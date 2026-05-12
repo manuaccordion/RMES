@@ -573,10 +573,11 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   <nav class="nav" role="tablist">
     <button class="tab active" data-tab="sell"><span class="num">1</span>Sell Strategy</button>
     <button class="tab" data-tab="cancel"><span class="num">2</span>Cancellazioni</button>
-    <button class="tab" data-tab="otb"><span class="num">3</span>OTB Anno Intero</button>
+    <button class="tab" data-tab="otb"><span class="num">3</span>Overview</button>
     <button class="tab" data-tab="fcst"><span class="num">4</span>Forecast</button>
-    <button class="tab" data-tab="hist"><span class="num">5</span>Dati Storici</button>
-    <button class="tab" data-tab="pk"><span class="num">6</span>Pickup Matrix</button>
+    <button class="tab" data-tab="hist" style="display:none"><span class="num">5</span>Dati Storici</button>
+    <button class="tab" data-tab="pk"><span class="num">5</span>Pickup Matrix</button>
+    <button class="tab" data-tab="rate"><span class="num">6</span>Rate Shopper</button>
     <button class="tab" data-tab="rt"><span class="num">7</span>OCC per Room Type</button>
     <button class="tab" data-tab="mkt"><span class="num">8</span>AirDNA Demand</button>
     <button class="tab" data-tab="pri" style="display:none"><span class="num">9</span>RMES</button>
@@ -589,8 +590,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   <section class="tab-panel" id="panel-otb">
     <div class="section-head">
       <div>
-        <h2>OTB — Anno Intero 2026</h2>
-        <div class="lede">Confronto booking <span class="mono" id="otb-cur-date">oggi</span> vs Same-Time-Last-Year (<span class="mono" id="otb-stly-date">—</span>) calcolato a <strong>−364 giorni</strong> per allineare il giorno della settimana.</div>
+        <h2>Overview — Anno Intero 2026</h2>
+        <div class="lede">Confronto booking <span class="mono" id="otb-cur-date">oggi</span> vs <strong>STLY</strong> (Same-Time-Last-Year, <span class="mono" id="otb-stly-date">—</span>, a −364 giorni) e <strong>Final LY</strong> (chiusura definitiva 2025, tutte le prenotazioni del 2025 senza filtro temporale).</div>
       </div>
     </div>
 
@@ -1123,17 +1124,38 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div id="pkmonth-legend" style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);padding:12px 16px 0;font-family:'DM Mono',monospace"></div>
       </div>
     </div>
+  </section>
 
-    <!-- ============ PIRAMIDE PREZZI ============ -->
-    <div class="panel" id="panel-piramide">
+  <!-- ============ SECTION RATE SHOPPER ============ -->
+  <section class="tab-panel" id="panel-rate">
+    <div class="section-head">
+      <div>
+        <h2>Rate Shopper <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">prezzi compset · pesi configurabili</span></h2>
+        <div class="lede">Tabelle dei competitor estratte da Expedia per ogni struttura. Imposta un <b>peso %</b> (0-100%) per ogni competitor: il peso influenza la <b>media ponderata compset</b> usata nel moltiplicatore C del sistema RMES nella Sell Strategy. <span class="mono" style="font-size:11px">Formula: media = Σ(prezzo × peso) / N · default 100%</span></div>
+      </div>
+      <div class="head-actions">
+        <button class="btn-link" id="rate-reset-weights" style="font-size:11px;padding:6px 12px;border:1px solid var(--line);border-radius:4px;background:transparent;cursor:pointer">Reset pesi a 100%</button>
+      </div>
+    </div>
+
+    <div id="rate-tables-wrap"></div>
+
+    <!-- Piramide spostata qui -->
+    <div class="panel" id="panel-piramide" style="margin-top:24px">
       <div class="panel-head" style="flex-wrap:wrap;gap:12px">
         <div>
           <h3>Piramide Prezzi <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="piramide-range-label">90 giorni</span></h3>
-          <div class="panel-sub">Confronto dei prezzi <b>visibili su Expedia</b> per Condotta 16 e Palazzo Alfani vs fascia compset di tutti i competitor. Tutti i valori sono in spazio Expedia lordo (= ciò che il mercato vede). Firenze Suite non è monitorata da Expedia. Sotto: variazione YoY del volume di ricerche per incrociare prezzo ↔ domanda.</div>
+          <div class="panel-sub">Confronto dei prezzi <b>visibili su Expedia</b> per le mie strutture vs fascia compset. Tutti i valori sono in spazio Expedia lordo (= ciò che il mercato vede). Sotto: variazione YoY del volume di ricerche per incrociare prezzo ↔ domanda.</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Giorni</span>
-          <div id="piramide-range-pills" style="display:flex;gap:4px"></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Giorni</span>
+            <div id="piramide-range-pills" style="display:flex;gap:4px"></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Strutture</span>
+            <div id="piramide-struct-pills" style="display:flex;gap:4px"></div>
+          </div>
         </div>
       </div>
       <div class="panel-body" style="padding:8px 4px 16px">
@@ -23921,14 +23943,16 @@ function aggOTBYearly(sel){
   const keys = new Set(structKeysFor(sel));
   const roomsTot = structRoomsTotal(sel);
 
-  // monthly buckets: m -> {rn, rev} for cur and prev
+  // monthly buckets: m -> {rn, rev} for cur and prev (STLY filtrato pari-data)
+  // Aggiungo anche "fly" = Final LY (tutte le prenotazioni 2025 senza filtro pari-data, = chiusura definitiva)
   const cur = {};   // m -> {rn,rev}
-  const prev = {};
-  for (let m=1;m<=12;m++){ cur[m]={rn:0,rev:0}; prev[m]={rn:0,rev:0}; }
+  const prev = {};  // STLY
+  const fly = {};   // Final LY (2025 chiusura)
+  for (let m=1;m<=12;m++){ cur[m]={rn:0,rev:0}; prev[m]={rn:0,rev:0}; fly[m]={rn:0,rev:0}; }
 
   // by source (provenienza) and channel
-  const provCur = {}, provPrev = {};
-  const canCur = {},  canPrev = {};
+  const provCur = {}, provPrev = {}, provFly = {};
+  const canCur = {},  canPrev = {},  canFly = {};
 
   for (const b of BOOKINGS){
     if (b.cancelled) continue;
@@ -23936,8 +23960,7 @@ function aggOTBYearly(sel){
 
     const isCurrentBkWindow = b.bookYmd <= TODAY_YMD;
     const isStlyBkWindow    = b.bookYmd <= STLY_YMD;
-
-    if (!isCurrentBkWindow && !isStlyBkWindow) continue;
+    // FinalLY: tutte le prenotazioni con stay nel 2025 (no filtro su bookYmd)
 
     const alloc = monthAllocate(b.dIn, b.dOut, b.revPerNight);
     for (const k in alloc){
@@ -23952,11 +23975,14 @@ function aggOTBYearly(sel){
       if (isStlyBkWindow && y===PREV_YEAR){
         prev[m].rn += a.rn; prev[m].rev += a.rev;
       }
+      // FinalLY: nessun filtro bookYmd
+      if (y===PREV_YEAR){
+        fly[m].rn += a.rn; fly[m].rev += a.rev;
+      }
     }
 
-    // for prov/canale tables: aggregate at YEAR level, only for stays in the year
+    // for prov/canale tables: aggregate at YEAR level
     if (isCurrentBkWindow){
-      // sum over months of CUR_YEAR portion
       let rn=0, rev=0;
       for (const k in alloc){
         const y = Math.floor((+k)/100);
@@ -23982,6 +24008,20 @@ function aggOTBYearly(sel){
         canPrev[b.canale].rn += rn; canPrev[b.canale].rev += rev; canPrev[b.canale].bk += 1;
       }
     }
+    // FinalLY for prov/canale: senza filtro bookYmd, solo stay nel 2025
+    {
+      let rn=0, rev=0;
+      for (const k in alloc){
+        const y = Math.floor((+k)/100);
+        if (y===PREV_YEAR){ rn += alloc[k].rn; rev += alloc[k].rev; }
+      }
+      if (rn>0){
+        if (!provFly[b.prov]) provFly[b.prov]={rn:0,rev:0,bk:0};
+        provFly[b.prov].rn += rn; provFly[b.prov].rev += rev; provFly[b.prov].bk += 1;
+        if (!canFly[b.canale]) canFly[b.canale]={rn:0,rev:0,bk:0};
+        canFly[b.canale].rn += rn; canFly[b.canale].rev += rev; canFly[b.canale].bk += 1;
+      }
+    }
   }
 
   // capacity per month
@@ -24000,9 +24040,20 @@ function aggOTBYearly(sel){
     const occP = p.rn / capPrev[m];
     const adrC = c.rn>0 ? c.rev/c.rn : NaN;
     const adrP = p.rn>0 ? p.rev/p.rn : NaN;
+    // Final LY (= chiusura 2025, tutte le confermate senza filtro bookYmd)
+    const f = fly[m];
+    const occF = f.rn / capPrev[m];
+    const adrF = f.rn>0 ? f.rev/f.rn : NaN;
     monthRows.push({
       m, occC, occP, adrC, adrP,
       revC:c.rev, revP:p.rev, rnC:c.rn, rnP:p.rn,
+      // Final LY fields
+      revF:f.rev, rnF:f.rn, occF, adrF,
+      dOccF: occC - occF,
+      dAdrFEur: (isFinite(adrC)&&isFinite(adrF)) ? adrC-adrF : NaN,
+      dAdrFPct: (isFinite(adrC)&&isFinite(adrF)&&adrF>0) ? (adrC-adrF)/adrF : NaN,
+      dRevFPct: f.rev>0 ? (c.rev-f.rev)/f.rev : NaN,
+      // Delta vs STLY (esistenti)
       dOcc: occC - occP,
       dAdrEur: (isFinite(adrC)&&isFinite(adrP)) ? adrC-adrP : NaN,
       dAdrPct: (isFinite(adrC)&&isFinite(adrP)&&adrP>0) ? (adrC-adrP)/adrP : NaN,
@@ -24011,19 +24062,32 @@ function aggOTBYearly(sel){
     totCur.rn += c.rn; totCur.rev += c.rev; totCur.cap += capCur[m];
     totPrev.rn += p.rn; totPrev.rev += p.rev; totPrev.cap += capPrev[m];
   }
+  // Total Final LY
+  let totFly = {rn:0, rev:0};
+  for (let m=1;m<=12;m++){ totFly.rn += fly[m].rn; totFly.rev += fly[m].rev; }
+
   const tot = {
     occC: totCur.rn/totCur.cap, occP: totPrev.rn/totPrev.cap,
     adrC: totCur.rn>0?totCur.rev/totCur.rn:NaN,
     adrP: totPrev.rn>0?totPrev.rev/totPrev.rn:NaN,
     revC: totCur.rev, revP: totPrev.rev, rnC: totCur.rn, rnP: totPrev.rn,
     capC: totCur.cap, capP: totPrev.cap,
+    // Final LY
+    rnF: totFly.rn, revF: totFly.rev,
+    occF: totFly.rn / totCur.cap,  // uso la stessa capacità di rif. (≈ 365 × rooms)
+    adrF: totFly.rn>0 ? totFly.rev/totFly.rn : NaN,
   };
   tot.dOcc = tot.occC - tot.occP;
   tot.dAdrEur = (isFinite(tot.adrC)&&isFinite(tot.adrP)) ? tot.adrC-tot.adrP : NaN;
   tot.dAdrPct = (isFinite(tot.adrC)&&isFinite(tot.adrP)&&tot.adrP>0) ? (tot.adrC-tot.adrP)/tot.adrP : NaN;
   tot.dRevPct = tot.revP>0 ? (tot.revC-tot.revP)/tot.revP : NaN;
+  // Delta vs Final LY (chiusura 2025)
+  tot.dOccF = tot.occC - tot.occF;
+  tot.dAdrFEur = (isFinite(tot.adrC)&&isFinite(tot.adrF)) ? tot.adrC-tot.adrF : NaN;
+  tot.dAdrFPct = (isFinite(tot.adrC)&&isFinite(tot.adrF)&&tot.adrF>0) ? (tot.adrC-tot.adrF)/tot.adrF : NaN;
+  tot.dRevFPct = tot.revF>0 ? (tot.revC-tot.revF)/tot.revF : NaN;
 
-  return { monthRows, tot, provCur, provPrev, canCur, canPrev };
+  return { monthRows, tot, provCur, provPrev, canCur, canPrev, provFly, canFly };
 }
 
 /* OCC per Room Type
@@ -24519,12 +24583,16 @@ function renderOTB(sel){
         <th rowspan="2" style="text-align:left">Mese</th>
         <th colspan="3" class="group g-26">2026 OTB</th>
         <th colspan="3" class="group g-25">2025 STLY</th>
-        <th colspan="4" class="group g-var">Variazione</th>
+        <th colspan="3" class="group g-25">Final LY (chiusura 2025)</th>
+        <th colspan="2" class="group g-var">Δ vs STLY</th>
+        <th colspan="2" class="group g-var">Δ vs Final LY</th>
       </tr>
       <tr>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
-        <th>ΔOcc</th><th>ΔADR €</th><th>ΔADR %</th><th>ΔRev %</th>
+        <th>OCC%</th><th>ADR</th><th>Revenue</th>
+        <th>ΔOcc</th><th>ΔRev %</th>
+        <th>ΔOcc</th><th>ΔRev %</th>
       </tr>
     </thead>`;
   const rows = A.monthRows.map(r=>{
@@ -24536,10 +24604,13 @@ function renderOTB(sel){
       <td class="cell-mono cell-flat">${fmtPct(r.occP,1)}</td>
       <td class="cell-mono cell-flat">${fmtAdr(r.adrP)}</td>
       <td class="cell-mono cell-flat">${fmtEUR(r.revP)}</td>
+      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtPct(r.occF,1)}</td>
+      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtAdr(r.adrF)}</td>
+      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(r.revF)}</td>
       ${deltaCell(r.dOcc,'pp')}
-      ${deltaCell(r.dAdrEur,'eur')}
-      ${deltaCell(r.dAdrPct,'pct')}
       ${deltaCell(r.dRevPct,'pct')}
+      ${deltaCell(r.dOccF,'pp')}
+      ${deltaCell(r.dRevFPct,'pct')}
     </tr>`;
   }).join('');
   const tot = A.tot;
@@ -24551,10 +24622,13 @@ function renderOTB(sel){
     <td class="cell-mono cell-flat">${fmtPct(tot.occP,1)}</td>
     <td class="cell-mono cell-flat">${fmtAdr(tot.adrP)}</td>
     <td class="cell-mono cell-flat">${fmtEUR(tot.revP)}</td>
+    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtPct(tot.occF,1)}</td>
+    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtAdr(tot.adrF)}</td>
+    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(tot.revF)}</td>
     ${deltaCell(tot.dOcc,'pp')}
-    ${deltaCell(tot.dAdrEur,'eur')}
-    ${deltaCell(tot.dAdrPct,'pct')}
     ${deltaCell(tot.dRevPct,'pct')}
+    ${deltaCell(tot.dOccF,'pp')}
+    ${deltaCell(tot.dRevFPct,'pct')}
   </tr>`;
   document.getElementById('otb-monthly').innerHTML = head + '<tbody>' + rows + totRow + '</tbody>';
 
@@ -24569,60 +24643,64 @@ function renderOTB(sel){
   );
 
   // prov / canale
-  document.getElementById('otb-prov-table').innerHTML = compareTable(A.provCur, A.provPrev, 'Provenienza');
-  document.getElementById('otb-prov-sub').textContent = `Top sources · 2026 vs STLY`;
-  document.getElementById('otb-can-table').innerHTML  = compareTable(A.canCur,  A.canPrev,  'Canale');
-  document.getElementById('otb-can-sub').textContent  = `Distribuzione canale · 2026 vs STLY`;
+  document.getElementById('otb-prov-table').innerHTML = compareTable(A.provCur, A.provPrev, A.provFly, 'Provenienza');
+  document.getElementById('otb-prov-sub').textContent = `Top sources · 2026 OTB vs STLY vs Final LY`;
+  document.getElementById('otb-can-table').innerHTML  = compareTable(A.canCur,  A.canPrev,  A.canFly,  'Canale');
+  document.getElementById('otb-can-sub').textContent  = `Distribuzione canale · 2026 OTB vs STLY vs Final LY`;
 }
 
-function compareTable(cur, prev, labelCol){
-  const keys = new Set([...Object.keys(cur), ...Object.keys(prev)]);
+function compareTable(cur, prev, fly, labelCol){
+  fly = fly || {};
+  const keys = new Set([...Object.keys(cur), ...Object.keys(prev), ...Object.keys(fly)]);
   const rows = [];
-  let totC={rn:0,rev:0,bk:0}, totP={rn:0,rev:0,bk:0};
+  let totC={rn:0,rev:0,bk:0}, totP={rn:0,rev:0,bk:0}, totF={rn:0,rev:0,bk:0};
   for (const k of keys){
     const c = cur[k] || {rn:0,rev:0,bk:0};
     const p = prev[k] || {rn:0,rev:0,bk:0};
+    const f = fly[k] || {rn:0,rev:0,bk:0};
     totC.rn+=c.rn; totC.rev+=c.rev; totC.bk+=c.bk;
     totP.rn+=p.rn; totP.rev+=p.rev; totP.bk+=p.bk;
-    rows.push({k,c,p});
+    totF.rn+=f.rn; totF.rev+=f.rev; totF.bk+=f.bk;
+    rows.push({k,c,p,f});
   }
   rows.sort((a,b)=> b.c.rev - a.c.rev);
 
   const head = `<thead><tr>
     <th>${labelCol}</th>
-    <th class="g-26">RN '26</th><th class="g-26">Rev '26</th><th class="g-26">% mix '26</th>
-    <th class="g-25">RN '25</th><th class="g-25">Rev '25</th><th class="g-25">% mix '25</th>
-    <th class="g-var">Δ Rev</th><th class="g-var">Δ %</th>
+    <th class="g-26">RN '26</th><th class="g-26">Rev '26</th>
+    <th class="g-25">RN STLY</th><th class="g-25">Rev STLY</th>
+    <th class="g-25" style="background:rgba(142,95,168,.08)">RN Final LY</th><th class="g-25" style="background:rgba(142,95,168,.08)">Rev Final LY</th>
+    <th class="g-var">Δ vs STLY</th><th class="g-var">Δ vs Final LY</th>
   </tr></thead>`;
   const body = rows.map(r=>{
-    const mix  = totC.rev>0 ? r.c.rev/totC.rev : 0;
-    const mixP = totP.rev>0 ? r.p.rev/totP.rev : 0;
     const dRev = r.c.rev - r.p.rev;
     const dPct = r.p.rev>0 ? dRev/r.p.rev : (r.c.rev>0?Infinity:NaN);
+    const dRevF = r.c.rev - r.f.rev;
+    const dPctF = r.f.rev>0 ? dRevF/r.f.rev : (r.c.rev>0?Infinity:NaN);
     return `<tr>
       <td>${escapeHtml(r.k)}</td>
       <td class="cell-mono">${fmtNum(r.c.rn)}</td>
       <td class="cell-mono">${fmtEUR(r.c.rev)}</td>
-      <td class="cell-mono cell-flat">${fmtPct(mix,1)}</td>
       <td class="cell-mono cell-flat">${fmtNum(r.p.rn)}</td>
       <td class="cell-mono cell-flat">${fmtEUR(r.p.rev)}</td>
-      <td class="cell-mono cell-flat">${r.p.rev>0?fmtPct(mixP,1):'—'}</td>
-      ${deltaCell(dRev,'eur')}
+      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtNum(r.f.rn)}</td>
+      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(r.f.rev)}</td>
       ${(!isFinite(dPct)) ? '<td class="cell-flat">—</td>' : (dPct===Infinity ? '<td class="cell-pos cell-mono">nuovo</td>' : deltaCell(dPct,'pct'))}
+      ${(!isFinite(dPctF)) ? '<td class="cell-flat">—</td>' : (dPctF===Infinity ? '<td class="cell-pos cell-mono">nuovo</td>' : deltaCell(dPctF,'pct'))}
     </tr>`;
   }).join('');
-  const dRevTot = totC.rev-totP.rev;
-  const dPctTot = totP.rev>0 ? dRevTot/totP.rev : NaN;
+  const dPctTot = totP.rev>0 ? (totC.rev-totP.rev)/totP.rev : NaN;
+  const dPctTotF = totF.rev>0 ? (totC.rev-totF.rev)/totF.rev : NaN;
   const totRow = `<tr class="total">
     <td>Totale</td>
     <td class="cell-mono">${fmtNum(totC.rn)}</td>
     <td class="cell-mono">${fmtEUR(totC.rev)}</td>
-    <td class="cell-mono">100%</td>
     <td class="cell-mono cell-flat">${fmtNum(totP.rn)}</td>
     <td class="cell-mono cell-flat">${fmtEUR(totP.rev)}</td>
-    <td class="cell-mono cell-flat">${totP.rev>0?'100%':'—'}</td>
-    ${deltaCell(dRevTot,'eur')}
+    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtNum(totF.rn)}</td>
+    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(totF.rev)}</td>
     ${deltaCell(dPctTot,'pct')}
+    ${deltaCell(dPctTotF,'pct')}
   </tr>`;
   return head + '<tbody>' + body + totRow + '</tbody>';
 }
@@ -26617,13 +26695,33 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       else B_mult = 1.05;
     }
     // === C · Comp ===
+    // Usa la "media ponderata compset" calcolata in base ai pesi configurati nella tab Rate Shopper.
+    // Formula: media = Σ(prezzo × peso) / N. Se compsetWeightedAvg restituisce un valore, lo usa
+    // al posto della media aritmetica. Fallback: compsetAvg (aritmetica) se non disponibile.
     let C_mult = 1;
-    if (exp2 && exp2.myPriceExpedia != null && exp2.compsetAvg != null && exp2.compsetAvg > 0){
-      const C_idx = exp2.myPriceExpedia / exp2.compsetAvg;
-      if (C_idx < 0.8) C_mult = 1.10;
-      else if (C_idx < 1.0) C_mult = 1.05;
-      else if (C_idx <= 1.2) C_mult = 1.00;
-      else C_mult = 0.95;
+    let _C_compAvg = null, _C_compSource = '';
+    if (exp2 && exp2.myPriceExpedia != null){
+      // Tentativo media ponderata (richiede la funzione globale + ratios in localStorage)
+      const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+      if (typeof compsetWeightedAvg === 'function'){
+        const w = compsetWeightedAvg(sel, isoK);
+        if (w && w.avg != null && w.avg > 0){
+          _C_compAvg = w.avg;
+          _C_compSource = 'ponderata';
+        }
+      }
+      // Fallback: media aritmetica
+      if (_C_compAvg == null && exp2.compsetAvg != null && exp2.compsetAvg > 0){
+        _C_compAvg = exp2.compsetAvg;
+        _C_compSource = 'aritmetica';
+      }
+      if (_C_compAvg != null && _C_compAvg > 0){
+        const C_idx = exp2.myPriceExpedia / _C_compAvg;
+        if (C_idx < 0.8) C_mult = 1.10;
+        else if (C_idx < 1.0) C_mult = 1.05;
+        else if (C_idx <= 1.2) C_mult = 1.00;
+        else C_mult = 0.95;
+      }
     }
     // === D · Pace ===
     const D_mult = _paceMult;
@@ -27157,14 +27255,27 @@ function renderSellStrategy(sel){
         else B_mult = 1.05;
       }
 
-      // === Indice C: Comp factor (mio Expedia / compset avg Expedia) ===
+      // === Indice C: Comp factor (mio Expedia / media ponderata compset) ===
+      // Stessa logica del C principale: usa la media ponderata se disponibile,
+      // altrimenti fallback alla media aritmetica.
       let C_idx = null, C_mult = 1;
-      if (exp2 && exp2.myPriceExpedia != null && exp2.compsetAvg != null && exp2.compsetAvg > 0){
-        C_idx = exp2.myPriceExpedia / exp2.compsetAvg;
-        if (C_idx < 0.8) C_mult = 1.10;
-        else if (C_idx < 1.0) C_mult = 1.05;
-        else if (C_idx <= 1.2) C_mult = 1.00;
-        else C_mult = 0.95;
+      let _C2_compAvg = null;
+      if (exp2 && exp2.myPriceExpedia != null){
+        const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+        if (typeof compsetWeightedAvg === 'function'){
+          const w = compsetWeightedAvg(sel, isoK);
+          if (w && w.avg != null && w.avg > 0) _C2_compAvg = w.avg;
+        }
+        if (_C2_compAvg == null && exp2.compsetAvg != null && exp2.compsetAvg > 0){
+          _C2_compAvg = exp2.compsetAvg;
+        }
+        if (_C2_compAvg != null && _C2_compAvg > 0){
+          C_idx = exp2.myPriceExpedia / _C2_compAvg;
+          if (C_idx < 0.8) C_mult = 1.10;
+          else if (C_idx < 1.0) C_mult = 1.05;
+          else if (C_idx <= 1.2) C_mult = 1.00;
+          else C_mult = 0.95;
+        }
       }
 
       // === Indice D: Pace factor (last 4 weeks pickup vs STLY) ===
@@ -27590,12 +27701,7 @@ function renderSellStrategy(sel){
   if (typeof renderPickupByMonth === 'function'){
     try { renderPickupByMonth(sel); } catch(e) { console.error('renderPickupByMonth:', e); }
   }
-
-  // === Piramide Prezzi: 120 giorni, confronto 3 strutture + fascia compset ===
-  // Sempre la stessa indipendentemente dalla struttura selezionata (mostra tutte e 3)
-  if (typeof renderPiramide === 'function'){
-    try { renderPiramide(); } catch(e) { console.error('renderPiramide:', e); }
-  }
+  // (La Piramide Prezzi è stata spostata nella tab Rate Shopper)
 }
 
 /* Drilldown modal for Sell Strategy pickup/cancel cell.
@@ -27904,14 +28010,16 @@ function renderPickupByMonth(sel){
 
 
 
-// Stato range Piramide (default 90gg)
+// Stato range Piramide (default 90gg) + strutture visibili
 let PIRAMIDE_DAYS = 90;
+let PIRAMIDE_STRUCTS = {firenze: true, condotta: true, alfani: true};
 
 function renderPiramide(){
   const wrapEl = document.getElementById('piramide-chart-wrap');
   const legendEl = document.getElementById('piramide-legend');
   const searchEl = document.getElementById('piramide-search-wrap');
   const pillsEl = document.getElementById('piramide-range-pills');
+  const structPillsEl = document.getElementById('piramide-struct-pills');
   const labelEl = document.getElementById('piramide-range-label');
   if (!wrapEl) return;
 
@@ -27933,6 +28041,30 @@ function renderPiramide(){
     });
   }
   if (labelEl) labelEl.textContent = `${DAYS} giorni`;
+
+  // === Pill selector strutture (multi-select toggle) ===
+  if (structPillsEl){
+    const sd = [
+      {key:'firenze',  label:'Firenze',  color:'#3b6b9a'},
+      {key:'condotta', label:'Condotta', color:'#3d7a4b'},
+      {key:'alfani',   label:'Alfani',   color:'#8e5fa8'},
+    ];
+    structPillsEl.innerHTML = sd.map(s => {
+      const on = PIRAMIDE_STRUCTS[s.key];
+      return `<button class="rt-pill ${on?'':'off'}" data-pstruct="${s.key}" style="${on?'border-color:'+s.color+';color:'+s.color+';font-weight:600':''}">${s.label}</button>`;
+    }).join('');
+    structPillsEl.querySelectorAll('button[data-pstruct]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const k = btn.dataset.pstruct;
+        PIRAMIDE_STRUCTS[k] = !PIRAMIDE_STRUCTS[k];
+        // Almeno una selezionata: se l'utente le toglie tutte, riattivo questa
+        if (!PIRAMIDE_STRUCTS.firenze && !PIRAMIDE_STRUCTS.condotta && !PIRAMIDE_STRUCTS.alfani){
+          PIRAMIDE_STRUCTS[k] = true;
+        }
+        renderPiramide();
+      });
+    });
+  }
 
   // 1) Le mie linee usano direttamente i prezzi visibili su Expedia (stesso "linguaggio" del compset)
   //    Niente prezzo base RMES qui — la piramide serve a confrontare il posizionamento competitivo,
@@ -28132,9 +28264,9 @@ function renderPiramide(){
     }
     return s;
   }
-  svg += buildLine('alfani',   '#8e5fa8', 2);  // viola
-  svg += buildLine('firenze',  '#3b6b9a', 2);  // blu
-  svg += buildLine('condotta', '#3d7a4b', 2);  // verde
+  if (PIRAMIDE_STRUCTS.alfani)   svg += buildLine('alfani',   '#8e5fa8', 2);  // viola
+  if (PIRAMIDE_STRUCTS.firenze)  svg += buildLine('firenze',  '#3b6b9a', 2);  // blu
+  if (PIRAMIDE_STRUCTS.condotta) svg += buildLine('condotta', '#3d7a4b', 2);  // verde
 
   // === Ticks asse X ===
   for (const t of xTicks){
@@ -28154,9 +28286,9 @@ function renderPiramide(){
     const dowIT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'][p.dow];
     let tip = `${dowIT} ${dateLabel}\n`;
     tip += '─────────────────\n';
-    if (p.firenze  != null) tip += `Firenze Suite:    €${Math.round(p.firenze)}\n`;
-    if (p.condotta != null) tip += `Condotta 16:      €${Math.round(p.condotta)}\n`;
-    if (p.alfani   != null) tip += `Palazzo Alfani:   €${Math.round(p.alfani)}\n`;
+    if (PIRAMIDE_STRUCTS.firenze  && p.firenze  != null) tip += `Firenze Suite:    €${Math.round(p.firenze)}\n`;
+    if (PIRAMIDE_STRUCTS.condotta && p.condotta != null) tip += `Condotta 16:      €${Math.round(p.condotta)}\n`;
+    if (PIRAMIDE_STRUCTS.alfani   && p.alfani   != null) tip += `Palazzo Alfani:   €${Math.round(p.alfani)}\n`;
     if (p.compMin != null){
       tip += '─────────────────\n';
       tip += `Compset: ${p.compN} competitor\n`;
@@ -30628,6 +30760,189 @@ function renderForecastCharts(A, ymOrder){
 }
 
 
+/* ============================================================
+   RATE SHOPPER TAB
+   3 tabelle competitor (una per struttura) con peso % editabile per ogni competitor.
+   I pesi sono salvati in localStorage e usati per calcolare la "media ponderata compset"
+   che a sua volta determina il moltiplicatore C nel sistema RMES (Sell Strategy).
+   ============================================================ */
+
+const RATE_WEIGHTS_KEY = 'rmes_compset_weights_v1';
+
+// Carico/salvo i pesi in localStorage
+function loadRateWeights(){
+  try {
+    const raw = localStorage.getItem(RATE_WEIGHTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return {};  // {struct: {compName: weight 0..1}}
+}
+function saveRateWeights(weights){
+  try { localStorage.setItem(RATE_WEIGHTS_KEY, JSON.stringify(weights)); } catch(e){}
+}
+function getWeight(struct, compName){
+  const w = loadRateWeights();
+  if (w[struct] && w[struct][compName] != null) return w[struct][compName];
+  return 1.0;  // default 100%
+}
+function setWeight(struct, compName, value){
+  const w = loadRateWeights();
+  if (!w[struct]) w[struct] = {};
+  w[struct][compName] = value;
+  saveRateWeights(w);
+}
+
+// Calcolo della media ponderata compset per uno (struct, isoKey)
+// Formula: media = Σ(prezzo × peso) / N_competitor_valid
+// Restituisce {avg, n, contributingNames}
+function compsetWeightedAvg(struct, isoKey){
+  if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return {avg: null, n: 0};
+  // Mappa competitors per struct
+  let compMap = null;
+  if (struct === 'condotta') compMap = EXPEDIA_DATA.competitors;
+  else if (struct === 'alfani') compMap = EXPEDIA_DATA.competitors_alfani;
+  else if (struct === 'firenze') compMap = EXPEDIA_DATA.competitors_firenze;  // probabilmente non esiste
+  if (!compMap) return {avg: null, n: 0};
+
+  let total = 0, n = 0;
+  const names = [];
+  for (const name in compMap){
+    const p = compMap[name][isoKey];
+    if (p == null || !isFinite(p) || p <= 0) continue;
+    const w = getWeight(struct, name);
+    total += p * w;
+    n += 1;
+    names.push(name);
+  }
+  if (n === 0) return {avg: null, n: 0};
+  return {avg: total / n, n, contributingNames: names};
+}
+
+// Render della tab Rate Shopper
+function renderRateShopper(){
+  const wrap = document.getElementById('rate-tables-wrap');
+  if (!wrap) return;
+
+  // Definisco le 3 strutture e il loro mapping nel data Expedia
+  const structDefs = [
+    { key: 'firenze',  label: 'Firenze Suite',   compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_firenze) || null, color: '#3b6b9a' },
+    { key: 'condotta', label: 'Condotta 16',     compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors)         || null, color: '#3d7a4b' },
+    { key: 'alfani',   label: 'Palazzo Alfani',  compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_alfani)  || null, color: '#8e5fa8' },
+  ];
+
+  let html = '';
+  for (const sd of structDefs){
+    html += `<div class="panel" style="margin-bottom:18px;border-top:3px solid ${sd.color}">
+      <div class="panel-head">
+        <div>
+          <h3 style="color:${sd.color}">${escapeHtml(sd.label)} · Compset Expedia</h3>
+          <div class="panel-sub">${sd.compMap ? Object.keys(sd.compMap).length + ' competitor monitorati' : '<i style="color:var(--ink-3)">Nessun dato Expedia disponibile per questa struttura</i>'}</div>
+        </div>
+      </div>
+      <div class="panel-body flush">`;
+
+    if (!sd.compMap || Object.keys(sd.compMap).length === 0){
+      html += `<div style="padding:24px;text-align:center;color:var(--ink-3);font-size:12px;font-style:italic">
+        Caricheremo i dati di ${escapeHtml(sd.label)} non appena saranno disponibili nel rate shopper Expedia.
+      </div>`;
+    } else {
+      // Costruisco la tabella: nomi competitor in righe, date in colonne
+      // Estraggo l'asse date come unione di tutte le date dei competitor (ordinate)
+      const allDates = new Set();
+      for (const name in sd.compMap){
+        for (const d in sd.compMap[name]) allDates.add(d);
+      }
+      const dateAxis = Array.from(allDates).sort();
+      // Limito a max 180 giorni futuri da oggi per leggibilità
+      const today0 = new Date(TODAY); today0.setHours(0,0,0,0);
+      const todayIso = today0.toISOString().slice(0,10);
+      const cutoffDate = new Date(today0); cutoffDate.setDate(cutoffDate.getDate() + 180);
+      const cutoffIso = cutoffDate.toISOString().slice(0,10);
+      const displayDates = dateAxis.filter(d => d >= todayIso && d <= cutoffIso);
+
+      const compNames = Object.keys(sd.compMap).sort();
+
+      html += `<div style="overflow-x:auto;max-height:60vh;overflow-y:auto"><table class="data" style="font-size:11px;white-space:nowrap">
+        <thead>
+          <tr>
+            <th style="position:sticky;left:0;background:var(--bg);z-index:3;text-align:left;min-width:200px">Competitor</th>
+            <th style="position:sticky;left:200px;background:var(--bg);z-index:3;width:80px">Peso %</th>`;
+      for (const d of displayDates){
+        const [y,m,da] = d.split('-');
+        html += `<th style="text-align:center;min-width:48px">${da}/${m}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+
+      for (const name of compNames){
+        const w = getWeight(sd.key, name);
+        const wPct = Math.round(w * 100);
+        html += `<tr>
+          <td style="position:sticky;left:0;background:var(--bg);z-index:2;font-weight:500">${escapeHtml(name)}</td>
+          <td style="position:sticky;left:200px;background:var(--bg);z-index:2">
+            <input type="number" min="0" max="100" step="5"
+              value="${wPct}"
+              data-struct="${sd.key}" data-comp="${escapeHtml(name)}"
+              class="rate-weight-input"
+              style="width:60px;padding:3px 6px;border:1px solid var(--line);border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;text-align:right">
+          </td>`;
+        for (const d of displayDates){
+          const p = sd.compMap[name][d];
+          if (p != null && isFinite(p) && p > 0){
+            // Applico il peso visivamente: prezzo più "spento" se il peso è basso
+            const opacity = 0.4 + 0.6 * w;
+            html += `<td class="cell-mono" style="text-align:center;opacity:${opacity}">€${Math.round(p)}</td>`;
+          } else {
+            html += `<td class="cell-mono cell-flat" style="text-align:center;color:var(--ink-3)">—</td>`;
+          }
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+
+    html += `</div></div>`;
+  }
+  wrap.innerHTML = html;
+
+  // Wire eventi input peso
+  wrap.querySelectorAll('.rate-weight-input').forEach(inp => {
+    inp.addEventListener('change', (ev) => {
+      const struct = inp.dataset.struct;
+      const comp = inp.dataset.comp;
+      let v = parseInt(inp.value, 10);
+      if (isNaN(v) || v < 0) v = 0;
+      if (v > 100) v = 100;
+      inp.value = v;
+      setWeight(struct, comp, v / 100);
+      // Rerender per aggiornare opacità + (eventualmente) la piramide sotto
+      renderRateShopper();
+      if (typeof renderPiramide === 'function') {
+        try { renderPiramide(); } catch(e){}
+      }
+    });
+  });
+
+  // Reset button
+  const resetBtn = document.getElementById('rate-reset-weights');
+  if (resetBtn && !resetBtn._wired){
+    resetBtn._wired = true;
+    resetBtn.addEventListener('click', () => {
+      if (confirm('Sicuro di voler resettare tutti i pesi al 100%?')){
+        try { localStorage.removeItem(RATE_WEIGHTS_KEY); } catch(e){}
+        renderRateShopper();
+        if (typeof renderPiramide === 'function') {
+          try { renderPiramide(); } catch(e){}
+        }
+      }
+    });
+  }
+
+  // Render anche la piramide qui (è dentro questa tab adesso)
+  if (typeof renderPiramide === 'function') {
+    try { renderPiramide(); } catch(e){}
+  }
+}
+
 
 /* ===========================================================================
    TAB CANCELLAZIONI
@@ -32058,6 +32373,7 @@ function renderAll(){
   if (typeof renderCancellations === 'function') renderCancellations(CURRENT_STRUCT);
   if (typeof renderBookingWindowOTB === 'function') renderBookingWindowOTB(CURRENT_STRUCT);
   if (typeof renderBookingWindowCancel === 'function') renderBookingWindowCancel(CURRENT_STRUCT);
+  if (typeof renderRateShopper === 'function') renderRateShopper();
   if (typeof renderAirbnb === 'function') renderAirbnb();
 }
 
