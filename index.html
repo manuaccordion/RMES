@@ -830,16 +830,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body flush" id="fcst-monthly-table" style="overflow-x:auto"></div>
     </div>
 
-    <div class="panel" style="margin-top:16px">
-      <div class="panel-head">
-        <div>
-          <h3>Forecast per Room Type × Mese</h3>
-          <div class="panel-sub">RN forecast · ADR forecast · Revenue forecast per ogni tipologia camera</div>
-        </div>
-      </div>
-      <div class="panel-body flush" id="fcst-rt-table" style="overflow-x:auto"></div>
-    </div>
-
     <div class="chart-grid" style="margin-top:16px">
       <div class="chart-card">
         <h4>Forecast vs Final LY · Revenue mensile</h4>
@@ -30522,7 +30512,8 @@ function renderForecast(sel){
     row += '</tr>';
     rtBody += row;
   }
-  document.getElementById('fcst-rt-table').innerHTML = '<table class="data">' + rtHead + '<tbody>' + rtBody + '</tbody></table>';
+  const _rtTblEl = document.getElementById('fcst-rt-table');
+  if (_rtTblEl) _rtTblEl.innerHTML = '<table class="data">' + rtHead + '<tbody>' + rtBody + '</tbody></table>';
 
   // === Subtitle aggiornato con info mix ===
   const subEl = document.getElementById('fcst-monthly-sub');
