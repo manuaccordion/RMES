@@ -27164,13 +27164,27 @@ function renderSellStrategy(sel){
       ? `<span class="sell-pickup-link" data-row="${i}" data-kind="cancel" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;color:#a83b3b">-${cancelCount}</span>`
       : '0';
 
-    // Expedia market context (only for Condotta 16)
+    // Expedia market context
     let expCells = '';
     if (showExp){
       const exp = expContext(r.ymd, sel);
       if (exp){
         const myP = exp.myPriceExpedia;
-        const cAvg = exp.compsetAvg;
+        // Usa la media PONDERATA calcolata dai pesi della tab Rate Shopper.
+        // Fallback alla media aritmetica se non disponibile o pesi non caricati.
+        let cAvg = null;
+        let avgIsWeighted = false;
+        const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+        if (typeof compsetWeightedAvg === 'function'){
+          const w = compsetWeightedAvg(sel, isoK);
+          if (w && w.avg != null && w.avg > 0){
+            cAvg = w.avg;
+            avgIsWeighted = true;
+          }
+        }
+        if (cAvg == null && exp.compsetAvg != null){
+          cAvg = exp.compsetAvg;
+        }
         // Differenza % vs compset
         let diffTxt = '—', diffCls = 'cell-flat';
         if (myP != null && cAvg != null && cAvg > 0){
@@ -27181,6 +27195,10 @@ function renderSellStrategy(sel){
         }
         const myTxt = myP != null ? fmtEUR(myP) : '—';
         const avgTxt = cAvg != null ? fmtEUR(cAvg) : '—';
+        const avgBadge = avgIsWeighted ? '<sup style="font-size:8px;color:var(--accent);font-weight:700;margin-left:2px" title="Media ponderata (pesi dalla tab Rate Shopper)">w</sup>' : '';
+        const avgTooltip = avgIsWeighted
+          ? `Media ponderata compset (pesi configurati in Rate Shopper) · diff vs mio: ${diffTxt}`
+          : `Media aritmetica compset · diff vs mio: ${diffTxt}`;
         // Search demand → ora finito nel tooltip della cella Mio prezzo (non più colonna a sé)
         const dem = expDemandLevel(exp.searchCurrent);
         let myTooltip = 'Mio prezzo su Expedia';
@@ -27192,7 +27210,7 @@ function renderSellStrategy(sel){
         }
         expCells =
           `<td class="cell-mono sell-block-expedia" style="background:rgba(58,107,107,.04)" title="${myTooltip}">${myTxt}</td>` +
-          `<td class="cell-mono ${diffCls}" style="background:rgba(58,107,107,.04)" title="Avg compset · diff vs mio: ${diffTxt}">${avgTxt}<br><span style="font-size:9px;font-weight:400">${diffTxt}</span></td>`;
+          `<td class="cell-mono ${diffCls}" style="background:rgba(58,107,107,.04)" title="${avgTooltip}">${avgTxt}${avgBadge}<br><span style="font-size:9px;font-weight:400">${diffTxt}</span></td>`;
       } else {
         expCells = `<td class="cell-mono cell-flat sell-block-expedia" colspan="2" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
       }
@@ -30804,12 +30822,17 @@ function compsetWeightedAvg(struct, isoKey){
   else if (struct === 'firenze') compMap = EXPEDIA_DATA.competitors_firenze;  // probabilmente non esiste
   if (!compMap) return {avg: null, n: 0};
 
+  // Per ogni competitor con prezzo > 0:
+  //   - se peso = 0% → ignoralo completamente (non contribuisce, e non gonfia il divisore)
+  //   - altrimenti → somma (prezzo × peso), conta nel divisore
+  // Formula: media = Σ(prezzo × peso) / N_competitor_con_peso_>_0
   let total = 0, n = 0;
   const names = [];
   for (const name in compMap){
     const p = compMap[name][isoKey];
     if (p == null || !isFinite(p) || p <= 0) continue;
     const w = getWeight(struct, name);
+    if (w <= 0) continue;  // peso 0 = competitor escluso, non conta nemmeno nel divisore
     total += p * w;
     n += 1;
     names.push(name);
@@ -30914,10 +30937,14 @@ function renderRateShopper(){
       if (v > 100) v = 100;
       inp.value = v;
       setWeight(struct, comp, v / 100);
-      // Rerender per aggiornare opacità + (eventualmente) la piramide sotto
+      // Rerender: Rate Shopper (opacità + tabelle) + Piramide + Sell Strategy
+      // (la Sell Strategy usa la media ponderata nel moltiplicatore C e nella cella Compset avg)
       renderRateShopper();
       if (typeof renderPiramide === 'function') {
         try { renderPiramide(); } catch(e){}
+      }
+      if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined') {
+        try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
       }
     });
   });
@@ -30932,6 +30959,9 @@ function renderRateShopper(){
         renderRateShopper();
         if (typeof renderPiramide === 'function') {
           try { renderPiramide(); } catch(e){}
+        }
+        if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined') {
+          try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
         }
       }
     });
