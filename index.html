@@ -30855,11 +30855,11 @@ function renderRateShopper(){
   const wrap = document.getElementById('rate-tables-wrap');
   if (!wrap) return;
 
-  // Definisco le 3 strutture e il loro mapping nel data Expedia
+  // Definisco le 3 strutture nell'ordine richiesto: Alfani, Condotta, Firenze
   const structDefs = [
-    { key: 'firenze',  label: 'Firenze Suite',   compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_firenze) || null, color: '#3b6b9a' },
-    { key: 'condotta', label: 'Condotta 16',     compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors)         || null, color: '#3d7a4b' },
     { key: 'alfani',   label: 'Palazzo Alfani',  compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_alfani)  || null, color: '#8e5fa8' },
+    { key: 'condotta', label: 'Condotta 16',     compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors)         || null, color: '#3d7a4b' },
+    { key: 'firenze',  label: 'Firenze Suite',   compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_firenze) || null, color: '#3b6b9a' },
   ];
 
   // === Render dei pill di filtro struttura ===
@@ -30867,9 +30867,9 @@ function renderRateShopper(){
   if (pillsEl){
     const opts = [
       { v: 'all',      label: 'Tutte',            color: '#6b5b3f' },
-      { v: 'firenze',  label: 'Firenze Suite',    color: '#3b6b9a' },
-      { v: 'condotta', label: 'Condotta 16',      color: '#3d7a4b' },
       { v: 'alfani',   label: 'Palazzo Alfani',   color: '#8e5fa8' },
+      { v: 'condotta', label: 'Condotta 16',      color: '#3d7a4b' },
+      { v: 'firenze',  label: 'Firenze Suite',    color: '#3b6b9a' },
     ];
     pillsEl.innerHTML = opts.map(o => {
       const on = (RATE_STRUCT_FILTER === o.v);
