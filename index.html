@@ -1131,10 +1131,17 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>Rate Shopper <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">prezzi compset · pesi configurabili</span></h2>
-        <div class="lede">Tabelle dei competitor estratte da Expedia per ogni struttura. Imposta un <b>peso %</b> (0-100%) per ogni competitor: il peso influenza la <b>media ponderata compset</b> usata nel moltiplicatore C del sistema RMES nella Sell Strategy. <span class="mono" style="font-size:11px">Formula: media = Σ(prezzo × peso) / N · default 100%</span></div>
+        <div class="lede">Tabelle dei competitor estratte da Expedia per ogni struttura. Imposta un <b>peso %</b> (0-100%) per ogni competitor: il peso influenza la <b>media ponderata compset</b> usata nel moltiplicatore C del sistema RMES nella Sell Strategy. <span class="mono" style="font-size:11px">Formula: media = Σ(prezzo × peso) / N · default 100% · peso 0% = competitor escluso</span></div>
       </div>
       <div class="head-actions">
         <button class="btn-link" id="rate-reset-weights" style="font-size:11px;padding:6px 12px;border:1px solid var(--line);border-radius:4px;background:transparent;cursor:pointer">Reset pesi a 100%</button>
+      </div>
+    </div>
+
+    <div class="panel" style="background:rgba(195,131,59,.03);border:1px solid rgba(195,131,59,.18);margin-bottom:18px">
+      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px 18px">
+        <span class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Mostra tabella</span>
+        <div id="rate-struct-pills" style="display:flex;gap:6px"></div>
       </div>
     </div>
 
@@ -30783,9 +30790,11 @@ function renderForecastCharts(A, ymOrder){
    3 tabelle competitor (una per struttura) con peso % editabile per ogni competitor.
    I pesi sono salvati in localStorage e usati per calcolare la "media ponderata compset"
    che a sua volta determina il moltiplicatore C nel sistema RMES (Sell Strategy).
+   Filtro struttura: 'all' (default) | 'firenze' | 'condotta' | 'alfani'
    ============================================================ */
 
 const RATE_WEIGHTS_KEY = 'rmes_compset_weights_v1';
+let RATE_STRUCT_FILTER = 'all';  // default: mostra tutte e 3
 
 // Carico/salvo i pesi in localStorage
 function loadRateWeights(){
@@ -30853,8 +30862,34 @@ function renderRateShopper(){
     { key: 'alfani',   label: 'Palazzo Alfani',  compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_alfani)  || null, color: '#8e5fa8' },
   ];
 
+  // === Render dei pill di filtro struttura ===
+  const pillsEl = document.getElementById('rate-struct-pills');
+  if (pillsEl){
+    const opts = [
+      { v: 'all',      label: 'Tutte',            color: '#6b5b3f' },
+      { v: 'firenze',  label: 'Firenze Suite',    color: '#3b6b9a' },
+      { v: 'condotta', label: 'Condotta 16',      color: '#3d7a4b' },
+      { v: 'alfani',   label: 'Palazzo Alfani',   color: '#8e5fa8' },
+    ];
+    pillsEl.innerHTML = opts.map(o => {
+      const on = (RATE_STRUCT_FILTER === o.v);
+      return `<button class="rt-pill ${on?'':'off'}" data-rfilter="${o.v}" style="${on?'border-color:'+o.color+';color:'+o.color+';font-weight:600':''}">${o.label}</button>`;
+    }).join('');
+    pillsEl.querySelectorAll('button[data-rfilter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        RATE_STRUCT_FILTER = btn.dataset.rfilter;
+        renderRateShopper();
+      });
+    });
+  }
+
+  // Filtro le strutture da mostrare in base a RATE_STRUCT_FILTER
+  const visibleStructs = (RATE_STRUCT_FILTER === 'all')
+    ? structDefs
+    : structDefs.filter(s => s.key === RATE_STRUCT_FILTER);
+
   let html = '';
-  for (const sd of structDefs){
+  for (const sd of visibleStructs){
     html += `<div class="panel" style="margin-bottom:18px;border-top:3px solid ${sd.color}">
       <div class="panel-head">
         <div>
