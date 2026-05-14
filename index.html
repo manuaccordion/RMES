@@ -411,6 +411,132 @@ table.pickup th.pk-tot-stly, table.pickup td.pk-tot-stly{ background:rgba(195,13
   display:flex;flex-direction:column;
   box-shadow:0 20px 60px rgba(0,0,0,.25);
 }
+
+/* ============ NOTES SYSTEM ============ */
+/* FAB (floating action button) in basso a destra, sopra la chat-fab */
+#notes-fab{
+  position:fixed;bottom:88px;right:22px;
+  width:48px;height:48px;border-radius:50%;
+  background:#c4823b;color:#fff;border:none;cursor:pointer;
+  box-shadow:0 4px 14px rgba(195,131,59,.4),0 2px 6px rgba(0,0,0,.15);
+  font-size:20px;display:flex;align-items:center;justify-content:center;
+  z-index:151;transition:transform .15s ease,box-shadow .15s ease;
+  font-family:'DM Sans',sans-serif;
+}
+
+/* ============ SELL STRATEGY MOBILE ENHANCEMENTS ============ */
+/* Prima colonna Data sticky a sinistra durante lo scroll orizzontale */
+table.sell-table th:first-child,
+table.sell-table td:first-child{
+  position:sticky;left:0;z-index:2;
+  background:var(--surface);
+  box-shadow:1px 0 0 var(--line),2px 0 4px rgba(0,0,0,.04);
+}
+table.sell-table thead th:first-child{
+  z-index:3;background:var(--surface-2);
+}
+/* Hide-block: data attributes sulla table */
+table.sell-table[data-hide-pickup="1"] .sell-block-pickup{display:none}
+table.sell-table[data-hide-stly="1"] .sell-block-stly{display:none}
+table.sell-table[data-hide-pkstly="1"] .sell-block-pkstly{display:none}
+table.sell-table[data-hide-expedia="1"] .sell-block-expedia{display:none}
+table.sell-table[data-hide-mlos="1"] .sell-block-mlos{display:none}
+table.sell-table[data-hide-event="1"] .sell-ev-col{display:none}
+/* Pill toggle */
+.sell-col-pill{
+  font-family:'DM Sans',sans-serif;font-size:11px;
+  padding:4px 9px;border-radius:11px;cursor:pointer;
+  background:#fff;border:1px solid var(--line);color:var(--ink-2);
+  transition:all .12s;
+  display:inline-flex;align-items:center;gap:4px;
+}
+.sell-col-pill.on{
+  background:rgba(195,131,59,.12);border-color:#c4823b;color:#7a4f1c;font-weight:600;
+}
+.sell-col-pill.on::before{content:'✓';font-size:10px}
+.sell-col-pill:not(.on){opacity:.65}
+.sell-col-pill:not(.on)::before{content:'○';font-size:10px;opacity:.6}
+.sell-col-pill:hover{transform:translateY(-1px)}
+#notes-fab:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(195,131,59,.5),0 3px 8px rgba(0,0,0,.2)}
+#notes-fab-badge{
+  position:absolute;top:-4px;right:-4px;
+  background:#2d6a3e;color:#fff;font-size:10px;font-weight:700;
+  min-width:18px;height:18px;border-radius:9px;padding:0 5px;
+  display:none;align-items:center;justify-content:center;
+  border:2px solid var(--bg);
+}
+
+/* Backdrop trasparente quando il pannello è aperto */
+#notes-backdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,.25);
+  z-index:202;display:none;animation:fadein .15s;
+}
+#notes-panel.show + #notes-backdrop,
+#notes-panel.show ~ #notes-backdrop{display:block}
+
+/* Pannello slide-in da destra */
+#notes-panel{
+  position:fixed;top:0;right:0;bottom:0;
+  width:420px;max-width:90vw;
+  background:#fff;
+  box-shadow:-8px 0 32px rgba(0,0,0,.15);
+  z-index:203;
+  transform:translateX(100%);transition:transform .25s ease;
+  display:flex;flex-direction:column;
+}
+#notes-panel.show{transform:translateX(0)}
+.notes-head{
+  padding:18px 20px 12px;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+}
+.notes-head h3{margin:0;font-family:'Playfair Display',serif;font-size:18px}
+.notes-meta-row{
+  padding:10px 20px;background:rgba(195,131,59,.04);
+  border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;font-size:11px;
+}
+#notes-list{
+  flex:1;overflow-y:auto;padding:14px 20px;
+}
+.note-card{
+  background:#fafaf6;border:1px solid var(--line);border-left:3px solid #c4823b;
+  border-radius:6px;padding:10px 12px;margin-bottom:10px;
+}
+.note-meta{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:6px;padding-bottom:6px;border-bottom:1px dashed var(--line);
+}
+.note-text{
+  font-size:13px;line-height:1.5;color:var(--ink);
+  white-space:pre-wrap;word-wrap:break-word;
+}
+.notes-input-area{
+  padding:14px 20px;border-top:1px solid var(--line);background:var(--surface);
+}
+#notes-input{
+  width:100%;min-height:80px;
+  padding:10px 12px;border:1px solid var(--line);border-radius:6px;
+  font-family:'DM Sans',sans-serif;font-size:13px;line-height:1.5;
+  resize:vertical;background:#fff;
+}
+#notes-input:focus{outline:none;border-color:#c4823b;box-shadow:0 0 0 2px rgba(195,131,59,.15)}
+.notes-actions{
+  display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px;
+}
+.notes-btn{
+  padding:7px 14px;border-radius:5px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  border:1px solid var(--line);background:#fff;color:var(--ink);
+}
+.notes-btn:hover{background:var(--surface-2)}
+.notes-btn.primary{background:#c4823b;color:#fff;border-color:#c4823b}
+.notes-btn.primary:hover{background:#a86d2f}
+.notes-btn.link{background:transparent;border:none;text-decoration:underline;color:var(--ink-3);font-size:11px;padding:4px 6px}
+.notes-btn.link:hover{color:#c4823b;background:transparent}
+@media (max-width:520px){
+  #notes-fab{width:44px;height:44px;font-size:18px;bottom:72px;right:12px}
+  #notes-panel{width:100vw}
+}
 .modal-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .modal-head h3{font-size:18px}
 .modal-head .modal-sub{font-size:11.5px;color:var(--ink-3);margin-top:2px}
@@ -976,6 +1102,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div style="font-size:11px;color:var(--ink-3);font-style:italic;text-align:right;padding:4px 8px">
           <span class="mono">⚙ pesi · soglie · pesi compset</span> → configurazione in tab <a href="#" onclick="document.querySelector('.tab[data-tab=pri]').click();return false" style="color:#7a4f1c;font-weight:600;text-decoration:underline">RMES</a>
         </div>
+      </div>
+      <!-- Pillole toggle blocchi colonne (più utile su mobile, ma disponibile anche su desktop) -->
+      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 16px;border-top:1px solid var(--line);background:rgba(195,131,59,.03)">
+        <span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-right:4px">Mostra blocchi:</span>
+        <div id="sell-cols-pills" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+      </div>
       <div class="panel-body flush" id="sell-table-wrap" style="overflow-x:auto;max-height:75vh;overflow-y:auto"></div>
     </div>
 
@@ -1246,6 +1378,34 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="modal-foot"><span id="modal-foot-l">—</span><span id="modal-foot-r" class="mono">—</span></div>
   </div>
 </div>
+
+<!-- ============ NOTES SYSTEM ============ -->
+<button id="notes-fab" aria-label="Apri note" title="Note (📝)">
+  📝
+  <span id="notes-fab-badge"></span>
+</button>
+<aside id="notes-panel" role="dialog" aria-label="Note">
+  <div class="notes-head">
+    <h3 id="notes-panel-title">Note</h3>
+    <button id="notes-close" aria-label="Chiudi" style="background:transparent;border:none;font-size:24px;cursor:pointer;color:var(--ink-3);padding:4px 8px;line-height:1">×</button>
+  </div>
+  <div class="notes-meta-row">
+    <span id="notes-panel-count" class="mono" style="color:var(--ink-3)">nessuna nota</span>
+    <div style="display:flex;gap:4px">
+      <button id="notes-export" class="notes-btn link" title="Esporta tutte le note come JSON">📥 export</button>
+      <button id="notes-import" class="notes-btn link" title="Importa note da JSON (merge)">📤 import</button>
+    </div>
+  </div>
+  <div id="notes-list"></div>
+  <div class="notes-input-area">
+    <textarea id="notes-input" placeholder="Scrivi una riflessione su questi dati… (Ctrl/Cmd+Enter per salvare)"></textarea>
+    <div class="notes-actions">
+      <span style="font-size:10.5px;color:var(--ink-3);font-style:italic">Salvate nel browser. Usa export per backup.</span>
+      <button id="notes-add-btn" class="notes-btn primary">+ Aggiungi nota</button>
+    </div>
+  </div>
+</aside>
+<div id="notes-backdrop"></div>
 
 <!-- ============ CHAT ============ -->
 <button class="chat-fab" id="chat-fab" aria-label="Chiedi alla AI">💬</button>
@@ -27854,6 +28014,10 @@ function renderSellStrategy(sel){
 
   document.getElementById('sell-table-wrap').innerHTML = html;
 
+  // Applica lo stato dei toggle blocchi (salvato in localStorage o auto-impostato per mobile)
+  _applySellColsState();
+  _renderSellColsPills();
+
   // Wire pickup-RN click handlers for drilldown
   document.getElementById('sell-table-wrap').querySelectorAll('.sell-pickup-link').forEach(el=>{
     el.addEventListener('click', (ev)=>{
@@ -28611,6 +28775,73 @@ function renderPiramide(){
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:rgba(195,100,30,.45);border-top:1px dashed rgba(195,100,30,.7)"></span>Mediana compset</span>
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:9px;height:9px;background:rgba(61,122,75,.65)"></span>/<span style="display:inline-block;width:9px;height:9px;background:rgba(168,59,59,.65)"></span>Ricerche YoY (verde +, rosso −)</span>
   `;
+}
+
+/* ============================================================
+   SELL STRATEGY: TOGGLE BLOCCHI COLONNE (utile su mobile)
+   I 6 blocchi: event, pickup, stly, pkstly, expedia, mlos. RMES + OTB sempre visibili.
+   ============================================================ */
+const SELL_COLS_KEY = 'sell_cols_visibility_v1';
+const SELL_COLS_DEFAULTS_DESKTOP = { event:true, pickup:true, stly:true, pkstly:true, expedia:true, mlos:true };
+// Su mobile (viewport < 720px) il default nasconde 3 blocchi pesanti
+const SELL_COLS_DEFAULTS_MOBILE  = { event:false, pickup:true, stly:true, pkstly:false, expedia:false, mlos:true };
+function _isMobileViewport(){
+  return typeof window !== 'undefined' && window.innerWidth < 720;
+}
+function _loadSellColsState(){
+  try {
+    const raw = localStorage.getItem(SELL_COLS_KEY);
+    if (raw){
+      const parsed = JSON.parse(raw);
+      const defaults = _isMobileViewport() ? SELL_COLS_DEFAULTS_MOBILE : SELL_COLS_DEFAULTS_DESKTOP;
+      return Object.assign({}, defaults, parsed);
+    }
+  } catch(e){}
+  return _isMobileViewport() ? Object.assign({}, SELL_COLS_DEFAULTS_MOBILE) : Object.assign({}, SELL_COLS_DEFAULTS_DESKTOP);
+}
+function _saveSellColsState(state){
+  try { localStorage.setItem(SELL_COLS_KEY, JSON.stringify(state)); } catch(e){}
+}
+
+function _applySellColsState(){
+  const state = _loadSellColsState();
+  const tbl = document.querySelector('#sell-table-wrap table.sell-table');
+  if (!tbl) return;
+  // Setto data-hide-* in base a state (true = visibile, false = nascosto)
+  tbl.setAttribute('data-hide-event',   state.event   ? '0' : '1');
+  tbl.setAttribute('data-hide-pickup',  state.pickup  ? '0' : '1');
+  tbl.setAttribute('data-hide-stly',    state.stly    ? '0' : '1');
+  tbl.setAttribute('data-hide-pkstly',  state.pkstly  ? '0' : '1');
+  tbl.setAttribute('data-hide-expedia', state.expedia ? '0' : '1');
+  tbl.setAttribute('data-hide-mlos',    state.mlos    ? '0' : '1');
+}
+
+function _renderSellColsPills(){
+  const wrap = document.getElementById('sell-cols-pills');
+  if (!wrap) return;
+  const state = _loadSellColsState();
+  const blocks = [
+    { key:'event',   label:'Evento' },
+    { key:'pickup',  label:'Pickup' },
+    { key:'stly',    label:'STLY' },
+    { key:'pkstly',  label:'Pickup STLY' },
+    { key:'expedia', label:'Expedia' },
+    { key:'mlos',    label:'MLOS' },
+  ];
+  wrap.innerHTML = blocks.map(b => {
+    const on = !!state[b.key];
+    return `<button class="sell-col-pill ${on?'on':''}" data-sell-col="${b.key}">${b.label}</button>`;
+  }).join('');
+  wrap.querySelectorAll('button[data-sell-col]').forEach(btn => {
+    btn.onclick = () => {
+      const key = btn.dataset.sellCol;
+      const st = _loadSellColsState();
+      st[key] = !st[key];
+      _saveSellColsState(st);
+      _applySellColsState();
+      _renderSellColsPills();
+    };
+  });
 }
 
 
@@ -31540,6 +31771,254 @@ function _renderRmesCompsetBox(sel){
   }
 }
 
+/* ============================================================
+   NOTES SYSTEM (append-only journal)
+   ============================================================ */
+
+const NOTES_KEY = 'notes_journal_v1';
+
+function loadNotes(){
+  try {
+    const raw = localStorage.getItem(NOTES_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return {};
+}
+function saveNotes(data){
+  try { localStorage.setItem(NOTES_KEY, JSON.stringify(data)); } catch(e){}
+}
+
+/* Determina la tab attiva dal DOM (cerca .tab-panel.active) */
+function getCurrentTab(){
+  const el = document.querySelector('.tab-panel.active');
+  if (!el) return 'unknown';
+  return (el.id || 'panel-unknown').replace(/^panel-/, '');
+}
+
+/* Chiave nello storage: tab + struttura */
+function notesKeyFor(tab, struct){
+  return `${tab}__${struct || 'both'}`;
+}
+
+const NOTES_TAB_LABELS = {
+  otb: 'Overview',
+  rt: 'OCC per Room Type',
+  cancel: 'Cancellazioni',
+  fcst: 'Forecast',
+  pk: 'Pickup Matrix',
+  mkt: 'AirDNA Demand',
+  rate: 'Rate Shopper',
+  hist: 'Dati Storici',
+  pri: 'RMES',
+  abnb: 'Airbnb',
+  sell: 'Sell Strategy',
+};
+const NOTES_STRUCT_LABELS = {
+  firenze: 'Firenze Suite',
+  condotta: 'Condotta 16',
+  alfani: 'Palazzo Alfani',
+  both: 'Tutte le strutture',
+};
+
+/* Format timestamp italiano */
+function fmtTs(iso){
+  try {
+    const d = new Date(iso);
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mi = String(d.getMinutes()).padStart(2,'0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+  } catch(e){ return iso; }
+}
+
+/* Apre il pannello note per la tab/struttura corrente */
+function openNotesPanel(){
+  const tab = getCurrentTab();
+  // Per la tab RMES Config, usa RMES_TAB_STRUCT invece di CURRENT_STRUCT
+  let struct = CURRENT_STRUCT;
+  if (tab === 'pri' && typeof RMES_TAB_STRUCT !== 'undefined') struct = RMES_TAB_STRUCT;
+
+  const panel = document.getElementById('notes-panel');
+  if (!panel) return;
+  panel.classList.add('show');
+  renderNotesPanel(tab, struct);
+}
+
+function closeNotesPanel(){
+  const panel = document.getElementById('notes-panel');
+  if (panel) panel.classList.remove('show');
+}
+
+function renderNotesPanel(tab, struct){
+  const k = notesKeyFor(tab, struct);
+  const all = loadNotes();
+  const entries = (all[k] || []).slice().sort((a,b)=> (b.ts||'').localeCompare(a.ts||''));
+
+  const titleEl = document.getElementById('notes-panel-title');
+  if (titleEl){
+    const tabLbl = NOTES_TAB_LABELS[tab] || tab;
+    const structLbl = NOTES_STRUCT_LABELS[struct] || struct;
+    titleEl.innerHTML = `<span style="font-weight:700">${escapeHtml(tabLbl)}</span> · <span style="color:var(--ink-3);font-weight:400">${escapeHtml(structLbl)}</span>`;
+  }
+  const countEl = document.getElementById('notes-panel-count');
+  if (countEl) countEl.textContent = entries.length === 0 ? 'nessuna nota' : (entries.length === 1 ? '1 nota' : `${entries.length} note`);
+
+  const listEl = document.getElementById('notes-list');
+  if (listEl){
+    if (entries.length === 0){
+      listEl.innerHTML = '<div style="text-align:center;color:var(--ink-3);padding:30px 12px;font-style:italic;font-size:13px">Nessuna nota qui ancora.<br>Scrivi la prima riflessione qui sotto.</div>';
+    } else {
+      listEl.innerHTML = entries.map((e, i) => `
+        <div class="note-card" data-note-idx="${i}">
+          <div class="note-meta">
+            <span class="mono" style="font-size:10.5px;color:var(--ink-3)">${fmtTs(e.ts)}</span>
+            <button class="note-del" data-note-ts="${escapeHtml(e.ts)}" title="Elimina questa nota" style="background:transparent;border:none;color:var(--ink-3);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:3px">🗑️</button>
+          </div>
+          <div class="note-text">${escapeHtml(e.text).replace(/\n/g,'<br>')}</div>
+        </div>
+      `).join('');
+      // Wire bottoni elimina
+      listEl.querySelectorAll('.note-del').forEach(btn => {
+        btn.onclick = () => {
+          if (!confirm('Eliminare questa nota?')) return;
+          const ts = btn.dataset.noteTs;
+          const cur = loadNotes();
+          if (cur[k]){
+            cur[k] = cur[k].filter(x => x.ts !== ts);
+            if (cur[k].length === 0) delete cur[k];
+            saveNotes(cur);
+            renderNotesPanel(tab, struct);
+          }
+        };
+      });
+    }
+  }
+}
+
+/* Aggiunge una nuova nota dal textarea */
+function addNote(){
+  const tab = getCurrentTab();
+  let struct = CURRENT_STRUCT;
+  if (tab === 'pri' && typeof RMES_TAB_STRUCT !== 'undefined') struct = RMES_TAB_STRUCT;
+
+  const ta = document.getElementById('notes-input');
+  if (!ta) return;
+  const txt = ta.value.trim();
+  if (!txt) return;
+  const k = notesKeyFor(tab, struct);
+  const all = loadNotes();
+  if (!all[k]) all[k] = [];
+  all[k].push({ ts: new Date().toISOString(), text: txt });
+  saveNotes(all);
+  ta.value = '';
+  renderNotesPanel(tab, struct);
+}
+
+/* Export di tutte le note come JSON */
+function exportNotes(){
+  const data = loadNotes();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  const today = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `dashboard-notes-${today}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 500);
+}
+
+/* Import note da file JSON (merge: nuove note vengono aggiunte alle esistenti) */
+function importNotes(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,application/json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (typeof imported !== 'object' || imported === null) throw new Error('Formato non valido');
+        // Merge: per ogni chiave, aggiunge le voci che non esistono già (matchate per ts)
+        const cur = loadNotes();
+        let added = 0;
+        for (const k of Object.keys(imported)){
+          if (!Array.isArray(imported[k])) continue;
+          if (!cur[k]) cur[k] = [];
+          const seenTs = new Set(cur[k].map(x => x.ts));
+          for (const entry of imported[k]){
+            if (entry && entry.ts && entry.text && !seenTs.has(entry.ts)){
+              cur[k].push(entry);
+              added += 1;
+            }
+          }
+        }
+        saveNotes(cur);
+        alert(`Import completato. ${added} note aggiunte.`);
+        const tab = getCurrentTab();
+        let struct = CURRENT_STRUCT;
+        if (tab === 'pri' && typeof RMES_TAB_STRUCT !== 'undefined') struct = RMES_TAB_STRUCT;
+        renderNotesPanel(tab, struct);
+        updateNotesBadge();
+      } catch(err){
+        alert('Errore durante l\'import: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+/* Aggiorna il badge sul FAB con il numero di note nella tab corrente */
+function updateNotesBadge(){
+  const tab = getCurrentTab();
+  let struct = CURRENT_STRUCT;
+  if (tab === 'pri' && typeof RMES_TAB_STRUCT !== 'undefined') struct = RMES_TAB_STRUCT;
+  const k = notesKeyFor(tab, struct);
+  const all = loadNotes();
+  const n = (all[k] || []).length;
+  const badgeEl = document.getElementById('notes-fab-badge');
+  if (badgeEl){
+    if (n > 0){
+      badgeEl.style.display = 'inline-block';
+      badgeEl.textContent = n;
+    } else {
+      badgeEl.style.display = 'none';
+    }
+  }
+}
+
+/* Wire iniziale del sistema note */
+function initNotes(){
+  const fab = document.getElementById('notes-fab');
+  if (fab) fab.onclick = openNotesPanel;
+  const closeBtn = document.getElementById('notes-close');
+  if (closeBtn) closeBtn.onclick = closeNotesPanel;
+  const addBtn = document.getElementById('notes-add-btn');
+  if (addBtn) addBtn.onclick = addNote;
+  const exportBtn = document.getElementById('notes-export');
+  if (exportBtn) exportBtn.onclick = exportNotes;
+  const importBtn = document.getElementById('notes-import');
+  if (importBtn) importBtn.onclick = importNotes;
+  // Click outside per chiudere
+  const backdrop = document.getElementById('notes-backdrop');
+  if (backdrop) backdrop.onclick = closeNotesPanel;
+  // Cmd/Ctrl+Enter nel textarea = aggiungi
+  const ta = document.getElementById('notes-input');
+  if (ta){
+    ta.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'Enter'){
+        e.preventDefault();
+        addNote();
+      }
+    });
+  }
+  updateNotesBadge();
+}
+
 
 /* ===========================================================================
    TAB CANCELLAZIONI
@@ -32995,11 +33474,13 @@ function setStructure(sel){
     p.classList.toggle('active', p.dataset.s===sel);
   });
   renderAll();
+  if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
 
 function setTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
+  if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
@@ -33018,6 +33499,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('modal').addEventListener('click', (e)=>{
     if (e.target.id==='modal') document.getElementById('modal').classList.remove('show');
   });
+  // wire notes system
+  if (typeof initNotes === 'function') initNotes();
 
   // load data
   try{
@@ -33025,6 +33508,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof AIRDNA_CSV !== 'undefined') loadAirdna(AIRDNA_CSV);
     if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
     renderAll();
+    if (typeof updateNotesBadge === 'function') updateNotesBadge();
     initChat();
   } catch(e){
     console.error(e);
