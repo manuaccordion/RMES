@@ -181,6 +181,9 @@ table.data thead th{
   font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);
   position:sticky;top:0;
 }
+/* Sticky head a 2 righe: row1 sticky a top:0, row2 sticky sotto row1 */
+table.data.sticky-head thead tr:first-child th{ top:0; z-index:3; }
+table.data.sticky-head thead tr:nth-child(2) th{ top:34px; z-index:3; box-shadow:0 1px 0 var(--line-2); }
 table.data thead th.group{border-bottom:2px solid var(--line-2);background:var(--surface);font-size:10.5px;letter-spacing:.1em}
 table.data thead th.g-26{color:var(--accent);background:rgba(107,91,63,.05)}
 table.data thead th.g-25{color:var(--ink-3);background:rgba(138,138,138,.05)}
@@ -368,6 +371,13 @@ table.pickup thead th{
 }
 table.pickup tbody tr:first-child td{border-top:1px solid var(--line)}
 table.pickup tbody tr.total td{font-weight:700;background:var(--surface-2);border-top:2px solid var(--line-2)}
+/* Divisori netti tra coppia cur/STLY: separazione fine tra cur e stly, separazione spessa tra una settimana e l'altra */
+table.pickup th.pk-cur, table.pickup td.pk-cur{ border-right:1px dashed rgba(107,91,63,.30) }
+table.pickup th.pk-stly, table.pickup td.pk-stly{ border-right:3px solid var(--line-2); background:rgba(0,0,0,.012) }
+table.pickup th.pk-stly + th, table.pickup td.pk-stly + td{ border-left:0 }
+/* Colonne Totale a destra: sfondo distinto */
+table.pickup th.pk-tot-cur, table.pickup td.pk-tot-cur{ background:rgba(195,131,59,.12); border-left:3px solid #c4823b }
+table.pickup th.pk-tot-stly, table.pickup td.pk-tot-stly{ background:rgba(195,131,59,.08); border-right:1px solid var(--line-2) }
 .pk-cell{
   display:block;padding:11px 10px;cursor:pointer;
   font-family:'DM Mono',monospace;font-size:13px;font-weight:600;
@@ -580,8 +590,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="rate"><span class="num">6</span>Rate Shopper</button>
     <button class="tab" data-tab="rt"><span class="num">7</span>OCC per Room Type</button>
     <button class="tab" data-tab="mkt"><span class="num">8</span>AirDNA Demand</button>
-    <button class="tab" data-tab="pri" style="display:none"><span class="num">9</span>RMES</button>
     <button class="tab" data-tab="abnb"><span class="num">9</span>Airbnb</button>
+    <button class="tab" data-tab="pri"><span class="num">10</span>RMES</button>
   </nav>
 </header>
 
@@ -601,28 +611,37 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Pacing mensile</h3>
-          <div class="panel-sub">2026 OTB · 2025 STLY · Variazione</div>
+          <div class="panel-sub">2026 OTB · 2025 STLY · Final LY · Variazioni</div>
         </div>
       </div>
       <div class="panel-body flush">
-        <div class="table-wrap">
-          <table class="data" id="otb-monthly"></table>
+        <div class="table-wrap" style="max-height:55vh;overflow:auto">
+          <table class="data sticky-head" id="otb-monthly"></table>
         </div>
       </div>
     </div>
 
     <div class="chart-grid">
       <div class="chart-card">
-        <h4>Revenue mensile</h4>
+        <h4 id="otb-chart-rev-title">Revenue mensile</h4>
         <div class="chart-sub">2026 OTB vs 2025 STLY (€)</div>
         <div id="otb-chart-rev"></div>
         <div class="chart-legend"><span class="lg"><span class="swatch" style="background:#6b5b3f"></span>2026 OTB</span><span class="lg"><span class="swatch dashed"></span>2025 STLY</span></div>
       </div>
       <div class="chart-card">
-        <h4>Occupazione mensile</h4>
+        <h4 id="otb-chart-occ-title">Occupazione mensile</h4>
         <div class="chart-sub">% OCC 2026 vs 2025 STLY</div>
         <div id="otb-chart-occ"></div>
         <div class="chart-legend"><span class="lg"><span class="swatch" style="background:#3b5a78"></span>2026 OTB</span><span class="lg"><span class="swatch dashed"></span>2025 STLY</span></div>
+      </div>
+    </div>
+
+    <!-- Filtro mese: aggiorna SOLO le tabelle Provenienza/Canale sotto (i grafici sopra restano annuali) -->
+    <div class="panel" style="background:rgba(195,131,59,.04);border:1px solid rgba(195,131,59,.22);margin-top:14px">
+      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 18px">
+        <span class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Filtro mese</span>
+        <div id="otb-month-pills" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-style:italic" id="otb-month-active">Tabelle Provenienza e Canale: tutto l'anno</span>
       </div>
     </div>
 
@@ -763,8 +782,13 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <div class="panel" style="margin-bottom:16px">
-      <div class="panel-head"><div><h3>Logica di calcolo</h3></div></div>
+    <details class="panel" style="margin-bottom:16px">
+      <summary class="panel-head" style="cursor:pointer;list-style:none">
+        <div>
+          <h3 style="display:inline">📚 Logica di calcolo</h3>
+          <span style="font-size:11px;color:var(--ink-3);margin-left:8px">— clicca per espandere</span>
+        </div>
+      </summary>
       <div class="panel-body" style="padding:12px 16px">
         <ul style="margin:0;padding-left:20px;font-size:11.5px;line-height:1.55;color:var(--ink-2)">
           <li><b>Range default</b>: Maggio 2026 → Aprile 2027 (12 mesi fiscal year). Due toggle sopra la tabella permettono di personalizzare:
@@ -807,7 +831,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>% Achievement</b> = OTB Rev / Forecast Rev. Verde ≥95%, default 70-95%, rosso &lt;70%.</li>
         </ul>
       </div>
-    </div>
+    </details>
 
     <div class="kpi-grid" id="fcst-kpis"></div>
 
@@ -869,19 +893,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
 
     <div class="panel">
-      <div class="panel-head"><div><h3>Mese di Soggiorno × Settimana</h3><div class="panel-sub">RN pickup raggruppate per mese di check-in: ti dice <b>per quale mese</b> stai ricevendo le prenotazioni · click per drilldown</div></div></div>
+      <div class="panel-head"><div><h3>Mese di Soggiorno × Settimana</h3><div class="panel-sub">RN pickup raggruppate per mese di check-in: ti dice <b>per quale mese</b> stai ricevendo le prenotazioni · <b>click su una cella</b> per il drilldown (room type + canale + lista prenotazioni)</div></div></div>
       <div class="panel-body flush"><div class="pickup-grid"><table class="pickup" id="pk-sm-table"></table></div></div>
-      <div class="panel-body" style="border-top:1px solid var(--line)"><div class="panel-sub" style="margin-bottom:8px">Chi vende di più per Mese di Soggiorno · barre 2026 (piene) sopra STLY (tratteggiate) · ordinato per RN ↓ filtrato dalle settimane sopra</div><div id="pk-sm-chart"></div></div>
-    </div>
-    <div class="panel">
-      <div class="panel-head"><div><h3>Provenienza × Settimana</h3><div class="panel-sub">RN pickup · click per drilldown</div></div></div>
-      <div class="panel-body flush"><div class="pickup-grid"><table class="pickup" id="pk-prov-table"></table></div></div>
-      <div class="panel-body" style="border-top:1px solid var(--line)"><div class="panel-sub" style="margin-bottom:8px">Chi vende di più per Provenienza · barre 2026 (piene) sopra STLY (tratteggiate) · ordinato per RN ↓ filtrato dalle settimane sopra</div><div id="pk-prov-chart"></div></div>
-    </div>
-    <div class="panel">
-      <div class="panel-head"><div><h3>Room Type × Settimana</h3><div class="panel-sub">RN pickup · click per drilldown</div></div></div>
-      <div class="panel-body flush"><div class="pickup-grid"><table class="pickup" id="pk-rt-table"></table></div></div>
-      <div class="panel-body" style="border-top:1px solid var(--line)"><div class="panel-sub" style="margin-bottom:8px">Chi vende di più per Room Type · barre 2026 (piene) sopra STLY (tratteggiate) · ordinato per RN ↓ filtrato dalle settimane sopra</div><div id="pk-rt-chart"></div></div>
+      <div class="panel-body" style="border-top:1px solid var(--line)"><div class="panel-sub" style="margin-bottom:8px">Volumi RN per Mese di Soggiorno · barre 2026 (piene) sopra STLY (tratteggiate) · ordinato per RN ↓ filtrato dalle settimane sopra</div><div id="pk-sm-chart"></div></div>
     </div>
   </section>
 
@@ -927,72 +941,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- BOX SPIEGAZIONE LOGICA RMES + CORRELAZIONE BEDDY↔EXPEDIA (fissa, documentale) -->
-    <div class="panel" style="background:rgba(195,131,59,.03);border:1px solid rgba(195,131,59,.20)">
-      <div class="panel-head" style="cursor:pointer" onclick="(function(el){const c=document.getElementById('rmes-explain-content');c.style.display=c.style.display==='none'?'block':'none';el.querySelector('.toggle-arrow').textContent=c.style.display==='none'?'▶':'▼'})(this)">
-        <div>
-          <h3 style="color:#c4823b">Come funziona il Prezzo Base RMES <span class="toggle-arrow" style="font-size:11px;color:var(--ink-3);margin-left:6px">▶</span></h3>
-          <div class="panel-sub">Logica completa per riprodurre i calcoli — clicca per espandere</div>
-        </div>
-      </div>
-      <div class="panel-body" id="rmes-explain-content" style="font-size:12px;line-height:1.6;color:var(--ink-2);display:none">
-        <p style="margin-top:0"><b>Formula generale:</b> Prezzo Base RMES = <span class="mono">Sorgente × moltiplicatore_finale</span></p>
-
-        <h4 style="color:var(--ink);margin-bottom:6px;margin-top:14px">📊 Correlazione Beddy ↔ Expedia (calcolata 12/05/2026)</h4>
-        <p>
-          I prezzi che carichi realmente su Beddy (PMS) e i prezzi visibili su Expedia (con markup OTA + sconto non rimborsabile) hanno una correlazione strutturale.
-          Calcolata oggi confrontando i 230-293 giorni con dati su entrambi:
-        </p>
-        <table class="data" style="width:auto;margin:8px 0;font-size:11px">
-          <thead><tr><th>Struttura</th><th>Ratio Beddy / Expedia eq.</th><th>Range osservato</th><th>N campioni</th><th>Significato</th></tr></thead>
-          <tbody>
-            <tr><td>Firenze Suite</td><td class="mono">0.775</td><td class="mono">0.490 → 1.113</td><td class="mono">220</td><td>Beddy reale −23% vs Expedia eq.</td></tr>
-            <tr><td>Condotta 16</td><td class="mono">0.775</td><td class="mono">0.387 → 1.069</td><td class="mono">218</td><td>Beddy reale −23% vs Expedia eq.</td></tr>
-            <tr><td>Palazzo Alfani</td><td class="mono">0.823</td><td class="mono">0.562 → 0.922</td><td class="mono">268</td><td>Beddy reale −18% vs Expedia eq.</td></tr>
-          </tbody>
-        </table>
-        <p>
-          Questi ratio sono <b>fissi e validi per sempre</b> come correzione strutturale: riflettono come carichi i prezzi rispetto al mercato Expedia visibile (più conservativo del minimo derivato).
-          Da domani, quando non caricherai più direttamente su Beddy, il sistema continua a stimare il prezzo Beddy implicito applicando questi ratio al prezzo Expedia.
-        </p>
-
-        <h4 style="color:var(--ink);margin-bottom:6px;margin-top:14px">🔢 Cascata della Sorgente (primo dato disponibile vince)</h4>
-        <ol style="margin:0;padding-left:20px">
-          <li><b>Beddy PMS reale</b> (verde scuro, badge <span class="mono" style="color:#1e6b4a;font-weight:700">B</span>) — il prezzo che hai caricato direttamente sul gestionale. Usato per i 230 giorni Firenze/Condotta e 293 giorni Alfani caricati il 12/5/2026.</li>
-          <li><b>Mio prezzo Expedia × ratio</b> (ambra) — quando Beddy reale non c'è: prendo il prezzo Expedia, lo converto a Beddy equivalente, e applico il ratio appreso (0.775 Firenze / 0.775 Condotta / 0.823 Alfani).
-            <ul style="margin:4px 0">
-              <li>Conversione: <span class="mono">prezzo_expedia ÷ 1.12 (markup OTA) ÷ 0.90 (sconto non rimborsabile) = Beddy_eq</span></li>
-              <li>Se Bilocale/Classic sold-out → Expedia mostra prezzo del Trilocale/Superior: il sistema sottrae il 50% del supplemento per ricondurlo alla baseRT.</li>
-              <li>Applicazione ratio: <span class="mono">Beddy_eq × 0.775 (o 0.823 per Alfani)</span></li>
-            </ul>
-          </li>
-          <li><b>Compset Expedia × 1</b> (blu, badge <span class="mono" style="color:#3b6b9a;font-weight:700">cs</span>) — quando neanche il mio prezzo Expedia c'è: media compset / 1.12 / 0.90.</li>
-          <li><b>ADR OTB del giorno</b> (verde, badge <span class="mono" style="color:#3d7a4b;font-weight:700">otb</span>) — Revenue confermato / RN confermate.</li>
-          <li><b>ADR Final LY 2025</b> (viola, badge <span class="mono" style="color:#8e5fa8;font-weight:700">ly</span>) — ultima risorsa: stesso giorno della settimana 364gg fa.</li>
-        </ol>
-
-        <h4 style="color:var(--ink);margin-bottom:6px;margin-top:14px">⚙️ 5 Moltiplicatori (media pesata, default 20% ciascuno)</h4>
-        <ul style="margin:0;padding-left:20px">
-          <li><b>A · OCC</b> = mia OCC OTB / OCC STLY → idx &lt;0.9 ⇒ 0.95 · 0.9-1.1 ⇒ 1.00 · &gt;1.1 ⇒ 1.05</li>
-          <li><b>B · Price</b> = ADR OTB / ADR STLY → idx &lt;0.8 ⇒ 1.10 · 0.8-1.1 ⇒ 1.05 · &gt;1.1 ⇒ 1.00</li>
-          <li><b>C · Compset</b> = mio Expedia / avg compset → &lt;0.8 ⇒ 1.10 · 0.8-1.0 ⇒ 1.05 · 1.0-1.2 ⇒ 1.00 · &gt;1.2 ⇒ 0.95</li>
-          <li><b>D · Pace</b> = pickup 4 settimane 2026 / STLY (valore unico) → &lt;0.9 ⇒ 0.95 · 0.9-1.1 ⇒ 1.00 · &gt;1.1 ⇒ 1.05</li>
-          <li><b>E · AirDNA</b> = booked listings / 2.948 totali Firenze, vs media 90gg → sotto media ⇒ 0.95 · in media ⇒ 1.00 · sopra media ⇒ 1.05</li>
-        </ul>
-
-        <h4 style="color:var(--ink);margin-bottom:6px;margin-top:14px">🧮 Esempio di calcolo step-by-step</h4>
-        <p>Per verificare i conti, passa il mouse sopra qualunque cella "Prezzo Base" nella tabella. Il tooltip mostra:</p>
-        <ol style="margin:0;padding-left:20px;font-size:11px">
-          <li>Quale sorgente è stata usata (con prezzo iniziale)</li>
-          <li>Le conversioni applicate (÷1.12, ÷0.90, × ratio, − supplemento se sold-out)</li>
-          <li>I 5 moltiplicatori con i loro indici e pesi</li>
-          <li>Il calcolo finale: <span class="mono">prezzo_base × multiplicatore_finale = prezzo_RMES</span></li>
-        </ol>
-        <p style="margin-bottom:0;font-size:11px;color:var(--ink-3);font-style:italic">
-          Tutti i numeri nel tooltip sono riproducibili a mano con una calcolatrice.
-        </p>
-      </div>
-    </div>
 
     <div class="panel">
       <div class="panel-head">
@@ -1025,105 +973,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <h3>Tabella giornaliera</h3>
           <div class="panel-sub" id="sell-table-sub">OTB di oggi · Pickup ultimi N giorni · STLY (-364)</div>
         </div>
-        <div id="sell-rmes-bar" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:14px 16px;background:linear-gradient(135deg,rgba(195,131,59,.06),rgba(195,131,59,.02));border:1px solid rgba(195,131,59,.30);border-radius:10px;font-family:'DM Sans',sans-serif">
-          <div style="display:flex;flex-direction:column;justify-content:center;padding-right:14px;border-right:1px solid rgba(195,131,59,.25);min-width:90px">
-            <div style="color:#c4823b;font-weight:700;font-size:13px;letter-spacing:.04em">Pesi RMES</div>
-            <div style="color:var(--ink-3);font-size:10px;font-style:italic">muovi i cursori</div>
-          </div>
-
-          <!-- Card A: OCC -->
-          <div class="rmes-w-card" data-factor="A" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;background:#fff;border:1.5px solid #4a7c59;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:90px">
-            <div style="display:flex;align-items:center;gap:5px">
-              <span style="background:#4a7c59;color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace">A</span>
-              <span style="font-size:11px;font-weight:600;color:#4a7c59">OCC</span>
-            </div>
-            <div style="display:flex;align-items:baseline;gap:2px">
-              <input type="number" id="rmes-w-occ" min="0" max="100" step="5" value="20" style="width:48px;font-family:'DM Mono',monospace;font-size:16px;font-weight:700;padding:3px 4px;border:1px solid #4a7c59;border-radius:4px;background:#f6faf7;color:#2d4f37;text-align:center">
-              <span style="font-size:12px;color:var(--ink-3);font-weight:600">%</span>
-            </div>
-            <div style="font-size:9px;color:var(--ink-3);text-align:center;line-height:1.2" title="OCC factor: mia OCC / OCC STLY">mia OCC / STLY</div>
-          </div>
-
-          <!-- Card B: Price -->
-          <div class="rmes-w-card" data-factor="B" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;background:#fff;border:1.5px solid #c4823b;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:90px">
-            <div style="display:flex;align-items:center;gap:5px">
-              <span style="background:#c4823b;color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace">B</span>
-              <span style="font-size:11px;font-weight:600;color:#c4823b">Price</span>
-            </div>
-            <div style="display:flex;align-items:baseline;gap:2px">
-              <input type="number" id="rmes-w-price" min="0" max="100" step="5" value="20" style="width:48px;font-family:'DM Mono',monospace;font-size:16px;font-weight:700;padding:3px 4px;border:1px solid #c4823b;border-radius:4px;background:#fdf7ee;color:#7a4f1c;text-align:center">
-              <span style="font-size:12px;color:var(--ink-3);font-weight:600">%</span>
-            </div>
-            <div style="font-size:9px;color:var(--ink-3);text-align:center;line-height:1.2" title="Price factor: ADR OTB / ADR STLY">ADR OTB / STLY</div>
-          </div>
-
-          <!-- Card C: Compset -->
-          <div class="rmes-w-card" data-factor="C" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;background:#fff;border:1.5px solid #3b6b6b;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:90px">
-            <div style="display:flex;align-items:center;gap:5px">
-              <span style="background:#3b6b6b;color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace">C</span>
-              <span style="font-size:11px;font-weight:600;color:#3b6b6b">Comp</span>
-            </div>
-            <div style="display:flex;align-items:baseline;gap:2px">
-              <input type="number" id="rmes-w-comp" min="0" max="100" step="5" value="20" style="width:48px;font-family:'DM Mono',monospace;font-size:16px;font-weight:700;padding:3px 4px;border:1px solid #3b6b6b;border-radius:4px;background:#eff5f5;color:#264848;text-align:center">
-              <span style="font-size:12px;color:var(--ink-3);font-weight:600">%</span>
-            </div>
-            <div style="font-size:9px;color:var(--ink-3);text-align:center;line-height:1.2" title="Comp factor: mio Expedia / avg compset">mio Exp / compset</div>
-          </div>
-
-          <!-- Card D: Pace -->
-          <div class="rmes-w-card" data-factor="D" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;background:#fff;border:1.5px solid #8e5fa8;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:90px">
-            <div style="display:flex;align-items:center;gap:5px">
-              <span style="background:#8e5fa8;color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace">D</span>
-              <span style="font-size:11px;font-weight:600;color:#8e5fa8">Pace</span>
-            </div>
-            <div style="display:flex;align-items:baseline;gap:2px">
-              <input type="number" id="rmes-w-pace" min="0" max="100" step="5" value="20" style="width:48px;font-family:'DM Mono',monospace;font-size:16px;font-weight:700;padding:3px 4px;border:1px solid #8e5fa8;border-radius:4px;background:#f5eff8;color:#5d3d70;text-align:center">
-              <span style="font-size:12px;color:var(--ink-3);font-weight:600">%</span>
-            </div>
-            <div style="font-size:9px;color:var(--ink-3);text-align:center;line-height:1.2" title="Pace factor: pickup ultime 4 settimane 2026 / STLY">pickup 4w / STLY</div>
-          </div>
-
-          <!-- Card E: AirDNA -->
-          <div class="rmes-w-card" data-factor="E" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 12px;background:#fff;border:1.5px solid #a83b3b;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:90px">
-            <div style="display:flex;align-items:center;gap:5px">
-              <span style="background:#a83b3b;color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace">E</span>
-              <span style="font-size:11px;font-weight:600;color:#a83b3b">AirDNA</span>
-            </div>
-            <div style="display:flex;align-items:baseline;gap:2px">
-              <input type="number" id="rmes-w-airdna" min="0" max="100" step="5" value="20" style="width:48px;font-family:'DM Mono',monospace;font-size:16px;font-weight:700;padding:3px 4px;border:1px solid #a83b3b;border-radius:4px;background:#faecec;color:#702828;text-align:center">
-              <span style="font-size:12px;color:var(--ink-3);font-weight:600">%</span>
-            </div>
-            <div style="font-size:9px;color:var(--ink-3);text-align:center;line-height:1.2" title="AirDNA Demand factor: booked listings / 2948 totali, vs media periodo">demand vs media</div>
-          </div>
-
-          <!-- Sum indicator + actions -->
-          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding-left:14px;border-left:1px solid rgba(195,131,59,.25);margin-left:auto">
-            <div id="rmes-w-sum" style="font-family:'DM Mono',monospace;font-size:18px;font-weight:700;padding:6px 14px;border-radius:8px;background:#e8f3eb;color:#2d6a3e;border:2px solid #4a7c59;min-width:70px;text-align:center;letter-spacing:.02em">Σ 100%</div>
-            <button id="rmes-w-reset" style="font-size:10px;padding:4px 12px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">reset 20% × 5</button>
-          </div>
-
-          <div style="flex-basis:100%;display:flex;align-items:center;gap:10px;font-size:10px;color:var(--ink-3);font-family:'DM Mono',monospace;font-style:italic;padding-top:4px;border-top:1px dashed rgba(195,131,59,.20);margin-top:4px">
-            <span id="sell-rmes-availability"></span>
-            <button id="rmes-th-toggle" style="font-size:10px;padding:3px 10px;border:1px solid rgba(195,131,59,.4);border-radius:4px;background:#fff;color:#7a4f1c;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600;letter-spacing:.02em">⚙ Soglie indici</button>
-            <span class="mono" style="cursor:help;color:var(--ink-3);font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;background:#fff;margin-left:auto" title="Prezzo Base = Sorgente × media pesata dei 5 moltiplicatori.&#10;&#10;SORGENTE — cascata di fallback se manca un dato:&#10;  1) Mio prezzo Expedia / 1.12 / 0.90 (ambra, default)&#10;  2) Compset avg Expedia / 1.12 / 0.90 (BLU)&#10;  3) ADR OTB del giorno (VERDE)&#10;  4) ADR Final LY 2025 stesso giorno (VIOLA)&#10;&#10;A · OCC factor = mia OCC / OCC STLY&#10;B · Price factor = ADR OTB / ADR STLY&#10;C · Comp factor = mio Expedia / avg compset&#10;D · Pace factor = pickup 4 settimane 2026 / STLY&#10;E · AirDNA Demand = booked listings/2948, vs media periodo&#10;&#10;Le soglie e i moltiplicatori sono configurabili (pulsante ⚙ Soglie indici).&#10;Se manca un dato, quel moltiplicatore = 1.">?</span>
-          </div>
+        <div style="font-size:11px;color:var(--ink-3);font-style:italic;text-align:right;padding:4px 8px">
+          <span class="mono">⚙ pesi · soglie · pesi compset</span> → configurazione in tab <a href="#" onclick="document.querySelector('.tab[data-tab=pri]').click();return false" style="color:#7a4f1c;font-weight:600;text-decoration:underline">RMES</a>
         </div>
-
-        <!-- Pannello soglie collassabile (mostrato/nascosto da bottone ⚙) -->
-        <div id="rmes-th-panel" style="display:none;margin-top:10px;padding:14px 16px;background:#fdfaf5;border:1px solid rgba(195,131,59,.30);border-radius:10px;font-family:'DM Sans',sans-serif">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(195,131,59,.18)">
-            <div>
-              <div style="color:#7a4f1c;font-weight:700;font-size:13px;letter-spacing:.04em">Soglie indici RMES</div>
-              <div style="color:var(--ink-3);font-size:10px;font-style:italic">Per ogni fattore: <code>idx&lt;lo → multLow · lo≤idx≤hi → multMid · idx&gt;hi → multHigh</code> · Moltiplicatori da 0.50 a 1.50</div>
-            </div>
-            <div style="display:flex;gap:8px">
-              <button id="rmes-th-apply" style="font-size:11px;padding:6px 16px;border:1px solid #4a7c59;border-radius:5px;background:#4a7c59;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.02em">APPLICA</button>
-              <button id="rmes-th-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset default</button>
-            </div>
-          </div>
-          <div id="rmes-th-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;overflow-x:auto"></div>
-        </div>
-      </div>
       <div class="panel-body flush" id="sell-table-wrap" style="overflow-x:auto;max-height:75vh;overflow-y:auto"></div>
     </div>
 
@@ -1147,10 +999,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>Rate Shopper <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">prezzi compset · pesi configurabili</span></h2>
-        <div class="lede">Tabelle dei competitor estratte da Expedia per ogni struttura. Imposta un <b>peso %</b> (0-100%) per ogni competitor: il peso influenza la <b>media ponderata compset</b> usata nel moltiplicatore C del sistema RMES nella Sell Strategy. <span class="mono" style="font-size:11px">Formula: media = Σ(prezzo × peso) / N · default 100% · peso 0% = competitor escluso</span></div>
+        <div class="lede">Tabelle dei competitor estratte da <b>Expedia</b> per ogni struttura, con i prezzi giornalieri. La prima riga (evidenziata) è il mio prezzo. I pesi compset per il calcolo RMES sono configurabili nella tab <a href="#" onclick="document.querySelector('.tab[data-tab=pri]').click();return false" style="color:#7a4f1c;font-weight:600;text-decoration:underline">RMES</a>: un competitor con peso < 100% appare con badge accanto al nome.</div>
       </div>
       <div class="head-actions">
-        <button class="btn-link" id="rate-reset-weights" style="font-size:11px;padding:6px 12px;border:1px solid var(--line);border-radius:4px;background:transparent;cursor:pointer">Reset pesi a 100%</button>
       </div>
     </div>
 
@@ -1226,67 +1077,114 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   </section>
 
   <!-- ============ SECTION 8: PRICING IN PROCESS (last) ============ -->
+  <!-- ============ SECTION 10: RMES CONFIGURAZIONE ============ -->
   <section class="tab-panel" id="panel-pri">
     <div class="section-head">
       <div>
-        <h2>RMES <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">tariffa giornaliera per ogni Room Type</span></h2>
-        <div class="lede">Cosa mostra questa tabella:</div>
-        <ul class="lede-bullets">
-          <li><b>Camera base</b> (Camera Matrim. Deluxe per FS, Bilocale per C16) → <b>prezzo flessibile RMES da caricare nel PMS</b>. Per Condotta 16: usa il prezzo RMES calcolato nella tab <b>Sell Strategy</b> = sorgente base (cascata: Mio Expedia → Compset avg → ADR OTB → ADR Final LY 2025) × media pesata dei 5 fattori (A·OCC, B·Price, C·Comp, D·Pace, E·AirDNA). Quando il Bilocale è sold-out, il prezzo Expedia mostrato si riferisce al Trilocale → il sistema sottrae automaticamente il supplemento per ricondurlo al Bilocale. Marker <span style="color:#c4823b;font-weight:700">R</span> indica che il prezzo arriva dal sistema RMES. <i>Per Firenze Suite (no Expedia): fallback sul vecchio calcolo target ADR mensile + scaletta.</i></li>
-          <li><b>Tipologie superiori</b> → <b>supplemento fisso per stagione</b> sopra il prezzo della camera base: due valori, uno per <b>alta stagione</b> (FS: Mag, Giu, Set, Ott · C16: Mag, Giu, Lug, Set, Ott) e uno per <b>bassa stagione</b> (tutti gli altri mesi). Calcolato come differenza ADR storico medio della stagione vs base. Badge <span style="color:#a83b3b;font-weight:700">A</span> = alta · <span style="color:#3b6b6b;font-weight:700">B</span> = bassa.</li>
-          <li>Il PMS Beddy applica automaticamente <b>+12%</b> sulle OTA (Booking, Expedia, ecc.). La tariffa <b>non rimborsabile</b> è -10% rispetto alla flessibile. La conversione tra prezzo Expedia osservato e prezzo Beddy flex è: <code>prezzo_beddy = prezzo_expedia / 1.12 / 0.90</code>.</li>
-          <li>I <b>pesi dei 5 fattori RMES</b> sono modificabili nella tab Sell Strategy: cambiandoli, questa tabella si aggiorna in tempo reale. Cambiando i pesi puoi rendere il sistema più sensibile alla competizione (peso C alto), all'andamento storico (peso A alto), al pacing recente (peso D alto), alla domanda di mercato Firenze (peso E alto), o all'evoluzione dell'ADR (peso B alto).</li>
-          <li>Marker: <span style="color:#c4823b;font-weight:700">R</span> = prezzo RMES applicato · <span style="color:#888;font-weight:700">∅</span> = sold out (prezzo proposto se arriva una cancellazione) · <span style="color:#3b6b6b;font-weight:700">🛑</span> = freno mercato attivo (solo per Firenze, perché RMES integra già il fattore Comp). Pallino <span style="color:#a83b3b">●</span> sotto la cella = sold out.</li>
-          <li>Per <b>Condotta 16</b> (l'unica struttura su Expedia): sotto le righe del Bilocale appaiono 3 righe con i dati di mercato di Expedia — Mio prezzo attuale (Beddy eq.), Avg compset (Beddy eq., con diff % vs prezzo proposto), Search demand (numero ricerche con categoria 🔥/↑/·/↓).</li>
-          <li>Passa il mouse su una cella per il dettaglio: sorgente base, moltiplicatori, supplemento applicato, mix canali, scaletta.</li>
-        </ul>
+        <h2>RMES <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">Revenue Manu&Enis System · configurazione</span></h2>
+        <div class="lede">Tutta la configurazione del sistema RMES in un unico posto: <b>pesi dei 5 fattori</b>, <b>soglie degli indici</b> e <b>pesi dei competitor</b>. Le tre cose sono <b>indipendenti per ogni struttura</b>: cambiare la configurazione di Firenze non influenza Condotta o Alfani.</div>
       </div>
       <div class="head-actions">
-        <div class="chip mono" id="pri-struct-chip">—</div>
+        <div class="chip mono" id="rmes-struct-chip">—</div>
       </div>
     </div>
 
-    <div class="panel">
+    <!-- Filtro struttura -->
+    <div class="panel" style="background:rgba(195,131,59,.04);border-color:rgba(195,131,59,.25);margin-bottom:16px">
+      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px 18px">
+        <span class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Configurazione struttura</span>
+        <div id="rmes-tab-struct-pills" style="display:flex;gap:6px"></div>
+        <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-style:italic">Ogni struttura ha pesi, soglie e pesi compset indipendenti.</span>
+      </div>
+    </div>
+
+    <!-- Documentazione collassabile -->
+    <details class="panel" style="margin-bottom:16px">
+      <summary class="panel-head" style="cursor:pointer;list-style:none">
+        <div>
+          <h3 style="display:inline">📚 Come funziona il sistema RMES</h3>
+          <span style="font-size:11px;color:var(--ink-3);margin-left:8px">— clicca per espandere</span>
+        </div>
+      </summary>
+      <div class="panel-body" style="font-size:13px;line-height:1.65;color:var(--ink)">
+        <p><b>Idea generale:</b> il Prezzo Base RMES suggerito per ogni giorno futuro è il prodotto di una <b>sorgente di prezzo</b> per un <b>moltiplicatore</b> che riflette 5 fattori. La sorgente cambia in base ai dati disponibili (cascata di fallback); il moltiplicatore è la media pesata di 5 indici calcolati dai dati di prenotazione e di mercato.</p>
+
+        <p><b>1. Sorgente del prezzo</b> (cascata, in ordine di priorità):</p>
+        <ol style="margin:4px 0 12px 18px">
+          <li><b>Mio prezzo Expedia</b> convertito a Beddy_eq via <code>÷ 1.12 ÷ 0.90</code> × ratio della struttura (Firenze 0.775, Condotta 0.775, Alfani 0.823). È la sorgente di default.</li>
+          <li><b>Media compset Expedia</b> (sempre Beddy_eq) — quando il mio prezzo Expedia manca quel giorno.</li>
+          <li><b>ADR OTB</b> del giorno — fallback se anche il compset manca.</li>
+          <li><b>ADR Final LY 2025</b> dello stesso giorno — ultimo fallback storico.</li>
+        </ol>
+
+        <p><b>2. Moltiplicatore RMES</b> = media pesata di 5 fattori. I primi 3 sono <b style="color:#4a7c59">dati interni</b> (storia/prenotazioni mie), gli ultimi 2 sono <b style="color:#a83b3b">dati esterni</b> (mercato):</p>
+        <table class="data" style="width:100%;font-size:12px;margin:8px 0">
+          <thead><tr><th></th><th>Indice</th><th>Cosa misura</th><th>Tipo</th></tr></thead>
+          <tbody>
+            <tr><td><span style="background:#4a7c59;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">A</span> OCC</td><td class="mono">mia OCC OTB / OCC STLY</td><td>Sto vendendo meglio di un anno fa (stesso giorno)?</td><td>interno</td></tr>
+            <tr><td><span style="background:#c4823b;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">B</span> Price</td><td class="mono">ADR OTB / ADR STLY</td><td>Sto piazzando le camere a prezzo migliore di STLY?</td><td>interno</td></tr>
+            <tr><td><span style="background:#8e5fa8;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">C</span> Pace</td><td class="mono">pickup 4 settimane / STLY</td><td>Il pickup recente è più caldo dello STLY?</td><td>interno</td></tr>
+            <tr><td><span style="background:#3b6b6b;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">D</span> Compset</td><td class="mono">mio Expedia / avg compset</td><td>Sono più caro o più economico dei competitor?</td><td>esterno</td></tr>
+            <tr><td><span style="background:#a83b3b;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">E</span> AirDNA</td><td class="mono">demand vs distribuzione 90gg</td><td>Il giorno è in alta domanda di mercato (Firenze)?</td><td>esterno</td></tr>
+          </tbody>
+        </table>
+
+        <p><b>3. Soglie e moltiplicatori:</b> per ogni indice impostato dai dati, le soglie <code>lo</code> e <code>hi</code> determinano in quale fascia cade l'indice, e ad ogni fascia corrisponde un moltiplicatore (es. <code>multLow=0.90 · multMid=1.00 · multHigh=1.10</code>). Solo per <b>E·AirDNA</b> le soglie sono <b>percentili</b> della distribuzione 90gg (es. Q2=0.50 → mediana, Q3=0.75).</p>
+
+        <p><b>4. Avg compset:</b> calcolato come <code>Σ(prezzo × peso) / N</code>. I pesi 0% escludono il competitor dal calcolo. Configurabili nella sezione "Pesi compset" sotto.</p>
+
+        <p><b>Esempio numerico</b> (per Condotta 16, oggi):<br>
+          sorgente = Mio Expedia €390 ÷ 1.12 ÷ 0.90 × 0.775 = <code>€240</code><br>
+          moltiplicatore = (0.95×0.20) + (1.05×0.20) + (1.00×0.20) + (1.00×0.20) + (1.10×0.20) = <code>1.02</code><br>
+          → Prezzo Base RMES = 240 × 1.02 = <code>€245</code>
+        </p>
+      </div>
+    </details>
+
+    <!-- Box 1: PESI -->
+    <div class="panel" style="margin-bottom:16px">
       <div class="panel-head">
         <div>
-          <h3>Controlli</h3>
-          <div class="panel-sub">Da quando partire, quanti giorni mostrare</div>
+          <h3>① Pesi dei 5 fattori <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-w-sub">struttura: —</span></h3>
+          <div class="panel-sub">Quanto contribuisce ogni fattore al moltiplicatore finale. Somma normalizzata a 100% automaticamente.</div>
         </div>
+        <button id="rmes-tab-w-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset 20% × 5</button>
       </div>
-      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:18px;align-items:end">
-        <div>
-          <label class="mono pri-ctrl-lbl">Data inizio</label>
-          <input type="date" id="pri-start-date" class="pri-ctrl-input">
-        </div>
-        <div>
-          <label class="mono pri-ctrl-lbl">Giorni</label>
-          <div id="pri-range-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-        </div>
+      <div class="panel-body" style="padding:14px 16px">
+        <div id="rmes-tab-w-bar" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px"></div>
       </div>
     </div>
 
-    <div class="kpi-grid" id="pri-kpis"></div>
-
-    <div class="panel">
+    <!-- Box 2: SOGLIE INDICI -->
+    <div class="panel" style="margin-bottom:16px">
       <div class="panel-head">
         <div>
-          <h3>Prezzo giornaliero per Room Type</h3>
-          <div class="panel-sub" id="pri-daily-sub">ADR target da praticare per ogni notte futura · una colonna per tipologia camera</div>
+          <h3>② Soglie degli indici <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-th-sub">struttura: —</span></h3>
+          <div class="panel-sub">Per ogni fattore: breakpoint <code>lo</code>/<code>hi</code> e moltiplicatori (range 0.50 – 1.50).</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="rmes-tab-th-apply" style="font-size:11px;padding:6px 16px;border:1px solid #4a7c59;border-radius:5px;background:#4a7c59;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.02em">APPLICA</button>
+          <button id="rmes-tab-th-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset default</button>
         </div>
       </div>
-      <div class="panel-body flush" id="pri-daily-wrap" style="overflow-x:auto;max-height:75vh;overflow-y:auto"></div>
+      <div class="panel-body" style="padding:14px 16px">
+        <div id="rmes-tab-th-cards" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;overflow-x:auto"></div>
+      </div>
     </div>
 
-    <div class="panel">
+    <!-- Box 3: PESI COMPSET -->
+    <div class="panel" style="margin-bottom:16px">
       <div class="panel-head">
         <div>
-          <h3>Andamento prezzo per Room Type</h3>
-          <div class="panel-sub" id="pri-chart-sub">Linea = prezzo da caricare nel PMS per ogni RT (per le derivate: prezzo base + supplemento mensile). Linea tratteggiata = prezzo già caricato in OTB.</div>
+          <h3>③ Pesi competitor compset <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-comp-sub">struttura: —</span></h3>
+          <div class="panel-sub">Quanto pesa ogni competitor nella media compset (default 100%, range 0-100%, 0 = competitor escluso). I prezzi giornalieri sono visibili in tab Rate Shopper.</div>
         </div>
+        <button id="rmes-tab-comp-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset pesi a 100%</button>
       </div>
-      <div class="panel-body" id="pri-chart-wrap" style="padding:16px"></div>
+      <div class="panel-body" style="padding:14px 16px">
+        <div id="rmes-tab-comp-wrap"></div>
+      </div>
     </div>
-
   </section>
 
   <!-- ============ SECTION 10: AIRBNB ============ -->
@@ -23972,9 +23870,16 @@ function aggOTBYearly(sel){
   const fly = {};   // Final LY (2025 chiusura)
   for (let m=1;m<=12;m++){ cur[m]={rn:0,rev:0}; prev[m]={rn:0,rev:0}; fly[m]={rn:0,rev:0}; }
 
-  // by source (provenienza) and channel
+  // by source (provenienza) and channel (year totals + per-month for filter)
   const provCur = {}, provPrev = {}, provFly = {};
   const canCur = {},  canPrev = {},  canFly = {};
+  // Per-mese: {m: {prov: {name: {rn,rev,bk}}}}
+  const provCurM = {}, provPrevM = {}, provFlyM = {};
+  const canCurM = {},  canPrevM = {},  canFlyM = {};
+  for (let m=1;m<=12;m++){
+    provCurM[m]={}; provPrevM[m]={}; provFlyM[m]={};
+    canCurM[m]={};  canPrevM[m]={};  canFlyM[m]={};
+  }
 
   for (const b of BOOKINGS){
     if (b.cancelled) continue;
@@ -24003,45 +23908,87 @@ function aggOTBYearly(sel){
       }
     }
 
-    // for prov/canale tables: aggregate at YEAR level
+    // for prov/canale tables: aggregate at YEAR level + PER MONTH
     if (isCurrentBkWindow){
       let rn=0, rev=0;
+      const perMonth = {};  // m -> {rn, rev}
       for (const k in alloc){
-        const y = Math.floor((+k)/100);
-        if (y===CUR_YEAR){ rn += alloc[k].rn; rev += alloc[k].rev; }
+        const ym = +k;
+        const y = Math.floor(ym/100);
+        if (y===CUR_YEAR){
+          rn += alloc[k].rn; rev += alloc[k].rev;
+          const mm = ym % 100;
+          if (!perMonth[mm]) perMonth[mm] = {rn:0, rev:0};
+          perMonth[mm].rn += alloc[k].rn; perMonth[mm].rev += alloc[k].rev;
+        }
       }
       if (rn>0){
         if (!provCur[b.prov]) provCur[b.prov]={rn:0,rev:0,bk:0};
         provCur[b.prov].rn += rn; provCur[b.prov].rev += rev; provCur[b.prov].bk += 1;
         if (!canCur[b.canale]) canCur[b.canale]={rn:0,rev:0,bk:0};
         canCur[b.canale].rn += rn; canCur[b.canale].rev += rev; canCur[b.canale].bk += 1;
+        for (const mm in perMonth){
+          const r = perMonth[mm];
+          if (!provCurM[mm][b.prov]) provCurM[mm][b.prov] = {rn:0,rev:0,bk:0};
+          provCurM[mm][b.prov].rn += r.rn; provCurM[mm][b.prov].rev += r.rev; provCurM[mm][b.prov].bk += 1;
+          if (!canCurM[mm][b.canale]) canCurM[mm][b.canale] = {rn:0,rev:0,bk:0};
+          canCurM[mm][b.canale].rn += r.rn; canCurM[mm][b.canale].rev += r.rev; canCurM[mm][b.canale].bk += 1;
+        }
       }
     }
     if (isStlyBkWindow){
       let rn=0, rev=0;
+      const perMonth = {};
       for (const k in alloc){
-        const y = Math.floor((+k)/100);
-        if (y===PREV_YEAR){ rn += alloc[k].rn; rev += alloc[k].rev; }
+        const ym = +k;
+        const y = Math.floor(ym/100);
+        if (y===PREV_YEAR){
+          rn += alloc[k].rn; rev += alloc[k].rev;
+          const mm = ym % 100;
+          if (!perMonth[mm]) perMonth[mm] = {rn:0, rev:0};
+          perMonth[mm].rn += alloc[k].rn; perMonth[mm].rev += alloc[k].rev;
+        }
       }
       if (rn>0){
         if (!provPrev[b.prov]) provPrev[b.prov]={rn:0,rev:0,bk:0};
         provPrev[b.prov].rn += rn; provPrev[b.prov].rev += rev; provPrev[b.prov].bk += 1;
         if (!canPrev[b.canale]) canPrev[b.canale]={rn:0,rev:0,bk:0};
         canPrev[b.canale].rn += rn; canPrev[b.canale].rev += rev; canPrev[b.canale].bk += 1;
+        for (const mm in perMonth){
+          const r = perMonth[mm];
+          if (!provPrevM[mm][b.prov]) provPrevM[mm][b.prov] = {rn:0,rev:0,bk:0};
+          provPrevM[mm][b.prov].rn += r.rn; provPrevM[mm][b.prov].rev += r.rev; provPrevM[mm][b.prov].bk += 1;
+          if (!canPrevM[mm][b.canale]) canPrevM[mm][b.canale] = {rn:0,rev:0,bk:0};
+          canPrevM[mm][b.canale].rn += r.rn; canPrevM[mm][b.canale].rev += r.rev; canPrevM[mm][b.canale].bk += 1;
+        }
       }
     }
     // FinalLY for prov/canale: senza filtro bookYmd, solo stay nel 2025
     {
       let rn=0, rev=0;
+      const perMonth = {};
       for (const k in alloc){
-        const y = Math.floor((+k)/100);
-        if (y===PREV_YEAR){ rn += alloc[k].rn; rev += alloc[k].rev; }
+        const ym = +k;
+        const y = Math.floor(ym/100);
+        if (y===PREV_YEAR){
+          rn += alloc[k].rn; rev += alloc[k].rev;
+          const mm = ym % 100;
+          if (!perMonth[mm]) perMonth[mm] = {rn:0, rev:0};
+          perMonth[mm].rn += alloc[k].rn; perMonth[mm].rev += alloc[k].rev;
+        }
       }
       if (rn>0){
         if (!provFly[b.prov]) provFly[b.prov]={rn:0,rev:0,bk:0};
         provFly[b.prov].rn += rn; provFly[b.prov].rev += rev; provFly[b.prov].bk += 1;
         if (!canFly[b.canale]) canFly[b.canale]={rn:0,rev:0,bk:0};
         canFly[b.canale].rn += rn; canFly[b.canale].rev += rev; canFly[b.canale].bk += 1;
+        for (const mm in perMonth){
+          const r = perMonth[mm];
+          if (!provFlyM[mm][b.prov]) provFlyM[mm][b.prov] = {rn:0,rev:0,bk:0};
+          provFlyM[mm][b.prov].rn += r.rn; provFlyM[mm][b.prov].rev += r.rev; provFlyM[mm][b.prov].bk += 1;
+          if (!canFlyM[mm][b.canale]) canFlyM[mm][b.canale] = {rn:0,rev:0,bk:0};
+          canFlyM[mm][b.canale].rn += r.rn; canFlyM[mm][b.canale].rev += r.rev; canFlyM[mm][b.canale].bk += 1;
+        }
       }
     }
   }
@@ -24109,7 +24056,8 @@ function aggOTBYearly(sel){
   tot.dAdrFPct = (isFinite(tot.adrC)&&isFinite(tot.adrF)&&tot.adrF>0) ? (tot.adrC-tot.adrF)/tot.adrF : NaN;
   tot.dRevFPct = tot.revF>0 ? (tot.revC-tot.revF)/tot.revF : NaN;
 
-  return { monthRows, tot, provCur, provPrev, canCur, canPrev, provFly, canFly };
+  return { monthRows, tot, provCur, provPrev, canCur, canPrev, provFly, canFly,
+           provCurM, provPrevM, provFlyM, canCurM, canPrevM, canFlyM };
 }
 
 /* OCC per Room Type
@@ -24571,8 +24519,14 @@ function deltaCell(val, kind){
   return `<td class="${cls} cell-mono">${txt}</td>`;
 }
 
+/* Stato del filtro mese (Overview): null = totale anno, 1..12 = mese specifico */
+let OTB_MONTH_FILTER = null;
+
 function renderOTB(sel){
   const A = aggOTBYearly(sel);
+  // Riferimento globale per il re-render del filtro mese
+  window._OTB_A = A;
+  window._OTB_SEL = sel;
 
   // KPIs
   const kpi = [
@@ -24654,7 +24608,43 @@ function renderOTB(sel){
   </tr>`;
   document.getElementById('otb-monthly').innerHTML = head + '<tbody>' + rows + totRow + '</tbody>';
 
-  // charts
+  // Pill selector mese
+  _renderOTBMonthPills(A);
+  // Rendering dipendente dal filtro (charts + prov/can tabelle)
+  _renderOTBDetailsByMonth(A);
+}
+
+/* Render dei pulsanti mese (Totale + Gen..Dic). Cliccando aggiorna OTB_MONTH_FILTER e ridisegna. */
+function _renderOTBMonthPills(A){
+  const pillsEl = document.getElementById('otb-month-pills');
+  if (!pillsEl) return;
+  const opts = [{v:null, label:'Totale anno'}];
+  for (let m=1;m<=12;m++) opts.push({v:m, label:CFG.monthsIT[m-1]});
+  pillsEl.innerHTML = opts.map(o => {
+    const on = (OTB_MONTH_FILTER === o.v);
+    const cls = on ? 'rt-pill' : 'rt-pill off';
+    const style = on ? 'border-color:#c4823b;color:#7a4f1c;font-weight:600;background:#fdf3e6' : '';
+    return `<button class="${cls}" data-otbm="${o.v==null?'all':o.v}" style="${style}">${o.label}</button>`;
+  }).join('');
+  pillsEl.querySelectorAll('button[data-otbm]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = btn.dataset.otbm;
+      OTB_MONTH_FILTER = (v === 'all') ? null : parseInt(v, 10);
+      _renderOTBMonthPills(A);
+      _renderOTBDetailsByMonth(A);
+    });
+  });
+}
+
+/* Aggiorna tabelle Prov/Can in base a OTB_MONTH_FILTER (i 2 grafici restano sempre annuali) */
+function _renderOTBDetailsByMonth(A){
+  const m = OTB_MONTH_FILTER;
+  const activeEl = document.getElementById('otb-month-active');
+  if (activeEl) activeEl.textContent = m == null
+    ? 'Tabelle Provenienza e Canale: tutto l\'anno'
+    : `Tabelle Provenienza e Canale: ${CFG.monthsITLong[m-1]}`;
+
+  // Grafici Revenue/OCC: sempre tutto l'anno (non influenzati dal filtro)
   document.getElementById('otb-chart-rev').innerHTML = lineChart(
     A.monthRows.map(r=>r.revC), A.monthRows.map(r=>r.revP),
     CFG.monthsIT, '#6b5b3f', '€', 'rev'
@@ -24663,12 +24653,27 @@ function renderOTB(sel){
     A.monthRows.map(r=>r.occC*100), A.monthRows.map(r=>r.occP*100),
     CFG.monthsIT, '#3b5a78', '%', 'pct'
   );
+  document.getElementById('otb-chart-rev-title').textContent = 'Revenue mensile';
+  document.getElementById('otb-chart-occ-title').textContent = 'Occupazione mensile';
 
-  // prov / canale
-  document.getElementById('otb-prov-table').innerHTML = compareTable(A.provCur, A.provPrev, A.provFly, 'Provenienza');
-  document.getElementById('otb-prov-sub').textContent = `Top sources · 2026 OTB vs STLY vs Final LY`;
-  document.getElementById('otb-can-table').innerHTML  = compareTable(A.canCur,  A.canPrev,  A.canFly,  'Canale');
-  document.getElementById('otb-can-sub').textContent  = `Distribuzione canale · 2026 OTB vs STLY vs Final LY`;
+  // Tabelle Provenienza e Canale: dipendono dal filtro
+  if (m == null){
+    document.getElementById('otb-prov-table').innerHTML = compareTable(A.provCur, A.provPrev, A.provFly, 'Provenienza');
+    document.getElementById('otb-prov-sub').textContent = `Top sources · 2026 OTB vs STLY vs Final LY · totale anno`;
+    document.getElementById('otb-can-table').innerHTML  = compareTable(A.canCur,  A.canPrev,  A.canFly,  'Canale');
+    document.getElementById('otb-can-sub').textContent  = `Distribuzione canale · 2026 OTB vs STLY vs Final LY · totale anno`;
+  } else {
+    const pc = (A.provCurM && A.provCurM[m]) || {};
+    const pp = (A.provPrevM && A.provPrevM[m]) || {};
+    const pf = (A.provFlyM && A.provFlyM[m]) || {};
+    const cc = (A.canCurM && A.canCurM[m]) || {};
+    const cp = (A.canPrevM && A.canPrevM[m]) || {};
+    const cf = (A.canFlyM && A.canFlyM[m]) || {};
+    document.getElementById('otb-prov-table').innerHTML = compareTable(pc, pp, pf, 'Provenienza');
+    document.getElementById('otb-prov-sub').textContent = `Top sources · ${CFG.monthsITLong[m-1]} 2026 OTB vs STLY vs Final LY`;
+    document.getElementById('otb-can-table').innerHTML  = compareTable(cc, cp, cf, 'Canale');
+    document.getElementById('otb-can-sub').textContent  = `Distribuzione canale · ${CFG.monthsITLong[m-1]} 2026 OTB vs STLY vs Final LY`;
+  }
 }
 
 function compareTable(cur, prev, fly, labelCol){
@@ -24733,7 +24738,8 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<
    SECTION 2: ROOM TYPE
    ============================================================ */
 
-const RT_PALETTE = ['#8b6f47','#3b6b6b','#a89274','#5a8c69','#7a5a8c','#c08838','#3b5a78','#b1432f'];
+// Palette colori room type: alta saturazione, colori molto distanziati sull'asse cromatico
+const RT_PALETTE = ['#2563eb','#dc2626','#16a34a','#ea580c','#7c3aed','#0891b2','#ca8a04','#be185d'];
 let RT_VISIBLE = null;  // Set or null (null = all)
 
 function renderRT(sel){
@@ -25170,15 +25176,18 @@ function renderPickup(sel){
     return head + '<tbody>' + body + trow + '</tbody>';
   }
 
-  function pkCellHtml(c, maxRn, dim, key, weekIdx, mode, divider=false){
-    const cls = divider?' cell-divider':'';
+  function pkCellHtml(c, maxRn, dim, key, weekIdx, mode, divider=false, extraCls=''){
+    const clsArr = [];
+    if (divider) clsArr.push('cell-divider');
+    if (extraCls) clsArr.push(extraCls);
+    const cls = clsArr.length ? ' class="'+clsArr.join(' ')+'"' : '';
     if (!c || (c.bk===0 && c.rn===0)){
-      return `<td${cls?' class="'+cls.trim()+'"':''}><span class="pk-cell zero">·</span></td>`;
+      return `<td${cls}><span class="pk-cell zero">·</span></td>`;
     }
     const intensity = Math.min(0.85, c.rn / Math.max(1,maxRn) * 1.0 + 0.08);
     const heatBg = mode.startsWith('stly') ? `rgba(138,138,138,${intensity*0.4})` : `rgba(107,91,63,${intensity*0.55})`;
     const dataAttr = `data-dim="${dim}" data-key="${escapeHtml(key)}" data-week="${weekIdx}" data-mode="${mode}"`;
-    return `<td${cls?' class=\"'+cls.trim()+'\"':''}><span class=\"pk-cell\" ${dataAttr}><span class=\"heat\" style=\"background:${heatBg}\"></span><span class=\"pk-rn\">${c.rn}</span></span></td>`;
+    return `<td${cls}><span class="pk-cell" ${dataAttr}><span class="heat" style="background:${heatBg}"></span><span class="pk-rn">${c.rn}</span></span></td>`;
   }
 
   // Helper: trasforma 'YYYY-MM' in label leggibile "Mag 2026"
@@ -25200,11 +25209,11 @@ function renderPickup(sel){
     for (let i=0;i<A.weeks.length;i++){
       head += `<th colspan="2">W${i+1} · ${pad2(A.weeks[i].start.getDate())}/${pad2(A.weeks[i].start.getMonth()+1)}–${pad2(A.weeks[i].end.getDate())}/${pad2(A.weeks[i].end.getMonth()+1)}</th>`;
     }
-    head += '<th colspan="2">Totale</th></tr><tr>';
+    head += '<th colspan="2" class="pk-tot-cur">Totale</th></tr><tr>';
     for (let i=0;i<A.weeks.length;i++){
-      head += '<th>2026</th><th class="cell-divider">STLY</th>';
+      head += '<th class="pk-cur">2026</th><th class="pk-stly">STLY</th>';
     }
-    head += '<th>2026</th><th class="cell-divider">STLY</th></tr></thead>';
+    head += '<th class="pk-tot-cur">2026</th><th class="pk-tot-stly">STLY</th></tr></thead>';
     let body = '';
     for (const k of axis){
       let row = `<tr><td>${escapeHtml(smLabel(k))}</td>`;
@@ -25213,11 +25222,11 @@ function renderPickup(sel){
         const c = dataC[k][i], p = dataP[k][i];
         totC.bk+=c.bk; totC.rn+=c.rn; totC.rev+=c.rev;
         totP.bk+=p.bk; totP.rn+=p.rn; totP.rev+=p.rev;
-        row += pkCellHtml(c, maxRn, 'sm', k, i, 'cur');
-        row += pkCellHtml(p, maxRn, 'sm', k, i, 'stly', true);
+        row += pkCellHtml(c, maxRn, 'sm', k, i, 'cur', false, 'pk-cur');
+        row += pkCellHtml(p, maxRn, 'sm', k, i, 'stly', true, 'pk-stly');
       }
-      row += pkCellHtml(totC, maxRn*4, 'sm', k, -1, 'cur-tot');
-      row += pkCellHtml(totP, maxRn*4, 'sm', k, -1, 'stly-tot', true);
+      row += pkCellHtml(totC, maxRn*4, 'sm', k, -1, 'cur-tot', false, 'pk-tot-cur');
+      row += pkCellHtml(totP, maxRn*4, 'sm', k, -1, 'stly-tot', true, 'pk-tot-stly');
       row += '</tr>';
       body += row;
     }
@@ -25233,18 +25242,21 @@ function renderPickup(sel){
       }
       gC.bk+=cAgg.bk; gC.rn+=cAgg.rn; gC.rev+=cAgg.rev;
       gP.bk+=pAgg.bk; gP.rn+=pAgg.rn; gP.rev+=pAgg.rev;
-      trow += pkCellHtml(cAgg, maxRn*axis.length, 'sm', '__ALL__', i, 'cur');
-      trow += pkCellHtml(pAgg, maxRn*axis.length, 'sm', '__ALL__', i, 'stly', true);
+      trow += pkCellHtml(cAgg, maxRn*axis.length, 'sm', '__ALL__', i, 'cur', false, 'pk-cur');
+      trow += pkCellHtml(pAgg, maxRn*axis.length, 'sm', '__ALL__', i, 'stly', true, 'pk-stly');
     }
-    trow += pkCellHtml(gC, maxRn*axis.length*4, 'sm', '__ALL__', -1, 'cur-tot');
-    trow += pkCellHtml(gP, maxRn*axis.length*4, 'sm', '__ALL__', -1, 'stly-tot', true);
+    trow += pkCellHtml(gC, maxRn*axis.length*4, 'sm', '__ALL__', -1, 'cur-tot', false, 'pk-tot-cur');
+    trow += pkCellHtml(gP, maxRn*axis.length*4, 'sm', '__ALL__', -1, 'stly-tot', true, 'pk-tot-stly');
     trow += '</tr>';
     return head + '<tbody>' + body + trow + '</tbody>';
   }
 
-  document.getElementById('pk-rt-table').innerHTML   = buildMatrix(A.rtAxis,   A.rt, A.rtS, 'Room Type',   'rt');
-  document.getElementById('pk-prov-table').innerHTML = buildMatrix(A.provAxis, A.pr, A.prS, 'Provenienza', 'prov');
-  // Nuovo: tabella per mese di soggiorno
+  // Tabelle RT/Prov rimosse dalla UI: i dati restano disponibili nel drilldown
+  const rtTblEl = document.getElementById('pk-rt-table');
+  if (rtTblEl) rtTblEl.innerHTML = buildMatrix(A.rtAxis,   A.rt, A.rtS, 'Room Type',   'rt');
+  const provTblEl = document.getElementById('pk-prov-table');
+  if (provTblEl) provTblEl.innerHTML = buildMatrix(A.provAxis, A.pr, A.prS, 'Provenienza', 'prov');
+  // Tabella per mese di soggiorno (unica visibile)
   const smTableEl = document.getElementById('pk-sm-table');
   if (smTableEl) smTableEl.innerHTML = buildMatrixSM(A.smAxis, A.sm, A.smS);
 
@@ -25443,11 +25455,42 @@ function openPickupDrill(dim, key, weekIdx, mode, A){
 
   document.getElementById('modal-title').textContent = label + (isCurr?' · 2026':' · STLY 2025');
   document.getElementById('modal-sub').textContent = `${weekLabel} · ${rows.length} prenotazioni`;
-  let html = `<table>
+
+  // === Aggregati per Camera e Canale (top del drilldown) ===
+  const aggRoom = {};
+  const aggCan = {};
+  for (const r of rows){
+    const rk = r.room || '—';
+    if (!aggRoom[rk]) aggRoom[rk] = {rn:0, rev:0, bk:0};
+    aggRoom[rk].rn += r.notti; aggRoom[rk].rev += r.revTotal; aggRoom[rk].bk += 1;
+    const ck = r.canale || '—';
+    if (!aggCan[ck]) aggCan[ck] = {rn:0, rev:0, bk:0};
+    aggCan[ck].rn += r.notti; aggCan[ck].rev += r.revTotal; aggCan[ck].bk += 1;
+  }
+  function buildAggTable(label, agg){
+    const entries = Object.entries(agg).sort((a,b)=> b[1].rn - a[1].rn);
+    if (!entries.length) return '';
+    let h = `<table style="width:100%;font-size:12px;margin-bottom:14px">
+      <thead><tr style="background:rgba(195,131,59,.08)"><th style="text-align:left;padding:8px 10px;width:46%">${label}</th><th class="num" style="padding:8px 10px">RN</th><th class="num" style="padding:8px 10px">ADR</th><th class="num" style="padding:8px 10px">Revenue</th></tr></thead><tbody>`;
+    for (const [k, v] of entries){
+      const adr = v.rn > 0 ? v.rev / v.rn : 0;
+      h += `<tr><td style="padding:6px 10px">${escapeHtml(k)}</td><td class="num" style="padding:6px 10px">${v.rn}</td><td class="num" style="padding:6px 10px">${adr>0?fmtEUR(adr):'—'}</td><td class="num" style="padding:6px 10px">${fmtEUR(v.rev)}</td></tr>`;
+    }
+    h += '</tbody></table>';
+    return h;
+  }
+
+  let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+  html += '<div><div style="font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Per camera</div>' + buildAggTable('Camera', aggRoom) + '</div>';
+  html += '<div><div style="font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Per canale</div>' + buildAggTable('Canale', aggCan) + '</div>';
+  html += '</div>';
+  html += '<div style="font-size:11px;color:var(--ink-3);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Dettaglio prenotazioni</div>';
+  html += `<table>
     <thead><tr>
-      <th>Data bk</th><th>Camera</th><th>Arrivo</th><th>Notti</th><th>Provenienza</th><th>Canale</th><th>Ospite</th><th class="num">Revenue</th>
+      <th>Data bk</th><th>Camera</th><th>Arrivo</th><th>Notti</th><th>Provenienza</th><th>Canale</th><th>Ospite</th><th class="num">ADR</th><th class="num">Revenue</th>
     </tr></thead><tbody>`;
   for (const r of rows){
+    const adrPerBk = (r.notti > 0) ? r.revTotal / r.notti : 0;
     html += `<tr>
       <td class="num">${fmtDateIT(r.dBook)}</td>
       <td>${escapeHtml(r.room)}</td>
@@ -25456,10 +25499,11 @@ function openPickupDrill(dim, key, weekIdx, mode, A){
       <td>${escapeHtml(r.prov)}</td>
       <td>${escapeHtml(r.canale)}</td>
       <td>${escapeHtml(r.guest||'—')}</td>
+      <td class="num">${adrPerBk>0?fmtEUR(adrPerBk):'—'}</td>
       <td class="num">${fmtEUR(r.revTotal)}</td>
     </tr>`;
   }
-  if (!rows.length) html += `<tr><td colspan="8" style="text-align:center;color:var(--ink-3);padding:30px">Nessuna prenotazione</td></tr>`;
+  if (!rows.length) html += `<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:30px">Nessuna prenotazione</td></tr>`;
   html += '</tbody>';
   document.getElementById('modal-body').innerHTML = html;
   document.getElementById('modal-foot-l').textContent = `${rows.length} prenotazioni · ${totRn} RN`;
@@ -26338,48 +26382,125 @@ let SELL_LAST_AGG = null;        // last aggregation result (for drilldown looku
 // === RMES weights (default 20% ognuno, somma = 100%) ===
 // 5 indici: A·OCC, B·Price, C·Comp, D·Pace, E·AirDNA Demand.
 // Modificabili via input UI; vengono normalizzati a somma=1 prima dell'uso.
-/* Pesi RMES persistenti (in % weights, sommati a 1 dopo normalizzazione) */
-let SELL_RMES_W = { occ: 0.20, price: 0.20, comp: 0.20, pace: 0.20, airdna: 0.20 };
+/* === Pesi RMES per-struttura ===
+   Ogni struttura ha la sua configurazione indipendente di pesi.
+   Ordine nuovo: A=OCC, B=Price, C=Pace, D=Compset, E=AirDNA (interni A/B/C, esterni D/E) */
+const SELL_RMES_W_DEFAULT = { occ: 0.20, price: 0.20, pace: 0.20, comp: 0.20, airdna: 0.20 };
+const SELL_RMES_W_KEY = 'rmes_weights_per_struct_v2';
+let SELL_RMES_W_ALL = (function(){
+  try {
+    const raw = localStorage.getItem(SELL_RMES_W_KEY);
+    if (raw){
+      const parsed = JSON.parse(raw);
+      const out = {};
+      for (const s of ['firenze','condotta','alfani']){
+        out[s] = Object.assign({}, SELL_RMES_W_DEFAULT, parsed[s] || {});
+      }
+      return out;
+    }
+    // Migrazione da chiave vecchia (globale) v1 → applica a tutte e 3 le strutture
+    const oldRaw = localStorage.getItem('rmes_weights_v1');
+    if (oldRaw){
+      const oldW = JSON.parse(oldRaw);
+      const seed = Object.assign({}, SELL_RMES_W_DEFAULT, oldW);
+      return { firenze: Object.assign({}, seed), condotta: Object.assign({}, seed), alfani: Object.assign({}, seed) };
+    }
+  } catch(e){}
+  return {
+    firenze:  Object.assign({}, SELL_RMES_W_DEFAULT),
+    condotta: Object.assign({}, SELL_RMES_W_DEFAULT),
+    alfani:   Object.assign({}, SELL_RMES_W_DEFAULT),
+  };
+})();
+function saveRmesWeights(){
+  try { localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL)); } catch(e){}
+}
+// Accesso comodo ai pesi della struttura corrente.
+// Per 'both' → media dei 3 set
+function getCurrentWeights(){
+  const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'condotta';
+  if (sel === 'both'){
+    const out = Object.assign({}, SELL_RMES_W_DEFAULT);
+    for (const k of Object.keys(out)){
+      out[k] = (SELL_RMES_W_ALL.firenze[k] + SELL_RMES_W_ALL.condotta[k] + SELL_RMES_W_ALL.alfani[k]) / 3;
+    }
+    return out;
+  }
+  return SELL_RMES_W_ALL[sel] || Object.assign({}, SELL_RMES_W_DEFAULT);
+}
 
-/* === Soglie e moltiplicatori RMES (configurabili dall'utente) ===
-   A/B/C/D: idx confrontato con breakpoint fissi (lo, hi).
-   E (AirDNA): lo/hi sono PERCENTILI (Q2=mediana, Q3=75esimo) della distribuzione
-   dell'indice nei prossimi 90 giorni — logica diversa, semantica esplicita nell'UI.
-   Regola comune: idx < lo → multLow · lo ≤ idx ≤ hi → multMid · idx > hi → multHigh
-   Moltiplicatori vincolati 0.5 – 1.5, breakpoint > 0. */
+/* === Soglie e moltiplicatori RMES per-struttura === */
 const RMES_TH_DEFAULT = {
   occ:    { lo: 0.9,  hi: 1.1,  multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
   price:  { lo: 0.8,  hi: 1.1,  multLow: 1.10, multMid: 1.05, multHigh: 1.00 },
-  comp:   { lo: 0.8,  hi: 1.1,  multLow: 1.10, multMid: 1.00, multHigh: 0.90 },
   pace:   { lo: 0.9,  hi: 1.1,  multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
-  // E: lo/hi rappresentano PERCENTILI della distribuzione 90gg (default Q2/Q3 = 0.50 / 0.75)
+  comp:   { lo: 0.8,  hi: 1.1,  multLow: 1.10, multMid: 1.00, multHigh: 0.90 },
   airdna: { lo: 0.50, hi: 0.75, multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
 };
-const RMES_TH_KEY = 'rmes_thresholds_v1';
-let RMES_TH = (function(){
+const RMES_TH_KEY = 'rmes_thresholds_per_struct_v2';
+let RMES_TH_ALL = (function(){
+  function clone(){
+    const out = {};
+    for (const k of ['occ','price','pace','comp','airdna']){
+      out[k] = Object.assign({}, RMES_TH_DEFAULT[k]);
+    }
+    return out;
+  }
+  function emptyAll(){ return { firenze: clone(), condotta: clone(), alfani: clone() }; }
   try {
     const raw = localStorage.getItem(RMES_TH_KEY);
     if (raw){
       const parsed = JSON.parse(raw);
-      // Merge con default per coprire eventuali fattori nuovi
-      const out = {};
-      for (const k of ['occ','price','comp','pace','airdna']){
-        out[k] = Object.assign({}, RMES_TH_DEFAULT[k], parsed[k] || {});
+      const out = emptyAll();
+      for (const s of ['firenze','condotta','alfani']){
+        if (parsed[s]){
+          for (const k of ['occ','price','pace','comp','airdna']){
+            if (parsed[s][k]) out[s][k] = Object.assign({}, RMES_TH_DEFAULT[k], parsed[s][k]);
+          }
+        }
       }
       return out;
     }
+    const oldRaw = localStorage.getItem('rmes_thresholds_v1');
+    if (oldRaw){
+      const oldTh = JSON.parse(oldRaw);
+      const seed = clone();
+      for (const k of ['occ','price','pace','comp','airdna']){
+        if (oldTh[k]) seed[k] = Object.assign({}, RMES_TH_DEFAULT[k], oldTh[k]);
+      }
+      return {
+        firenze:  JSON.parse(JSON.stringify(seed)),
+        condotta: JSON.parse(JSON.stringify(seed)),
+        alfani:   JSON.parse(JSON.stringify(seed)),
+      };
+    }
   } catch(e){}
-  // Deep clone dei default
-  return JSON.parse(JSON.stringify(RMES_TH_DEFAULT));
+  return emptyAll();
 })();
 function saveRmesThresholds(){
-  try { localStorage.setItem(RMES_TH_KEY, JSON.stringify(RMES_TH)); } catch(e){}
+  try { localStorage.setItem(RMES_TH_KEY, JSON.stringify(RMES_TH_ALL)); } catch(e){}
 }
-function resetRmesThresholds(){
-  RMES_TH = JSON.parse(JSON.stringify(RMES_TH_DEFAULT));
+function resetRmesThresholds(structKey){
+  function clone(){
+    const out = {};
+    for (const k of ['occ','price','pace','comp','airdna']) out[k] = Object.assign({}, RMES_TH_DEFAULT[k]);
+    return out;
+  }
+  if (structKey){
+    RMES_TH_ALL[structKey] = clone();
+  } else {
+    RMES_TH_ALL = { firenze: clone(), condotta: clone(), alfani: clone() };
+  }
   saveRmesThresholds();
 }
-/* Vincola input nel range valido (0.5 – 1.5 per mult, > 0 per breakpoint) */
+// Helper: ritorna le soglie attive per la struttura corrente
+function getCurrentThresholds(){
+  const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'condotta';
+  if (sel === 'both') return RMES_TH_ALL.condotta;
+  return RMES_TH_ALL[sel] || RMES_TH_ALL.condotta;
+}
+
+/* Vincola input nel range valido */
 function clampMult(v){
   v = parseFloat(v);
   if (!isFinite(v)) return 1.00;
@@ -26390,12 +26511,12 @@ function clampMult(v){
 function clampBreakpoint(v){
   v = parseFloat(v);
   if (!isFinite(v) || v <= 0) return 1.0;
-  if (v > 10) return 10;  // safety
+  if (v > 10) return 10;
   return v;
 }
 /* Calcola il moltiplicatore in base a un indice e alle soglie del fattore */
 function applyThresholds(idx, factorKey){
-  const t = RMES_TH[factorKey];
+  const t = getCurrentThresholds()[factorKey];
   if (!t) return 1.0;
   if (idx < t.lo) return t.multLow;
   if (idx > t.hi) return t.multHigh;
@@ -26730,8 +26851,8 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         const i = Math.max(0, Math.min(values.length-1, Math.floor(p * (values.length-1))));
         return values[i];
       }
-      _airdnaQ_lo = pct(RMES_TH.airdna.lo);
-      _airdnaQ_hi = pct(RMES_TH.airdna.hi);
+      _airdnaQ_lo = pct(getCurrentThresholds().airdna.lo);
+      _airdnaQ_hi = pct(getCurrentThresholds().airdna.hi);
     }
   }
 
@@ -26770,29 +26891,33 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     return _suppData.highSeason.has(month) ? s.alta : s.bassa;
   }
 
-  // Pesi normalizzati
-  const W = SELL_RMES_W;
+  // Pesi normalizzati. Ordine: A=OCC, B=Price, C=Pace, D=Compset, E=AirDNA
+  const W = getCurrentWeights();
   const wSum = (W.occ + W.price + W.comp + W.pace + W.airdna) || 1;
-  const wA = W.occ/wSum, wB = W.price/wSum, wC = W.comp/wSum, wD = W.pace/wSum, wE = W.airdna/wSum;
+  const wOcc = W.occ/wSum, wPrice = W.price/wSum, wPace = W.pace/wSum, wComp = W.comp/wSum, wAir = W.airdna/wSum;
+  // Alias per compatibilità con codice legacy
+  const wA = wOcc, wB = wPrice, wC = wPace, wD = wComp, wE = wAir;
 
   for (const r of A.rows){
     const exp2 = (typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
 
     // === A · OCC ===
-    let A_mult = 1;
+    let occ_mult = 1;
     if (r.stlyOcc > 0 && r.curOcc > 0){
       const A_idx = r.curOcc / r.stlyOcc;
-      A_mult = applyThresholds(A_idx, 'occ');
+      occ_mult = applyThresholds(A_idx, 'occ');
     }
     // === B · Price ===
-    let B_mult = 1;
+    let price_mult = 1;
     if (r.stlyAdr > 0 && r.curAdr > 0 && isFinite(r.curAdr) && isFinite(r.stlyAdr)){
       const B_idx = r.curAdr / r.stlyAdr;
-      B_mult = applyThresholds(B_idx, 'price');
+      price_mult = applyThresholds(B_idx, 'price');
     }
-    // === C · Comp ===
+    // === C · Pace ===
+    const pace_mult = _paceMult;
+    // === D · Compset (era C) ===
     // Usa la "media ponderata compset" calcolata in base ai pesi configurati nella tab Rate Shopper.
-    let C_mult = 1;
+    let comp_mult = 1;
     let _C_compAvg = null, _C_compSource = '';
     if (exp2 && exp2.myPriceExpedia != null){
       const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
@@ -26809,23 +26934,22 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       }
       if (_C_compAvg != null && _C_compAvg > 0){
         const C_idx = exp2.myPriceExpedia / _C_compAvg;
-        C_mult = applyThresholds(C_idx, 'comp');
+        comp_mult = applyThresholds(C_idx, 'comp');
       }
     }
-    // === D · Pace ===
-    const D_mult = _paceMult;
-    // === E · AirDNA ===
-    // Logica a quantili: confronto idx del giorno con Q_lo / Q_hi della finestra 90gg.
-    // sotto Q_lo → multLow · tra Q_lo e Q_hi → multMid · sopra Q_hi → multHigh
-    let E_mult = 1;
+    // === E · AirDNA (quantili) ===
+    let air_mult = 1;
     const idx = _airdnaIdx[r.ymd];
     if (idx != null && _airdnaQ_lo != null && _airdnaQ_hi != null){
-      const t = RMES_TH.airdna;
-      if (idx < _airdnaQ_lo) E_mult = t.multLow;
-      else if (idx > _airdnaQ_hi) E_mult = t.multHigh;
-      else E_mult = t.multMid;
+      const t = getCurrentThresholds().airdna;
+      if (idx < _airdnaQ_lo) air_mult = t.multLow;
+      else if (idx > _airdnaQ_hi) air_mult = t.multHigh;
+      else air_mult = t.multMid;
     }
-    const multFinale = wA*A_mult + wB*B_mult + wC*C_mult + wD*D_mult + wE*E_mult;
+    // Alias legacy per il codice tooltip/render sotto
+    const A_mult = occ_mult, B_mult = price_mult, C_mult = comp_mult, D_mult = pace_mult, E_mult = air_mult;
+
+    const multFinale = wOcc*occ_mult + wPrice*price_mult + wPace*pace_mult + wComp*comp_mult + wAir*air_mult;
 
     // Cascata base price + sottrazione supplemento se Bilocale sold-out (50% del valore pieno)
     // ORDINE: (1) Beddy reale → (2) Expedia mio convertito × ratio Beddy↔Expedia → (3) Compset → (4) OTB → (5) FinalLY
@@ -26950,203 +27074,7 @@ function renderSellStrategy(sel){
       availEl.style.color = 'var(--ink-3)';
     }
   }
-  // Helper: update sum display + factor weights and re-render
-  function _rmesSyncFromInputs(){
-    const wA = Math.max(0, parseFloat(document.getElementById('rmes-w-occ').value)/100);
-    const wB = Math.max(0, parseFloat(document.getElementById('rmes-w-price').value)/100);
-    const wC = Math.max(0, parseFloat(document.getElementById('rmes-w-comp').value)/100);
-    const wD = Math.max(0, parseFloat(document.getElementById('rmes-w-pace').value)/100);
-    const wE = Math.max(0, parseFloat(document.getElementById('rmes-w-airdna').value)/100);
-    SELL_RMES_W = { occ: wA, price: wB, comp: wC, pace: wD, airdna: wE };
-    const sumPct = (wA + wB + wC + wD + wE) * 100;
-    const sumEl = document.getElementById('rmes-w-sum');
-    if (sumEl){
-      sumEl.textContent = `Σ ${sumPct.toFixed(0)}%`;
-      const isOk = Math.abs(sumPct-100) <= 0.5;
-      if (isOk){
-        // Verde: somma corretta
-        sumEl.style.background = '#e8f3eb';
-        sumEl.style.color = '#2d6a3e';
-        sumEl.style.borderColor = '#4a7c59';
-        sumEl.title = 'Somma pesi corretta (100%)';
-      } else {
-        // Rosso: somma sbagliata
-        sumEl.style.background = '#faecec';
-        sumEl.style.color = '#a83b3b';
-        sumEl.style.borderColor = '#a83b3b';
-        sumEl.title = `Somma errata: dovrebbe essere 100%, è ${sumPct.toFixed(0)}%. I pesi vengono normalizzati automaticamente, ma è meglio averli a somma 100%.`;
-      }
-    }
-  }
-  ['rmes-w-occ','rmes-w-price','rmes-w-comp','rmes-w-pace','rmes-w-airdna'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el && !el._rmesWired){
-      el._rmesWired = true;
-      // Set initial values from state
-      if (id === 'rmes-w-occ') el.value = Math.round(SELL_RMES_W.occ*100);
-      else if (id === 'rmes-w-price') el.value = Math.round(SELL_RMES_W.price*100);
-      else if (id === 'rmes-w-comp') el.value = Math.round(SELL_RMES_W.comp*100);
-      else if (id === 'rmes-w-pace') el.value = Math.round(SELL_RMES_W.pace*100);
-      else if (id === 'rmes-w-airdna') el.value = Math.round(SELL_RMES_W.airdna*100);
-      el.onchange = () => {
-        _rmesSyncFromInputs();
-        renderSellStrategy(CURRENT_STRUCT);
-        // Aggiorna anche la tab RMES (Pricing) perché usa il prezzo base RMES per il Bilocale
-        if (typeof renderPricing === 'function') renderPricing(CURRENT_STRUCT);
-      };
-      el.oninput = () => { _rmesSyncFromInputs(); /* light feedback only */ };
-    }
-  });
-  const rmesReset = document.getElementById('rmes-w-reset');
-  if (rmesReset && !rmesReset._wired){
-    rmesReset._wired = true;
-    rmesReset.onclick = () => {
-      SELL_RMES_W = { occ:0.20, price:0.20, comp:0.20, pace:0.20, airdna:0.20 };
-      document.getElementById('rmes-w-occ').value = 20;
-      document.getElementById('rmes-w-price').value = 20;
-      document.getElementById('rmes-w-comp').value = 20;
-      document.getElementById('rmes-w-pace').value = 20;
-      document.getElementById('rmes-w-airdna').value = 20;
-      _rmesSyncFromInputs();
-      renderSellStrategy(CURRENT_STRUCT);
-      if (typeof renderPricing === 'function') renderPricing(CURRENT_STRUCT);
-    };
-  }
-  _rmesSyncFromInputs();
-
-  // === SOGLIE indici: render del pannello collassabile ===
-  function _renderThresholdsPanel(){
-    const wrap = document.getElementById('rmes-th-cards');
-    if (!wrap) return;
-    const factors = [
-      { key:'occ',    label:'A · OCC',    color:'#4a7c59', idxDesc:'mia OCC / STLY' },
-      { key:'price',  label:'B · Price',  color:'#c4823b', idxDesc:'ADR OTB / STLY' },
-      { key:'comp',   label:'C · Comp',   color:'#3b6b6b', idxDesc:'mio Exp / compset' },
-      { key:'pace',   label:'D · Pace',   color:'#8e5fa8', idxDesc:'pickup 4w / STLY' },
-      { key:'airdna', label:'E · AirDNA', color:'#a83b3b', idxDesc:'percentili demand 90gg', isQuantile:true },
-    ];
-    wrap.innerHTML = factors.map(f => {
-      const t = RMES_TH[f.key];
-      // Per E (quantile) le label sono diverse: "idx < Q" non ha senso, uso "demand sotto P{lo*100}"
-      if (f.isQuantile){
-        return `<div style="background:#fff;border:1px solid ${f.color}40;border-radius:6px;padding:7px 8px;min-width:0">
-          <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
-            <span style="background:${f.color};color:#fff;width:16px;height:16px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;font-family:'DM Mono',monospace">${f.label.charAt(0)}</span>
-            <span style="font-size:11px;font-weight:600;color:${f.color}">${escapeHtml(f.label.slice(4))}</span>
-            <span style="font-size:9px;color:var(--ink-3);font-style:italic;margin-left:auto" title="Logica a percentili: lo/hi sono percentili nella distribuzione 90gg (es. 0.50=mediana, 0.75=Q3)">ⓘ %ile</span>
-          </div>
-          <div style="display:grid;grid-template-columns:auto 1fr auto;gap:4px 4px;align-items:center;font-size:10px;font-family:'DM Mono',monospace">
-            <span style="color:var(--ink-3)">&lt;P</span>
-            <input type="number" step="0.05" min="0" max="1" value="${t.lo.toFixed(2)}" data-th="${f.key}" data-fld="lo" class="rmes-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid var(--line);border-radius:3px;text-align:right;justify-self:start" title="Percentile basso (Q2=0.50)">
-            <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multLow.toFixed(2)}" data-th="${f.key}" data-fld="multLow" class="rmes-th-input" style="width:46px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
-
-            <span style="color:var(--ink-3)">≈</span>
-            <span style="color:var(--ink-3);font-size:9px;font-style:italic">lo-hi</span>
-            <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multMid.toFixed(2)}" data-th="${f.key}" data-fld="multMid" class="rmes-th-input" style="width:46px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
-
-            <span style="color:var(--ink-3)">&gt;P</span>
-            <input type="number" step="0.05" min="0" max="1" value="${t.hi.toFixed(2)}" data-th="${f.key}" data-fld="hi" class="rmes-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid var(--line);border-radius:3px;text-align:right;justify-self:start" title="Percentile alto (Q3=0.75)">
-            <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multHigh.toFixed(2)}" data-th="${f.key}" data-fld="multHigh" class="rmes-th-input" style="width:46px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
-          </div>
-        </div>`;
-      }
-      return `<div style="background:#fff;border:1px solid ${f.color}40;border-radius:6px;padding:7px 8px;min-width:0">
-        <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
-          <span style="background:${f.color};color:#fff;width:16px;height:16px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;font-family:'DM Mono',monospace">${f.label.charAt(0)}</span>
-          <span style="font-size:11px;font-weight:600;color:${f.color}">${escapeHtml(f.label.slice(4))}</span>
-        </div>
-        <div style="display:grid;grid-template-columns:auto 1fr auto;gap:4px 4px;align-items:center;font-size:10px;font-family:'DM Mono',monospace">
-          <span style="color:var(--ink-3)">&lt;</span>
-          <input type="number" step="0.05" min="0.1" max="5" value="${t.lo}" data-th="${f.key}" data-fld="lo" class="rmes-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid var(--line);border-radius:3px;text-align:right;justify-self:start">
-          <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multLow.toFixed(2)}" data-th="${f.key}" data-fld="multLow" class="rmes-th-input" style="width:46px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
-
-          <span style="color:var(--ink-3)">≈</span>
-          <span style="color:var(--ink-3);font-size:9px;font-style:italic">lo-hi</span>
-          <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multMid.toFixed(2)}" data-th="${f.key}" data-fld="multMid" class="rmes-th-input" style="width:46px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
-
-          <span style="color:var(--ink-3)">&gt;</span>
-          <input type="number" step="0.05" min="0.1" max="5" value="${t.hi}" data-th="${f.key}" data-fld="hi" class="rmes-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid var(--line);border-radius:3px;text-align:right;justify-self:start">
-          <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multHigh.toFixed(2)}" data-th="${f.key}" data-fld="multHigh" class="rmes-th-input" style="width:46px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // Toggle visibilità pannello soglie
-  const thToggle = document.getElementById('rmes-th-toggle');
-  const thPanel = document.getElementById('rmes-th-panel');
-  if (thToggle && thPanel && !thToggle._wired){
-    thToggle._wired = true;
-    thToggle.onclick = () => {
-      const isVisible = thPanel.style.display !== 'none';
-      thPanel.style.display = isVisible ? 'none' : 'block';
-      thToggle.style.background = isVisible ? '#fff' : '#fdf7ee';
-      if (!isVisible) _renderThresholdsPanel();
-    };
-  }
-
-  // Pulsante APPLICA: legge i 25 input, valida, salva, rerender
-  const thApply = document.getElementById('rmes-th-apply');
-  if (thApply && !thApply._wired){
-    thApply._wired = true;
-    thApply.onclick = () => {
-      const inputs = document.querySelectorAll('.rmes-th-input');
-      // Costruisco una nuova RMES_TH da applicare
-      const newTh = JSON.parse(JSON.stringify(RMES_TH));
-      let invalid = 0;
-      inputs.forEach(inp => {
-        const factor = inp.dataset.th;
-        const fld = inp.dataset.fld;
-        let v = parseFloat(inp.value);
-        if (!isFinite(v)){ invalid++; return; }
-        if (fld === 'lo' || fld === 'hi'){
-          if (factor === 'airdna'){
-            // Percentili: clamp [0, 1]
-            if (v < 0) v = 0;
-            if (v > 1) v = 1;
-          } else {
-            v = clampBreakpoint(v);
-          }
-        } else {
-          v = clampMult(v);  // 0.5-1.5
-        }
-        newTh[factor][fld] = v;
-        inp.value = (fld === 'lo' || fld === 'hi')
-          ? (factor === 'airdna' ? v.toFixed(2) : v)
-          : v.toFixed(2);
-      });
-      // Validazione coerenza: lo deve essere < hi per ogni fattore
-      for (const k of ['occ','price','comp','pace','airdna']){
-        if (newTh[k].lo >= newTh[k].hi){
-          alert(`Errore fattore ${k}: la soglia bassa (${newTh[k].lo}) deve essere minore della soglia alta (${newTh[k].hi}).`);
-          return;
-        }
-      }
-      RMES_TH = newTh;
-      saveRmesThresholds();
-      // Rerender Sell Strategy con le nuove soglie
-      renderSellStrategy(CURRENT_STRUCT);
-      if (typeof renderPricing === 'function') renderPricing(CURRENT_STRUCT);
-      // Mini-feedback visivo sul pulsante
-      const orig = thApply.textContent;
-      thApply.textContent = '✓ APPLICATO';
-      thApply.style.background = '#2d6a3e';
-      setTimeout(() => { thApply.textContent = orig; thApply.style.background = '#4a7c59'; }, 1200);
-    };
-  }
-
-  const thReset = document.getElementById('rmes-th-reset');
-  if (thReset && !thReset._wired){
-    thReset._wired = true;
-    thReset.onclick = () => {
-      if (confirm('Resettare tutte le soglie ai valori di default?')){
-        resetRmesThresholds();
-        _renderThresholdsPanel();
-        renderSellStrategy(CURRENT_STRUCT);
-        if (typeof renderPricing === 'function') renderPricing(CURRENT_STRUCT);
-      }
-    };
-  }
+  // (RMES bar legacy rimossa: ora la configurazione è nella tab RMES)
 
   const A = aggSellStrategy(sel, SELL_START_YMD, SELL_RANGE_DAYS, SELL_PICKUP_DAYS);
 
@@ -27311,8 +27239,8 @@ function renderSellStrategy(sel){
         const i = Math.max(0, Math.min(values.length-1, Math.floor(p * (values.length-1))));
         return values[i];
       }
-      _airdnaQ_lo = pct(RMES_TH.airdna.lo);
-      _airdnaQ_hi = pct(RMES_TH.airdna.hi);
+      _airdnaQ_lo = pct(getCurrentThresholds().airdna.lo);
+      _airdnaQ_hi = pct(getCurrentThresholds().airdna.hi);
     }
   }
   function airdnaMultFor(ymdNum){
@@ -27320,7 +27248,7 @@ function renderSellStrategy(sel){
     if (idx == null || _airdnaQ_lo == null || _airdnaQ_hi == null){
       return { mult: 1, idx: null };
     }
-    const t = RMES_TH.airdna;
+    const t = getCurrentThresholds().airdna;
     let mult;
     if (idx < _airdnaQ_lo) mult = t.multLow;
     else if (idx > _airdnaQ_hi) mult = t.multHigh;
@@ -27338,6 +27266,7 @@ function renderSellStrategy(sel){
     + '<th colspan="4" class="g-26 sell-block-otb" style="text-align:center">OTB ad oggi</th>'
     + '<th colspan="5" class="g-25 sell-block-pickup" style="text-align:center">Pickup ' + A.pickupDaysAgo + 'gg</th>'
     + '<th colspan="3" class="g-var sell-block-stly" style="text-align:center">STLY (-364)</th>'
+    + '<th colspan="2" class="g-var sell-block-pkstly" style="text-align:center;background:rgba(138,138,138,.08)" title="Pickup STLY = stessa finestra di ' + A.pickupDaysAgo + ' giorni ma centrata su STLY (= ' + A.pickupDaysAgo + ' giorni prima della data STLY -364). Indica quanto stava facendo un anno fa nello stesso pickup window.">Pickup STLY ' + A.pickupDaysAgo + 'gg</th>'
     + (showBeddy ? '<th rowspan="2" class="g-26" style="background:rgba(30,107,74,.10);text-align:center;line-height:1.1" title="Prezzo Camera Matrimoniale Deluxe (Firenze) / Bilocale (Condotta) realmente caricato sul PMS Beddy. Solo i 230 giorni caricati nel sistema (12/5/2026 → 27/12/2026)">Beddy<br><span style=\"font-size:9px;font-weight:400;color:var(--ink-3)\">PMS reale</span></th>' : '')
     + (showExp ? '<th colspan="2" class="g-26 sell-block-expedia" style="text-align:center;background:rgba(58,107,107,.10)">Mercato Expedia</th>' : '')
     + '<th colspan="3" class="g-26 sell-block-rmes" style="text-align:center;background:rgba(195,131,59,.12);line-height:1.2" title="Sistema RMES — calcola tre raccomandazioni per ogni giorno: Prezzo Base (Beddy flex), Variazione (rispetto al prezzo Beddy attuale) e MLOS (Min Length Of Stay).">RMES <span style="font-size:9px;color:var(--ink-3);font-weight:400;text-transform:none;letter-spacing:0">(Revenue Manu Enis System)</span></th>'
@@ -27348,6 +27277,9 @@ function renderSellStrategy(sel){
     + '<th class="g-25 sell-block-pickup">Nuove</th><th class="g-25">Cancel.</th><th class="g-25">ΔRN netto</th><th class="g-25">Pickup ADR</th><th class="g-25">ΔRev netto</th>'
     // STLY
     + '<th class="g-var sell-block-stly">RN</th><th class="g-var">ADR</th><th class="g-var">Revenue</th>'
+    // Pickup STLY
+    + '<th class="g-var sell-block-pkstly" style="background:rgba(138,138,138,.04)" title="ΔRN netto Pickup STLY: differenza tra RN totali STLY e RN allo snapshot STLY (= stessa finestra pickup, un anno fa)">ΔRN netto</th>'
+    + '<th class="g-var sell-block-pkstly" style="background:rgba(138,138,138,.04)" title="Pickup ADR STLY: ADR delle prenotazioni nel pickup window di STLY (Pickup Rev STLY / Pickup RN STLY)">Pickup ADR</th>'
     // Expedia (solo se condotta o alfani)
     + (showExp
        ? '<th class="g-26 sell-block-expedia" style="background:rgba(58,107,107,.05)" title="Prezzo attualmente caricato su Expedia">Mio prezzo</th>'
@@ -27535,9 +27467,9 @@ function renderSellStrategy(sel){
       const E_ratio = airE.ratio;   // E_idx / media (per tooltip)
 
       // === Moltiplicatore finale = media pesata di 5 fattori ===
-      const W = SELL_RMES_W;
+      const W = getCurrentWeights();
       const wSum = (W.occ + W.price + W.comp + W.pace + W.airdna) || 1;
-      const wA = W.occ/wSum, wB = W.price/wSum, wC = W.comp/wSum, wD = W.pace/wSum, wE = W.airdna/wSum;
+      const wA = W.occ/wSum, wB = W.price/wSum, wC = W.pace/wSum, wD = W.comp/wSum, wE = W.airdna/wSum;
       const multFinale = wA * A_mult + wB * B_mult + wC * C_mult + wD * D_mult + wE * E_mult;
 
       // === Prezzo RMES ===
@@ -27664,16 +27596,18 @@ function renderSellStrategy(sel){
                        `    → Prezzo base partenza: ${fmtEUR(basePrice)}\n`;
       }
 
-      // === Costruzione dei 5 moltiplicatori RMES ===
+      // === Costruzione dei 5 moltiplicatori RMES (ordine A=OCC, B=Price, C=Pace, D=Compset, E=AirDNA) ===
       const stepMolt =
         `[2] 5 MOLTIPLICATORI RMES (media pesata):\n` +
-        `    A · OCC      idx ${fmtIdx(A_idx)}  → mult ${fmtMult(A_mult)}  × peso ${(wA*100).toFixed(0)}%\n` +
-        `    B · Price    idx ${fmtIdx(B_idx)}  → mult ${fmtMult(B_mult)}  × peso ${(wB*100).toFixed(0)}%\n` +
-        `    C · Compset  idx ${fmtIdx(C_idx)}  → mult ${fmtMult(C_mult)}  × peso ${(wC*100).toFixed(0)}%\n` +
-        `    D · Pace     idx ${fmtIdx(D_idx)}  → mult ${fmtMult(D_mult)}  × peso ${(wD*100).toFixed(0)}% [pickup ${_paceCurRn} RN cur vs ${_paceStlyRn} STLY]\n` +
-        `    E · AirDNA   idx ${fmtIdx3(E_idx)}  → mult ${fmtMult(E_mult)}  × peso ${(wE*100).toFixed(0)}% [${E_ratio!=null?(E_ratio*100).toFixed(0)+'% vs media mercato 90gg':'n/a'}]\n` +
+        `    Dati interni:\n` +
+        `      A · OCC      idx ${fmtIdx(A_idx)}  → mult ${fmtMult(A_mult)}  × peso ${(wA*100).toFixed(0)}%\n` +
+        `      B · Price    idx ${fmtIdx(B_idx)}  → mult ${fmtMult(B_mult)}  × peso ${(wB*100).toFixed(0)}%\n` +
+        `      C · Pace     idx ${fmtIdx(D_idx)}  → mult ${fmtMult(D_mult)}  × peso ${(wC*100).toFixed(0)}% [pickup ${_paceCurRn} RN cur vs ${_paceStlyRn} STLY]\n` +
+        `    Dati esterni:\n` +
+        `      D · Compset  idx ${fmtIdx(C_idx)}  → mult ${fmtMult(C_mult)}  × peso ${(wD*100).toFixed(0)}%\n` +
+        `      E · AirDNA   idx ${fmtIdx3(E_idx)}  → mult ${fmtMult(E_mult)}  × peso ${(wE*100).toFixed(0)}% [${E_ratio!=null?(E_ratio*100).toFixed(0)+'% vs media mercato 90gg':'n/a'}]\n` +
         `\n` +
-        `    Calcolo: (${fmtMult(A_mult)}×${(wA).toFixed(2)} + ${fmtMult(B_mult)}×${(wB).toFixed(2)} + ${fmtMult(C_mult)}×${(wC).toFixed(2)} + ${fmtMult(D_mult)}×${(wD).toFixed(2)} + ${fmtMult(E_mult)}×${(wE).toFixed(2)})\n` +
+        `    Calcolo: (${fmtMult(A_mult)}×${(wA).toFixed(2)} + ${fmtMult(B_mult)}×${(wB).toFixed(2)} + ${fmtMult(D_mult)}×${(wC).toFixed(2)} + ${fmtMult(C_mult)}×${(wD).toFixed(2)} + ${fmtMult(E_mult)}×${(wE).toFixed(2)})\n` +
         `    → Moltiplicatore finale: ${fmtMult(multFinale)}\n`;
 
       // === Step finale ===
@@ -27847,6 +27781,8 @@ function renderSellStrategy(sel){
       <td class="cell-mono cell-flat sell-block-stly">${r.stlyRn}</td>
       <td class="cell-mono cell-flat">${isFinite(r.stlyAdr)?fmtEUR(r.stlyAdr):'—'}</td>
       <td class="cell-mono cell-flat">${fmtEUR(r.stlyRev)}</td>
+      <td class="cell-mono sell-block-pkstly ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</td>
+      <td class="cell-mono ${isFinite(r.pkAdrStly)?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${isFinite(r.pkAdrStly)?fmtEUR(r.pkAdrStly):'—'}</td>
       ${beddyCell}
       ${expCells}
       ${cellMercato}
@@ -27889,6 +27825,8 @@ function renderSellStrategy(sel){
     <td class="cell-mono cell-flat sell-block-stly">${T.stlyRn}</td>
     <td class="cell-mono cell-flat">${isFinite(T.stlyAdr)?fmtEUR(T.stlyAdr):'—'}</td>
     <td class="cell-mono cell-flat">${fmtEUR(T.stlyRev)}</td>
+    <td class="cell-mono sell-block-pkstly ${T.pkRnStly>=0?'cell-pos':'cell-neg'}" style="background:rgba(138,138,138,.04)">${T.pkRnStly>=0?'+':''}${T.pkRnStly}</td>
+    <td class="cell-mono ${isFinite(T.pkAdrStly)?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${isFinite(T.pkAdrStly)?fmtEUR(T.pkAdrStly):'—'}</td>
     ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>' : ''}
     ${showExp ? '<td class="cell-flat sell-block-expedia" colspan="2" style="background:rgba(58,107,107,.04);text-align:center;color:var(--ink-3);font-size:10px">— vedi dettaglio per data —</td>' : ''}
     <td class="cell-flat sell-block-rmes" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>
@@ -27897,38 +27835,6 @@ function renderSellStrategy(sel){
   </tr>`;
 
   html += '</tbody></table>';
-
-  // === BOX CORRELAZIONE BEDDY ↔ EXPEDIA ===
-  // Documenta la relazione storica calcolata oggi tra prezzo Beddy caricato e prezzo Expedia visibile.
-  // Questo ratio resta utile per sempre: da domani che caricherai solo Expedia, il sistema applica
-  // il ratio appreso per stimare il prezzo Beddy implicito su cui calcolare la Variazione.
-  if (typeof beddyExpediaRatio === 'function'){
-    const corr = beddyExpediaRatio(sel, 90);
-    if (corr && corr.n >= 5){
-      const pctDelta = (corr.median - 1) * 100;
-      const dirLabel = pctDelta >= 0 ? `+${pctDelta.toFixed(1)}%` : `${pctDelta.toFixed(1)}%`;
-      const ratioDir = corr.median >= 1
-        ? 'Il prezzo che carichi su Beddy è in media <b>più alto</b> del prezzo Expedia convertito a Beddy eq.'
-        : 'Il prezzo che carichi su Beddy è in media <b>più basso</b> del prezzo Expedia convertito a Beddy eq.';
-      html += `<div style="margin-top:14px;padding:14px 18px;background:rgba(30,107,74,.05);border-left:3px solid #1e6b4a;border-radius:4px;font-size:12px;line-height:1.5">
-        <div style="font-weight:600;color:#1e6b4a;margin-bottom:6px">📊 Correlazione Beddy ↔ Expedia · ${structLabel(sel)}</div>
-        <div style="color:var(--ink-2)">
-          Su <b>${corr.n} giorni</b> con dati su entrambi (Mio Expedia + Beddy reale caricato), il rapporto mediano è
-          <span class="mono" style="font-weight:600;color:#1e6b4a">${corr.median.toFixed(3)}</span>
-          → in media <b>${dirLabel}</b> rispetto al prezzo Mio Expedia convertito a Beddy eq. (= prezzo Expedia ÷ 1.12 ÷ 0.90).<br>
-          <span style="font-size:11px;color:var(--ink-3)">Range osservato: ${corr.min.toFixed(3)} → ${corr.max.toFixed(3)}. ${ratioDir}</span>
-        </div>
-        <div style="margin-top:8px;color:var(--ink-2);font-size:11px;border-top:1px solid rgba(30,107,74,.15);padding-top:8px">
-          <b>Uso del ratio nel sistema</b>:
-          <ul style="margin:4px 0 0 18px;padding:0">
-            <li>Per giorni con prezzo Beddy reale già caricato → si usa direttamente quello come Prezzo Base.</li>
-            <li>Per giorni futuri (= solo Expedia disponibile) → il sistema applica il ratio <b>${corr.median.toFixed(3)}</b> al Mio Expedia (Beddy eq.) per stimare il prezzo Beddy implicito, su cui poi RMES applica i 5 moltiplicatori.</li>
-            <li>Il ratio resta valido per sempre come correzione strutturale: rappresenta come tu personalmente carichi i prezzi rispetto a quanto il mercato Expedia li mostra.</li>
-          </ul>
-        </div>
-      </div>`;
-    }
-  }
 
   document.getElementById('sell-table-wrap').innerHTML = html;
 
@@ -31178,34 +31084,53 @@ function renderRateShopper(){
       const myStructKeysExcl = new Set(['Condotta 16 Apartments', 'Palazzo Alfani al David']);
       const compNames = Object.keys(sd.compMap).filter(n => !myStructKeysExcl.has(n)).sort();
 
+      // Mappa "mio prezzo" della struttura
+      const myMap = (sd.key === 'condotta') ? (EXPEDIA_DATA && EXPEDIA_DATA.condotta)
+                  : (sd.key === 'alfani')   ? (EXPEDIA_DATA && EXPEDIA_DATA.alfani)
+                  : (sd.key === 'firenze')  ? (EXPEDIA_DATA && EXPEDIA_DATA.firenze)
+                  : null;
+      const myLabels = { firenze:'Firenze Suite', condotta:'Condotta 16 Apartments', alfani:'Palazzo Alfani al David' };
+
       html += `<div style="overflow-x:auto;max-height:60vh;overflow-y:auto"><table class="data" style="font-size:11px;white-space:nowrap">
         <thead>
           <tr>
-            <th style="position:sticky;left:0;background:var(--bg);z-index:3;text-align:left;min-width:200px">Competitor</th>
-            <th style="position:sticky;left:200px;background:var(--bg);z-index:3;width:80px">Peso %</th>`;
+            <th style="position:sticky;left:0;background:var(--bg);z-index:3;text-align:left;min-width:220px">Struttura / Competitor</th>`;
       for (const d of displayDates){
         const [y,m,da] = d.split('-');
         html += `<th style="text-align:center;min-width:48px">${da}/${m}</th>`;
       }
       html += '</tr></thead><tbody>';
 
+      // Prima riga: il mio prezzo (su sfondo colorato)
+      if (myMap){
+        html += `<tr style="background:${sd.color}10">
+          <td style="position:sticky;left:0;background:${sd.color}15;z-index:2;font-weight:700;color:${sd.color}">▸ ${escapeHtml(myLabels[sd.key])} <span style="font-weight:400;font-size:10px;color:var(--ink-3);font-style:italic">(mio prezzo)</span></td>`;
+        for (const d of displayDates){
+          const p = myMap[d];
+          if (p != null && isFinite(p) && p > 0){
+            html += `<td class="cell-mono" style="text-align:center;background:${sd.color}10;font-weight:700;color:${sd.color}">€${Math.round(p)}</td>`;
+          } else {
+            html += `<td class="cell-mono cell-flat" style="text-align:center;background:${sd.color}10;color:var(--ink-3)">—</td>`;
+          }
+        }
+        html += '</tr>';
+      }
+
+      // Righe competitor
       for (const name of compNames){
         const w = getWeight(sd.key, name);
         const wPct = Math.round(w * 100);
+        const isExcluded = (w <= 0);
+        const labelStyle = isExcluded ? 'color:var(--ink-3);font-style:italic;text-decoration:line-through' : 'color:var(--ink)';
+        const wBadge = isExcluded
+          ? '<span style="font-size:9px;background:#aaa;color:#fff;padding:1px 4px;border-radius:3px;margin-left:6px">peso 0%</span>'
+          : (wPct < 100 ? `<span style="font-size:9px;background:${sd.color}40;color:${sd.color};padding:1px 4px;border-radius:3px;margin-left:6px">peso ${wPct}%</span>` : '');
         html += `<tr>
-          <td style="position:sticky;left:0;background:var(--bg);z-index:2;font-weight:500">${escapeHtml(name)}</td>
-          <td style="position:sticky;left:200px;background:var(--bg);z-index:2">
-            <input type="number" min="0" max="100" step="5"
-              value="${wPct}"
-              data-struct="${sd.key}" data-comp="${escapeHtml(name)}"
-              class="rate-weight-input"
-              style="width:60px;padding:3px 6px;border:1px solid var(--line);border-radius:3px;font-family:'DM Mono',monospace;font-size:11px;text-align:right">
-          </td>`;
+          <td style="position:sticky;left:0;background:var(--bg);z-index:2;font-weight:500;${labelStyle}">${escapeHtml(name)}${wBadge}</td>`;
         for (const d of displayDates){
           const p = sd.compMap[name][d];
           if (p != null && isFinite(p) && p > 0){
-            // Applico il peso visivamente: prezzo più "spento" se il peso è basso
-            const opacity = 0.4 + 0.6 * w;
+            const opacity = isExcluded ? 0.3 : (0.4 + 0.6 * w);
             html += `<td class="cell-mono" style="text-align:center;opacity:${opacity}">€${Math.round(p)}</td>`;
           } else {
             html += `<td class="cell-mono cell-flat" style="text-align:center;color:var(--ink-3)">—</td>`;
@@ -31263,6 +31188,324 @@ function renderRateShopper(){
   // Render anche la piramide qui (è dentro questa tab adesso)
   if (typeof renderPiramide === 'function') {
     try { renderPiramide(); } catch(e){}
+  }
+}
+
+/* ============================================================
+   RMES CONFIG TAB
+   Filtro struttura indipendente da CURRENT_STRUCT del topbar:
+   è una scelta locale di "quale configurazione voglio modificare".
+   ============================================================ */
+
+let RMES_TAB_STRUCT = 'condotta';  // default
+
+function renderRMESConfigTab(){
+  const sel = RMES_TAB_STRUCT;
+  // === Filtro struttura (pills) ===
+  const pillsEl = document.getElementById('rmes-tab-struct-pills');
+  if (pillsEl){
+    const opts = [
+      { v: 'firenze',  label: 'Firenze Suite',   color: '#3b6b9a' },
+      { v: 'condotta', label: 'Condotta 16',     color: '#3d7a4b' },
+      { v: 'alfani',   label: 'Palazzo Alfani',  color: '#8e5fa8' },
+    ];
+    pillsEl.innerHTML = opts.map(o => {
+      const on = (sel === o.v);
+      return `<button class="rt-pill ${on?'':'off'}" data-rmesst="${o.v}" style="${on?'border-color:'+o.color+';color:'+o.color+';font-weight:600':''}">${o.label}</button>`;
+    }).join('');
+    pillsEl.querySelectorAll('button[data-rmesst]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        RMES_TAB_STRUCT = btn.dataset.rmesst;
+        renderRMESConfigTab();
+      });
+    });
+  }
+  // Chip topbar
+  const chipEl = document.getElementById('rmes-struct-chip');
+  if (chipEl){
+    const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani' };
+    chipEl.textContent = labels[sel] || sel;
+  }
+  // Sub headers
+  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani' };
+  const sublabel = `struttura: ${labels[sel]}`;
+  ['rmes-tab-w-sub','rmes-tab-th-sub','rmes-tab-comp-sub'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = sublabel;
+  });
+
+  _renderRmesWeightsBox(sel);
+  _renderRmesThresholdsBox(sel);
+  _renderRmesCompsetBox(sel);
+}
+
+/* === ① PESI === */
+function _renderRmesWeightsBox(sel){
+  const wrap = document.getElementById('rmes-tab-w-bar');
+  if (!wrap) return;
+  const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
+  const factors = [
+    { key:'occ',    letter:'A', label:'OCC',     color:'#4a7c59', desc:'mia OCC / STLY',     kind:'interno' },
+    { key:'price',  letter:'B', label:'Price',   color:'#c4823b', desc:'ADR OTB / STLY',     kind:'interno' },
+    { key:'pace',   letter:'C', label:'Pace',    color:'#8e5fa8', desc:'pickup 4w / STLY',   kind:'interno' },
+    { key:'comp',   letter:'D', label:'Compset', color:'#3b6b6b', desc:'mio Exp / compset',  kind:'esterno' },
+    { key:'airdna', letter:'E', label:'AirDNA',  color:'#a83b3b', desc:'demand vs 90gg',     kind:'esterno' },
+  ];
+  // Layout: blocco "interni" + separatore + blocco "esterni" + sum
+  let html = '<div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:10px;color:#4a7c59;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Interni</div>';
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  for (const f of factors.filter(x => x.kind === 'interno')){
+    html += _wcard(f, W);
+  }
+  html += '</div></div>';
+  html += '<div style="border-left:2px dashed rgba(195,131,59,.40);align-self:stretch;margin:0 4px"></div>';
+  html += '<div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:10px;color:#a83b3b;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Esterni</div>';
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  for (const f of factors.filter(x => x.kind === 'esterno')){
+    html += _wcard(f, W);
+  }
+  html += '</div></div>';
+  html += '<div style="margin-left:auto;display:flex;flex-direction:column;gap:4px"><div style="font-size:10px;color:var(--ink-3);font-weight:700;letter-spacing:.04em;text-transform:uppercase">Totale</div><div id="rmes-tab-w-sum" style="padding:6px 14px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:\'DM Mono\',monospace;font-weight:700;font-size:14px">Σ —</div></div>';
+  wrap.innerHTML = html;
+
+  // Wire inputs
+  wrap.querySelectorAll('.rmes-w-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      _rmesTabSyncWeights(sel);
+      _rmesTabApplyWeights(sel);
+    });
+  });
+  _rmesTabSyncWeights(sel);
+  // Reset button
+  const resetBtn = document.getElementById('rmes-tab-w-reset');
+  if (resetBtn && !resetBtn._wired){
+    resetBtn._wired = true;
+    resetBtn.onclick = () => {
+      SELL_RMES_W_ALL[RMES_TAB_STRUCT] = Object.assign({}, SELL_RMES_W_DEFAULT);
+      saveRmesWeights();
+      _renderRmesWeightsBox(RMES_TAB_STRUCT);
+      if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+    };
+  }
+}
+
+function _wcard(f, W){
+  const v = Math.round((W[f.key] || 0) * 100);
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;background:#fff;border:1px solid ${f.color}40;border-radius:6px;min-width:78px">
+    <div style="display:flex;align-items:center;gap:4px">
+      <span style="background:${f.color};color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace">${f.letter}</span>
+      <span style="font-size:11px;font-weight:600;color:${f.color}">${f.label}</span>
+    </div>
+    <input type="number" min="0" max="100" step="5" value="${v}" data-rmesw="${f.key}" class="rmes-w-input" style="width:50px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;font-family:'DM Mono',monospace;font-size:13px;text-align:right;font-weight:700">
+    <div style="font-size:9px;color:var(--ink-3);font-style:italic">${f.desc}</div>
+  </div>`;
+}
+
+function _rmesTabSyncWeights(sel){
+  const inputs = document.querySelectorAll('.rmes-w-input');
+  let sum = 0;
+  inputs.forEach(inp => {
+    const v = Math.max(0, Math.min(100, parseInt(inp.value, 10) || 0));
+    sum += v;
+  });
+  const sumEl = document.getElementById('rmes-tab-w-sum');
+  if (sumEl){
+    sumEl.textContent = `Σ ${sum}%`;
+    sumEl.style.color = (sum === 100) ? '#4a7c59' : '#c4823b';
+  }
+}
+
+function _rmesTabApplyWeights(sel){
+  const inputs = document.querySelectorAll('.rmes-w-input');
+  const newW = Object.assign({}, SELL_RMES_W_DEFAULT);
+  inputs.forEach(inp => {
+    const key = inp.dataset.rmesw;
+    const v = Math.max(0, Math.min(100, parseInt(inp.value, 10) || 0));
+    newW[key] = v / 100;
+  });
+  SELL_RMES_W_ALL[sel] = newW;
+  saveRmesWeights();
+  // Rerender Sell Strategy se la struttura corrente combacia
+  if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === sel || CURRENT_STRUCT === 'both')){
+    renderSellStrategy(CURRENT_STRUCT);
+  }
+}
+
+/* === ② SOGLIE INDICI === */
+function _renderRmesThresholdsBox(sel){
+  const wrap = document.getElementById('rmes-tab-th-cards');
+  if (!wrap) return;
+  const TH = RMES_TH_ALL[sel] || RMES_TH_DEFAULT;
+  const factors = [
+    { key:'occ',    label:'A · OCC',    color:'#4a7c59' },
+    { key:'price',  label:'B · Price',  color:'#c4823b' },
+    { key:'pace',   label:'C · Pace',   color:'#8e5fa8' },
+    { key:'comp',   label:'D · Compset',color:'#3b6b6b' },
+    { key:'airdna', label:'E · AirDNA', color:'#a83b3b', isQuantile:true },
+  ];
+  wrap.innerHTML = factors.map(f => {
+    const t = TH[f.key];
+    if (f.isQuantile){
+      return `<div style="background:#fff;border:1px solid ${f.color}40;border-radius:6px;padding:8px;min-width:0">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+          <span style="background:${f.color};color:#fff;width:16px;height:16px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;font-family:'DM Mono',monospace">${f.label.charAt(0)}</span>
+          <span style="font-size:11px;font-weight:600;color:${f.color}">${f.label.slice(4)}</span>
+          <span style="font-size:9px;color:var(--ink-3);font-style:italic;margin-left:auto" title="Percentili della distribuzione 90gg (Q2=0.50, Q3=0.75)">ⓘ %ile</span>
+        </div>
+        <div style="display:grid;grid-template-columns:auto 1fr auto;gap:4px;align-items:center;font-size:10px;font-family:'DM Mono',monospace">
+          <span style="color:var(--ink-3)">&lt;P</span>
+          <input type="number" step="0.05" min="0" max="1" value="${t.lo.toFixed(2)}" data-tabth="${f.key}" data-fld="lo" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid var(--line);border-radius:3px;text-align:right;justify-self:start">
+          <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multLow.toFixed(2)}" data-tabth="${f.key}" data-fld="multLow" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
+
+          <span style="color:var(--ink-3)">≈</span>
+          <span style="color:var(--ink-3);font-size:9px;font-style:italic">lo-hi</span>
+          <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multMid.toFixed(2)}" data-tabth="${f.key}" data-fld="multMid" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
+
+          <span style="color:var(--ink-3)">&gt;P</span>
+          <input type="number" step="0.05" min="0" max="1" value="${t.hi.toFixed(2)}" data-tabth="${f.key}" data-fld="hi" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid var(--line);border-radius:3px;text-align:right;justify-self:start">
+          <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multHigh.toFixed(2)}" data-tabth="${f.key}" data-fld="multHigh" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
+        </div>
+      </div>`;
+    }
+    return `<div style="background:#fff;border:1px solid ${f.color}40;border-radius:6px;padding:8px;min-width:0">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
+        <span style="background:${f.color};color:#fff;width:16px;height:16px;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:10px;font-family:'DM Mono',monospace">${f.label.charAt(0)}</span>
+        <span style="font-size:11px;font-weight:600;color:${f.color}">${f.label.slice(4)}</span>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr auto;gap:4px;align-items:center;font-size:10px;font-family:'DM Mono',monospace">
+        <span style="color:var(--ink-3)">&lt;</span>
+        <input type="number" step="0.05" min="0.1" max="5" value="${t.lo}" data-tabth="${f.key}" data-fld="lo" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid var(--line);border-radius:3px;text-align:right;justify-self:start">
+        <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multLow.toFixed(2)}" data-tabth="${f.key}" data-fld="multLow" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
+
+        <span style="color:var(--ink-3)">≈</span>
+        <span style="color:var(--ink-3);font-size:9px;font-style:italic">lo-hi</span>
+        <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multMid.toFixed(2)}" data-tabth="${f.key}" data-fld="multMid" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
+
+        <span style="color:var(--ink-3)">&gt;</span>
+        <input type="number" step="0.05" min="0.1" max="5" value="${t.hi}" data-tabth="${f.key}" data-fld="hi" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid var(--line);border-radius:3px;text-align:right;justify-self:start">
+        <input type="number" step="0.05" min="0.5" max="1.5" value="${t.multHigh.toFixed(2)}" data-tabth="${f.key}" data-fld="multHigh" class="rmes-tab-th-input" style="width:48px;padding:2px 3px;font-size:10px;border:1px solid ${f.color}80;border-radius:3px;text-align:right;background:${f.color}10">
+      </div>
+    </div>`;
+  }).join('');
+
+  // Apply button
+  const applyBtn = document.getElementById('rmes-tab-th-apply');
+  if (applyBtn && !applyBtn._wired){
+    applyBtn._wired = true;
+    applyBtn.onclick = () => {
+      const inputs = document.querySelectorAll('.rmes-tab-th-input');
+      const newTh = JSON.parse(JSON.stringify(RMES_TH_ALL[RMES_TAB_STRUCT] || RMES_TH_DEFAULT));
+      inputs.forEach(inp => {
+        const factor = inp.dataset.tabth;
+        const fld = inp.dataset.fld;
+        let v = parseFloat(inp.value);
+        if (!isFinite(v)) return;
+        if (fld === 'lo' || fld === 'hi'){
+          if (factor === 'airdna'){ if (v < 0) v = 0; if (v > 1) v = 1; }
+          else { v = clampBreakpoint(v); }
+        } else {
+          v = clampMult(v);
+        }
+        if (!newTh[factor]) newTh[factor] = Object.assign({}, RMES_TH_DEFAULT[factor]);
+        newTh[factor][fld] = v;
+        inp.value = (fld === 'lo' || fld === 'hi')
+          ? (factor === 'airdna' ? v.toFixed(2) : v)
+          : v.toFixed(2);
+      });
+      // Validate lo < hi
+      for (const k of ['occ','price','pace','comp','airdna']){
+        if (newTh[k].lo >= newTh[k].hi){
+          alert(`Errore fattore ${k}: la soglia bassa (${newTh[k].lo}) deve essere minore della soglia alta (${newTh[k].hi}).`);
+          return;
+        }
+      }
+      RMES_TH_ALL[RMES_TAB_STRUCT] = newTh;
+      saveRmesThresholds();
+      if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+      const orig = applyBtn.textContent;
+      applyBtn.textContent = '✓ APPLICATO';
+      applyBtn.style.background = '#2d6a3e';
+      setTimeout(() => { applyBtn.textContent = orig; applyBtn.style.background = '#4a7c59'; }, 1200);
+    };
+  }
+  // Reset button
+  const resetBtn = document.getElementById('rmes-tab-th-reset');
+  if (resetBtn && !resetBtn._wired){
+    resetBtn._wired = true;
+    resetBtn.onclick = () => {
+      if (confirm(`Resettare le soglie di ${RMES_TAB_STRUCT} ai default?`)){
+        resetRmesThresholds(RMES_TAB_STRUCT);
+        _renderRmesThresholdsBox(RMES_TAB_STRUCT);
+        if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+      }
+    };
+  }
+}
+
+/* === ③ PESI COMPETITOR === */
+function _renderRmesCompsetBox(sel){
+  const wrap = document.getElementById('rmes-tab-comp-wrap');
+  if (!wrap) return;
+  // Mappa competitor della struttura selezionata
+  const compMap = (sel === 'condotta') ? (EXPEDIA_DATA && EXPEDIA_DATA.competitors)
+                : (sel === 'alfani')   ? (EXPEDIA_DATA && EXPEDIA_DATA.competitors_alfani)
+                : (sel === 'firenze')  ? (EXPEDIA_DATA && EXPEDIA_DATA.competitors_firenze)
+                : null;
+  if (!compMap || Object.keys(compMap).length === 0){
+    wrap.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-3);font-style:italic">Nessun dato compset Expedia disponibile.</div>';
+    return;
+  }
+  // Esclude le mie strutture mutuali
+  const myExcl = new Set(['Condotta 16 Apartments', 'Palazzo Alfani al David']);
+  const names = Object.keys(compMap).filter(n => !myExcl.has(n)).sort();
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">`;
+  for (const name of names){
+    const w = (typeof getWeight === 'function') ? getWeight(sel, name) : 1.0;
+    const wPct = Math.round(w * 100);
+    html += `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:5px">
+      <span style="flex:1;font-size:12px;font-weight:500">${escapeHtml(name)}</span>
+      <input type="number" min="0" max="100" step="5" value="${wPct}"
+        data-tabcomp="${escapeHtml(name)}" data-tabcomp-struct="${sel}"
+        class="rmes-tab-comp-input"
+        style="width:64px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;font-family:'DM Mono',monospace;font-size:12px;text-align:right;font-weight:600">
+      <span style="font-size:11px;color:var(--ink-3)">%</span>
+    </div>`;
+  }
+  html += `</div>`;
+  html += `<div style="margin-top:10px;font-size:10px;color:var(--ink-3);font-style:italic;text-align:center">Peso 0% = competitor escluso dalla media · 100% = peso pieno · I prezzi giornalieri sono in tab Rate Shopper.</div>`;
+  wrap.innerHTML = html;
+
+  // Wire input
+  wrap.querySelectorAll('.rmes-tab-comp-input').forEach(inp => {
+    inp.addEventListener('change', () => {
+      const name = inp.dataset.tabcomp;
+      const structKey = inp.dataset.tabcompStruct;
+      let v = parseInt(inp.value, 10);
+      if (isNaN(v) || v < 0) v = 0;
+      if (v > 100) v = 100;
+      inp.value = v;
+      if (typeof setWeight === 'function') setWeight(structKey, name, v / 100);
+      // Rerender Sell Strategy se la struttura matcha
+      if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === structKey || CURRENT_STRUCT === 'both')){
+        renderSellStrategy(CURRENT_STRUCT);
+      }
+      // Rerender Rate Shopper se aperto (per opacità)
+      if (typeof renderRateShopper === 'function') renderRateShopper();
+    });
+  });
+
+  // Reset button
+  const resetBtn = document.getElementById('rmes-tab-comp-reset');
+  if (resetBtn && !resetBtn._wired){
+    resetBtn._wired = true;
+    resetBtn.onclick = () => {
+      if (!confirm('Resettare tutti i pesi compset al 100% (per tutte le strutture)?')) return;
+      try { localStorage.removeItem('rmes_compset_weights_v1'); } catch(e){}
+      _renderRmesCompsetBox(RMES_TAB_STRUCT);
+      if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+      if (typeof renderRateShopper === 'function') renderRateShopper();
+    };
   }
 }
 
@@ -32383,10 +32626,23 @@ function multiLineChart(series, labels, unit='%', kind='pct'){
   for (const s of series){
     lines += `<path d="${pathFor(s.prev)}" fill="none" stroke="${s.color}" stroke-width="1.6" stroke-dasharray="4,4" opacity="0.55"/>`;
     lines += `<path d="${pathFor(s.cur)}"  fill="none" stroke="${s.color}" stroke-width="2.2"/>`;
+    // Cerchi punti correnti (con tooltip che include STLY)
     s.cur.forEach((v,i)=>{
       if (!isFinite(v)||v<=0) return;
       const [x,y] = xy(i,v);
-      lines += `<circle cx="${x}" cy="${y}" r="2.6" fill="${s.color}" stroke="#fff" stroke-width="1.2"><title>${s.label} ${labels[i]}: ${tickFmt(v,kind,unit)}</title></circle>`;
+      const prev = isFinite(s.prev[i]) ? s.prev[i] : null;
+      const delta = (prev != null && prev > 0) ? ((v - prev) / prev * 100) : null;
+      const dStr = (delta != null) ? `\nΔ ${delta>=0?'+':''}${delta.toFixed(1)}%` : '';
+      const prevStr = (prev != null && prev > 0) ? `\nSTLY: ${tickFmt(prev,kind,unit)}` : '\nSTLY: —';
+      lines += `<circle cx="${x}" cy="${y}" r="2.8" fill="${s.color}" stroke="#fff" stroke-width="1.2"><title>${s.label} · ${labels[i]}\n2026: ${tickFmt(v,kind,unit)}${prevStr}${dStr}</title></circle>`;
+    });
+    // Cerchietti più piccoli per STLY (tratteggiati) — con stesso tooltip che include cur
+    s.prev.forEach((v,i)=>{
+      if (!isFinite(v)||v<=0) return;
+      const [x,y] = xy(i,v);
+      const cur = isFinite(s.cur[i]) ? s.cur[i] : null;
+      const curStr = (cur != null && cur > 0) ? `\n2026: ${tickFmt(cur,kind,unit)}` : '\n2026: —';
+      lines += `<circle cx="${x}" cy="${y}" r="2.2" fill="#fff" stroke="${s.color}" stroke-width="1.4" opacity="0.7"><title>${s.label} · ${labels[i]}\nSTLY: ${tickFmt(v,kind,unit)}${curStr}</title></circle>`;
     });
   }
   return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMidYMid meet">
@@ -32684,7 +32940,8 @@ function updateChips(){
 
 function renderAll(){
   updateChips();
-  renderPricing(CURRENT_STRUCT);
+  // renderPricing(CURRENT_STRUCT);  // Old: vecchia tab Prezzi rimossa, ora è tab RMES Config
+  if (typeof renderRMESConfigTab === 'function') renderRMESConfigTab();
   renderOTB(CURRENT_STRUCT);
   RT_VISIBLE = null;  // reset filter on struct change
   renderRT(CURRENT_STRUCT);
