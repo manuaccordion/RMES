@@ -1264,7 +1264,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px 18px">
         <span class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Configurazione struttura</span>
         <div id="rmes-tab-struct-pills" style="display:flex;gap:6px"></div>
-        <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-style:italic">Ogni struttura ha pesi, soglie e pesi compset indipendenti.</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-style:italic">Sincronizzata con la struttura globale in alto. Pesi/soglie/compset sono indipendenti per ogni struttura.</span>
       </div>
     </div>
 
@@ -1348,10 +1348,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>② Soglie degli indici <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-th-sub">struttura: —</span></h3>
-          <div class="panel-sub">Per ogni fattore: breakpoint <code>lo</code>/<code>hi</code> e moltiplicatori (range 0.50 – 1.50). <b>D·Budget default:</b> &lt;0.9 → 1.10 (sotto budget → spingi su), 0.9–1.1 → 1.00 (in linea), &gt;1.1 → 1.00 (sopra budget → neutro).</div>
+          <div class="panel-sub">Per ogni fattore: breakpoint <code>lo</code>/<code>hi</code> e moltiplicatori (range 0.50 – 1.50). <b>D·Budget default:</b> &lt;0.9 → 1.10 (sotto budget → spingi su), 0.9–1.1 → 1.05 (in linea → leggera spinta), &gt;1.1 → 1.00 (sopra budget → neutro).</div>
         </div>
         <div style="display:flex;gap:8px">
-          <button id="rmes-tab-th-apply" style="font-size:11px;padding:6px 16px;border:1px solid #4a7c59;border-radius:5px;background:#4a7c59;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.02em">APPLICA</button>
           <button id="rmes-tab-th-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset default</button>
         </div>
       </div>
@@ -1371,6 +1370,14 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
       <div class="panel-body" style="padding:14px 16px">
         <div id="rmes-tab-comp-wrap"></div>
+      </div>
+    </div>
+
+    <!-- Bottone APPLICA unico (pesi + soglie) sticky in basso -->
+    <div style="position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg) 0%,var(--bg) 70%,transparent 100%);padding:16px 0 12px 0;margin-top:18px;z-index:10;border-top:1px solid var(--line)">
+      <div style="display:flex;align-items:center;gap:14px;justify-content:flex-end;padding:0 4px;flex-wrap:wrap">
+        <div style="font-size:11px;color:var(--ink-3);font-style:italic;line-height:1.4">Le modifiche a pesi e soglie sono <b>locali</b>: vengono salvate e applicate alla struttura corrente <b>solo</b> al click sul bottone qui a destra. Cambia struttura sopra per modificare le altre.</div>
+        <button id="rmes-tab-apply-all" disabled style="font-size:13px;padding:10px 22px;border:1px solid #4a7c59;border-radius:6px;background:#4a7c59;color:#fff;cursor:not-allowed;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.02em;opacity:0.55;box-shadow:0 2px 6px rgba(74,124,89,.20)">Applica modifiche</button>
       </div>
     </div>
   </section>
@@ -26703,7 +26710,7 @@ let SELL_RT_FILTER = null;       // null = tutte le RT (default); altrimenti nom
    Ogni struttura ha la sua configurazione indipendente di pesi.
    Ordine nuovo: A=OCC, B=Price, C=Pace, D=Compset, E=AirDNA (interni A/B/C, esterni D/E) */
 const SELL_RMES_W_DEFAULT = { occ: 0.15, price: 0.15, pace: 0.15, budget: 0.15, comp: 0.20, airdna: 0.20 };
-const SELL_RMES_W_KEY = 'rmes_weights_per_struct_v3';
+const SELL_RMES_W_KEY = 'rmes_weights_per_struct_v4';
 let SELL_RMES_W_ALL = (function(){
   try {
     const raw = localStorage.getItem(SELL_RMES_W_KEY);
@@ -26715,7 +26722,17 @@ let SELL_RMES_W_ALL = (function(){
       }
       return out;
     }
-    // Migrazione da v2 (5 fattori senza budget) → v3 (6 fattori)
+    // Migrazione v3 → v4 (key bump, struttura uguale, mantenuti i valori utente)
+    const oldRawV3 = localStorage.getItem('rmes_weights_per_struct_v3');
+    if (oldRawV3){
+      const parsed = JSON.parse(oldRawV3);
+      const out = {};
+      for (const s of ['firenze','condotta','alfani']){
+        out[s] = Object.assign({}, SELL_RMES_W_DEFAULT, parsed[s] || {});
+      }
+      return out;
+    }
+    // Migrazione da v2 (5 fattori senza budget) → v4 (6 fattori)
     // I pesi pre-esistenti vengono ridotti proporzionalmente per fare spazio a budget=15%
     const oldRawV2 = localStorage.getItem('rmes_weights_per_struct_v2');
     if (oldRawV2){
@@ -26723,7 +26740,6 @@ let SELL_RMES_W_ALL = (function(){
       const out = {};
       for (const s of ['firenze','condotta','alfani']){
         const old = parsed[s] || {};
-        // Rinormalizzo gli altri 5 al 85% per fare spazio a budget al 15%
         const sumOld = (old.occ||0)+(old.price||0)+(old.pace||0)+(old.comp||0)+(old.airdna||0);
         if (sumOld > 0){
           const factor = 0.85 / sumOld;
@@ -26777,7 +26793,7 @@ const RMES_TH_DEFAULT = {
   occ:    { lo: 0.9,  hi: 1.1,  multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
   price:  { lo: 0.8,  hi: 1.1,  multLow: 1.10, multMid: 1.05, multHigh: 1.00 },
   pace:   { lo: 0.9,  hi: 1.1,  multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
-  budget: { lo: 0.9,  hi: 1.1,  multLow: 1.10, multMid: 1.00, multHigh: 1.00 },
+  budget: { lo: 0.9,  hi: 1.1,  multLow: 1.10, multMid: 1.05, multHigh: 1.00 },
   comp:   { lo: 0.8,  hi: 1.1,  multLow: 1.10, multMid: 1.00, multHigh: 0.90 },
   airdna: { lo: 0.50, hi: 0.75, multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
 };
@@ -28733,6 +28749,46 @@ function renderPickupByMonth(sel){
   const labelEl = document.getElementById('pkmonth-window-label');
   if (!wrapEl) return;
 
+  // Quando sel === 'both' renderizziamo 3 mini-grafici (uno per struttura)
+  // invece di un unico grafico aggregato (che mescolerebbe i numeri rendendo illeggibile
+  // a quale struttura si riferisce ciascun pickup).
+  if (sel === 'both'){
+    const structs = [
+      { key:'firenze',  label:'Firenze Suite',  color:'#3b6b9a' },
+      { key:'condotta', label:'Condotta 16',    color:'#3d7a4b' },
+      { key:'alfani',   label:'Palazzo Alfani', color:'#8e5fa8' },
+    ];
+    // Costruisco contenitore con un wrapper interno per ogni struttura
+    wrapEl.innerHTML = structs.map(s => `
+      <div style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:10px;padding:4px 16px 8px">
+          <span style="display:inline-block;width:10px;height:10px;background:${s.color};border-radius:2px"></span>
+          <h4 style="margin:0;font-family:'Playfair Display',serif;font-size:15px;color:${s.color}">${s.label}</h4>
+        </div>
+        <div id="pkmonth-chart-${s.key}" data-pkmonth-struct="${s.key}"></div>
+        <div id="pkmonth-legend-${s.key}" style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:10.5px;color:var(--ink-2);padding:8px 16px 0;font-family:'DM Mono',monospace"></div>
+      </div>
+    `).join('<hr style="border:none;border-top:1px dashed var(--line);margin:6px 14px">');
+    if (legendEl) legendEl.innerHTML = '';  // svuota legenda principale: ogni struttura ha la sua
+    // Render dei 3 grafici. Devo passare temporaneamente gli ID custom: faccio una chiamata
+    // ricorsiva con un parametro extra che indica il target DOM da usare.
+    for (const s of structs){
+      renderPickupByMonth._renderOne(s.key, `pkmonth-chart-${s.key}`, `pkmonth-legend-${s.key}`);
+    }
+    return;
+  }
+
+  // Default: singola struttura
+  renderPickupByMonth._renderOne(sel, 'pkmonth-chart-wrap', 'pkmonth-legend');
+}
+
+// Funzione interna: render del grafico in un container specifico
+renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
+  const wrapEl = document.getElementById(wrapId);
+  const legendEl = document.getElementById(legendId);
+  const labelEl = document.getElementById('pkmonth-window-label');
+  if (!wrapEl) return;
+
   const pickupDays = (typeof SELL_PICKUP_DAYS === 'number' && SELL_PICKUP_DAYS > 0) ? SELL_PICKUP_DAYS : 1;
   const keys = new Set(structKeysFor(sel));
 
@@ -28818,7 +28874,7 @@ function renderPickupByMonth(sel){
 
   if (monthAxis.length === 0){
     wrapEl.innerHTML = '<div class="panel-sub" style="padding:20px;text-align:center">Nessun pickup nel periodo</div>';
-    legendEl.innerHTML = '';
+    if (legendEl) legendEl.innerHTML = '';
     return;
   }
 
@@ -28974,7 +29030,7 @@ function renderPickupByMonth(sel){
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:9px;height:9px;background:#7f4c28;border-radius:50%;border:1px solid #fff"></span>Pickup OTB · Revenue (asse dx)</span>
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:9px;height:9px;background:#bfa57c;border-radius:50%;border:1px solid #fff"></span>Pickup STLY · Revenue (asse dx)</span>
   `;
-}
+};
 
 
 
@@ -32133,6 +32189,14 @@ function renderRateShopper(){
 let RMES_TAB_STRUCT = 'condotta';  // default
 
 function renderRMESConfigTab(){
+  // Sincronizza la struttura della tab RMES con quella globale.
+  // Importante: in passato l'utente poteva selezionare "Alfani" nel selettore globale
+  // ma vedere "Condotta" nella tab RMES (e modificarla senza accorgersene).
+  // Ora la tab RMES segue sempre CURRENT_STRUCT. La pillula nella tab funziona
+  // come selettore globale: cambiarla cambia anche CURRENT_STRUCT.
+  if (typeof CURRENT_STRUCT !== 'undefined' && CURRENT_STRUCT !== 'both'){
+    RMES_TAB_STRUCT = CURRENT_STRUCT;
+  }
   const sel = RMES_TAB_STRUCT;
   // === Filtro struttura (pills) ===
   const pillsEl = document.getElementById('rmes-tab-struct-pills');
@@ -32148,8 +32212,15 @@ function renderRMESConfigTab(){
     }).join('');
     pillsEl.querySelectorAll('button[data-rmesst]').forEach(btn => {
       btn.addEventListener('click', () => {
-        RMES_TAB_STRUCT = btn.dataset.rmesst;
-        renderRMESConfigTab();
+        const newSel = btn.dataset.rmesst;
+        RMES_TAB_STRUCT = newSel;
+        // Sincronizza anche la struttura globale per coerenza: così l'utente non rischia
+        // di modificare la struttura sbagliata pensando di essere su un'altra.
+        if (typeof setStructure === 'function' && typeof CURRENT_STRUCT !== 'undefined' && CURRENT_STRUCT !== newSel){
+          setStructure(newSel);  // chiama setStructure che fa anche renderAll → renderRMESConfigTab
+        } else {
+          renderRMESConfigTab();
+        }
       });
     });
   }
@@ -32170,6 +32241,28 @@ function renderRMESConfigTab(){
   _renderRmesWeightsBox(sel);
   _renderRmesThresholdsBox(sel);
   _renderRmesCompsetBox(sel);
+  // Reset dirty state alla nuova render (gli input riflettono ora i valori salvati)
+  _rmesTabClearDirty();
+  // Wire bottone APPLICA UNIFICATO una sola volta
+  const applyAllBtn = document.getElementById('rmes-tab-apply-all');
+  if (applyAllBtn && !applyAllBtn._wired){
+    applyAllBtn._wired = true;
+    applyAllBtn.onclick = () => {
+      if (applyAllBtn.disabled) return;
+      const structLbl = (RMES_TAB_STRUCT === 'condotta') ? 'Condotta 16' : (RMES_TAB_STRUCT === 'firenze') ? 'Firenze Suite' : 'Palazzo Alfani';
+      const ok = _rmesTabApplyAll();
+      if (ok){
+        // Feedback visivo
+        const orig = applyAllBtn.textContent;
+        applyAllBtn.textContent = '✓ Applicato a ' + structLbl;
+        applyAllBtn.style.background = '#2d6a3e';
+        setTimeout(() => {
+          applyAllBtn.textContent = orig;
+          applyAllBtn.style.background = '#4a7c59';
+        }, 1500);
+      }
+    };
+  }
 }
 
 /* === ① PESI === */
@@ -32202,11 +32295,12 @@ function _renderRmesWeightsBox(sel){
   html += '<div style="margin-left:auto;display:flex;flex-direction:column;gap:4px"><div style="font-size:10px;color:var(--ink-3);font-weight:700;letter-spacing:.04em;text-transform:uppercase">Totale</div><div id="rmes-tab-w-sum" style="padding:6px 14px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:\'DM Mono\',monospace;font-weight:700;font-size:14px">Σ —</div></div>';
   wrap.innerHTML = html;
 
-  // Wire inputs
+  // Wire inputs: l'input aggiorna SOLO il totale visualizzato, non applica.
+  // L'applicazione vera richiede click sul bottone "Applica modifiche".
   wrap.querySelectorAll('.rmes-w-input').forEach(inp => {
     inp.addEventListener('input', () => {
       _rmesTabSyncWeights(sel);
-      _rmesTabApplyWeights(sel);
+      _rmesTabMarkDirty();  // segna che ci sono modifiche da applicare
     });
   });
   _rmesTabSyncWeights(sel);
@@ -32215,11 +32309,36 @@ function _renderRmesWeightsBox(sel){
   if (resetBtn && !resetBtn._wired){
     resetBtn._wired = true;
     resetBtn.onclick = () => {
+      if (!confirm(`Resettare i pesi di ${RMES_TAB_STRUCT} ai default?`)) return;
       SELL_RMES_W_ALL[RMES_TAB_STRUCT] = Object.assign({}, SELL_RMES_W_DEFAULT);
       saveRmesWeights();
       _renderRmesWeightsBox(RMES_TAB_STRUCT);
       if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+      _rmesTabClearDirty();
     };
+  }
+}
+
+// Stato "dirty" della tab: true se ci sono modifiche non applicate
+let _RMES_TAB_DIRTY = false;
+function _rmesTabMarkDirty(){
+  _RMES_TAB_DIRTY = true;
+  const btn = document.getElementById('rmes-tab-apply-all');
+  if (btn){
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.textContent = '⚠ Applica modifiche (' + (RMES_TAB_STRUCT === 'condotta' ? 'Condotta 16' : RMES_TAB_STRUCT === 'firenze' ? 'Firenze Suite' : 'Palazzo Alfani') + ')';
+  }
+}
+function _rmesTabClearDirty(){
+  _RMES_TAB_DIRTY = false;
+  const btn = document.getElementById('rmes-tab-apply-all');
+  if (btn){
+    btn.disabled = true;
+    btn.style.opacity = '0.55';
+    btn.style.cursor = 'not-allowed';
+    btn.textContent = 'Applica modifiche (' + (RMES_TAB_STRUCT === 'condotta' ? 'Condotta 16' : RMES_TAB_STRUCT === 'firenze' ? 'Firenze Suite' : 'Palazzo Alfani') + ')';
   }
 }
 
@@ -32323,46 +32442,11 @@ function _renderRmesThresholdsBox(sel){
     </div>`;
   }).join('');
 
-  // Apply button
-  const applyBtn = document.getElementById('rmes-tab-th-apply');
-  if (applyBtn && !applyBtn._wired){
-    applyBtn._wired = true;
-    applyBtn.onclick = () => {
-      const inputs = document.querySelectorAll('.rmes-tab-th-input');
-      const newTh = JSON.parse(JSON.stringify(RMES_TH_ALL[RMES_TAB_STRUCT] || RMES_TH_DEFAULT));
-      inputs.forEach(inp => {
-        const factor = inp.dataset.tabth;
-        const fld = inp.dataset.fld;
-        let v = parseFloat(inp.value);
-        if (!isFinite(v)) return;
-        if (fld === 'lo' || fld === 'hi'){
-          if (factor === 'airdna'){ if (v < 0) v = 0; if (v > 1) v = 1; }
-          else { v = clampBreakpoint(v); }
-        } else {
-          v = clampMult(v);
-        }
-        if (!newTh[factor]) newTh[factor] = Object.assign({}, RMES_TH_DEFAULT[factor]);
-        newTh[factor][fld] = v;
-        inp.value = (fld === 'lo' || fld === 'hi')
-          ? (factor === 'airdna' ? v.toFixed(2) : v)
-          : v.toFixed(2);
-      });
-      // Validate lo < hi
-      for (const k of ['occ','price','pace','budget','comp','airdna']){
-        if (newTh[k].lo >= newTh[k].hi){
-          alert(`Errore fattore ${k}: la soglia bassa (${newTh[k].lo}) deve essere minore della soglia alta (${newTh[k].hi}).`);
-          return;
-        }
-      }
-      RMES_TH_ALL[RMES_TAB_STRUCT] = newTh;
-      saveRmesThresholds();
-      if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
-      const orig = applyBtn.textContent;
-      applyBtn.textContent = '✓ APPLICATO';
-      applyBtn.style.background = '#2d6a3e';
-      setTimeout(() => { applyBtn.textContent = orig; applyBtn.style.background = '#4a7c59'; }, 1200);
-    };
-  }
+  // Wire input listeners: cambia stato dirty quando si modificano valori
+  wrap.querySelectorAll('.rmes-tab-th-input').forEach(inp => {
+    inp.addEventListener('input', () => { _rmesTabMarkDirty(); });
+  });
+
   // Reset button
   const resetBtn = document.getElementById('rmes-tab-th-reset');
   if (resetBtn && !resetBtn._wired){
@@ -32372,9 +32456,61 @@ function _renderRmesThresholdsBox(sel){
         resetRmesThresholds(RMES_TAB_STRUCT);
         _renderRmesThresholdsBox(RMES_TAB_STRUCT);
         if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+        _rmesTabClearDirty();
       }
     };
   }
+}
+
+// === BOTTONE APPLICA UNIFICATO (pesi + soglie + compset) ===
+// Legge i valori correnti dagli input nella tab RMES e li applica
+// (= salva in localStorage + ri-renderizza Sell Strategy) UNA TANTUM, solo per la
+// struttura attualmente configurata (RMES_TAB_STRUCT).
+function _rmesTabApplyAll(){
+  const sel = RMES_TAB_STRUCT;
+  // === PESI ===
+  const wInputs = document.querySelectorAll('.rmes-w-input');
+  const newW = Object.assign({}, SELL_RMES_W_DEFAULT);
+  wInputs.forEach(inp => {
+    const key = inp.dataset.rmesw;
+    const v = Math.max(0, Math.min(100, parseInt(inp.value, 10) || 0));
+    newW[key] = v / 100;
+  });
+  SELL_RMES_W_ALL[sel] = newW;
+  saveRmesWeights();
+  // === SOGLIE ===
+  const thInputs = document.querySelectorAll('.rmes-tab-th-input');
+  const newTh = JSON.parse(JSON.stringify(RMES_TH_ALL[sel] || RMES_TH_DEFAULT));
+  thInputs.forEach(inp => {
+    const factor = inp.dataset.tabth;
+    const fld = inp.dataset.fld;
+    let v = parseFloat(inp.value);
+    if (!isFinite(v)) return;
+    if (fld === 'lo' || fld === 'hi'){
+      if (factor === 'airdna'){ if (v < 0) v = 0; if (v > 1) v = 1; }
+      else { v = clampBreakpoint(v); }
+    } else {
+      v = clampMult(v);
+    }
+    if (!newTh[factor]) newTh[factor] = Object.assign({}, RMES_TH_DEFAULT[factor]);
+    newTh[factor][fld] = v;
+    inp.value = (fld === 'lo' || fld === 'hi')
+      ? (factor === 'airdna' ? v.toFixed(2) : v)
+      : v.toFixed(2);
+  });
+  // Validate lo < hi per ogni fattore
+  for (const k of ['occ','price','pace','budget','comp','airdna']){
+    if (newTh[k].lo >= newTh[k].hi){
+      alert(`Errore fattore ${k}: la soglia bassa (${newTh[k].lo}) deve essere minore della soglia alta (${newTh[k].hi}). Impossibile applicare.`);
+      return false;
+    }
+  }
+  RMES_TH_ALL[sel] = newTh;
+  saveRmesThresholds();
+  // === RERENDER ===
+  if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+  _rmesTabClearDirty();
+  return true;
 }
 
 /* === ③ PESI COMPETITOR === */
