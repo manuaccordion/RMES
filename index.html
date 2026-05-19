@@ -27719,20 +27719,20 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           const paceRatio = mCur / mStly;
           const rawMult = applyThresholds(paceRatio, 'pace');
           if (paceRatio >= 1){
-            _paceStateByStayMonth[ym] = {state:'alza', rawMult, ratio:paceRatio};
+            _paceStateByStayMonth[ym] = {state:'tutto_su', rawMult, ratio:paceRatio, pickupCur: mCur, pickupStly: mStly};
             _paceMultByStayMonth[ym] = rawMult;  // legacy field (per backward compat)
           } else {
             const occMo = _occByMonth[ym];
             if (occMo && occMo.curOcc >= occMo.stlyOcc && occMo.curOcc > 0){
-              _paceStateByStayMonth[ym] = {state:'ambiguo', rawMult, ratio:paceRatio};
+              _paceStateByStayMonth[ym] = {state:'ambiguo', rawMult, ratio:paceRatio, pickupCur: mCur, pickupStly: mStly};
               _paceMultByStayMonth[ym] = 1;  // placeholder per backward compat
             } else {
-              _paceStateByStayMonth[ym] = {state:'freno_pieno', rawMult, ratio:paceRatio};
+              _paceStateByStayMonth[ym] = {state:'tutto_giù', rawMult, ratio:paceRatio, pickupCur: mCur, pickupStly: mStly};
               _paceMultByStayMonth[ym] = rawMult;
             }
           }
         } else {
-          _paceStateByStayMonth[ym] = {state:'fallback', rawMult:_paceMult, ratio:null};
+          _paceStateByStayMonth[ym] = {state:'fallback', rawMult:_paceMult, ratio:null, pickupCur: mCur, pickupStly: mStly};
           _paceMultByStayMonth[ym] = _paceMult;
         }
       }
@@ -27748,18 +27748,18 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     if (!st){
       // Nessuno stato per il mese specifico: uso il fallback annuale di struttura (_paceMult).
       // Il dato c'è (calcolato sui pickup 4w aggregati), è solo meno granulare → NON è 'dato n/d'.
-      return verbose ? { mult: _paceMult, naReason: null } : _paceMult;
+      return verbose ? { mult: _paceMult, naReason: null, state: 'fallback_annuale', rawMult: _paceMult, source: 'pace annuale struttura (mese specifico non disponibile)' } : _paceMult;
     }
     if (st.state === 'ambiguo'){
       if (r.curOcc != null && r.curOcc >= 0.90){
         // Neutro perché sold-out: i dati ci sono ma decido di non spingere
-        return verbose ? { mult: 1, naReason: null } : 1;
+        return verbose ? { mult: 1, naReason: null, state: 'ambiguo_neutralizzato_OCC90', rawMult: st.rawMult, pickupCur: st.pickupCur, pickupStly: st.pickupStly, source: 'mese ambiguo ma giorno con OCC ≥90%, neutralizzato a 1.0' } : 1;
       }
       const dev = st.rawMult - 1;
       const mFinal = 1 + dev * 0.5;
-      return verbose ? { mult: mFinal, naReason: null } : mFinal;
+      return verbose ? { mult: mFinal, naReason: null, state: 'ambiguo_freno_50pct', rawMult: st.rawMult, pickupCur: st.pickupCur, pickupStly: st.pickupStly, source: 'mese ambiguo (pace down ma OCC mese sopra LY), freno al 50%' } : mFinal;
     }
-    return verbose ? { mult: st.rawMult, naReason: null } : st.rawMult;
+    return verbose ? { mult: st.rawMult, naReason: null, state: st.state, rawMult: st.rawMult, pickupCur: st.pickupCur, pickupStly: st.pickupStly, source: st.state === 'tutto_giù' ? 'mese in calo (pace e OCC ↓), freno pieno' : (st.state === 'tutto_su' ? 'mese in salita (pickup ≥ LY), alzo' : 'pace mese cur vs STLY') } : st.rawMult;
   }
 
   // AirDNA: indice per giorno + quantili sulla finestra 90gg
@@ -28088,6 +28088,24 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         },
         // Pesi normalizzati effettivamente applicati (servono alla modale per il display)
         _weightsApplied: _wNorm,
+        // Numeri grezzi del calcolo (per "Dettaglio calcolo" nella modale)
+        _debug: {
+          // A·OCC
+          occCur: r.curOcc, occStly: r.stlyOcc, occIdx: A_idx,
+          rnCur: r.curRn, capCur: r.cap, rnStly: r.stlyRn, capStly: r.cap,
+          // B·Price
+          adrCur: r.curAdr, adrStly: r.stlyAdr, priceIdx: B_idx, priceCase: _B_case, priceDevSigned: _B_dev_signed,
+          targetGrowthMo: (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(sel, r.mo) : null,
+          // C·Pace (estesi se _paceResult ha info)
+          paceInfo: (typeof _paceResult === 'object' && _paceResult !== null) ? _paceResult : null,
+          // E·Compset
+          myExpedia: (exp2 && exp2.myPriceExpedia != null) ? exp2.myPriceExpedia : null,
+          compsetAvg: _C_compAvg, compsetSource: _C_compSource,
+          // F·Search
+          searchCur: _searchCur,
+          searchP50Mo: (_searchStatsMo && _searchStatsMo.p50) ? _searchStatsMo.p50 : null,
+          searchDev: (_searchCur != null && _searchStatsMo && _searchStatsMo.p50 > 0) ? ((_searchCur - _searchStatsMo.p50) / _searchStatsMo.p50) : null,
+        },
       };
     }
 
@@ -29491,6 +29509,82 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         {key:'air_mult',   naKey:'air',   code:'F', name:'Search',  color:'#a83b3b', desc:'Ricerche Expedia vs mediana mese'}
       ];
       const naReasons = mults._naReasons || {};
+      const dbg = mults._debug || {};
+      // Helper per formattare numeri
+      const _fn = (v, d) => (v == null || !isFinite(v)) ? '—' : (Math.round(v * Math.pow(10, d||0)) / Math.pow(10, d||0)).toFixed(d||0);
+      const _fpct = (v, d) => (v == null || !isFinite(v)) ? '—' : ((v >= 0 ? '+' : '') + (v * 100).toFixed(d||1) + '%');
+      const _fmt2 = (v) => (v == null || !isFinite(v)) ? '—' : '€' + v.toFixed(0);
+      // Helper: costruisce il contenuto del "Dettaglio calcolo" per ogni fattore
+      function _buildFactorDetail(code){
+        let h = '<div style="padding:8px 14px 10px 14px;background:#fbfaf7;border-left:3px solid #d4cdb8;font-family:\'DM Mono\',monospace;font-size:11px;line-height:1.7;color:#333">';
+        if (code === 'A'){
+          // OCC
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>OCC_cur / OCC_STLY − 1</code></div>';
+          h += '<div>OCC oggi: <b>'+_fn((dbg.occCur||0)*100, 1)+'%</b> &nbsp;<span style="color:#888">(RN '+(dbg.rnCur||0)+' / cap '+(dbg.capCur||0)+')</span></div>';
+          h += '<div>OCC STLY (−364gg): <b>'+_fn((dbg.occStly||0)*100, 1)+'%</b> &nbsp;<span style="color:#888">(RN '+(dbg.rnStly||0)+' / cap '+(dbg.capStly||0)+')</span></div>';
+          if (dbg.occIdx != null){
+            const dev = dbg.occIdx - 1;
+            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Ratio: <b>'+(dbg.occIdx).toFixed(3)+'</b> · Dev grezza: <b>'+_fpct(dev,1)+'</b></div>';
+            h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Dev applicata (post-soglie utente + clamp ±50%): '+_fpct((mults.occ_mult-1),1)+'</div>';
+          }
+        } else if (code === 'B'){
+          // Price
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula condizionale a 3 casi (vedi sotto)</div>';
+          h += '<div>ADR oggi: <b>'+_fmt2(dbg.adrCur)+'</b> · ADR STLY: <b>'+_fmt2(dbg.adrStly)+'</b></div>';
+          if (dbg.priceIdx != null){
+            const adrDev = dbg.priceIdx - 1;
+            h += '<div>Ratio ADR: <b>'+(dbg.priceIdx).toFixed(3)+'</b> · Δ%ADR: <b>'+_fpct(adrDev,1)+'</b></div>';
+            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Caso applicato: <b style="color:#c4823b">';
+            if (dbg.priceCase === 'recover_below_LY')
+              h += 'CASO 1 — ADR sotto LY → recupero, alzo</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">Dev = −(ratio−1) = '+_fpct(-adrDev,1)+'</div>';
+            else if (dbg.priceCase === 'all_good')
+              h += 'CASO 2 — ADR ≥ LY e OCC ≥ LY → neutro</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">Tutto in pari, mantengo Foundation. Dev = 0%</div>';
+            else if (dbg.priceCase === 'brake_softened'){
+              const tg = (dbg.targetGrowthMo || 0) / 100;
+              const eff = adrDev - tg;
+              h += 'CASO 3 — ADR ≥ LY ma OCC &lt; LY → freno ammorbidito</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">Target growth mese: '+(dbg.targetGrowthMo||0).toFixed(1)+'% · Effettivo = '+_fpct(adrDev,1)+' − '+(dbg.targetGrowthMo||0).toFixed(1)+'% = '+_fpct(eff,1)+' · Dev = −effettivo = '+_fpct(-eff,1)+'</div>';
+            }
+            h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-clamp ±50%): '+_fpct((mults.price_mult-1),1)+'</div>';
+          }
+        } else if (code === 'C'){
+          // Pace
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Pickup mese di soggiorno (ultime 4 settimane) cur vs STLY, multi-livello</div>';
+          const pi = dbg.paceInfo || {};
+          if (pi.pickupCur != null && pi.pickupStly != null){
+            h += '<div>Pickup 4w mese cur: <b>'+pi.pickupCur+' RN</b> · STLY: <b>'+pi.pickupStly+' RN</b></div>';
+            if (pi.pickupStly > 0){
+              const ratio = pi.pickupCur / pi.pickupStly;
+              h += '<div>Ratio pickup: <b>'+ratio.toFixed(3)+'</b> · Dev grezza: <b>'+_fpct(ratio-1,1)+'</b></div>';
+            }
+          }
+          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Stato decisione: <b style="color:#8e5fa8">'+(pi.state || '—')+'</b></div>';
+          if (pi.source){
+            h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">'+pi.source+'</div>';
+          }
+          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-clamp): '+_fpct((mults.pace_mult-1),1)+'</div>';
+        } else if (code === 'E'){
+          // Compset
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>−(mio_Expedia / avg_compset − 1)</code> (invertito: economico → alzo)</div>';
+          h += '<div>Mio prezzo Expedia: <b>'+_fmt2(dbg.myExpedia)+'</b> &nbsp;<span style="color:#888">(prezzo lordo OTA)</span></div>';
+          h += '<div>Media compset (ponderata): <b>'+_fmt2(dbg.compsetAvg)+'</b> &nbsp;<span style="color:#888">('+(dbg.compsetSource||'—')+')</span></div>';
+          if (dbg.myExpedia != null && dbg.compsetAvg != null && dbg.compsetAvg > 0){
+            const ratio = dbg.myExpedia / dbg.compsetAvg;
+            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Ratio mio/compset: <b>'+ratio.toFixed(3)+'</b> · Dev grezza invertita: <b>'+_fpct(-(ratio-1),1)+'</b></div>';
+          }
+          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-soglie + clamp ±50%): '+_fpct((mults.comp_mult-1),1)+'</div>';
+        } else if (code === 'F'){
+          // Search
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>(search_cur − mediana_mese) / mediana_mese</code></div>';
+          h += '<div>Ricerche Expedia oggi: <b>'+(dbg.searchCur != null ? dbg.searchCur.toLocaleString('it-IT') : '—')+'</b></div>';
+          h += '<div>Mediana ricerche del mese: <b>'+(dbg.searchP50Mo != null ? Math.round(dbg.searchP50Mo).toLocaleString('it-IT') : '—')+'</b></div>';
+          if (dbg.searchDev != null){
+            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Dev grezza: <b>'+_fpct(dbg.searchDev,1)+'</b></div>';
+          }
+          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-soglie + clamp ±50%): '+_fpct((mults.air_mult-1),1)+'</div>';
+        }
+        h += '</div>';
+        return h;
+      }
       rmesSection += '<div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Fattori RMES (a livello struttura)</div>';
       rmesSection += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">';
       rmesSection += '<thead style="background:#f8f8f5"><tr>';
@@ -29526,6 +29620,12 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           rmesSection += '<td style="padding:5px 10px;border-bottom:1px solid #eee;text-align:right;color:#bbb;font-size:11px">—</td>';
           rmesSection += '<td style="padding:5px 10px;border-bottom:1px solid #eee;color:#999;font-size:10.5px;font-style:italic">— dato n/d<div style="font-size:9.5px;color:#aaa;margin-top:1px">'+reasonTxt+'</div></td>';
           rmesSection += '</tr>';
+          // Anche per fattori n/d, mostro un dettaglio (con i numeri parziali disponibili + motivo)
+          rmesSection += '<tr style="background:#fafafa"><td colspan="5" style="padding:0;border-bottom:1px solid #eee">';
+          rmesSection += '<details style="padding:0 10px"><summary style="cursor:pointer;padding:4px 0;font-size:10.5px;color:#999;font-weight:600;list-style:none;user-select:none">▸ Dettaglio (dato mancante)</summary>';
+          rmesSection += _buildFactorDetail(f.code);
+          rmesSection += '<div style="padding:6px 14px 10px;background:#fbf6f6;border-left:3px solid #d4a8a8;font-size:10.5px;color:#a83b3b;font-family:\'DM Sans\',sans-serif;font-style:italic">Motivo: '+reasonTxt+'. Il peso di questo fattore è stato redistribuito sugli altri fattori attivi.</div>';
+          rmesSection += '</details></td></tr>';
           continue;
         }
         const devPct = (m - 1) * 100;
@@ -29546,6 +29646,11 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '<td style="padding:5px 10px;border-bottom:1px solid #eee;text-align:right;font-family:\'DM Mono\',monospace;color:'+arrowCol+';font-weight:600">'+arrow+' '+(devPct>=0?'+':'')+devPct.toFixed(1)+'%</td>';
         rmesSection += '<td style="padding:5px 10px;border-bottom:1px solid #eee;color:'+actionCol+'">'+action+'</td>';
         rmesSection += '</tr>';
+        // Riga "Dettaglio calcolo" espandibile sotto ogni fattore
+        rmesSection += '<tr><td colspan="5" style="padding:0;border-bottom:1px solid #eee">';
+        rmesSection += '<details style="padding:0 10px"><summary style="cursor:pointer;padding:4px 0;font-size:10.5px;color:'+f.color+';font-weight:600;list-style:none;user-select:none">▸ Dettaglio calcolo '+f.code+'·'+f.name+'</summary>';
+        rmesSection += _buildFactorDetail(f.code);
+        rmesSection += '</details></td></tr>';
       }
       rmesSection += '</tbody></table>';
       
