@@ -1267,26 +1267,39 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <b>Idea chiave</b>: Foundation è il prezzo "strutturale" del giorno (cambia poco di giorno in giorno). I 5 fattori sono il <b>movimento dinamico</b> (cambiano ogni giorno con i nuovi booking, le nuove cancellazioni, i nuovi prezzi compset). Foundation ti dice <i>quanto vorresti vendere</i>, i fattori ti dicono <i>come stai effettivamente vendendo oggi</i>.
         </p>
 
+        <p style="padding:10px 14px;background:#e8f4ec;border:1px solid #1e6b4a;border-radius:5px;font-size:12px;line-height:1.5;margin-top:8px">
+          <b style="color:#1e6b4a">📌 Sorgente del prezzo RMES</b>: il prezzo RMES viene calcolato <b>SEMPRE</b> a partire dal valore Foundation del giorno (non dal prezzo Beddy attualmente pubblicato, non dal prezzo Expedia, non dal compset). Il calcolo è: <code>Foundation × (1 + Σ peso × deviazione)</code>. La vecchia cascata Beddy reale → Mio Expedia → Compset → ADR OTB → ADR Final LY interviene <b>SOLO come fallback</b> nei rari casi in cui Foundation non riesce a calcolare (es. nessun dato LY per quel giorno della settimana di quel mese). Nelle 3 strutture Manu&Enis questo accade per &lt; 1% dei giorni. Per ogni cella del prezzo RMES nella Sell Strategy puoi cliccare ⚡ Foundation a sinistra per vedere lo step-by-step della sorgente.
+        </p>
+
         <hr style="margin:18px 0;border:0;border-top:1px solid #c4823b">
 
         <h3 style="color:#7a4f1c;font-size:15px;margin:8px 0">PARTE 1 — Foundation Pricing (la sorgente)</h3>
 
         <p><b>Due modalità in base ai giorni che mancano al check-in:</b></p>
         <ul style="margin:4px 0 12px 18px">
-          <li><b>Modalità completa (&lt;180gg)</b>: tutti gli 8 step. Pace, OTB, pickup, cap mercato disponibili.</li>
+          <li><b>Modalità completa (&lt;180gg)</b>: tutti i 7 step. Pace, OTB, pickup, cap mercato disponibili.</li>
           <li><b>Modalità semplificata (&gt;180gg)</b>: solo storico + Base + growth. Niente pace/cap perché OTB non è ancora rappresentativo.</li>
         </ul>
 
-        <h4 style="margin:14px 0 6px 0;color:#7a4f1c">Modalità completa (&lt;180gg) — 8 step</h4>
+        <h4 style="margin:14px 0 6px 0;color:#7a4f1c">Modalità completa (&lt;180gg) — 7 step</h4>
         <ol style="margin:4px 0 12px 18px;font-size:12.5px">
           <li><b>① Ancora storica</b>: mediana ADR Beddy_eq pari-DOW pari-mese (2024+2025). Se &lt;3 osservazioni allargo a mese intero. Cancellate incluse solo se cancellate ≥30gg prima dello stay.</li>
           <li><b>② Target Revenue</b>: <code>Revenue LY × (1 + growth%)</code>. Growth configurabile per mese (default +5%). Pannello Ⓐ.</li>
-          <li><b>③ RN attese</b>: <code>RN_OTB_oggi + pickup_atteso</code>, cap inventario. <code>pace = OTB_oggi / OTB_LY_pari_giorni</code> clampato in [0.85, 1.15]. ADR target chiusura = Rev_target / RN_attese.</li>
-          <li><b>④ Booking window</b>: posizione 0-1 sulla curva di vendita storica (frazione media RN già venduta a -Xgg).</li>
-          <li><b>⑤ P_grezzo</b>: <code>ADR_target × pace × (0.85 + 0.15 × pos_curva)</code>.</li>
-          <li><b>⑥ Cap mercato</b>: media pesata compset Expedia × ratio + offset come riferimento, range [×0.75, ×1.25]. Se P_grezzo fuori, capped.</li>
-          <li><b>⑦ Floor + Base lift</b>: Floor (hard, default 100€) è il limite assoluto. <b>Base price</b> (soft, default Firenze 220, Condotta 280, Alfani 270) è il "north star": se P sotto Base → <code>P = (P + Base) / 2</code>.</li>
-          <li><b>⑧ Re-target adattivo</b>: se P_finale &lt; 92% ADR target → segnalo che il growth effettivo è inferiore.</li>
+          <li><b>③ RN attese + ADR target</b>: <code>RN attese = RN_OTB + (pickup_LY_residuo × pace)</code>, cap inventario.
+            <ul style="margin:4px 0 4px 18px">
+              <li><b>pace</b> = <code>RN_OTB_oggi / RN_OTB_LY_pari_giorni</code>. Smoothing per dati piccoli: se <code>rnLY &lt; 4</code> applico <code>sqrt(pace)</code> (es. 1.50 → 1.22, 3.00 → 1.73, 0.50 → 0.71) — tira il valore verso 1 perché su pochi dati gli estremi sono rumore. Clamp finale [0.70, 1.30].</li>
+            </ul>
+            L'ADR target chiusura segue una <b>logica condizionale</b> per non penalizzare i giorni dove l'OTB sta già coprendo il revenue target:
+            <ul style="margin:4px 0 4px 18px">
+              <li><b>Caso A — Rev OTB Beddy_eq ≥ Rev target</b>: target già coperto → <code>ADR target = max(ADR OTB Beddy_eq, ADR_LY × (1+growth%))</code>. Non scendo sotto quello che già vendo.</li>
+              <li><b>Caso B — Rev OTB ≥ 95% Rev target</b>: stesso del caso A (formula identica). Sono praticamente a target, mantengo il prezzo.</li>
+              <li><b>Caso C — sotto 95%</b>: formula classica con floor composito. <code>ADR target = max(adrFormula, floor)</code> dove <code>adrFormula = (Rev target − Rev OTB) / (RN attese − RN OTB)</code>. Il floor è sempre il tetto storico <code>ADR_LY × (1+growth%)</code>, e <b>se ho già venduto ≥50% dell'inventario</b> anche <code>ADR OTB Beddy_eq</code> (il dato OTB è significativo solo con abbastanza vendite). Evita ribassi assurdi quando sei vicino al target.</li>
+            </ul>
+            <b>Rev OTB Beddy_eq</b> = revenue OTB con markup OTA sottratto: prenotazioni dirette restano lorde, prenotazioni Booking/Expedia/Airbnb divise per 1.12. Così l'ADR OTB usato nei confronti rappresenta il vero incasso netto.</li>
+          <li><b>④ P_grezzo</b>: <code>ADR_target × pace</code>. Il prezzo che voglio pubblicare oggi è il prezzo target chiusura modulato dal pace (se sto vendendo meglio di LY → pace > 1 → chiedo di più; se peggio → pace < 1 → ribasso). La curva booking storica non entra nella formula del prezzo (era una correzione temporale che generava sconti inappropriati su giorni last-minute).</li>
+          <li><b>⑤ Cap mercato</b>: media pesata compset Expedia (convertito Beddy_eq con /1.12/0.90) + offset come riferimento, range [×0.80, ×1.20]. Se P_grezzo fuori, capped al limite più vicino.</li>
+          <li><b>⑥ Floor + Base lift</b>: Floor (hard, default 100€) è il limite assoluto. <b>Base price</b> (soft, default Firenze 220, Condotta 280, Alfani 270) è il "north star": se P sotto Base → <code>P = (P + Base) / 2</code>.</li>
+          <li><b>⑦ Re-target adattivo</b>: se P_finale &lt; 92% ADR target → segnalo che il growth effettivo è inferiore.</li>
         </ol>
 
         <h4 style="margin:14px 0 6px 0;color:#7a4f1c">Modalità semplificata (&gt;180gg)</h4>
@@ -1380,10 +1393,10 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li>① Ancora storica = mediana ADR LY pari-DOW pari-mese (sabato di agosto): <b>€185</b> (12 obs)</li>
           <li>② Target Revenue: 185 × 8 RN × 1.05 = <b>€1.554</b></li>
           <li>③ RN attese: OTB 2 + pickup atteso 5 × pace 1.00 = <b>7 RN</b> → ADR target = 1554/7 = <b>€222</b></li>
-          <li>④-⑤ Curva pos 28%, P_grezzo = 222 × 1.00 × (0.85 + 0.15×0.28) = <b>€198</b></li>
-          <li>⑥ Cap mercato: compset rif €240 → range [180, 300]. P_grezzo dentro → P_capped = <b>€198</b></li>
-          <li>⑦ Base 220€ → P sotto Base → Base lift: (198+220)/2 = <b>€209</b></li>
-          <li><b>Foundation = €209 Beddy_eq</b></li>
+          <li>④ P_grezzo = ADR target × pace = 222 × 1.00 = <b>€222</b></li>
+          <li>⑤ Cap mercato: compset rif €240 → range [192, 288]. P_grezzo dentro → P_capped = <b>€222</b></li>
+          <li>⑥ Base 220€ → P sopra Base → no Base lift. P = <b>€222</b></li>
+          <li><b>Foundation = €222 Beddy_eq</b></li>
         </ul>
 
         <p><b>Step 2 — 5 fattori RMES misurano la situazione di oggi</b>:</p>
@@ -1405,12 +1418,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <p><b>Step 4 — Prezzo finale</b>:</p>
         <p style="padding:10px 14px;background:#fef8ed;border:1px solid #c4823b;border-radius:5px;font-size:12px;line-height:1.6">
-          <b>Prezzo RMES = Foundation × moltiplicatore = €209 × 0.953 = €199</b><br>
-          <span style="font-size:11px;color:var(--ink-3)">Sito diretto (÷0.775): €257 · OTA (×1.12): €223</span>
+          <b>Prezzo RMES = Foundation × moltiplicatore = €222 × 0.953 = €212</b><br>
+          <span style="font-size:11px;color:var(--ink-3)">Sito diretto/Beddy: €212 · OTA (×1.12): €237</span>
         </p>
 
         <p style="margin-top:14px;padding:10px 14px;background:#f5f5f5;border-radius:4px;font-size:12px;color:#666">
-          <b>Lettura del risultato</b>: Foundation aveva calcolato €209 come prezzo strutturale per quel sabato di agosto. La situazione attuale dice: OCC del giorno sotto (-15%, freno), ADR del giorno sotto LY → recupero (+7.7%, alzo), pace di agosto in calo (-33%) ma il mese si sta riempiendo meglio del LY → caso ambiguo, OCC del giorno 85% &lt; 90% → freno al 50% (-16.65% invece di -33%), compset più caro di me (+12.5%, alzo), ricerche del giorno sotto mediana di agosto (-12%, freno). Risultato: €199. La logica condizionale ha ammortizzato la penalità del pace (che sarebbe stata pesante) perché il mese complessivamente va bene.
+          <b>Lettura del risultato</b>: Foundation aveva calcolato €222 come prezzo strutturale per quel sabato di agosto. La situazione attuale dice: OCC del giorno sotto (-15%, freno), ADR del giorno sotto LY → recupero (+7.7%, alzo), pace di agosto in calo (-33%) ma il mese si sta riempiendo meglio del LY → caso ambiguo, OCC del giorno 85% &lt; 90% → freno al 50% (-16.65% invece di -33%), compset più caro di me (+12.5%, alzo), ricerche del giorno sotto mediana di agosto (-12%, freno). Risultato: €212. La logica condizionale ha ammortizzato la penalità del pace (che sarebbe stata pesante) perché il mese complessivamente va bene.
         </p>
 
       </div>
@@ -1453,8 +1466,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="panel" style="margin-bottom:16px;background:rgba(195,131,59,.04);border-color:rgba(195,131,59,.30)">
       <div class="panel-head" style="border-bottom:1px solid rgba(195,131,59,.25)">
         <div>
-          <h3 style="color:#7a4f1c">⚡ Foundation Pricing <span style="font-size:10px;font-weight:600;background:#c4823b;color:#fff;padding:2px 8px;border-radius:3px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">shadow mode</span></h3>
-          <div class="panel-sub" style="margin-top:6px">Configurazione della <b>nuova sorgente di prezzo</b> che sostituirà la cascata Beddy→Expedia→compset→OTB→LY. Calcolato dallo storico LY × target × pace × curva × cap mercato. In modalità <b>shadow</b>: il prezzo Foundation è mostrato come colonna info nella Sell Strategy (accanto al prezzo RMES che usa ancora la cascata vecchia). I 6 fattori RMES qui sopra restano invariati e si applicheranno sopra Foundation nella prossima sessione.</div>
+          <h3 style="color:#7a4f1c">⚡ Foundation Pricing <span style="font-size:10px;font-weight:600;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:3px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">attivo</span></h3>
+          <div class="panel-sub" style="margin-top:6px"><b>Foundation è la sorgente del prezzo RMES.</b> Per ogni giorno e ogni RT, calcolo un prezzo strutturale partendo da: storico LY × target growth × pace × curva temporale × cap mercato compset × floor/base lift. Il prezzo RMES finale è <code>Foundation × (1 + Σ pesi × deviazioni dei 5 fattori)</code>. La vecchia cascata (Beddy reale → Mio Expedia → Compset → ADR OTB → ADR Final LY) è ora <b>solo fallback</b> per giorni dove Foundation non riesce a calcolare un prezzo (es. nessun dato LY pari-DOW pari-mese disponibile).</div>
         </div>
       </div>
       <div class="panel-body" style="padding:14px 16px">
@@ -27217,9 +27230,10 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     const end = startOfDay(b.dOut);
     while (cur < end){
       const k = ymd(cur);
-      if (!bucketsCur[k]) bucketsCur[k] = {rev:0, rn:0};
+      if (!bucketsCur[k]) bucketsCur[k] = {rev:0, rn:0, revBeddyEq:0};
       bucketsCur[k].rev += b.revPerNight;
       bucketsCur[k].rn  += 1;
+      bucketsCur[k].revBeddyEq += b.revPerNightCaricato;  // = revPerNight / 1.12 se OTA, identico se sito diretto
       // Per-RT count (per disponibilità RT)
       if (b.room){
         if (!bucketsCurByRT[k]) bucketsCurByRT[k] = {};
@@ -27410,8 +27424,10 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
       dow: d.getDay(),
       cap: rooms,
       curRn: c.rn, curRev: c.rev,
+      curRevBeddyEq: c.revBeddyEq || 0,  // revenue OTB con markup OTA sottratto (Beddy_eq)
       curOcc: rooms>0 ? c.rn/rooms : 0,
       curAdr: c.rn>0 ? c.rev/c.rn : NaN,
+      curAdrBeddyEq: c.rn>0 ? (c.revBeddyEq||0)/c.rn : NaN,  // ADR OTB Beddy_eq
       pkRn, pkRev,
       pkAdr,
       pkRnStly, pkRevStly, pkAdrStly,
@@ -27477,13 +27493,20 @@ function ymdToDate(n){
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
-   Calcola il prezzo RMES per ogni giorno del range, con la stessa logica della tab
-   Sell Strategy: cascata di fallback (Mio Expedia → Compset → OTB → Final LY) + 
-   sottrazione del supplemento se Bilocale sold-out + media pesata dei 5 fattori.
-   Ritorna: { ymdNum: { price, source, suppApplied, multFinale } }
-   Usa SELL_RMES_W (pesi correnti).
-   La Pricing-tab usa questo per la prima riga (camera base), e applica i supplementi
-   per le altre RT.
+   Calcola il prezzo RMES per ogni giorno del range.
+   
+   SORGENTE DEL PREZZO (importante):
+   1. SEMPRE Foundation Pricing del giorno (storico LY × target × pace × curva × cap × floor)
+   2. SOLO se Foundation non riesce (rarissimo, dati LY assenti) → fallback cascata vecchia
+      (Mio Expedia → Compset → OTB → Final LY)
+   
+   Sopra la sorgente si applica il moltiplicatore composto dai 5 fattori:
+   prezzo_finale = sorgente × (1 + Σ peso_i × deviazione_i), capped a ±cap totale.
+   
+   Per le RT non-base: sorgente = prezzo baseRT + supplemento storico mensile della RT.
+   
+   Ritorna: { ymdNum: { price, source, suppApplied, multFinale, pricesByRT, mlosByRT, multsByRT } }
+   Usa SELL_RMES_W (pesi correnti per struttura).
 */
 function computeRMESPriceMap(sel, startYmd, rangeDays){
   const out = {};
@@ -27687,10 +27710,13 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     const ym = r.y * 100 + r.mo;
 
     // === Sorgente Expedia "pulita" Beddy-eq (= sorgente cascata, usata anche per D Budget) ===
+    // Conversione: prezzo Expedia (lordo, flessibile) → Beddy_eq (non rimborsabile, no markup OTA)
+    //   /1.12 = toglie markup OTA (12%)
+    //   /0.90 = riporta da flessibile a non rimborsabile (10% meno)
+    // Beddy = sito diretto, nessun ratio storico applicato.
     let _sourceExpediaBeddyEq = null;
     if (exp2 && exp2.myPriceExpedia != null){
-      const ratioForMine = (_beddyExpediaRatio != null) ? _beddyExpediaRatio : 1.0;
-      _sourceExpediaBeddyEq = (exp2.myPriceExpedia / 1.12 / 0.90) * ratioForMine;
+      _sourceExpediaBeddyEq = exp2.myPriceExpedia / 1.12 / 0.90;
     }
 
     // === Moltiplicatori RMES: TUTTI E 5 i fattori A LIVELLO STRUTTURA ===
@@ -27895,8 +27921,8 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         basePrice = beddyReal;
         baseSource = 'beddy_fallback';
       } else if (exp2 && exp2.myPriceBeddy != null){
-        const beddyExpRatio = (_beddyExpediaRatio != null) ? _beddyExpediaRatio : 1.0;
-        basePrice = (exp2.myPriceBeddy - supp_to_subtract) * beddyExpRatio;
+        // myPriceBeddy è già un valore Beddy_eq (Expedia /1.12/0.90 in expContext)
+        basePrice = exp2.myPriceBeddy - supp_to_subtract;
         baseSource = 'mine_fallback';
         baseSuppApplied = supp_to_subtract;
       } else if (exp2 && exp2.compsetAvgBeddy != null){
@@ -28268,8 +28294,20 @@ function fp_computePace(structKey, rt, targetDateISO){
     if (b.bookYmd <= todayLYYmd && ciYmd <= tdLYYmd && coYmd > tdLYYmd) rnLY++;
   }
   if (rnLY === 0) return 1.0;
+  
   let pace = rnNow / rnLY;
-  return Math.max(0.85, Math.min(1.15, pace));
+  
+  // SMOOTHING per dati piccoli: se rnLY < 4, applica sqrt per tirare il pace verso 1
+  //   (es. raw 1.50, sqrt = 1.22 — meno aggressivo)
+  //   (es. raw 3.00, sqrt = 1.73 — ancora più stretto del clamp)
+  //   (es. raw 0.50, sqrt = 0.71)
+  // Su dati piccoli (rnLY ≤ 3) un pace estremo è quasi sempre rumore.
+  if (rnLY < 4){
+    pace = Math.sqrt(pace);
+  }
+  
+  // CLAMP esterno: [0.70, 1.30]
+  return Math.max(0.70, Math.min(1.30, pace));
 }
 
 function fp_computePickupLYResiduo(structKey, rt, targetDateISO){
@@ -28303,7 +28341,6 @@ function fp_computeMarketCap(structKey, targetDateISO){
                 : (structKey === 'firenze') ? EXPEDIA_DATA.competitors_firenze
                 : EXPEDIA_DATA.competitors;
   if (!compMap) return null;
-  const ratio = fp_ratioForStruct(structKey);
   let weightedSum = 0, weightSum = 0;
   const details = [];
   for (const name of Object.keys(compMap)){
@@ -28311,7 +28348,11 @@ function fp_computeMarketCap(structKey, targetDateISO){
     if (cfg.peso <= 0) continue;
     const rawPrice = compMap[name][targetDateISO];
     if (rawPrice == null || !isFinite(rawPrice)) continue;
-    const beddyEq = (rawPrice / 1.12) * ratio;
+    // Conversione Expedia → Beddy_eq:
+    //   /1.12 = togliere markup OTA (12%)
+    //   /0.90 = riportare da tariffa Expedia "flessibile" a Beddy "non rimborsabile" (10% meno)
+    // NESSUN ratio storico: Beddy = sito diretto.
+    const beddyEq = rawPrice / 1.12 / 0.90;
     const adjusted = beddyEq + cfg.offset;
     weightedSum += cfg.peso * adjusted;
     weightSum += cfg.peso;
@@ -28319,7 +28360,7 @@ function fp_computeMarketCap(structKey, targetDateISO){
   }
   if (weightSum === 0) return null;
   const ref = weightedSum / weightSum;
-  return { ref: ref, min: ref * 0.75, max: ref * 1.25, nCompet: details.length, details: details };
+  return { ref: ref, min: ref * 0.80, max: ref * 1.20, nCompet: details.length, details: details };
 }
 
 /* Helpers ADR/RN OTB */
@@ -28367,6 +28408,35 @@ function fp_rnOtbForDay(structKey, rt, targetDateISO){
     if (ciYmd <= tdYmd && coYmd > tdYmd) cnt++;
   }
   return cnt;
+}
+
+/* Revenue OTB Beddy_eq della specifica RT in un giorno.
+   Usa b.revPerNightCaricato che è già "Beddy_eq" (= revPerNight / 1.12 se OTA,
+   identico al revPerNight se sito diretto/Beddy).
+   Serve a Foundation per calcolare il "target del prezzo per le RN residue":
+   se ho già coperto il revenue target con le RN già vendute, non devo abbassare per quelle residue.
+*/
+function fp_revOtbBeddyEqForDay(structKey, rt, targetDateISO){
+  if (typeof BOOKINGS === 'undefined') return 0;
+  const td = new Date(targetDateISO + 'T00:00:00');
+  if (isNaN(td.getTime())) return 0;
+  const tdYmd = ymd(td);
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const todayYmd = ymd(today);
+  const structName = fp_structName(structKey);
+  let rev = 0;
+  for (const b of BOOKINGS){
+    if (b.struct !== structName) continue;
+    if (b.stato !== 'Confermate') continue;
+    if (b.room !== rt) continue;
+    if (!b.dIn || !b.dOut || !b.bookYmd) continue;
+    if (b.bookYmd > todayYmd) continue;
+    const ciYmd = ymd(b.dIn), coYmd = ymd(b.dOut);
+    if (ciYmd <= tdYmd && coYmd > tdYmd){
+      rev += (b.revPerNightCaricato != null) ? b.revPerNightCaricato : b.revPerNight;
+    }
+  }
+  return rev;
 }
 
 /* Calcolo prezzo Foundation per (struct, RT, day) */
@@ -28448,14 +28518,64 @@ function fp_computePrice(structKey, rt, targetDateISO){
   detail.rnAttese = rnAttese;
   detail.inv = inv;
   
-  const adrTargetChiusura = (rnAttese > 0) ? (revTarget / rnAttese) : adrLY;
+  // === adrTargetChiusura: PREZZO TARGET per le RN da vendere ===
+  // Logica condizionale che considera quanto già fatto in OTB:
+  //   - Se revYaFatto ≥ revTarget (target già coperto):
+  //         prezzoTarget = max(adrOtbBeddyEq, adrLY × (1+growth%))
+  //         Non scendere sotto quello che già vendi mediamente, non sotto tetto storico.
+  //   - Se revYaFatto ≥ 0.95 × revTarget (quasi a target):
+  //         prezzoTarget = max(adrOtbBeddyEq, adrLY × (1+growth%))  (stesso del caso sopra)
+  //   - Altrimenti (sotto 95%):
+  //         prezzoTarget = revResiduo / rnResidueDaVendere  (formula classica)
+  //
+  // Beddy_eq: revenue OTB con markup OTA sottratto via b.revPerNightCaricato
+  const revYaFattoBeddyEq = fp_revOtbBeddyEqForDay(structKey, rt, targetDateISO);
+  const adrOtbBeddyEq = (rnOtb > 0) ? (revYaFattoBeddyEq / rnOtb) : 0;
+  const tettoStorico = adrLY * (1 + targetGrowth/100);  // = ADR LY × (1 + growth%)
+  detail.revYaFattoBeddyEq = revYaFattoBeddyEq;
+  detail.adrOtbBeddyEq = adrOtbBeddyEq;
+  detail.tettoStorico = tettoStorico;
+  
+  let adrTargetChiusura;
+  let _adrTargetCase = null;
+  if (revYaFattoBeddyEq >= revTarget){
+    // Caso A: target già superato → tetto = max(ADR OTB attuale, ADR LY × growth)
+    adrTargetChiusura = Math.max(adrOtbBeddyEq, tettoStorico);
+    _adrTargetCase = 'target_superato';
+  } else if (revYaFattoBeddyEq >= 0.95 * revTarget){
+    // Caso B: ≥95% target → stesso del caso A
+    adrTargetChiusura = Math.max(adrOtbBeddyEq, tettoStorico);
+    _adrTargetCase = 'vicino_target';
+  } else {
+    // Caso C: sotto 95% → formula classica revResiduo / RN residue
+    // CON FLOOR composito:
+    //   - sempre: tetto storico (ADR_LY × growth)
+    //   - se ho venduto ≥50% dell'inventario: anche ADR OTB Beddy_eq (dato OTB significativo)
+    const rnResidue = Math.max(1, rnAttese - rnOtb);
+    const revResiduo = revTarget - revYaFattoBeddyEq;
+    const adrFormula = (rnResidue > 0) ? (revResiduo / rnResidue) : adrLY;
+    const occOtb = (inv > 0) ? (rnOtb / inv) : 0;
+    let floorPrezzo = tettoStorico;
+    if (occOtb >= 0.50 && adrOtbBeddyEq > 0){
+      floorPrezzo = Math.max(floorPrezzo, adrOtbBeddyEq);
+    }
+    adrTargetChiusura = Math.max(adrFormula, floorPrezzo);
+    detail.floorPrezzoCasoC = floorPrezzo;
+    detail.occOtbForFloor = occOtb;
+    _adrTargetCase = 'sotto_target';
+  }
   detail.adrTargetChiusura = adrTargetChiusura;
+  detail.adrTargetCase = _adrTargetCase;
   
-  const pos = fp_positionInCurve(structKey, daysToArrival);
-  detail.pos = pos;
-  
-  const pGrezzo = adrTargetChiusura * pace * (0.85 + 0.15 * pos);
+  // P_grezzo = adrTargetChiusura × pace
+  // (rimosso il lift temporale basato sulla curva booking: non separava bene
+  // i casi "lontano dall'arrivo" da quelli "vendi sempre last-minute", quindi
+  // applicava sconti inappropriati. Il prezzo target chiusura, modulato dal pace,
+  // è il prezzo che voglio mediare sulle RN attese.)
+  const pGrezzo = adrTargetChiusura * pace;
   detail.pGrezzo = pGrezzo;
+  // Curva booking ancora calcolata per display nella modale (NON usata nella formula)
+  detail.pos = fp_positionInCurve(structKey, daysToArrival);
   
   const mcap = fp_computeMarketCap(structKey, targetDateISO);
   detail.marketCap = mcap;
@@ -28645,33 +28765,45 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   h += '</table></div>';
   
   if (!d.longHorizon && d.anchor && d.anchor.medianADR){
-    // Step 3: RN attese
-    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#8e5fa8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">③ RN attese</div>';
+    // Step 3: RN attese + ADR target chiusura (logica condizionale)
+    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#8e5fa8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">③ RN attese + ADR target</div>';
     h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
     h += '<tr><td style="padding:3px 6px;color:#666;width:55%">RN OTB oggi (' + rt + ')</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + d.rnOtb + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">Revenue OTB Beddy_eq (markup OTA sottratto)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.revYaFattoBeddyEq||0) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">ADR OTB Beddy_eq medio</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.adrOtbBeddyEq||0) + '</td></tr>';
     h += '<tr><td style="padding:3px 6px;color:#666">Pace RN (oggi / STLY pari-pace)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">×' + fmt2(d.pace) + '</td></tr>';
     h += '<tr><td style="padding:3px 6px;color:#666">Pickup LY residuo × pace = pickup atteso</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt2(d.pickupLYResiduo) + ' × ' + fmt2(d.pace) + ' = ' + fmt2(d.pickupAtteso) + '</td></tr>';
     h += '<tr><td style="padding:3px 6px;color:#666">RN attese (cap inventario ' + d.inv + ')</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt2(d.rnAttese) + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666"><b>ADR target chiusura</b> = Rev target / RN attese</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700">' + fmt(d.adrTargetChiusura) + '</td></tr>';
+    // Logica condizionale
+    const caseLabel = d.adrTargetCase === 'target_superato' ? 'TARGET GIÀ SUPERATO'
+                    : d.adrTargetCase === 'vicino_target' ? '≥95% TARGET'
+                    : 'SOTTO 95% TARGET';
+    const caseFormula = (d.adrTargetCase === 'target_superato' || d.adrTargetCase === 'vicino_target')
+                        ? 'max(ADR OTB Beddy_eq, ADR_LY × growth)'
+                        : '(Rev target − Rev OTB) / RN residue';
+    const tettoStorico = d.tettoStorico||0;
+    h += '<tr><td colspan="2" style="padding:6px;background:rgba(142,95,168,.06);border-top:1px solid rgba(142,95,168,.15);font-size:11px;color:#8e5fa8;font-weight:600">Caso: <b>' + caseLabel + '</b></td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666;font-size:11px">Tetto storico (ADR LY × ' + (d.targetGrowthPct||5) + '%)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-size:11px">' + fmt(tettoStorico) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666"><b>ADR target chiusura</b> = ' + caseFormula + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700">' + fmt(d.adrTargetChiusura) + '</td></tr>';
     h += '</table></div>';
     
-    // Step 4-5: Curva e P_grezzo
-    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3b6b9a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">④ Booking window + ⑤ Prezzo grezzo</div>';
+    // Step 4: P_grezzo
+    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3b6b9a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">④ Prezzo grezzo</div>';
     h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
     h += '<tr><td style="padding:3px 6px;color:#666;width:55%">Days-to-arrival</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + d.daysToArrival + 'gg</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">Posizione curva (frazione RN già vendute tipicamente)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + (d.pos*100).toFixed(0) + '%</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">P_grezzo = ADR target × pace × (0.85 + 0.15×pos)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700">' + fmt(d.pGrezzo) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666;font-size:11px;font-style:italic">Curva booking storica (frazione RN gi&agrave; vendute a -' + d.daysToArrival + 'gg)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;color:#888;font-size:11px">' + (d.pos*100).toFixed(0) + '% <span style="color:#aaa">(info, non in formula)</span></td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666"><b>P_grezzo = ADR target &times; pace</b></td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700">' + fmt(d.pGrezzo) + '</td></tr>';
     h += '</table></div>';
     
-    // Step 6: Cap mercato
-    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑥ Cap di mercato (compset Expedia)</div>';
+    // Step 5: Cap mercato
+    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑤ Cap di mercato (compset Expedia)</div>';
     if (!d.marketCap || d.marketCap.nCompet === 0){
       h += '<div style="padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:12px;color:#888">Nessun competitor con prezzo valido per questa data. Cap non applicato.</div>';
     } else {
       const m = d.marketCap;
       h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:3px 6px;color:#666;width:55%">Competitor attivi (peso > 0)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + m.nCompet + '</td></tr>';
       h += '<tr><td style="padding:3px 6px;color:#666">Riferimento compset Beddy_eq (peso × (raw/1.12 × ratio + offset))</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(m.ref) + '</td></tr>';
-      h += '<tr><td style="padding:3px 6px;color:#666">Range ammesso [×0.75, ×1.25]</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">[' + fmt(m.min) + ', ' + fmt(m.max) + ']</td></tr>';
+      h += '<tr><td style="padding:3px 6px;color:#666">Range ammesso [×0.80, ×1.20]</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">[' + fmt(m.min) + ', ' + fmt(m.max) + ']</td></tr>';
       const capped = (d.pCapped !== d.pGrezzo);
       h += '<tr><td style="padding:3px 6px;color:#666">P_capped' + (capped ? ' <span style="color:#c4823b;font-style:italic">(capped!)</span>' : '') + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:' + (capped?'700':'400') + '">' + fmt(d.pCapped) + '</td></tr>';
       h += '</table>';
@@ -28685,8 +28817,8 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
     h += '</div>';
   }
   
-  // Step 7-8: Floor + Base lift + Re-target
-  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3d7a4b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑦ Floor + Base lift + ⑧ Re-target</div>';
+  // Step 6-7: Floor + Base lift + Re-target
+  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3d7a4b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑥ Floor + Base lift + ⑦ Re-target</div>';
   h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
   h += '<tr><td style="padding:3px 6px;color:#666;width:55%">Floor struttura (hard)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.floor) + '</td></tr>';
   h += '<tr><td style="padding:3px 6px;color:#666">Base price struttura (soft)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.basePrice) + '</td></tr>';
@@ -28708,20 +28840,18 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   h += '<div style="margin-top:18px;padding:14px 16px;background:linear-gradient(180deg,#fef8ed,#fdf0d8);border:2px solid #c4823b;border-radius:6px">';
   h += '<div style="display:flex;justify-content:space-between;align-items:center">';
   h += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7a4f1c">Prezzo Foundation</div>';
-  h += '<div style="font-size:22px;font-weight:700;font-family:\'DM Mono\',monospace;color:#5a3a14">' + fmt(d.priceFinal) + ' <span style="font-size:11px;font-weight:400;color:#888">Beddy_eq netto</span></div>';
+  h += '<div style="font-size:22px;font-weight:700;font-family:\'DM Mono\',monospace;color:#5a3a14">' + fmt(d.priceFinal) + ' <span style="font-size:11px;font-weight:400;color:#888">Beddy = sito diretto</span></div>';
   h += '</div>';
-  // Equivalenti OTA / canale diretto
-  const otaEquiv = d.priceFinal / ratio * 1.12;
-  const directEquiv = d.priceFinal / ratio;
+  // Equivalente OTA (solo OTA ha markup, Beddy/sito diretto è lo stesso prezzo)
+  const otaEquiv = d.priceFinal * 1.12;
   h += '<div style="margin-top:6px;font-size:11px;color:#666;display:flex;gap:18px;flex-wrap:wrap">';
-  h += '<span>Sito diretto (÷ratio ' + ratio + '): <b style="font-family:\'DM Mono\',monospace">' + fmt(directEquiv) + '</b></span>';
-  h += '<span>Equivalente OTA (×1.12): <b style="font-family:\'DM Mono\',monospace">' + fmt(otaEquiv) + '</b></span>';
+  h += '<span>Equivalente OTA (Booking/Expedia, ×1.12 markup): <b style="font-family:\'DM Mono\',monospace">' + fmt(otaEquiv) + '</b></span>';
   h += '</div></div>';
   
   // Note di trasparenza
   h += '<div style="margin-top:14px;padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#666;line-height:1.4">';
-  h += '<b>Nota</b>: Foundation è in modalità SHADOW. Il prezzo RMES nella colonna principale usa ancora la cascata Beddy→Expedia→compset→OTB→LY. ';
-  h += 'Una volta validato (step B), Foundation diventerà la sorgente del prezzo RMES e i 6 fattori si applicheranno sopra questo numero.';
+  h += '<b>Nota</b>: Foundation è la <b>sorgente</b> del prezzo RMES. Il prezzo finale = Foundation × moltiplicatore composto dai 5 fattori (A·OCC, B·Price, C·Pace, E·Compset, F·Search). ';
+  h += 'La cascata vecchia (Beddy→Expedia→compset→OTB→LY) è solo fallback per giorni dove Foundation non riesce a calcolare (es. dati LY assenti).';
   h += '</div>';
   
   h += '</div>';  // /body
@@ -28760,7 +28890,7 @@ function fp_renderFoundationConfigBox(structKey){
   // ----- Section C: Pesi (0-100%) + Offset € competitor — fonte unica per E·Compset RMES e cap mercato Foundation -----
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓒ Pesi e offset competitor compset <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">struttura: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub"><b>Peso</b> (0-100%, default 100): quanto conta un competitor nella media compset. Usato sia dal <b>fattore E·Compset RMES</b> sia dal <b>cap mercato Foundation</b>. Peso = 0 esclude il competitor. <b>Offset €</b> (default 0, solo Foundation): es. -10 = "voglio stare €10 sotto questo competitor". Riferimento mercato Foundation = Σ(peso × (prezzo_compset_Beddy_eq + offset)) / Σ(peso). Range cap Foundation: [×0.75, ×1.25].</div></div>';
+  h += '<div class="panel-sub"><b>Peso</b> (0-100%, default 100): quanto conta un competitor nella media compset. Usato sia dal <b>fattore E·Compset RMES</b> sia dal <b>cap mercato Foundation</b>. Peso = 0 esclude il competitor. <b>Offset €</b> (default 0, solo Foundation): es. -10 = "voglio stare €10 sotto questo competitor". Riferimento mercato Foundation = Σ(peso × (prezzo_compset_Beddy_eq + offset)) / Σ(peso). Range cap Foundation: [×0.80, ×1.20].</div></div>';
   h += '<button id="fp-reset-pesi-100" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:\'DM Sans\',sans-serif;align-self:flex-start">reset pesi a 100%</button>';
   h += '</div>';
   h += '<div class="panel-body" style="padding:8px 16px"><table id="fp-comp-table" style="width:100%;border-collapse:collapse;font-size:12px"><thead style="background:#f8f8f5"><tr><th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2)">Competitor</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:110px">Peso (0-100%)</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:120px">Offset €</th></tr></thead><tbody></tbody></table></div></div>';
@@ -28927,17 +29057,12 @@ function renderSellStrategy(sel){
   }
 
   // === RMES weights wiring ===
-  // Bar sempre visibile sopra la tabella. RMES si calcola per tutte le strutture grazie alla
-  // cascata di fallback (Mio Expedia → Compset → OTB → Final LY).
+  // Bar sempre visibile sopra la tabella. Il prezzo RMES base usa SEMPRE Foundation come sorgente
+  // (cascata vecchia Mio Expedia → Compset → OTB → Final LY solo come fallback se Foundation non disponibile).
   const availEl = document.getElementById('sell-rmes-availability');
   if (availEl){
-    if (sel === 'condotta' || sel === 'alfani'){
-      availEl.textContent = '· base: Mio Expedia → Compset → OTB → Final LY';
-      availEl.style.color = 'var(--ink-3)';
-    } else {
-      availEl.textContent = '· base: OTB → Final LY (Expedia disponibile solo per Condotta 16 e Palazzo Alfani)';
-      availEl.style.color = 'var(--ink-3)';
-    }
+    availEl.textContent = '· sorgente: Foundation (fallback cascata storica)';
+    availEl.style.color = 'var(--ink-3)';
   }
   // (RMES bar legacy rimossa: ora la configurazione è nella tab RMES)
 
@@ -29276,9 +29401,9 @@ function renderSellStrategy(sel){
         const shownRT = _rtFilter || baseRT;
         const shownLbl = shownRT || 'BaseRT';
         const tipRMES = _rtFilter
-          ? `Prezzo RMES per ${shownLbl} (RT filtrata) con MLOS dentro la cella.\nFormula: Foundation × (1 + Σ pesi × deviazioni).\nTutti i 5 fattori sono a livello struttura.`
-          : `Prezzo RMES per la baseRT (${shownLbl}) con MLOS dentro la cella (M1 o M2).\nSorgente: Foundation (con fallback cascata vecchia).\nFoundation × (1 + Σ pesi × deviazioni dei 5 fattori).`;
-        return `<th class="sell-grp-fp-sub" style="background:rgba(195,131,59,.12);color:#7a4f1c;border-left:2px solid #c4823b" title="Foundation Pricing: prezzo strutturale del giorno (storico LY × target × pace × curva × cap mercato). È la SORGENTE del prezzo RMES. Click cella per dettaglio 8 step.">⚡ Foundation</th>` +
+          ? `Prezzo RMES per ${shownLbl} (RT filtrata) con MLOS dentro la cella.\nSORGENTE: Foundation Pricing del giorno (sempre).\nFormula: Foundation × (1 + Σ pesi × deviazioni dei 5 fattori, capped ±cap).\nTutti i 5 fattori sono a livello struttura.`
+          : `Prezzo RMES per la baseRT (${shownLbl}) con MLOS dentro la cella (M1 o M2).\nSORGENTE: Foundation Pricing del giorno (sempre).\nFormula: Foundation × (1 + Σ pesi × deviazioni dei 5 fattori, capped ±cap).\nLa cascata vecchia Beddy→Expedia→Compset→OTB→LY è SOLO fallback se Foundation non disponibile.`;
+        return `<th class="sell-grp-fp-sub" style="background:rgba(195,131,59,.12);color:#7a4f1c;border-left:2px solid #c4823b" title="Foundation Pricing: prezzo strutturale del giorno (storico LY × target × pace × cap mercato). È la SORGENTE del prezzo RMES. Click cella per dettaglio 7 step.">⚡ Foundation</th>` +
                `<th class="sell-grp-rmes-sub" title="${escapeHtml(tipRMES)}">${escapeHtml(shownLbl)}</th>`;
     })()
     + ((_rtFilter || !_showAllRT) ? '' : (function(){
@@ -29483,13 +29608,13 @@ function renderSellStrategy(sel){
       const D_mult = _paceMonthMult;
 
       // === Indice nuovo: Budget factor (mio_prezzo_expedia_beddy_eq / ADR_budget_struct) ===
-      // Sorgente: prezzo Mio Expedia convertito Beddy eq. (=  exp/1.12/0.90 × ratio). Se non disponibile, mult=1.
+      // Sorgente: Mio Expedia convertito Beddy_eq (/1.12 markup OTA, /0.90 da flex a non rimb).
+      // Beddy = sito diretto, nessun ratio storico.
       const ym_row = r.y * 100 + r.mo;
       let Budget_idx = null, Budget_mult = 1;
       let _sourceExpediaBeddyEq_render = null;
       if (exp2 && exp2.myPriceExpedia != null){
-        const ratioForMine = (_beddyExpediaRatio_render != null) ? _beddyExpediaRatio_render : 1.0;
-        _sourceExpediaBeddyEq_render = (exp2.myPriceExpedia / 1.12 / 0.90) * ratioForMine;
+        _sourceExpediaBeddyEq_render = exp2.myPriceExpedia / 1.12 / 0.90;
         const adrBudgetStruct = (typeof budgetMonthlyFor === 'function') ? budgetMonthlyFor(sel, ym_row, 'adr') : 0;
         if (adrBudgetStruct > 0){
           Budget_idx = _sourceExpediaBeddyEq_render / adrBudgetStruct;
@@ -29568,8 +29693,8 @@ function renderSellStrategy(sel){
           baseSource = 'beddy_fallback';
           baseColor = '#1e6b4a';
         } else if (exp2 && exp2.myPriceBeddy != null){
-          const ratioForMine = (_beddyExpediaRatio_render != null) ? _beddyExpediaRatio_render : 1.0;
-          basePrice = (exp2.myPriceBeddy - supp_to_subtract) * ratioForMine;
+          // myPriceBeddy è già un valore Beddy_eq (convertito da Expedia /1.12/0.90 in expContext)
+          basePrice = exp2.myPriceBeddy - supp_to_subtract;
           baseSource = 'mine_fallback';
           baseSuppApplied = supp_to_subtract;
         } else if (exp2 && exp2.compsetAvgBeddy != null){
@@ -29636,18 +29761,14 @@ function renderSellStrategy(sel){
       } else if (baseSource === 'mine'){
         const expRaw = exp2.myPriceExpedia;
         const expBeddyEq = exp2.myPriceBeddy;
-        const ratioForMine = (_beddyExpediaRatio_render != null) ? _beddyExpediaRatio_render : 1.0;
         stepSorgente = `[1] SORGENTE: Mio prezzo Expedia\n` +
                        `    Prezzo visibile su Expedia: ${fmtEUR(expRaw)}\n` +
-                       `    Conversione a Beddy eq.: ${fmtEUR(expRaw)} ÷ 1.12 (markup OTA) ÷ 0.90 (sconto non rimb.) = ${fmtEUR(expBeddyEq)}\n`;
+                       `    Conversione a Beddy_eq: ${fmtEUR(expRaw)} ÷ 1.12 (markup OTA) ÷ 0.90 (sconto non rimb.) = ${fmtEUR(expBeddyEq)}\n`;
         if (baseSuppApplied > 0 && expedia_rt_shown){
           const isHigh = _suppData && _suppData.highSeason.has(r.mo);
           const stagionLbl = isHigh ? 'alta' : 'bassa';
           stepSorgente += `    Bilocale sold-out → Expedia mostra ${expedia_rt_shown} (suppl. ${stagionLbl})\n` +
-                          `    Sottrazione 50% suppl.: ${fmtEUR(expBeddyEq)} − ${fmtEUR(baseSuppApplied)} = ${fmtEUR(expBeddyEq - baseSuppApplied)}\n`;
-        }
-        if (_beddyExpediaRatio_render != null){
-          stepSorgente += `    Applicazione ratio Beddy↔Expedia appreso: ${fmtEUR(expBeddyEq - baseSuppApplied)} × ${ratioForMine.toFixed(3)} = ${fmtEUR(basePrice)}\n`;
+                          `    Sottrazione 50% suppl.: ${fmtEUR(expBeddyEq)} − ${fmtEUR(baseSuppApplied)} = ${fmtEUR(basePrice)}\n`;
         }
         stepSorgente += `    → Prezzo base partenza: ${fmtEUR(basePrice)}\n`;
       } else if (baseSource === 'compset'){
@@ -29729,67 +29850,9 @@ function renderSellStrategy(sel){
     // (= /1.12/0.90), e se il Bilocale è sold-out abbassato del 50% del supplemento del RT mostrato
     // (stessa logica del prezzo RMES base, ma con supplemento al 50% invece che 100%).
     // Variazione = quanto dovrei alzare/abbassare il prezzo per allinearmi al RMES.
-    let cellVar = '';
-    {
-      const exp2v = (showExp && typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
-      let priceCurrent = null;
-      let curSource = null;  // 'beddy' | 'mine' | 'compset'
-      // (1) Prezzo Beddy reale (= il prezzo effettivamente caricato sul PMS, fonte più affidabile)
-      const beddyRealVar = (typeof beddyPriceFor === 'function') ? beddyPriceFor(sel, r.ymd) : null;
-      if (beddyRealVar != null){
-        priceCurrent = beddyRealVar;
-        curSource = 'beddy';
-      } else if (exp2v && exp2v.myPriceBeddy != null){
-        priceCurrent = exp2v.myPriceBeddy;
-        curSource = 'mine';
-      } else if (exp2v && exp2v.compsetAvgBeddy != null){
-        priceCurrent = exp2v.compsetAvgBeddy;
-        curSource = 'compset';
-      }
-
-      // Sottrazione 50% supplemento se il Bilocale è sold-out (RT mostrato è > base)
-      // SOLO per fonti Expedia (mine/compset); il prezzo Beddy reale è già della baseRT, niente supplemento.
-      let supp50Applied = 0;
-      let suppRT = null;
-      if (priceCurrent != null && curSource !== 'beddy' && _expedia_rt_shown_row && _suppData && _expedia_rt_shown_row !== _suppData.baseRT){
-        const fullSupp = _supplementForRT(_expedia_rt_shown_row, r.mo);
-        supp50Applied = fullSupp * 0.5;
-        suppRT = _expedia_rt_shown_row;
-        priceCurrent = priceCurrent - supp50Applied;
-      }
-      // Safety: se diventa irrealistico, ignora la sottrazione
-      if (priceCurrent != null && priceCurrent < 50){
-        if (curSource === 'beddy')        priceCurrent = beddyRealVar;
-        else if (curSource === 'mine')    priceCurrent = exp2v.myPriceBeddy;
-        else if (curSource === 'compset') priceCurrent = exp2v.compsetAvgBeddy;
-        supp50Applied = 0;
-      }
-
-      if (priceCurrent != null && _prezzoRMES_row != null){
-        const variazione = _prezzoRMES_row - priceCurrent;
-        const variazPct = priceCurrent > 0 ? variazione/priceCurrent : 0;
-        const varSign = variazione > 0 ? '+' : '';
-        const varCls = Math.abs(variazione) < 1 ? 'cell-flat'
-                      : (variazione > 0 ? 'cell-pos' : 'cell-neg');
-        const arrow = variazione > 1 ? '↑' : (variazione < -1 ? '↓' : '●');
-        const arrowCol = variazione > 1 ? '#3d7a4b' : (variazione < -1 ? '#a83b3b' : 'var(--ink-3)');
-        const curSourceLbl = curSource === 'beddy'   ? 'Beddy PMS (prezzo reale caricato)'
-                           : curSource === 'mine'    ? 'Mio Expedia (Beddy eq.)'
-                           : 'Compset avg (Beddy eq.)';
-        const supLine = supp50Applied > 0
-          ? `\nBilocale sold-out → −50% suppl. ${suppRT} (= −${fmtEUR(supp50Applied)}) → prezzo attuale rivisto`
-          : '';
-        const tip = `Variazione = Prezzo Base RMES − Prezzo attuale Beddy\n` +
-                    `Prezzo Base RMES: ${fmtEUR(_prezzoRMES_row)}\n` +
-                    `Prezzo attuale (${curSourceLbl}): ${fmtEUR(priceCurrent)}${supLine}\n` +
-                    `Variazione: ${varSign}${fmtEUR(variazione)} (${varSign}${(variazPct*100).toFixed(1)}%)`;
-        cellVar = `<td class="cell-mono sell-block-rmes ${varCls}" style="background:rgba(195,131,59,.04);text-align:center;cursor:help" title="${tip}"><b><span style="color:${arrowCol}">${arrow}</span> ${varSign}${fmtEUR(variazione)}</b><br><span style="font-size:9px;color:var(--ink-3);font-weight:400">${varSign}${(variazPct*100).toFixed(0)}%</span></td>`;
-      } else {
-        const why = (_prezzoRMES_row == null) ? 'Manca prezzo Base RMES' :
-                    (priceCurrent == null) ? 'Manca prezzo Beddy/Expedia attuale' : 'Dati incompleti';
-        cellVar = `<td class="cell-mono cell-flat sell-block-rmes" style="background:rgba(195,131,59,.04);color:var(--ink-3);text-align:center" title="${why}">—</td>`;
-      }
-    }
+    // (rimossa logica cellVar: la variazione vs prezzo attuale Beddy/Expedia non è più
+    // visualizzata come colonna dedicata. Ora la variazione vs Foundation è mostrata
+    // accanto al prezzo RMES nella stessa cella, con colore verde/rosso e badge €.)
 
     // === MLOS (Minimum Length Of Stay) ===
     // Logica:
@@ -29901,13 +29964,11 @@ function renderSellStrategy(sel){
         _fpPriceVal = fpR.price;
         const fpDetail = fpR.detail;
         const isLong = fpDetail && fpDetail.longHorizon;
-        const isRetarget = fpDetail && fpDetail.retargetTriggered;
         const fpPriceTxt = (_fpPriceVal != null && isFinite(_fpPriceVal)) ? fmtEUR(_fpPriceVal) : '—';
         const textStyle = isLong ? 'color:#999;font-style:italic;font-weight:500' : 'color:#5a3a14;font-weight:700';
-        const retargetBadge = isRetarget ? ` <span style="font-size:9px;color:#c4823b;font-weight:600">↘${(fpDetail.targetGrowthEffettivo||0).toFixed(0)}%</span>` : '';
-        const fpTip = `Foundation Pricing\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nPrezzo strutturale del giorno: storico LY × target × pace × curva × cap mercato.\nÈ la SORGENTE del prezzo RMES.\n\nClick per dettaglio completo (8 step).`;
+        const fpTip = `Foundation Pricing\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nPrezzo strutturale del giorno: storico LY × target × pace × cap mercato.\nÈ la SORGENTE del prezzo RMES.\n\nClick per dettaglio completo (7 step).`;
         const fpRTAttr = escapeHtml(fpRT);
-        cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" style="background:rgba(195,131,59,.10);text-align:center;cursor:pointer;border-left:2px solid rgba(195,131,59,.4)" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${fpPriceTxt}</b>${retargetBadge}</td>`;
+        cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" style="background:rgba(195,131,59,.10);text-align:center;cursor:pointer;border-left:2px solid rgba(195,131,59,.4)" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${fpPriceTxt}</b></td>`;
       }
     }
 
@@ -29957,7 +30018,32 @@ function renderSellStrategy(sel){
         mainTip += `\nSORGENTE: Prezzo baseRT (${baseRT}) + supplemento storico mensile ${mainRT}`;
       }
       mainTip += `\n\nPrezzo finale: ${mainPriceTxt}  ·  MLOS: ${mainM}`;
-      cells += `<td class="cell-mono sell-block-rmes sell-rmes-baseRT" style="background:rgba(195,131,59,.10);text-align:center;cursor:help" title="${escapeHtml(mainTip)}"><b style="color:${mainColor}">${mainPriceTxt}</b> <span style="color:${mainMCol};font-weight:700;font-size:10.5px">M${mainM}</span></td>`;
+      
+      // === Variazione vs Foundation (colore + diff in €) ===
+      // mainPNum è il prezzo RMES numerico effettivo (priorità _pricesByRT, fallback prezzoRMES per baseRT)
+      let mainPNum = (mainP != null && isFinite(mainP)) ? mainP : null;
+      if (mainPNum == null && mainRT === baseRT && typeof prezzoRMES !== 'undefined' && prezzoRMES != null && isFinite(prezzoRMES)){
+        mainPNum = prezzoRMES;
+      }
+      let variazBadge = '';
+      let cellBgRgba = 'rgba(195,131,59,.10)';  // default ambra RMES
+      if (mainPNum != null && _fpPriceVal != null && isFinite(_fpPriceVal)){
+        const delta = mainPNum - _fpPriceVal;
+        if (Math.abs(delta) >= 0.5){
+          const sign = delta > 0 ? '+' : '−';
+          const absVal = Math.abs(delta);
+          const isUp = delta > 0;
+          const badgeColor = isUp ? '#1e6b4a' : '#a83b3b';
+          // Background sfumato verde/rosso
+          cellBgRgba = isUp ? 'rgba(30,107,74,.10)' : 'rgba(168,59,59,.10)';
+          variazBadge = ` <span style="font-size:9.5px;color:${badgeColor};font-weight:600;letter-spacing:.02em">${sign}€${absVal.toFixed(0)}</span>`;
+          mainTip += `\nΔ vs Foundation: ${sign}€${absVal.toFixed(2)} (${sign}${(Math.abs(delta)/_fpPriceVal*100).toFixed(1)}%)`;
+        } else {
+          // delta quasi zero → cella neutra (= Foundation invariato)
+          variazBadge = ` <span style="font-size:9.5px;color:#888;font-weight:500">=</span>`;
+        }
+      }
+      cells += `<td class="cell-mono sell-block-rmes sell-rmes-baseRT" style="background:${cellBgRgba};text-align:center;cursor:help" title="${escapeHtml(mainTip)}"><b style="color:${mainColor}">${mainPriceTxt}</b>${variazBadge} <span style="color:${mainMCol};font-weight:700;font-size:10.5px">M${mainM}</span></td>`;
 
 
       // Celle altre RT (solo se non filtrato E toggle Tutti RT ON)
@@ -29988,7 +30074,26 @@ function renderSellStrategy(sel){
           }
           cellTip += `\nSORGENTE: Prezzo baseRT (${baseRT}) + supplemento storico mensile ${rt}`;
           cellTip += `\n\nPrezzo finale: ${priceTxt}  ·  MLOS: ${m}`;
-          cells += `<td class="cell-mono sell-block-rt" style="background:${rtCol}10;text-align:center;cursor:help" title="${escapeHtml(cellTip)}">${priceTxt} <span style="color:${mCol};font-weight:700;font-size:10.5px">M${m}</span></td>`;
+          
+          // Variazione vs prezzo neutro (= prezzo se multFinale fosse 1 → senza fattori RMES)
+          let rtVariazBadge = '';
+          let rtCellBg = rtCol + '10';
+          if (p != null && isFinite(p) && mults && mults.multFinale && mults.multFinale > 0){
+            const priceNeutro = p / mults.multFinale;  // = prezzo prima dell'applicazione dei 5 fattori
+            const delta = p - priceNeutro;
+            if (Math.abs(delta) >= 0.5){
+              const sign = delta > 0 ? '+' : '−';
+              const absVal = Math.abs(delta);
+              const isUp = delta > 0;
+              const badgeColor = isUp ? '#1e6b4a' : '#a83b3b';
+              rtCellBg = isUp ? 'rgba(30,107,74,.08)' : 'rgba(168,59,59,.08)';
+              rtVariazBadge = ` <span style="font-size:9.5px;color:${badgeColor};font-weight:600">${sign}€${absVal.toFixed(0)}</span>`;
+              cellTip += `\nΔ vs prezzo neutro: ${sign}€${absVal.toFixed(2)}`;
+            } else {
+              rtVariazBadge = ` <span style="font-size:9.5px;color:#888;font-weight:500">=</span>`;
+            }
+          }
+          cells += `<td class="cell-mono sell-block-rt" style="background:${rtCellBg};text-align:center;cursor:help" title="${escapeHtml(cellTip)}">${priceTxt}${rtVariazBadge} <span style="color:${mCol};font-weight:700;font-size:10.5px">M${m}</span></td>`;
         }
       }
       return cells;
