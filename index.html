@@ -24087,7 +24087,29 @@ const ROOM_NORMALIZE = {
 function normRoom(s){
   if(!s) return '';
   const k = s.trim().toLowerCase();
-  return ROOM_NORMALIZE[k] || s.trim().replace(/\b\w/g, c=>c.toUpperCase());
+  // 1) Lookup esatto nella mappa
+  if (ROOM_NORMALIZE[k]) return ROOM_NORMALIZE[k];
+  // 2) Fuzzy matching per varianti storiche (Primo_passaggio PMS vecchio + varianti Beddy/OTA).
+  //    I nomi storici Alfani hanno decine di forme: "Appartamento Classic con 1 Camera da Letto",
+  //    "Classic Apartment, 1 King Bed with Sofa bed, Kitchen", "APPARTAMENTO SUPERIOR", ecc.
+  //    Mappiamo per keyword. ATTENZIONE all'ordine: "junior suite" PRIMA di "suite"/"deluxe",
+  //    e i nomi multi-camera (es. "Classic, Superior") restano invariati (sono prenotazioni
+  //    multi-unità, gestite altrove via split su virgola in loadData).
+  //    Solo applicato a nomi SINGOLI (no virgola), per non rompere i multi-room.
+  if (k.indexOf(',') === -1){
+    // Junior Suite (prima di tutto, perché contiene "suite")
+    if (k.indexOf('junior suite') !== -1 || /\bjunior\b/.test(k)) return 'Junior Suite';
+    // Deluxe (Alfani): "appartamento deluxe", "deluxe apartment, 2 bedrooms", ecc.
+    //   NB: distinguere da "Camera Matrimoniale Deluxe" di Firenze, che però è già preso dal lookup esatto sopra.
+    if (k.indexOf('deluxe') !== -1 && (k.indexOf('appartamento') !== -1 || k.indexOf('apartment') !== -1 || k.indexOf('bedroom') !== -1 || k.indexOf('camere da letto') !== -1)) return 'Deluxe';
+    // Superior (Alfani)
+    if (k.indexOf('superior') !== -1) return 'Superior';
+    // Classic (Alfani): include "vista giardino" (era una Classic nel vecchio PMS)
+    if (k.indexOf('classic') !== -1) return 'Classic';
+    if (k.indexOf('vista giardino') !== -1 || (k.indexOf('1 camera da letto') !== -1 && k.indexOf('appartamento') !== -1)) return 'Classic';
+  }
+  // 3) Fallback: title-case del nome originale
+  return s.trim().replace(/\b\w/g, c=>c.toUpperCase());
 }
 
 /* -------- PROVENIENZA NORMALIZE -------- */
@@ -24175,7 +24197,25 @@ function loadData(csvText){
     const tax = parseFloat((r['Tassa di soggiorno']||'0').toString().replace(',', '.')) || 0;
     const totNet = tot - tax;
 
-    const alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
+    // Split su virgola per gestire prenotazioni multi-camera reali (es. "Classic, Superior").
+    // PROBLEMA: alcuni nomi storici Alfani contengono virgole DESCRITTIVE
+    //   (es. "Classic Apartment, 1 King Bed with Sofa bed, Kitchen"), che lo split
+    //   spezza in frammenti spuri ("1 King Bed...", "Kitchen").
+    // SOLUZIONE: dopo split+normalizzazione, scarto i frammenti che NON normalizzano a un
+    //   room type valido della struttura. Così "Classic Apartment, 1 King Bed, Kitchen" → ["Classic"].
+    //   I multi-camera reali ("Classic, Superior") restano intatti (entrambi validi).
+    const _structKeyForRooms = (struct === CFG.structures.firenze.key) ? 'firenze'
+                             : (struct === CFG.structures.condotta.key) ? 'condotta'
+                             : (struct === CFG.structures.alfani.key) ? 'alfani' : null;
+    const _validRoomsForStruct = (_structKeyForRooms && typeof structRoomsFor === 'function')
+      ? Object.keys(structRoomsFor(_structKeyForRooms) || {}) : null;
+    let alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
+    if (_validRoomsForStruct && _validRoomsForStruct.length){
+      const _filtered = alloggi.filter(rm => _validRoomsForStruct.includes(rm));
+      // Tengo solo le room valide per la struttura. Se NESSUNA è valida (es. "CAMERA VIRTUALE
+      // PER SPOSTAMENTI" o room di altra struttura per errore di data-entry), scarto il booking.
+      alloggi = _filtered;
+    }
     if (!alloggi.length) continue;
     const numRooms = alloggi.length;
     const revPerRoomNight = (totNet / notti) / numRooms;
