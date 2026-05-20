@@ -1164,15 +1164,25 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div class="lede"><b>A cosa serve:</b> capire ogni giorno quanto stai vendendo, quanto vendevi l'anno scorso in quella fase, e quale prezzo conviene tenere domani. Le tre colonne centrali (OTB · STLY · RMES) rispondono a 3 domande in sequenza: <b>quanto ho già venduto oggi</b>, <b>quanto avevo venduto l'anno scorso a parità di anticipo</b>, <b>quale prezzo suggerisce il sistema</b>.
           <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Come leggere la tabella</summary>
             <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
-              <p style="margin:0 0 10px 0"><b>Una riga = un giorno futuro</b>. Da sinistra a destra leggi una "storia" su quel giorno:</p>
+              <p style="margin:0 0 10px 0"><b>Una riga = un giorno futuro</b>. L'ordine delle colonne nella tabella è: <b>Data → OTB → Pickup → STLY → Pickup STLY → Mercato Expedia → Foundation → RMES</b>. Da sinistra a destra leggi una "storia" su quel giorno:</p>
               <ol style="margin:0 0 12px 18px;padding:0">
                 <li style="margin-bottom:6px"><b>Data · Evento · DoW</b> — il giorno e che giorno della settimana è (i weekend sono colorati). Se in quel giorno c'è un evento configurato (Pitti, Calcio Storico, ecc.) compare l'icona.</li>
                 <li style="margin-bottom:6px"><b style="color:#c4823b">OTB ad oggi</b> — quante camere hai venduto, l'occupazione (%) e l'ADR medio. È la "fotografia di adesso".</li>
                 <li style="margin-bottom:6px"><b style="color:#7a3a8e">Pickup Ngg</b> — l'andamento recente: prenotazioni nuove, cancellazioni, delta netto, ADR delle nuove. Configurabile a 1, 3, 7, 14 o 28 giorni dal selettore "Pickup ultimi Ngg". <b>Nuove e Cancellate sono cliccabili</b> per vedere la lista.</li>
                 <li style="margin-bottom:6px"><b style="color:#3a6b6b">STLY (−364)</b> — come stavi a parità di anticipo l'anno scorso. Confronto a giorno-della-settimana (non a data): se oggi è venerdì, il sistema mostra il venerdì di 52 settimane fa.</li>
                 <li style="margin-bottom:6px"><b style="color:#888">Pickup STLY</b> — quanto era stato il pickup nei medesimi Ngg di un anno fa. Confronta le 2 colonne pickup per capire se stai andando meglio o peggio.</li>
-                <li style="margin-bottom:6px"><b style="color:#1e6b4a">Beddy</b> — il prezzo che hai pubblicato in questo momento sul tuo sito diretto.</li>
-                <li style="margin-bottom:6px"><b style="color:#3a6b6b">Mercato Expedia</b> — Mio = il mio prezzo Expedia tradotto in Beddy_eq (netto markup OTA). Compset = la media dei competitor scelti.</li>
+                <li style="margin-bottom:6px"><b style="color:#3a6b6b">Mercato Expedia (Mio · Compset)</b> — il blocco a metà tabella, presente per <b>tutte e 3 le strutture</b>. Due numeri affiancati:
+                  <ul style="margin:4px 0 4px 16px;padding:0">
+                    <li><b>Mio</b> = il prezzo che <b>io stesso</b> ho pubblicato su Expedia per quel giorno, tradotto in <b>Beddy_eq</b> (cioè scontato del markup OTA: <code>Expedia ÷ 1.12 ÷ 0.90</code>). Così è confrontabile direttamente con il prezzo del mio sito diretto.</li>
+                    <li><b>Compset</b> = il <b>prezzo medio del mercato</b> nella mia zona, anch'esso in Beddy_eq. Non è una media semplice: è la <b>media ponderata dei competitor scelti per quella struttura</b>, con due elementi configurabili nella tab RMES → Ⓒ Compset:
+                      <ul style="margin:4px 0 4px 16px;padding:0">
+                        <li><b>Peso</b> per ogni competitor (es. quello più vicino al mio posizionamento pesa di più, una guesthouse fuori target pesa di meno o addirittura zero).</li>
+                        <li><b>Offset</b> per ogni competitor (es. "+15%" se quel competitor è strutturalmente più caro del mio prodotto, "−10%" se è una sistemazione di livello inferiore). L'offset normalizza i competitor rispetto al mio benchmark.</li>
+                      </ul>
+                    </li>
+                  </ul>
+                  <span style="color:var(--ink-3)">Il Compset alimenta il fattore <b>D·Compset</b> di RMES e contribuisce anche a Foundation come ancora di mercato.</span>
+                </li>
                 <li style="margin-bottom:6px"><b style="color:#c4823b">⚡ Foundation</b> — il "fair value" del giorno, il prezzo strutturale che il sistema calcola dai dati storici e dal target. Tre stati possibili (vedi sotto).</li>
                 <li style="margin-bottom:6px"><b style="color:#c4823b">RMES</b> — il prezzo finale suggerito = Foundation × moltiplicatore (i 5 fattori). M1/M2 dentro la cella = MLOS suggerito (minimum length of stay).</li>
               </ol>
@@ -27014,7 +27024,7 @@ function fp_expToBeddyDivisor(structKey){
 // Supports: 'condotta' and 'alfani'.
 function expContext(ymdNum, structSel){
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return null;
-  if (structSel !== 'condotta' && structSel !== 'alfani') return null;
+  if (structSel !== 'condotta' && structSel !== 'alfani' && structSel !== 'firenze') return null;
   const k = expYmdKey(ymdNum);
   if (!k) return null;
 
@@ -27022,9 +27032,12 @@ function expContext(ymdNum, structSel){
   if (structSel === 'condotta'){
     myPrice = EXPEDIA_DATA.condotta[k];
     compAvg = EXPEDIA_DATA.compset_avg[k];
-  } else {
+  } else if (structSel === 'alfani'){
     myPrice = EXPEDIA_DATA.alfani[k];
     compAvg = EXPEDIA_DATA.compset_avg_alfani[k];
+  } else { // firenze
+    myPrice = EXPEDIA_DATA.firenze ? EXPEDIA_DATA.firenze[k] : null;
+    compAvg = EXPEDIA_DATA.compset_avg_firenze ? EXPEDIA_DATA.compset_avg_firenze[k] : null;
   }
   // Search demand is the same for both (= Firenze area)
   const searchCur = EXPEDIA_DATA.search_current[k];
@@ -31164,8 +31177,9 @@ function renderSellStrategy(sel){
 
   // Table
   const dowIT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
-  // Mostra il blocco "Mercato Expedia" solo se la struttura è Condotta 16 (gli altri non sono coperti).
-  const showExp = (sel === 'condotta' || sel === 'alfani');
+  // Mostra il blocco "Mercato Expedia" per tutte e 3 le strutture: Firenze Suite (compset Firenze area),
+  // Condotta 16 (compset Condotta area), Palazzo Alfani (compset Alfani area).
+  const showExp = (sel === 'condotta' || sel === 'alfani' || sel === 'firenze');
   // La colonna "Beddy" è nascosta dalla tabella: il prezzo Beddy reale viene comunque usato internamente
   // come sorgente primaria nella cascata RMES e per il calcolo della correlazione Beddy ↔ Expedia.
   // Una volta che la correlazione è stabile (caricamento prezzi solo oggi), non serve mostrare la colonna.
