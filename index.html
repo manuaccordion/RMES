@@ -29918,7 +29918,7 @@ function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, 
   if (btnDetail){
     btnDetail.onclick = () => {
       popup.remove();
-      if (typeof fp_showDetailModal === 'function') fp_showDetailModal(structKey, rt, dateISO);
+      if (typeof fp_showFoundationOnlyModal === 'function') fp_showFoundationOnlyModal(structKey, rt, dateISO);
     };
   }
 }
@@ -30278,137 +30278,30 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       // (Vecchio box "Prezzo suggerito RMES" sostituito dai 2 box sopra)
       
-      // Toggle "Mostra calcolo Foundation"
+      // Bottone "Vai al dettaglio Foundation (6 step)" → apre la modale Foundation-only
       if (!d.longHorizon){
         rmesSection += '<div style="text-align:center;margin-bottom:8px">';
-        rmesSection += '<button id="fp-show-detail-toggle" style="padding:8px 16px;border:1px solid var(--line);background:#fff;color:#666;border-radius:4px;cursor:pointer;font-size:12px;font-family:\'DM Sans\',sans-serif"><span id="fp-show-detail-arrow">▸</span> Mostra calcolo Foundation (6 step)</button>';
+        rmesSection += '<button id="fp-show-detail-toggle" style="padding:8px 16px;border:1px solid #c4823b;background:#fef8ed;color:#7a4f1c;border-radius:4px;cursor:pointer;font-size:12px;font-family:\'DM Sans\',sans-serif;font-weight:600">⚡ Vedi dettaglio Foundation (6 step)</button>';
         rmesSection += '</div>';
       }
     }
   } catch(e){ console.error('PARTE RMES rendering failed', e); }
   h += rmesSection;
   
-  // ============== DETTAGLIO FOUNDATION (collassato di default) ==============
-  h += '<div id="fp-detail-block" style="display:none">';
-  
-  // Step 1: Ancora storica
-  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">① Ancora storica</div>';
-  if (!d.anchor || !d.anchor.medianADR){
-    h += '<div style="padding:8px 12px;background:#fff4f4;border:1px solid #e0a0a0;border-radius:4px;font-size:12px">Nessun dato LY disponibile per ' + rt + ' nel mese ' + monthNames[d.month-1] + '. Fallback su ADR OTB o floor.</div>';
-  } else {
-    const fb = d.anchor.fallbackUsed;
-    const fbLbl = (fb === 'monthWide') ? ' <span style="color:#c4823b;font-style:italic">(allargato a mese intero, &lt;3 obs pari-DOW)</span>' : '';
-    h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:3px 6px;color:#666;width:55%">Mediana ADR LY (Beddy_eq, 2024+2025 pari-DOW)' + fbLbl + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(d.anchor.medianADR) + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">Mediana RN venduti / giorno LY</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + (d.anchor.medianRN || 0) + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">Osservazioni (n. booking)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + d.anchor.nObs + '</td></tr></table>';
-  }
-  h += '</div>';
-  
-  // Step 2: Target
-  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3d7a4b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">② Target Revenue</div>';
-  h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:3px 6px;color:#666;width:55%">Crescita target ' + monthNames[d.month-1] + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmtPct(d.targetGrowthPct) + '</td></tr>';
-  if (d.revLY != null){
-    h += '<tr><td style="padding:3px 6px;color:#666">Revenue LY (ADR × RN)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.revLY) + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">Revenue target</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(d.revTarget) + '</td></tr>';
-  }
-  h += '</table></div>';
-  
-  if (!d.longHorizon && d.anchor && d.anchor.medianADR){
-    // Step 3: RN attese + ADR target chiusura (logica condizionale)
-    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#8e5fa8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">③ RN attese + ADR target</div>';
-    h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
-    h += '<tr><td style="padding:3px 6px;color:#666;width:55%">RN OTB oggi (' + rt + ')</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + d.rnOtb + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">Revenue OTB Beddy_eq (markup OTA sottratto)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.revYaFattoBeddyEq||0) + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">ADR OTB Beddy_eq medio</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.adrOtbBeddyEq||0) + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">Pickup atteso da qui a check-in (pickup LY residuo × pace ' + fmt2(d.pace) + ')</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt2(d.pickupLYResiduo) + ' × ' + fmt2(d.pace) + ' = ' + fmt2(d.pickupAtteso) + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666">RN attese a chiusura (cap inventario ' + d.inv + ')</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt2(d.rnAttese) + '</td></tr>';
-    // Logica condizionale
-    const caseLabel = d.adrTargetCase === 'target_superato' ? 'TARGET GIÀ SUPERATO'
-                    : d.adrTargetCase === 'vicino_target' ? '≥95% TARGET'
-                    : 'SOTTO 95% TARGET';
-    const caseFormula = (d.adrTargetCase === 'target_superato' || d.adrTargetCase === 'vicino_target')
-                        ? 'max(ADR OTB Beddy_eq, ADR_LY × growth)'
-                        : '(Rev target − Rev OTB) / RN residue';
-    const tettoStorico = d.tettoStorico||0;
-    h += '<tr><td colspan="2" style="padding:6px;background:rgba(142,95,168,.06);border-top:1px solid rgba(142,95,168,.15);font-size:11px;color:#8e5fa8;font-weight:600">Caso: <b>' + caseLabel + '</b></td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666;font-size:11px">Tetto storico (ADR LY × ' + (d.targetGrowthPct||5) + '%)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-size:11px">' + fmt(tettoStorico) + '</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666"><b>ADR target chiusura</b> = ' + caseFormula + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700">' + fmt(d.adrTargetChiusura) + '</td></tr>';
-    h += '</table></div>';
-    
-    // Step 4: Cap mercato (era step 5; step 4 P_grezzo rimosso perché ridondante)
-    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">④ Cap di mercato (compset Expedia)</div>';
-    if (!d.marketCap || d.marketCap.nCompet === 0){
-      h += '<div style="padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:12px;color:#888">Nessun competitor con prezzo valido per questa data. Cap non applicato.</div>';
-    } else {
-      const m = d.marketCap;
-      h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:3px 6px;color:#666;width:55%">Competitor attivi (peso > 0)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + m.nCompet + '</td></tr>';
-      h += '<tr><td style="padding:3px 6px;color:#666">Riferimento compset Beddy_eq (peso × (raw/1.12 × ratio + offset))</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(m.ref) + '</td></tr>';
-      h += '<tr><td style="padding:3px 6px;color:#666">Range ammesso [×0.80, ×1.20]</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">[' + fmt(m.min) + ', ' + fmt(m.max) + ']</td></tr>';
-      const capped = (d.pCapped !== d.pGrezzo);
-      h += '<tr><td style="padding:3px 6px;color:#666">P_capped' + (capped ? ' <span style="color:#c4823b;font-style:italic">(capped!)</span>' : '') + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:' + (capped?'700':'400') + '">' + fmt(d.pCapped) + '</td></tr>';
-      h += '</table>';
-      // Dettaglio competitor (collassabile)
-      h += '<details style="margin-top:6px;font-size:11px"><summary style="cursor:pointer;color:#888">Dettaglio competitor</summary><table style="width:100%;border-collapse:collapse;margin-top:6px;font-size:11px"><thead style="background:#f5f5f5"><tr><th style="padding:4px 6px;text-align:left">Competitor</th><th style="padding:4px 6px;text-align:right">Peso</th><th style="padding:4px 6px;text-align:right">Raw €</th><th style="padding:4px 6px;text-align:right">Beddy_eq</th><th style="padding:4px 6px;text-align:right">Offset</th><th style="padding:4px 6px;text-align:right">Adjusted</th></tr></thead><tbody>';
-      for (const c of m.details){
-        h += '<tr><td style="padding:3px 6px">' + c.name + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + c.peso + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(c.rawPrice) + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(c.beddyEq) + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + (c.offset>=0?'+':'') + c.offset + '€</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(c.adjusted) + '</td></tr>';
-      }
-      h += '</tbody></table></details>';
-    }
-    h += '</div>';
-  }
-  
-  // Step 6-7: Floor + Base lift + Re-target
-  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3d7a4b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑤ Floor + Base lift + ⑥ Re-target</div>';
-  h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
-  h += '<tr><td style="padding:3px 6px;color:#666;width:55%">Floor struttura (hard)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.floor) + '</td></tr>';
-  h += '<tr><td style="padding:3px 6px;color:#666">Base price struttura (soft)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.basePrice) + '</td></tr>';
-  if (d.pCapped != null && d.pFloored != null){
-    const floorApplied = (d.pFloored !== d.pCapped);
-    h += '<tr><td style="padding:3px 6px;color:#666">P_floored' + (floorApplied ? ' <span style="color:#3d7a4b;font-style:italic">(floor applicato)</span>' : '') + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.pFloored) + '</td></tr>';
-  }
-  if (d.baseLiftApplied){
-    h += '<tr><td style="padding:3px 6px;color:#666"><b>Base lift attivato</b> (P sotto Base): media tra ' + fmt(d.baseLiftFrom) + ' e ' + fmt(d.basePrice) + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;color:#7a4f1c;font-weight:700">' + fmt(d.pBaseLifted) + '</td></tr>';
-  } else if (d.pBaseLifted != null){
-    h += '<tr><td style="padding:3px 6px;color:#666">Base lift non attivato (P ≥ Base)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;color:#999">—</td></tr>';
-  }
-  if (d.retargetTriggered){
-    h += '<tr><td style="padding:3px 6px;color:#666"><b>Re-target attivato</b> (sotto target di &gt;8%)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;color:#c4823b;font-weight:600">' + fmtPct(d.targetGrowthEffettivo) + ' effettivo</td></tr>';
-  }
-  h += '</table></div>';
-  
-  // Final price
-  h += '<div style="margin-top:18px;padding:14px 16px;background:linear-gradient(180deg,#fef8ed,#fdf0d8);border:2px solid #c4823b;border-radius:6px">';
-  h += '<div style="display:flex;justify-content:space-between;align-items:center">';
-  h += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7a4f1c">Prezzo Foundation</div>';
-  h += '<div style="font-size:22px;font-weight:700;font-family:\'DM Mono\',monospace;color:#5a3a14">' + fmt(d.priceFinal) + ' <span style="font-size:11px;font-weight:400;color:#888">Beddy = sito diretto</span></div>';
-  h += '</div></div>';
-  
-  // Note di trasparenza
-  h += '<div style="margin-top:14px;padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#666;line-height:1.4">';
-  h += '<b>Nota</b>: Foundation è la <b>sorgente</b> del prezzo RMES. Il prezzo finale = Foundation × moltiplicatore composto dai 5 fattori (A·OCC, B·Price, C·Pace, D·Compset, E·Search). ';
-  h += 'La cascata vecchia (Beddy→Expedia→compset→OTB→LY) è solo fallback per giorni dove Foundation non riesce a calcolare (es. dati LY assenti).';
-  h += '</div>';
-  
-  h += '</div>';  // /fp-detail-block
   
   h += '</div>';  // /body
   h += '</div></div>';  // /modal /bg
   
   document.body.insertAdjacentHTML('beforeend', h);
   
-  // Wire toggle "Mostra calcolo Foundation"
+  // Wire bottone "Vedi dettaglio Foundation": chiude modale RMES, apre modale Foundation-only
   const togBtn = document.getElementById('fp-show-detail-toggle');
   if (togBtn){
     togBtn.onclick = function(){
-      const block = document.getElementById('fp-detail-block');
-      if (!block) return;
-      const isHidden = block.style.display === 'none' || block.style.display === '';
-      if (isHidden){
-        block.style.display = 'block';
-        togBtn.innerHTML = '<span>▾</span> Nascondi calcolo Foundation';
-      } else {
-        block.style.display = 'none';
-        togBtn.innerHTML = '<span>▸</span> Mostra calcolo Foundation (6 step)';
+      const modal = document.getElementById('fp-detail-modal');
+      if (modal) modal.remove();
+      if (typeof fp_showFoundationOnlyModal === 'function'){
+        fp_showFoundationOnlyModal(structKey, rt, dateISO);
       }
     };
   }
@@ -30512,6 +30405,198 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       setTimeout(()=>{ if (typeof fp_showDetailModal === 'function') fp_showDetailModal(struct, rtN, date); }, 50);
     };
   }
+}
+
+/* ---------- Modale dedicata SOLO al dettaglio Foundation (6 step) ----------
+   Si apre dal click sulla cella Foundation (icona ⚡), dal bottone "📖 Vedi dettaglio Foundation"
+   del popup approvazione, o dal bottone "Mostra calcolo Foundation" della modale RMES.
+   Mostra: Ancora storica, Target Revenue, RN attese, Cap mercato, Floor + Base lift, Re-target.
+   NON mostra i 5 fattori RMES (per quelli c'è fp_showDetailModal). */
+function fp_showFoundationOnlyModal(structKey, rt, dateISO){
+  // Rimuovi modale esistente se c'è
+  const existing = document.getElementById('fp-detail-modal');
+  if (existing) existing.remove();
+
+  // Ottieni il calcolo Foundation
+  let r = (typeof fp_getPrice === 'function') ? fp_getPrice(structKey, rt, dateISO) : null;
+  if (!r){
+    const c = (typeof fp_computePrice === 'function') ? fp_computePrice(structKey, rt, dateISO) : null;
+    if (!c){ alert('Impossibile calcolare Foundation per ' + structKey + ' / ' + rt + ' / ' + dateISO); return; }
+    r = c;
+  }
+  const d = r.detail;
+  const td = new Date(dateISO + 'T00:00:00');
+  const dowNames = ['domenica','lunedì','martedì','mercoledì','giovedì','venerdì','sabato'];
+  const monthNames = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+  const dowLbl = dowNames[td.getDay()];
+  const dateLbl = td.getDate() + '/' + (td.getMonth()+1) + '/' + td.getFullYear();
+  const structLbl = (structKey === 'condotta') ? 'Condotta 16'
+                  : (structKey === 'alfani')   ? 'Palazzo Alfani'
+                  : 'Firenze Suite';
+  const fmt = function(n){ if (n == null || !isFinite(n)) return '—'; return '€' + (Math.round(n * 100) / 100).toFixed(0); };
+  const fmt2 = function(n){ if (n == null || !isFinite(n)) return '—'; return (Math.round(n * 100) / 100).toFixed(2); };
+  const fmtPct = function(n){ if (n == null || !isFinite(n)) return '—'; return (n >= 0 ? '+' : '') + (Math.round(n * 10) / 10).toFixed(1) + '%'; };
+
+  // Verifica se è baseRT o RT non-base
+  const baseRT_struct = (typeof CFG !== 'undefined' && CFG.structures && CFG.structures[structKey])
+                      ? CFG.structures[structKey].baseRT : null;
+  const isBaseRT = (baseRT_struct && rt === baseRT_struct);
+
+  let h = '';
+  h += '<div class="fp-modal-bg" id="fp-detail-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto" onclick="if(event.target===this){this.remove()}">';
+  h += '<div class="fp-modal" style="background:#fff;border-radius:8px;max-width:720px;width:100%;font-family:\'DM Sans\',sans-serif;font-size:13px;line-height:1.5;color:#222;box-shadow:0 8px 32px rgba(0,0,0,.3)">';
+  // Header
+  h += '<div style="padding:16px 22px;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#fef8ed,#fff)">';
+  h += '<div>';
+  h += '<div style="font-size:12px;color:#7a4f1c;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px">⚡ Foundation Pricing · dettaglio calcolo (6 step)</div>';
+  h += '<div style="font-size:16px;font-weight:700">' + dateLbl + ' (' + dowLbl + ') · ' + rt + ' · ' + structLbl + '</div>';
+  h += '</div>';
+  h += '<button onclick="document.getElementById(\'fp-detail-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
+  h += '</div>';
+
+  h += '<div style="padding:18px 22px">';
+
+  // ============== CASO RT NON-BASE: spiega derivazione ==============
+  if (!isBaseRT && baseRT_struct){
+    // Per RT non-base, Foundation = Foundation_baseRT_effettivo + supplemento_RT_mese
+    const _stB = (typeof fp_getFoundationState === 'function') ? fp_getFoundationState(structKey, dateISO, baseRT_struct) : null;
+    const _baseR = (typeof fp_getPrice === 'function') ? fp_getPrice(structKey, baseRT_struct, dateISO) : null;
+    const _baseEff = (_stB && _stB.status !== 'proposed') ? _stB.value : (_baseR ? _baseR.price : null);
+    const _mo = (new Date(dateISO + 'T00:00:00')).getMonth() + 1;
+    const _suppVal = (typeof _globalSupplementForRT === 'function') ? _globalSupplementForRT(structKey, rt, _mo) : 0;
+    const _fpRT = (_baseEff != null) ? (_baseEff + _suppVal) : d.priceFinal;
+
+    h += '<div style="padding:14px 16px;background:#fef8ed;border:2px solid #c4823b;border-radius:6px;margin-bottom:18px">';
+    h += '<div style="font-size:11px;font-weight:700;color:#7a4f1c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Foundation derivato</div>';
+    h += '<p style="margin:0 0 10px 0;font-size:12.5px;color:var(--ink-2);line-height:1.55">' + rt + ' è una <b>RT non-base</b>. Foundation non viene ricalcolato dai 6 step per questa RT; eredita dalla baseRT (<b>' + baseRT_struct + '</b>) tramite supplemento mensile storico:</p>';
+    h += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+    h += '<tr><td style="padding:5px 8px;color:#666">Foundation effettivo <b>' + baseRT_struct + '</b> (baseRT)</td><td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(_baseEff) + '</td></tr>';
+    h += '<tr><td style="padding:5px 8px;color:#666">+ Supplemento <b>' + rt + '</b> mese ' + monthNames[_mo-1] + ' (storico)</td><td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">+' + fmt(_suppVal) + '</td></tr>';
+    h += '<tr style="border-top:2px solid #c4823b"><td style="padding:8px;color:#5a3a14;font-weight:700">= Foundation ' + rt + '</td><td style="padding:8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700;color:#5a3a14;font-size:16px">' + fmt(_fpRT) + '</td></tr>';
+    h += '</table>';
+    h += '<p style="margin:10px 0 0 0;font-size:11px;color:#888;font-style:italic">Per modificare Foundation di questo giorno, agisci sulla riga ' + baseRT_struct + ' nella tabella (è la baseRT, le altre RT seguono automaticamente). Tabella supplementi: tab RMES → Ⓔ.</p>';
+    h += '<p style="margin:10px 0 0 0;font-size:11.5px;color:var(--ink-2)">📌 Il dettaglio 6 step sotto si riferisce a <b>' + baseRT_struct + '</b> (la baseRT). I 6 step non vengono calcolati per ' + rt + ' direttamente.</p>';
+    h += '</div>';
+
+    // Re-fetch r per la baseRT (per mostrare i 6 step della baseRT, non di rt)
+    const r_base = (typeof fp_getPrice === 'function') ? fp_getPrice(structKey, baseRT_struct, dateISO) : null;
+    if (r_base) {
+      r = r_base;
+    }
+  }
+
+  const dd = r.detail;
+
+  // Long horizon notice
+  if (dd.longHorizon){
+    h += '<div style="padding:10px 14px;background:#fff8e8;border:1px solid #f0d090;border-radius:5px;margin-bottom:14px;font-size:12px;color:#7a5a14"><b>⚠ Orizzonte lontano</b> (' + dd.daysToArrival + ' giorni dall\'oggi). Modalità semplificata: <b>max(Base, mediana LY) × target growth</b>. Niente pace/curva/cap mercato.</div>';
+    if (dd.anchorOrBase != null){
+      h += '<div style="margin-bottom:14px;padding:10px 14px;background:#fef8ed;border:1px solid #c4823b;border-radius:5px;font-size:12px">';
+      h += '<b style="color:#7a4f1c">Ancora usata</b>: ' + fmt(dd.anchorOrBase) + ' (' + (dd.anchorOrBaseSource||'') + ')<br>';
+      h += 'Base price (config): ' + fmt(dd.basePrice) + ' · Mediana LY: ' + (dd.anchor && dd.anchor.medianADR ? fmt(dd.anchor.medianADR) : 'n/d');
+      h += '</div>';
+    }
+  }
+
+  // === Step 1: Ancora storica ===
+  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">① Ancora storica</div>';
+  if (!dd.anchor || !dd.anchor.medianADR){
+    h += '<div style="padding:8px 12px;background:#fff4f4;border:1px solid #e0a0a0;border-radius:4px;font-size:12px">Nessun dato LY disponibile per ' + (isBaseRT ? rt : baseRT_struct) + ' nel mese ' + monthNames[dd.month-1] + '. Fallback su ADR OTB o floor.</div>';
+  } else {
+    const fb = dd.anchor.fallbackUsed;
+    const fbLbl = (fb === 'monthWide') ? ' <span style="color:#c4823b;font-style:italic">(allargato a mese intero, &lt;3 obs pari-DOW)</span>' : '';
+    h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:3px 6px;color:#666;width:55%">Mediana ADR LY (Beddy_eq, 2024+2025 pari-DOW)' + fbLbl + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(dd.anchor.medianADR) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">Mediana RN venduti / giorno LY</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + (dd.anchor.medianRN || 0) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">Osservazioni (n. booking)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + dd.anchor.nObs + '</td></tr></table>';
+  }
+  h += '</div>';
+
+  // === Step 2: Target Revenue ===
+  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3d7a4b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">② Target Revenue</div>';
+  h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:3px 6px;color:#666;width:55%">Crescita target ' + monthNames[dd.month-1] + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmtPct(dd.targetGrowthPct) + '</td></tr>';
+  if (dd.revLY != null){
+    h += '<tr><td style="padding:3px 6px;color:#666">Revenue LY (ADR × RN)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(dd.revLY) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">Revenue target</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(dd.revTarget) + '</td></tr>';
+  }
+  h += '</table></div>';
+
+  if (!dd.longHorizon && dd.anchor && dd.anchor.medianADR){
+    // === Step 3: RN attese + ADR target ===
+    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#8e5fa8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">③ RN attese + ADR target chiusura</div>';
+    h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+    h += '<tr><td style="padding:3px 6px;color:#666;width:55%">RN OTB oggi (' + (isBaseRT ? rt : baseRT_struct) + ')</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + dd.rnOtb + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">Revenue OTB Beddy_eq (markup OTA sottratto)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(dd.revYaFattoBeddyEq||0) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">ADR OTB Beddy_eq medio</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(dd.adrOtbBeddyEq||0) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">Pickup atteso (pickup LY residuo × pace ' + fmt2(dd.pace) + ')</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt2(dd.pickupLYResiduo) + ' × ' + fmt2(dd.pace) + ' = ' + fmt2(dd.pickupAtteso) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666">RN attese a chiusura (cap inventario ' + dd.inv + ')</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt2(dd.rnAttese) + '</td></tr>';
+    const caseLabel = dd.adrTargetCase === 'target_superato' ? 'TARGET GIÀ SUPERATO'
+                    : dd.adrTargetCase === 'vicino_target' ? '≥95% TARGET'
+                    : 'SOTTO 95% TARGET';
+    const caseFormula = (dd.adrTargetCase === 'target_superato' || dd.adrTargetCase === 'vicino_target')
+                        ? 'max(ADR OTB Beddy_eq, ADR_LY × growth)'
+                        : '(Rev target − Rev OTB) / RN residue';
+    const tettoStorico = dd.tettoStorico||0;
+    h += '<tr><td colspan="2" style="padding:6px;background:rgba(142,95,168,.06);border-top:1px solid rgba(142,95,168,.15);font-size:11px;color:#8e5fa8;font-weight:600">Caso: <b>' + caseLabel + '</b></td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666;font-size:11px">Tetto storico (ADR LY × ' + (dd.targetGrowthPct||5) + '%)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-size:11px">' + fmt(tettoStorico) + '</td></tr>';
+    h += '<tr><td style="padding:3px 6px;color:#666"><b>ADR target chiusura</b> = ' + caseFormula + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700">' + fmt(dd.adrTargetChiusura) + '</td></tr>';
+    h += '</table></div>';
+
+    // === Step 4: Cap mercato ===
+    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">④ Cap di mercato (compset Expedia)</div>';
+    if (!dd.marketCap || dd.marketCap.nCompet === 0){
+      h += '<div style="padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:12px;color:#888">Nessun competitor con prezzo valido per questa data. Cap non applicato.</div>';
+    } else {
+      const m = dd.marketCap;
+      h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:3px 6px;color:#666;width:55%">Competitor attivi (peso > 0)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + m.nCompet + '</td></tr>';
+      h += '<tr><td style="padding:3px 6px;color:#666">Riferimento compset Beddy_eq</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(m.ref) + '</td></tr>';
+      h += '<tr><td style="padding:3px 6px;color:#666">Range ammesso [×0.80, ×1.20]</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">[' + fmt(m.min) + ', ' + fmt(m.max) + ']</td></tr>';
+      const capped = (dd.pCapped !== dd.pGrezzo);
+      h += '<tr><td style="padding:3px 6px;color:#666">P_capped' + (capped ? ' <span style="color:#c4823b;font-style:italic">(capped!)</span>' : '') + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:' + (capped?'700':'400') + '">' + fmt(dd.pCapped) + '</td></tr>';
+      h += '</table>';
+      h += '<details style="margin-top:6px;font-size:11px"><summary style="cursor:pointer;color:#888">Dettaglio competitor</summary><table style="width:100%;border-collapse:collapse;margin-top:6px;font-size:11px"><thead style="background:#f5f5f5"><tr><th style="padding:4px 6px;text-align:left">Competitor</th><th style="padding:4px 6px;text-align:right">Peso</th><th style="padding:4px 6px;text-align:right">Raw €</th><th style="padding:4px 6px;text-align:right">Beddy_eq</th><th style="padding:4px 6px;text-align:right">Offset</th><th style="padding:4px 6px;text-align:right">Adjusted</th></tr></thead><tbody>';
+      for (const c of m.details){
+        h += '<tr><td style="padding:3px 6px">' + c.name + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + c.peso + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(c.rawPrice) + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(c.beddyEq) + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + (c.offset>=0?'+':'') + c.offset + '€</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(c.adjusted) + '</td></tr>';
+      }
+      h += '</tbody></table></details>';
+    }
+    h += '</div>';
+  }
+
+  // === Step 5+6: Floor + Base lift + Re-target ===
+  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3d7a4b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑤ Floor + Base lift + ⑥ Re-target</div>';
+  h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+  h += '<tr><td style="padding:3px 6px;color:#666;width:55%">Floor struttura (hard)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(dd.floor) + '</td></tr>';
+  h += '<tr><td style="padding:3px 6px;color:#666">Base price struttura (soft)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(dd.basePrice) + '</td></tr>';
+  if (dd.pCapped != null && dd.pFloored != null){
+    const floorApplied = (dd.pFloored !== dd.pCapped);
+    h += '<tr><td style="padding:3px 6px;color:#666">P_floored' + (floorApplied ? ' <span style="color:#3d7a4b;font-style:italic">(floor applicato)</span>' : '') + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(dd.pFloored) + '</td></tr>';
+  }
+  if (dd.baseLiftApplied){
+    h += '<tr><td style="padding:3px 6px;color:#666"><b>Base lift attivato</b> (P sotto Base): media tra ' + fmt(dd.baseLiftFrom) + ' e ' + fmt(dd.basePrice) + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;color:#7a4f1c;font-weight:700">' + fmt(dd.pBaseLifted) + '</td></tr>';
+  } else if (dd.pBaseLifted != null){
+    h += '<tr><td style="padding:3px 6px;color:#666">Base lift non attivato (P ≥ Base)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;color:#999">—</td></tr>';
+  }
+  if (dd.retargetTriggered){
+    h += '<tr><td style="padding:3px 6px;color:#666"><b>Re-target attivato</b> (sotto target di &gt;8%)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;color:#c4823b;font-weight:600">' + fmtPct(dd.targetGrowthEffettivo) + ' effettivo</td></tr>';
+  }
+  h += '</table></div>';
+
+  // Prezzo Foundation finale (della baseRT, se la modale è in modalità derivata)
+  h += '<div style="margin-top:18px;padding:14px 16px;background:linear-gradient(180deg,#fef8ed,#fdf0d8);border:2px solid #c4823b;border-radius:6px">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center">';
+  h += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7a4f1c">Prezzo Foundation ' + (isBaseRT ? rt : baseRT_struct + ' (baseRT)') + '</div>';
+  h += '<div style="font-size:22px;font-weight:700;font-family:\'DM Mono\',monospace;color:#5a3a14">' + fmt(dd.priceFinal) + '</div>';
+  h += '</div></div>';
+
+  // Nota chiusura
+  h += '<div style="margin-top:14px;padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#666;line-height:1.4">';
+  h += '<b>Nota</b>: questo è il <b>prezzo Foundation</b>, ovvero il prezzo strutturale del giorno. Per vedere come Foundation viene aggiustato dai 5 fattori RMES (A·OCC, B·Price, C·Pace, D·Compset, E·Search) per produrre il prezzo finale RMES, clicca sulla cella <b>RMES</b> a destra nella tabella.';
+  h += '</div>';
+
+  h += '</div>';  // /body
+  h += '</div></div>';  // /modal /bg
+
+  document.body.insertAdjacentHTML('beforeend', h);
 }
 
 /* ---------- Tab RMES: sezione Foundation Pricing Config ---------- */
@@ -30670,10 +30755,75 @@ function fp_renderFoundationConfigBox(structKey){
         auditRows.push({ dateISO, rtN, ovrPrice, rmesSugg, rnFinal, revFinal, revIpotetico, deltaRev });
       }
     }
-    if (auditRows.length === 0){
-      list.innerHTML = '<div style="padding:10px 12px;background:#f8f8f5;border-radius:4px;color:#888;font-style:italic">Nessun override su giorni passati. Quando un giorno con override sarà chiuso (data &lt; oggi), apparirà qui il confronto con il prezzo che RMES avrebbe suggerito.</div>';
+
+    // ===== Calcolo override FUTURI (≥ oggi) — prima dei check di "vuoto" =====
+    const futureOverrides = [];
+    for (const dateISO in overridesForStruct){
+      if (dateISO < todayYmd) continue;  // solo futuri/oggi
+      const rtMap = overridesForStruct[dateISO];
+      for (const rtN in rtMap){
+        const ovrObj = rtMap[rtN];
+        const ovrPrice = (typeof ovrObj === 'number') ? ovrObj : (ovrObj && ovrObj.price);
+        const snapshot = (typeof ovrObj === 'object' && ovrObj) ? ovrObj.snapshot : null;
+        if (ovrPrice == null || !isFinite(ovrPrice)) continue;
+        const rmesSugg = (snapshot && snapshot.rmesSuggested != null) ? +snapshot.rmesSuggested : null;
+        const savedAt = (typeof ovrObj === 'object' && ovrObj) ? ovrObj.savedAt : null;
+        futureOverrides.push({ dateISO, rtN, ovrPrice, rmesSugg, savedAt });
+      }
+    }
+    futureOverrides.sort((a,b) => a.dateISO.localeCompare(b.dateISO));
+
+    let h = '';
+
+    // ===== Render sezione override FUTURI (se presenti) =====
+    if (futureOverrides.length > 0){
+      h += '<div style="margin-bottom:18px">';
+      h += '<div style="font-size:12px;font-weight:700;color:#1e4a6b;margin-bottom:8px">🖋 Override attivi su giorni futuri (' + futureOverrides.length + ')</div>';
+      h += '<div style="font-size:11px;color:#888;margin-bottom:8px;font-style:italic">Override del prezzo finale RMES non ancora chiusi (giorno ≥ oggi). Non c\'è ancora confronto revenue. Per rimuovere un override: clicca la cella RMES del giorno nella Sell Strategy → ✕ Reset nella modale.</div>';
+      h += '<table style="width:100%;border-collapse:collapse;font-size:11px"><thead style="background:#eef4fb"><tr>';
+      h += '<th style="padding:6px 8px;text-align:left;color:#1e4a6b;font-weight:600">Data</th>';
+      h += '<th style="padding:6px 8px;text-align:left;color:#1e4a6b;font-weight:600">RT</th>';
+      h += '<th style="padding:6px 8px;text-align:right;color:#1e4a6b;font-weight:600">Override</th>';
+      h += '<th style="padding:6px 8px;text-align:right;color:#1e4a6b;font-weight:600">RMES sugg. (snapshot)</th>';
+      h += '<th style="padding:6px 8px;text-align:right;color:#1e4a6b;font-weight:600">Δ vs RMES</th>';
+      h += '<th style="padding:6px 8px;text-align:left;color:#1e4a6b;font-weight:600">Impostato il</th>';
+      h += '</tr></thead><tbody>';
+      for (const r of futureOverrides){
+        const dParts = r.dateISO.split('-');
+        const ddMmYyyy = dParts[2]+'/'+dParts[1]+'/'+dParts[0];
+        const delta = (r.rmesSugg != null) ? (r.ovrPrice - r.rmesSugg) : null;
+        const dCol = (delta != null) ? (delta > 0 ? '#1e6b4a' : (delta < 0 ? '#a83b3b' : '#666')) : '#bbb';
+        const dSign = (delta != null && delta >= 0) ? '+' : '';
+        let savedLbl = '—';
+        if (r.savedAt){
+          try { const sd = new Date(r.savedAt); savedLbl = String(sd.getDate()).padStart(2,'0')+'/'+String(sd.getMonth()+1).padStart(2,'0')+'/'+sd.getFullYear(); } catch(e){}
+        }
+        h += '<tr style="background:rgba(59,107,154,.03)">';
+        h += '<td style="padding:5px 8px;border-bottom:1px solid #e8eef5;font-family:\'DM Mono\',monospace">'+ddMmYyyy+'</td>';
+        h += '<td style="padding:5px 8px;border-bottom:1px solid #e8eef5">'+r.rtN+'</td>';
+        h += '<td style="padding:5px 8px;border-bottom:1px solid #e8eef5;text-align:right;font-family:\'DM Mono\',monospace;color:#1e4a6b;font-weight:700">€'+r.ovrPrice.toFixed(0)+'</td>';
+        h += '<td style="padding:5px 8px;border-bottom:1px solid #e8eef5;text-align:right;font-family:\'DM Mono\',monospace;color:#666">'+(r.rmesSugg!=null?'€'+r.rmesSugg.toFixed(0):'<span style="color:#bbb">n/d</span>')+'</td>';
+        h += '<td style="padding:5px 8px;border-bottom:1px solid #e8eef5;text-align:right;font-family:\'DM Mono\',monospace;color:'+dCol+';font-weight:600">'+(delta!=null?dSign+'€'+delta.toFixed(0):'<span style="color:#bbb">—</span>')+'</td>';
+        h += '<td style="padding:5px 8px;border-bottom:1px solid #e8eef5;font-family:\'DM Mono\',monospace;color:#999;font-size:10.5px">'+savedLbl+'</td>';
+        h += '</tr>';
+      }
+      h += '</tbody></table>';
+      h += '</div>';
+    }
+
+    // ===== Check vuoto (dopo aver eventualmente reso i futuri) =====
+    if (auditRows.length === 0 && futureOverrides.length === 0){
+      list.innerHTML = '<div style="padding:10px 12px;background:#f8f8f5;border-radius:4px;color:#888;font-style:italic">Nessun override attivo. Quando imposti un override del prezzo finale RMES (cliccando una cella RMES nella Sell Strategy), comparirà qui: prima nella sezione "futuri", poi nell\'audit quando il giorno sarà chiuso.</div>';
       return;
     }
+    if (auditRows.length === 0){
+      // Solo override futuri, nessun audit storico
+      h += '<div style="padding:10px 12px;background:#f8f8f5;border-radius:4px;color:#888;font-style:italic;font-size:11px">Nessun override su giorni già chiusi. Il confronto revenue apparirà quando i giorni con override saranno passati.</div>';
+      list.innerHTML = h;
+      return;
+    }
+
+    // ===== Audit storico (giorni chiusi) =====
     auditRows.sort((a,b) => b.dateISO.localeCompare(a.dateISO));
     let totDelta = 0, nValid = 0, nVintoOverride = 0, nVintoRMES = 0;
     for (const r of auditRows){
@@ -30683,7 +30833,8 @@ function fp_renderFoundationConfigBox(structKey){
         else if (r.deltaRev < -0.5) nVintoRMES++;
       }
     }
-    let h = '';
+    h += '<div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;padding-top:8px;border-top:1px solid var(--line)">📊 Audit override su giorni chiusi (passati)</div>';
+
     if (nValid > 0){
       const sign = totDelta >= 0 ? '+' : '';
       const col = totDelta > 0 ? '#1e6b4a' : (totDelta < 0 ? '#a83b3b' : '#666');
@@ -32092,15 +32243,23 @@ function renderSellStrategy(sel){
       // Click cella → apre modale unificata Foundation + RMES (gestita da event listener delegato)
       const fpDateAttrISO = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
       const fpRTAttrCell = escapeHtml(mainRT);
-      // Indicatore se la baseRT ha un override attivo per questo giorno
-      const hasOverride = (typeof fp_getOverride === 'function' && mainRT === baseRT) ? (fp_getOverride(sel, fpDateAttrISO, baseRT) != null) : false;
-      const overrideBadge = hasOverride ? `<span title="Override attivo: prezzo Foundation impostato manualmente" style="font-size:9px;color:#c4823b;font-weight:700;margin-right:2px">🖋</span>` : '';
+      // Indicatore se la RT visualizzata (qualsiasi, non solo baseRT) ha un override del PREZZO FINALE RMES.
+      // L'override del prezzo finale è salvato per la specifica RT (fp_getOverride con la mainRT).
+      const ovrObjMain = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, fpDateAttrISO, mainRT) : null;
+      const hasOverride = !!(ovrObjMain && ovrObjMain.price != null && isFinite(ovrObjMain.price));
+      const overrideBadge = hasOverride ? `<span title="Override prezzo finale RMES attivo per ${mainRT}: prezzo pubblicato impostato manualmente (clicca per dettaglio)" style="font-size:10px;color:#1e4a6b;font-weight:700;margin-right:2px">🖋</span>` : '';
+      // Se c'è override, evidenzia la cella con bordo blu (sovrascrive il colore delta vs Foundation)
+      let cellBorderStyle = '';
+      if (hasOverride){
+        cellBgRgba = 'rgba(59,107,154,.12)';
+        cellBorderStyle = 'border:1.5px solid rgba(59,107,154,.55);';
+      }
       // Badge "P̄" = fattore C·Pace sta usando il fallback aggregato 3 strutture (perché il pace
       // mese-specifico per questa struttura non è disponibile). Le 3 strutture sono nella stessa area
       // e fascia qualità, quindi è un proxy ragionevole della domanda del mercato locale per quel mese.
       const paceFromAgg = (mainMults && mainMults._paceFromAggregate === true);
       const paceAggBadge = paceFromAgg ? `<span title="Fattore C·Pace: dato mese-specifico struttura non disponibile, sto usando il pace aggregato delle 3 strutture (mercato locale, area e fascia qualità simili) come proxy." style="font-size:9px;color:#8e5fa8;font-weight:700;margin-right:2px;font-family:'DM Mono',monospace">P̄</span>` : '';
-      cells += `<td class="cell-mono sell-block-rmes sell-rmes-baseRT" data-rmes-struct="${sel}" data-rmes-rt="${fpRTAttrCell}" data-rmes-date="${fpDateAttrISO}" style="background:${cellBgRgba};text-align:center;cursor:pointer" title="${escapeHtml(mainTip)}">${overrideBadge}${paceAggBadge}<b style="color:${mainColor}">${mainPriceTxt}</b> <span style="color:${mainMCol};font-weight:700;font-size:10.5px">M${mainM}</span></td>`;
+      cells += `<td class="cell-mono sell-block-rmes sell-rmes-baseRT" data-rmes-struct="${sel}" data-rmes-rt="${fpRTAttrCell}" data-rmes-date="${fpDateAttrISO}" style="background:${cellBgRgba};${cellBorderStyle}text-align:center;cursor:pointer" title="${escapeHtml(mainTip)}">${overrideBadge}${paceAggBadge}<b style="color:${mainColor}">${mainPriceTxt}</b> <span style="color:${mainMCol};font-weight:700;font-size:10.5px">M${mainM}</span></td>`;
 
 
       // Celle altre RT (solo se non filtrato E toggle Tutti RT ON)
