@@ -1750,7 +1750,10 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <h3>① Pesi dei 5 fattori RMES <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-w-sub">struttura: —</span></h3>
           <div class="panel-sub">Quanto contribuisce ogni fattore al moltiplicatore finale. Tutti e 5 i fattori sono calcolati <b>a livello struttura</b> (le differenze tra Room Type vengono interamente da Foundation, via supplementi storici mensili). Default: 20% × 5 fattori = 100%. Somma normalizzata automaticamente.</div>
         </div>
-        <button id="rmes-tab-w-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset default v3</button>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button id="rmes-tab-w-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" title="Resetta i pesi della struttura corrente a 20% × 5 fattori">↺ Reset 20%×5 (struttura corrente)</button>
+          <button id="rmes-tab-w-reset-all" style="font-size:10px;padding:5px 10px;border:1px solid #c4823b;border-radius:4px;background:#c4823b;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600" title="Resetta i pesi a 20% × 5 fattori per TUTTE e 3 le strutture (Firenze + Condotta + Alfani)">↺ Reset 20%×5 (tutte e 3 le strutture)</button>
+        </div>
       </div>
       <div class="panel-body" style="padding:14px 16px">
         <div id="rmes-tab-w-bar" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px"></div>
@@ -36647,16 +36650,31 @@ function _renderRmesWeightsBox(sel){
     });
   });
   _rmesTabSyncWeights(sel);
-  // Reset button
+  // Reset button (struttura corrente)
   const resetBtn = document.getElementById('rmes-tab-w-reset');
   if (resetBtn && !resetBtn._wired){
     resetBtn._wired = true;
     resetBtn.onclick = () => {
-      if (!confirm(`Resettare i pesi di ${RMES_TAB_STRUCT} ai default?`)) return;
+      if (!confirm(`Resettare i pesi di ${RMES_TAB_STRUCT} a 20% × 5 fattori?`)) return;
       SELL_RMES_W_ALL[RMES_TAB_STRUCT] = Object.assign({}, SELL_RMES_W_DEFAULT);
       saveRmesWeights();
       _renderRmesWeightsBox(RMES_TAB_STRUCT);
       if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+      _rmesTabClearDirty();
+    };
+  }
+  // Reset button (TUTTE e 3 le strutture)
+  const resetBtnAll = document.getElementById('rmes-tab-w-reset-all');
+  if (resetBtnAll && !resetBtnAll._wired){
+    resetBtnAll._wired = true;
+    resetBtnAll.onclick = () => {
+      if (!confirm('Resettare i pesi a 20% × 5 fattori per TUTTE e 3 le strutture (Firenze + Condotta + Alfani)?')) return;
+      for (const s of ['firenze','condotta','alfani']){
+        SELL_RMES_W_ALL[s] = Object.assign({}, SELL_RMES_W_DEFAULT);
+      }
+      saveRmesWeights();
+      _renderRmesWeightsBox(RMES_TAB_STRUCT);
+      if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined') renderSellStrategy(CURRENT_STRUCT);
       _rmesTabClearDirty();
     };
   }
