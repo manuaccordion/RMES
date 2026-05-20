@@ -976,51 +976,52 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>Forecast <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">Maggio 2026 → Aprile 2027</span></h2>
-        <div class="lede">Quanto chiuderò di revenue e occupazione, per ogni mese, dalla data di oggi fino ad Aprile 2027. La logica è semplice: <b>parte da quello che già ho confermato in cassa (OTB) e aggiunge una stima di quante prenotazioni arriveranno ancora</b>, basandosi su come è andato l'anno scorso.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.55;color:var(--ink-2);max-width:920px">
-              <p style="margin:0 0 8px 0"><b>L'idea di base in una frase</b>: ogni mese viene calcolato come "<b>quello che ho già venduto (OTB) + un'estimazione di quello che venderò ancora, basata sul mese corrispondente del 2025 corretto da indicatori di come stanno andando le cose oggi</b>".</p>
+        <div class="lede"><b>A cosa serve:</b> rispondere alla domanda "quanto chiuderò questo mese?" (e i mesi a seguire) basandosi su quello che hai già venduto e su come stai performando rispetto all'anno scorso.
+          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Come funziona</summary>
+            <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
+              <p style="margin:0 0 10px 0"><b>L'idea in una frase:</b> per ogni mese futuro, il sistema parte dalle prenotazioni dell'anno scorso e le aggiusta in base a come stanno andando le cose oggi. Se oggi vendi il 5% in più di un anno fa, il forecast del mese di luglio è "luglio 2025 × 1.05". Poi confronta con quello che hai già confermato (OTB) e prende il massimo dei due (= non scende mai sotto il già-venduto).</p>
 
-              <p style="margin:10px 0 4px 0"><b>Step 1 — Distinguo 3 tipi di mesi:</b></p>
-              <ul style="margin:4px 0 8px 18px">
-                <li><b>Passati</b> (es. gennaio 2026 oggi): nessuna stima. Mostro solo l'<b>actual</b>, cioè quello che ho effettivamente incassato.</li>
-                <li><b>Corrente</b> (es. maggio 2026 oggi): mostro <b>actual fino a ieri + forecast da oggi a fine mese</b>. Per la parte futura uso la stessa logica dei mesi futuri.</li>
-                <li><b>Futuri</b> (giugno 2026 → aprile 2027): stima completa.</li>
+              <p style="margin:14px 0 6px 0"><b>3 tipi di mese, 3 logiche:</b></p>
+              <ul style="margin:0 0 12px 18px;padding:0">
+                <li style="margin-bottom:5px"><b>Mese già passato</b> (es. febbraio 2026): mostra solo il <b>realizzato</b>. Niente forecast, è storia.</li>
+                <li style="margin-bottom:5px"><b>Mese in corso</b> (es. maggio 2026 se oggi è il 20): <b>realizzato fino a ieri + forecast da oggi a fine mese</b>.</li>
+                <li style="margin-bottom:5px"><b>Mese futuro</b> (es. giugno 2026): <b>forecast completo</b> con la logica sotto.</li>
               </ul>
 
-              <p style="margin:10px 0 4px 0"><b>Step 2 — Per un mese futuro, quante RN venderò?</b></p>
-              <p style="margin:0 0 4px 0">Prendo le RN del mese corrispondente del 2025 (es. per giugno 2026 prendo giugno 2025) e le moltiplico per uno "<b>share</b>" che dice se sto andando meglio o peggio del LY (clampato fra 0.70 e 1.30, cioè ±30%).</p>
-              <ul style="margin:4px 0 8px 18px">
-                <li><b>share</b> = OCC media OTB attuale (su tutti i mesi futuri vicini) / OCC media STLY corrispondente. Es. share=1.05 = sto venendo +5% in più del LY.</li>
-                <li>Poi confronto con l'OTB già confermato: se OTB &gt; (LY × share), tengo OTB (non riduco mai sotto il confermato).</li>
-                <li>Cap inventario al 98%: non posso vendere più del fisicamente disponibile.</li>
+              <p style="margin:14px 0 6px 0"><b>Come calcola le RN (room nights) di un mese futuro:</b></p>
+              <ol style="margin:0 0 12px 18px;padding:0">
+                <li style="margin-bottom:5px">Prende le RN del mese corrispondente del 2025 (es. per giugno 2026 → giugno 2025).</li>
+                <li style="margin-bottom:5px">Le moltiplica per uno <b>"share"</b> che dice come stai andando rispetto all'anno scorso. Lo share viene calcolato <b>per mese di stay specifico</b> (non un singolo numero globale): le RN venduto a giugno negli ultimi 12 mesi vs RN dei 12 mesi precedenti, e così per ogni mese. Esempio: share giugno = 1.05 vuol dire "a giugno sto vendendo il 5% in più rispetto all'anno scorso". Lo share è limitato fra 0.70 e 1.30 (±30%). <b>Soglie minime di dati</b>: ≥30 RN cur per usare lo share mensile puro; 10-29 RN → blend 60% mese + 40% globale; sotto 10 → usa lo share globale (90gg). Così proiezioni di mesi forti non vengono "diluite" da medie globali, e mesi deboli non vengono "gonfiati" da mesi forti.</li>
+                <li style="margin-bottom:5px">Confronta con quanto hai <b>già venduto (OTB)</b> per quel mese. Se l'OTB è già più alto della stima, vince l'OTB (il forecast non scende mai sotto il già-confermato).</li>
+                <li style="margin-bottom:5px">Cap al 98% dell'inventario: non puoi vendere più camere di quante ne hai (e nel mondo reale non si arriva mai al 100% per overbooking/manutenzioni/blocchi).</li>
+              </ol>
+
+              <p style="margin:14px 0 6px 0"><b>Come calcola l'ADR (= prezzo medio) di un mese futuro:</b></p>
+              <ul style="margin:0 0 12px 18px;padding:0">
+                <li style="margin-bottom:5px">Per le <b>RN già confermate (OTB)</b>: usa il prezzo reale che hai incassato. Niente stima.</li>
+                <li style="margin-bottom:5px">Per le <b>RN del pickup atteso</b> (= quelle che venderai ancora): usa il <b>prezzo RMES suggerito giorno-per-giorno</b>, mediato sul mese <b>pesato per inventory residuo</b>. Significa: i giorni già esauriti (es. sabati pieni) non contribuiscono alla media; i giorni quasi pieni contribuiscono in proporzione al residuo (es. OCC=80% → peso 20%); i giorni vuoti contribuiscono pienamente. Così l'ADR pickup riflette davvero quello che venderai ancora, non la media indiscriminata di tutti i giorni del mese.</li>
+                <li style="margin-bottom:5px">Se per qualche giorno RMES non riesce a calcolare un prezzo (manca lo storico LY di quel giorno-settimana), <b>fallback</b>: ADR LY del mese × growth ADR (stesso clamp ±30%).</li>
               </ul>
 
-              <p style="margin:10px 0 4px 0"><b>Step 3 — A che prezzo le venderò (ADR forecast)?</b></p>
-              <p style="margin:0 0 4px 0">L'ADR del pickup (le RN ancora da vendere) usa il <b>prezzo RMES suggerito giorno-per-giorno</b> calcolato dal sistema di pricing principale, mediato per il mese e per RT. Se per qualche giorno RMES non riesce a calcolare un prezzo (mancanza dati storici), <b>fallback</b> al vecchio metodo: <code>ADR LY del mese × growth ADR</code> (clamp [0.70, 1.30]).</p>
-              <p style="margin:0 0 4px 0">Per le RN già confermate (OTB) uso il prezzo reale incassato — non lo stimo.</p>
-              <p style="margin:0 0 4px 0;font-size:11.5px;color:#666;font-style:italic">Tutto in Beddy_eq (netto): le tariffe OTA storiche sono già al netto del markup configurato. Il prezzo RMES suggerito è già in Beddy_eq.</p>
+              <p style="margin:14px 0 6px 0"><b>Calcolo per Room Type:</b></p>
+              <p style="margin:0 0 10px 0">Tutto sopra è ripetuto <b>per ogni tipologia camera</b>, partendo dal mix LY (es. se a luglio 2025 il 60% delle vendite erano Camera Matrim. Deluxe, parte da quella ripartizione). Ogni RT ha il suo cap inventario. La somma per RT coincide sempre col totale mese.</p>
 
-              <p style="margin:10px 0 4px 0"><b>Step 4 — Per Room Type</b></p>
-              <p style="margin:0 0 4px 0">Il calcolo sopra è fatto <b>per ogni RT separatamente</b>, partendo dal mix LY per RT del mese corrispondente. Ogni RT ha il suo cap (= camere RT × giorni del mese) e non lo supera mai.</p>
+              <p style="margin:14px 0 6px 0"><b>Forecast Snapshot vs Forecast Live:</b></p>
+              <p style="margin:0 0 10px 0">Il 1° giorno di ogni mese, il sistema salva il forecast che aveva in quel momento ("snapshot"). Durante il mese, il forecast viene aggiornato in tempo reale ("live"). A fine mese puoi confrontare i due: quanto eri stato bravo a prevedere 30 giorni prima, vs come è andata davvero. È un audit di accuratezza.</p>
 
-              <p style="margin:10px 0 4px 0"><b>Override manuali per ancorare al budget</b></p>
-              <p style="margin:0 0 4px 0">In alcuni mesi specifici (es. Alfani giugno/luglio/settembre/dicembre 2026) ho applicato <b>boost manuali</b> di ADR e/o forzature di OCC al valore budget, per riflettere strategie commerciali decise a priori (eventi, prezzi premium, lavori). Sono hardcoded nel codice.</p>
+              <p style="margin:14px 0 6px 0"><b>Override manuali (boost):</b></p>
+              <p style="margin:0 0 10px 0">In alcuni mesi specifici (es. Alfani giugno/luglio/settembre/dicembre 2026) sono applicati boost manuali di ADR o forzature di OCC al valore budget, per riflettere decisioni strategiche prese a priori (eventi, riposizionamento, lavori). Sono configurati nel codice e visibili nelle note in tabella.</p>
 
-              <p style="margin:10px 0 4px 0"><b>Forecast Snapshot (1° del mese) vs Forecast Live</b></p>
-              <p style="margin:0 0 4px 0">Per ogni mese viene salvato il <b>forecast del 1° giorno del mese</b> (snapshot) per confronto a chiusura con il forecast live (aggiornato giornalmente). Mostra quanto sei stato bravo a prevedere il mese 30 giorni prima vs come sta andando in tempo reale.</p>
+              <p style="margin:14px 0 6px 0"><b>Correzione Pasqua:</b></p>
+              <p style="margin:0 0 10px 0">Pasqua 2027 cade il 28 marzo, mentre Pasqua 2026 era ad aprile. Per evitare di confrontare un marzo "senza Pasqua" con un marzo "con Pasqua", il sistema sposta la settimana santa 2026 nel mese giusto del 2027 ai fini del calcolo Final LY (vedi sezione "Logica di calcolo" sotto per i dettagli).</p>
 
-              <p style="margin:10px 0 4px 0"><b>Note importanti</b></p>
-              <ul style="margin:4px 0 8px 18px">
-                <li><b>Easter correction</b>: per marzo/aprile 2027 c'è una correzione speciale perché Pasqua cade in date diverse rispetto a 2026.</li>
-                <li>Tutto in <b>Beddy_eq</b> (netto markup OTA): sia OTB storico che prezzo RMES suggerito. Per visualizzare il revenue lordo OTA, moltiplica per (1 + markup_OTA/100).</li>
+              <p style="margin:14px 0 6px 0"><b>Toggle sopra la tabella:</b></p>
+              <ul style="margin:0 0 10px 18px;padding:0">
+                <li><b>+ gen-apr 2026 (passato)</b>: aggiunge i 4 mesi 2026 già chiusi. Utile per vedere il fiscal year da inizio anno.</li>
+                <li><b>− gen-apr 2027 (futuro lontano)</b>: nasconde i 4 mesi più lontani dove la stima è meno affidabile (OTB ancora vuoto).</li>
               </ul>
 
-              <p style="margin:10px 0 4px 0"><b>Toggle UI</b></p>
-              <ul style="margin:4px 0 8px 18px">
-                <li><b>+ gen-apr 2026 (passato)</b>: aggiunge in testa i 4 mesi 2026 già chiusi come actual. Utile per vedere il fiscal year da inizio anno.</li>
-                <li><b>− gen-apr 2027 (futuro lontano)</b>: nasconde i 4 mesi più lontani dove la stima è meno affidabile.</li>
-              </ul>
+              <p style="margin:14px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica:</b> ogni inizio mese guardi la riga del mese in corso e dei 2-3 successivi: la colonna <b>Forecast</b> ti dice "se nulla cambia rispetto al ritmo attuale, finirò qui". Confronti con il <b>Budget</b> per vedere se sei sopra o sotto. La colonna <b>€/giorno per chiudere</b> ti dice quanto devi incassare ogni giorno che manca alla chiusura per raggiungere il forecast — utile per capire l'urgenza. Tutti i numeri sono in Beddy_eq (netto del markup OTA).</p>
             </div>
           </details>
         </div>
@@ -1160,23 +1161,59 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>Sell Strategy <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px" id="sell-range-label">—</span></h2>
-        <div class="lede">Tabella giornaliera con OTB · Pickup · STLY · Foundation · prezzo RMES suggerito. <b>Click sul prezzo Foundation</b> → popup di approvazione con dettaglio 6 step. <b>Bottoni inline ✓ 🖋 ↺</b> in ogni riga: accetta · override · reset. <b>Click sulla cella RMES</b> → modale 5 fattori + simulazione revenue. Sopra la tabella: bottoni batch per applicare azioni a tutti i giorni visibili.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
-              <p><b>Colonne</b>:
-                <b>OTB ad oggi</b> (RN/OCC/ADR) = ciò che hai venduto fino ad ora.
-                <b>Pickup Ngg</b> = nuove prenotazioni − cancellazioni negli ultimi N giorni (configurabile).
-                <b>STLY (−364)</b> = stesso giorno della settimana 364 giorni fa (non stessa data).
-                <b>Pickup STLY</b> = pickup nei medesimi N giorni un anno fa.
-                <b>Beddy</b> = prezzo attualmente pubblicato sul sito diretto.
-                <b>Mercato Expedia</b> (Mio / Compset) = prezzi lordi visibili oggi sull'OTA.
-                <b>Foundation</b> = prezzo "strutturale" del giorno (sorgente RMES).
-                <b>RMES</b> = prezzo Beddy_eq suggerito (= Foundation × moltiplicatore composto dai 5 fattori, override applicabile).
-              </p>
-              <p><b>MLOS</b> per RT è calcolato da OCC_RT e OCC_RT Final LY.</p>
-              <p><b>Filtro Room Type</b> sopra la tabella: pillole colorate ("Tutte" = aggregato struttura). Quando filtri per RT specifica, tutti i dati (OTB, pickup, STLY, RMES) vengono filtrati per quella RT. Il moltiplicatore RMES resta uguale tra RT (i 5 fattori sono di struttura); cambia solo il prezzo base per supplementi storici mensili.</p>
-              <p><b>Variazione vs Foundation</b>: cella colorata in base al delta (verde = RMES alza vs Foundation, rosso = RMES freno). Click sulla cella → modale RMES con: prezzo Foundation, 5 fattori (peso "20%+5%" in blu se redistribuito da fattore n/d), prezzo suggerito, prezzo finale pubblicato editabile con 💾 Salva, simulazione revenue live (Δ prezzo → Δ RN → Δ Revenue), e toggle per espandere il calcolo Foundation in 6 step.</p>
-              <p><b>Approvazione Foundation — solo baseRT</b>: i 3 stati (proposed/accepted/override) e i bottoni di approvazione si applicano <b>esclusivamente alla baseRT</b> di ogni struttura (Firenze → Camera Matrim. Deluxe · Condotta → Bilocale · Alfani → Classic). Le altre RT (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) ereditano automaticamente Foundation della baseRT + supplemento mensile storico, e nella tabella appaiono con <code>↳</code> a sinistra del prezzo (cella più chiara, non cliccabile). Il pannello batch "Approvazione Foundation" sopra la tabella è visibile solo quando il filtro RT è <b>"Tutte"</b> o la <b>baseRT</b>; viene nascosto quando filtri su una RT non-base.</p>
+        <div class="lede"><b>A cosa serve:</b> capire ogni giorno quanto stai vendendo, quanto vendevi l'anno scorso in quella fase, e quale prezzo conviene tenere domani. Le tre colonne centrali (OTB · STLY · RMES) rispondono a 3 domande in sequenza: <b>quanto ho già venduto oggi</b>, <b>quanto avevo venduto l'anno scorso a parità di anticipo</b>, <b>quale prezzo suggerisce il sistema</b>.
+          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Come leggere la tabella</summary>
+            <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
+              <p style="margin:0 0 10px 0"><b>Una riga = un giorno futuro</b>. Da sinistra a destra leggi una "storia" su quel giorno:</p>
+              <ol style="margin:0 0 12px 18px;padding:0">
+                <li style="margin-bottom:6px"><b>Data · Evento · DoW</b> — il giorno e che giorno della settimana è (i weekend sono colorati). Se in quel giorno c'è un evento configurato (Pitti, Calcio Storico, ecc.) compare l'icona.</li>
+                <li style="margin-bottom:6px"><b style="color:#c4823b">OTB ad oggi</b> — quante camere hai venduto, l'occupazione (%) e l'ADR medio. È la "fotografia di adesso".</li>
+                <li style="margin-bottom:6px"><b style="color:#7a3a8e">Pickup Ngg</b> — l'andamento recente: prenotazioni nuove, cancellazioni, delta netto, ADR delle nuove. Configurabile a 1, 3, 7, 14 o 28 giorni dal selettore "Pickup ultimi Ngg". <b>Nuove e Cancellate sono cliccabili</b> per vedere la lista.</li>
+                <li style="margin-bottom:6px"><b style="color:#3a6b6b">STLY (−364)</b> — come stavi a parità di anticipo l'anno scorso. Confronto a giorno-della-settimana (non a data): se oggi è venerdì, il sistema mostra il venerdì di 52 settimane fa.</li>
+                <li style="margin-bottom:6px"><b style="color:#888">Pickup STLY</b> — quanto era stato il pickup nei medesimi Ngg di un anno fa. Confronta le 2 colonne pickup per capire se stai andando meglio o peggio.</li>
+                <li style="margin-bottom:6px"><b style="color:#1e6b4a">Beddy</b> — il prezzo che hai pubblicato in questo momento sul tuo sito diretto.</li>
+                <li style="margin-bottom:6px"><b style="color:#3a6b6b">Mercato Expedia</b> — Mio = il mio prezzo Expedia tradotto in Beddy_eq (netto markup OTA). Compset = la media dei competitor scelti.</li>
+                <li style="margin-bottom:6px"><b style="color:#c4823b">⚡ Foundation</b> — il "fair value" del giorno, il prezzo strutturale che il sistema calcola dai dati storici e dal target. Tre stati possibili (vedi sotto).</li>
+                <li style="margin-bottom:6px"><b style="color:#c4823b">RMES</b> — il prezzo finale suggerito = Foundation × moltiplicatore (i 5 fattori). M1/M2 dentro la cella = MLOS suggerito (minimum length of stay).</li>
+              </ol>
+
+              <p style="margin:10px 0 6px 0"><b>Filtro Room Type</b> (sopra la tabella, pillole colorate):</p>
+              <ul style="margin:0 0 10px 18px;padding:0">
+                <li><b>"Tutte"</b> = aggregato struttura (default). Le colonne OTB/Pickup/STLY mostrano i totali.</li>
+                <li>Una pillola per ogni tipologia camera. Quando ne selezioni una, <b>tutta la tabella</b> si ricolora per quella RT.</li>
+              </ul>
+
+              <p style="margin:10px 0 6px 0"><b>Foundation — i 3 stati</b> (icone visibili nella cella):</p>
+              <ul style="margin:0 0 10px 18px;padding:0">
+                <li><b style="color:#c4823b">⚡ proposed</b> (default) = il sistema sta calcolando dinamicamente. Cambia ogni volta che entrano dati nuovi.</li>
+                <li><b style="color:#1e6b4a">✓ accepted</b> = hai detto al sistema "questo valore mi va bene, congelalo". Anche se i dati cambiano, Foundation resta quello.</li>
+                <li><b style="color:#1e4a6b">🖋 override</b> = hai inserito un valore manuale tuo. Congelato.</li>
+              </ul>
+
+              <p style="margin:10px 0 6px 0"><b>Approvazione Foundation — solo sulla camera principale</b>:</p>
+              <p style="margin:0 0 6px 0">Per evitare di dover approvare prezzi su 5+ tipologie diverse, l'approvazione si fa <b>solo sulla baseRT</b> di ogni struttura:</p>
+              <ul style="margin:0 0 6px 18px;padding:0">
+                <li>Firenze Suite → <b>Camera Matrim. Deluxe</b></li>
+                <li>Condotta 16 → <b>Bilocale</b></li>
+                <li>Palazzo Alfani → <b>Classic</b></li>
+              </ul>
+              <p style="margin:0 0 10px 0">Le altre tipologie (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) ereditano automaticamente: <code>Foundation_baseRT + supplemento_RT_mensile</code>. Nella tabella si riconoscono dal <code>↳</code> e dalla cella più chiara (non cliccabile).</p>
+
+              <p style="margin:10px 0 6px 0"><b>Come approvare/modificare Foundation</b>:</p>
+              <ol style="margin:0 0 6px 18px;padding:0">
+                <li><b>Bottoni inline ✓ 🖋 ↺</b> nella cella Foundation di ogni riga (solo per baseRT) = azione rapida sul singolo giorno.</li>
+                <li><b>Click sul prezzo</b> dentro la cella → popup di dettaglio con il calcolo Foundation in 6 step.</li>
+                <li><b>Pannello batch sopra la tabella</b> (visibile solo se filtro = "Tutte" o baseRT): "Accetta tutti i giorni visibili", "Override tutti a €X", "Reset tutti". Utile per approvare un mese in un colpo.</li>
+              </ol>
+
+              <p style="margin:10px 0 6px 0"><b>Modale RMES (click sulla cella prezzo RMES)</b>:</p>
+              <ul style="margin:0 0 10px 18px;padding:0">
+                <li>Mostra Foundation effettivo, i 5 fattori uno per uno con i numeri, il prezzo suggerito.</li>
+                <li>Ha un input per inserire il <b>prezzo finale pubblicato</b> diverso dal suggerito (override puntuale) con 💾 Salva.</li>
+                <li>Simulazione revenue live: se cambi il prezzo, ti mostra l'impatto stimato su RN e Revenue (usa l'elasticità configurata).</li>
+              </ul>
+
+              <p style="margin:10px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica:</b> ogni mattina apri Sell Strategy, scorri i prossimi 7-14 giorni, controlli i giorni con scostamenti significativi (cella RMES verde = sistema suggerisce alzare, rossa = abbassare), e per i casi dove sai cose che il sistema non sa (eventi, situazioni particolari) fai override. Una volta a settimana o a mese, fai una review più ampia approvando i Foundation per il periodo successivo.</p>
             </div>
           </details>
         </div>
@@ -1381,7 +1418,52 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>RMES <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">Revenue Manu&Enis System · configurazione</span></h2>
-        <div class="lede">Sistema a 2 livelli: <b style="color:#7a4f1c">Foundation</b> calcola il prezzo strutturale del giorno (sorgente), poi <b>5 fattori RMES</b> lo aggiustano in deviazione (A·OCC, B·Price, C·Pace, D·Compset, E·Search — al 20% ciascuno di default). Cap totale ±30%. <b>Se un fattore è "dato n/d"</b> il suo peso viene redistribuito proporzionalmente agli altri (es. 20%+5% in blu). <b>Override</b>: puoi sovrascrivere il prezzo finale (puntuale o per periodo). La modale RMES mostra prezzo Foundation, 5 fattori, prezzo suggerito, prezzo pubblicato editabile con simulazione revenue live e audit post-chiusura. Apri la doc qui sotto per i passaggi e l'esempio numerico.</div>
+        <div class="lede"><b>A cosa serve:</b> configurare il sistema di pricing dinamico (RMES = Revenue Manu&amp;Enis System) per le 3 strutture. Qui imposti i parametri che decidono il prezzo. <b>L'approvazione giornaliera dei prezzi si fa nella Sell Strategy</b>, non qui.
+          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Spiegazione semplice</summary>
+            <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
+              <p style="margin:0 0 10px 0"><b>Il problema che risolve RMES:</b> per ogni giorno futuro, decidere a quale prezzo vendere le camere. Troppo basso → lasci soldi sul tavolo. Troppo alto → resti vuoto.</p>
+
+              <p style="margin:14px 0 6px 0"><b>Come funziona (in 2 passaggi):</b></p>
+              <ol style="margin:0 0 12px 18px;padding:0">
+                <li style="margin-bottom:8px"><b style="color:#7a4f1c">Step 1 — Foundation calcola il "prezzo strutturale" del giorno.</b><br>
+                  Guarda quanto hai venduto un anno fa nello stesso giorno-settimana stesso mese (es. sabato di luglio), applica un obiettivo di crescita (es. +5%), aggiusta in base al ritmo di vendita attuale, e cappa al range di mercato dei competitor. È il <b>fair value</b> di quel giorno.</li>
+                <li style="margin-bottom:8px"><b style="color:#3b5a78">Step 2 — 5 fattori aggiustano in base alla situazione di oggi.</b><br>
+                  Foundation è "quanto vorresti vendere". I 5 fattori sono "come stai effettivamente vendendo adesso":
+                  <ul style="margin:6px 0 0 18px;padding:0">
+                    <li><b>A·OCC</b> — sto vendendo più o meno camere rispetto a un anno fa per questo giorno?</li>
+                    <li><b>B·Price</b> — il mio prezzo medio è sopra o sotto un anno fa?</li>
+                    <li><b>C·Pace</b> — il ritmo di prenotazioni del mese di soggiorno è in crescita o calo vs un anno fa? <i>Se i dati del mese-specifico per la struttura non bastano, il sistema usa il pace aggregato delle 3 strutture (badge <b style="color:#8e5fa8;font-family:'DM Mono',monospace">P̄</b> sulla cella RMES). Sono nella stessa area e fascia qualità, quindi è un proxy ragionevole.</i></li>
+                    <li><b>D·Compset</b> — sono più caro o più economico dei competitor su Expedia?</li>
+                    <li><b>E·Search</b> — quante persone stanno cercando questo giorno (ricerche Expedia) rispetto al normale del mese?</li>
+                  </ul>
+                  Ogni fattore produce una <b>deviazione</b> (es. -10%, +5%) limitata a ±50%. Le 5 deviazioni vengono pesate (default 20% ciascuna), sommate e clampate al cap totale (default ±30%). Il risultato è un moltiplicatore (es. 0.95 o 1.08).</li>
+              </ol>
+
+              <p style="margin:14px 0 6px 0"><b>La formula in una riga:</b></p>
+              <p style="margin:0 0 10px 0;padding:10px 14px;background:#fef8ed;border:1px solid #c4823b;border-radius:5px;font-size:13px;font-family:'DM Mono',monospace;color:#5a3a14;text-align:center">
+                Prezzo RMES = Foundation × (1 + Σ peso × deviazione)
+              </p>
+
+              <p style="margin:14px 0 6px 0"><b>Esempio veloce:</b></p>
+              <p style="margin:0 0 10px 0">Sabato 15 agosto. Foundation calcola €240 (quello che dovrei vendere se tutto va come previsto). Oggi però: OCC del giorno -10% vs LY, ADR sotto LY → recupero, pace del mese in crescita, sono più economico del compset, ricerche sopra mediana. Σ ponderato = +4%. Cap non raggiunto. <b>Prezzo RMES = 240 × 1.04 = €250</b>.</p>
+
+              <p style="margin:14px 0 6px 0"><b>L'approvazione (Foundation states):</b></p>
+              <p style="margin:0 0 6px 0">Foundation cambia ogni volta che i dati storici cambiano. Per evitare oscillazioni indesiderate, puoi "congelare" il valore di Foundation per ogni giorno: dalla Sell Strategy clicchi <b>✓ Accetta</b> (congela il calcolato) o <b>🖋 Override</b> (metti un valore manuale). Solo la baseRT (camera principale) viene approvata; le altre tipologie ereditano automaticamente. <b>I 5 fattori RMES continuano comunque a funzionare sopra il Foundation congelato</b>.</p>
+
+              <p style="margin:14px 0 6px 0"><b>Cosa configuri qui in questa tab:</b></p>
+              <ul style="margin:0 0 10px 18px;padding:0">
+                <li><b>Ⓐ Target growth per mese</b>: quanto vuoi crescere vs l'anno scorso (default +5% ogni mese).</li>
+                <li><b>Ⓑ Base / Floor / Markup OTA / Elasticità</b>: il prezzo di riferimento annuale, il limite assoluto sotto cui non scendi, il markup che le OTA aggiungono, la sensibilità RN ↔ prezzo.</li>
+                <li><b>① Pesi dei 5 fattori</b>: quanto contribuisce ognuno al moltiplicatore. Default uguali (20% × 5). Aumenti il peso di un fattore se vuoi che pesi di più nella decisione.</li>
+                <li><b>② Cap totale</b>: di quanto al massimo il prezzo RMES può discostarsi da Foundation (default ±30%).</li>
+                <li><b>Ⓒ Pesi e offset compset</b>: quali competitor includi e con quale peso, e quanto stare sotto/sopra a ognuno.</li>
+                <li><b>Ⓓ Audit override</b>: a chiusura mese, confronta i giorni in cui hai messo override manuali vs quello che RMES aveva suggerito. Ti dice se hai fatto meglio o peggio del sistema.</li>
+              </ul>
+
+              <p style="margin:14px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica:</b> imposti i parametri una volta (o li ritocchi raramente), e poi lavori sulla Sell Strategy giorno per giorno. La doc tecnica completa con la formula condizionale dei singoli fattori, l'esempio numerico e i 6 step di Foundation è nel pannello <b>📚 Come funziona il sistema RMES + Foundation Pricing</b> qui sotto, espandibile.</p>
+            </div>
+          </details>
+        </div>
       </div>
       <div class="head-actions">
         <div class="chip mono" id="rmes-struct-chip">—</div>
@@ -1521,7 +1603,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <ul style="margin:4px 0 4px 18px">
               <li><b>Caso 1 — ADR cur &lt; ADR STLY</b>: a prescindere dall'OCC, <b>recupero</b>. Non devo essere sotto LY. <code>dev = -(ADR_cur/ADR_STLY − 1)</code> (positivo, alzo).</li>
               <li><b>Caso 2 — ADR cur ≥ ADR STLY AND OCC cur ≥ OCC STLY</b>: vado bene su entrambi i fronti. <code>dev = 0</code> (neutro).</li>
-              <li><b>Caso 3 — ADR cur ≥ ADR STLY AND OCC cur &lt; OCC STLY</b>: ADR sopra ma OCC in calo → <b>freno</b>, ma <b>ammorbidito dal target growth</b> del mese. <code>dev = -((ADR_cur/ADR_STLY − 1) − target_growth%)</code>. Esempio: ADR +10% vs LY, target growth +5% → freno solo del 5% effettivo (non del 10% pieno).</li>
+              <li><b>Caso 3 — ADR cur ≥ ADR STLY AND OCC cur &lt; OCC STLY</b>: ADR sopra ma OCC in calo → <b>freno ammorbidito dal target growth</b> del mese. <code>effective = max(0, (ADR_cur/ADR_STLY − 1) − target_growth%)</code> · <code>dev = -effective</code>. <b>Il Caso 3 può solo frenare o essere neutro, mai alzare</b> (se ADR è solo leggermente sopra STLY ma OCC sta calando, sarebbe contraddittorio alzare). Esempio: ADR +10% vs LY, target growth +5% → freno solo del 5% effettivo. Esempio: ADR +2% vs LY, target +5% → effective max(0, -3%) = 0 → dev = 0 (neutro, non +3%).</li>
             </ul>
             Clamp finale ±50%.</li>
           <li>Per <b>C·Pace</b>: <b>logica condizionale multi-livello</b> per mese di soggiorno con ultime 4 settimane (28 giorni) di pickup. Per ogni giorno X di mese YYYY-MM, calcolo il ratio pickup mese cur / pickup mese STLY e applico:
@@ -1535,7 +1617,14 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
                 </ul>
               </li>
             </ul>
-            <b>Fallback annuale</b>: se per quel mese cur=0 o stly=0, uso il ratio annuale di struttura. Clamp finale ±50%.</li>
+            <b>Gerarchia dei fallback (dal più specifico al meno):</b>
+            <ol style="margin:4px 0 4px 18px">
+              <li><b>Pace 4w mese-specifico della struttura</b> (ideale) — usa pickup ultime 4 settimane di questa struttura per quel mese di stay vs STLY.</li>
+              <li><b>Pace 4w mese-specifico AGGREGATO delle 3 strutture</b> (Firenze + Condotta + Alfani) — se la struttura non ha abbastanza dati per quel mese ma le altre sì. Le 3 strutture sono nella stessa area (Firenze centro) e fascia qualità/prezzo simile, quindi il pace aggregato è un proxy ragionevole della domanda di mercato locale. Quando attivo, sopra la cella RMES appare un badge <b style="color:#8e5fa8;font-family:'DM Mono',monospace">P̄</b> a sinistra del prezzo.</li>
+              <li><b>Pace annuale della struttura</b> (fallback debole) — usato solo se è "moderato" (|dev|≤15%). Se è estremo (es. -24%), il fattore viene neutralizzato per evitare di applicare un freno costante a tutti i giorni futuri.</li>
+              <li><b>Neutralizzato</b> — peso del fattore Pace redistribuito proporzionalmente agli altri fattori attivi (vedi sezione "Pesi normalizzati").</li>
+            </ol>
+            Clamp finale ±50%.</li>
           <li>Per <b>D·Compset</b>: deviazione <b>invertita</b> (più economico del compset = +, sto sottovendendo).</li>
           <li>Per <b>E·Search</b>: confronto con la <b>mediana del MESE</b> di appartenenza (es. un sabato di agosto si confronta con la mediana di tutti i giorni di agosto). <code>dev = (cur − mediana_mese) / mediana_mese</code>, clampato ±50%. <b>Normalizzazione stagionale</b>: evita di confrontare inverno vs estate (mediane molto diverse).</li>
           <li>Ogni deviazione è <b>clampata a [−50%, +50%]</b>: anche se OCC è −80%, conta solo come −50% per quel fattore.</li>
@@ -24306,6 +24395,8 @@ function loadData(csvText){
 /* Foundation Pricing: pre-compute al caricamento dati */
 function fp_postLoadHook(){
   try {
+    // Invalida cache pace aggregato (le 3 strutture potrebbero avere booking nuovi)
+    if (typeof _invalidatePaceAggCache === 'function') _invalidatePaceAggCache();
     if (typeof fp_computeAll === 'function' && typeof BOOKINGS !== 'undefined' && BOOKINGS.length > 0){
       console.log('[Foundation] Pre-computing prices…');
       const t0 = performance.now();
@@ -27696,6 +27787,38 @@ function ymdToDate(n){
   return new Date(y, m-1, d);
 }
 
+/* Cache pace aggregato 3 strutture (calcolato 1 volta, riusato da computeRMESPriceMap di
+   ogni struttura come fallback intermedio quando il pace mese-specifico di struttura non c'è).
+   Le 3 strutture sono nella stessa area (Firenze centro) e fascia qualità/prezzo simile,
+   quindi il pace aggregato è un proxy ragionevole della domanda di mercato locale per quel mese. */
+let _PACE_AGG_BOTH_CACHE = null;
+function _getPaceAggBoth(){
+  if (_PACE_AGG_BOTH_CACHE) return _PACE_AGG_BOTH_CACHE;
+  if (typeof aggPickup !== 'function') return null;
+  const pkAgg = aggPickup('both');
+  const PACE_WEEK_INDEXES = [0, 1, 2, 3];
+  const byStayMonth = {};  // ym → { rawMult, ratio, pickupCur, pickupStly }
+  if (pkAgg && pkAgg.sm && pkAgg.smS){
+    const allMonths = new Set([...Object.keys(pkAgg.sm), ...Object.keys(pkAgg.smS)]);
+    for (const ym of allMonths){
+      let mCur = 0, mStly = 0;
+      for (const i of PACE_WEEK_INDEXES){
+        if (pkAgg.sm[ym] && pkAgg.sm[ym][i]) mCur  += pkAgg.sm[ym][i].rn;
+        if (pkAgg.smS[ym] && pkAgg.smS[ym][i]) mStly += pkAgg.smS[ym][i].rn;
+      }
+      if (mStly > 0 && mCur > 0){
+        const ratio = mCur / mStly;
+        const rawMult = (typeof applyThresholds === 'function') ? applyThresholds(ratio, 'pace') : 1;
+        byStayMonth[ym] = { rawMult, ratio, pickupCur: mCur, pickupStly: mStly };
+      }
+    }
+  }
+  _PACE_AGG_BOTH_CACHE = byStayMonth;
+  return byStayMonth;
+}
+// Invalida cache quando i dati cambiano (es. reload CSV)
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; }
+
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -27814,17 +27937,77 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       }
     }
   }
-  // Helper: ritorna il pace mult per il row, applicando la logica condizionale finale
-  // per il caso 'ambiguo' (pace<1 ma OCC mese ok) → decide in base a r.curOcc:
+  // Helper: ritorna il pace mult per il row.
+  //
+  // GERARCHIA DEI FALLBACK (dal più specifico al meno specifico):
+  //   1. Pace 4w mese-specifico DI QUESTA STRUTTURA (state in _paceStateByStayMonth) — ottimale
+  //   2. Pace 4w mese-specifico AGGREGATO 3 STRUTTURE — se la struttura non ha dati ma il
+  //      mercato locale (Firenze + Condotta + Alfani, area + fascia qualità simili) li ha.
+  //      Marcato 'fallback_aggregato' per trasparenza (badge "P̄" nella tabella).
+  //   3. Pace annuale DI QUESTA STRUTTURA — se anche l'aggregato non ha dati per quel mese.
+  //      Solo se NON è estremo (|dev|≤15%). Se estremo, il fattore viene neutralizzato.
+  //   4. Neutralizzato (mult=1, naReason valorizzato) — peso redistribuito agli altri fattori.
+  //
+  // Per il caso 'ambiguo' (pace<1 ma OCC mese ok) la decisione finale dipende da r.curOcc:
   //   - r.curOcc ≥ 0.90 → neutro (mult = 1)
   //   - r.curOcc < 0.90 → freno al 50% del valore originale
   function _paceMultForRow(r, verbose){
     const ym = `${r.y}-${pad2(r.mo)}`;
     const st = (typeof _paceStateByStayMonth !== 'undefined') ? _paceStateByStayMonth[ym] : null;
     if (!st){
-      // Nessuno stato per il mese specifico: uso il fallback annuale di struttura (_paceMult).
-      // Il dato c'è (calcolato sui pickup 4w aggregati), è solo meno granulare → NON è 'dato n/d'.
-      return verbose ? { mult: _paceMult, naReason: null, state: 'fallback_annuale', rawMult: _paceMult, source: 'pace annuale struttura (mese specifico non disponibile)' } : _paceMult;
+      // Livello 2: provo il pace aggregato 3 strutture per lo stesso mese
+      const aggPaceByMonth = (typeof _getPaceAggBoth === 'function') ? _getPaceAggBoth() : null;
+      const aggForMonth = aggPaceByMonth ? aggPaceByMonth[ym] : null;
+      if (aggForMonth && isFinite(aggForMonth.rawMult)){
+        // Applico la stessa logica condizionale a 3 stati (alza / freno / ambiguo)
+        const aggRatio = aggForMonth.ratio;
+        const aggRaw = aggForMonth.rawMult;
+        let aggMult = aggRaw;
+        let aggState = 'fallback_agg_tutto_su';
+        let aggSource = 'pace aggregato 3 strutture (mese ' + ym + ', ' + aggForMonth.pickupCur + ' RN vs ' + aggForMonth.pickupStly + ' RN STLY)';
+        if (aggRatio >= 1){
+          aggMult = aggRaw;  // alza
+          aggState = 'fallback_agg_tutto_su';
+        } else {
+          // pace<1: caso ambiguo o freno?
+          const occMo = _occByMonth[ym];
+          if (occMo && occMo.curOcc >= occMo.stlyOcc && occMo.curOcc > 0){
+            // ambiguo → decide per giorno
+            if (r.curOcc != null && r.curOcc >= 0.90){
+              aggMult = 1;
+              aggState = 'fallback_agg_ambiguo_neutralizzato_OCC90';
+              aggSource += ' · giorno OCC≥90%: neutralizzato';
+            } else {
+              const dev = aggRaw - 1;
+              aggMult = 1 + dev * 0.5;
+              aggState = 'fallback_agg_ambiguo_freno_50pct';
+              aggSource += ' · mese ambiguo, freno 50%';
+            }
+          } else {
+            aggMult = aggRaw;
+            aggState = 'fallback_agg_tutto_giù';
+          }
+        }
+        return verbose ? {
+          mult: aggMult, naReason: null, state: aggState, rawMult: aggRaw,
+          ratio: aggRatio, pickupCur: aggForMonth.pickupCur, pickupStly: aggForMonth.pickupStly,
+          source: aggSource, fromAggregate: true
+        } : aggMult;
+      }
+      // Livello 3: pace annuale della struttura (solo se NON estremo)
+      const fbDev = (_paceMult != null && isFinite(_paceMult)) ? Math.abs(_paceMult - 1) : 0;
+      if (fbDev > 0.15){
+        // Livello 4: neutralizzo (peso redistribuito agli altri fattori)
+        return verbose ? {
+          mult: 1, naReason: 'pace mese non disponibile per struttura né per aggregato 3 strutture; fallback annuale estremo (' + ((_paceMult-1)*100).toFixed(0) + '%): fattore neutralizzato',
+          state: 'neutralizzato_no_dati', rawMult: 1,
+          source: 'pace 4w mese-specifico non disponibile né per la struttura né per l\'aggregato delle 3 strutture · fallback annuale di struttura sarebbe ' + (_paceMult>1?'+':'') + ((_paceMult-1)*100).toFixed(0) + '% (estremo): fattore neutralizzato e peso redistribuito agli altri'
+        } : 1;
+      }
+      return verbose ? {
+        mult: _paceMult, naReason: null, state: 'fallback_annuale_struct', rawMult: _paceMult,
+        source: 'pace annuale di questa struttura (mese-specifico non disponibile né per la struttura né per le altre 3, ma il fallback annuale è moderato)'
+      } : _paceMult;
     }
     if (st.state === 'ambiguo'){
       if (r.curOcc != null && r.curOcc >= 0.90){
@@ -28012,12 +28195,15 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           _B_dev_signed = 0;
           _B_case = 'all_good';
         } else {
-          // Caso 3: ADR sopra ma OCC sotto → freno ammorbidito dal target growth
+          // Caso 3: ADR sopra ma OCC sotto → freno ammorbidito dal target growth.
+          // FIX: il Caso 3 (OCC in calo) può SOLO frenare o essere neutro, mai alzare il prezzo.
+          // Se ADR_cur è solo leggermente sopra STLY e il target growth è più alto, la formula originale
+          // (effective = adrDev - tgFrac) può produrre effective < 0 → dev positivo → "alzo nonostante OCC giù",
+          // che è contraddittorio. Clampiamo l'effective a un minimo di 0 (= no spinta verso l'alto in questo caso).
           const tgPct = (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(sel, r.mo) : 5;
           const tgFrac = (tgPct || 0) / 100;
-          // adrDev - tgFrac: se ADR +10% e target +5% → effettivo +5% → freno del 5%
-          const effective = adrDev - tgFrac;
-          _B_dev_signed = -effective;  // se effective > 0 → freno (dev neg); se effective ≤ 0 (target già superato) → neutro/leggermente positivo
+          const effective = Math.max(0, adrDev - tgFrac);  // mai negativo → mai dev positivo nel Caso 3
+          _B_dev_signed = -effective;  // dev ≤ 0 (freno o neutro)
           _B_case = 'brake_softened';
         }
       }
@@ -28161,6 +28347,9 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         multFinale: mfin_rt,
         _rawSumDev: _mfin_rt_raw - 1,
         _hitCap: _capRT.hitCap,
+        // Flag: pace usa fallback aggregato 3 strutture (per badge "P̄" nella tabella)
+        _paceFromAggregate: (_paceResult && _paceResult.fromAggregate === true),
+        _paceState: (_paceResult && _paceResult.state) ? _paceResult.state : null,
         // Reasons per "dato n/d" — usate dalla modale RMES per distinguere mult=1 reale vs assenza dati
         _naReasons: {
           occ: _A_naReason,
@@ -28283,6 +28472,10 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         suppApplied: baseSuppApplied,
         suppRT: expedia_rt_shown,
         multFinale,
+        // OTB del giorno (struttura) — usato dal Forecast per calcolare inventory residuo e pesare l'ADR pickup
+        curRn: r.curRn,
+        cap: r.cap,
+        curOcc: r.cap > 0 ? r.curRn / r.cap : 0,
         // Esponi anche i moltiplicatori per RT (servono alla modale RMES per mostrare la cascata dei 5 fattori)
         multsByRT: _mults_byRT,
         // Prezzi finali per RT (include eventuali override)
@@ -31926,7 +32119,12 @@ function renderSellStrategy(sel){
       // Indicatore se la baseRT ha un override attivo per questo giorno
       const hasOverride = (typeof fp_getOverride === 'function' && mainRT === baseRT) ? (fp_getOverride(sel, fpDateAttrISO, baseRT) != null) : false;
       const overrideBadge = hasOverride ? `<span title="Override attivo: prezzo Foundation impostato manualmente" style="font-size:9px;color:#c4823b;font-weight:700;margin-right:2px">🖋</span>` : '';
-      cells += `<td class="cell-mono sell-block-rmes sell-rmes-baseRT" data-rmes-struct="${sel}" data-rmes-rt="${fpRTAttrCell}" data-rmes-date="${fpDateAttrISO}" style="background:${cellBgRgba};text-align:center;cursor:pointer" title="${escapeHtml(mainTip)}">${overrideBadge}<b style="color:${mainColor}">${mainPriceTxt}</b> <span style="color:${mainMCol};font-weight:700;font-size:10.5px">M${mainM}</span></td>`;
+      // Badge "P̄" = fattore C·Pace sta usando il fallback aggregato 3 strutture (perché il pace
+      // mese-specifico per questa struttura non è disponibile). Le 3 strutture sono nella stessa area
+      // e fascia qualità, quindi è un proxy ragionevole della domanda del mercato locale per quel mese.
+      const paceFromAgg = (mainMults && mainMults._paceFromAggregate === true);
+      const paceAggBadge = paceFromAgg ? `<span title="Fattore C·Pace: dato mese-specifico struttura non disponibile, sto usando il pace aggregato delle 3 strutture (mercato locale, area e fascia qualità simili) come proxy." style="font-size:9px;color:#8e5fa8;font-weight:700;margin-right:2px;font-family:'DM Mono',monospace">P̄</span>` : '';
+      cells += `<td class="cell-mono sell-block-rmes sell-rmes-baseRT" data-rmes-struct="${sel}" data-rmes-rt="${fpRTAttrCell}" data-rmes-date="${fpDateAttrISO}" style="background:${cellBgRgba};text-align:center;cursor:pointer" title="${escapeHtml(mainTip)}">${overrideBadge}${paceAggBadge}<b style="color:${mainColor}">${mainPriceTxt}</b> <span style="color:${mainMCol};font-weight:700;font-size:10.5px">M${mainM}</span></td>`;
 
 
       // Celle altre RT (solo se non filtrato E toggle Tutti RT ON)
@@ -34807,6 +35005,73 @@ function fcstFloorShare(structKey){
   return { share, curRn, lyRn };
 }
 
+// fcstShareByMonth(structKey)
+// Calcola lo share RN cur/LY per MESE DI STAY (anziché globale 90gg).
+// Per ogni booking confermato: alloca per stay-night al mese di stay (calendar month, NON pari-DOW).
+//   - cur: stay-night con stay-date in [today-364, today-1] (= 12 mesi prima, fino a ieri)
+//   - LY:  stay-night con stay-date in [today-728, today-365] (= 12-24 mesi prima)
+// Ritorna: { 'YYYY-MM': { share, curRn, lyRn } }
+//   - YYYY-MM è il mese di stay del booking (calendar month dell'anno corrispondente)
+//
+// Il blend col share globale viene fatto a valle (in fcstShareForMonth) per evitare proiezioni
+// instabili quando il mese ha pochi dati. Soglia minima: 30 RN cur per usare lo share mensile puro;
+// sotto, blend pesato; sotto 10 RN, usa lo share globale.
+function fcstShareByMonth(structKey){
+  const keys = new Set(structKeysFor(structKey));
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const ymdToday = TODAY_YMD;
+  const ymdMinus365 = ymd(addDays(today, -365));
+  const ymdMinus728 = ymd(addDays(today, -728));
+  const byMonth = {};  // 'MM' (1-12 padded) → { curRn, lyRn }
+  for (const b of BOOKINGS){
+    if (b.cancelled) continue;
+    if (!keys.has(b.struct)) continue;
+    let cur = startOfDay(b.dIn);
+    const end = startOfDay(b.dOut);
+    while (cur < end){
+      const k = ymd(cur);
+      const mm = pad2(cur.getMonth() + 1);
+      if (!byMonth[mm]) byMonth[mm] = { curRn: 0, lyRn: 0 };
+      // Cur: ultimi 365 giorni
+      if (k > ymdMinus365 && k <= ymdToday) byMonth[mm].curRn += 1;
+      // LY: 365-730 giorni fa
+      if (k > ymdMinus728 && k <= ymdMinus365) byMonth[mm].lyRn += 1;
+      cur = addDays(cur, 1);
+    }
+  }
+  // Calcolo share per ogni mese con dati sufficienti
+  const out = {};
+  for (const mm in byMonth){
+    const o = byMonth[mm];
+    if (o.lyRn > 0 && o.curRn > 0){
+      out[mm] = { share: o.curRn / o.lyRn, curRn: o.curRn, lyRn: o.lyRn };
+    } else {
+      out[mm] = { share: null, curRn: o.curRn, lyRn: o.lyRn };
+    }
+  }
+  return out;
+}
+
+// fcstShareForMonth(globalShare, monthShareMap, mm)
+// Decide quale share usare per il mese 'mm' (1-12 padded):
+//   - monthShareMap[mm].share disponibile + ≥30 RN cur → usa share mensile puro (segnale forte)
+//   - monthShareMap[mm].share disponibile + 10-29 RN cur → blend 60% mese + 40% globale (segnale debole)
+//   - altrimenti → usa share globale (default)
+// Ritorna: { share, source } dove source ∈ { 'mensile', 'blend', 'globale' }
+function fcstShareForMonth(globalShare, monthShareMap, mm){
+  const m = monthShareMap[mm];
+  if (m && m.share != null && isFinite(m.share)){
+    if (m.curRn >= 30){
+      return { share: m.share, source: 'mensile', curRn: m.curRn, lyRn: m.lyRn };
+    }
+    if (m.curRn >= 10){
+      const blended = 0.6 * m.share + 0.4 * globalShare;
+      return { share: blended, source: 'blend', curRn: m.curRn, lyRn: m.lyRn };
+    }
+  }
+  return { share: globalShare, source: 'globale', curRn: (m ? m.curRn : 0), lyRn: (m ? m.lyRn : 0) };
+}
+
 // ============ HELPER: PACE FACTOR (single value, last 4 weeks) ============
 function fcstPaceFactor(structKey){
   const pkAgg = aggPickup(structKey);
@@ -34886,7 +35151,8 @@ function aggForecast(structKey){
   // Helpers di periodo
   const mix = fcstMixFactor(sel);                    // mix canali / tariffe
   const pace = fcstPaceFactor(sel);                  // pace 4-weeks (booking)
-  const floorShare = fcstFloorShare(sel);            // share RN cur/LY ultimi 90gg (stay-night)
+  const floorShare = fcstFloorShare(sel);            // share RN cur/LY ultimi 90gg (stay-night, globale)
+  const monthShareMap = (typeof fcstShareByMonth === 'function') ? fcstShareByMonth(sel) : {};  // share per mese di stay (12 mesi cur vs LY)
   const adrGrowth = fcstAdrGrowth(sel);              // growth ADR cur/LY ultimi 90gg
   const supp = fcstSupplements(sel);
   const baseRT = supp.baseRT;
@@ -35136,10 +35402,15 @@ function aggForecast(structKey){
   } catch(e){ _rmesMapForFcst = null; }
   
   // Helper: ADR pickup medio per (mese, RT) usando prezzo RMES giorno-per-giorno.
-  // Ritorna null se RMES non disponibile per il mese (fallback al vecchio metodo).
+  // PESATO per INVENTORY RESIDUO: i giorni già esauriti (OCC = 100%) hanno peso 0; i giorni quasi
+  // pieni hanno peso ridotto. Questo evita di sovrastimare l'ADR del pickup quando i giorni "premium"
+  // (es. sabati in alta stagione) sono già pieni e ciò che resta da vendere sono i giorni infrasettimanali
+  // più economici. Peso = max(0, cap - curRn) / cap ∈ [0, 1].
+  // Ritorna null se RMES non disponibile per il mese o nessun giorno con inventory residuo.
   function _rmesAdrPickupForMonth(y, mo, rt){
     if (!_rmesMapForFcst) return null;
     let weightedSum = 0, totWeight = 0;
+    let fallbackSum = 0, fallbackCount = 0;  // backup non-pesato (se totWeight=0)
     const daysInMo = new Date(y, mo, 0).getDate();
     for (let d = 1; d <= daysInMo; d++){
       // Salta giorni passati (per CURRENT month)
@@ -35156,11 +35427,22 @@ function aggForecast(structKey){
         priceForRt = dd.rmesSuggestedByRT[rt];
       }
       if (priceForRt == null) continue;
-      // Peso = 1 RN al giorno (uniforme): equivale a media aritmetica dei prezzi del mese
-      weightedSum += priceForRt;
-      totWeight += 1;
+      // Peso = inventory residuo (cap - curRn) / cap. Se OCC=100% → peso=0 (giorno escluso dalla media pickup).
+      // Se OCC=50% → peso=0.5. Se OCC=0% → peso=1.
+      const cap = (dd.cap != null && isFinite(dd.cap)) ? dd.cap : 0;
+      const otb = (dd.curRn != null && isFinite(dd.curRn)) ? dd.curRn : 0;
+      const residual = Math.max(0, cap - otb);
+      const weight = cap > 0 ? residual / cap : 1;
+      weightedSum += priceForRt * weight;
+      totWeight += weight;
+      // Backup non-pesato per fallback (se tutto sold-out → useremo la media semplice come fallback)
+      fallbackSum += priceForRt;
+      fallbackCount += 1;
     }
-    return totWeight > 0 ? weightedSum / totWeight : null;
+    if (totWeight > 0) return weightedSum / totWeight;
+    // Fallback: tutti i giorni futuri sono sold-out → uso la media semplice (caso raro)
+    if (fallbackCount > 0) return fallbackSum / fallbackCount;
+    return null;
   }
 
   for (const ymKey of Object.keys(monthly)){
@@ -35247,9 +35529,17 @@ function aggForecast(structKey){
         const todayDay = today0.getDate();
         const daysRemaining = Math.max(0, m.days - todayDay + 1);
         const daysPast = m.days - daysRemaining;
-        // Pro-rata LY per giorni rimanenti, applicato share
+        // Share specifico per il mese di stay (con fallback al globale se mese non ha dati sufficienti)
+        const mmKey_cur = pad2(m.mo);
+        const shareInfo_cur = (typeof fcstShareForMonth === 'function')
+          ? fcstShareForMonth(floorShare.share, monthShareMap, mmKey_cur)
+          : { share: floorShare.share, source: 'globale' };
+        const shareCapped_month_cur = Math.max(0.70, Math.min(1.30, shareInfo_cur.share));
+        rtData._shareSource = shareInfo_cur.source;
+        rtData._shareValue = shareCapped_month_cur;
+        // Pro-rata LY per giorni rimanenti, applicato share del mese
         const lyRnProRata = rtData.finalLyRn * (daysRemaining / m.days);
-        const futureBase = lyRnProRata * shareCapped;
+        const futureBase = lyRnProRata * shareCapped_month_cur;
         // OTB già confermato per giorni futuri (>= oggi)
         const otbFutureRn = rtData.otbRn - rtData.actualPastRn;
         const otbFutureRev = rtData.otbRev - rtData.actualPastRev;
@@ -35273,12 +35563,20 @@ function aggForecast(structKey){
       } else {
         // Mese futuro: forecast totale = OTB confermato (revenue reale) + pickup atteso a ADR di pickup
         let targetRn;
+        // Share specifico per il mese di stay (fallback al globale se mese non ha dati sufficienti)
+        const mmKey = pad2(m.mo);
+        const shareInfo_fut = (typeof fcstShareForMonth === 'function')
+          ? fcstShareForMonth(floorShare.share, monthShareMap, mmKey)
+          : { share: floorShare.share, source: 'globale' };
+        const shareCapped_month_fut = Math.max(0.70, Math.min(1.30, shareInfo_fut.share));
+        rtData._shareSource = shareInfo_fut.source;
+        rtData._shareValue = shareCapped_month_fut;
         if (occOverrideShare !== null){
           // Override OCC% al valore Budget: RN target distribuito proporzionalmente
           targetRn = occOverrideShare[rt];
         } else {
-          // Logica standard share-based
-          targetRn = rtData.finalLyRn * shareCapped;
+          // Logica standard share-based (ora per-mese, non globale)
+          targetRn = rtData.finalLyRn * shareCapped_month_fut;
         }
         fcstRn = Math.max(rtData.otbRn, targetRn);
         fcstRn = Math.min(Math.max(capMaxOcc, rtData.otbRn), fcstRn);
