@@ -31889,7 +31889,15 @@ function renderSellStrategy(sel){
           if (!mults) continue;
           const supp = (rt === baseRT) ? 0 : _supplementForRT(rt, r.mo);
           const sourcePriceForRt = _foundationForCalc + supp;
-          pricesByRT_row[rt] = sourcePriceForRt * mults.multFinale;
+          const calcPrice = sourcePriceForRt * mults.multFinale;
+          // OVERRIDE PREZZO FINALE: se l'utente ha impostato un override del prezzo finale RMES
+          // per questa RT in questo giorno, esso PREVALE sul prezzo calcolato.
+          const _ovrFinal = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, _isoDateForOvr, rt) : null;
+          if (_ovrFinal && _ovrFinal.price != null && isFinite(_ovrFinal.price) && _ovrFinal.price > 0){
+            pricesByRT_row[rt] = _ovrFinal.price;
+          } else {
+            pricesByRT_row[rt] = calcPrice;
+          }
         }
       }
       r._pricesByRT = pricesByRT_row;
