@@ -759,6 +759,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="rt"><span class="num">7</span>OCC per Room Type</button>
     <button class="tab" data-tab="abnb"><span class="num">8</span>Airbnb</button>
     <button class="tab" data-tab="pri"><span class="num">9</span>RMES</button>
+    <button class="tab" data-tab="instr"><span class="num">📖</span>Istruzioni</button>
   </nav>
 </header>
 
@@ -768,17 +769,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>Overview — Anno Intero 2026</h2>
-        <div class="lede">Confronto booking <span class="mono" id="otb-cur-date">oggi</span> vs <strong>STLY</strong> e <strong>Final LY</strong>.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
-              <p><b>STLY (Same-Time-Last-Year)</b>: snapshot delle prenotazioni 2025 prese fino al <span class="mono" id="otb-stly-date">—</span> (= oggi − 364gg), filtrate solo per soggiorni nel 2025. È il confronto "alla pari": dove eravamo in questo stesso momento del ciclo l'anno scorso.</p>
-              <p><b>Final LY</b>: chiusura definitiva 2025 = tutte le prenotazioni 2025 senza filtro temporale di prenotazione. Indica quanto valore è effettivamente stato consolidato l'anno scorso (utile per stimare quanto pickup ancora atteso vs LY).</p>
-              <p><b>OTB</b> = On The Books = prenotazioni confermate ad oggi per il periodo 2026.</p>
-              <p><b>Pacing mensile</b>: tabella con OCC%, RN, ADR, Revenue per ogni mese × 3 colonne (OTB / STLY / Final LY). Le variazioni Δ% sono OTB vs STLY (segnale di velocità) e OTB vs Final LY (% di chiusura raggiunta).</p>
-              <p><b>Mix booking window</b>: distribuzione delle prenotazioni per lead time (giorni tra prenotazione e check-in). Periodo rolling 12 mesi chiusi. Utile per capire quanto in anticipo prenotano i tuoi ospiti.</p>
-              <p><b>OCC e ADR per Room Type</b>: linea solida = 2026 OTB, tratteggiata = 2025 STLY. Permette di vedere se una RT specifica sta sotto-performando rispetto a LY.</p>
-            </div>
-          </details>
+        <div class="lede">Confronto booking <span class="mono" id="otb-cur-date">oggi</span> vs <strong>STLY</strong> (snapshot al <span class="mono" id="otb-stly-date">—</span>) e <strong>Final LY</strong>. Vedi tab <a href="#" onclick="document.querySelector('.tab[data-tab=instr]').click();return false" style="color:#7a4f1c;font-weight:600;text-decoration:underline">📖 Istruzioni</a> per il manuale completo.
         </div>
       </div>
     </div>
@@ -853,14 +844,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>OCC per Room Type</h2>
         <div class="lede">Occupazione e ADR per tipologia camera. Linea solida = 2026 OTB, tratteggiata = 2025 STLY.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
-              <p><b>OCC per RT</b> = RN venduti di quella RT / (numero camere di quella RT × giorni mese). Per Alfani, l'inventario è time-aware (cambia 01/02/2025): Junior Suite era nella Classic prima di quella data.</p>
-              <p><b>ADR per RT</b> = revenue Beddy_eq di quella RT / RN venduti di quella RT. Il revenue è già al netto del markup OTA configurato (default 12%).</p>
-              <p><b>2026 OTB</b>: prenotazioni confermate ad oggi con check-in nel 2026. <b>2025 STLY</b>: prenotazioni 2025 prese a parità di pacing (oggi − 364gg) con check-in nel 2025.</p>
-              <p><b>Tabella mensile</b>: dettaglio per ogni RT × mese con confronto vs STLY (Δ% OCC e Δ% ADR). Indicativo per: capire quali RT stanno andando meglio o peggio del LY, quali mesi hanno sotto-performance specifiche di una tipologia.</p>
-            </div>
-          </details>
+          
         </div>
       </div>
     </div>
@@ -905,16 +889,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>Cancellazioni</h2>
         <div class="lede">Andamento delle prenotazioni cancellate negli ultimi 12 mesi.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
-              <p><b>Come si conta una cancellazione</b>: la cancellazione viene attribuita al <b>mese e canale in cui è stata cancellata</b> (data ultima modifica = data del cambio di stato a "Cancellate"). Non al mese del check-in originale.</p>
-              <p><b>RN cancellati</b> = somma delle notti perse per cancellazione (= ogni prenotazione contribuisce con il suo numero di notti).</p>
-              <p><b>Revenue persa</b> = somma del Totale (al netto della tassa di soggiorno) delle prenotazioni cancellate.</p>
-              <p><b>Lead time medio</b> = media dei giorni tra data prenotazione e data cancellazione (quanto tempo passa prima che il cliente cancelli).</p>
-              <p><b>% cancellazioni per canale</b>: tasso di cancellazione = Cancellate / (Confermate + Cancellate), per canale, ultimi 12 mesi. Il denominatore include solo prenotazioni il cui check-in cade negli ultimi 12 mesi (per non distorcere con cancellazioni vecchie).</p>
-              <p><b>Mix per booking window</b>: lead time tra prenotazione e check-in originale (non tra prenotazione e cancellazione). Permette di capire se cancellano di più i prenotanti di lungo o di breve periodo.</p>
-            </div>
-          </details>
+          
         </div>
       </div>
     </div>
@@ -977,107 +952,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>Forecast <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">Maggio 2026 → Aprile 2027</span></h2>
         <div class="lede"><b>A cosa serve:</b> rispondere alla domanda "quanto chiuderò questo mese?" (e i mesi a seguire) basandosi su quello che hai già venduto e su come stai performando rispetto all'anno scorso.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Come funziona</summary>
-            <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
-              <p style="margin:0 0 10px 0"><b>L'idea in una frase:</b> per ogni mese futuro, il sistema parte dalle prenotazioni dell'anno scorso e le aggiusta in base a come stanno andando le cose oggi. Se oggi vendi il 5% in più di un anno fa, il forecast del mese di luglio è "luglio 2025 × 1.05". Poi confronta con quello che hai già confermato (OTB) e prende il massimo dei due (= non scende mai sotto il già-venduto).</p>
-
-              <p style="margin:14px 0 6px 0"><b>3 tipi di mese, 3 logiche:</b></p>
-              <ul style="margin:0 0 12px 18px;padding:0">
-                <li style="margin-bottom:5px"><b>Mese già passato</b> (es. febbraio 2026): mostra solo il <b>realizzato</b>. Niente forecast, è storia.</li>
-                <li style="margin-bottom:5px"><b>Mese in corso</b> (es. maggio 2026 se oggi è il 20): <b>realizzato fino a ieri + forecast da oggi a fine mese</b>.</li>
-                <li style="margin-bottom:5px"><b>Mese futuro</b> (es. giugno 2026): <b>forecast completo</b> con la logica sotto.</li>
-              </ul>
-
-              <p style="margin:14px 0 6px 0"><b>Come calcola le RN (room nights) di un mese futuro:</b></p>
-              <ol style="margin:0 0 12px 18px;padding:0">
-                <li style="margin-bottom:5px">Prende le RN del mese corrispondente del 2025 (es. per giugno 2026 → giugno 2025).</li>
-                <li style="margin-bottom:5px">Le moltiplica per uno <b>"share"</b> che dice come stai andando rispetto all'anno scorso. Lo share viene calcolato <b>per mese di stay specifico</b> (non un singolo numero globale): le RN venduto a giugno negli ultimi 12 mesi vs RN dei 12 mesi precedenti, e così per ogni mese. Esempio: share giugno = 1.05 vuol dire "a giugno sto vendendo il 5% in più rispetto all'anno scorso". Lo share è limitato fra 0.70 e 1.30 (±30%). <b>Soglie minime di dati</b>: ≥30 RN cur per usare lo share mensile puro; 10-29 RN → blend 60% mese + 40% globale; sotto 10 → usa lo share globale (90gg). Così proiezioni di mesi forti non vengono "diluite" da medie globali, e mesi deboli non vengono "gonfiati" da mesi forti.</li>
-                <li style="margin-bottom:5px">Confronta con quanto hai <b>già venduto (OTB)</b> per quel mese. Se l'OTB è già più alto della stima, vince l'OTB (il forecast non scende mai sotto il già-confermato).</li>
-                <li style="margin-bottom:5px">Cap al 98% dell'inventario: non puoi vendere più camere di quante ne hai (e nel mondo reale non si arriva mai al 100% per overbooking/manutenzioni/blocchi).</li>
-              </ol>
-
-              <p style="margin:14px 0 6px 0"><b>Come calcola l'ADR (= prezzo medio) di un mese futuro:</b></p>
-              <ul style="margin:0 0 12px 18px;padding:0">
-                <li style="margin-bottom:5px">Per le <b>RN già confermate (OTB)</b>: usa il prezzo reale che hai incassato. Niente stima.</li>
-                <li style="margin-bottom:5px">Per le <b>RN del pickup atteso</b> (= quelle che venderai ancora): usa il <b>prezzo RMES suggerito giorno-per-giorno</b>, mediato sul mese <b>pesato per inventory residuo</b>. Significa: i giorni già esauriti (es. sabati pieni) non contribuiscono alla media; i giorni quasi pieni contribuiscono in proporzione al residuo (es. OCC=80% → peso 20%); i giorni vuoti contribuiscono pienamente. Così l'ADR pickup riflette davvero quello che venderai ancora, non la media indiscriminata di tutti i giorni del mese.</li>
-                <li style="margin-bottom:5px">Se per qualche giorno RMES non riesce a calcolare un prezzo (manca lo storico LY di quel giorno-settimana), <b>fallback</b>: ADR LY del mese × growth ADR (stesso clamp ±30%).</li>
-              </ul>
-
-              <p style="margin:14px 0 6px 0"><b>Calcolo per Room Type:</b></p>
-              <p style="margin:0 0 10px 0">Tutto sopra è ripetuto <b>per ogni tipologia camera</b>, partendo dal mix LY (es. se a luglio 2025 il 60% delle vendite erano Camera Matrim. Deluxe, parte da quella ripartizione). Ogni RT ha il suo cap inventario. La somma per RT coincide sempre col totale mese.</p>
-
-              <p style="margin:14px 0 6px 0"><b>Forecast Snapshot vs Forecast Live:</b></p>
-              <p style="margin:0 0 10px 0">Il 1° giorno di ogni mese, il sistema salva il forecast che aveva in quel momento ("snapshot"). Durante il mese, il forecast viene aggiornato in tempo reale ("live"). A fine mese puoi confrontare i due: quanto eri stato bravo a prevedere 30 giorni prima, vs come è andata davvero. È un audit di accuratezza.</p>
-
-              <p style="margin:14px 0 6px 0"><b>Override manuali (boost):</b></p>
-              <p style="margin:0 0 10px 0">In alcuni mesi specifici (es. Alfani giugno/luglio/settembre/dicembre 2026) sono applicati boost manuali di ADR o forzature di OCC al valore budget, per riflettere decisioni strategiche prese a priori (eventi, riposizionamento, lavori). Sono configurati nel codice e visibili nelle note in tabella.</p>
-
-              <p style="margin:14px 0 6px 0"><b>Correzione Pasqua:</b></p>
-              <p style="margin:0 0 10px 0">Pasqua 2027 cade il 28 marzo, mentre Pasqua 2026 era ad aprile. Per evitare di confrontare un marzo "senza Pasqua" con un marzo "con Pasqua", il sistema sposta la settimana santa 2026 nel mese giusto del 2027 ai fini del calcolo Final LY (vedi sezione "Logica di calcolo" sotto per i dettagli).</p>
-
-              <p style="margin:14px 0 6px 0"><b>Toggle sopra la tabella:</b></p>
-              <ul style="margin:0 0 10px 18px;padding:0">
-                <li><b>+ gen-apr 2026 (passato)</b>: aggiunge i 4 mesi 2026 già chiusi. Utile per vedere il fiscal year da inizio anno.</li>
-                <li><b>− gen-apr 2027 (futuro lontano)</b>: nasconde i 4 mesi più lontani dove la stima è meno affidabile (OTB ancora vuoto).</li>
-              </ul>
-
-              <p style="margin:14px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica:</b> ogni inizio mese guardi la riga del mese in corso e dei 2-3 successivi: la colonna <b>Forecast</b> ti dice "se nulla cambia rispetto al ritmo attuale, finirò qui". Confronti con il <b>Budget</b> per vedere se sei sopra o sotto. La colonna <b>€/giorno per chiudere</b> ti dice quanto devi incassare ogni giorno che manca alla chiusura per raggiungere il forecast — utile per capire l'urgenza. Tutti i numeri sono in Beddy_eq (netto del markup OTA).</p>
-            </div>
-          </details>
+          
         </div>
       </div>
     </div>
 
-    <details class="panel" style="margin-bottom:16px">
-      <summary class="panel-head" style="cursor:pointer;list-style:none">
-        <div>
-          <h3 style="display:inline">📚 Logica di calcolo</h3>
-          <span style="font-size:11px;color:var(--ink-3);margin-left:8px">— clicca per espandere</span>
-        </div>
-      </summary>
-      <div class="panel-body" style="padding:12px 16px">
-        <ul style="margin:0;padding-left:20px;font-size:11.5px;line-height:1.55;color:var(--ink-2)">
-          <li><b>Range default</b>: Maggio 2026 → Aprile 2027 (12 mesi fiscal year). Due toggle sopra la tabella permettono di personalizzare:
-            <ul style="margin:4px 0;padding-left:18px">
-              <li><b>+ gen-apr 2026</b>: aggiunge i 4 mesi già passati (per analisi retrospettiva)</li>
-              <li><b>− gen-apr 2027</b>: nasconde gen-apr 2027 (utile se l'OTB è ancora vuoto)</li>
-            </ul>
-            Per i mesi 2026, Final LY = stesso mese 2025. Per gen-apr 2027, Final LY = stesso mese 2026.
-          </li>
-          <li><b>Final LY</b> = aggregato del <b>mese di calendario corrispondente del 2025</b> (es. Giugno 2026 → Giugno 2025). Coincide esattamente con la tab <b>Dati Storici</b>. NIENTE shift di -364gg, niente filtri pari-data.</li>
-          <li><b>Correzione Settimana Santa per Mar/Apr 2027 🐣</b>: Pasqua 2027 cade il 28 marzo, Pasqua 2026 era il 5 aprile, Pasqua 2025 era il 20 aprile. La settimana santa 2026 era a cavallo: 30-31 marzo (resta a marzo) e 1-5 aprile (in aprile). Per allineare il bias Pasqua-driven al 2027:
-            <ul style="margin:4px 0;padding-left:18px">
-              <li><b>Marzo 2027 Final LY</b> = Marzo 2026 totale + giorni 1-5 aprile 2026 (parte settimana santa 2026 caduta in aprile, spostata a marzo dove cade Pasqua 2027)</li>
-              <li><b>Aprile 2027 Final LY</b> = (Aprile 2026 totale − giorni 1-5 aprile 2026) + giorni 1-5 aprile 2025 (riempimento con un periodo NON-Pasqua: aprile 2025 aveva Pasqua il 20, quindi 1-5 aprile 2025 era una settimana standard)</li>
-              <li>I giorni 30-31 marzo 2026 (parte settimana santa già a marzo) restano in Marzo 2027 senza spostamenti</li>
-              <li>Effetto netto: Marzo 2027 acquista la "spinta Pasqua", Aprile 2027 ha 30 giorni di base ma con la prima settimana sostituita da dati non-Pasqua (= comportamento normale di aprile senza Pasqua)</li>
-            </ul>
-          </li>
-          <li><b>Forecast RN per RT × mese</b> = max(OTB_RN, FinalLY_RN × shareCapped), cappato al <b>98% dell'inventario disponibile</b> (camere × giorni mese × 0.98). Eccezione: se OTB è già &gt; 98%, vince OTB. Il 98% riflette il fatto che nel mondo reale la 100% OCC non si raggiunge mai (overbooking, blocchi, manutenzioni).</li>
-          <li><b>Share dinamico (clamp ±30% → [0.70, 1.30])</b> = stay-night quest'anno ultimi 90gg / stay-night LY stesso periodo (= ymd in [-454, -364]). Cappato tra <b>0.70 (min)</b> e <b>1.30 (max)</b>:
-            <ul style="margin:4px 0;padding-left:18px">
-              <li>Se share ≥ 100% → forecast cresce vs LY (max +30%): segnale di salute reale</li>
-              <li>Se share &lt; 100% → forecast cala vs LY (min −30%)</li>
-              <li>Caps evitano sovra/sottostima eccessiva basata su un campione di soli 90gg</li>
-            </ul>
-          </li>
-          <li><b>Forecast ADR per RT × mese</b>: <b>usa il prezzo RMES suggerito giorno-per-giorno</b> (mediato per il mese) come ADR del pickup. <b>Fallback</b> se RMES non disponibile per quel giorno: FinalLY_ADR × adrGrowth, con adrGrowth = ADR cur ultimi 90gg / ADR LY stesso periodo, cappato tra <b>0.70</b> e <b>1.30</b>. Per le RN già confermate (OTB) viene usato il prezzo reale incassato (non stimato).</li>
-          <li><b>Forecast Revenue per RT × mese</b> = forecast_RN × forecast_ADR. Coerenza matematica garantita: il totale mensile coincide sempre con la somma RN × ADR di ogni RT.</li>
-          <li><b>Logica colonna "YTD + Forecast"</b>: la colonna combina dati realizzati (YTD = Year To Date, fino a ieri) e proiezione forecast (da oggi in poi):
-            <ul style="margin:4px 0;padding-left:18px">
-              <li><b>Mesi passati</b> (es. gen-apr 2026): tutto realizzato → YTD+Forecast = OTB confermato = revenue effettivo.</li>
-              <li><b>Mese in corso</b> (es. maggio 2026 con TODAY=11/5): <b>YTD = giorni 1-10 maggio</b> (actual realizzato) + <b>Forecast = giorni 11-31 maggio</b> (proiezione basata su FinalLY proporzionale × share, floor a OTB già confermato).</li>
-              <li><b>Mesi futuri</b>: Forecast completo = max(OTB attuale, FinalLY × shareCapped), cappato al 98% inventory.</li>
-            </ul>
-          </li>
-          <li><b>OTB attuale</b>: tutte le stay-night di prenotazioni Confermate per quel mese (sia passate che future). Coincide al 100% con la tab OTB Anno Intero (mese corrispondente).</li>
-          <li><b>Budget</b>: Revenue mensile dal file budget caricato. Δ vs Budget = Forecast − Budget. Verde se Forecast ≥ Budget, rosso se sotto. Cella vuota se il budget per quel mese non è disponibile.</li>
-          <li><b>Pickup 14gg cur</b>: revenue da prenotazioni con bookYmd negli ultimi 14gg, allocato per stay-night al mese corrispondente, diviso 14. <b>Pickup 14gg STLY</b>: stesso ma con bookYmd in [-378, -364] e stay-date allocata al Forecast year (+1).</li>
-          <li><b>€/giorno per chiudere</b> = (Forecast Rev − OTB Rev) / giorni cumulativi da oggi a fine mese. Es: per Giugno 2026 da oggi 8/5/2026 = giorni residui di maggio + tutti i giorni di giugno.</li>
-          <li><b>% Achievement</b> = OTB Rev / Forecast Rev. Verde ≥95%, default 70-95%, rosso &lt;70%.</li>
-        </ul>
-      </div>
-    </details>
+    
 
     <div class="kpi-grid" id="fcst-kpis"></div>
 
@@ -1122,15 +1002,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>Pickup Matrix</h2>
         <div class="lede">Prenotazioni acquisite nelle ultime 4 settimane (chiuse) vs stessa settimana STLY (−364 giorni). Click su una cella per il drilldown.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
-              <p><b>Matrice "Settimana booking × Mese soggiorno"</b>: per ogni settimana di prenotazione (ultime 4 chiuse, dalla più vicina), conta le RN acquisite e per quale mese di soggiorno sono. Permette di vedere a colpo d'occhio per quale mese stai ricevendo prenotazioni ORA.</p>
-              <p><b>Confronto STLY</b>: stesse 4 settimane di prenotazione 364 giorni fa. Se la cella è verde stiamo facendo meglio del LY in quella combinazione, rossa il contrario.</p>
-              <p><b>Click su una cella</b> → drilldown: lista prenotazioni di quella combinazione (booking week × stay month) con room type, canale, prezzo, durata. Utile per investigare anomalie ("perché tante prenotazioni a luglio in questa settimana?").</p>
-              <p><b>Volumi RN per Mese di Soggiorno</b> (in basso): barre 2026 (piene) sopra STLY (tratteggiate), ordinate per RN decrescente. Filtrato dalle settimane selezionate sopra. Indica i mesi "caldi" del momento.</p>
-              <p><b>RN allocation</b>: per ogni prenotazione, RN = numero di notti × camere; cancellate sono escluse dal pickup positivo ma contano nel "Cancellate" se la cancellazione cade nella finestra.</p>
-            </div>
-          </details>
+          
         </div>
       </div>
       <div class="head-actions">
@@ -1162,114 +1034,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>Sell Strategy <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px" id="sell-range-label">—</span></h2>
         <div class="lede"><b>A cosa serve:</b> capire ogni giorno quanto stai vendendo, quanto vendevi l'anno scorso in quella fase, e quale prezzo conviene tenere domani. Le tre colonne centrali (OTB · STLY · RMES) rispondono a 3 domande in sequenza: <b>quanto ho già venduto oggi</b>, <b>quanto avevo venduto l'anno scorso a parità di anticipo</b>, <b>quale prezzo suggerisce il sistema</b>.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Come leggere la tabella</summary>
-            <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
-              <p style="margin:0 0 10px 0"><b>Una riga = un giorno futuro</b>. L'ordine delle colonne nella tabella è: <b>Data → OTB → Pickup → STLY → Pickup STLY → Mercato Expedia → Foundation → RMES</b>. Da sinistra a destra leggi una "storia" su quel giorno:</p>
-              <ol style="margin:0 0 12px 18px;padding:0">
-                <li style="margin-bottom:6px"><b>Data · Evento · DoW</b> — il giorno e che giorno della settimana è (i weekend sono colorati). Se in quel giorno c'è un evento configurato (Pitti, Calcio Storico, ecc.) compare l'icona.</li>
-                <li style="margin-bottom:6px"><b style="color:#c4823b">OTB ad oggi</b> — quante camere hai venduto, l'occupazione (%) e l'ADR medio. È la "fotografia di adesso".</li>
-                <li style="margin-bottom:6px"><b style="color:#7a3a8e">Pickup Ngg</b> — l'andamento recente: prenotazioni nuove, cancellazioni, delta netto, ADR delle nuove. Configurabile a 1, 3, 7, 14 o 28 giorni dal selettore "Pickup ultimi Ngg". <b>Nuove e Cancellate sono cliccabili</b> per vedere la lista.</li>
-                <li style="margin-bottom:6px"><b style="color:#3a6b6b">STLY (−364)</b> — come stavi a parità di anticipo l'anno scorso. Confronto a giorno-della-settimana (non a data): se oggi è venerdì, il sistema mostra il venerdì di 52 settimane fa.</li>
-                <li style="margin-bottom:6px"><b style="color:#888">Pickup STLY</b> — quanto era stato il pickup nei medesimi Ngg di un anno fa. Confronta le 2 colonne pickup per capire se stai andando meglio o peggio.</li>
-                <li style="margin-bottom:6px"><b style="color:#3a6b6b">Mercato Expedia (Mio · Compset)</b> — il blocco a metà tabella, presente per <b>tutte e 3 le strutture</b>. Due numeri affiancati:
-                  <ul style="margin:4px 0 4px 16px;padding:0">
-                    <li><b>Mio</b> = il prezzo che <b>io stesso</b> ho pubblicato su Expedia per quel giorno, tradotto in <b>Beddy_eq</b> (cioè scontato del markup OTA: <code>Expedia ÷ 1.12 ÷ 0.90</code>). Così è confrontabile direttamente con il prezzo del mio sito diretto.</li>
-                    <li><b>Compset</b> = il <b>prezzo medio del mercato</b> nella mia zona, anch'esso in Beddy_eq. Non è una media semplice: è la <b>media ponderata dei competitor scelti per quella struttura</b>, con due elementi configurabili nella tab RMES → Ⓒ Compset:
-                      <ul style="margin:4px 0 4px 16px;padding:0">
-                        <li><b>Peso</b> per ogni competitor (es. quello più vicino al mio posizionamento pesa di più, una guesthouse fuori target pesa di meno o addirittura zero).</li>
-                        <li><b>Offset</b> per ogni competitor (es. "+15%" se quel competitor è strutturalmente più caro del mio prodotto, "−10%" se è una sistemazione di livello inferiore). L'offset normalizza i competitor rispetto al mio benchmark.</li>
-                      </ul>
-                    </li>
-                  </ul>
-                  <span style="color:var(--ink-3)">Il Compset alimenta il fattore <b>D·Compset</b> di RMES e contribuisce anche a Foundation come ancora di mercato.</span>
-                </li>
-                <li style="margin-bottom:6px"><b style="color:#c4823b">⚡ Foundation</b> — il "fair value" del giorno, il prezzo strutturale che il sistema calcola dai dati storici e dal target. Tre stati possibili (vedi sotto).</li>
-                <li style="margin-bottom:6px"><b style="color:#c4823b">RMES</b> — il prezzo finale suggerito = Foundation × moltiplicatore (i 5 fattori). M1/M2 dentro la cella = MLOS suggerito (minimum length of stay).</li>
-              </ol>
-
-              <p style="margin:10px 0 6px 0"><b>Filtro Room Type</b> (sopra la tabella, pillole colorate):</p>
-              <ul style="margin:0 0 10px 18px;padding:0">
-                <li><b>"Tutte"</b> = aggregato struttura (default). Le colonne OTB/Pickup/STLY mostrano i totali.</li>
-                <li>Una pillola per ogni tipologia camera. Quando ne selezioni una, <b>tutta la tabella</b> si ricolora per quella RT.</li>
-              </ul>
-
-              <p style="margin:10px 0 6px 0"><b>Foundation — i 3 stati</b> (icone visibili nella cella):</p>
-              <ul style="margin:0 0 10px 18px;padding:0">
-                <li><b style="color:#c4823b">⚡ proposed</b> (default) = il sistema sta calcolando dinamicamente. Cambia ogni volta che entrano dati nuovi.</li>
-                <li><b style="color:#1e6b4a">✓ accepted</b> = hai detto al sistema "questo valore mi va bene, congelalo". Anche se i dati cambiano, Foundation resta quello.</li>
-                <li><b style="color:#1e4a6b">🖋 override</b> = hai inserito un valore manuale tuo. Congelato.</li>
-              </ul>
-
-              <p style="margin:10px 0 6px 0"><b>Approvazione Foundation — solo sulla camera principale</b>:</p>
-              <p style="margin:0 0 6px 0">Per evitare di dover approvare prezzi su 5+ tipologie diverse, l'approvazione si fa <b>solo sulla baseRT</b> di ogni struttura:</p>
-              <ul style="margin:0 0 6px 18px;padding:0">
-                <li>Firenze Suite → <b>Camera Matrim. Deluxe</b></li>
-                <li>Condotta 16 → <b>Bilocale</b></li>
-                <li>Palazzo Alfani → <b>Classic</b></li>
-              </ul>
-              <p style="margin:0 0 10px 0">Le altre tipologie (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) ereditano automaticamente: <code>Foundation_baseRT + supplemento_RT_mensile</code>. Nella tabella si riconoscono dal <code>↳</code> e dalla cella più chiara (non cliccabile).</p>
-
-              <p style="margin:10px 0 6px 0"><b>Come approvare/modificare Foundation</b>:</p>
-              <ol style="margin:0 0 6px 18px;padding:0">
-                <li><b>Bottoni inline ✓ 🖋 ↺</b> nella cella Foundation di ogni riga (solo per baseRT) = azione rapida sul singolo giorno.</li>
-                <li><b>Click sul prezzo</b> dentro la cella → popup di dettaglio con il calcolo Foundation in 6 step.</li>
-                <li><b>Pannello batch sopra la tabella</b> (visibile solo se filtro = "Tutte" o baseRT): "Accetta tutti i giorni visibili", "Override tutti a €X", "Reset tutti". Utile per approvare un mese in un colpo.</li>
-              </ol>
-
-              <p style="margin:10px 0 6px 0"><b>Modale RMES (click sulla cella prezzo RMES)</b>:</p>
-              <ul style="margin:0 0 10px 18px;padding:0">
-                <li>Mostra Foundation effettivo, i 5 fattori uno per uno con i numeri, il prezzo suggerito.</li>
-                <li>Ha un input per inserire il <b>prezzo finale pubblicato</b> diverso dal suggerito (override puntuale) con 💾 Salva.</li>
-                <li>Simulazione revenue live: se cambi il prezzo, ti mostra l'impatto stimato su RN e Revenue (usa l'elasticità configurata).</li>
-              </ul>
-
-              <p style="margin:10px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica:</b> ogni mattina apri Sell Strategy, scorri i prossimi 7-14 giorni, controlli i giorni con scostamenti significativi (cella RMES verde = sistema suggerisce alzare, rossa = abbassare), e per i casi dove sai cose che il sistema non sa (eventi, situazioni particolari) fai override. Una volta a settimana o a mese, fai una review più ampia approvando i Foundation per il periodo successivo.</p>
-            </div>
-          </details>
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">🏗 Architettura prezzo per Room Type</summary>
-            <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
-              <p style="margin:0 0 10px 0">Il sistema calcola il prezzo a <b>2 livelli</b>: la baseRT ha un calcolo completo, le altre RT ereditano. Questo è importante per capire cosa vedi nelle celle.</p>
-
-              <p style="margin:10px 0 6px 0"><b>① Foundation: solo la baseRT viene calcolata davvero</b></p>
-              <p style="margin:0 0 6px 0">Per ogni struttura esiste una <b>baseRT</b> = la camera con più stanze (più dati storici, più stabile):</p>
-              <ul style="margin:0 0 8px 18px;padding:0">
-                <li>Firenze Suite → <b>Camera Matrim. Deluxe</b> (4 stanze su 8)</li>
-                <li>Condotta 16 → <b>Bilocale</b> (3 stanze su 7)</li>
-                <li>Palazzo Alfani → <b>Classic</b> (3 stanze su 9, dal 01/02/2025)</li>
-              </ul>
-              <p style="margin:6px 0">Per la baseRT, Foundation si calcola con i <b>6 step completi</b>: ancora storica LY pari-DOW pari-mese, target revenue mensile, RN attese in chiusura, curva booking window, cap mercato compset, floor + base lift. Risultato: un prezzo strutturale "fair" della baseRT per quel giorno.</p>
-
-              <p style="margin:10px 0 6px 0"><b>② Le altre RT ereditano via supplemento mensile</b></p>
-              <p style="margin:0 0 6px 0">Per le RT non-base (Suite, Suite con Terrazza, Trilocale, Attico, Superior, Junior Suite, Deluxe) Foundation NON viene ricalcolato dai 6 step. Si usa una scorciatoia:</p>
-              <p style="margin:6px 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #3b6b9a;font-family:'DM Mono',monospace;font-size:12px;text-align:center"><b>Foundation_RT = Foundation_baseRT + supplemento_RT_mese</b></p>
-              <p style="margin:6px 0">Il <b>supplemento mensile</b> è derivato dallo storico (ADR media RT - ADR media baseRT, separato per stagione alta/bassa, arrotondato al multiplo di 5). Vedi la tabella completa nella <b>tab RMES → sezione Ⓔ Supplementi RT per mese</b>.</p>
-              <p style="margin:6px 0">Es. Firenze · 20/05/2026 · Suite con Terrazza:<br>
-              &nbsp;&nbsp;Foundation baseRT (Camera Matrim. Deluxe) = €318<br>
-              &nbsp;&nbsp;Supplemento Suite con Terrazza maggio (alta stagione) = +€70<br>
-              &nbsp;&nbsp;Foundation Suite con Terrazza = €318 + €70 = <b>€388</b></p>
-
-              <p style="margin:10px 0 6px 0"><b>③ I 5 fattori RMES sono di struttura, non per RT</b></p>
-              <p style="margin:0 0 6px 0">Il <b>moltiplicatore RMES</b> (es. ×0.767, somma pesata dei 5 fattori A·OCC, B·Price, C·Pace, D·Compset, E·Search) è calcolato <b>una sola volta a livello struttura</b>. Lo stesso identico moltiplicatore si applica a Camera Matrim. Deluxe, Suite, Suite con Terrazza in quel giorno.</p>
-              <p style="margin:6px 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #3b6b9a;font-family:'DM Mono',monospace;font-size:12px;text-align:center"><b>Prezzo_RMES_RT = Foundation_RT × moltiplicatore_struttura</b></p>
-              <p style="margin:6px 0">Es. continuazione (moltiplicatore Firenze 20/05 = ×0.767):</p>
-              <ul style="margin:0 0 8px 18px;padding:0;font-family:'DM Mono',monospace;font-size:11.5px">
-                <li>Camera Matrim. Deluxe: €318 × 0.767 = <b>€244</b></li>
-                <li>Suite: (€318 + €15) × 0.767 = €333 × 0.767 = <b>€255</b></li>
-                <li>Suite con Terrazza: (€318 + €70) × 0.767 = €388 × 0.767 = <b>€297</b></li>
-              </ul>
-              <p style="margin:6px 0">Il prezzo che vedi nella cella RMES è quindi specifico per RT, ma la "logica dinamica" del moltiplicatore è condivisa.</p>
-
-              <p style="margin:10px 0 6px 0"><b>④ Perché questa asimmetria?</b></p>
-              <p style="margin:0 0 6px 0">Le RT non-base hanno troppi pochi dati per un calcolo affidabile:</p>
-              <ul style="margin:0 0 8px 18px;padding:0">
-                <li><b>Foundation autonomo</b> non funzionerebbe: la mediana LY su una singola Suite con Terrazza (2 stanze) avrebbe pochissime osservazioni → instabile. Il cap mercato compset non ha senso (non c'è compset per "Suite con Terrazza"). Solo la baseRT ha la massa critica per i 6 step.</li>
-                <li><b>Fattori RMES per RT</b> non funzionerebbero: il pace 4w di 1-2 stanze è dominato dal rumore (una singola cancellazione fa oscillare C·Pace di ±50%). A livello struttura (8 camere per Firenze) i segnali sono stabili.</li>
-              </ul>
-              <p style="margin:6px 0">La gerarchia di prezzo tra RT (Suite costa più di Deluxe, sempre, ma in modo abbastanza stabile mese per mese) è una cosa <b>strutturale</b>, non dinamica. Il supplemento storico cattura questa gerarchia. La dinamica del mercato (occupazione, pace, ricerche) è invece <b>comune</b> a tutta la struttura — il moltiplicatore RMES.</p>
-
-              <p style="margin:10px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica nella UI:</b> approvi/override Foundation solo sulla baseRT (le altre RT mostrano "↳ €X" come derivato, non cliccabile). Quando filtri per una RT non-base e clicchi la cella RMES, la modale ti mostra Foundation_RT = Foundation_baseRT + supplemento, lo stesso moltiplicatore di struttura, e il prezzo finale specifico per quella RT.</p>
-            </div>
-          </details>
+          
+          
         </div>
       </div>
       <div class="head-actions">
@@ -1323,19 +1089,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
            NB: visibile SOLO quando filtro RT è non-impostato (= "Tutte") oppure è la baseRT della struttura.
            L'approvazione si applica esclusivamente alla baseRT; le altre RT ne ereditano Foundation + supplemento. -->
       <div class="panel-body" id="sell-fp-approval-bar" style="display:none;padding:10px 16px;border-top:1px solid var(--line);background:rgba(59,107,154,.04)">
-        <details style="margin-bottom:8px">
-          <summary style="cursor:pointer;font-size:10px;color:#3b6b9a;text-transform:uppercase;letter-spacing:.05em;font-weight:700;list-style:none;outline:none">⚡ Come funziona l'Approvazione Foundation (click per dettagli)</summary>
-          <div style="margin-top:8px;padding:10px 12px;background:#fff;border-left:3px solid #3b6b9a;font-size:11.5px;color:var(--ink-2);line-height:1.55">
-            <p style="margin:0 0 6px 0">Foundation è il <b>prezzo strutturale di partenza</b> sul quale i 5 fattori RMES applicano l'aggiustamento dinamico. Per ogni giorno della <b>baseRT</b> ha uno di tre stati:</p>
-            <ul style="margin:0 0 6px 18px;padding:0">
-              <li><b style="color:#c4823b">⚡ Proposed</b> = valore calcolato dinamico (storico LY × growth × pace × cap mercato). Cambia se cambiano i dati storici.</li>
-              <li><b style="color:#1e6b4a">✓ Accepted</b> = valore calcolato congelato al momento dell'accept. Non cambia più anche se i dati storici cambiano.</li>
-              <li><b style="color:#1e4a6b">🖋 Override</b> = valore manuale che hai inserito tu. Congelato fino a reset.</li>
-            </ul>
-            <p style="margin:6px 0;padding:6px 10px;background:#fffbee;border-left:2px solid #c4823b"><b>Solo baseRT</b>: l'approvazione si applica esclusivamente alla room type principale di ogni struttura. Le altre RT (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) ereditano automaticamente Foundation della baseRT + supplemento mensile storico (sono indicate con "↳" e cella più chiara).</p>
-            <p style="margin:6px 0 0 0">I 5 fattori RMES si applicano sempre sopra il <b>Foundation effettivo</b> (= valore congelato se accepted/override, calcolato altrimenti). Ogni giorno è indipendente: niente autoregressione. La cella Foundation per la baseRT è cliccabile (popup di dettaglio 6 step) e ha 3 bottoni inline ✓ 🖋 ↺ per le azioni rapide.</p>
-          </div>
-        </details>
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px">
           <span class="mono" style="font-size:10px;color:#3b6b9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Approvazione Foundation</span>
           <span id="sell-fp-baseRT-label" style="font-size:11px;color:#666;font-style:italic"></span>
@@ -1379,16 +1132,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>Rate Shopper <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">prezzi compset · pesi configurabili</span></h2>
         <div class="lede">Tabelle dei competitor estratte da <b>Expedia</b> con prezzi giornalieri. La prima riga (evidenziata) è il mio prezzo.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
-              <p><b>Cosa vedi</b>: prezzi <b>lordi su Expedia</b> (= ciò che il cliente vede prima di pagare). Sono i prezzi della tariffa Flessibile (la "tariffa più bassa visibile") di una camera doppia matrim. base.</p>
-              <p><b>Mio prezzo</b>: la prima riga è il MIO listing Expedia. Conversione a Beddy_eq: <code>prezzo_lordo / (1 + markup_OTA/100) / 0.90</code>. Il markup OTA è configurabile per struttura nella tab RMES → Ⓑ (default 12%). Il /0.90 toglie lo sconto della non-rimborsabile (Beddy_eq è la tariffa Beddy non-rimborsabile, il vero prezzo netto).</p>
-              <p><b>Pesi compset</b>: ogni competitor ha un peso 0-100% configurabile nella tab RMES → Ⓒ. Peso = 100% conta pieno, peso = 0% lo esclude dal calcolo. Un competitor con peso &lt; 100% appare con badge accanto al nome. Il peso è usato sia dal <b>fattore D·Compset RMES</b> sia dal <b>cap mercato Foundation</b>.</p>
-              <p><b>Offset €</b>: solo per Foundation. Es. -10 significa "voglio stare €10 sotto questo competitor". Il riferimento mercato Foundation = Σ(peso × (compset_Beddy_eq + offset)) / Σ(peso).</p>
-              <p><b>Piramide Prezzi</b> (sotto): barre verticali con i prezzi compset (lordi Expedia) per ogni giorno, con il mio prezzo evidenziato. Range temporale selezionabile (30/60/90/180gg).</p>
-              <p><b>Grafico "Intensità ricerche"</b>: ricerche Expedia per ogni giorno della finestra, normalizzate al picco massimo. Barre verticali dal basso, colore graduato (chiaro = bassa domanda, scuro = picco). Sostituisce il vecchio "Volume ricerche YoY" che dava falsi negativi.</p>
-            </div>
-          </details>
+          
         </div>
       </div>
       <div class="head-actions">
@@ -1473,50 +1217,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>RMES <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">Revenue Manu&Enis System · configurazione</span></h2>
         <div class="lede"><b>A cosa serve:</b> configurare il sistema di pricing dinamico (RMES = Revenue Manu&amp;Enis System) per le 3 strutture. Qui imposti i parametri che decidono il prezzo. <b>L'approvazione giornaliera dei prezzi si fa nella Sell Strategy</b>, non qui.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Spiegazione semplice</summary>
-            <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
-              <p style="margin:0 0 10px 0"><b>Il problema che risolve RMES:</b> per ogni giorno futuro, decidere a quale prezzo vendere le camere. Troppo basso → lasci soldi sul tavolo. Troppo alto → resti vuoto.</p>
-
-              <p style="margin:14px 0 6px 0"><b>Come funziona (in 2 passaggi):</b></p>
-              <ol style="margin:0 0 12px 18px;padding:0">
-                <li style="margin-bottom:8px"><b style="color:#7a4f1c">Step 1 — Foundation calcola il "prezzo strutturale" del giorno.</b><br>
-                  Guarda quanto hai venduto un anno fa nello stesso giorno-settimana stesso mese (es. sabato di luglio), applica un obiettivo di crescita (es. +5%), aggiusta in base al ritmo di vendita attuale, e cappa al range di mercato dei competitor. È il <b>fair value</b> di quel giorno.</li>
-                <li style="margin-bottom:8px"><b style="color:#3b5a78">Step 2 — 5 fattori aggiustano in base alla situazione di oggi.</b><br>
-                  Foundation è "quanto vorresti vendere". I 5 fattori sono "come stai effettivamente vendendo adesso":
-                  <ul style="margin:6px 0 0 18px;padding:0">
-                    <li><b>A·OCC</b> — sto vendendo più o meno camere rispetto a un anno fa per questo giorno?</li>
-                    <li><b>B·Price</b> — il mio prezzo medio è sopra o sotto un anno fa?</li>
-                    <li><b>C·Pace</b> — il ritmo di prenotazioni del mese di soggiorno è in crescita o calo vs un anno fa? <i>Se i dati del mese-specifico per la struttura non bastano, il sistema usa il pace aggregato delle 3 strutture (badge <b style="color:#8e5fa8;font-family:'DM Mono',monospace">P̄</b> sulla cella RMES). Sono nella stessa area e fascia qualità, quindi è un proxy ragionevole.</i></li>
-                    <li><b>D·Compset</b> — sono più caro o più economico dei competitor su Expedia?</li>
-                    <li><b>E·Search</b> — quante persone stanno cercando questo giorno (ricerche Expedia) rispetto al normale del mese?</li>
-                  </ul>
-                  Ogni fattore produce una <b>deviazione</b> (es. -10%, +5%) limitata a ±50%. Le 5 deviazioni vengono pesate (default 20% ciascuna), sommate e clampate al cap totale (default ±30%). Il risultato è un moltiplicatore (es. 0.95 o 1.08).</li>
-              </ol>
-
-              <p style="margin:14px 0 6px 0"><b>La formula in una riga:</b></p>
-              <p style="margin:0 0 10px 0;padding:10px 14px;background:#fef8ed;border:1px solid #c4823b;border-radius:5px;font-size:13px;font-family:'DM Mono',monospace;color:#5a3a14;text-align:center">
-                Prezzo RMES = Foundation × (1 + Σ peso × deviazione)
-              </p>
-
-              <p style="margin:14px 0 6px 0"><b>Esempio veloce:</b></p>
-              <p style="margin:0 0 10px 0">Sabato 15 agosto. Foundation calcola €240 (quello che dovrei vendere se tutto va come previsto). Oggi però: OCC del giorno -10% vs LY, ADR sotto LY → recupero, pace del mese in crescita, sono più economico del compset, ricerche sopra mediana. Σ ponderato = +4%. Cap non raggiunto. <b>Prezzo RMES = 240 × 1.04 = €250</b>.</p>
-
-              <p style="margin:14px 0 6px 0"><b>L'approvazione (Foundation states):</b></p>
-              <p style="margin:0 0 6px 0">Foundation cambia ogni volta che i dati storici cambiano. Per evitare oscillazioni indesiderate, puoi "congelare" il valore di Foundation per ogni giorno: dalla Sell Strategy clicchi <b>✓ Accetta</b> (congela il calcolato) o <b>🖋 Override</b> (metti un valore manuale). Solo la baseRT (camera principale) viene approvata; le altre tipologie ereditano automaticamente. <b>I 5 fattori RMES continuano comunque a funzionare sopra il Foundation congelato</b>.</p>
-
-              <p style="margin:14px 0 6px 0"><b>Cosa configuri qui in questa tab:</b></p>
-              <ul style="margin:0 0 10px 18px;padding:0">
-                <li><b>Ⓐ Target growth per mese</b>: quanto vuoi crescere vs l'anno scorso (default +5% ogni mese).</li>
-                <li><b>Ⓑ Base / Floor / Markup OTA / Elasticità</b>: il prezzo di riferimento annuale, il limite assoluto sotto cui non scendi, il markup che le OTA aggiungono, la sensibilità RN ↔ prezzo.</li>
-                <li><b>① Pesi dei 5 fattori</b>: quanto contribuisce ognuno al moltiplicatore. Default uguali (20% × 5). Aumenti il peso di un fattore se vuoi che pesi di più nella decisione.</li>
-                <li><b>② Cap totale</b>: di quanto al massimo il prezzo RMES può discostarsi da Foundation (default ±30%).</li>
-                <li><b>Ⓒ Pesi e offset compset</b>: quali competitor includi e con quale peso, e quanto stare sotto/sopra a ognuno.</li>
-                <li><b>Ⓓ Audit override</b>: a chiusura mese, confronta i giorni in cui hai messo override manuali vs quello che RMES aveva suggerito. Ti dice se hai fatto meglio o peggio del sistema.</li>
-              </ul>
-
-              <p style="margin:14px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica:</b> imposti i parametri una volta (o li ritocchi raramente), e poi lavori sulla Sell Strategy giorno per giorno. La doc tecnica completa con la formula condizionale dei singoli fattori, l'esempio numerico e i 6 step di Foundation è nel pannello <b>📚 Come funziona il sistema RMES + Foundation Pricing</b> qui sotto, espandibile.</p>
-            </div>
-          </details>
+          
         </div>
       </div>
       <div class="head-actions">
@@ -1534,214 +1235,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
 
     <!-- Documentazione collassabile -->
-    <details class="panel" style="margin-bottom:16px">
-      <summary class="panel-head" style="cursor:pointer;list-style:none">
-        <div>
-          <h3 style="display:inline">📚 Come funziona il sistema RMES + Foundation Pricing</h3>
-          <span style="font-size:11px;color:var(--ink-3);margin-left:8px">— clicca per espandere</span>
-        </div>
-      </summary>
-      <div class="panel-body" style="font-size:13px;line-height:1.65;color:var(--ink)">
-
-        <p><b>Architettura</b>: il prezzo finale RMES = <b>Foundation × (1 + Σ peso × deviazione)</b>, capped a ±cap. È un sistema a 2 livelli:</p>
-        <ul style="margin:4px 0 12px 18px">
-          <li><b style="color:#7a4f1c">Foundation Pricing</b> calcola il <b>prezzo "ideale" del giorno</b> partendo dallo storico LY, target Revenue, pace booking, curva di vendita, cap mercato compset, Base/Floor. È la <b>sorgente</b>.</li>
-          <li><b>5 fattori RMES dinamici</b> aggiustano il prezzo Foundation in base alle <b>novità del momento</b>: come sta andando l'occupazione oggi vs LY, il pace per mese di stay, l'ADR, il mio prezzo vs compset, la domanda di ricerche Expedia. Ogni fattore produce una <b>deviazione</b> (es. -10%, +15%); le 5 deviazioni vengono <b>pesate e sommate</b> per produrre l'aggiustamento finale rispetto a Foundation.</li>
-        </ul>
-
-        <p style="padding:10px 14px;background:#fef8ed;border:1px solid #c4823b;border-radius:5px;font-size:12px;line-height:1.5">
-          <b>Idea chiave</b>: Foundation è il prezzo "strutturale" del giorno (cambia poco di giorno in giorno). I 5 fattori sono il <b>movimento dinamico</b> (cambiano ogni giorno con i nuovi booking, le nuove cancellazioni, i nuovi prezzi compset). Foundation ti dice <i>quanto vorresti vendere</i>, i fattori ti dicono <i>come stai effettivamente vendendo oggi</i>.
-        </p>
-
-        <p style="padding:10px 14px;background:#e8f4ec;border:1px solid #1e6b4a;border-radius:5px;font-size:12px;line-height:1.5;margin-top:8px">
-          <b style="color:#1e6b4a">📌 Sorgente del prezzo RMES</b>: il prezzo RMES viene calcolato <b>SEMPRE</b> a partire dal valore Foundation del giorno (non dal prezzo Beddy attualmente pubblicato, non dal prezzo Expedia, non dal compset). Il calcolo è: <code>Foundation × (1 + Σ peso × deviazione)</code>. La vecchia cascata Beddy reale → Mio Expedia → Compset → ADR OTB → ADR Final LY interviene <b>SOLO come fallback</b> nei rari casi in cui Foundation non riesce a calcolare (es. nessun dato LY per quel giorno della settimana di quel mese). Nelle 3 strutture Manu&Enis questo accade per &lt; 1% dei giorni. Per ogni cella del prezzo RMES nella Sell Strategy puoi cliccare ⚡ Foundation a sinistra per vedere lo step-by-step della sorgente.
-        </p>
-
-        <hr style="margin:18px 0;border:0;border-top:1px solid #c4823b">
-
-        <h3 style="color:#7a4f1c;font-size:15px;margin:8px 0">PARTE 1 — Foundation Pricing (la sorgente)</h3>
-
-        <p><b>Due modalità in base ai giorni che mancano al check-in:</b></p>
-        <ul style="margin:4px 0 12px 18px">
-          <li><b>Modalità completa (&lt;180gg)</b>: tutti i 6 step. Pace, OTB, pickup, cap mercato disponibili.</li>
-          <li><b>Modalità semplificata (&gt;180gg)</b>: solo storico + Base + growth. Niente pace/cap perché OTB non è ancora rappresentativo.</li>
-        </ul>
-
-        <h4 style="margin:14px 0 6px 0;color:#7a4f1c">Modalità completa (&lt;180gg) — 6 step</h4>
-        <ol style="margin:4px 0 12px 18px;font-size:12.5px">
-          <li><b>① Ancora storica = mediana ADR LY pari-giorno</b>:
-            <ul style="margin:4px 0 4px 18px">
-              <li><b>Cosa cerco</b>: nel 2024+2025 prendo tutte le prenotazioni confermate il cui soggiorno è caduto nello <b>stesso mese</b> e nello <b>stesso giorno della settimana</b> (es. tutti i sabati di luglio). Calcolo l'ADR di ogni stay-night, poi la mediana.</li>
-              <li><b>Quante osservazioni minimo</b>: 3. Sotto 3, allargo al mese intero (tutti i giorni, non solo lo stesso DOW). Sotto 3 anche lì, allargo a tutti i mesi adiacenti. Se proprio non bastano, il giorno entra in modalità "semplificata" (vedi sotto).</li>
-              <li><b>Cancellate</b>: incluse solo se cancellate ≥30gg prima dello stay (= chi cancella all'ultimo era un cliente "fragile", non rappresentativo del comportamento medio).</li>
-              <li><b>Già al netto del markup OTA</b>: le prenotazioni Booking/Expedia/Airbnb sono divise per (1 + markup/100) per ottenere il vero prezzo netto Beddy_eq incassato. Markup configurabile per struttura (default 12%).</li>
-            </ul>
-          </li>
-          <li><b>② Target Revenue del giorno</b>: <code>Revenue_LY_stesso_giorno × (1 + growth%)</code>. Growth configurabile per mese (default +5%). Pannello Ⓐ. Es: se il 15/07 dell'anno scorso ha incassato €1.500 e voglio crescere +5%, il target di oggi è €1.575.</li>
-          <li><b>③ RN attese + ADR target chiusura</b>:
-            <ul style="margin:4px 0 4px 18px">
-              <li><b>RN attese</b> = <code>RN_OTB + (pickup_LY_residuo × pace)</code>, cap inventario. Stima quante notti venderò ancora.</li>
-              <li><b>pace</b> = <code>RN_OTB_oggi / RN_OTB_LY_pari_giorni</code>. Misura se sto pacing meglio o peggio dell'anno scorso a parità di giorni mancanti. Smoothing: se LY ha &lt;4 prenotazioni a quel pacing, applico <code>sqrt(pace)</code> per smorzare estremi (es. pace 1.50 → 1.22). Clamp [0.70, 1.30].</li>
-              <li><b>ADR target chiusura</b> — logica condizionale a 3 casi per non spingere ribassi assurdi quando sei vicino al target:
-                <ul style="margin:3px 0 0 14px">
-                  <li><b>Caso A — Target già coperto (Rev_OTB ≥ Rev_target)</b>: tieni almeno il prezzo che già vendi. <code>ADR_target = max(ADR_OTB_Beddy_eq, ADR_LY × (1+growth%))</code>.</li>
-                  <li><b>Caso B — Vicino al target (Rev_OTB ≥ 95% Rev_target)</b>: stessa formula del caso A.</li>
-                  <li><b>Caso C — Lontano dal target (Rev_OTB &lt; 95% Rev_target)</b>: formula classica con un floor di salvaguardia. Il floor di salvaguardia non è il Floor da 100€ (quello arriva allo step ⑤). È un <b>tetto storico relativo</b> = <code>ADR_LY × (1+growth%)</code>. Se ho già venduto ≥50% dell'inventario, aggiungo come ulteriore floor anche <code>ADR_OTB_Beddy_eq</code> (il prezzo medio che sto già incassando). <code>ADR_target = max(adrFormula, tetto storico, [ADR_OTB se OCC≥50%])</code>. Evita di fare ribassi forti per "riempire" quando in realtà il pacing è già ragionevole.</li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li><b>④ Cap mercato (compset)</b>: media pesata dei competitor Expedia (convertita in Beddy_eq con divisore <code>(1+markup/100) × 0.90</code>) + offset configurabili. La media è il "range di mercato": <code>P_grezzo</code> viene cappato a <code>[×0.80, ×1.20]</code> di questa media. Se P_grezzo è dentro il range, passa; se è fuori, viene capped al limite più vicino.</li>
-          <li><b>⑤ Floor + Base lift</b>:
-            <ul style="margin:4px 0 4px 18px">
-              <li><b>Floor (hard, default 100€)</b>: limite assoluto sotto cui Foundation non scende mai. È il valore "non venderò mai sotto X" che imposti nella tab RMES → Ⓑ.</li>
-              <li><b>Base price (soft, default Firenze 220, Condotta 280, Alfani 270)</b>: il prezzo "giusto" annuale, una specie di "north star". Se Foundation calcolato è sotto Base, applico una media: <code>P = (P + Base) / 2</code>. Non è un limite duro, ma un'attrazione verso il prezzo target.</li>
-            </ul>
-          </li>
-          <li><b>⑥ Re-target adattivo (info)</b>: se P_finale è &lt; 92% dell'ADR target dello step ③, segnalo nella modale che il growth effettivo è inferiore al target richiesto (utile per capire se i floor stanno "tirandoti giù" troppo).</li>
-        </ol>
-
-        <h4 style="margin:14px 0 6px 0;color:#7a4f1c">Modalità semplificata (&gt;180gg)</h4>
-        <ol style="margin:4px 0 12px 18px;font-size:12.5px">
-          <li><b>Ancora</b> = mediana LY (se disponibile).</li>
-          <li><b>Combina con Base</b>: <code>ancora_usata = max(Base, mediana_LY)</code>.</li>
-          <li><b>Target growth</b>: <code>P = ancora_usata × (1 + growth%)</code>.</li>
-          <li><b>Floor</b>: <code>P_finale = max(P, Floor)</code>.</li>
-        </ol>
-
-        <p><b>Parametri configurabili</b> (tab RMES → pannelli Ⓐ/Ⓑ/Ⓒ/Ⓓ):</p>
-        <ul style="margin:4px 0 12px 18px;font-size:12.5px">
-          <li><b>Ⓐ Target growth per mese</b>: % crescita Revenue vs LY. Default +5%.</li>
-          <li><b>Ⓑ Base price annuale</b>: il prezzo che ritieni fair annualmente. Default Firenze 220, Condotta 280, Alfani 270.</li>
-          <li><b>Ⓑ Floor rate</b>: limite assoluto. Default 100€.</li>
-          <li><b>Ⓑ Markup OTA</b>: percentuale che le OTA aggiungono al prezzo Beddy_eq. Default 12%. Cambiando questo valore il sistema ricalcola tutti i revenue Beddy_eq storici (revPerNightCaricato).</li>
-          <li><b>Ⓑ Elasticità prezzo</b>: usata nelle simulazioni di override. Default 1.0 (1:1). Bottone "📊 Stima dai dati" calcola la stima storica.</li>
-          <li><b>Ⓒ Pesi compset (0-100%)</b>: usati sia da Foundation (cap mercato) sia da fattore D·Compset RMES.</li>
-          <li><b>Ⓒ Offset compset (€)</b>: solo Foundation. Es. -10 = "voglio stare €10 sotto questo competitor".</li>
-          <li><b>Approvazione Foundation (solo baseRT)</b>: la decisione strategica sul prezzo Foundation è <b>spostata nella tab Sell Strategy</b>. Si applica esclusivamente alla <b>baseRT</b> di ogni struttura (Firenze → Camera Matrim. Deluxe · Condotta → Bilocale · Alfani → Classic). Le altre RT ereditano Foundation dalla baseRT + supplemento mensile. Per ogni giorno della baseRT, Foundation ha uno di 3 stati: <b style="color:#c4823b">⚡ proposed</b> (calcolato dinamico, default), <b style="color:#1e6b4a">✓ accepted</b> (calcolato congelato), <b style="color:#1e4a6b">🖋 override</b> (manuale congelato). Operazioni dalla Sell Strategy: bottoni inline ✓ 🖋 ↺ nella cella Foundation di ogni riga · click sul prezzo per popup dettaglio 6 step · bottoni batch sopra la tabella per accettare/override/reset tutti i giorni visibili.</li>
-          <li><b>I 5 fattori RMES si applicano comunque sopra Foundation effettivo</b>: prezzo_finale = foundation_effettivo × moltiplicatore. Niente autoregressione: ogni giorno è indipendente dagli altri.</li>
-          <li><b>Override prezzo finale RMES (puntuale)</b>: gestito dalla <b>modale RMES</b> cliccando una cella prezzo nella Sell Strategy. Sovrascrive il <b>risultato finale</b> (Foundation × fattori). I fattori restano calcolati e mostrati come info "RMES avrebbe suggerito X". Tipico uso: correzione del singolo giorno. Al salvataggio memorizzato uno snapshot per l'audit.</li>
-          <li><b>Ⓓ Audit override (post-chiusura)</b>: per ogni giorno chiuso con override, confronto override vs RMES suggerito (snapshot). Δ Revenue mostra chi avrebbe fatto meglio assumendo stesse RN.</li>
-        </ul>
-
-        <hr style="margin:18px 0;border:0;border-top:1px solid #3b5a78">
-
-        <h3 style="color:#3b5a78;font-size:15px;margin:8px 0">PARTE 2 — 5 fattori RMES (l'aggiustamento dinamico)</h3>
-
-        <p><b>Idea</b>: Foundation ti dice il prezzo strutturale del giorno. I 5 fattori misurano <b>quanto la situazione di oggi si discosta dalle aspettative</b>, e producono ognuno una <b>deviazione</b> (numero tra -50% e +50%) che spinge il prezzo su o giù.</p>
-
-        <table class="data" style="width:100%;font-size:12px;margin:8px 0">
-          <thead><tr><th></th><th>Indice</th><th>Cosa misura</th><th>Granularità</th><th>Tipo</th></tr></thead>
-          <tbody>
-            <tr><td><span style="background:#4a7c59;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">A</span> OCC</td><td class="mono">OCC giorno cur / OCC stesso giorno STLY (-364gg)</td><td>Sto vendendo meglio di un anno fa per QUESTO specifico giorno?</td><td>struttura, giorno-per-giorno</td><td>interno</td></tr>
-            <tr><td><span style="background:#c4823b;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">B</span> Price</td><td class="mono">condizionale (3 casi, vedi sotto)</td><td>Recupero se sotto LY; neutro se ADR+OCC ok; freno ammorbidito se ADR sopra ma OCC sotto</td><td>struttura, giorno-per-giorno</td><td>interno</td></tr>
-            <tr><td><span style="background:#8e5fa8;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">C</span> Pace</td><td class="mono">condizionale multi-livello (vedi sotto)</td><td>Pace mese + check OCC mese + check OCC giorno (soglia 90%) per decidere neutro vs freno 50% vs freno pieno</td><td>struttura, per mese di soggiorno + giorno</td><td>interno</td></tr>
-            <tr><td><span style="background:#3b6b6b;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">E</span> Compset</td><td class="mono">mio Expedia / avg compset ponderata</td><td>Sono più caro/economico dei competitor oggi?</td><td>struttura, giorno-per-giorno</td><td>esterno</td></tr>
-            <tr><td><span style="background:#a83b3b;color:#fff;padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:700">F</span> Search</td><td class="mono">(search_cur − mediana_mese) / mediana_mese</td><td>Ricerche Expedia per questo giorno sopra/sotto la mediana del mese (paragone stagionale)</td><td>struttura, giorno-per-giorno</td><td>esterno</td></tr>
-          </tbody>
-        </table>
-
-        <p style="padding:8px 12px;background:#eaf3ec;border:1px solid #b6d4bd;border-radius:5px;font-size:12px;color:#2d5a3a">
-          <b>Tutti i 5 fattori sono calcolati a livello STRUTTURA</b>, non per singola RT. Più dati = segnale più stabile. Le differenze di prezzo tra RT sono gestite interamente da Foundation (supplementi storici mensili per RT). Il moltiplicatore RMES è uniforme dentro un giorno e si applica a tutte le RT.
-        </p>
-
-        <p style="padding:8px 12px;background:#fff8e8;border:1px solid #f0d090;border-radius:5px;font-size:12px;color:#7a5a14;margin-top:8px">
-          <b>Nota</b>: il fattore <b>D·Budget</b> è stato <b>eliminato</b>: è già incorporato in Foundation (via Target Revenue growth). Niente duplicazione.
-        </p>
-
-        <h4 style="margin:14px 0 6px 0;color:#3b5a78">Come si calcola la deviazione</h4>
-        <ul style="margin:4px 0 12px 18px;font-size:12.5px">
-          <li>Per ogni fattore: <code>deviazione = (cur / reference) − 1</code>.</li>
-          <li>Per <b>A·OCC</b>: confronto del <b>singolo giorno X</b> con lo <b>stesso giorno -364gg STLY</b> (stesso giorno della settimana). Non un aggregato annuale. <code>dev = OCC_X / OCC_(X-364) − 1</code>.</li>
-          <li>Per <b>B·Price</b>: logica <b>condizionale a 3 casi</b> che dipende sia dall'ADR sia dall'OCC dello stesso giorno vs STLY:
-            <ul style="margin:4px 0 4px 18px">
-              <li><b>Caso 1 — ADR cur &lt; ADR STLY</b>: a prescindere dall'OCC, <b>recupero</b>. Non devo essere sotto LY. <code>dev = -(ADR_cur/ADR_STLY − 1)</code> (positivo, alzo).</li>
-              <li><b>Caso 2 — ADR cur ≥ ADR STLY AND OCC cur ≥ OCC STLY</b>: vado bene su entrambi i fronti. <code>dev = 0</code> (neutro).</li>
-              <li><b>Caso 3 — ADR cur ≥ ADR STLY AND OCC cur &lt; OCC STLY</b>: ADR sopra ma OCC in calo → <b>freno ammorbidito dal target growth</b> del mese. <code>effective = max(0, (ADR_cur/ADR_STLY − 1) − target_growth%)</code> · <code>dev = -effective</code>. <b>Il Caso 3 può solo frenare o essere neutro, mai alzare</b> (se ADR è solo leggermente sopra STLY ma OCC sta calando, sarebbe contraddittorio alzare). Esempio: ADR +10% vs LY, target growth +5% → freno solo del 5% effettivo. Esempio: ADR +2% vs LY, target +5% → effective max(0, -3%) = 0 → dev = 0 (neutro, non +3%).</li>
-            </ul>
-            Clamp finale ±50%.</li>
-          <li>Per <b>C·Pace</b>: <b>logica condizionale multi-livello</b> per mese di soggiorno con ultime 4 settimane (28 giorni) di pickup. Per ogni giorno X di mese YYYY-MM, calcolo il ratio pickup mese cur / pickup mese STLY e applico:
-            <ul style="margin:4px 0 4px 18px">
-              <li><b>Pace cur ≥ Pace STLY</b> (pickup uguale o in crescita) → <code>dev = (pickup_cur/pickup_stly − 1)</code>, alzo <b>sempre</b>.</li>
-              <li><b>Pace cur &lt; Pace STLY AND OCC mese cur &lt; OCC mese STLY</b> → <b>freno pieno</b>: <code>dev = (pickup_cur/pickup_stly − 1)</code>.</li>
-              <li><b>Pace cur &lt; Pace STLY AND OCC mese cur ≥ OCC mese STLY</b> → caso "ambiguo": il mese va meglio del LY ma il pickup recente sta calando. Decisione <b>per giorno</b> in base a OCC OTB del giorno:
-                <ul style="margin:2px 0 2px 18px;font-size:12px">
-                  <li>se <code>r.curOcc ≥ 90%</code> → <b>neutro</b> (dev = 0). Il giorno è quasi pieno, non penalizzo.</li>
-                  <li>se <code>r.curOcc &lt; 90%</code> → <b>freno al 50%</b>: <code>dev = (pickup_cur/pickup_stly − 1) × 0.5</code>. Penalità ridotta perché il dato mese è ambiguo.</li>
-                </ul>
-              </li>
-            </ul>
-            <b>Gerarchia dei fallback (dal più specifico al meno):</b>
-            <ol style="margin:4px 0 4px 18px">
-              <li><b>Pace 4w mese-specifico della struttura</b> (ideale) — usa pickup ultime 4 settimane di questa struttura per quel mese di stay vs STLY.</li>
-              <li><b>Pace 4w mese-specifico AGGREGATO delle 3 strutture</b> (Firenze + Condotta + Alfani) — se la struttura non ha abbastanza dati per quel mese ma le altre sì. Le 3 strutture sono nella stessa area (Firenze centro) e fascia qualità/prezzo simile, quindi il pace aggregato è un proxy ragionevole della domanda di mercato locale. Quando attivo, sopra la cella RMES appare un badge <b style="color:#8e5fa8;font-family:'DM Mono',monospace">P̄</b> a sinistra del prezzo.</li>
-              <li><b>Pace annuale della struttura</b> (fallback debole) — usato solo se è "moderato" (|dev|≤15%). Se è estremo (es. -24%), il fattore viene neutralizzato per evitare di applicare un freno costante a tutti i giorni futuri.</li>
-              <li><b>Neutralizzato</b> — peso del fattore Pace redistribuito proporzionalmente agli altri fattori attivi (vedi sezione "Pesi normalizzati").</li>
-            </ol>
-            Clamp finale ±50%.</li>
-          <li>Per <b>D·Compset</b>: deviazione <b>invertita</b> (più economico del compset = +, sto sottovendendo).</li>
-          <li>Per <b>E·Search</b>: confronto con la <b>mediana del MESE</b> di appartenenza (es. un sabato di agosto si confronta con la mediana di tutti i giorni di agosto). <code>dev = (cur − mediana_mese) / mediana_mese</code>, clampato ±50%. <b>Normalizzazione stagionale</b>: evita di confrontare inverno vs estate (mediane molto diverse).</li>
-          <li>Ogni deviazione è <b>clampata a [−50%, +50%]</b>: anche se OCC è −80%, conta solo come −50% per quel fattore.</li>
-        </ul>
-
-        <h4 style="margin:14px 0 6px 0;color:#3b5a78">Come si applica al prezzo</h4>
-        <ul style="margin:4px 0 12px 18px;font-size:12.5px">
-          <li><b>Pesi default v5</b>: A=B=C=E=F=20% (somma 100%). Modificabili nel pannello ①.</li>
-          <li><b>Pesi normalizzati quando un fattore è "dato n/d"</b>: se per un giorno un fattore non ha dati (es. Mio Expedia non disponibile → D·Compset), il suo peso viene <b>redistribuito proporzionalmente</b> sugli altri fattori attivi. Esempio: A=B=C=F=20%, E=20% → E n/d → ognuno degli altri 4 sale di +5% → 25% ciascuno. La modale mostra "20%+5%" col +5% in <span style="color:#3b6b9a;font-weight:600">blu</span>.</li>
-          <li><b>Somma pesata</b>: <code>Σ peso_normalizzato_i × dev_i</code>.</li>
-          <li><b>Cap totale ±30%</b> (configurabile per struttura nel pannello ②): la somma viene clampata. Anche se tutti i fattori puntano forte nella stessa direzione, il prezzo finale non si discosta più del 30% da Foundation. Il clamp individuale per fattore è ±50%, quindi il cap totale 30% offre una protezione anti-errore aggiuntiva su somma aggregata.</li>
-          <li><b>Prezzo finale RMES suggerito</b>: <code>Foundation × (1 + somma_clampata)</code>.</li>
-          <li><b>Override sul prezzo finale</b>: se per quel giorno × RT esiste un override, il prezzo finale RMES = override.price (non Foundation × moltiplicatore). I 5 fattori restano calcolati come info "RMES avrebbe suggerito X". Lo snapshot del suggerimento al momento dell'override è salvato per l'audit post-chiusura.</li>
-        </ul>
-
-        <p><b>MLOS per RT</b>: il Minimum Length Of Stay è calcolato per RT usando OCC_RT e OCC_RT Final LY. Logica invariata.</p>
-
-        <hr style="margin:18px 0;border:0;border-top:1px solid var(--line)">
-
-        <h3 style="color:#3b5a78;font-size:15px;margin:8px 0">Esempio numerico completo</h3>
-
-        <p><b>Scenario</b>: Firenze Suite, Camera Matrim. Deluxe, target check-in <b>23/08/2026</b> (low season), oggi 18/05/2026 → daysToArrival = 97 (modalità completa).</p>
-
-        <p><b>Step 1 — Foundation calcola la sorgente</b>:</p>
-        <ul style="margin:4px 0 12px 18px;font-size:12px">
-          <li>① Ancora storica = mediana ADR LY pari-DOW pari-mese (sabato di agosto): <b>€185</b> (12 obs)</li>
-          <li>② Target Revenue: 185 × 8 RN × 1.05 = <b>€1.554</b></li>
-          <li>③ RN attese: OTB 2 + pickup atteso 5 × pace 1.00 = <b>7 RN</b> → ADR target = 1554/7 = <b>€222</b></li>
-          <li>④ Cap mercato: compset rif €240 → range [192, 288]. ADR target dentro → P_capped = <b>€222</b></li>
-          <li>⑤ Base 220€ → P sopra Base → no Base lift. P = <b>€222</b></li>
-          <li><b>Foundation = €222 Beddy_eq</b></li>
-        </ul>
-
-        <p><b>Step 2 — 5 fattori RMES misurano la situazione di oggi</b>:</p>
-        <ul style="margin:4px 0 12px 18px;font-size:12px">
-          <li>A·OCC: cur 0.85 / STLY 1.00 → dev = <b>-0.15</b> (sto vendendo il 15% peggio, freno)</li>
-          <li>B·Price: cur ADR 180 / STLY 195 → ADR sotto LY → <b>Caso 1 (recupero)</b> → dev = <b>+0.077</b> (alzo per non scendere sotto LY)</li>
-          <li>C·Pace (mese stay agosto): pickup 4w cur 8 / STLY 12 → ratio 0.667. OCC mese cur sopra STLY → <b>caso ambiguo</b>. OCC OTB del giorno 23/08 = 0.85 (sotto 90%) → <b>freno al 50%</b> → dev = -0.333 × 0.5 = <b>-0.1665</b></li>
-          <li>D·Compset: mio 210 / compset 240 → 0.875 → INVERTITO → dev = <b>+0.125</b> (più economico → alzo)</li>
-          <li>E·Search: ricerche per 23/08 = 22.000 vs mediana di agosto 25.000 → dev = (22-25)/25 = <b>-0.12</b> (domanda lievemente sotto mediana stagionale)</li>
-        </ul>
-
-        <p><b>Step 3 — Somma pesata e cap</b>:</p>
-        <ul style="margin:4px 0 12px 18px;font-size:12px">
-          <li>Σ peso × dev = 0.20×(-0.15) + 0.20×(+0.077) + 0.20×(-0.1665) + 0.20×(+0.125) + 0.20×(-0.12)</li>
-          <li>= -0.030 + 0.0154 - 0.0333 + 0.025 - 0.024 = <b>-0.047 (-4.7%)</b></li>
-          <li>Cap ±30%: -4.7% ben dentro → no clamp</li>
-          <li>Moltiplicatore = 1 - 0.047 = <b>0.953</b></li>
-        </ul>
-
-        <p><b>Step 4 — Prezzo finale</b>:</p>
-        <p style="padding:10px 14px;background:#fef8ed;border:1px solid #c4823b;border-radius:5px;font-size:12px;line-height:1.6">
-          <b>Prezzo RMES suggerito = Foundation × moltiplicatore = €222 × 0.953 = €212</b><br>
-          <span style="font-size:11px;color:var(--ink-3)">Beddy/sito diretto: €212 (incassi netti). OTA mostrano €212 × (1 + markup OTA configurato): se markup = 12% → €237 visibile su Booking/Expedia.</span><br>
-          <span style="font-size:11px;color:var(--ink-3);font-style:italic">Se metti un override su questo giorno, il prezzo finale diventa il valore manuale; i 5 fattori sopra restano come "RMES avrebbe suggerito €212" per l'audit post-chiusura.</span>
-        </p>
-
-        <p style="margin-top:14px;padding:10px 14px;background:#f5f5f5;border-radius:4px;font-size:12px;color:#666">
-          <b>Lettura del risultato</b>: Foundation aveva calcolato €222 come prezzo strutturale per quel sabato di agosto. La situazione attuale dice: OCC del giorno sotto (-15%, freno), ADR del giorno sotto LY → recupero (+7.7%, alzo), pace di agosto in calo (-33%) ma il mese si sta riempiendo meglio del LY → caso ambiguo, OCC del giorno 85% &lt; 90% → freno al 50% (-16.65% invece di -33%), compset più caro di me (+12.5%, alzo), ricerche del giorno sotto mediana di agosto (-12%, freno). Risultato: €212. La logica condizionale ha ammortizzato la penalità del pace (che sarebbe stata pesante) perché il mese complessivamente va bene.
-        </p>
-
-      </div>
-    </details>
+    
 
     <!-- Box 1: PESI -->
     <div class="panel" style="margin-bottom:16px">
@@ -1806,14 +1300,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>Airbnb · 5 Listings <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">2026 OTB vs 2025 STLY</span></h2>
         <div class="lede">5 appartamenti gestiti su Airbnb (Firenze) — ogni listing è 1 unità.
-          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
-              <p><b>Inventario</b>: 5 listing × 1 stanza ciascuno. OCC = RN venduti / giorni del mese (per listing) o / (5 × giorni del mese) per aggregato.</p>
-              <p><b>2026 OTB</b>: prenotazioni confermate ad oggi con check-in nel 2026. <b>2025 STLY</b>: prenotazioni 2025 prese a parità di pacing.</p>
-              <p><b>Dati separati</b>: Airbnb non è sullo stesso PMS (Beddy) delle altre 3 strutture. Il dataset è caricato come file separato. Non rientra nel calcolo RMES (le 3 strutture principali sono Firenze Suite, Condotta 16, Palazzo Alfani).</p>
-              <p><b>Tabella per Listing</b>: performance annuale di ogni appartamento (RN, ADR, OCC, Revenue) vs LY. Permette di vedere quali listing rendono meglio.</p>
-            </div>
-          </details>
+          
         </div>
       </div>
     </div>
@@ -1849,6 +1336,299 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div class="table-wrap"><table class="data" id="abnb-monthly-all"></table></div>
       </div>
     </div>
+  </section>
+
+  <!-- ============ SECTION 11: ISTRUZIONI ============ -->
+  <section class="tab-panel" id="panel-instr">
+    <div class="section-head">
+      <div>
+        <h2>📖 Istruzioni</h2>
+        <div class="lede">Guida completa a tutte le tab della dashboard. Apri ogni sezione per leggere il dettaglio. <b>Suggerimento</b>: parti dalla Sell Strategy (la principale) e dal box RMES per capire il sistema di pricing.</div>
+      </div>
+    </div>
+
+    <!-- Indice ancore -->
+    <div class="panel" style="background:#fafaf8;border:1px solid var(--line);margin-bottom:18px">
+      <div class="panel-body" style="padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+        <span style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Indice rapido</span>
+        <a href="#instr-sell"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">① Sell Strategy</a>
+        <a href="#instr-cancel" style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">② Cancellazioni</a>
+        <a href="#instr-otb"    style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">③ Overview</a>
+        <a href="#instr-fcst"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">④ Forecast</a>
+        <a href="#instr-pk"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑤ Pickup Matrix</a>
+        <a href="#instr-rate"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑥ Rate Shopper</a>
+        <a href="#instr-rt"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑦ OCC per RT</a>
+        <a href="#instr-abnb"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑧ Airbnb</a>
+        <a href="#instr-rmes"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑨ RMES (config)</a>
+        <a href="#instr-glossario" style="font-size:12px;color:#7a4f1c;font-weight:600;text-decoration:none;padding:4px 10px;background:#fef8ed;border:1px solid #c4823b;border-radius:4px">📚 Glossario</a>
+      </div>
+    </div>
+
+    <!-- ============ ① SELL STRATEGY ============ -->
+    <details id="instr-sell" open class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a3a14;background:#fef8ed;list-style:none;outline:none">① Sell Strategy <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">la tab principale: tabella giornaliera con prezzo suggerito</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: capire ogni giorno futuro quanto stai vendendo, quanto vendevi l'anno scorso in quella fase, e quale prezzo conviene tenere. È la tab che usi tutti i giorni.</p>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Lettura della tabella (sinistra → destra)</h4>
+        <p>Una riga = un giorno futuro. L'ordine delle colonne è: <b>Data → OTB → Pickup → STLY → Pickup STLY → Mercato Expedia → Foundation → RMES</b>.</p>
+        <ol style="margin:0 0 12px 18px;padding:0">
+          <li><b>Data · Evento · DoW</b> — il giorno, il giorno della settimana (weekend colorati), eventuali eventi configurati.</li>
+          <li><b style="color:#c4823b">OTB ad oggi</b> — RN vendute, OCC %, ADR medio. La fotografia di adesso.</li>
+          <li><b style="color:#7a3a8e">Pickup Ngg</b> — andamento recente: nuove, cancellate, ΔRN, ADR nuove. Configurabile a 1/3/7/14/28 giorni. Nuove e Cancellate cliccabili per la lista.</li>
+          <li><b style="color:#3a6b6b">STLY (−364)</b> — come stavi a parità di anticipo l'anno scorso. Confronto a giorno-della-settimana (se oggi è venerdì, mostra il venerdì di 52 settimane fa).</li>
+          <li><b style="color:#888">Pickup STLY</b> — pickup nei medesimi Ngg di un anno fa. Confronta le 2 colonne pickup per capire se stai andando meglio.</li>
+          <li><b style="color:#3a6b6b">Mercato Expedia (Mio · Compset)</b> — su tutte e 3 le strutture. <b>Mio</b> = il mio prezzo Expedia tradotto in Beddy_eq (<code>÷ 1.12 ÷ 0.90</code>). <b>Compset</b> = media ponderata dei competitor scelti (con peso e offset configurabili in tab RMES → Ⓒ).</li>
+          <li><b style="color:#c4823b">⚡ Foundation</b> — il prezzo strutturale del giorno, calcolato dai 6 step (vedi sezione RMES sotto). Cliccabile per dettaglio. <b>Solo per la baseRT</b>: ✓ accetta · 🖋 override · ↺ reset.</li>
+          <li><b style="color:#c4823b">RMES</b> — il prezzo finale suggerito = Foundation × moltiplicatore (i 5 fattori). M1/M2 = MLOS suggerito. Cliccabile per modale completa.</li>
+        </ol>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Architettura prezzo per Room Type (importante)</h4>
+        <p>Il sistema lavora a <b>2 livelli</b>: la baseRT ha un calcolo completo, le altre RT ereditano.</p>
+        <p><b>Foundation: solo la baseRT viene calcolata davvero.</b> Per ogni struttura esiste una baseRT (la camera con più stanze, più dati storici, più stabile):</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li>Firenze Suite → <b>Camera Matrim. Deluxe</b> (4 stanze su 8)</li>
+          <li>Condotta 16 → <b>Bilocale</b> (3 stanze su 7)</li>
+          <li>Palazzo Alfani → <b>Classic</b> (3 stanze su 9, dal 01/02/2025)</li>
+        </ul>
+        <p>Per la baseRT, Foundation usa i 6 step completi. Per le RT non-base (Suite, Suite con Terrazza, Trilocale, Attico, Superior, Junior Suite, Deluxe), Foundation NON viene ricalcolato dai 6 step; si usa la scorciatoia:</p>
+        <p style="padding:8px 12px;background:#f8f8f5;border-left:3px solid #3b6b9a;font-family:'DM Mono',monospace;font-size:12px;text-align:center"><b>Foundation_RT = Foundation_baseRT + supplemento_RT_mese</b></p>
+        <p>Il supplemento mensile è derivato dallo storico (ADR media RT − ADR media baseRT, separato per stagione alta/bassa, arrotondato al multiplo di 5). Tabella completa in tab RMES → Ⓔ Supplementi RT per mese.</p>
+
+        <p><b>I 5 fattori RMES sono di struttura, non per RT.</b> Il moltiplicatore (es. ×0.767) è lo stesso identico per tutte le RT di quella struttura in quel giorno. Cambia solo il prezzo base:</p>
+        <p style="padding:8px 12px;background:#f8f8f5;border-left:3px solid #3b6b9a;font-family:'DM Mono',monospace;font-size:12px;text-align:center"><b>Prezzo_RMES_RT = Foundation_RT × moltiplicatore_struttura</b></p>
+        <p>Esempio Firenze · 20/05/2026 (moltiplicatore struttura = ×0.767):</p>
+        <ul style="margin:0 0 8px 18px;padding:0;font-family:'DM Mono',monospace;font-size:12px">
+          <li>Camera Matrim. Deluxe: €318 × 0.767 = <b>€244</b></li>
+          <li>Suite: (€318 + €15) × 0.767 = €333 × 0.767 = <b>€255</b></li>
+          <li>Suite con Terrazza: (€318 + €70) × 0.767 = €388 × 0.767 = <b>€297</b></li>
+        </ul>
+        <p><b>Perché questa asimmetria?</b> Le RT non-base hanno pochi dati. Foundation autonomo non funzionerebbe (mediana LY instabile su 1-2 stanze). I fattori per RT sarebbero rumorosi (una cancellazione fa oscillare il pace di ±50%). A livello struttura i segnali sono stabili.</p>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Filtro Room Type (pillole colorate)</h4>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b>"Tutte"</b> = aggregato struttura (default). Le colonne mostrano i totali.</li>
+          <li>Una pillola per ogni RT. Quando ne selezioni una, tutta la tabella si ricolora per quella RT (i numeri OTB/Pickup/STLY restano di struttura, ma il prezzo Foundation/RMES diventa specifico della RT).</li>
+        </ul>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Approvazione Foundation (solo baseRT)</h4>
+        <p>Per evitare di dover approvare prezzi su 5+ tipologie, l'approvazione si fa <b>solo sulla baseRT</b>. Le altre RT ereditano automaticamente. La cella Foundation della baseRT ha 3 stati:</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b style="color:#c4823b">⚡ Proposed</b> (default) = calcolato dinamico, cambia se cambiano i dati.</li>
+          <li><b style="color:#1e6b4a">✓ Accepted</b> = calcolato congelato al momento dell'accept.</li>
+          <li><b style="color:#1e4a6b">🖋 Override</b> = valore manuale che hai inserito tu.</li>
+        </ul>
+        <p>Azioni rapide dai bottoni inline ✓ 🖋 ↺ sulla cella, oppure batch sopra la tabella ("Accetta tutti", "Override tutti", "Reset tutti").</p>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Modale RMES (click sulla cella prezzo)</h4>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li>Mostra Foundation effettivo, i 5 fattori uno per uno con i numeri, prezzo suggerito.</li>
+          <li><b>Importante</b>: i numeri dei fattori (RN, OCC, ADR, pace, ricerche) sono <b>aggregati della struttura</b>, NON specifici della RT visualizzata. Es. "RN 3 / cap 8" = 3 camere su 8 totali della struttura.</li>
+          <li>Input per inserire prezzo finale diverso dal suggerito (override puntuale) con 💾 Salva.</li>
+          <li>Simulazione revenue live: se cambi il prezzo, ti mostra l'impatto stimato (usa elasticità configurata).</li>
+        </ul>
+
+        <p style="margin:14px 0 0 0;padding:10px 14px;background:#fef8ed;border-left:3px solid #c4823b"><b>In pratica</b>: ogni mattina apri Sell Strategy, scorri 7-14 giorni, controlli i giorni con cella RMES verde (alzare) o rossa (abbassare). Override solo se sai cose che il sistema non sa (eventi, situazioni particolari). Una volta a settimana, review più ampia con approvazione Foundation batch.</p>
+      </div>
+    </details>
+
+    <!-- ============ ② CANCELLAZIONI ============ -->
+    <details id="instr-cancel" class="panel" style="margin-bottom:14px;border-left:3px solid #a83b3b">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a1a1a;background:#fbf6f6;list-style:none;outline:none">② Cancellazioni <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">tasso, motivi e impatto economico</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: capire quante prenotazioni vengono cancellate, da chi (canale/provenienza), quando (lead time) e qual è l'impatto sul revenue.</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b>Tasso cancellazione</b> = cancellate / (confermate + cancellate). Confronto con periodo equivalente LY.</li>
+          <li><b>Lead time cancellazione</b>: giorni tra cancellazione e check-in. Lead time alto = cancellazione precoce, basso = last-minute (più dannosa, hai meno tempo per rivendere).</li>
+          <li><b>Top canali/provenienze cancellate</b>: chi cancella di più. Booking.com di solito è strutturalmente più cancellato di Sito Diretto.</li>
+          <li><b>Revenue perso</b>: somma del Totale (netto tassa di soggiorno) delle prenotazioni cancellate nel periodo.</li>
+        </ul>
+        <p><b>Uso pratico</b>: se vedi un picco anomalo di cancellazioni in un periodo specifico, indaga (problema con un canale? evento cancellato? policy troppo permissiva?).</p>
+      </div>
+    </details>
+
+    <!-- ============ ③ OVERVIEW ============ -->
+    <details id="instr-otb" class="panel" style="margin-bottom:14px;border-left:3px solid #4a7c59">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#1e4a2e;background:#f5faf6;list-style:none;outline:none">③ Overview <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">anno intero 2026 vs STLY 2025 e Final LY</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: vista a volo d'uccello sul tutto l'anno. Risponde a "come sto andando complessivamente vs l'anno scorso?".</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b>OTB</b> (On The Books) = prenotazioni confermate ad oggi per il periodo 2026.</li>
+          <li><b>STLY</b> (Same-Time-Last-Year) = snapshot 2025 al pari giorno-della-settimana di un anno fa (oggi −364gg). Confronto "alla pari".</li>
+          <li><b>Final LY</b> = chiusura definitiva 2025, tutte le prenotazioni 2025 senza filtro temporale. Indica quanto valore è stato consolidato l'anno scorso.</li>
+        </ul>
+        <p><b>Cosa contiene</b>: pacing mensile (OCC%, RN, ADR, Revenue per mese × 3 colonne OTB/STLY/Final LY con Δ%), grafici revenue e OCC mensile, tabelle Provenienza e Canale filtrate per mese, booking window (distribuzione lead time, rolling 12 mesi chiusi).</p>
+        <p><b>Lettura veloce</b>: Δ% OTB vs STLY = segnale di velocità (sto vendendo più veloce/lento?). Δ% OTB vs Final LY = % di chiusura raggiunta (quanto pickup ancora atteso).</p>
+      </div>
+    </details>
+
+    <!-- ============ ④ FORECAST ============ -->
+    <details id="instr-fcst" class="panel" style="margin-bottom:14px;border-left:3px solid #6b4f8e">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#3a2a5a;background:#f8f5fb;list-style:none;outline:none">④ Forecast <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">proiezione di chiusura per i mesi futuri</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: stimare dove chiuderà ogni mese futuro (RN, ADR, Revenue, OCC%), così sai in anticipo quali mesi sono in linea e quali no.</p>
+        <p><b>Logica del calcolo</b>:</p>
+        <ol style="margin:0 0 8px 18px;padding:0">
+          <li><b>OTB ad oggi</b> per il mese (RN già confermate × ADR medio).</li>
+          <li><b>Pickup atteso residuo</b>: quanto pickup si aspetta da qui a fine mese, in base al pattern storico stesso periodo dell'anno scorso. Calcolo "share per mese" = quale frazione del totale finale è stata raccolta a -X giorni dal mese.</li>
+          <li><b>Fattore RMES</b>: il pickup residuo non viene venduto a ADR storico; viene venduto al prezzo medio che RMES sta suggerendo per quei giorni (ponderato per inventory residuo: i giorni sold-out non contano).</li>
+          <li><b>Forecast = OTB + (pickup_atteso × ADR_RMES_medio_pesato)</b>.</li>
+        </ol>
+        <p><b>Cose da sapere</b>:</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li>Lo "share per mese" è ricalcolato sui dati LY del singolo mese (non solo global): se agosto storicamente raccoglie il 90% del totale già a -30gg, lo share è 0.90 per agosto, non 0.50 della media annuale.</li>
+          <li>L'ADR del pickup atteso usa il <b>prezzo RMES medio del mese</b>, pesato per inventory residuo per ogni giorno (giorni sold-out → peso 0).</li>
+          <li>Range di chiusura proiettato + barre OTB/STLY per mese di soggiorno.</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- ============ ⑤ PICKUP MATRIX ============ -->
+    <details id="instr-pk" class="panel" style="margin-bottom:14px;border-left:3px solid #3b6b9a">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#1e4a6b;background:#f5f8fb;list-style:none;outline:none">⑤ Pickup Matrix <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">matrice mese di soggiorno × finestra di prenotazione</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: visualizzare in una griglia quante RN sono state vendute (o cancellate) per ogni combinazione di mese di soggiorno × periodo di prenotazione. Risponde a "quante prenotazioni ho preso negli ultimi 7gg per agosto?".</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b>Righe</b>: finestre di prenotazione (ultimi 7gg, ultimi 14gg, ecc.) o per giorno specifico.</li>
+          <li><b>Colonne</b>: mesi di soggiorno (Gen-Dic).</li>
+          <li><b>Celle</b>: ΔRN netto (nuove - cancellate), ADR medio delle nuove.</li>
+        </ul>
+        <p><b>Uso pratico</b>: spotting di trend. Se vedi una colonna mese tutta verde (pickup positivo costante) sai che mese sta andando bene. Una riga tutta rossa = settimana di cancellazioni anomale.</p>
+      </div>
+    </details>
+
+    <!-- ============ ⑥ RATE SHOPPER ============ -->
+    <details id="instr-rate" class="panel" style="margin-bottom:14px;border-left:3px solid #c47d3b">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#7a4f1c;background:#fef8ed;list-style:none;outline:none">⑥ Rate Shopper <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">confronto prezzo mio vs competitor su Expedia</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: vedere ogni giorno futuro il mio prezzo Expedia vs quello dei competitor, e capire dove sono posizionato (sopra/sotto la media).</p>
+        <p><b>Cose da sapere</b>:</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b>Mio prezzo</b>: la prima riga è il MIO listing Expedia. Conversione a Beddy_eq: <code>prezzo_lordo / (1 + markup_OTA/100) / 0.90</code>. Markup OTA configurabile in tab RMES → Ⓑ (default 12%). Il /0.90 toglie lo sconto della non-rimborsabile.</li>
+          <li><b>Pesi compset</b>: ogni competitor ha un peso 0-100% configurabile in tab RMES → Ⓒ. Peso 100% conta pieno, peso 0% esclude dal calcolo. Il peso è usato sia dal fattore D·Compset RMES sia dal cap mercato Foundation.</li>
+          <li><b>Offset €</b>: solo per Foundation. Es. -10 = "voglio stare €10 sotto questo competitor". Il riferimento mercato Foundation = Σ(peso × (compset_Beddy_eq + offset)) / Σ(peso).</li>
+        </ul>
+        <p><b>Lettura</b>: ogni cella mostra il prezzo competitor di quel giorno (Beddy_eq). Colorazione gradiente: più chiaro = più economico, più scuro = più caro. Confronto immediato con la mia riga in alto.</p>
+      </div>
+    </details>
+
+    <!-- ============ ⑦ OCC PER ROOM TYPE ============ -->
+    <details id="instr-rt" class="panel" style="margin-bottom:14px;border-left:3px solid #3a6b6b">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#1e3a3a;background:#f5f9f9;list-style:none;outline:none">⑦ OCC per Room Type <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">performance OCC e ADR per tipologia camera</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: vedere se una RT specifica sta sotto-performando rispetto a LY, indipendentemente dal totale di struttura.</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b>Linea solida</b> = 2026 OTB.</li>
+          <li><b>Linea tratteggiata</b> = 2025 STLY (giorno-della-settimana equivalente).</li>
+          <li>Tabella con OCC%, RN, ADR per ogni RT × mese.</li>
+        </ul>
+        <p><b>Uso pratico</b>: se vedi che le Suite con Terrazza hanno OCC sotto LY ma le Deluxe sono in pari, hai un segnale di pricing/sales mix da indagare (forse il prezzo delle Suite è troppo alto rispetto al Deluxe, o c'è una saturazione di stanze piccole).</p>
+      </div>
+    </details>
+
+    <!-- ============ ⑧ AIRBNB ============ -->
+    <details id="instr-abnb" class="panel" style="margin-bottom:14px;border-left:3px solid #a83b6b">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a1a3a;background:#fbf5f8;list-style:none;outline:none">⑧ Airbnb <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">5 listing Airbnb Firenze, OTB 2026 vs STLY 2025</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: monitoraggio dei 5 listing Airbnb (Firenze), separati dalle 3 strutture Beddy. Ogni listing è 1 unità.</p>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li>Tabella mensile per ogni listing: OCC%, RN, ADR, Revenue OTB vs STLY.</li>
+          <li>Vista aggregata di tutti i listing nella tabella finale.</li>
+          <li>I dati Airbnb sono separati dal flusso Beddy perché Airbnb non si sincronizza con il PMS Beddy delle 3 strutture: è un canale parallelo.</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- ============ ⑨ RMES (CONFIG) ============ -->
+    <details id="instr-rmes" class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a3a14;background:#fef8ed;list-style:none;outline:none">⑨ RMES — Revenue Manu&amp;Enis System <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">configurazione del sistema di pricing</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p><b>A cosa serve</b>: tab di configurazione del sistema di pricing automatico. Qui non vedi prezzi (quelli sono in Sell Strategy), qui imposti i parametri che determinano come RMES calcola i prezzi.</p>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Come funziona RMES (sintesi)</h4>
+        <p>RMES calcola il prezzo finale di ogni giorno × room type secondo questa formula:</p>
+        <p style="padding:10px 14px;background:#fef8ed;border-left:3px solid #c4823b;font-family:'DM Mono',monospace;font-size:13px;text-align:center"><b>Prezzo_RMES = Foundation × (1 + Σ peso × deviazione)</b></p>
+        <p>Il moltiplicatore <b>(1 + Σ peso × deviazione)</b> è capped a ±cap_totale (default ±30%). Ogni deviazione individuale è clampata a ±50%. Le deviazioni vengono dai 5 fattori.</p>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">I 5 fattori (tutti a livello struttura, non per RT)</h4>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b style="color:#3b6b9a">A · OCC</b>: confronto OCC del giorno cur vs STLY (-364gg, pari-DOW). <code>dev = OCC_cur / OCC_STLY − 1</code>. Sotto LY → freno (abbasso). Sopra LY → spinta (alzo).</li>
+          <li><b style="color:#c4823b">B · Price</b>: confronto ADR cur vs STLY, <b>logica condizionale a 3 casi</b>:<br>
+            <span style="margin-left:14px;color:#7a4f1c">• <b>Caso 1</b> (ADR &lt; LY): recupero, alzo. dev = -(ratio - 1) positivo.</span><br>
+            <span style="margin-left:14px;color:#7a4f1c">• <b>Caso 2</b> (ADR ≥ LY AND OCC ≥ LY): tutto bene, neutro. dev = 0.</span><br>
+            <span style="margin-left:14px;color:#7a4f1c">• <b>Caso 3</b> (ADR ≥ LY ma OCC &lt; LY): freno ammorbidito dal target growth. dev = -((ADR/STLY -1) - target_growth/100). Mai positiva (non alza mai in Caso 3).</span></li>
+          <li><b style="color:#8e5fa8">C · Pace</b>: pickup ultime 4 settimane del mese cur vs stesso periodo STLY. Gerarchia con fallback:<br>
+            <span style="margin-left:14px;color:#5a3a7a">1. Pace 4w mese struttura. 2. Pace 4w mese aggregato 3 strutture (badge <b>P̄</b>). 3. Pace annuale struttura solo se |dev| ≤ 15%. 4. Neutralizzato (peso redistribuito).</span></li>
+          <li><b style="color:#1e6b4a">D · Compset</b>: il mio prezzo Expedia vs media compset (ponderata dai pesi competitor). <b>Logica invertita</b>: <code>dev = -((mio_Expedia / avg_compset) − 1)</code>. Se sono più economico → dev positivo → posso alzare.</li>
+          <li><b style="color:#a83b3b">E · Search</b>: ricerche Expedia del giorno vs <b>mediana del mese</b> (non vs media annuale). <code>dev = (search_cur − mediana_mese) / mediana_mese</code>. Picchi di ricerche = spinta, valli = freno.</li>
+        </ul>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">I 6 step Foundation</h4>
+        <p>Foundation è il prezzo strutturale del giorno, sorgente di RMES (non più la vecchia cascata Beddy→Expedia→Compset→OTB→LY, che ora è solo fallback). Calcolo per la baseRT in 6 step:</p>
+        <ol style="margin:0 0 8px 18px;padding:0">
+          <li><b>Ancora storica</b>: mediana ADR LY pari-DOW pari-mese (Beddy_eq).</li>
+          <li><b>Target Revenue</b>: ancora × target growth mensile (default +5%, configurabile in Ⓐ).</li>
+          <li><b>RN attese</b>: OTB + pickup atteso × pace → ADR target chiusura.</li>
+          <li><b>Booking window + curva temporale</b>: P_grezzo aggiustato.</li>
+          <li><b>Cap mercato compset</b>: range [×0.80, ×1.20] sulla media ponderata competitor (con offset).</li>
+          <li><b>Floor (hard) + Base lift (soft)</b>: limiti assoluti. Configurabili in Ⓑ.</li>
+        </ol>
+        <p><b>Modalità lontana</b> (>180gg): semplificata = max(Base, mediana_LY) × growth.</p>
+
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Sezioni configurabili nella tab RMES</h4>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b>① Pesi dei 5 fattori</b> (default 20% × 5 = 100%). Bottoni Reset 20%×5 sulla struttura corrente o su tutte e 3 le strutture.</li>
+          <li><b>② Cap totale RMES</b> (default ±30%). Limita di quanto il prezzo finale può discostarsi da Foundation, anche se tutti i fattori puntano nella stessa direzione.</li>
+          <li><b>Ⓐ Target growth per mese</b> (default +5% × 12). Crescita Revenue vs LY per ogni mese.</li>
+          <li><b>Ⓑ Base / Floor / Markup OTA / Elasticità</b>. Base = prezzo annuale fair (default Firenze 220, Condotta 280, Alfani 270). Floor = limite assoluto (default 100€). Markup OTA = % che le OTA aggiungono al Beddy_eq (default 12%). Elasticità = sensibilità RN ↔ prezzo (default 1.0).</li>
+          <li><b>Ⓒ Pesi e offset compset</b>. Quali competitor includere, con che peso (0-100%) e che offset (€). Pesi alimentano D·Compset RMES + cap mercato Foundation. Offset solo Foundation.</li>
+          <li><b>Ⓓ Audit override post-chiusura</b>. Per ogni giorno chiuso con override attivo, confronto override vs prezzo RMES snapshot. Δ Revenue mostra chi avrebbe fatto meglio (assumendo stesse RN).</li>
+          <li><b>Ⓔ Supplementi RT per mese</b> (read-only). Tabella 12 mesi × N RT con i supplementi che il sistema applica automaticamente a Foundation per le RT non-base. Derivati dallo storico, separati per stagione alta/bassa.</li>
+        </ul>
+
+        <p><b>Storage</b>: tutta la configurazione è salvata in localStorage del browser, separata per struttura. Cambiare struttura nel selettore globale fa anche cambiare la struttura su cui stai configurando in tab RMES.</p>
+      </div>
+    </details>
+
+    <!-- ============ GLOSSARIO ============ -->
+    <details id="instr-glossario" class="panel" style="margin-bottom:14px;border-left:3px solid #888">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#444;background:#f8f8f5;list-style:none;outline:none">📚 Glossario <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">termini e acronimi</span></summary>
+      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <dl style="margin:0">
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">ADR</dt>
+          <dd style="margin:2px 0 8px 18px">Average Daily Rate = Revenue / RN. Prezzo medio per camera venduta.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Beddy_eq</dt>
+          <dd style="margin:2px 0 8px 18px">Tariffa equivalente Beddy = prezzo netto del markup OTA. Usata per confronti omogenei. Conversione Expedia → Beddy_eq: <code>Expedia_lordo ÷ 1.12 ÷ 0.90</code>. Il /1.12 toglie il markup OTA (default 12%, config in Ⓑ); il /0.90 toglie lo sconto della non-rimborsabile.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">baseRT</dt>
+          <dd style="margin:2px 0 8px 18px">Room Type principale di una struttura (quella con più stanze, più dati storici): Firenze → Camera Matrim. Deluxe, Condotta → Bilocale, Alfani → Classic. È l'unica RT su cui Foundation viene calcolato dai 6 step; le altre ereditano via supplemento mensile.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Compset</dt>
+          <dd style="margin:2px 0 8px 18px">Competitive set = insieme di competitor diretti su Expedia. Media ponderata: <code>Σ(peso × (compset_Beddy_eq + offset)) / Σ(peso)</code>. Pesi e offset configurabili in Ⓒ.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Final LY (Last Year)</dt>
+          <dd style="margin:2px 0 8px 18px">Chiusura definitiva 2025 = tutte le prenotazioni 2025 senza filtro temporale. Indica quanto valore è stato consolidato l'anno scorso.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Foundation</dt>
+          <dd style="margin:2px 0 8px 18px">Prezzo strutturale del giorno (la sorgente di RMES). Calcolato per la baseRT in 6 step; ereditato dalle RT non-base via Foundation_baseRT + supplemento_mese. 3 stati: ⚡ proposed, ✓ accepted, 🖋 override.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">MLOS</dt>
+          <dd style="margin:2px 0 8px 18px">Minimum Length Of Stay = restrizione "vendi solo soggiorni di almeno N notti". Suggerito da RMES come M1, M2, ecc. dentro la cella prezzo.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">OTB</dt>
+          <dd style="margin:2px 0 8px 18px">On The Books = prenotazioni confermate ad oggi per un periodo futuro.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Pace</dt>
+          <dd style="margin:2px 0 8px 18px">Velocità di pickup = quante prenotazioni stanno arrivando in un periodo. Pace cur vs STLY indica se stai vendendo più veloce o lento dell'anno scorso.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Pickup</dt>
+          <dd style="margin:2px 0 8px 18px">Nuove prenotazioni acquisite in un periodo (es. ultimi 7gg). Netto = nuove - cancellate.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Revenue</dt>
+          <dd style="margin:2px 0 8px 18px">Sempre <b>netto della tassa di soggiorno</b>. Allocazione stay-night: rev/notte = Totale / num_notti.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RMES</dt>
+          <dd style="margin:2px 0 8px 18px">Revenue Manu&amp;Enis System. Il sistema di pricing automatico di questa dashboard.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RN</dt>
+          <dd style="margin:2px 0 8px 18px">Room Nights = camere × notti. Es. 2 camere per 3 notti = 6 RN.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">STLY</dt>
+          <dd style="margin:2px 0 8px 18px">Same-Time-Last-Year = snapshot dell'anno scorso al pari momento del ciclo. Confronto a giorno-della-settimana (oggi - 364gg), non a data. Es. se oggi è venerdì 20/05/2026, STLY è venerdì 21/05/2025.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Supplemento RT</dt>
+          <dd style="margin:2px 0 8px 18px">Differenza ADR storica tra una RT e la baseRT, separata per stagione alta/bassa, arrotondata al multiplo di 5. Es. Suite con Terrazza Firenze maggio = +€70 (alta), +€50 (bassa). Tabella completa in tab RMES → Ⓔ.</dd>
+        </dl>
+      </div>
+    </details>
+
   </section>
 
   <div class="foot-note mono">Revenue Intelligence Manu&amp;Enis · dati al <span id="foot-today">—</span> · STLY = oggi −364gg</div>
@@ -30379,6 +30159,8 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         return h;
       }
       rmesSection += '<div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Fattori RMES (a livello struttura)</div>';
+      var _notaRTLbl = _isBaseRT ? (rt + ' è la baseRT') : ('per ' + rt + ' = Foundation_baseRT + supplemento mensile');
+      rmesSection += '<div style="font-size:11px;color:#888;margin-bottom:8px;padding:6px 10px;background:#f8f8f5;border-left:3px solid #c4823b;line-height:1.5">📌 I numeri qui sotto (RN, OCC, ADR, pace, ricerche) sono <b>aggregati di ' + structLbl + '</b>, NON specifici di ' + rt + '. Esempio: "RN 3 / cap 8" = 3 camere vendute su 8 totali della struttura. Tutti i 5 fattori sono per-struttura per ragioni di stabilità (più dati = meno rumore). Le differenze di prezzo tra Room Type vengono <b>solo da Foundation</b> (' + _notaRTLbl + ').</div>';
       rmesSection += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">';
       rmesSection += '<thead style="background:#f8f8f5"><tr>';
       rmesSection += '<th style="padding:6px 10px;text-align:left;font-size:10.5px;color:#666">Fattore</th>';
@@ -38610,12 +38392,14 @@ function updateChips(){
   const chip = document.getElementById('chip-struct');
   chip.classList.remove('struct-fs','struct-c16','struct-both');
   chip.classList.add(CURRENT_STRUCT==='firenze'?'struct-fs':CURRENT_STRUCT==='condotta'?'struct-c16':'struct-both');
-  document.getElementById('chip-today').textContent = fmtDateIT(TODAY);
-  document.getElementById('foot-today').textContent = fmtDateIT(TODAY);
-  document.getElementById('topbar-sub').textContent = `${structLabel(CURRENT_STRUCT)} · OTB al ${fmtDateIT(TODAY)} · STLY ${fmtDateIT(STLY)}`;
-  document.getElementById('otb-cur-date').textContent = fmtDateIT(TODAY);
-  document.getElementById('otb-stly-date').textContent = fmtDateIT(STLY);
-  document.getElementById('chat-ctx').textContent = 'Contesto: ' + structLabel(CURRENT_STRUCT);
+  // Helper: set textContent solo se l'elemento esiste (evita crash se un id viene rimosso dall'HTML)
+  const _safeSet = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  _safeSet('chip-today', fmtDateIT(TODAY));
+  _safeSet('foot-today', fmtDateIT(TODAY));
+  _safeSet('topbar-sub', `${structLabel(CURRENT_STRUCT)} · OTB al ${fmtDateIT(TODAY)} · STLY ${fmtDateIT(STLY)}`);
+  _safeSet('otb-cur-date', fmtDateIT(TODAY));
+  _safeSet('otb-stly-date', fmtDateIT(STLY));
+  _safeSet('chat-ctx', 'Contesto: ' + structLabel(CURRENT_STRUCT));
 }
 
 function renderAll(){
