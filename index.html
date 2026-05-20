@@ -1226,6 +1226,50 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
               <p style="margin:10px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica:</b> ogni mattina apri Sell Strategy, scorri i prossimi 7-14 giorni, controlli i giorni con scostamenti significativi (cella RMES verde = sistema suggerisce alzare, rossa = abbassare), e per i casi dove sai cose che il sistema non sa (eventi, situazioni particolari) fai override. Una volta a settimana o a mese, fai una review più ampia approvando i Foundation per il periodo successivo.</p>
             </div>
           </details>
+          <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">🏗 Architettura prezzo per Room Type</summary>
+            <div style="margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--ink-2);max-width:920px">
+              <p style="margin:0 0 10px 0">Il sistema calcola il prezzo a <b>2 livelli</b>: la baseRT ha un calcolo completo, le altre RT ereditano. Questo è importante per capire cosa vedi nelle celle.</p>
+
+              <p style="margin:10px 0 6px 0"><b>① Foundation: solo la baseRT viene calcolata davvero</b></p>
+              <p style="margin:0 0 6px 0">Per ogni struttura esiste una <b>baseRT</b> = la camera con più stanze (più dati storici, più stabile):</p>
+              <ul style="margin:0 0 8px 18px;padding:0">
+                <li>Firenze Suite → <b>Camera Matrim. Deluxe</b> (4 stanze su 8)</li>
+                <li>Condotta 16 → <b>Bilocale</b> (3 stanze su 7)</li>
+                <li>Palazzo Alfani → <b>Classic</b> (3 stanze su 9, dal 01/02/2025)</li>
+              </ul>
+              <p style="margin:6px 0">Per la baseRT, Foundation si calcola con i <b>6 step completi</b>: ancora storica LY pari-DOW pari-mese, target revenue mensile, RN attese in chiusura, curva booking window, cap mercato compset, floor + base lift. Risultato: un prezzo strutturale "fair" della baseRT per quel giorno.</p>
+
+              <p style="margin:10px 0 6px 0"><b>② Le altre RT ereditano via supplemento mensile</b></p>
+              <p style="margin:0 0 6px 0">Per le RT non-base (Suite, Suite con Terrazza, Trilocale, Attico, Superior, Junior Suite, Deluxe) Foundation NON viene ricalcolato dai 6 step. Si usa una scorciatoia:</p>
+              <p style="margin:6px 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #3b6b9a;font-family:'DM Mono',monospace;font-size:12px;text-align:center"><b>Foundation_RT = Foundation_baseRT + supplemento_RT_mese</b></p>
+              <p style="margin:6px 0">Il <b>supplemento mensile</b> è derivato dallo storico (ADR media RT - ADR media baseRT, separato per stagione alta/bassa, arrotondato al multiplo di 5). Vedi la tabella completa nella <b>tab RMES → sezione Ⓔ Supplementi RT per mese</b>.</p>
+              <p style="margin:6px 0">Es. Firenze · 20/05/2026 · Suite con Terrazza:<br>
+              &nbsp;&nbsp;Foundation baseRT (Camera Matrim. Deluxe) = €318<br>
+              &nbsp;&nbsp;Supplemento Suite con Terrazza maggio (alta stagione) = +€70<br>
+              &nbsp;&nbsp;Foundation Suite con Terrazza = €318 + €70 = <b>€388</b></p>
+
+              <p style="margin:10px 0 6px 0"><b>③ I 5 fattori RMES sono di struttura, non per RT</b></p>
+              <p style="margin:0 0 6px 0">Il <b>moltiplicatore RMES</b> (es. ×0.767, somma pesata dei 5 fattori A·OCC, B·Price, C·Pace, D·Compset, E·Search) è calcolato <b>una sola volta a livello struttura</b>. Lo stesso identico moltiplicatore si applica a Camera Matrim. Deluxe, Suite, Suite con Terrazza in quel giorno.</p>
+              <p style="margin:6px 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #3b6b9a;font-family:'DM Mono',monospace;font-size:12px;text-align:center"><b>Prezzo_RMES_RT = Foundation_RT × moltiplicatore_struttura</b></p>
+              <p style="margin:6px 0">Es. continuazione (moltiplicatore Firenze 20/05 = ×0.767):</p>
+              <ul style="margin:0 0 8px 18px;padding:0;font-family:'DM Mono',monospace;font-size:11.5px">
+                <li>Camera Matrim. Deluxe: €318 × 0.767 = <b>€244</b></li>
+                <li>Suite: (€318 + €15) × 0.767 = €333 × 0.767 = <b>€255</b></li>
+                <li>Suite con Terrazza: (€318 + €70) × 0.767 = €388 × 0.767 = <b>€297</b></li>
+              </ul>
+              <p style="margin:6px 0">Il prezzo che vedi nella cella RMES è quindi specifico per RT, ma la "logica dinamica" del moltiplicatore è condivisa.</p>
+
+              <p style="margin:10px 0 6px 0"><b>④ Perché questa asimmetria?</b></p>
+              <p style="margin:0 0 6px 0">Le RT non-base hanno troppi pochi dati per un calcolo affidabile:</p>
+              <ul style="margin:0 0 8px 18px;padding:0">
+                <li><b>Foundation autonomo</b> non funzionerebbe: la mediana LY su una singola Suite con Terrazza (2 stanze) avrebbe pochissime osservazioni → instabile. Il cap mercato compset non ha senso (non c'è compset per "Suite con Terrazza"). Solo la baseRT ha la massa critica per i 6 step.</li>
+                <li><b>Fattori RMES per RT</b> non funzionerebbero: il pace 4w di 1-2 stanze è dominato dal rumore (una singola cancellazione fa oscillare C·Pace di ±50%). A livello struttura (8 camere per Firenze) i segnali sono stabili.</li>
+              </ul>
+              <p style="margin:6px 0">La gerarchia di prezzo tra RT (Suite costa più di Deluxe, sempre, ma in modo abbastanza stabile mese per mese) è una cosa <b>strutturale</b>, non dinamica. Il supplemento storico cattura questa gerarchia. La dinamica del mercato (occupazione, pace, ricerche) è invece <b>comune</b> a tutta la struttura — il moltiplicatore RMES.</p>
+
+              <p style="margin:10px 0 0 0;padding:8px 12px;background:#f8f8f5;border-left:3px solid #c4823b;font-size:12px"><b>In pratica nella UI:</b> approvi/override Foundation solo sulla baseRT (le altre RT mostrano "↳ €X" come derivato, non cliccabile). Quando filtri per una RT non-base e clicchi la cella RMES, la modale ti mostra Foundation_RT = Foundation_baseRT + supplemento, lo stesso moltiplicatore di struttura, e il prezzo finale specifico per quella RT.</p>
+            </div>
+          </details>
         </div>
       </div>
       <div class="head-actions">
@@ -29362,6 +29406,27 @@ function rmes_getSourcePrice(structKey, ymdNum, fallbackPrice){
   return { price: fallbackPrice, source: 'fallback' };
 }
 
+/* _globalSupplementForRT(structKey, rt, month)
+   Versione GLOBALE di _supplementForRT (che invece è una closure di renderSellStrategy e computeRMESPriceMap).
+   Necessaria per la modale RMES dettaglio (fp_showDetailModalFromResult) che deve calcolare
+   Foundation per RT non-base allineato alla tabella.
+   Ritorna il supplemento mensile (alta/bassa stagione) della RT vs baseRT, in € Beddy_eq.
+*/
+function _globalSupplementForRT(structKey, rt, month){
+  if (typeof aggPricingDaily !== 'function') return 0;
+  try {
+    const today = new Date(TODAY); today.setHours(0,0,0,0);
+    const todayNum = today.getFullYear()*10000 + (today.getMonth()+1)*100 + today.getDate();
+    const A = aggPricingDaily(structKey, todayNum, 1);
+    if (!A || !A.baseRT || rt === A.baseRT) return 0;
+    const s = A.supplementoStagione[rt];
+    if (!s) return 0;
+    const isHigh = (A.highSeason || []).includes(month);
+    return isHigh ? s.alta : s.bassa;
+  } catch(e){ return 0; }
+}
+
+
 
 /* 3.1 + 3.2: Ancora storica (mediana ADR/RN, fallback mese intero) */
 function fp_computeAnchorLY(structKey, rt, targetDateISO){
@@ -30161,17 +30226,35 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       // Check override Foundation (sostituisce la sorgente prima dell'applicazione dei fattori)
       const foundationOvr = (typeof fp_getFoundationOverridePrice === 'function')
         ? fp_getFoundationOverridePrice(d.structKey, d.targetDateISO, d.rt) : null;
-      const fpPriceSourceCalc = d.priceFinal;       // Foundation calcolato (originale)
+      // ALLINEAMENTO TABELLA ↔ MODALE: Foundation per RT non-base = Foundation_baseRT_effettivo + supplemento_RT.
+      // La tabella (sell-block-fp) e questa modale DEVONO mostrare lo stesso valore Foundation.
+      // Logica identica a riga ~32000 (renderSellStrategy):
+      //   - baseRT: state.value se non-proposed, altrimenti calc
+      //   - non-baseRT: baseRT_effective + supplemento_RT mensile (NON il Foundation autonomo della RT)
+      let fpPriceSourceCalc;
+      const _baseRTFp = (typeof CFG !== 'undefined' && CFG.structures && CFG.structures[d.structKey])
+        ? CFG.structures[d.structKey].baseRT : null;
+      const _isBaseRT = (_baseRTFp != null && d.rt === _baseRTFp);
+      if (_isBaseRT || !_baseRTFp){
+        // baseRT: usa lo stato (se non-proposed) o il calcolo
+        const _stB = (typeof fp_getFoundationState === 'function')
+          ? fp_getFoundationState(d.structKey, d.targetDateISO, d.rt) : null;
+        fpPriceSourceCalc = (_stB && _stB.status !== 'proposed') ? _stB.value : d.priceFinal;
+      } else {
+        // RT non-base: prendi Foundation effettivo della baseRT + supplemento RT mensile
+        const _stB = (typeof fp_getFoundationState === 'function')
+          ? fp_getFoundationState(d.structKey, d.targetDateISO, _baseRTFp) : null;
+        const _baseR = (typeof fp_getPrice === 'function') ? fp_getPrice(d.structKey, _baseRTFp, d.targetDateISO) : null;
+        const _baseEff = (_stB && _stB.status !== 'proposed') ? _stB.value : (_baseR ? _baseR.price : null);
+        const _mo = (new Date(d.targetDateISO + 'T00:00:00')).getMonth() + 1;
+        const _suppVal = (typeof _globalSupplementForRT === 'function') ? _globalSupplementForRT(d.structKey, d.rt, _mo) : 0;
+        fpPriceSourceCalc = (_baseEff != null) ? (_baseEff + _suppVal) : d.priceFinal;
+      }
       const fpPriceSource = (foundationOvr != null) ? foundationOvr : fpPriceSourceCalc;
       const hasFoundationOverride = (foundationOvr != null);
-      // Prezzo che RMES avrebbe suggerito (Foundation o override Foundation × moltiplicatore)
-      // NOTA: il snapshot rmesSuggestedByRT è basato sul Foundation calcolato; se c'è override Foundation
-      // devo ricalcolare con il nuovo prezzo sorgente.
-      const rmesSuggested = hasFoundationOverride
-        ? (fpPriceSource * mults.multFinale)
-        : ((dayData.rmesSuggestedByRT && dayData.rmesSuggestedByRT[d.rt] != null)
-            ? dayData.rmesSuggestedByRT[d.rt]
-            : fpPriceSourceCalc * mults.multFinale);
+      // Prezzo che RMES avrebbe suggerito (Foundation effettivo × moltiplicatore)
+      // Ricalcolato sempre da fpPriceSource per garantire allineamento tabella↔modale.
+      const rmesSuggested = fpPriceSource * mults.multFinale;
       // Prezzo finale EFFETTIVO (può essere override prezzo finale, che sovrascrive tutto)
       const priceRmesFinal = (dayData.pricesByRT && dayData.pricesByRT[d.rt] != null && isFinite(dayData.pricesByRT[d.rt]))
         ? dayData.pricesByRT[d.rt]
@@ -30695,7 +30778,19 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<div class="panel-body" style="padding:12px 16px">';
   h += '<div id="fp-audit-list" style="font-size:12px"></div>';
   h += '</div></div>';
-  
+
+  // ----- Section E: Supplementi RT per mese (read-only) -----
+  // Mostra i supplementi che il sistema applica automaticamente alle RT non-base
+  // per calcolare Foundation. Foundation_RT_nonbase = Foundation_baseRT + supplemento_RT_mese.
+  // I supplementi sono calcolati da aggPricingDaily a partire dallo storico (differenza ADR
+  // RT - baseRT per stagione alta/bassa, arrotondata al multiplo di 5).
+  h += '<div class="panel" style="margin-bottom:16px">';
+  h += '<div class="panel-head"><div><h3>Ⓔ Supplementi RT per mese <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">struttura: ' + structLbl + '</span></h3>';
+  h += '<div class="panel-sub">Foundation viene calcolato <b>solo per la baseRT</b> (' + structLbl + ' → <b id="fp-supp-baseRT">—</b>). Le altre RT lo ereditano via supplemento mensile: <code>Foundation_RT = Foundation_baseRT + supplemento_RT_mese</code>. I supplementi sono <b>derivati dallo storico</b> (differenza ADR media RT vs baseRT, divisa per stagione alta/bassa, arrotondata al multiplo di 5), e identici per tutti i giorni dello stesso mese. <b>Esempio</b>: se Suite con Terrazza ha supplemento maggio €70, e Foundation Camera Matrim. Deluxe per quel giorno è €318, allora Foundation Suite con Terrazza = €318 + €70 = €388. Lo stesso moltiplicatore RMES (×0.767 di struttura) si applica sopra: prezzo finale Suite con Terrazza = €388 × 0.767 = €297. Pannello informativo (read-only).</div></div></div>';
+  h += '<div class="panel-body" style="padding:12px 16px">';
+  h += '<div id="fp-supp-table-wrap" style="font-size:12px;overflow-x:auto"></div>';
+  h += '</div></div>';
+
   // ----- Action buttons -----
   h += '<div style="display:flex;gap:10px;justify-content:flex-end;padding:14px 0;border-top:1px solid var(--line);margin-top:18px">';
   h += '<button id="fp-reset-defaults" style="font-size:12px;padding:8px 16px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);cursor:pointer">↺ Reset Foundation defaults</button>';
@@ -30853,6 +30948,88 @@ function fp_renderFoundationConfigBox(structKey){
     list.innerHTML = h;
   }
   _renderAuditList();
+
+  // ===== Sezione Ⓔ Supplementi RT per mese (read-only) =====
+  function _renderSuppTable(){
+    const wrap = document.getElementById('fp-supp-table-wrap');
+    if (!wrap) return;
+    if (typeof aggPricingDaily !== 'function'){
+      wrap.innerHTML = '<div style="color:var(--ink-3);font-style:italic">Dati non ancora disponibili.</div>';
+      return;
+    }
+    try {
+      const today = new Date(TODAY); today.setHours(0,0,0,0);
+      const todayNum = today.getFullYear()*10000 + (today.getMonth()+1)*100 + today.getDate();
+      const A = aggPricingDaily(structKey, todayNum, 1);
+      if (!A || !A.baseRT){
+        wrap.innerHTML = '<div style="color:var(--ink-3);font-style:italic">Nessun dato supplementi disponibile.</div>';
+        return;
+      }
+      const baseRT = A.baseRT;
+      const rtList = A.rtList || [];
+      const supp = A.supplementoStagione || {};
+      const highSeasonSet = new Set(A.highSeason || []);
+      // Mostro la baseRT nella sezione titolo
+      const baseLblEl = document.getElementById('fp-supp-baseRT');
+      if (baseLblEl) baseLblEl.textContent = baseRT;
+      // Tabella: righe = RT non-base, colonne = 12 mesi
+      const monthLbls = ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+      let html = '<table style="width:100%;border-collapse:collapse;font-size:11.5px">';
+      // Header
+      html += '<thead style="background:#f8f8f5"><tr>';
+      html += '<th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);min-width:170px">Room Type</th>';
+      for (let m=1; m<=12; m++){
+        const isHigh = highSeasonSet.has(m);
+        const bg = isHigh ? '#fff4e0' : '#f8f8f5';
+        const col = isHigh ? '#a06820' : 'var(--ink-2)';
+        const tip = isHigh ? 'Stagione ALTA' : 'Stagione BASSA';
+        html += '<th title="' + tip + '" style="padding:6px 6px;text-align:center;border-bottom:1px solid var(--line);font-size:11px;color:' + col + ';background:' + bg + ';width:54px">' + monthLbls[m-1] + '</th>';
+      }
+      html += '</tr></thead>';
+      // Body
+      html += '<tbody>';
+      // Riga baseRT (info, tutto a 0)
+      html += '<tr style="background:rgba(195,131,59,.06)">';
+      html += '<td style="padding:7px 10px;border-bottom:1px solid #f0eee8;font-family:\'DM Mono\',monospace;font-weight:700;color:#5a3a14"><b>' + baseRT + '</b> <span style="font-size:10px;font-weight:400;color:#888">(baseRT)</span></td>';
+      for (let m=1; m<=12; m++){
+        html += '<td style="padding:7px 6px;text-align:center;border-bottom:1px solid #f0eee8;font-family:\'DM Mono\',monospace;color:#5a3a14">€0</td>';
+      }
+      html += '</tr>';
+      // Righe altre RT
+      for (const rt of rtList){
+        if (rt === baseRT) continue;
+        const s = supp[rt] || { alta: 0, bassa: 0 };
+        html += '<tr>';
+        html += '<td style="padding:7px 10px;border-bottom:1px solid #f0eee8;font-family:\'DM Mono\',monospace;font-weight:600">' + rt + '</td>';
+        for (let m=1; m<=12; m++){
+          const isHigh = highSeasonSet.has(m);
+          const v = isHigh ? s.alta : s.bassa;
+          const bg = isHigh ? 'rgba(255,200,120,.13)' : 'transparent';
+          const sign = v >= 0 ? '+' : '';
+          html += '<td style="padding:7px 6px;text-align:center;border-bottom:1px solid #f0eee8;font-family:\'DM Mono\',monospace;background:' + bg + '">' + sign + '€' + v.toFixed(0) + '</td>';
+        }
+        html += '</tr>';
+      }
+      html += '</tbody></table>';
+      // Legenda stagioni sotto la tabella
+      const altaMesi = [];
+      for (let m=1; m<=12; m++){ if (highSeasonSet.has(m)) altaMesi.push(monthLbls[m-1]); }
+      const bassaMesi = [];
+      for (let m=1; m<=12; m++){ if (!highSeasonSet.has(m)) bassaMesi.push(monthLbls[m-1]); }
+      html += '<div style="margin-top:10px;font-size:10.5px;color:#888;display:flex;gap:18px;flex-wrap:wrap">';
+      html += '<div><span style="display:inline-block;width:12px;height:12px;background:#fff4e0;border:1px solid #f0d090;border-radius:2px;vertical-align:middle;margin-right:4px"></span>Stagione <b style="color:#a06820">ALTA</b> (' + altaMesi.join(', ') + ')</div>';
+      html += '<div><span style="display:inline-block;width:12px;height:12px;background:#f8f8f5;border:1px solid var(--line);border-radius:2px;vertical-align:middle;margin-right:4px"></span>Stagione <b>BASSA</b> (' + bassaMesi.join(', ') + ')</div>';
+      html += '</div>';
+      // Nota su come vengono calcolati
+      html += '<div style="margin-top:10px;font-size:10.5px;color:#999;font-style:italic;line-height:1.5">';
+      html += 'I supplementi sono calcolati automaticamente da <code>aggPricingDaily</code>: per ogni RT, ADR storica media RT meno ADR storica media baseRT, separato per stagione alta/bassa, arrotondato al multiplo di 5 più vicino. Un eventuale override manuale (es. Suite Firenze fissata a €20 in alta) è applicato sopra.';
+      html += '</div>';
+      wrap.innerHTML = html;
+    } catch(e){
+      wrap.innerHTML = '<div style="color:#a83b3b;font-style:italic">Errore caricamento supplementi: ' + (e.message || 'unknown') + '</div>';
+    }
+  }
+  _renderSuppTable();
   
   // Wire reset pesi 100% (condiviso con D·Compset RMES)
   const btnResetPesi = document.getElementById('fp-reset-pesi-100');
