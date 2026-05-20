@@ -334,6 +334,7 @@ table.data.sell-table .sell-grp-expedia-sub:not(:first-of-type){border-left:1px 
 /* Gruppo RMES (arancio scuro evidenziato) */
 /* Foundation Pricing — colonna shadow */
 table.data.sell-table tbody td.sell-block-fp{font-size:12px;font-family:'DM Mono',monospace}
+table.data.sell-table thead th.sell-grp-fp{background:rgba(195,131,59,.18);color:#5a3a14;border-left:3px solid #c4823b;font-weight:700}
 table.data.sell-table thead th.sell-grp-fp-sub{font-size:10px;letter-spacing:.04em}
 table.data.sell-table tbody td.sell-block-fp:hover{background:rgba(195,131,59,.16) !important}
 table.data.sell-table .sell-grp-rmes{background:rgba(195,131,59,.25);color:#5a3a14;border-left:3px solid #c4823b;font-weight:700}
@@ -975,20 +976,51 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>Forecast <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">Maggio 2026 → Aprile 2027</span></h2>
-        <div class="lede">Forecast di occupazione e revenue per il fiscal year (12 mesi). I toggle sopra la tabella permettono di aggiungere gen-apr 2026 (passato) o togliere gen-apr 2027 (futuro lontano).
+        <div class="lede">Quanto chiuderò di revenue e occupazione, per ogni mese, dalla data di oggi fino ad Aprile 2027. La logica è semplice: <b>parte da quello che già ho confermato in cassa (OTB) e aggiunge una stima di quante prenotazioni arriveranno ancora</b>, basandosi su come è andato l'anno scorso.
           <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
-            <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
-              <p><b>Per ogni mese del forecast</b>:</p>
+            <div style="margin-top:8px;font-size:12px;line-height:1.55;color:var(--ink-2);max-width:920px">
+              <p style="margin:0 0 8px 0"><b>L'idea di base in una frase</b>: ogni mese viene calcolato come "<b>quello che ho già venduto (OTB) + un'estimazione di quello che venderò ancora, basata sul mese corrispondente del 2025 corretto da indicatori di come stanno andando le cose oggi</b>".</p>
+
+              <p style="margin:10px 0 4px 0"><b>Step 1 — Distinguo 3 tipi di mesi:</b></p>
               <ul style="margin:4px 0 8px 18px">
-                <li><b>OCC forecast</b> = OCC mese 2025 corrispondente × share performance (vedi sotto)</li>
-                <li><b>ADR forecast</b> = ADR mese 2025 × growth ADR (rolling 3 mesi chiusi)</li>
-                <li><b>Revenue forecast</b> = OCC × cap × ADR forecast</li>
-                <li><b>Share performance</b> = OCC OTB cur / OCC STLY (a parità di stesso giorno della settimana). Es. se OCC OTB di giugno è 70% mentre l'anno scorso allo stesso pacing era 65%, share = 1.077 (sto vendendo meglio del +7.7% del LY)</li>
-                <li><b>ADR growth</b> = rolling media degli ultimi 3 mesi chiusi: ADR cur / ADR LY pari pacing. Se &gt;1 sto vendendo a prezzi più alti</li>
+                <li><b>Passati</b> (es. gennaio 2026 oggi): nessuna stima. Mostro solo l'<b>actual</b>, cioè quello che ho effettivamente incassato.</li>
+                <li><b>Corrente</b> (es. maggio 2026 oggi): mostro <b>actual fino a ieri + forecast da oggi a fine mese</b>. Per la parte futura uso la stessa logica dei mesi futuri.</li>
+                <li><b>Futuri</b> (giugno 2026 → aprile 2027): stima completa.</li>
               </ul>
-              <p><b>Toggle "Includi gen-apr 2026" (passato)</b>: aggiunge i 4 mesi passati come revenue effettivo (non forecast). Utile per vedere il fiscal year completo da inizio anno.</p>
-              <p><b>Toggle "Estendi a gen-apr 2027" (futuro lontano)</b>: se OFF, taglia i mesi troppo lontani dove la stima è poco affidabile.</p>
-              <p><b>Forecast vs Final LY</b>: differenza assoluta e % rispetto alla chiusura 2025. Indica se stai migliorando o peggiorando vs anno precedente.</p>
+
+              <p style="margin:10px 0 4px 0"><b>Step 2 — Per un mese futuro, quante RN venderò?</b></p>
+              <p style="margin:0 0 4px 0">Prendo le RN del mese corrispondente del 2025 (es. per giugno 2026 prendo giugno 2025) e le moltiplico per uno "<b>share</b>" che dice se sto andando meglio o peggio del LY (clampato fra 0.70 e 1.30, cioè ±30%).</p>
+              <ul style="margin:4px 0 8px 18px">
+                <li><b>share</b> = OCC media OTB attuale (su tutti i mesi futuri vicini) / OCC media STLY corrispondente. Es. share=1.05 = sto venendo +5% in più del LY.</li>
+                <li>Poi confronto con l'OTB già confermato: se OTB &gt; (LY × share), tengo OTB (non riduco mai sotto il confermato).</li>
+                <li>Cap inventario al 98%: non posso vendere più del fisicamente disponibile.</li>
+              </ul>
+
+              <p style="margin:10px 0 4px 0"><b>Step 3 — A che prezzo le venderò (ADR forecast)?</b></p>
+              <p style="margin:0 0 4px 0">L'ADR del pickup (le RN ancora da vendere) usa il <b>prezzo RMES suggerito giorno-per-giorno</b> calcolato dal sistema di pricing principale, mediato per il mese e per RT. Se per qualche giorno RMES non riesce a calcolare un prezzo (mancanza dati storici), <b>fallback</b> al vecchio metodo: <code>ADR LY del mese × growth ADR</code> (clamp [0.70, 1.30]).</p>
+              <p style="margin:0 0 4px 0">Per le RN già confermate (OTB) uso il prezzo reale incassato — non lo stimo.</p>
+              <p style="margin:0 0 4px 0;font-size:11.5px;color:#666;font-style:italic">Tutto in Beddy_eq (netto): le tariffe OTA storiche sono già al netto del markup configurato. Il prezzo RMES suggerito è già in Beddy_eq.</p>
+
+              <p style="margin:10px 0 4px 0"><b>Step 4 — Per Room Type</b></p>
+              <p style="margin:0 0 4px 0">Il calcolo sopra è fatto <b>per ogni RT separatamente</b>, partendo dal mix LY per RT del mese corrispondente. Ogni RT ha il suo cap (= camere RT × giorni del mese) e non lo supera mai.</p>
+
+              <p style="margin:10px 0 4px 0"><b>Override manuali per ancorare al budget</b></p>
+              <p style="margin:0 0 4px 0">In alcuni mesi specifici (es. Alfani giugno/luglio/settembre/dicembre 2026) ho applicato <b>boost manuali</b> di ADR e/o forzature di OCC al valore budget, per riflettere strategie commerciali decise a priori (eventi, prezzi premium, lavori). Sono hardcoded nel codice.</p>
+
+              <p style="margin:10px 0 4px 0"><b>Forecast Snapshot (1° del mese) vs Forecast Live</b></p>
+              <p style="margin:0 0 4px 0">Per ogni mese viene salvato il <b>forecast del 1° giorno del mese</b> (snapshot) per confronto a chiusura con il forecast live (aggiornato giornalmente). Mostra quanto sei stato bravo a prevedere il mese 30 giorni prima vs come sta andando in tempo reale.</p>
+
+              <p style="margin:10px 0 4px 0"><b>Note importanti</b></p>
+              <ul style="margin:4px 0 8px 18px">
+                <li><b>Easter correction</b>: per marzo/aprile 2027 c'è una correzione speciale perché Pasqua cade in date diverse rispetto a 2026.</li>
+                <li>Tutto in <b>Beddy_eq</b> (netto markup OTA): sia OTB storico che prezzo RMES suggerito. Per visualizzare il revenue lordo OTA, moltiplica per (1 + markup_OTA/100).</li>
+              </ul>
+
+              <p style="margin:10px 0 4px 0"><b>Toggle UI</b></p>
+              <ul style="margin:4px 0 8px 18px">
+                <li><b>+ gen-apr 2026 (passato)</b>: aggiunge in testa i 4 mesi 2026 già chiusi come actual. Utile per vedere il fiscal year da inizio anno.</li>
+                <li><b>− gen-apr 2027 (futuro lontano)</b>: nasconde i 4 mesi più lontani dove la stima è meno affidabile.</li>
+              </ul>
             </div>
           </details>
         </div>
@@ -1021,14 +1053,14 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             </ul>
           </li>
           <li><b>Forecast RN per RT × mese</b> = max(OTB_RN, FinalLY_RN × shareCapped), cappato al <b>98% dell'inventario disponibile</b> (camere × giorni mese × 0.98). Eccezione: se OTB è già &gt; 98%, vince OTB. Il 98% riflette il fatto che nel mondo reale la 100% OCC non si raggiunge mai (overbooking, blocchi, manutenzioni).</li>
-          <li><b>Share dinamico (capped 90%-115%)</b> = stay-night quest'anno ultimi 90gg / stay-night LY stesso periodo (= ymd in [-454, -364]). Cappato tra <b>0.90 (min)</b> e <b>1.15 (max)</b>:
+          <li><b>Share dinamico (clamp ±30% → [0.70, 1.30])</b> = stay-night quest'anno ultimi 90gg / stay-night LY stesso periodo (= ymd in [-454, -364]). Cappato tra <b>0.70 (min)</b> e <b>1.30 (max)</b>:
             <ul style="margin:4px 0;padding-left:18px">
-              <li>Se share ≥ 100% → forecast cresce vs LY (max +15%): segnale di salute reale</li>
-              <li>Se share < 100% → forecast cala vs LY (min −10%): floor di sicurezza</li>
-              <li>Caps evitano sovra/sottostima eccessiva basata su un campione di soli 3 mesi</li>
+              <li>Se share ≥ 100% → forecast cresce vs LY (max +30%): segnale di salute reale</li>
+              <li>Se share &lt; 100% → forecast cala vs LY (min −30%)</li>
+              <li>Caps evitano sovra/sottostima eccessiva basata su un campione di soli 90gg</li>
             </ul>
           </li>
-          <li><b>Forecast ADR per RT × mese</b> = FinalLY_ADR × adrGrowth. ADR growth = ADR cur ultimi 90gg / ADR LY stesso periodo, cappato tra <b>0.95</b> e <b>1.20</b>. Riflette l'andamento reale dei prezzi medi realizzati, non i prezzi RMES Beddy proposti.</li>
+          <li><b>Forecast ADR per RT × mese</b>: <b>usa il prezzo RMES suggerito giorno-per-giorno</b> (mediato per il mese) come ADR del pickup. <b>Fallback</b> se RMES non disponibile per quel giorno: FinalLY_ADR × adrGrowth, con adrGrowth = ADR cur ultimi 90gg / ADR LY stesso periodo, cappato tra <b>0.70</b> e <b>1.30</b>. Per le RN già confermate (OTB) viene usato il prezzo reale incassato (non stimato).</li>
           <li><b>Forecast Revenue per RT × mese</b> = forecast_RN × forecast_ADR. Coerenza matematica garantita: il totale mensile coincide sempre con la somma RN × ADR di ogni RT.</li>
           <li><b>Logica colonna "YTD + Forecast"</b>: la colonna combina dati realizzati (YTD = Year To Date, fino a ieri) e proiezione forecast (da oggi in poi):
             <ul style="margin:4px 0;padding-left:18px">
@@ -1128,7 +1160,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>Sell Strategy <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px" id="sell-range-label">—</span></h2>
-        <div class="lede">Tabella giornaliera con OTB · Pickup · STLY · prezzo RMES suggerito. <b>Click su una cella prezzo</b> per aprire la modale RMES (Foundation, 5 fattori, prezzo finale editabile con simulazione revenue).
+        <div class="lede">Tabella giornaliera con OTB · Pickup · STLY · Foundation · prezzo RMES suggerito. <b>Click sul prezzo Foundation</b> → popup di approvazione con dettaglio 6 step. <b>Bottoni inline ✓ 🖋 ↺</b> in ogni riga: accetta · override · reset. <b>Click sulla cella RMES</b> → modale 5 fattori + simulazione revenue. Sopra la tabella: bottoni batch per applicare azioni a tutti i giorni visibili.
           <details style="display:inline-block;margin-left:10px"><summary style="cursor:pointer;color:#7a4f1c;font-weight:600;font-size:12px">📖 Logica e calcolo</summary>
             <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
               <p><b>Colonne</b>:
@@ -1143,7 +1175,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
               </p>
               <p><b>MLOS</b> per RT è calcolato da OCC_RT e OCC_RT Final LY.</p>
               <p><b>Filtro Room Type</b> sopra la tabella: pillole colorate ("Tutte" = aggregato struttura). Quando filtri per RT specifica, tutti i dati (OTB, pickup, STLY, RMES) vengono filtrati per quella RT. Il moltiplicatore RMES resta uguale tra RT (i 5 fattori sono di struttura); cambia solo il prezzo base per supplementi storici mensili.</p>
-              <p><b>Variazione vs Foundation</b>: cella colorata in base al delta (verde = RMES alza vs Foundation, rosso = RMES freno). Click sulla cella → modale RMES con: prezzo Foundation, 5 fattori (peso "20%+5%" in blu se redistribuito da fattore n/d), prezzo suggerito, prezzo finale pubblicato editabile con 💾 Salva, simulazione revenue live (Δ prezzo → Δ RN → Δ Revenue), e toggle per espandere il calcolo Foundation in 7 step.</p>
+              <p><b>Variazione vs Foundation</b>: cella colorata in base al delta (verde = RMES alza vs Foundation, rosso = RMES freno). Click sulla cella → modale RMES con: prezzo Foundation, 5 fattori (peso "20%+5%" in blu se redistribuito da fattore n/d), prezzo suggerito, prezzo finale pubblicato editabile con 💾 Salva, simulazione revenue live (Δ prezzo → Δ RN → Δ Revenue), e toggle per espandere il calcolo Foundation in 6 step.</p>
+              <p><b>Approvazione Foundation — solo baseRT</b>: i 3 stati (proposed/accepted/override) e i bottoni di approvazione si applicano <b>esclusivamente alla baseRT</b> di ogni struttura (Firenze → Camera Matrim. Deluxe · Condotta → Bilocale · Alfani → Classic). Le altre RT (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) ereditano automaticamente Foundation della baseRT + supplemento mensile storico, e nella tabella appaiono con <code>↳</code> a sinistra del prezzo (cella più chiara, non cliccabile). Il pannello batch "Approvazione Foundation" sopra la tabella è visibile solo quando il filtro RT è <b>"Tutte"</b> o la <b>baseRT</b>; viene nascosto quando filtri su una RT non-base.</p>
             </div>
           </details>
         </div>
@@ -1195,6 +1228,35 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div id="sell-rt-filter-pills" style="display:flex;flex-wrap:wrap;gap:4px"></div>
         <span style="font-size:10px;color:var(--ink-3);margin-left:8px;font-style:italic">selezione attiva: tutti i dati (OTB, Pickup, STLY, RMES) sono filtrati per questa RT</span>
       </div>
+      <!-- Pannello Approvazione Foundation: documentazione + bottoni batch + summary
+           NB: visibile SOLO quando filtro RT è non-impostato (= "Tutte") oppure è la baseRT della struttura.
+           L'approvazione si applica esclusivamente alla baseRT; le altre RT ne ereditano Foundation + supplemento. -->
+      <div class="panel-body" id="sell-fp-approval-bar" style="display:none;padding:10px 16px;border-top:1px solid var(--line);background:rgba(59,107,154,.04)">
+        <details style="margin-bottom:8px">
+          <summary style="cursor:pointer;font-size:10px;color:#3b6b9a;text-transform:uppercase;letter-spacing:.05em;font-weight:700;list-style:none;outline:none">⚡ Come funziona l'Approvazione Foundation (click per dettagli)</summary>
+          <div style="margin-top:8px;padding:10px 12px;background:#fff;border-left:3px solid #3b6b9a;font-size:11.5px;color:var(--ink-2);line-height:1.55">
+            <p style="margin:0 0 6px 0">Foundation è il <b>prezzo strutturale di partenza</b> sul quale i 5 fattori RMES applicano l'aggiustamento dinamico. Per ogni giorno della <b>baseRT</b> ha uno di tre stati:</p>
+            <ul style="margin:0 0 6px 18px;padding:0">
+              <li><b style="color:#c4823b">⚡ Proposed</b> = valore calcolato dinamico (storico LY × growth × pace × cap mercato). Cambia se cambiano i dati storici.</li>
+              <li><b style="color:#1e6b4a">✓ Accepted</b> = valore calcolato congelato al momento dell'accept. Non cambia più anche se i dati storici cambiano.</li>
+              <li><b style="color:#1e4a6b">🖋 Override</b> = valore manuale che hai inserito tu. Congelato fino a reset.</li>
+            </ul>
+            <p style="margin:6px 0;padding:6px 10px;background:#fffbee;border-left:2px solid #c4823b"><b>Solo baseRT</b>: l'approvazione si applica esclusivamente alla room type principale di ogni struttura. Le altre RT (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) ereditano automaticamente Foundation della baseRT + supplemento mensile storico (sono indicate con "↳" e cella più chiara).</p>
+            <p style="margin:6px 0 0 0">I 5 fattori RMES si applicano sempre sopra il <b>Foundation effettivo</b> (= valore congelato se accepted/override, calcolato altrimenti). Ogni giorno è indipendente: niente autoregressione. La cella Foundation per la baseRT è cliccabile (popup di dettaglio 6 step) e ha 3 bottoni inline ✓ 🖋 ↺ per le azioni rapide.</p>
+          </div>
+        </details>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px">
+          <span class="mono" style="font-size:10px;color:#3b6b9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Approvazione Foundation</span>
+          <span id="sell-fp-baseRT-label" style="font-size:11px;color:#666;font-style:italic"></span>
+          <button id="fp-batch-accept-all" style="padding:5px 11px;border:1px solid #3d7a4b;background:#3d7a4b;color:#fff;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:11.5px;font-weight:600;cursor:pointer" title="Accetta il valore calcolato come Foundation effettivo per tutti i giorni visibili (solo baseRT).">✓ Accetta tutti i giorni visibili</button>
+          <button id="fp-batch-reset-all" style="padding:5px 11px;border:1px solid #999;background:#fff;color:#666;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:11.5px;cursor:pointer" title="Riporta tutti i giorni visibili (baseRT) allo stato proposed.">↺ Reset tutti i giorni</button>
+          <span style="display:inline-flex;gap:4px;align-items:center;padding:1px 6px;border:1px dashed #3b6b9a;border-radius:4px;margin-left:4px">
+            <input type="number" id="fp-batch-override-price" min="0" max="9999" step="5" placeholder="€" style="width:65px;padding:4px 5px;border:1px solid #3b6b9a;background:#eef4fb;border-radius:3px;font-family:'DM Mono',monospace;text-align:right;font-size:11.5px;color:#1e4a6b;font-weight:600">
+            <button id="fp-batch-override-all" style="padding:4px 10px;border:1px solid #3b6b9a;background:#3b6b9a;color:#fff;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer" title="Imposta tutti i giorni visibili (baseRT) come override con questo prezzo.">🖋 Override tutti</button>
+          </span>
+          <div id="fp-approval-summary" style="margin-left:auto;font-size:11px;color:#1e4a6b;background:#fff;padding:5px 10px;border-radius:4px;font-family:'DM Mono',monospace;border:1px solid #c8d8e8">—</div>
+        </div>
+      </div>
       <!-- Banner Audit Override globale (popolato dinamicamente da renderSellStrategy) -->
       <div id="sell-audit-banner" style="display:none"></div>
       <div class="panel-body flush" id="sell-table-wrap" style="overflow-x:auto;max-height:75vh;overflow-y:auto"></div>
@@ -1230,7 +1292,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <div style="margin-top:8px;font-size:12px;line-height:1.5;color:var(--ink-2);max-width:900px">
               <p><b>Cosa vedi</b>: prezzi <b>lordi su Expedia</b> (= ciò che il cliente vede prima di pagare). Sono i prezzi della tariffa Flessibile (la "tariffa più bassa visibile") di una camera doppia matrim. base.</p>
               <p><b>Mio prezzo</b>: la prima riga è il MIO listing Expedia. Conversione a Beddy_eq: <code>prezzo_lordo / (1 + markup_OTA/100) / 0.90</code>. Il markup OTA è configurabile per struttura nella tab RMES → Ⓑ (default 12%). Il /0.90 toglie lo sconto della non-rimborsabile (Beddy_eq è la tariffa Beddy non-rimborsabile, il vero prezzo netto).</p>
-              <p><b>Pesi compset</b>: ogni competitor ha un peso 0-100% configurabile nella tab RMES → Ⓒ. Peso = 100% conta pieno, peso = 0% lo esclude dal calcolo. Un competitor con peso &lt; 100% appare con badge accanto al nome. Il peso è usato sia dal <b>fattore E·Compset RMES</b> sia dal <b>cap mercato Foundation</b>.</p>
+              <p><b>Pesi compset</b>: ogni competitor ha un peso 0-100% configurabile nella tab RMES → Ⓒ. Peso = 100% conta pieno, peso = 0% lo esclude dal calcolo. Un competitor con peso &lt; 100% appare con badge accanto al nome. Il peso è usato sia dal <b>fattore D·Compset RMES</b> sia dal <b>cap mercato Foundation</b>.</p>
               <p><b>Offset €</b>: solo per Foundation. Es. -10 significa "voglio stare €10 sotto questo competitor". Il riferimento mercato Foundation = Σ(peso × (compset_Beddy_eq + offset)) / Σ(peso).</p>
               <p><b>Piramide Prezzi</b> (sotto): barre verticali con i prezzi compset (lordi Expedia) per ogni giorno, con il mio prezzo evidenziato. Range temporale selezionabile (30/60/90/180gg).</p>
               <p><b>Grafico "Intensità ricerche"</b>: ricerche Expedia per ogni giorno della finestra, normalizzate al picco massimo. Barre verticali dal basso, colore graduato (chiaro = bassa domanda, scuro = picco). Sostituisce il vecchio "Volume ricerche YoY" che dava falsi negativi.</p>
@@ -1319,7 +1381,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="section-head">
       <div>
         <h2>RMES <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">Revenue Manu&Enis System · configurazione</span></h2>
-        <div class="lede">Sistema a 2 livelli: <b style="color:#7a4f1c">Foundation</b> calcola il prezzo strutturale del giorno (sorgente), poi <b>5 fattori RMES</b> lo aggiustano in deviazione (A·OCC, B·Price, C·Pace, E·Compset, F·Search — al 20% ciascuno di default). Cap totale ±40%. <b>Se un fattore è "dato n/d"</b> il suo peso viene redistribuito proporzionalmente agli altri (es. 20%+5% in blu). <b>Override</b>: puoi sovrascrivere il prezzo finale (puntuale o per periodo). La modale RMES mostra prezzo Foundation, 5 fattori, prezzo suggerito, prezzo pubblicato editabile con simulazione revenue live e audit post-chiusura. Apri la doc qui sotto per i passaggi e l'esempio numerico.</div>
+        <div class="lede">Sistema a 2 livelli: <b style="color:#7a4f1c">Foundation</b> calcola il prezzo strutturale del giorno (sorgente), poi <b>5 fattori RMES</b> lo aggiustano in deviazione (A·OCC, B·Price, C·Pace, D·Compset, E·Search — al 20% ciascuno di default). Cap totale ±30%. <b>Se un fattore è "dato n/d"</b> il suo peso viene redistribuito proporzionalmente agli altri (es. 20%+5% in blu). <b>Override</b>: puoi sovrascrivere il prezzo finale (puntuale o per periodo). La modale RMES mostra prezzo Foundation, 5 fattori, prezzo suggerito, prezzo pubblicato editabile con simulazione revenue live e audit post-chiusura. Apri la doc qui sotto per i passaggi e l'esempio numerico.</div>
       </div>
       <div class="head-actions">
         <div class="chip mono" id="rmes-struct-chip">—</div>
@@ -1365,29 +1427,42 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <p><b>Due modalità in base ai giorni che mancano al check-in:</b></p>
         <ul style="margin:4px 0 12px 18px">
-          <li><b>Modalità completa (&lt;180gg)</b>: tutti i 7 step. Pace, OTB, pickup, cap mercato disponibili.</li>
+          <li><b>Modalità completa (&lt;180gg)</b>: tutti i 6 step. Pace, OTB, pickup, cap mercato disponibili.</li>
           <li><b>Modalità semplificata (&gt;180gg)</b>: solo storico + Base + growth. Niente pace/cap perché OTB non è ancora rappresentativo.</li>
         </ul>
 
-        <h4 style="margin:14px 0 6px 0;color:#7a4f1c">Modalità completa (&lt;180gg) — 7 step</h4>
+        <h4 style="margin:14px 0 6px 0;color:#7a4f1c">Modalità completa (&lt;180gg) — 6 step</h4>
         <ol style="margin:4px 0 12px 18px;font-size:12.5px">
-          <li><b>① Ancora storica</b>: mediana ADR pari-DOW pari-mese (storico 2024+2025), <b>già al netto del markup OTA configurato</b> (b.revPerNightCaricato = revLordo / (1+markup/100) se canale OTA, identico se diretto). Markup OTA configurabile per struttura nella tab RMES → Ⓑ (default 12%). Riflette quindi il prezzo medio realmente incassato. Il mix flex/non-rimborsabile dello storico è preservato come parte naturale del prezzo medio reale. Se &lt;3 osservazioni allargo a mese intero. Cancellate incluse solo se cancellate ≥30gg prima dello stay.</li>
-          <li><b>② Target Revenue</b>: <code>Revenue LY × (1 + growth%)</code>. Growth configurabile per mese (default +5%). Pannello Ⓐ.</li>
-          <li><b>③ RN attese + ADR target</b>: <code>RN attese = RN_OTB + (pickup_LY_residuo × pace)</code>, cap inventario.
+          <li><b>① Ancora storica = mediana ADR LY pari-giorno</b>:
             <ul style="margin:4px 0 4px 18px">
-              <li><b>pace</b> = <code>RN_OTB_oggi / RN_OTB_LY_pari_giorni</code>. Smoothing per dati piccoli: se <code>rnLY &lt; 4</code> applico <code>sqrt(pace)</code> (es. 1.50 → 1.22, 3.00 → 1.73, 0.50 → 0.71) — tira il valore verso 1 perché su pochi dati gli estremi sono rumore. Clamp finale [0.70, 1.30].</li>
+              <li><b>Cosa cerco</b>: nel 2024+2025 prendo tutte le prenotazioni confermate il cui soggiorno è caduto nello <b>stesso mese</b> e nello <b>stesso giorno della settimana</b> (es. tutti i sabati di luglio). Calcolo l'ADR di ogni stay-night, poi la mediana.</li>
+              <li><b>Quante osservazioni minimo</b>: 3. Sotto 3, allargo al mese intero (tutti i giorni, non solo lo stesso DOW). Sotto 3 anche lì, allargo a tutti i mesi adiacenti. Se proprio non bastano, il giorno entra in modalità "semplificata" (vedi sotto).</li>
+              <li><b>Cancellate</b>: incluse solo se cancellate ≥30gg prima dello stay (= chi cancella all'ultimo era un cliente "fragile", non rappresentativo del comportamento medio).</li>
+              <li><b>Già al netto del markup OTA</b>: le prenotazioni Booking/Expedia/Airbnb sono divise per (1 + markup/100) per ottenere il vero prezzo netto Beddy_eq incassato. Markup configurabile per struttura (default 12%).</li>
             </ul>
-            L'ADR target chiusura segue una <b>logica condizionale</b> per non penalizzare i giorni dove l'OTB sta già coprendo il revenue target:
+          </li>
+          <li><b>② Target Revenue del giorno</b>: <code>Revenue_LY_stesso_giorno × (1 + growth%)</code>. Growth configurabile per mese (default +5%). Pannello Ⓐ. Es: se il 15/07 dell'anno scorso ha incassato €1.500 e voglio crescere +5%, il target di oggi è €1.575.</li>
+          <li><b>③ RN attese + ADR target chiusura</b>:
             <ul style="margin:4px 0 4px 18px">
-              <li><b>Caso A — Rev OTB Beddy_eq ≥ Rev target</b>: target già coperto → <code>ADR target = max(ADR OTB Beddy_eq, ADR_LY × (1+growth%))</code>. Non scendo sotto quello che già vendo.</li>
-              <li><b>Caso B — Rev OTB ≥ 95% Rev target</b>: stesso del caso A (formula identica). Sono praticamente a target, mantengo il prezzo.</li>
-              <li><b>Caso C — sotto 95%</b>: formula classica con floor composito. <code>ADR target = max(adrFormula, floor)</code> dove <code>adrFormula = (Rev target − Rev OTB) / (RN attese − RN OTB)</code>. Il floor è sempre il tetto storico <code>ADR_LY × (1+growth%)</code>, e <b>se ho già venduto ≥50% dell'inventario</b> anche <code>ADR OTB Beddy_eq</code> (il dato OTB è significativo solo con abbastanza vendite). Evita ribassi assurdi quando sei vicino al target.</li>
+              <li><b>RN attese</b> = <code>RN_OTB + (pickup_LY_residuo × pace)</code>, cap inventario. Stima quante notti venderò ancora.</li>
+              <li><b>pace</b> = <code>RN_OTB_oggi / RN_OTB_LY_pari_giorni</code>. Misura se sto pacing meglio o peggio dell'anno scorso a parità di giorni mancanti. Smoothing: se LY ha &lt;4 prenotazioni a quel pacing, applico <code>sqrt(pace)</code> per smorzare estremi (es. pace 1.50 → 1.22). Clamp [0.70, 1.30].</li>
+              <li><b>ADR target chiusura</b> — logica condizionale a 3 casi per non spingere ribassi assurdi quando sei vicino al target:
+                <ul style="margin:3px 0 0 14px">
+                  <li><b>Caso A — Target già coperto (Rev_OTB ≥ Rev_target)</b>: tieni almeno il prezzo che già vendi. <code>ADR_target = max(ADR_OTB_Beddy_eq, ADR_LY × (1+growth%))</code>.</li>
+                  <li><b>Caso B — Vicino al target (Rev_OTB ≥ 95% Rev_target)</b>: stessa formula del caso A.</li>
+                  <li><b>Caso C — Lontano dal target (Rev_OTB &lt; 95% Rev_target)</b>: formula classica con un floor di salvaguardia. Il floor di salvaguardia non è il Floor da 100€ (quello arriva allo step ⑤). È un <b>tetto storico relativo</b> = <code>ADR_LY × (1+growth%)</code>. Se ho già venduto ≥50% dell'inventario, aggiungo come ulteriore floor anche <code>ADR_OTB_Beddy_eq</code> (il prezzo medio che sto già incassando). <code>ADR_target = max(adrFormula, tetto storico, [ADR_OTB se OCC≥50%])</code>. Evita di fare ribassi forti per "riempire" quando in realtà il pacing è già ragionevole.</li>
+                </ul>
+              </li>
             </ul>
-            <b>Rev OTB Beddy_eq</b> = revenue OTB con markup OTA sottratto: prenotazioni dirette restano lorde, prenotazioni Booking/Expedia/Airbnb divise per (1+markup/100). Markup configurabile per struttura nella tab RMES (default 12%). Così l'ADR OTB usato nei confronti rappresenta il vero incasso netto.</li>
-          <li><b>④ P_grezzo</b>: <code>= ADR target chiusura</code> (direttamente dallo step ③). Il pace dinamico NON entra qui per evitare double counting (è già usato nello step ③ per stimare rnAttese). Il pace influenzerà il prezzo finale solo tramite il fattore C·Pace dei moltiplicatori RMES.</li>
-          <li><b>⑤ Cap mercato</b>: media pesata compset Expedia (convertito Beddy_eq con divisore <code>(1+markup/100)×0.90</code>, markup configurabile) + offset come riferimento, range [×0.80, ×1.20]. Se P_grezzo fuori, capped al limite più vicino.</li>
-          <li><b>⑥ Floor + Base lift</b>: Floor (hard, default 100€) è il limite assoluto. <b>Base price</b> (soft, default Firenze 220, Condotta 280, Alfani 270) è il "north star": se P sotto Base → <code>P = (P + Base) / 2</code>.</li>
-          <li><b>⑦ Re-target adattivo</b>: se P_finale &lt; 92% ADR target → segnalo che il growth effettivo è inferiore.</li>
+          </li>
+          <li><b>④ Cap mercato (compset)</b>: media pesata dei competitor Expedia (convertita in Beddy_eq con divisore <code>(1+markup/100) × 0.90</code>) + offset configurabili. La media è il "range di mercato": <code>P_grezzo</code> viene cappato a <code>[×0.80, ×1.20]</code> di questa media. Se P_grezzo è dentro il range, passa; se è fuori, viene capped al limite più vicino.</li>
+          <li><b>⑤ Floor + Base lift</b>:
+            <ul style="margin:4px 0 4px 18px">
+              <li><b>Floor (hard, default 100€)</b>: limite assoluto sotto cui Foundation non scende mai. È il valore "non venderò mai sotto X" che imposti nella tab RMES → Ⓑ.</li>
+              <li><b>Base price (soft, default Firenze 220, Condotta 280, Alfani 270)</b>: il prezzo "giusto" annuale, una specie di "north star". Se Foundation calcolato è sotto Base, applico una media: <code>P = (P + Base) / 2</code>. Non è un limite duro, ma un'attrazione verso il prezzo target.</li>
+            </ul>
+          </li>
+          <li><b>⑥ Re-target adattivo (info)</b>: se P_finale è &lt; 92% dell'ADR target dello step ③, segnalo nella modale che il growth effettivo è inferiore al target richiesto (utile per capire se i floor stanno "tirandoti giù" troppo).</li>
         </ol>
 
         <h4 style="margin:14px 0 6px 0;color:#7a4f1c">Modalità semplificata (&gt;180gg)</h4>
@@ -1398,17 +1473,19 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Floor</b>: <code>P_finale = max(P, Floor)</code>.</li>
         </ol>
 
-        <p><b>Parametri configurabili</b> (tab RMES → pannelli Ⓐ/Ⓑ/Ⓒ/Ⓓ/Ⓔ):</p>
+        <p><b>Parametri configurabili</b> (tab RMES → pannelli Ⓐ/Ⓑ/Ⓒ/Ⓓ):</p>
         <ul style="margin:4px 0 12px 18px;font-size:12.5px">
           <li><b>Ⓐ Target growth per mese</b>: % crescita Revenue vs LY. Default +5%.</li>
           <li><b>Ⓑ Base price annuale</b>: il prezzo che ritieni fair annualmente. Default Firenze 220, Condotta 280, Alfani 270.</li>
           <li><b>Ⓑ Floor rate</b>: limite assoluto. Default 100€.</li>
           <li><b>Ⓑ Markup OTA</b>: percentuale che le OTA aggiungono al prezzo Beddy_eq. Default 12%. Cambiando questo valore il sistema ricalcola tutti i revenue Beddy_eq storici (revPerNightCaricato).</li>
           <li><b>Ⓑ Elasticità prezzo</b>: usata nelle simulazioni di override. Default 1.0 (1:1). Bottone "📊 Stima dai dati" calcola la stima storica.</li>
-          <li><b>Ⓒ Pesi compset (0-100%)</b>: usati sia da Foundation (cap mercato) sia da fattore E·Compset RMES.</li>
+          <li><b>Ⓒ Pesi compset (0-100%)</b>: usati sia da Foundation (cap mercato) sia da fattore D·Compset RMES.</li>
           <li><b>Ⓒ Offset compset (€)</b>: solo Foundation. Es. -10 = "voglio stare €10 sotto questo competitor".</li>
-          <li><b>Ⓓ Override Base Rate</b>: sovrascrive il <b>prezzo finale RMES</b> (non Foundation) per uno o più giorni × RT. Supporta override puntuale e per periodo. Al salvataggio viene memorizzato uno snapshot del prezzo RMES suggerito (per audit).</li>
-          <li><b>Ⓔ Audit override (post-chiusura)</b>: per ogni giorno chiuso con override, confronto override vs RMES suggerito (snapshot). Δ Revenue mostra chi avrebbe fatto meglio assumendo stesse RN.</li>
+          <li><b>Approvazione Foundation (solo baseRT)</b>: la decisione strategica sul prezzo Foundation è <b>spostata nella tab Sell Strategy</b>. Si applica esclusivamente alla <b>baseRT</b> di ogni struttura (Firenze → Camera Matrim. Deluxe · Condotta → Bilocale · Alfani → Classic). Le altre RT ereditano Foundation dalla baseRT + supplemento mensile. Per ogni giorno della baseRT, Foundation ha uno di 3 stati: <b style="color:#c4823b">⚡ proposed</b> (calcolato dinamico, default), <b style="color:#1e6b4a">✓ accepted</b> (calcolato congelato), <b style="color:#1e4a6b">🖋 override</b> (manuale congelato). Operazioni dalla Sell Strategy: bottoni inline ✓ 🖋 ↺ nella cella Foundation di ogni riga · click sul prezzo per popup dettaglio 6 step · bottoni batch sopra la tabella per accettare/override/reset tutti i giorni visibili.</li>
+          <li><b>I 5 fattori RMES si applicano comunque sopra Foundation effettivo</b>: prezzo_finale = foundation_effettivo × moltiplicatore. Niente autoregressione: ogni giorno è indipendente dagli altri.</li>
+          <li><b>Override prezzo finale RMES (puntuale)</b>: gestito dalla <b>modale RMES</b> cliccando una cella prezzo nella Sell Strategy. Sovrascrive il <b>risultato finale</b> (Foundation × fattori). I fattori restano calcolati e mostrati come info "RMES avrebbe suggerito X". Tipico uso: correzione del singolo giorno. Al salvataggio memorizzato uno snapshot per l'audit.</li>
+          <li><b>Ⓓ Audit override (post-chiusura)</b>: per ogni giorno chiuso con override, confronto override vs RMES suggerito (snapshot). Δ Revenue mostra chi avrebbe fatto meglio assumendo stesse RN.</li>
         </ul>
 
         <hr style="margin:18px 0;border:0;border-top:1px solid #3b5a78">
@@ -1459,17 +1536,17 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
               </li>
             </ul>
             <b>Fallback annuale</b>: se per quel mese cur=0 o stly=0, uso il ratio annuale di struttura. Clamp finale ±50%.</li>
-          <li>Per <b>E·Compset</b>: deviazione <b>invertita</b> (più economico del compset = +, sto sottovendendo).</li>
-          <li>Per <b>F·Search</b>: confronto con la <b>mediana del MESE</b> di appartenenza (es. un sabato di agosto si confronta con la mediana di tutti i giorni di agosto). <code>dev = (cur − mediana_mese) / mediana_mese</code>, clampato ±50%. <b>Normalizzazione stagionale</b>: evita di confrontare inverno vs estate (mediane molto diverse).</li>
+          <li>Per <b>D·Compset</b>: deviazione <b>invertita</b> (più economico del compset = +, sto sottovendendo).</li>
+          <li>Per <b>E·Search</b>: confronto con la <b>mediana del MESE</b> di appartenenza (es. un sabato di agosto si confronta con la mediana di tutti i giorni di agosto). <code>dev = (cur − mediana_mese) / mediana_mese</code>, clampato ±50%. <b>Normalizzazione stagionale</b>: evita di confrontare inverno vs estate (mediane molto diverse).</li>
           <li>Ogni deviazione è <b>clampata a [−50%, +50%]</b>: anche se OCC è −80%, conta solo come −50% per quel fattore.</li>
         </ul>
 
         <h4 style="margin:14px 0 6px 0;color:#3b5a78">Come si applica al prezzo</h4>
         <ul style="margin:4px 0 12px 18px;font-size:12.5px">
           <li><b>Pesi default v5</b>: A=B=C=E=F=20% (somma 100%). Modificabili nel pannello ①.</li>
-          <li><b>Pesi normalizzati quando un fattore è "dato n/d"</b>: se per un giorno un fattore non ha dati (es. Mio Expedia non disponibile → E·Compset), il suo peso viene <b>redistribuito proporzionalmente</b> sugli altri fattori attivi. Esempio: A=B=C=F=20%, E=20% → E n/d → ognuno degli altri 4 sale di +5% → 25% ciascuno. La modale mostra "20%+5%" col +5% in <span style="color:#3b6b9a;font-weight:600">blu</span>.</li>
+          <li><b>Pesi normalizzati quando un fattore è "dato n/d"</b>: se per un giorno un fattore non ha dati (es. Mio Expedia non disponibile → D·Compset), il suo peso viene <b>redistribuito proporzionalmente</b> sugli altri fattori attivi. Esempio: A=B=C=F=20%, E=20% → E n/d → ognuno degli altri 4 sale di +5% → 25% ciascuno. La modale mostra "20%+5%" col +5% in <span style="color:#3b6b9a;font-weight:600">blu</span>.</li>
           <li><b>Somma pesata</b>: <code>Σ peso_normalizzato_i × dev_i</code>.</li>
-          <li><b>Cap totale ±40%</b> (configurabile per struttura nel pannello ②): la somma viene clampata. Anche se tutti i fattori puntano forte nella stessa direzione, il prezzo finale non si discosta più del 40% da Foundation. Il clamp individuale per fattore è ±50%, quindi il cap totale 40% offre una protezione anti-errore aggiuntiva su somma aggregata.</li>
+          <li><b>Cap totale ±30%</b> (configurabile per struttura nel pannello ②): la somma viene clampata. Anche se tutti i fattori puntano forte nella stessa direzione, il prezzo finale non si discosta più del 30% da Foundation. Il clamp individuale per fattore è ±50%, quindi il cap totale 30% offre una protezione anti-errore aggiuntiva su somma aggregata.</li>
           <li><b>Prezzo finale RMES suggerito</b>: <code>Foundation × (1 + somma_clampata)</code>.</li>
           <li><b>Override sul prezzo finale</b>: se per quel giorno × RT esiste un override, il prezzo finale RMES = override.price (non Foundation × moltiplicatore). I 5 fattori restano calcolati come info "RMES avrebbe suggerito X". Lo snapshot del suggerimento al momento dell'override è salvato per l'audit post-chiusura.</li>
         </ul>
@@ -1487,9 +1564,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li>① Ancora storica = mediana ADR LY pari-DOW pari-mese (sabato di agosto): <b>€185</b> (12 obs)</li>
           <li>② Target Revenue: 185 × 8 RN × 1.05 = <b>€1.554</b></li>
           <li>③ RN attese: OTB 2 + pickup atteso 5 × pace 1.00 = <b>7 RN</b> → ADR target = 1554/7 = <b>€222</b></li>
-          <li>④ P_grezzo = ADR target = <b>€222</b> (uguale all'ADR target, niente più moltiplicazione per pace)</li>
-          <li>⑤ Cap mercato: compset rif €240 → range [192, 288]. P_grezzo dentro → P_capped = <b>€222</b></li>
-          <li>⑥ Base 220€ → P sopra Base → no Base lift. P = <b>€222</b></li>
+          <li>④ Cap mercato: compset rif €240 → range [192, 288]. ADR target dentro → P_capped = <b>€222</b></li>
+          <li>⑤ Base 220€ → P sopra Base → no Base lift. P = <b>€222</b></li>
           <li><b>Foundation = €222 Beddy_eq</b></li>
         </ul>
 
@@ -1498,15 +1574,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li>A·OCC: cur 0.85 / STLY 1.00 → dev = <b>-0.15</b> (sto vendendo il 15% peggio, freno)</li>
           <li>B·Price: cur ADR 180 / STLY 195 → ADR sotto LY → <b>Caso 1 (recupero)</b> → dev = <b>+0.077</b> (alzo per non scendere sotto LY)</li>
           <li>C·Pace (mese stay agosto): pickup 4w cur 8 / STLY 12 → ratio 0.667. OCC mese cur sopra STLY → <b>caso ambiguo</b>. OCC OTB del giorno 23/08 = 0.85 (sotto 90%) → <b>freno al 50%</b> → dev = -0.333 × 0.5 = <b>-0.1665</b></li>
-          <li>E·Compset: mio 210 / compset 240 → 0.875 → INVERTITO → dev = <b>+0.125</b> (più economico → alzo)</li>
-          <li>F·Search: ricerche per 23/08 = 22.000 vs mediana di agosto 25.000 → dev = (22-25)/25 = <b>-0.12</b> (domanda lievemente sotto mediana stagionale)</li>
+          <li>D·Compset: mio 210 / compset 240 → 0.875 → INVERTITO → dev = <b>+0.125</b> (più economico → alzo)</li>
+          <li>E·Search: ricerche per 23/08 = 22.000 vs mediana di agosto 25.000 → dev = (22-25)/25 = <b>-0.12</b> (domanda lievemente sotto mediana stagionale)</li>
         </ul>
 
         <p><b>Step 3 — Somma pesata e cap</b>:</p>
         <ul style="margin:4px 0 12px 18px;font-size:12px">
           <li>Σ peso × dev = 0.20×(-0.15) + 0.20×(+0.077) + 0.20×(-0.1665) + 0.20×(+0.125) + 0.20×(-0.12)</li>
           <li>= -0.030 + 0.0154 - 0.0333 + 0.025 - 0.024 = <b>-0.047 (-4.7%)</b></li>
-          <li>Cap ±40%: -4.7% ben dentro → no clamp</li>
+          <li>Cap ±30%: -4.7% ben dentro → no clamp</li>
           <li>Moltiplicatore = 1 - 0.047 = <b>0.953</b></li>
         </ul>
 
@@ -1529,7 +1605,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>① Pesi dei 5 fattori RMES <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-w-sub">struttura: —</span></h3>
-          <div class="panel-sub">Quanto contribuisce ogni fattore al moltiplicatore finale. <b>A-B-C-D si calcolano per ogni room type</b>; E-F sono di struttura. Somma normalizzata a 100% automaticamente. Default: 60% interni (A+B+C+D = 15%×4) + 40% esterni (E+F = 20%×2).</div>
+          <div class="panel-sub">Quanto contribuisce ogni fattore al moltiplicatore finale. Tutti e 5 i fattori sono calcolati <b>a livello struttura</b> (le differenze tra Room Type vengono interamente da Foundation, via supplementi storici mensili). Default: 20% × 5 fattori = 100%. Somma normalizzata automaticamente.</div>
         </div>
         <button id="rmes-tab-w-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset default v3</button>
       </div>
@@ -1543,10 +1619,10 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>② Cap totale RMES <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-th-sub">struttura: —</span></h3>
-          <div class="panel-sub"><b>Nuovo sistema lineare</b>: il prezzo RMES = sorgente × (1 + Σ peso × deviazione). Niente più soglie discrete. Ogni deviazione è clampata individualmente a ±50%, e la somma totale Σ(peso × deviazione) è limitata dal Cap qui sotto. Default 40%: il prezzo finale non si discosta mai più del 40% da Foundation (clamp individuale per fattore ±50%, quindi 40% sul totale è la protezione anti-errore), anche se i fattori puntano forte tutti nella stessa direzione.</div>
+          <div class="panel-sub"><b>Sistema lineare</b>: il prezzo RMES = sorgente × (1 + Σ peso × deviazione). Ogni deviazione individuale è clampata a ±50%, la somma totale è limitata dal Cap qui sotto. Default 30%: il prezzo finale non si discosta mai più del 30% da Foundation, anche se i 5 fattori puntano tutti nella stessa direzione.</div>
         </div>
         <div style="display:flex;gap:8px">
-          <button id="rmes-tab-th-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset al 40%</button>
+          <button id="rmes-tab-th-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset al 30%</button>
         </div>
       </div>
       <div class="panel-body" style="padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
@@ -26897,7 +26973,7 @@ function expSearchStats(){
   return _expSearchStats;
 }
 
-// Calcola stats della search demand PER MESE — usato dal fattore F·Search RMES
+// Calcola stats della search demand PER MESE — usato dal fattore E·Search RMES
 // per normalizzare il confronto stagionalmente (mediana di agosto vs mediana di gennaio sono diverse).
 // Ritorna {avg, p50, p25, p75, p90, min, max, n} per il mese 'YYYY-MM'.
 let _expSearchStatsByMonthCache = null;
@@ -27154,7 +27230,7 @@ const RMES_TH_DEFAULT = {
   airdna: { lo: 0.50, hi: 0.75, multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
 };
 const RMES_TH_KEY = 'rmes_thresholds_per_struct_v3';
-const RMES_CAP_KEY = 'rmes_total_cap_v1';  // Cap totale sulla somma Σ(deviazione × peso) - default 0.40 (=40%)
+const RMES_CAP_KEY = 'rmes_total_cap_v1';  // Cap totale sulla somma Σ(deviazione × peso) - default 0.30 (=30%)
 
 function getRmesCap(structKey){
   try {
@@ -27164,7 +27240,7 @@ function getRmesCap(structKey){
       if (obj && typeof obj[structKey] === 'number') return obj[structKey];
     }
   } catch(e){}
-  return 0.40;  // default 40%
+  return 0.30;  // default 30%
 }
 function setRmesCap(structKey, value){
   let obj = {};
@@ -27857,7 +27933,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     }
 
     // === Moltiplicatori RMES: TUTTI E 5 i fattori A LIVELLO STRUTTURA ===
-    // Tutti i fattori (A·OCC, B·Price, C·Pace, E·Compset, F·Search) sono calcolati
+    // Tutti i fattori (A·OCC, B·Price, C·Pace, D·Compset, E·Search) sono calcolati
     // sull'aggregato della struttura per avere più dati (segnale più stabile).
     // Le funzioni per-RT sotto sono mantenute per backward-compat ma non sono più usate
     // nel loop finale (vedi sotto).
@@ -27967,24 +28043,31 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         budget_mult = applyThresholds(D_budget_idx, 'budget');
       }
     }
-    // === E · Compset (struttura)
+    // === D · Compset (struttura) — confronto in Beddy_eq con offset per-competitor applicato
     let comp_mult = 1;
     let _C_compAvg = null, _C_compSource = '', _E_naReason = null;
+    let _D_myBeddy = null, _D_compsetBeddy = null;
     if (exp2 && exp2.myPriceExpedia != null){
       const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+      // Converto myExpedia a Beddy_eq (uniforme con i compset adjusted)
+      _D_myBeddy = exp2.myPriceExpedia / fp_expToBeddyDivisor(sel);
+      // Compset Beddy_eq + offset applicato
       if (typeof compsetWeightedAvg === 'function'){
-        const w = compsetWeightedAvg(sel, isoK);
+        const w = compsetWeightedAvg(sel, isoK, /*applyOffset=*/true);
         if (w && w.avg != null && w.avg > 0){
-          _C_compAvg = w.avg;
-          _C_compSource = 'ponderata';
+          _D_compsetBeddy = w.avg;
+          _C_compAvg = _D_compsetBeddy;  // alias per _debug
+          _C_compSource = 'ponderata + offset';
         }
       }
-      if (_C_compAvg == null && exp2.compsetAvg != null && exp2.compsetAvg > 0){
-        _C_compAvg = exp2.compsetAvg;
-        _C_compSource = 'aritmetica';
+      if (_D_compsetBeddy == null && exp2.compsetAvg != null && exp2.compsetAvg > 0){
+        // Fallback: compset_avg aritmetico dell'export Expedia (senza pesi né offset)
+        _D_compsetBeddy = exp2.compsetAvg / fp_expToBeddyDivisor(sel);
+        _C_compAvg = _D_compsetBeddy;
+        _C_compSource = 'aritmetica (no offset)';
       }
-      if (_C_compAvg != null && _C_compAvg > 0){
-        const C_idx = exp2.myPriceExpedia / _C_compAvg;
+      if (_D_compsetBeddy != null && _D_compsetBeddy > 0){
+        const C_idx = _D_myBeddy / _D_compsetBeddy;
         comp_mult = applyThresholds(C_idx, 'comp');
       } else {
         _E_naReason = 'Nessun competitor compset con prezzo per il giorno';
@@ -28098,10 +28181,12 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           targetGrowthMo: (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(sel, r.mo) : null,
           // C·Pace (estesi se _paceResult ha info)
           paceInfo: (typeof _paceResult === 'object' && _paceResult !== null) ? _paceResult : null,
-          // E·Compset
+          // D·Compset (entrambi in Beddy_eq con offset applicato sui compset)
           myExpedia: (exp2 && exp2.myPriceExpedia != null) ? exp2.myPriceExpedia : null,
+          myBeddy: _D_myBeddy,
+          compsetBeddy: _D_compsetBeddy,
           compsetAvg: _C_compAvg, compsetSource: _C_compSource,
-          // F·Search
+          // E·Search
           searchCur: _searchCur,
           searchP50Mo: (_searchStatsMo && _searchStatsMo.p50) ? _searchStatsMo.p50 : null,
           searchDev: (_searchCur != null && _searchStatsMo && _searchStatsMo.p50 > 0) ? ((_searchCur - _searchStatsMo.p50) / _searchStatsMo.p50) : null,
@@ -28120,7 +28205,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     let baseSource = null;
     let baseSuppApplied = 0;
     // NUOVO SISTEMA: Foundation è la sorgente principale del prezzo RMES.
-    // I 5 fattori (A·OCC, B·Price, C·Pace, E·Compset, F·AirDNA) lo aggiustano in deviazione.
+    // I 5 fattori (A·OCC, B·Price, C·Pace, D·Compset, E·Search) lo aggiustano in deviazione.
     // Se Foundation non ha dati (es. giorni passati o errori), fallback alla vecchia cascata.
     if (typeof rmes_getSourcePrice === 'function'){
       const sp = rmes_getSourcePrice(sel, r.ymd, null);
@@ -28587,6 +28672,229 @@ function fp_getOverride(structKey, dateISO, rt){
 function fp_getOverridePrice(structKey, dateISO, rt){
   const o = fp_getOverride(structKey, dateISO, rt);
   return (o && o.price != null && isFinite(o.price)) ? +o.price : null;
+}
+
+/* === FOUNDATION OVERRIDE — chiave separata ===
+   Diverso dall'override del prezzo finale (sopra):
+   - Override Foundation: sostituisce il prezzo Foundation. I 5 fattori si applicano comunque
+     SOPRA questo valore (override × moltiplicatore). Usato per periodi grandi quando vuoi
+     forzare un prezzo base diverso ma lasciare che RMES reagisca alle variazioni.
+   - Override prezzo finale (chiave sopra): sostituisce il prezzo finale RMES. Usato per
+     correzioni puntuali, di solito di 1 giorno.
+   
+   Struttura: { structKey: { 'YYYY-MM-DD': { rt: { price: <Beddy_eq>, savedAt } } } }
+   Per i giorni futuri lontani senza override puntuale prezzo finale, se c'è override Foundation
+   per quel (struct, date, rt) → il prezzo Foundation usato diventa quello.
+*/
+/* ============================================================
+   FOUNDATION STATE — Stato di approvazione del prezzo Foundation
+   ============================================================
+   
+   Per ogni (struttura, data, room type), Foundation ha uno di 3 stati:
+   
+   - 'proposed' (default, NON salvato): valore calcolato dal sistema, 
+     non rivisto dall'utente. È sempre il foundation_calcolato dinamico.
+   
+   - 'accepted': l'utente ha confermato il valore calcolato in un dato momento.
+     Il valore viene CONGELATO al momento dell'accept. Anche se il foundation
+     calcolato dovesse cambiare (es. nuovi dati storici), foundation_effettivo
+     resta il valore congelato.
+   
+   - 'override': l'utente ha sovrascritto Foundation con un valore manuale.
+     foundation_effettivo = quel valore, congelato.
+   
+   Schema storage (chiave: 'rmes_foundation_overrides_v1' — mantenuta dalla
+   versione precedente per backward-compat. Il nome "overrides" è legacy:
+   ora contiene sia 'accepted' che 'override').
+   
+   Struttura:
+   {
+     <structKey>: {
+       'YYYY-MM-DD': {
+         <rt>: {
+           status: 'accepted' | 'override',
+           value: <number>,                       // Foundation effettivo congelato
+           calculatedAtSave: <number|null>,       // foundation_calcolato al momento dello save
+           savedAt: <ISO timestamp>
+         }
+       }
+     }
+   }
+   
+   Backward-compat: vecchie entry erano {price, savedAt} → vengono lette come
+   {status:'override', value:price, ...} automaticamente in fp_getFoundationState.
+*/
+const FP_FOUNDATION_OVERRIDES_KEY = 'rmes_foundation_overrides_v1';
+
+function fp_getAllFoundationStates(){
+  try {
+    const raw = localStorage.getItem(FP_FOUNDATION_OVERRIDES_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e){ return {}; }
+}
+
+// Legge lo stato Foundation per (struct, date, rt). Ritorna null se 'proposed'.
+// Normalizza il formato legacy ({price}) al formato nuovo ({status, value, ...}).
+function fp_getFoundationState(structKey, dateISO, rt){
+  try {
+    const all = fp_getAllFoundationStates();
+    const entry = all && all[structKey] && all[structKey][dateISO] && all[structKey][dateISO][rt];
+    if (entry == null) return null;
+    // Backward-compat: vecchio formato {price, savedAt} → normalizza a status='override'
+    if (typeof entry === 'number'){
+      return { status: 'override', value: entry, calculatedAtSave: null, savedAt: null };
+    }
+    if (entry.price != null && entry.status == null){
+      return { status: 'override', value: +entry.price, calculatedAtSave: null, savedAt: entry.savedAt || null };
+    }
+    if (entry.status && entry.value != null){
+      return { status: entry.status, value: +entry.value, calculatedAtSave: (entry.calculatedAtSave != null ? +entry.calculatedAtSave : null), savedAt: entry.savedAt || null };
+    }
+  } catch(e){}
+  return null;
+}
+
+// Helper: foundation effettivo (= valore congelato se status accepted/override, null se proposed)
+function fp_getFoundationEffectiveValue(structKey, dateISO, rt){
+  const s = fp_getFoundationState(structKey, dateISO, rt);
+  return s ? s.value : null;
+}
+
+// Alias legacy: la vecchia funzione restituiva un prezzo solo per gli override
+// "veri" (manuali). Ora restituisce il valore congelato sia per accepted che override.
+// Codice esistente che usa fp_getFoundationOverridePrice si comporterà correttamente:
+// userà il valore congelato qualunque sia lo stato (è quello che vogliamo).
+function fp_getFoundationOverridePrice(structKey, dateISO, rt){
+  return fp_getFoundationEffectiveValue(structKey, dateISO, rt);
+}
+
+// Imposta stato per un singolo (struct, date, rt). status = 'accepted' | 'override' | null (=reset).
+//   - accepted: value DEVE essere il foundation_calcolato attuale (lo congela)
+//   - override: value DEVE essere il prezzo manuale dell'utente
+//   - null: rimuove l'entry (torna a status 'proposed')
+// calculatedAtSnapshot è opzionale (= il foundation_calcolato al momento del salvataggio,
+// salvato per poter mostrare "scostamento" se in seguito il calcolato cambia).
+function fp_setFoundationState(structKey, dateISO, rt, status, value, calculatedAtSnapshot){
+  const all = fp_getAllFoundationStates();
+  if (!all[structKey]) all[structKey] = {};
+  if (!all[structKey][dateISO]) all[structKey][dateISO] = {};
+  if (status == null){
+    delete all[structKey][dateISO][rt];
+    if (Object.keys(all[structKey][dateISO]).length === 0) delete all[structKey][dateISO];
+  } else {
+    if (status !== 'accepted' && status !== 'override') throw new Error('Status non valido: ' + status);
+    if (value == null || !isFinite(value)) throw new Error('Value non valido');
+    all[structKey][dateISO][rt] = {
+      status: status,
+      value: +value,
+      calculatedAtSave: (calculatedAtSnapshot != null && isFinite(calculatedAtSnapshot)) ? +calculatedAtSnapshot : null,
+      savedAt: new Date().toISOString(),
+    };
+  }
+  try { localStorage.setItem(FP_FOUNDATION_OVERRIDES_KEY, JSON.stringify(all)); } catch(e){}
+}
+
+// Helper: accetta il foundation_calcolato come "accepted". value = foundation_calcolato attuale.
+function fp_acceptFoundation(structKey, dateISO, rt, foundationCalculatedNow){
+  fp_setFoundationState(structKey, dateISO, rt, 'accepted', foundationCalculatedNow, foundationCalculatedNow);
+}
+
+// Helper: override manuale.
+function fp_overrideFoundation(structKey, dateISO, rt, manualPrice, foundationCalculatedNow){
+  fp_setFoundationState(structKey, dateISO, rt, 'override', manualPrice, foundationCalculatedNow);
+}
+
+// Helper: reset (torna a 'proposed').
+function fp_resetFoundationState(structKey, dateISO, rt){
+  fp_setFoundationState(structKey, dateISO, rt, null);
+}
+
+// === ALIAS LEGACY (compatibilità con codice esistente) ===
+// fp_getFoundationOverrides → ritorna tutto lo store (= tutti i giorni con stato non-proposed)
+function fp_getFoundationOverrides(){
+  return fp_getAllFoundationStates();
+}
+// fp_getFoundationOverride → alias che restituisce l'entry (con nuovo formato {status,value,...})
+function fp_getFoundationOverride(structKey, dateISO, rt){
+  return fp_getFoundationState(structKey, dateISO, rt);
+}
+// fp_setFoundationOverride → mantenuto come "imposta come override manuale" (compat. legacy)
+function fp_setFoundationOverride(structKey, dateISO, rt, price){
+  if (price == null || price === '' || !isFinite(price)){
+    fp_resetFoundationState(structKey, dateISO, rt);
+    return;
+  }
+  // Non passo calculatedAtSnapshot perché qui non lo conosco. È OK.
+  fp_setFoundationState(structKey, dateISO, rt, 'override', +price, null);
+}
+
+
+/* === FORECAST MONTHLY SNAPSHOT ===
+   Salva uno snapshot del forecast per il "1° giorno del mese" per ogni mese × struttura.
+   Permette di confrontare a chiusura mese il forecast iniziale vs come è effettivamente
+   andato. Utile per misurare bias di previsione.
+   
+   Struttura storage:
+     { structKey: { ymKey: { fcstRev, fcstRn, fcstOcc, fcstAdr, savedAt, savedAtYmd, lastSnapshotDay } } }
+   ymKey = YYYYMM (es. 202606 per giugno 2026)
+   
+   Logica salvataggio automatico:
+   - Quando renderForecast viene chiamato, controllo per ogni mese FUTURO o CURRENT:
+     - Se non c'è snapshot → salvo (primo accesso al mese)
+     - Se c'è snapshot ma è stato salvato in un giorno >= 2 del mese e siamo al giorno 1
+       → ignoro (mantengo il più vecchio: il vero "1°")
+   - Snapshot manuale: bottone "Salva snapshot" se voglio sovrascrivere.
+*/
+const FCST_MONTHLY_SNAP_KEY = 'fcst_monthly_snapshot_v1';
+
+function fp_getFcstSnapshots(){
+  try {
+    const raw = localStorage.getItem(FCST_MONTHLY_SNAP_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch(e){ return {}; }
+}
+function fp_setFcstSnapshot(structKey, ymKey, snap){
+  const all = fp_getFcstSnapshots();
+  if (!all[structKey]) all[structKey] = {};
+  all[structKey][ymKey] = Object.assign({}, snap, {savedAt: new Date().toISOString()});
+  try { localStorage.setItem(FCST_MONTHLY_SNAP_KEY, JSON.stringify(all)); } catch(e){}
+}
+function fp_getFcstSnapshot(structKey, ymKey){
+  try {
+    const all = fp_getFcstSnapshots();
+    if (all[structKey] && all[structKey][ymKey] != null) return all[structKey][ymKey];
+  } catch(e){}
+  return null;
+}
+function fp_deleteFcstSnapshot(structKey, ymKey){
+  const all = fp_getFcstSnapshots();
+  if (all[structKey] && all[structKey][ymKey]){
+    delete all[structKey][ymKey];
+    try { localStorage.setItem(FCST_MONTHLY_SNAP_KEY, JSON.stringify(all)); } catch(e){}
+  }
+}
+// Logica auto-save: chiamata da renderForecast con il forecast appena calcolato
+function fp_maybeAutoSaveSnapshot(structKey, ymKey, fcstData, currentYmd){
+  // Salva solo se:
+  //   - non esiste snapshot per (structKey, ymKey), OPPURE
+  //   - esiste snapshot ma con savedAtYmd > giorno1 del mese (= snapshot non veramente "1°")
+  //     e siamo ancora dentro il mese
+  const existing = fp_getFcstSnapshot(structKey, ymKey);
+  const monthYmd1 = Math.floor(ymKey/100)*10000 + (ymKey%100)*100 + 1;
+  if (!existing){
+    // Primo accesso al mese → salvo come snapshot iniziale
+    fp_setFcstSnapshot(structKey, ymKey, Object.assign({}, fcstData, {savedAtYmd: currentYmd}));
+    return 'created';
+  }
+  // Se esiste snapshot ma è stato salvato il giorno 1, è il "vero 1°" → non sovrascrivo
+  if (existing.savedAtYmd && existing.savedAtYmd === monthYmd1) return 'preserved';
+  // Se snapshot esiste ma con savedAtYmd > 1 (= salvato in un giorno successivo perché abbiamo perso il 1°),
+  // ma il giorno corrente È il 1° → sovrascrivo (snapshot più "vero")
+  if (currentYmd === monthYmd1){
+    fp_setFcstSnapshot(structKey, ymKey, Object.assign({}, fcstData, {savedAtYmd: currentYmd}));
+    return 'updated_to_day1';
+  }
+  return 'kept';
 }
 
 /* === AUDIT OVERRIDE post-chiusura ===
@@ -29391,6 +29699,176 @@ function fp_getPrice(structKey, rt, dateISO){
    FOUNDATION PRICING — UI: modale dettaglio + tab RMES sezione
    ============================================================ */
 
+/* ---------- Mini-popup approvazione Foundation ----------
+   Si apre cliccando una cella Foundation nella Sell Strategy.
+   Mostra: data, RT, valore calcolato, stato corrente.
+   Azioni: Accetta (congela il calcolato), Modifica (override manuale),
+   Reset (torna a proposed), Vedi dettaglio 6 step (apre modale grossa).
+*/
+function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, anchorEl){
+  // Rimuovi popup esistente
+  const existing = document.getElementById('fp-approval-popup');
+  if (existing) existing.remove();
+  // Calcola valori freschi
+  const calcResult = (typeof fp_getPrice === 'function') ? fp_getPrice(structKey, rt, dateISO) : null;
+  const fpCalcNow = calcResult ? calcResult.price : (fpCalcFromCell != null ? fpCalcFromCell : null);
+  const state = (typeof fp_getFoundationState === 'function') ? fp_getFoundationState(structKey, rt, dateISO) : null;
+  const status = state ? state.status : 'proposed';
+  const effective = state ? state.value : fpCalcNow;
+  
+  // Label data
+  const td = new Date(dateISO + 'T00:00:00');
+  const dowNames = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+  const dateLbl = dowNames[td.getDay()] + ' ' + td.getDate() + '/' + (td.getMonth()+1) + '/' + td.getFullYear();
+  const structLbl = (structKey === 'firenze') ? 'Firenze Suite'
+                  : (structKey === 'condotta') ? 'Condotta 16'
+                  : (structKey === 'alfani') ? 'Palazzo Alfani' : structKey;
+  
+  // Colori per stato
+  let statusBg, statusBorder, statusLabel, statusIcon, statusCol;
+  if (status === 'override'){
+    statusBg = 'rgba(59,107,154,.12)'; statusBorder = '#3b6b9a';
+    statusLabel = 'OVERRIDE (valore manuale)'; statusIcon = '🖋'; statusCol = '#1e4a6b';
+  } else if (status === 'accepted'){
+    statusBg = 'rgba(60,124,90,.12)'; statusBorder = '#3d7a4b';
+    statusLabel = 'ACCETTATO (calcolato confermato)'; statusIcon = '✓'; statusCol = '#1e6b4a';
+  } else {
+    statusBg = 'rgba(195,131,59,.10)'; statusBorder = '#c4823b';
+    statusLabel = 'PROPOSED (calcolato, non confermato)'; statusIcon = '⚡'; statusCol = '#7a4f1c';
+  }
+  
+  // Costruisco popup
+  const popup = document.createElement('div');
+  popup.id = 'fp-approval-popup';
+  popup.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;font-family:\'DM Sans\',sans-serif';
+  popup.onclick = (e) => { if (e.target === popup) popup.remove(); };
+  
+  let h = '<div style="background:#fff;border-radius:8px;max-width:480px;width:100%;font-size:13px;line-height:1.5;color:#222;box-shadow:0 8px 32px rgba(0,0,0,.3);overflow:hidden">';
+  // Header
+  h += '<div style="padding:14px 18px;background:#f8f8f5;border-bottom:1px solid #e8e6df;display:flex;justify-content:space-between;align-items:flex-start">';
+  h += '<div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;font-weight:700">Foundation</div>';
+  h += '<div style="font-size:15px;font-weight:700;margin-top:2px">' + escapeHtml(structLbl) + ' · ' + escapeHtml(rt) + '</div>';
+  h += '<div style="font-size:12px;color:#666;margin-top:2px;font-family:\'DM Mono\',monospace">' + dateLbl + '</div></div>';
+  h += '<button onclick="document.getElementById(\'fp-approval-popup\').remove()" style="background:none;border:none;font-size:24px;color:#888;cursor:pointer;padding:0 4px;line-height:1">×</button>';
+  h += '</div>';
+  
+  // Body: stato corrente
+  h += '<div style="padding:16px 18px">';
+  h += '<div style="background:' + statusBg + ';border:1px solid ' + statusBorder + ';border-radius:6px;padding:12px 14px;margin-bottom:14px">';
+  h += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:' + statusCol + ';font-weight:700;margin-bottom:6px">' + statusIcon + ' ' + statusLabel + '</div>';
+  h += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px">';
+  h += '<div><div style="font-size:11px;color:#888">Foundation effettivo (usato dai fattori)</div>';
+  h += '<div style="font-size:26px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + statusCol + '">' + (effective != null ? '€' + effective.toFixed(0) : '—') + '</div></div>';
+  if (status !== 'proposed' && fpCalcNow != null && state){
+    const driftAbs = fpCalcNow - state.value;
+    const driftPct = state.value > 0 ? driftAbs / state.value : 0;
+    const driftCol = Math.abs(driftPct) >= 0.03 ? '#c4823b' : '#888';
+    h += '<div style="text-align:right"><div style="font-size:11px;color:#888">Calcolato oggi sarebbe</div>';
+    h += '<div style="font-size:16px;font-weight:600;font-family:\'DM Mono\',monospace;color:#888;text-decoration:line-through">€' + fpCalcNow.toFixed(0) + '</div>';
+    if (Math.abs(driftPct) >= 0.01){
+      h += '<div style="font-size:11px;color:' + driftCol + ';font-weight:600">' + (driftAbs >= 0 ? '+' : '') + '€' + Math.abs(driftAbs).toFixed(0) + ' (' + (driftPct >= 0 ? '+' : '') + (driftPct*100).toFixed(1) + '%)</div>';
+    }
+    h += '</div>';
+  }
+  h += '</div>';
+  // Info salvato
+  if (state && state.savedAt){
+    const savedDate = new Date(state.savedAt);
+    h += '<div style="font-size:10.5px;color:#888;margin-top:6px">Salvato il ' + savedDate.getDate() + '/' + (savedDate.getMonth()+1) + '/' + savedDate.getFullYear() + '</div>';
+  }
+  h += '</div>';
+  
+  // Azioni
+  h += '<div style="margin-bottom:10px;font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Azioni</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:8px">';
+  
+  // ✓ Accetta (= congela il calcolato)
+  if (fpCalcNow != null){
+    const acceptDisabled = (status === 'accepted' && state && Math.abs(state.value - fpCalcNow) < 0.01);
+    h += '<button id="fp-popup-accept" ' + (acceptDisabled ? 'disabled' : '') + ' style="padding:10px 14px;border:1px solid #3d7a4b;background:' + (acceptDisabled ? '#f0f0f0' : '#3d7a4b') + ';color:' + (acceptDisabled ? '#888' : '#fff') + ';border-radius:5px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;cursor:' + (acceptDisabled ? 'not-allowed' : 'pointer') + ';text-align:left">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">';
+    h += '<span>✓ Accetta calcolato</span><span style="font-family:\'DM Mono\',monospace;opacity:.9">€' + fpCalcNow.toFixed(0) + '</span></div>';
+    h += '<div style="font-size:10.5px;font-weight:400;opacity:.85;margin-top:3px">' + (acceptDisabled ? 'Già accettato a questo valore' : 'Congela il valore calcolato. I 5 fattori partiranno da qui.') + '</div>';
+    h += '</button>';
+  }
+  
+  // 🖋 Modifica con override
+  h += '<div id="fp-popup-override-block" style="display:flex;gap:6px;align-items:stretch">';
+  h += '<input type="number" id="fp-popup-override-input" min="0" max="9999" step="5" placeholder="€" value="' + (status === 'override' && state ? state.value.toFixed(0) : (fpCalcNow != null ? fpCalcNow.toFixed(0) : '')) + '" style="flex:0 0 110px;padding:10px;border:1px solid #3b6b9a;background:#eef4fb;border-radius:5px;font-family:\'DM Mono\',monospace;text-align:right;font-size:14px;font-weight:700;color:#1e4a6b">';
+  h += '<button id="fp-popup-override" style="flex:1;padding:10px 14px;border:1px solid #3b6b9a;background:#3b6b9a;color:#fff;border-radius:5px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:left">';
+  h += '<div>🖋 Salva override</div>';
+  h += '<div style="font-size:10.5px;font-weight:400;opacity:.85;margin-top:3px">Valore manuale congelato. I 5 fattori partiranno da qui.</div>';
+  h += '</button></div>';
+  
+  // ↺ Reset (solo se non proposed)
+  if (status !== 'proposed'){
+    h += '<button id="fp-popup-reset" style="padding:8px 14px;border:1px solid #999;background:#fff;color:#666;border-radius:5px;font-family:\'DM Sans\',sans-serif;font-size:12px;cursor:pointer;text-align:left">';
+    h += '↺ Torna a "proposed" (Foundation ricalcolato ad ogni aggiornamento dati)';
+    h += '</button>';
+  }
+  
+  h += '</div>';  // chiudo lista azioni
+  
+  // Link "Vedi dettaglio calcolo 6 step"
+  h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e8e6df;text-align:center">';
+  h += '<button id="fp-popup-detail" style="background:none;border:none;color:#7a4f1c;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;font-family:\'DM Sans\',sans-serif">📖 Vedi dettaglio calcolo Foundation (6 step)</button>';
+  h += '</div>';
+  
+  h += '</div>';  // chiudo body
+  h += '</div>';  // chiudo box
+  popup.innerHTML = h;
+  document.body.appendChild(popup);
+  
+  // Wire azioni
+  const _refresh = () => {
+    popup.remove();
+    if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined'){
+      try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
+    }
+  };
+  const btnAccept = document.getElementById('fp-popup-accept');
+  if (btnAccept && !btnAccept.disabled){
+    btnAccept.onclick = () => {
+      if (typeof fp_acceptFoundation === 'function' && fpCalcNow != null){
+        fp_acceptFoundation(structKey, dateISO, rt, fpCalcNow);
+        _refresh();
+      }
+    };
+  }
+  const btnOverride = document.getElementById('fp-popup-override');
+  if (btnOverride){
+    btnOverride.onclick = () => {
+      const inp = document.getElementById('fp-popup-override-input');
+      const v = parseFloat(inp.value);
+      if (!isFinite(v) || v <= 0){
+        alert('Inserisci un prezzo valido > 0');
+        return;
+      }
+      if (typeof fp_overrideFoundation === 'function'){
+        fp_overrideFoundation(structKey, dateISO, rt, v, fpCalcNow);
+        _refresh();
+      }
+    };
+  }
+  const btnReset = document.getElementById('fp-popup-reset');
+  if (btnReset){
+    btnReset.onclick = () => {
+      if (!confirm('Tornare a "proposed"? Foundation verrà ricalcolato dinamicamente.')) return;
+      if (typeof fp_resetFoundationState === 'function'){
+        fp_resetFoundationState(structKey, dateISO, rt);
+        _refresh();
+      }
+    };
+  }
+  const btnDetail = document.getElementById('fp-popup-detail');
+  if (btnDetail){
+    btnDetail.onclick = () => {
+      popup.remove();
+      if (typeof fp_showDetailModal === 'function') fp_showDetailModal(structKey, rt, dateISO);
+    };
+  }
+}
+
 /* ---------- Modale dettaglio Foundation ---------- */
 function fp_showDetailModal(structKey, rt, dateISO){
   // Rimuovi modale esistente se c'è
@@ -29474,26 +29952,49 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
     const dayData = rmesMap[targetYmdNum];
     if (dayData && dayData.multsByRT && dayData.multsByRT[d.rt]){
       const mults = dayData.multsByRT[d.rt];
-      const fpPriceSource = d.priceFinal;  // = Foundation per la RT corrente
-      // Prezzo che RMES avrebbe suggerito SENZA override (snapshot per audit)
-      const rmesSuggested = (dayData.rmesSuggestedByRT && dayData.rmesSuggestedByRT[d.rt] != null)
-        ? dayData.rmesSuggestedByRT[d.rt]
-        : fpPriceSource * mults.multFinale;
-      // Prezzo finale EFFETTIVO (può essere override)
+      // Check override Foundation (sostituisce la sorgente prima dell'applicazione dei fattori)
+      const foundationOvr = (typeof fp_getFoundationOverridePrice === 'function')
+        ? fp_getFoundationOverridePrice(d.structKey, d.targetDateISO, d.rt) : null;
+      const fpPriceSourceCalc = d.priceFinal;       // Foundation calcolato (originale)
+      const fpPriceSource = (foundationOvr != null) ? foundationOvr : fpPriceSourceCalc;
+      const hasFoundationOverride = (foundationOvr != null);
+      // Prezzo che RMES avrebbe suggerito (Foundation o override Foundation × moltiplicatore)
+      // NOTA: il snapshot rmesSuggestedByRT è basato sul Foundation calcolato; se c'è override Foundation
+      // devo ricalcolare con il nuovo prezzo sorgente.
+      const rmesSuggested = hasFoundationOverride
+        ? (fpPriceSource * mults.multFinale)
+        : ((dayData.rmesSuggestedByRT && dayData.rmesSuggestedByRT[d.rt] != null)
+            ? dayData.rmesSuggestedByRT[d.rt]
+            : fpPriceSourceCalc * mults.multFinale);
+      // Prezzo finale EFFETTIVO (può essere override prezzo finale, che sovrascrive tutto)
       const priceRmesFinal = (dayData.pricesByRT && dayData.pricesByRT[d.rt] != null && isFinite(dayData.pricesByRT[d.rt]))
         ? dayData.pricesByRT[d.rt]
         : rmesSuggested;
-      // Check override
+      // Check override prezzo finale (precedenza su Foundation override per il prezzo finale)
       const overrideObj = (typeof fp_getOverride === 'function') ? fp_getOverride(d.structKey, d.targetDateISO, d.rt) : null;
       const hasOverride = !!(overrideObj && overrideObj.price != null);
       
       // ----- Row Foundation in alto (read-only, info) -----
-      rmesSection += '<div style="padding:14px 16px;background:#fef8ed;border:1px solid #c4823b;border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
+      // ----- Row Foundation in alto (read-only, info) -----
+      // Colore diverso se Foundation è override (blu invece di ambra)
+      const fpBg = hasFoundationOverride ? '#eef4fb' : '#fef8ed';
+      const fpBorder = hasFoundationOverride ? '#3b6b9a' : '#c4823b';
+      const fpLabelCol = hasFoundationOverride ? '#1e4a6b' : '#7a4f1c';
+      const fpPriceCol = hasFoundationOverride ? '#1e4a6b' : '#5a3a14';
+      const fpIcon = hasFoundationOverride ? '🖋' : '⚡';
+      const fpLabel = hasFoundationOverride ? 'Foundation (override manuale)' : 'Foundation (sorgente, calcolato)';
+      const fpSub = hasFoundationOverride
+        ? 'Override Foundation attivo · prezzo sorgente impostato manualmente · i 5 fattori si applicano sopra'
+        : 'Prezzo strutturale del giorno · clicca toggle sotto per il dettaglio';
+      rmesSection += '<div style="padding:14px 16px;background:'+fpBg+';border:1px solid '+fpBorder+';border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
       rmesSection += '<div>';
-      rmesSection += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:#7a4f1c;font-weight:700;margin-bottom:2px">⚡ Foundation (sorgente, calcolato)</div>';
-      rmesSection += '<div style="font-size:10.5px;color:#888">Prezzo strutturale del giorno · clicca toggle sotto per il dettaglio</div>';
+      rmesSection += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:'+fpLabelCol+';font-weight:700;margin-bottom:2px">'+fpIcon+' '+fpLabel+'</div>';
+      rmesSection += '<div style="font-size:10.5px;color:#888">'+fpSub+'</div>';
+      if (hasFoundationOverride){
+        rmesSection += '<div style="font-size:10.5px;color:#888;margin-top:2px">Foundation calcolato sarebbe: <span style="font-family:\'DM Mono\',monospace;text-decoration:line-through">'+fmt(fpPriceSourceCalc)+'</span></div>';
+      }
       rmesSection += '</div>';
-      rmesSection += '<div style="font-size:20px;font-weight:700;color:#5a3a14;font-family:\'DM Mono\',monospace">' + fmt(fpPriceSource) + '</div>';
+      rmesSection += '<div style="font-size:20px;font-weight:700;color:'+fpPriceCol+';font-family:\'DM Mono\',monospace">' + fmt(fpPriceSource) + '</div>';
       rmesSection += '</div>';
       
       // ----- Tabella 5 fattori -----
@@ -29505,8 +30006,8 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         {key:'occ_mult',   naKey:'occ',   code:'A', name:'OCC',     color:'#3b6b9a', desc:'OCC giorno cur vs STLY -364gg'},
         {key:'price_mult', naKey:'price', code:'B', name:'Price',   color:'#c4823b', desc:'ADR giorno cur vs STLY (3 casi condizionali)'},
         {key:'pace_mult',  naKey:'pace',  code:'C', name:'Pace',    color:'#8e5fa8', desc:'Pickup 4w mese cur vs STLY + check OCC'},
-        {key:'comp_mult',  naKey:'comp',  code:'E', name:'Compset', color:'#1e6b4a', desc:'Mio Expedia vs media compset (invertito)'},
-        {key:'air_mult',   naKey:'air',   code:'F', name:'Search',  color:'#a83b3b', desc:'Ricerche Expedia vs mediana mese'}
+        {key:'comp_mult',  naKey:'comp',  code:'D', name:'Compset', color:'#1e6b4a', desc:'Mio Expedia vs media compset (invertito)'},
+        {key:'air_mult',   naKey:'air',   code:'E', name:'Search',  color:'#a83b3b', desc:'Ricerche Expedia vs mediana mese'}
       ];
       const naReasons = mults._naReasons || {};
       const dbg = mults._debug || {};
@@ -29562,17 +30063,17 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
             h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">'+pi.source+'</div>';
           }
           h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-clamp): '+_fpct((mults.pace_mult-1),1)+'</div>';
-        } else if (code === 'E'){
-          // Compset
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>−(mio_Expedia / avg_compset − 1)</code> (invertito: economico → alzo)</div>';
-          h += '<div>Mio prezzo Expedia: <b>'+_fmt2(dbg.myExpedia)+'</b> &nbsp;<span style="color:#888">(prezzo lordo OTA)</span></div>';
-          h += '<div>Media compset (ponderata): <b>'+_fmt2(dbg.compsetAvg)+'</b> &nbsp;<span style="color:#888">('+(dbg.compsetSource||'—')+')</span></div>';
-          if (dbg.myExpedia != null && dbg.compsetAvg != null && dbg.compsetAvg > 0){
-            const ratio = dbg.myExpedia / dbg.compsetAvg;
+        } else if (code === 'D'){
+          // Compset (entrambi in Beddy_eq con offset applicato)
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>−(mio_BeddyEq / avg_compset_BeddyEq − 1)</code> · entrambi in Beddy_eq, offset per-competitor applicato</div>';
+          h += '<div>Mio prezzo Expedia (lordo): <b>'+_fmt2(dbg.myExpedia)+'</b> → Beddy_eq: <b>'+_fmt2(dbg.myBeddy)+'</b></div>';
+          h += '<div>Media compset (Beddy_eq + offset): <b>'+_fmt2(dbg.compsetBeddy)+'</b> &nbsp;<span style="color:#888">('+(dbg.compsetSource||'—')+')</span></div>';
+          if (dbg.myBeddy != null && dbg.compsetBeddy != null && dbg.compsetBeddy > 0){
+            const ratio = dbg.myBeddy / dbg.compsetBeddy;
             h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Ratio mio/compset: <b>'+ratio.toFixed(3)+'</b> · Dev grezza invertita: <b>'+_fpct(-(ratio-1),1)+'</b></div>';
           }
           h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-soglie + clamp ±50%): '+_fpct((mults.comp_mult-1),1)+'</div>';
-        } else if (code === 'F'){
+        } else if (code === 'E'){
           // Search
           h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>(search_cur − mediana_mese) / mediana_mese</code></div>';
           h += '<div>Ricerche Expedia oggi: <b>'+(dbg.searchCur != null ? dbg.searchCur.toLocaleString('it-IT') : '—')+'</b></div>';
@@ -29706,7 +30207,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       // Toggle "Mostra calcolo Foundation"
       if (!d.longHorizon){
         rmesSection += '<div style="text-align:center;margin-bottom:8px">';
-        rmesSection += '<button id="fp-show-detail-toggle" style="padding:8px 16px;border:1px solid var(--line);background:#fff;color:#666;border-radius:4px;cursor:pointer;font-size:12px;font-family:\'DM Sans\',sans-serif"><span id="fp-show-detail-arrow">▸</span> Mostra calcolo Foundation (7 step)</button>';
+        rmesSection += '<button id="fp-show-detail-toggle" style="padding:8px 16px;border:1px solid var(--line);background:#fff;color:#666;border-radius:4px;cursor:pointer;font-size:12px;font-family:\'DM Sans\',sans-serif"><span id="fp-show-detail-arrow">▸</span> Mostra calcolo Foundation (6 step)</button>';
         rmesSection += '</div>';
       }
     }
@@ -29760,16 +30261,8 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
     h += '<tr><td style="padding:3px 6px;color:#666"><b>ADR target chiusura</b> = ' + caseFormula + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700">' + fmt(d.adrTargetChiusura) + '</td></tr>';
     h += '</table></div>';
     
-    // Step 4: P_grezzo (semplice: = adrTargetChiusura, niente pace nella formula)
-    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3b6b9a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">④ Prezzo grezzo</div>';
-    h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
-    h += '<tr><td style="padding:3px 6px;color:#666;width:55%">Days-to-arrival</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + d.daysToArrival + 'gg</td></tr>';
-    h += '<tr><td style="padding:3px 6px;color:#666"><b>P_grezzo = ADR target chiusura</b> (dallo step ③)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700">' + fmt(d.pGrezzo) + '</td></tr>';
-    h += '<tr><td colspan="2" style="padding:6px;font-size:10.5px;color:#888;font-style:italic">Il pace dinamico (oggi vs LY) NON entra qui per evitare double counting (è già considerato in rnAttese). Influenza il prezzo finale solo come fattore C·Pace RMES.</td></tr>';
-    h += '</table></div>';
-    
-    // Step 5: Cap mercato
-    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑤ Cap di mercato (compset Expedia)</div>';
+    // Step 4: Cap mercato (era step 5; step 4 P_grezzo rimosso perché ridondante)
+    h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">④ Cap di mercato (compset Expedia)</div>';
     if (!d.marketCap || d.marketCap.nCompet === 0){
       h += '<div style="padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:12px;color:#888">Nessun competitor con prezzo valido per questa data. Cap non applicato.</div>';
     } else {
@@ -29791,7 +30284,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   }
   
   // Step 6-7: Floor + Base lift + Re-target
-  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3d7a4b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑥ Floor + Base lift + ⑦ Re-target</div>';
+  h += '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#3d7a4b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⑤ Floor + Base lift + ⑥ Re-target</div>';
   h += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
   h += '<tr><td style="padding:3px 6px;color:#666;width:55%">Floor struttura (hard)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.floor) + '</td></tr>';
   h += '<tr><td style="padding:3px 6px;color:#666">Base price struttura (soft)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + fmt(d.basePrice) + '</td></tr>';
@@ -29818,7 +30311,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   
   // Note di trasparenza
   h += '<div style="margin-top:14px;padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#666;line-height:1.4">';
-  h += '<b>Nota</b>: Foundation è la <b>sorgente</b> del prezzo RMES. Il prezzo finale = Foundation × moltiplicatore composto dai 5 fattori (A·OCC, B·Price, C·Pace, E·Compset, F·Search). ';
+  h += '<b>Nota</b>: Foundation è la <b>sorgente</b> del prezzo RMES. Il prezzo finale = Foundation × moltiplicatore composto dai 5 fattori (A·OCC, B·Price, C·Pace, D·Compset, E·Search). ';
   h += 'La cascata vecchia (Beddy→Expedia→compset→OTB→LY) è solo fallback per giorni dove Foundation non riesce a calcolare (es. dati LY assenti).';
   h += '</div>';
   
@@ -29841,7 +30334,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         togBtn.innerHTML = '<span>▾</span> Nascondi calcolo Foundation';
       } else {
         block.style.display = 'none';
-        togBtn.innerHTML = '<span>▸</span> Mostra calcolo Foundation (7 step)';
+        togBtn.innerHTML = '<span>▸</span> Mostra calcolo Foundation (6 step)';
       }
     };
   }
@@ -29977,32 +30470,21 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<span style="font-size:11px;color:var(--ink-3);font-style:italic">Premi "Ricalcola Foundation" sotto per applicare</span>';
   h += '</div></div>';
   
-  // ----- Section C: Pesi (0-100%) + Offset € competitor — fonte unica per E·Compset RMES e cap mercato Foundation -----
+  // ----- Section C: Pesi (0-100%) + Offset € competitor — fonte unica per D·Compset RMES e cap mercato Foundation -----
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓒ Pesi e offset competitor compset <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">struttura: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub"><b>Peso</b> (0-100%, default 100): quanto conta un competitor nella media compset. Usato sia dal <b>fattore E·Compset RMES</b> sia dal <b>cap mercato Foundation</b>. Peso = 0 esclude il competitor. <b>Offset €</b> (default 0, solo Foundation): es. -10 = "voglio stare €10 sotto questo competitor". Riferimento mercato Foundation = Σ(peso × (prezzo_compset_Beddy_eq + offset)) / Σ(peso). Range cap Foundation: [×0.80, ×1.20].</div></div>';
+  h += '<div class="panel-sub"><b>Peso</b> (0-100%, default 100): quanto conta un competitor nella media compset. Usato sia dal <b>fattore D·Compset RMES</b> sia dal <b>cap mercato Foundation</b>. Peso = 0 esclude il competitor. <b>Offset €</b> (default 0, solo Foundation): es. -10 = "voglio stare €10 sotto questo competitor". Riferimento mercato Foundation = Σ(peso × (prezzo_compset_Beddy_eq + offset)) / Σ(peso). Range cap Foundation: [×0.80, ×1.20].</div></div>';
   h += '<button id="fp-reset-pesi-100" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:\'DM Sans\',sans-serif;align-self:flex-start">reset pesi a 100%</button>';
   h += '</div>';
   h += '<div class="panel-body" style="padding:8px 16px"><table id="fp-comp-table" style="width:100%;border-collapse:collapse;font-size:12px"><thead style="background:#f8f8f5"><tr><th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2)">Competitor</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:110px">Peso (0-100%)</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:120px">Offset €</th></tr></thead><tbody></tbody></table></div></div>';
 
-  // ----- Section D: Override Prezzo Finale RMES (puntuale o per periodo) -----
-  h += '<div class="panel" style="margin-bottom:16px">';
-  h += '<div class="panel-head"><div><h3>Ⓓ Override Prezzo Finale RMES <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">struttura: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub">Sovrascrive il <b>prezzo finale RMES</b> (non Foundation) per un singolo giorno o periodo. Se data fine è vuota, l\'override si applica solo al giorno di inizio. Il valore è in <b>Beddy_eq</b> (= sito diretto, no markup OTA). Quando attivo: prezzo finale = override; Foundation e i 5 fattori restano calcolati e mostrati come "RMES avrebbe suggerito X". Al salvataggio viene memorizzato uno <b>snapshot del prezzo RMES suggerito</b> (usato nell\'Audit Ⓔ post-chiusura). Per override puntuale + simulazione revenue, usa direttamente la modale RMES cliccando una cella prezzo nella Sell Strategy.</div></div></div>';
-  h += '<div class="panel-body" style="padding:12px 16px">';
-  h += '<div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:12px">';
-  h += '<label style="font-size:11px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px"><span>Data inizio</span><input type="date" id="fp-ovr-date" style="padding:5px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Sans\',sans-serif;font-size:12px"></label>';
-  h += '<label style="font-size:11px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px"><span>Data fine (opzionale)</span><input type="date" id="fp-ovr-date-end" style="padding:5px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Sans\',sans-serif;font-size:12px"></label>';
-  h += '<label style="font-size:11px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px"><span>Room Type</span><select id="fp-ovr-rt" style="padding:5px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Sans\',sans-serif;font-size:12px;min-width:180px"></select></label>';
-  h += '<label style="font-size:11px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px"><span>Prezzo Beddy_eq €</span><input type="number" id="fp-ovr-price" min="0" max="9999" step="10" placeholder="es. 350" style="width:110px;padding:5px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px"></label>';
-  h += '<button id="fp-ovr-save" style="padding:6px 14px;border:1px solid #c4823b;background:#c4823b;color:#fff;border-radius:4px;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:600;cursor:pointer">+ Aggiungi override</button>';
-  h += '</div>';
-  h += '<div id="fp-ovr-list" style="font-size:12px"></div>';
-  h += '</div></div>';
+  // NB: La vecchia "Sezione Ⓓ Approvazione Foundation mensile" è stata rimossa.
+  // La logica di approvazione Foundation è ora nella tab Sell Strategy (inline + bottoni batch).
+  // La tab RMES è dedicata solo a configurazione. L'audit override è stato rinominato Ⓓ (era Ⓔ).
   
-  // ----- Section E: Audit override post-chiusura -----
+  // ----- Section D: Audit override post-chiusura -----
   h += '<div class="panel" style="margin-bottom:16px">';
-  h += '<div class="panel-head"><div><h3>Ⓔ Audit override (post-chiusura) <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">struttura: ' + structLbl + '</span></h3>';
+  h += '<div class="panel-head"><div><h3>Ⓓ Audit override (post-chiusura) <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">struttura: ' + structLbl + '</span></h3>';
   h += '<div class="panel-sub">Per ogni giorno <b>chiuso</b> con override attivo, confronto override vs prezzo RMES che avrebbe suggerito al momento del salvataggio (snapshot). Mostro: prezzo override, prezzo RMES snapshot, RN vendute effettive (Beddy), revenue effettivo (= revenue Beddy_eq incassato), revenue ipotetico se avessi seguito RMES (= prezzo_RMES × stesse RN vendute). Δ Revenue indica chi avrebbe fatto meglio. <b>Limitazione</b>: assume che con prezzo RMES si sarebbero vendute le stesse RN. Approssimazione necessaria — il vero pickup contro-fattuale è impossibile da misurare. Serve come segnale storico: se RMES "vince" sistematicamente su override negativi, sei stato troppo aggressivo nel scontare; se "vince" su override positivi, stavi alzando troppo.</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px">';
   h += '<div id="fp-audit-list" style="font-size:12px"></div>';
@@ -30055,90 +30537,9 @@ function fp_renderFoundationConfigBox(structKey){
     fp_renderFoundationConfigBox(structKey);
   };
   
-  // ==== Override Base Rate ====
-  // Popola dropdown RT — uso structRoomsFor() che restituisce un dict {rtName: count}
-  const ovrRtSel = document.getElementById('fp-ovr-rt');
-  if (ovrRtSel){
-    let rtsForStruct = [];
-    if (typeof structRoomsFor === 'function'){
-      const rooms = structRoomsFor(structKey);
-      if (rooms && typeof rooms === 'object') rtsForStruct = Object.keys(rooms);
-    }
-    if (!rtsForStruct.length && typeof CFG !== 'undefined' && CFG.structures && CFG.structures[structKey] && CFG.structures[structKey].rooms){
-      rtsForStruct = Object.keys(CFG.structures[structKey].rooms);
-    }
-    ovrRtSel.innerHTML = '';
-    if (rtsForStruct.length === 0){
-      const opt = document.createElement('option');
-      opt.value = ''; opt.textContent = '(nessuna RT trovata)';
-      opt.disabled = true;
-      ovrRtSel.appendChild(opt);
-    } else {
-      for (const rtN of rtsForStruct){
-        const opt = document.createElement('option');
-        opt.value = rtN; opt.textContent = rtN;
-        ovrRtSel.appendChild(opt);
-      }
-    }
-  }
-  // Default date = oggi
-  const dateInp = document.getElementById('fp-ovr-date');
-  if (dateInp){
-    const t = new Date(TODAY);
-    dateInp.value = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
-  }
-  // Render lista esistenti
-  function _renderOverrideList(){
-    const list = document.getElementById('fp-ovr-list');
-    if (!list) return;
-    const all = fp_getOverrides();
-    const overridesForStruct = all[structKey] || {};
-    const dates = Object.keys(overridesForStruct).sort();
-    if (dates.length === 0){
-      list.innerHTML = '<div style="padding:10px 12px;background:#f8f8f5;border-radius:4px;color:#888;font-style:italic">Nessun override attivo per ' + structLbl + '.</div>';
-      return;
-    }
-    let lh = '<table style="width:100%;border-collapse:collapse;font-size:11.5px"><thead style="background:#f8f8f5"><tr>';
-    lh += '<th style="padding:6px 10px;text-align:left;font-size:10.5px;color:var(--ink-2);font-weight:600">Data</th>';
-    lh += '<th style="padding:6px 10px;text-align:left;font-size:10.5px;color:var(--ink-2);font-weight:600">Room Type</th>';
-    lh += '<th style="padding:6px 10px;text-align:right;font-size:10.5px;color:var(--ink-2);font-weight:600">Prezzo €</th>';
-    lh += '<th style="padding:6px 10px;text-align:center;font-size:10.5px;color:var(--ink-2);font-weight:600;width:60px"></th>';
-    lh += '</tr></thead><tbody>';
-    for (const date of dates){
-      const rtMap = overridesForStruct[date];
-      for (const rtN in rtMap){
-        const dParts = date.split('-');
-        const ddMmYyyy = dParts[2] + '/' + dParts[1] + '/' + dParts[0];
-        lh += '<tr>';
-        lh += '<td style="padding:5px 10px;border-bottom:1px solid #eee;font-family:\'DM Mono\',monospace">' + ddMmYyyy + '</td>';
-        lh += '<td style="padding:5px 10px;border-bottom:1px solid #eee">' + rtN + '</td>';
-        lh += '<td style="padding:5px 10px;border-bottom:1px solid #eee;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600;color:#7a4f1c">€' + rtMap[rtN].toFixed(0) + '</td>';
-        lh += '<td style="padding:5px 10px;border-bottom:1px solid #eee;text-align:center"><button class="fp-ovr-del" data-date="' + date + '" data-rt="' + rtN.replace(/"/g,'&quot;') + '" style="padding:2px 6px;border:1px solid #a83b3b;color:#a83b3b;background:#fff;border-radius:3px;font-size:10px;cursor:pointer">elimina</button></td>';
-        lh += '</tr>';
-      }
-    }
-    lh += '</tbody></table>';
-    list.innerHTML = lh;
-    // Wire delete buttons
-    list.querySelectorAll('.fp-ovr-del').forEach(btn=>{
-      btn.onclick = function(){
-        const date = btn.getAttribute('data-date');
-        const rtN = btn.getAttribute('data-rt');
-        if (!confirm('Rimuovere override per ' + date + ' · ' + rtN + '?')) return;
-        fp_setOverride(structKey, date, rtN, null);
-        _renderOverrideList();
-        // Invalida cache + ricalcola Foundation per applicare l'override
-        if (typeof fp_computeAll === 'function') fp_computeAll();
-        // Ri-renderizza Sell Strategy se siamo in quella tab
-        if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined'){
-          try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
-        }
-      };
-    });
-  }
-  _renderOverrideList();
+  // Wizard mensile Foundation rimosso (logica spostata in Sell Strategy)
   
-  // ===== Audit override post-chiusura =====
+    // ===== Audit override post-chiusura =====
   function _renderAuditList(){
     const list = document.getElementById('fp-audit-list');
     if (!list) return;
@@ -30247,72 +30648,11 @@ function fp_renderFoundationConfigBox(structKey){
   }
   _renderAuditList();
   
-  // Save button
-  const btnSave = document.getElementById('fp-ovr-save');
-  if (btnSave){
-    btnSave.onclick = function(){
-      const dateStart = document.getElementById('fp-ovr-date').value;
-      const dateEnd = document.getElementById('fp-ovr-date-end').value;
-      const rtN = document.getElementById('fp-ovr-rt').value;
-      const price = parseFloat(document.getElementById('fp-ovr-price').value);
-      if (!dateStart || !rtN || !isFinite(price) || price <= 0){
-        alert('Inserisci data inizio, room type e prezzo valido (>0).');
-        return;
-      }
-      // Range: dateStart .. dateEnd (incluso). Se dateEnd vuoto → solo dateStart.
-      const d0 = new Date(dateStart + 'T00:00:00');
-      const dFin = dateEnd ? new Date(dateEnd + 'T00:00:00') : d0;
-      if (isNaN(d0.getTime()) || isNaN(dFin.getTime())){ alert('Date non valide'); return; }
-      if (dFin < d0){ alert('La data di fine deve essere uguale o successiva alla data di inizio.'); return; }
-      // Sanity: max 366 giorni
-      const diffDays = Math.floor((dFin - d0)/86400000) + 1;
-      if (diffDays > 366){ alert('Periodo troppo lungo (>366 giorni).'); return; }
-      // Confirm se applica più giorni
-      if (diffDays > 1 && !confirm('Imposterai €' + price.toFixed(0) + ' su ' + diffDays + ' giorni (' + dateStart + ' → ' + (dateEnd || dateStart) + ') per ' + rtN + '. Procedere?')) return;
-      // Pre-computa la mappa RMES per gli snapshot
-      let _rmesMapForSnap = null;
-      try {
-        if (typeof computeRMESPriceMap === 'function'){
-          const today = new Date(TODAY); today.setHours(0,0,0,0);
-          const todayNum = today.getFullYear()*10000 + (today.getMonth()+1)*100 + today.getDate();
-          const rangeForSnap = Math.max(1, Math.ceil((dFin - today)/86400000) + 2);
-          _rmesMapForSnap = computeRMESPriceMap(structKey, todayNum, rangeForSnap);
-        }
-      } catch(e){ _rmesMapForSnap = null; }
-      // Itera
-      for (let d = new Date(d0); d <= dFin; d.setDate(d.getDate()+1)){
-        const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-        // Snapshot del prezzo RMES che ci sarebbe stato senza override
-        let snap = null;
-        if (_rmesMapForSnap){
-          const ymdNum = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
-          const dd = _rmesMapForSnap[ymdNum];
-          if (dd && dd.rmesSuggestedByRT && dd.rmesSuggestedByRT[rtN] != null){
-            snap = {
-              rmesSuggested: dd.rmesSuggestedByRT[rtN],
-              foundation: (dd.foundationByRT && dd.foundationByRT[rtN] != null) ? dd.foundationByRT[rtN] : null,
-              multFinale: (dd.multsByRT && dd.multsByRT[rtN]) ? dd.multsByRT[rtN].multFinale : null,
-              source: 'tabRMES_period'
-            };
-          }
-        }
-        fp_setOverride(structKey, iso, rtN, price, snap);
-      }
-      document.getElementById('fp-ovr-price').value = '';
-      if (dateEnd) document.getElementById('fp-ovr-date-end').value = '';
-      _renderOverrideList();
-      if (typeof fp_computeAll === 'function') fp_computeAll();
-      if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined'){
-        try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
-      }
-    };
-  }
-  
-  // Wire reset pesi 100% (condiviso con E·Compset RMES)
+  // Wire reset pesi 100% (condiviso con D·Compset RMES)
   const btnResetPesi = document.getElementById('fp-reset-pesi-100');
   if (btnResetPesi){
     btnResetPesi.onclick = function(){
-      if (!confirm('Reset di tutti i pesi competitor di ' + structLbl + ' a 100%? Impatta sia il fattore E·Compset RMES sia il cap mercato Foundation.')) return;
+      if (!confirm('Reset di tutti i pesi competitor di ' + structLbl + ' a 100%? Impatta sia il fattore D·Compset RMES sia il cap mercato Foundation.')) return;
       const compNames = fp_getCompetitorsForStruct(structKey);
       for (const cn of compNames){
         if (typeof setWeight === 'function') setWeight(structKey, cn, 1.0);
@@ -30392,7 +30732,7 @@ function fp_renderFoundationConfigBox(structKey){
     }
     const elVal = parseFloat((document.getElementById('fp-elasticity-input')||{}).value);
     if (isFinite(elVal) && elVal >= 0 && elVal <= 3) fp_setElasticity(structKey, elVal);
-    // Salvo peso (via setWeight legacy, condiviso con E·Compset RMES) E offset (Foundation)
+    // Salvo peso (via setWeight legacy, condiviso con D·Compset RMES) E offset (Foundation)
     document.querySelectorAll('input[data-fp-comp-peso]').forEach(function(inp){
       const cn = inp.dataset.fpCompPeso;
       const peso = parseFloat(inp.value);
@@ -30497,6 +30837,11 @@ function renderSellStrategy(sel){
   // (RMES bar legacy rimossa: ora la configurazione è nella tab RMES)
 
   const A = aggSellStrategy(sel, SELL_START_YMD, SELL_RANGE_DAYS, SELL_PICKUP_DAYS);
+
+  // ALLINEAMENTO TABELLA ↔ MODALE RMES (post-render fix):
+  // computeRMESPriceMap applica la normalizzazione pesi per fattori n/d + cap totale ±30%.
+  // aggSellStrategy ora applica anche il cap (vedi sotto), ma NON la normalizzazione per n/d.
+  // L'override di r._multsByRT viene fatto PIÙ AVANTI (dopo che il loop interno lo popola).
 
   // OCC media per MESE DI SOGGIORNO — serve a C·Pace per il check condizionale
   const _occByMonth = {};
@@ -30609,7 +30954,7 @@ function renderSellStrategy(sel){
   if (subEl){
     const snapDateD = ymdToDate(A.snapYmd);
     const stlyDateD = ymdToDate(A.stlyTodayYmd);
-    subEl.innerHTML = `OTB ad oggi vs Pickup ultimi ${A.pickupDaysAgo}gg (snapshot ${pad2(snapDateD.getDate())}/${pad2(snapDateD.getMonth()+1)}) · STLY (snapshot ${pad2(stlyDateD.getDate())}/${pad2(stlyDateD.getMonth()+1)}) · RMES v3: 6 fattori (A·OCC, B·Price, C·Pace, D·Budget per RT + E·Compset, F·AirDNA struttura)<br>` +
+    subEl.innerHTML = `OTB ad oggi vs Pickup ultimi ${A.pickupDaysAgo}gg (snapshot ${pad2(snapDateD.getDate())}/${pad2(snapDateD.getMonth()+1)}) · STLY (snapshot ${pad2(stlyDateD.getDate())}/${pad2(stlyDateD.getMonth()+1)}) · RMES v5: 5 fattori a livello struttura (A·OCC, B·Price, C·Pace, D·Compset, E·Search)<br>` +
       `<span style="font-size:10.5px;color:var(--ink-3)">Gruppi colonne (bordo sinistro colorato): ` +
       `<span style="border-left:3px solid #c4823b;padding-left:6px;margin-right:10px">OTB</span>` +
       `<span style="border-left:3px solid #8e5fa8;padding-left:6px;margin-right:10px">Pickup</span>` +
@@ -30798,7 +31143,8 @@ function renderSellStrategy(sel){
     + '<th colspan="4" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'gg</th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Prezzo realmente caricato sul PMS Beddy per la baseRT (giorni coperti: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">PMS reale</span></th>' : '')
     + (showExp ? '<th colspan="2" class="sell-grp sell-grp-expedia">Mercato Expedia</th>' : '')
-    + '<th colspan="' + _rmesGroupCols + '" class="sell-grp sell-grp-rmes" title="Sistema RMES v5: Foundation (sorgente) × moltiplicatore composto da 5 fattori (A·OCC, B·Price, C·Pace, E·Compset, F·Search), tutti a livello struttura.">RMES <span class="sell-th-sub">Foundation · suggerito · M[MLOS]</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Foundation Pricing: prezzo strutturale del giorno (sorgente RMES). Approvazione gestita inline per la baseRT (✓ accetta · 🖋 override · ↺ reset). Le altre RT mostrano valore derivato (Foundation baseRT + supplemento mensile) in sola lettura.">Foundation</th>'
+    + '<th colspan="' + _rmesGroupCols + '" class="sell-grp sell-grp-rmes" title="Sistema RMES v5: Foundation (sorgente) × moltiplicatore composto da 5 fattori (A·OCC, B·Price, C·Pace, D·Compset, E·Search), tutti a livello struttura.">RMES <span class="sell-th-sub">Foundation · suggerito · M[MLOS]</span></th>'
     + '</tr>'
     // === RIGA 2: sub-headers ===
     + '<tr class="sell-thead-subs">'
@@ -30839,12 +31185,21 @@ function renderSellStrategy(sel){
         let h = '';
         for (const rt of _nonBaseRTs){
           const c = _RT_COLORS[rt] || '#888';
-          const tip = `Prezzo RMES per ${rt} con MLOS dentro la cella.\n\nFormula: (Prezzo Base ${_suppData.baseRT} + supplemento storico mensile) × moltiplicatore RT-specifico.\n\nA·OCC, B·Price, C·Pace, D·Budget = dati specifici di ${rt}.\nE·Compset, F·AirDNA = struttura.`;
+          const tip = `Prezzo RMES per ${rt} con MLOS dentro la cella.\n\nFormula: (Prezzo Base ${_suppData.baseRT} + supplemento storico mensile) × moltiplicatore RT-specifico.\n\nA·OCC, B·Price, C·Pace, D·Compset, E·Search = tutti a livello struttura. Le differenze tra RT vengono solo da Foundation (supplementi storici).`;
           h += `<th class="sell-grp-rmes-sub" style="color:${c}" title="${escapeHtml(tip)}">${escapeHtml(rt)}</th>`;
         }
         return h;
     })())
     + '</tr></thead><tbody>';
+
+  // ALLINEAMENTO TABELLA ↔ MODALE RMES: precomputo computeRMESPriceMap per tutto il range,
+  // così posso sovrascrivere r._multsByRT[rt].multFinale dentro il loop con i valori che
+  // userà la modale (= normalizzazione pesi n/d + cap totale ±30%).
+  let _rmesMapForAlignment = null;
+  if (typeof computeRMESPriceMap === 'function' && sel !== 'both'){
+    try { _rmesMapForAlignment = computeRMESPriceMap(sel, SELL_START_YMD, SELL_RANGE_DAYS); }
+    catch(e){ _rmesMapForAlignment = null; }
+  }
 
   for (let i=0; i<A.rows.length; i++){
     const r = A.rows[i];
@@ -31065,13 +31420,19 @@ function renderSellStrategy(sel){
       const wD = (W.budget||0)/wSum;  // NUOVO: Budget
       const wE = W.comp/wSum;
       const wF = W.airdna/wSum;
-      const multFinale = wA * A_mult + wB * B_mult + wC * D_mult + wD * Budget_mult + wE * C_mult + wF * E_mult;
+      const _multFinaleRaw = wA * A_mult + wB * B_mult + wC * D_mult + wD * Budget_mult + wE * C_mult + wF * E_mult;
+      // CAP TOTALE: stessa logica di computeRMESPriceMap (default ±30%, configurabile per struttura).
+      // Senza questo, il multFinale può eccedere il cap e produrre un prezzo diverso da quello mostrato nella modale RMES.
+      const _capSell = (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.30;
+      const _cappedSell = (typeof applyTotalCap === 'function') ? applyTotalCap(_multFinaleRaw - 1, _capSell) : { mult: _multFinaleRaw, hitCap: false };
+      const multFinale = _cappedSell.mult;
 
       // === Calcolo Moltiplicatori per RT — TUTTI E 5 I FATTORI A LIVELLO STRUTTURA ===
       // Per dare più dati ai fattori (segnale più stabile) tutti i 5 fattori sono calcolati
       // sull'aggregato della struttura, non per singola RT. La differenza di prezzo tra RT
       // è gestita interamente da Foundation (supplementi storici mensili per RT) — il
       // moltiplicatore RMES è uniforme dentro un giorno e si applica a tutte le RT identicamente.
+      // Il cap totale si applica identicamente a tutte le RT (multiplier struttura → stesso valore).
       const _multsByRT_render = {};
       for (const rt of _rtList){
         // Tutti i moltiplicatori = valori di struttura del giorno r
@@ -31079,10 +31440,26 @@ function renderSellStrategy(sel){
         const B_rt = B_mult;       // ADR giorno vs STLY (struttura)
         const C_rt = D_mult;       // Pace mese di stay (struttura)
         const Budget_rt = Budget_mult;  // Budget (struttura)
-        const mfin_rt = wA * A_rt + wB * B_rt + wC * C_rt + wD * Budget_rt + wE * C_mult + wF * E_mult;
+        const _mfin_rt_raw = wA * A_rt + wB * B_rt + wC * C_rt + wD * Budget_rt + wE * C_mult + wF * E_mult;
+        const _capRT_sell = (typeof applyTotalCap === 'function') ? applyTotalCap(_mfin_rt_raw - 1, _capSell) : { mult: _mfin_rt_raw };
+        const mfin_rt = _capRT_sell.mult;
         _multsByRT_render[rt] = { occ_mult: A_rt, price_mult: B_rt, pace_mult: C_rt, budget_mult: Budget_rt, comp_mult: C_mult, air_mult: E_mult, multFinale: mfin_rt };
       }
       r._multsByRT = _multsByRT_render;
+
+      // ALLINEAMENTO TABELLA ↔ MODALE RMES:
+      // Sovrascrivo multFinale leggendo da _rmesMapForAlignment (già pre-calcolato fuori dal loop)
+      // così tabella e modale mostrano sempre lo stesso numero per il prezzo RMES.
+      if (_rmesMapForAlignment){
+        const _ddAlign = _rmesMapForAlignment[r.ymd];
+        if (_ddAlign && _ddAlign.multsByRT){
+          for (const rt in _ddAlign.multsByRT){
+            if (r._multsByRT[rt] && _ddAlign.multsByRT[rt].multFinale != null){
+              r._multsByRT[rt].multFinale = _ddAlign.multsByRT[rt].multFinale;
+            }
+          }
+        }
+      }
 
       // === Prezzo RMES ===
       // Cascata di fallback per il prezzo Beddy di partenza (Beddy_eq):
@@ -31156,12 +31533,22 @@ function renderSellStrategy(sel){
       const pricesByRT_row = {};
       const mlosByRT_row = {};
       const _multsForThisRow = r._multsByRT || {};
-      if (basePrice != null && baseRT){
+      const _isoDateForOvr = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+      // NUOVO PARADIGMA: lo stato Foundation (accepted/override) si applica SOLO alla baseRT.
+      // Per le altre RT, partiamo sempre da: foundation_baseRT_effettivo + supplemento_RT.
+      // Se baseRT ha override → tutte le RT ne ereditano (override baseRT + supplemento).
+      // Se baseRT ha accepted → tutte le RT ne ereditano (accepted baseRT + supplemento).
+      // Se baseRT è proposed → uso basePrice (calcolato) + supplemento.
+      const _foundationBaseEffective = (baseRT && typeof fp_getFoundationOverridePrice === 'function')
+        ? fp_getFoundationOverridePrice(sel, _isoDateForOvr, baseRT)
+        : null;  // null = proposed → uso basePrice calcolato
+      const _foundationForCalc = (_foundationBaseEffective != null) ? _foundationBaseEffective : basePrice;
+      if (_foundationForCalc != null && baseRT){
         for (const rt of _rtList){
           const mults = _multsForThisRow[rt];
           if (!mults) continue;
           const supp = (rt === baseRT) ? 0 : _supplementForRT(rt, r.mo);
-          const sourcePriceForRt = basePrice + supp;
+          const sourcePriceForRt = _foundationForCalc + supp;
           pricesByRT_row[rt] = sourcePriceForRt * mults.multFinale;
         }
       }
@@ -31379,24 +31766,119 @@ function renderSellStrategy(sel){
     }
 
     // === Foundation Pricing: cella separata (verrà inserita PRIMA di Var + BaseRT) ===
+    // 3 stati possibili:
+    //   - proposed (default): ⚡ ambra. Foundation calcolato dinamico, non confermato.
+    //   - accepted: ✓ verde. Foundation calcolato accettato e congelato.
+    //   - override: 🖋 blu. Valore manuale inserito.
     let cellFoundation = '';
     let _fpPriceVal = null;
     if (_suppData && _suppData.baseRT){
       const baseRT_fp = _suppData.baseRT;
       const fpRT = _rtFilter || baseRT_fp;
       const fpDateISO = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+      // L'approvazione (stato Foundation) si applica SOLO alla baseRT della struttura.
+      // Per RT non-base, mostro un valore "derivato" = Foundation_baseRT_effettivo + supplemento_RT,
+      // senza bottoni di approvazione (sola lettura).
+      const isBaseRT = (fpRT === baseRT_fp);
+      // Calcolo Foundation per la RT visualizzata
       const fpR = (typeof fp_getPrice === 'function') ? fp_getPrice(sel, fpRT, fpDateISO) : null;
-      if (!fpR){
+      const fpCalcVal = fpR ? fpR.price : null;
+      // Stato si legge SOLO per baseRT
+      const fpState = (isBaseRT && typeof fp_getFoundationState === 'function')
+        ? fp_getFoundationState(sel, fpDateISO, baseRT_fp) : null;
+      const fpStatus = fpState ? fpState.status : 'proposed';
+      // foundation effettivo per la RT visualizzata:
+      //   - se baseRT: lo stato del giorno determina (state.value se non-proposed, altrimenti calc)
+      //   - se non-baseRT: prende valore Foundation effettivo della baseRT + supplemento RT
+      let fpEffective = null;
+      if (isBaseRT){
+        fpEffective = fpState ? fpState.value : fpCalcVal;
+      } else {
+        // Cerco lo stato della baseRT e applico supplemento RT
+        const baseState = (typeof fp_getFoundationState === 'function')
+          ? fp_getFoundationState(sel, fpDateISO, baseRT_fp) : null;
+        const baseR = (typeof fp_getPrice === 'function') ? fp_getPrice(sel, baseRT_fp, fpDateISO) : null;
+        const baseEff = baseState ? baseState.value : (baseR ? baseR.price : null);
+        if (baseEff != null){
+          const supp = (typeof _supplementForRT === 'function') ? _supplementForRT(fpRT, r.mo) : 0;
+          fpEffective = baseEff + supp;
+        }
+      }
+      // Drift: SOLO per baseRT in stato accepted
+      let driftBadge = '';
+      if (isBaseRT && fpStatus === 'accepted' && fpCalcVal != null && fpState.value > 0){
+        const driftPct = (fpCalcVal - fpState.value) / fpState.value;
+        if (Math.abs(driftPct) >= 0.03){
+          const sign = driftPct >= 0 ? '+' : '';
+          driftBadge = ` <sup style="color:#c4823b;font-size:9px;font-weight:700" title="Foundation calcolato oggi sarebbe €${fpCalcVal.toFixed(0)} (${sign}${(driftPct*100).toFixed(1)}% vs accettato). Considera di ri-accettare.">⚠</sup>`;
+        }
+      }
+      if (fpEffective == null){
         cellFoundation = `<td class="cell-mono sell-block-fp" style="background:rgba(195,131,59,.04);text-align:center;color:var(--ink-3);font-style:italic">—</td>`;
       } else {
-        _fpPriceVal = fpR.price;
-        const fpDetail = fpR.detail;
+        _fpPriceVal = fpEffective;
+        const fpDetail = fpR ? fpR.detail : null;
         const isLong = fpDetail && fpDetail.longHorizon;
-        const fpPriceTxt = (_fpPriceVal != null && isFinite(_fpPriceVal)) ? fmtEUR(_fpPriceVal) : '—';
-        const textStyle = isLong ? 'color:#999;font-style:italic;font-weight:500' : 'color:#5a3a14;font-weight:700';
-        const fpTip = `Foundation Pricing\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nPrezzo strutturale del giorno: storico LY × target × pace × cap mercato.\nÈ la SORGENTE del prezzo RMES.\n\nClick per dettaglio completo (7 step).`;
+        const fpPriceTxt = isFinite(fpEffective) ? fmtEUR(fpEffective) : '—';
         const fpRTAttr = escapeHtml(fpRT);
-        cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" style="background:rgba(195,131,59,.10);text-align:center;cursor:pointer;border-left:2px solid rgba(195,131,59,.4)" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${fpPriceTxt}</b></td>`;
+        // === RT non-base: cella sola lettura, deriva da baseRT ===
+        if (!isBaseRT){
+          // Cerco lo stato baseRT per riflettere il "colore base" sul derivato
+          const baseState = (typeof fp_getFoundationState === 'function')
+            ? fp_getFoundationState(sel, fpDateISO, baseRT_fp) : null;
+          const baseStatus = baseState ? baseState.status : 'proposed';
+          let cellBg, cellBorder, textStyle, derivedTipPrefix;
+          if (baseStatus === 'override'){
+            cellBg = 'rgba(59,107,154,.06)'; cellBorder = 'rgba(59,107,154,.3)';
+            textStyle = 'color:#1e4a6b;font-weight:600';
+            derivedTipPrefix = `Foundation DERIVATO da ${baseRT_fp} (override)`;
+          } else if (baseStatus === 'accepted'){
+            cellBg = 'rgba(60,124,90,.06)'; cellBorder = 'rgba(60,124,90,.3)';
+            textStyle = 'color:#1e6b4a;font-weight:600';
+            derivedTipPrefix = `Foundation DERIVATO da ${baseRT_fp} (accepted)`;
+          } else {
+            cellBg = 'rgba(195,131,59,.05)'; cellBorder = 'rgba(195,131,59,.25)';
+            textStyle = isLong ? 'color:#aaa;font-style:italic' : 'color:#7a4f1c;font-weight:600';
+            derivedTipPrefix = `Foundation DERIVATO da ${baseRT_fp} (proposed)`;
+          }
+          const supp = (typeof _supplementForRT === 'function') ? _supplementForRT(fpRT, r.mo) : 0;
+          const derivedTip = derivedTipPrefix + `\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\n` +
+            `= Foundation ${baseRT_fp} + supplemento ${fpRT} mese ${r.mo}\n` +
+            `= €${(fpEffective - supp).toFixed(0)} + €${supp.toFixed(0)} = €${fpEffective.toFixed(0)}\n\n` +
+            `L'approvazione si applica SOLO alla baseRT (${baseRT_fp}). Per cambiare questo prezzo, vai sulla riga della baseRT.`;
+          cellFoundation = `<td class="cell-mono sell-block-fp" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(derivedTip)}"><b style="${textStyle}">↳ ${fpPriceTxt}</b></td>`;
+        } else {
+          // === baseRT: cella interattiva con stato + bottoni inline ===
+          let cellBg, cellBorder, textStyle, statusIcon, fpTipPrefix;
+          if (fpStatus === 'override'){
+            cellBg = 'rgba(59,107,154,.14)'; cellBorder = 'rgba(59,107,154,.6)';
+            textStyle = 'color:#1e4a6b;font-weight:700'; statusIcon = '🖋 ';
+            fpTipPrefix = `Foundation OVERRIDE (manuale)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nValore manuale inserito: €${fpEffective.toFixed(0)}\nFoundation calcolato dal sistema sarebbe: ${fpCalcVal != null ? '€'+fpCalcVal.toFixed(0) : '—'}\n\nI 5 fattori RMES si applicano sopra questo prezzo.\nLe altre RT (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) ereditano questo valore + supplemento mensile.`;
+          } else if (fpStatus === 'accepted'){
+            cellBg = 'rgba(60,124,90,.12)'; cellBorder = 'rgba(60,124,90,.6)';
+            textStyle = 'color:#1e6b4a;font-weight:700'; statusIcon = '✓ ';
+            fpTipPrefix = `Foundation ACCETTATO\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nValore congelato al momento dell'accept: €${fpEffective.toFixed(0)}\nFoundation calcolato oggi sarebbe: ${fpCalcVal != null ? '€'+fpCalcVal.toFixed(0) : '—'}\n\nI 5 fattori RMES si applicano sopra questo prezzo.\nLe altre RT (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) ereditano questo valore + supplemento mensile.`;
+          } else {
+            cellBg = 'rgba(195,131,59,.10)'; cellBorder = 'rgba(195,131,59,.4)';
+            textStyle = isLong ? 'color:#999;font-style:italic;font-weight:500' : 'color:#5a3a14;font-weight:700';
+            statusIcon = '⚡ ';
+            fpTipPrefix = `Foundation PROPOSED (calcolato, non ancora accettato)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nValore calcolato dal sistema: €${fpEffective.toFixed(0)}\nNon ancora confermato — verrà ricalcolato a ogni aggiornamento dati.\n\nI 5 fattori RMES si applicano sopra questo prezzo.`;
+          }
+          const fpTip = fpTipPrefix + `\n\nClick sul prezzo per dettaglio 6 step. Usa i bottoni a destra per ✓ accetta · 🖋 override · ↺ reset.`;
+          // Bottoni inline solo per baseRT
+          const acceptDisabled = (fpStatus === 'accepted' && fpCalcVal != null && Math.abs(fpEffective - fpCalcVal) < 0.01);
+          const btnAccept = (fpCalcVal != null && !acceptDisabled)
+            ? `<button class="fp-inline-btn fp-inline-accept" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" data-calc="${fpCalcVal.toFixed(2)}" title="Accetta calcolato (€${fpCalcVal.toFixed(0)})" style="border:1px solid #3d7a4b;background:#fff;color:#3d7a4b;border-radius:3px;padding:0 4px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5">✓</button>`
+            : (acceptDisabled
+                ? `<button class="fp-inline-btn" disabled title="Già accettato a questo valore" style="border:1px solid #ccc;background:#f5f5f5;color:#bbb;border-radius:3px;padding:0 4px;font-size:10px;line-height:1.5;cursor:not-allowed">✓</button>`
+                : '');
+          const btnOvr = `<button class="fp-inline-btn fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" data-calc="${fpCalcVal != null ? fpCalcVal.toFixed(2) : ''}" title="Override manuale" style="border:1px solid #3b6b9a;background:#fff;color:#3b6b9a;border-radius:3px;padding:0 4px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5">🖋</button>`;
+          const btnReset = (fpStatus !== 'proposed')
+            ? `<button class="fp-inline-btn fp-inline-reset" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Reset a proposed" style="border:1px solid #999;background:#fff;color:#666;border-radius:3px;padding:0 4px;font-size:10px;cursor:pointer;line-height:1.5">↺</button>`
+            : '';
+          const inlineBtns = `<span style="display:inline-flex;gap:2px;margin-left:6px;vertical-align:middle">${btnAccept}${btnOvr}${btnReset}</span>`;
+          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-calc="${fpCalcVal != null ? fpCalcVal.toFixed(2) : ''}" data-fp-status="${fpStatus}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><span class="fp-price-click" style="cursor:pointer"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b>${driftBadge}</span>${inlineBtns}</td>`;
+        }
       }
     }
 
@@ -31502,7 +31984,9 @@ function renderSellStrategy(sel){
       <td class="cell-mono ${pkStlyNuoveCount>0?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
       ${beddyCell}
       ${expCells}
-      <!-- RMES: BaseRT (con M dentro) + ogni RT non-base. Foundation è incorporato nella cella BaseRT come info nel tooltip + click apre modale -->
+      <!-- Foundation: cella con stato + bottoni inline (solo per baseRT) -->
+      ${cellFoundation}
+      <!-- RMES: BaseRT (con M dentro) + ogni RT non-base. Click apre modale 5 fattori -->
       ${rmesRtCells}
     </tr>`;
   }
@@ -31558,8 +32042,9 @@ function renderSellStrategy(sel){
     <td class="cell-mono ${isFinite(totPkStlyAdr)?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${isFinite(totPkStlyAdr)?fmtEUR(totPkStlyAdr):'—'}</td>
     ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>' : ''}
     ${showExp ? '<td class="cell-flat" colspan="2" style="background:rgba(58,107,107,.04);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>' : ''}
-    <!-- RMES: Var + BaseRT|RTFilter + altre RT (solo se non filtrato + Tutti RT ON) -->
+    <!-- Foundation -->
     <td class="cell-flat" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>
+    <!-- RMES: BaseRT/RTFilter + altre RT (solo se non filtrato + Tutti RT ON) -->
     <td class="cell-flat" style="background:rgba(195,131,59,.10);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>
     ${((_rtFilter || !_showAllRT) ? '' : (function(){
         if (!_suppData || !_suppData.baseRT) return '';
@@ -31650,15 +32135,74 @@ function renderSellStrategy(sel){
     });
   });
 
-  // Wire click handler per celle Foundation (apre modale dettaglio calcolo)
-  document.getElementById('sell-table-wrap').querySelectorAll('td.sell-block-fp[data-fp-struct]').forEach(el=>{
-    el.addEventListener('click', (ev)=>{
+  // Wire bottoni inline (✓ accetta · 🖋 override · ↺ reset) sulla cella Foundation
+  // I bottoni sono dentro la cella ma hanno priorità sul click cella: usano stopPropagation
+  const _refreshSellAfterFp = () => {
+    if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined'){
+      try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
+    }
+  };
+  document.getElementById('sell-table-wrap').querySelectorAll('.fp-inline-accept').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
       ev.stopPropagation();
-      const struct = el.dataset.fpStruct;
-      const rt = el.dataset.fpRt;
-      const dateISO = el.dataset.fpDate;
-      if (struct && rt && dateISO && typeof fp_showDetailModal === 'function'){
-        fp_showDetailModal(struct, rt, dateISO);
+      if (btn.disabled) return;
+      const iso = btn.getAttribute('data-iso');
+      const rt = btn.getAttribute('data-rt');
+      const calc = parseFloat(btn.getAttribute('data-calc'));
+      if (!iso || !rt || !isFinite(calc)) return;
+      if (typeof fp_acceptFoundation === 'function'){
+        fp_acceptFoundation(sel, iso, rt, calc);
+        _refreshSellAfterFp();
+      }
+    });
+  });
+  document.getElementById('sell-table-wrap').querySelectorAll('.fp-inline-override').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const iso = btn.getAttribute('data-iso');
+      const rt = btn.getAttribute('data-rt');
+      const calc = parseFloat(btn.getAttribute('data-calc'));
+      if (!iso || !rt) return;
+      // Leggo lo stato attuale per pre-popolare il prompt
+      const cur = (typeof fp_getFoundationState === 'function') ? fp_getFoundationState(sel, iso, rt) : null;
+      const defVal = (cur && cur.value) ? cur.value : (isFinite(calc) ? calc : null);
+      const dateLbl = iso.split('-').reverse().join('/');
+      const v = prompt('Override Foundation per ' + dateLbl + '\n' + rt + '\n\nValore in Beddy_eq (€):', defVal != null ? Math.round(defVal) : '');
+      if (v == null) return;
+      const num = parseFloat(v);
+      if (!isFinite(num) || num <= 0){ alert('Valore non valido'); return; }
+      if (typeof fp_overrideFoundation === 'function'){
+        fp_overrideFoundation(sel, iso, rt, num, isFinite(calc) ? calc : null);
+        _refreshSellAfterFp();
+      }
+    });
+  });
+  document.getElementById('sell-table-wrap').querySelectorAll('.fp-inline-reset').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const iso = btn.getAttribute('data-iso');
+      const rt = btn.getAttribute('data-rt');
+      if (!iso || !rt) return;
+      const dateLbl = iso.split('-').reverse().join('/');
+      if (!confirm('Reset Foundation a "proposed" per ' + dateLbl + '?\n' + rt)) return;
+      if (typeof fp_resetFoundationState === 'function'){
+        fp_resetFoundationState(sel, iso, rt);
+        _refreshSellAfterFp();
+      }
+    });
+  });
+  // Click sul PREZZO della cella Foundation (.fp-price-click) → apre popup dettaglio
+  document.getElementById('sell-table-wrap').querySelectorAll('td.sell-block-fp[data-fp-struct] .fp-price-click').forEach(el => {
+    el.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const td = el.closest('td.sell-block-fp');
+      if (!td) return;
+      const struct = td.dataset.fpStruct;
+      const rt = td.dataset.fpRt;
+      const dateISO = td.dataset.fpDate;
+      const fpCalc = td.dataset.fpCalc ? parseFloat(td.dataset.fpCalc) : null;
+      if (struct && rt && dateISO && typeof fp_showFoundationApprovalPopup === 'function'){
+        fp_showFoundationApprovalPopup(struct, rt, dateISO, fpCalc, td);
       }
     });
   });
@@ -31676,6 +32220,104 @@ function renderSellStrategy(sel){
     });
   });
 
+  // === Pannello Approvazione Foundation (sopra la tabella): summary + bottoni batch ===
+  // L'approvazione si applica SOLO alla baseRT della struttura. Quindi:
+  //   - Se il filtro RT corrente è la baseRT (o "Tutte"), il pannello è visibile e operativo.
+  //   - Se il filtro RT corrente è una RT non-base, il pannello è nascosto.
+  (function _wireFpApprovalBar(){
+    const barEl = document.getElementById('sell-fp-approval-bar');
+    const sumEl = document.getElementById('fp-approval-summary');
+    const labelEl = document.getElementById('sell-fp-baseRT-label');
+    if (!barEl || !sumEl) return;
+    // Visualizzazione: solo struttura singola + filtro = baseRT o "Tutte"
+    const baseRT = _suppData ? _suppData.baseRT : null;
+    const isFilterCompatible = (!_rtFilter) || (_rtFilter === baseRT);
+    if (sel === 'both' || !baseRT || !isFilterCompatible){
+      barEl.style.display = 'none';
+      return;
+    }
+    barEl.style.display = 'block';
+    if (labelEl) labelEl.textContent = '— baseRT: ' + baseRT;
+    // Estraggo giorni visibili dalla tabella, MA SOLO le righe della baseRT.
+    // Logica: nella DOM le celle Foundation hanno data-fp-rt. Filtro per rt === baseRT.
+    const cells = document.getElementById('sell-table-wrap').querySelectorAll('td.sell-block-fp[data-fp-date]');
+    const visibleDays = [];
+    let nAccepted = 0, nOverride = 0, nProposed = 0, nDrift = 0;
+    cells.forEach(td => {
+      const iso = td.dataset.fpDate;
+      const rt = td.dataset.fpRt;
+      if (!iso || !rt || rt !== baseRT) return;  // SOLO baseRT
+      const status = td.dataset.fpStatus || 'proposed';
+      const calc = td.dataset.fpCalc ? parseFloat(td.dataset.fpCalc) : null;
+      visibleDays.push({ iso, rt, calc, status });
+      if (status === 'accepted') nAccepted++;
+      else if (status === 'override') nOverride++;
+      else nProposed++;
+      if (status === 'accepted' && calc != null){
+        const state = (typeof fp_getFoundationState === 'function') ? fp_getFoundationState(sel, iso, rt) : null;
+        if (state && state.value > 0 && Math.abs((calc - state.value) / state.value) >= 0.03){
+          nDrift++;
+        }
+      }
+    });
+    const total = visibleDays.length;
+    if (total === 0){
+      sumEl.textContent = 'Nessun giorno baseRT visibile';
+    } else {
+      let s = total + ' giorni · ';
+      const parts = [];
+      if (nAccepted > 0) parts.push('✓ ' + nAccepted + ' accepted');
+      if (nOverride > 0) parts.push('🖋 ' + nOverride + ' override');
+      if (nProposed > 0) parts.push('⚡ ' + nProposed + ' proposed');
+      if (nDrift > 0) parts.push('⚠ ' + nDrift + ' scostamento');
+      s += parts.join(' · ');
+      sumEl.textContent = s;
+    }
+    const _refreshSell = () => {
+      if (typeof renderSellStrategy === 'function') renderSellStrategy(sel);
+    };
+    // ✓ Accetta tutti i visibili (baseRT only)
+    const btnAcceptAll = document.getElementById('fp-batch-accept-all');
+    if (btnAcceptAll){
+      btnAcceptAll.onclick = function(){
+        if (visibleDays.length === 0){ alert('Nessun giorno baseRT visibile.'); return; }
+        const acceptable = visibleDays.filter(d => d.calc != null && isFinite(d.calc) && d.status !== 'override');
+        if (acceptable.length === 0){ alert('Nessun giorno con Foundation calcolato accettabile (tutti già override).'); return; }
+        if (!confirm('Accettare Foundation calcolato per ' + acceptable.length + ' giorni baseRT visibili?\n\nbaseRT: ' + baseRT + '\n\nIl valore calcolato verrà congelato. Eventuali override esistenti NON saranno toccati.')) return;
+        let n = 0;
+        for (const d of acceptable){ fp_acceptFoundation(sel, d.iso, d.rt, d.calc); n++; }
+        alert('Accettati ' + n + ' giorni su ' + visibleDays.length + '.');
+        _refreshSell();
+      };
+    }
+    // ↺ Reset
+    const btnResetAll = document.getElementById('fp-batch-reset-all');
+    if (btnResetAll){
+      btnResetAll.onclick = function(){
+        if (visibleDays.length === 0){ alert('Nessun giorno baseRT visibile.'); return; }
+        const toReset = visibleDays.filter(d => d.status !== 'proposed');
+        if (toReset.length === 0){ alert('Tutti i giorni visibili sono già "proposed".'); return; }
+        if (!confirm('Reset di ' + toReset.length + ' giorni (accepted/override) a "proposed"?\n\nbaseRT: ' + baseRT + '\n\nForeach giorno verrà rimosso lo stato salvato; Foundation tornerà a essere il calcolato dinamico.')) return;
+        for (const d of toReset){ fp_resetFoundationState(sel, d.iso, d.rt); }
+        _refreshSell();
+      };
+    }
+    // 🖋 Override
+    const btnOverrideAll = document.getElementById('fp-batch-override-all');
+    if (btnOverrideAll){
+      btnOverrideAll.onclick = function(){
+        const priceInp = document.getElementById('fp-batch-override-price');
+        const price = priceInp ? parseFloat(priceInp.value) : NaN;
+        if (!isFinite(price) || price <= 0){ alert('Inserisci un prezzo valido (>0)'); return; }
+        if (visibleDays.length === 0){ alert('Nessun giorno baseRT visibile.'); return; }
+        if (!confirm('Override Foundation di €' + price.toFixed(0) + ' su ' + visibleDays.length + ' giorni baseRT visibili?\n\nbaseRT: ' + baseRT + '\n\nTutti passeranno a stato "override" col valore inserito.')) return;
+        for (const d of visibleDays){ fp_overrideFoundation(sel, d.iso, d.rt, price, d.calc); }
+        if (priceInp) priceInp.value = '';
+        _refreshSell();
+      };
+    }
+  })();
+  
   // === Pickup OTB vs Pickup STLY per Mese di Soggiorno ===
   if (typeof renderPickupByMonth === 'function'){
     try { renderPickupByMonth(sel); } catch(e) { console.error('renderPickupByMonth:', e); }
@@ -32584,7 +33226,7 @@ function _renderSellColsPills(){
   wrap.innerHTML = blocks.map(b => {
     const on = !!state[b.key];
     const extra = b.highlight ? 'style="border-color:#c4823b;background:'+(on?'rgba(195,131,59,0.18)':'rgba(195,131,59,0.04)')+';color:#7a4f1c;font-weight:600"' : '';
-    const tooltip = b.key === 'allrt' ? ' title="Mostra colonne extra dentro il gruppo RMES con prezzo + MLOS per ogni room type non-base (Suite, Trilocale, Attico ecc.). I prezzi sono calcolati con moltiplicatori specifici per RT (A·OCC, B·Price, C·Pace, D·Budget) + struttura (E·Compset, F·AirDNA)."' : '';
+    const tooltip = b.key === 'allrt' ? ' title="Mostra colonne extra dentro il gruppo RMES con prezzo + MLOS per ogni room type non-base (Suite, Trilocale, Attico ecc.). I prezzi sono calcolati con moltiplicatori specifici per RT (A·OCC, B·Price, C·Pace, D·Compset, E·Search — tutti a livello struttura."' : '';
     return `<button class="sell-col-pill ${on?'on':''}" data-sell-col="${b.key}" ${extra}${tooltip}>${b.label}</button>`;
   }).join('');
   wrap.querySelectorAll('button[data-sell-col]').forEach(btn => {
@@ -34435,10 +35077,10 @@ function aggForecast(structKey){
   //
   // Forecast_ADR_mese = FinalLY_ADR_mese × adrGrowth (anche cappato a [0.95, 1.20])
 
-  // Share clampato (floor 90%, max 115% — l'utente vuole evitare sovrastima oltre questi)
-  const shareCapped = Math.max(0.90, Math.min(1.15, floorShare.share));
-  // ADR growth cappato (range realistico, evita oscillazioni anomale)
-  const adrGrowthCapped = Math.max(0.95, Math.min(1.20, adrGrowth.growth || 1.0));
+  // Share clampato (range ±30%: tra 0.70 e 1.30)
+  const shareCapped = Math.max(0.70, Math.min(1.30, floorShare.share));
+  // ADR growth cappato (range ±30%)
+  const adrGrowthCapped = Math.max(0.70, Math.min(1.30, adrGrowth.growth || 1.0));
 
   // === ADR BOOST PER (STRUTTURA, MESE) ===
   // Moltiplicatori manuali per spingere il Forecast verso il Budget agendo SOLO sulla tariffa
@@ -34476,6 +35118,49 @@ function aggForecast(structKey){
   function occToBudgetFor(sel, ymKey){
     const map = OCC_TO_BUDGET[sel] || {};
     return !!map[ymKey];
+  }
+
+  // === Pre-computa la mappa RMES per i giorni futuri (fino a fine forecast horizon) ===
+  // Serve per usare il prezzo RMES suggerito come ADR del pickup, giorno-per-giorno,
+  // poi aggregato a mese tramite media ponderata per RN attese del giorno.
+  // Se per un giorno RMES non è disponibile (mancano dati storici sufficienti),
+  // fallback al vecchio metodo (finalLyAdr × adrGrowth).
+  const todayNum = today0.getFullYear()*10000 + (today0.getMonth()+1)*100 + today0.getDate();
+  const lastFcstDate = new Date(2027, 3, 30);  // 30 aprile 2027 (ultimo giorno fcst)
+  const rmesRangeDays = Math.max(1, Math.ceil((lastFcstDate - today0) / 86400000) + 5);
+  let _rmesMapForFcst = null;
+  try {
+    if (typeof computeRMESPriceMap === 'function'){
+      _rmesMapForFcst = computeRMESPriceMap(sel, todayNum, rmesRangeDays);
+    }
+  } catch(e){ _rmesMapForFcst = null; }
+  
+  // Helper: ADR pickup medio per (mese, RT) usando prezzo RMES giorno-per-giorno.
+  // Ritorna null se RMES non disponibile per il mese (fallback al vecchio metodo).
+  function _rmesAdrPickupForMonth(y, mo, rt){
+    if (!_rmesMapForFcst) return null;
+    let weightedSum = 0, totWeight = 0;
+    const daysInMo = new Date(y, mo, 0).getDate();
+    for (let d = 1; d <= daysInMo; d++){
+      // Salta giorni passati (per CURRENT month)
+      const dDate = new Date(y, mo-1, d);
+      if (dDate < today0) continue;
+      const ymdN = y*10000 + mo*100 + d;
+      const dd = _rmesMapForFcst[ymdN];
+      if (!dd) continue;
+      // Prezzo RMES finale (Beddy_eq) per la RT (preferito) o per baseRT (fallback)
+      let priceForRt = null;
+      if (dd.pricesByRT && dd.pricesByRT[rt] != null && isFinite(dd.pricesByRT[rt])){
+        priceForRt = dd.pricesByRT[rt];
+      } else if (dd.rmesSuggestedByRT && dd.rmesSuggestedByRT[rt] != null && isFinite(dd.rmesSuggestedByRT[rt])){
+        priceForRt = dd.rmesSuggestedByRT[rt];
+      }
+      if (priceForRt == null) continue;
+      // Peso = 1 RN al giorno (uniforme): equivale a media aritmetica dei prezzi del mese
+      weightedSum += priceForRt;
+      totWeight += 1;
+    }
+    return totWeight > 0 ? weightedSum / totWeight : null;
   }
 
   for (const ymKey of Object.keys(monthly)){
@@ -34574,7 +35259,12 @@ function aggForecast(structKey){
         futureForecastRn = Math.min(Math.max(capResidual, otbFutureRn), futureForecastRn);
         futureForecastRn = Math.min(inventory[rt] * daysRemaining, futureForecastRn);
         const pickupExpectedRn = Math.max(0, futureForecastRn - otbFutureRn);
-        const pickupAdr = finalLyAdr > 0 ? finalLyAdr * effectiveAdrMult : 0;
+        // NUOVO: ADR pickup = prezzo RMES medio del mese (Beddy_eq), fallback al vecchio metodo se non disponibile
+        const rmesAdr = _rmesAdrPickupForMonth(m.y, m.mo, rt);
+        const fallbackAdr = finalLyAdr > 0 ? finalLyAdr * effectiveAdrMult : 0;
+        const pickupAdr = (rmesAdr != null && rmesAdr > 0) ? rmesAdr : fallbackAdr;
+        rtData.pickupAdrSource = (rmesAdr != null && rmesAdr > 0) ? 'rmes' : 'ly_growth';
+        rtData.pickupAdr = pickupAdr;
         const pickupRev = pickupExpectedRn * pickupAdr;
         const futureRev = otbFutureRev + pickupRev;
         fcstRn = Math.round(rtData.actualPastRn + futureForecastRn);
@@ -34596,7 +35286,12 @@ function aggForecast(structKey){
         fcstRn = Math.round(fcstRn);
         // Preservo il revenue OTB confermato a tariffa reale, aggiungo solo il pickup atteso
         const pickupRn = Math.max(0, fcstRn - rtData.otbRn);
-        const pickupAdr = finalLyAdr > 0 ? finalLyAdr * effectiveAdrMult : 0;
+        // NUOVO: ADR pickup = prezzo RMES medio del mese (Beddy_eq), fallback se non disponibile
+        const rmesAdr = _rmesAdrPickupForMonth(m.y, m.mo, rt);
+        const fallbackAdr = finalLyAdr > 0 ? finalLyAdr * effectiveAdrMult : 0;
+        const pickupAdr = (rmesAdr != null && rmesAdr > 0) ? rmesAdr : fallbackAdr;
+        rtData.pickupAdrSource = (rmesAdr != null && rmesAdr > 0) ? 'rmes' : 'ly_growth';
+        rtData.pickupAdr = pickupAdr;
         const pickupRev = pickupRn * pickupAdr;
         fcstRev = rtData.otbRev + pickupRev;
         fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
@@ -34642,6 +35337,42 @@ function aggForecast(structKey){
     m.eurPerDayPickupStly7 = m.pickupStlyRev / 14;
 
     m.achievement = m.fcstRev > 0 ? m.otbRev / m.fcstRev : 0;
+    
+    // === SNAPSHOT FORECAST MENSILE ===
+    // Auto-salva il forecast attuale come "snapshot 1° del mese" per ogni mese
+    // CURRENT o FUTURE, se non esiste già (o se esiste ma siamo proprio al giorno 1).
+    // Permette confronto a chiusura mese tra forecast iniziale e chiusura effettiva.
+    if (monthState === 'CURRENT' || monthState === 'FUTURE'){
+      if (typeof fp_maybeAutoSaveSnapshot === 'function'){
+        const snapData = {
+          fcstRev: m.fcstRev,
+          fcstRn: m.fcstRn,
+          fcstOcc: m.occ,
+          fcstAdr: m.adr,
+          finalLyRev: m.finalLyRev,
+          finalLyRn: m.finalLyRn,
+        };
+        try {
+          const status = fp_maybeAutoSaveSnapshot(sel, ymKey, snapData, ymdToday);
+          m.snapshotStatus = status;
+        } catch(e){}
+      }
+    }
+    // Recupera snapshot per esposizione UI (sempre, per qualsiasi stato)
+    if (typeof fp_getFcstSnapshot === 'function'){
+      try {
+        const snap = fp_getFcstSnapshot(sel, ymKey);
+        if (snap){
+          m.snapshot = snap;
+          // Calcola Δ% snapshot vs forecast live (o vs OTB se mese chiuso)
+          const liveValue = (monthState === 'PAST') ? m.otbRev : m.fcstRev;
+          if (snap.fcstRev > 0){
+            m.snapshotDeltaRev = liveValue - snap.fcstRev;
+            m.snapshotDeltaRevPct = (liveValue - snap.fcstRev) / snap.fcstRev;
+          }
+        }
+      } catch(e){}
+    }
   }
 
   return {
@@ -34732,7 +35463,8 @@ function renderForecast(sel){
         <th rowspan="2" style="text-align:left">Mese</th>
         <th colspan="3" class="g-26" style="text-align:center">OTB attuale</th>
         <th colspan="3" class="g-25" style="background:rgba(142,95,168,.10);text-align:center">Final LY 2025</th>
-        <th colspan="3" class="g-26" style="background:rgba(195,131,59,.10);text-align:center" title="Mesi passati: actual realizzato. Mese in corso: actual fino a ieri + forecast da oggi a fine mese. Mesi futuri: forecast.">YTD + Forecast</th>
+        <th colspan="3" class="g-26" style="background:rgba(195,131,59,.10);text-align:center" title="Mesi passati: actual realizzato. Mese in corso: actual fino a ieri + forecast da oggi a fine mese. Mesi futuri: forecast.">YTD + Forecast (live)</th>
+        <th colspan="2" class="g-26" style="background:rgba(59,107,154,.08);text-align:center" title="Forecast salvato il 1° giorno del mese (snapshot iniziale). Confronto: forecast live (o chiusura effettiva se passato) vs forecast iniziale.">Snapshot 1° mese</th>
         <th colspan="3" class="g-25" style="background:rgba(60,124,90,.08);text-align:center">Budget</th>
         <th colspan="5" class="g-26" style="background:rgba(195,131,59,.04);text-align:center">KPI per Forecast achievement</th>
       </tr>
@@ -34740,6 +35472,8 @@ function renderForecast(sel){
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
+        <th title="Revenue forecast salvato il 1° del mese">Rev snap</th>
+        <th title="Δ% live vs snapshot iniziale (positivo = sto andando meglio di come previsto a inizio mese)">Δ% vs snap</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th title="YTD+Forecast Revenue − OTB Revenue">Diff € (Fct−OTB)</th>
         <th title="Differenza Fct−OTB diviso giorni cumulativi da oggi a fine mese (es. per giugno = giorni residui di maggio + tutto giugno)">€/giorno per chiudere</th>
@@ -34780,6 +35514,29 @@ function renderForecast(sel){
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(m.occ,1)}</td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(m.adr)}</td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.fcstRev)}</b></td>
+      ${(() => {
+        // Snapshot 1° del mese
+        const snap = m.snapshot || null;
+        if (!snap){
+          return `<td class="cell-mono cell-flat" style="background:rgba(59,107,154,.04);color:var(--ink-3);font-style:italic" title="Nessun snapshot disponibile. Verrà creato il prossimo 1° del mese.">—</td>
+                  <td class="cell-mono cell-flat" style="background:rgba(59,107,154,.04);color:var(--ink-3)">—</td>`;
+        }
+        const snapDate = snap.savedAtYmd ? `${String(snap.savedAtYmd).slice(6,8)}/${String(snap.savedAtYmd).slice(4,6)}/${String(snap.savedAtYmd).slice(0,4)}` : '?';
+        const dPct = m.snapshotDeltaRevPct;
+        const dRev = m.snapshotDeltaRev;
+        let dCls = 'cell-flat';
+        if (dPct != null && isFinite(dPct)){
+          dCls = dPct >= 0.02 ? 'cell-pos' : (dPct <= -0.02 ? 'cell-neg' : 'cell-flat');
+        }
+        const dText = (dPct != null && isFinite(dPct))
+          ? `${dPct>=0?'+':''}${(dPct*100).toFixed(1)}%`
+          : '—';
+        const dTip = (dRev != null && isFinite(dRev))
+          ? `Snapshot salvato il ${snapDate}: forecast iniziale €${snap.fcstRev.toFixed(0)} (${snap.fcstRn} RN). Δ revenue ${dRev>=0?'+':''}€${Math.round(dRev)} (${dText}).`
+          : `Snapshot salvato il ${snapDate}`;
+        return `<td class="cell-mono cell-flat" style="background:rgba(59,107,154,.04);cursor:help" title="${dTip}">${fmtEUR(snap.fcstRev)}</td>
+                <td class="cell-mono ${dCls}" style="background:rgba(59,107,154,.04);cursor:help" title="${dTip}"><b>${dText}</b></td>`;
+      })()}
       ${(() => {
         const ymBud = m.y*100 + m.mo;
         const budRev = (typeof budgetMonthlyFor === 'function') ? budgetMonthlyFor(sel, ymBud, 'rev') : 0;
@@ -34831,6 +35588,22 @@ function renderForecast(sel){
   const totBudgetRevCls = !totBudgetRev ? 'cell-flat' : (totDvb >= 0 ? 'cell-pos' : 'cell-neg');
   const totBudgetRevTip = totBudgetRev > 0 ? `YTD+Forecast vs Budget: ${(totDvb>=0?'+':'')+fmtEUR(totDvb)} (${(totDvb>=0?'+':'')+fmtPct(totDvb/totBudgetRev,1)})` : 'Budget non disponibile';
 
+  // Snapshot totale: somma dei forecast iniziali dei mesi con snapshot disponibile + Δ%
+  let totSnapRev = 0, totSnapAvail = 0;
+  for (const ym of ymOrder){
+    const sn = M[ym].snapshot;
+    if (sn && isFinite(sn.fcstRev)){
+      totSnapRev += sn.fcstRev;
+      totSnapAvail += 1;
+    } else {
+      // Se non c'è snapshot, uso il live attuale (non distorce la somma)
+      totSnapRev += M[ym].fcstRev || 0;
+    }
+  }
+  const totSnapDelta = totSnapRev > 0 ? (totFcstRev - totSnapRev) / totSnapRev : null;
+  const totSnapCls = (totSnapDelta != null && totSnapDelta >= 0.02) ? 'cell-pos'
+                   : (totSnapDelta != null && totSnapDelta <= -0.02) ? 'cell-neg' : 'cell-flat';
+  
   body += `<tr class="total">
     <td>Totale ${ymOrder.length} mesi</td>
     <td class="cell-mono cell-flat" title="${totOtbRn} RN su ${totCap} disponibili">${fmtPct(totOtbOcc,1)}</td>
@@ -34842,6 +35615,8 @@ function renderForecast(sel){
     <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(fcstOcc,1)}</td>
     <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(fcstAdr)}</td>
     <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(totFcstRev)}</b></td>
+    <td class="cell-mono cell-flat" style="background:rgba(59,107,154,.04)" title="${totSnapAvail} mesi con snapshot disponibile su ${ymOrder.length}">${fmtEUR(totSnapRev)}</td>
+    <td class="cell-mono ${totSnapCls}" style="background:rgba(59,107,154,.04)" title="Δ live vs snapshot iniziale aggregato">${totSnapDelta != null ? '<b>'+(totSnapDelta>=0?'+':'')+(totSnapDelta*100).toFixed(1)+'%</b>' : '—'}</td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetOcc > 0 ? fmtPct(totBudgetOcc,1) : '—'}</td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetAdr > 0 ? fmtEUR(totBudgetAdr) : '—'}</td>
     <td class="cell-mono ${totBudgetRevCls}" style="background:rgba(60,124,90,.04)" title="${totBudgetRevTip}"><b>${totBudgetRev > 0 ? fmtEUR(totBudgetRev) : '—'}</b></td>
@@ -35034,7 +35809,10 @@ function setWeight(struct, compName, value){
 // Calcolo della media ponderata compset per uno (struct, isoKey)
 // Formula: media = Σ(prezzo × peso) / N_competitor_valid
 // Restituisce {avg, n, contributingNames}
-function compsetWeightedAvg(struct, isoKey){
+function compsetWeightedAvg(struct, isoKey, applyOffset){
+  // applyOffset: se true, applica l'offset per-competitor (in € Beddy_eq) dopo conversione
+  //   → ritorna avg in Beddy_eq. Usato da Foundation step ④ e (opzionalmente) da fattore D·Compset.
+  // se false (default), ritorna avg in Expedia lordo (= prezzi grezzi dal compset)
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return {avg: null, n: 0};
   // Mappa competitors per struct
   let compMap = null;
@@ -35049,11 +35827,8 @@ function compsetWeightedAvg(struct, isoKey){
     'Palazzo Alfani al David',    // = Alfani nei compset Condotta e Firenze
   ]);
 
-  // Per ogni competitor con prezzo > 0:
-  //   - se è una mia struttura → escluso
-  //   - se peso = 0% → ignoralo completamente (non contribuisce, e non gonfia il divisore)
-  //   - altrimenti → somma (prezzo × peso), conta nel divisore
-  // Formula: media = Σ(prezzo × peso) / N_competitor_con_peso_>_0
+  const divisor = applyOffset && typeof fp_expToBeddyDivisor === 'function' ? fp_expToBeddyDivisor(struct) : null;
+
   let total = 0, n = 0;
   const names = [];
   for (const name in compMap){
@@ -35062,12 +35837,23 @@ function compsetWeightedAvg(struct, isoKey){
     if (p == null || !isFinite(p) || p <= 0) continue;
     const w = getWeight(struct, name);
     if (w <= 0) continue;  // peso 0 = competitor escluso, non conta nemmeno nel divisore
-    total += p * w;
+    let priceToUse = p;
+    if (applyOffset && divisor){
+      // Converto a Beddy_eq, applico offset, aggiungo a totale in Beddy_eq
+      const beddyEq = p / divisor;
+      let offset = 0;
+      try {
+        const cfg = (typeof fp_getCompsetConfig === 'function') ? fp_getCompsetConfig(struct, name) : null;
+        if (cfg && typeof cfg.offset === 'number') offset = cfg.offset;
+      } catch(e){}
+      priceToUse = beddyEq + offset;
+    }
+    total += priceToUse * w;
     n += 1;
     names.push(name);
   }
   if (n === 0) return {avg: null, n: 0};
-  return {avg: total / n, n, contributingNames: names};
+  return {avg: total / n, n, contributingNames: names, unit: applyOffset ? 'beddy_eq' : 'expedia_lordo'};
 }
 
 // Render della tab Rate Shopper
@@ -35346,28 +36132,21 @@ function _renderRmesWeightsBox(sel){
   const wrap = document.getElementById('rmes-tab-w-bar');
   if (!wrap) return;
   const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
+  // Tutti e 5 i fattori sono ora calcolati a livello struttura (no più distinzione INTERNI/ESTERNI).
   const factors = [
-    { key:'occ',    letter:'A', label:'OCC',     color:'#4a7c59', desc:'mia OCC / STLY (per RT)',     kind:'interno' },
-    { key:'price',  letter:'B', label:'Price',   color:'#c4823b', desc:'ADR OTB / STLY (per RT)',     kind:'interno' },
-    { key:'pace',   letter:'C', label:'Pace',    color:'#8e5fa8', desc:'pickup 4w / STLY (per RT)',   kind:'interno' },
-    { key:'comp',   letter:'E', label:'Compset', color:'#3b6b6b', desc:'mio Exp / compset (struttura)',   kind:'esterno' },
-    { key:'airdna', letter:'F', label:'Search',  color:'#a83b3b', desc:'ricerche Expedia vs mediana (struttura)', kind:'esterno' },
+    { key:'occ',    letter:'A', label:'OCC',     color:'#3b6b9a', desc:'OCC oggi vs STLY -364gg' },
+    { key:'price',  letter:'B', label:'Price',   color:'#c4823b', desc:'ADR OTB vs STLY (3 casi)' },
+    { key:'pace',   letter:'C', label:'Pace',    color:'#8e5fa8', desc:'pickup 4w mese vs STLY' },
+    { key:'comp',   letter:'D', label:'Compset', color:'#1e6b4a', desc:'mio Exp vs compset (invertito)' },
+    { key:'airdna', letter:'E', label:'Search',  color:'#a83b3b', desc:'ricerche Expedia vs mediana mese' },
   ];
-  // Layout: blocco "interni" + separatore + blocco "esterni" + sum
-  let html = '<div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:10px;color:#4a7c59;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Interni</div>';
-  html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  for (const f of factors.filter(x => x.kind === 'interno')){
+  // Layout pulito: 5 card a fianco + totale a destra
+  let html = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">';
+  for (const f of factors){
     html += _wcard(f, W);
   }
-  html += '</div></div>';
-  html += '<div style="border-left:2px dashed rgba(195,131,59,.40);align-self:stretch;margin:0 4px"></div>';
-  html += '<div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:10px;color:#a83b3b;font-weight:700;letter-spacing:.04em;text-transform:uppercase">Esterni</div>';
-  html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  for (const f of factors.filter(x => x.kind === 'esterno')){
-    html += _wcard(f, W);
-  }
-  html += '</div></div>';
   html += '<div style="margin-left:auto;display:flex;flex-direction:column;gap:4px"><div style="font-size:10px;color:var(--ink-3);font-weight:700;letter-spacing:.04em;text-transform:uppercase">Totale</div><div id="rmes-tab-w-sum" style="padding:6px 14px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:\'DM Mono\',monospace;font-weight:700;font-size:14px">Σ —</div></div>';
+  html += '</div>';
   wrap.innerHTML = html;
 
   // Wire inputs: l'input aggiorna SOLO il totale visualizzato, non applica.
@@ -35478,8 +36257,8 @@ function _renderRmesThresholdsBox(sel){
   if (resetBtn && !resetBtn._wired){
     resetBtn._wired = true;
     resetBtn.onclick = () => {
-      if (confirm('Resettare il Cap di ' + RMES_TAB_STRUCT + ' al default 40%?')){
-        if (typeof setRmesCap === 'function') setRmesCap(RMES_TAB_STRUCT, 0.40);
+      if (confirm('Resettare il Cap di ' + RMES_TAB_STRUCT + ' al default 30%?')){
+        if (typeof setRmesCap === 'function') setRmesCap(RMES_TAB_STRUCT, 0.30);
         _renderRmesThresholdsBox(RMES_TAB_STRUCT);
         if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
         if (typeof _rmesTabClearDirty === 'function') _rmesTabClearDirty();
