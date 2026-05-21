@@ -1404,7 +1404,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b style="color:#7a3a8e">Pickup Ngg</b> — andamento recente: nuove, cancellate, ΔRN, ADR nuove. Configurabile a 1/3/7/14/28 giorni. Nuove e Cancellate cliccabili per la lista.</li>
           <li><b style="color:#3a6b6b">STLY (−364)</b> — come stavi a parità di anticipo l'anno scorso. Confronto a giorno-della-settimana (se oggi è venerdì, mostra il venerdì di 52 settimane fa).</li>
           <li><b style="color:#888">Pickup STLY</b> — pickup nei medesimi Ngg di un anno fa. Confronta le 2 colonne pickup per capire se stai andando meglio.</li>
-          <li><b style="color:#3a6b6b">Mercato Expedia (Mio · Compset)</b> — su tutte le strutture. <b>Mio</b> = il mio prezzo Expedia tradotto in Beddy_eq (<code>÷ 1.12 ÷ 0.90</code>). <b>Compset</b> = media ponderata dei competitor scelti (con peso e offset configurabili in tab RMES → Ⓒ).</li>
+          <li><b style="color:#3a6b6b">Mercato Expedia (Mio · Compset)</b> — su tutte le strutture. <b>Mio</b> = il mio prezzo Expedia riportato a Beddy_eq togliendo il markup OTA (configurabile, non una % fissa) e il margine. Inoltre, se quel giorno la baseRT risulta <b>esaurita</b>, il prezzo Expedia visibile è probabilmente di una stanza superiore: il sistema sottrae il relativo supplemento per riportarlo al valore equivalente della baseRT. <b>Compset</b> = media ponderata dei competitor scelti (peso e offset configurabili in tab RMES → Ⓒ).</li>
           <li><b style="color:#c4823b">⚡ Foundation</b> — il prezzo strutturale del giorno, calcolato dai 6 step (vedi sezione RMES sotto). Cliccabile per dettaglio. <b>Solo per la baseRT</b>: 🖋 override · ↺ reset sulla singola cella.</li>
           <li><b style="color:#c4823b">RMES</b> — il prezzo finale suggerito = Foundation × moltiplicatore (i 5 fattori). M1/M2 = MLOS suggerito. Cliccabile per modale completa.</li>
         </ol>
@@ -1543,8 +1543,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p><b>A cosa serve</b>: vedere ogni giorno futuro il mio prezzo Expedia vs quello dei competitor, e capire dove sono posizionato (sopra/sotto la media).</p>
         <p><b>Cose da sapere</b>:</p>
         <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Mio prezzo</b>: la prima riga è il MIO listing Expedia. Conversione a Beddy_eq: <code>prezzo_lordo / (1 + markup_OTA/100) / 0.90</code>. Markup OTA configurabile in tab RMES → Ⓑ (default 12%). Il /0.90 toglie lo sconto della non-rimborsabile.</li>
-          <li><b>Pesi compset</b>: ogni competitor ha un peso 0-100% configurabile in tab RMES → Ⓒ. Peso 100% conta pieno, peso 0% esclude dal calcolo. Il peso è usato sia dal fattore D·Compset RMES sia dal cap mercato Foundation.</li>
+          <li><b>Mio prezzo</b>: la prima riga è il MIO listing Expedia. Conversione a Beddy_eq: <code>prezzo_lordo / (1 + markup_Expedia/100) / 0.90</code>. Il markup non è una % fissa: è configurabile in tab RMES → Ⓑ (3 markup: Expedia/altri 17%, Booking 13%, Airbnb/VRBO 10%). Se la baseRT è esaurita, viene sottratto il supplemento della stanza superiore disponibile. Il /0.90 toglie lo sconto della non-rimborsabile.</li>
+          <li><b>Pesi compset</b>: ogni competitor ha un peso 0-100% configurabile in tab RMES → Ⓒ. Peso 100% conta pieno, peso 0% esclude dal calcolo. Il peso è usato sia dal fattore E·Compset RMES sia dal cap mercato Foundation.</li>
           <li><b>Offset €</b>: solo per Foundation. Es. -10 = "voglio stare €10 sotto questo competitor". Il riferimento mercato Foundation = Σ(peso × (compset_Beddy_eq + offset)) / Σ(peso).</li>
         </ul>
         <p><b>Lettura</b>: ogni cella mostra il prezzo competitor di quel giorno (Beddy_eq). Colorazione gradiente: più chiaro = più economico, più scuro = più caro. Confronto immediato con la mia riga in alto.</p>
@@ -1619,8 +1619,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>① Pesi dei 5 fattori</b> (default 20% × 5 = 100%). Bottoni Reset 20%×5 sulla struttura corrente o su tutte le strutture.</li>
           <li><b>② Cap totale RMES</b> (default ±30%). Limita di quanto il prezzo finale può discostarsi da Foundation, anche se tutti i fattori puntano nella stessa direzione.</li>
           <li><b>Ⓐ Target growth per mese</b> (default +5% × 12). Crescita Revenue vs LY per ogni mese.</li>
-          <li><b>Ⓑ Base / Floor / Markup OTA / Elasticità</b>. Base = prezzo annuale fair (default Firenze 220, Condotta 280, Alfani 270, David's 145). Floor = limite assoluto sotto cui il prezzo non scende mai (default per struttura: Condotta 200, Alfani 200, Firenze 150, David's 100). Vale sia per Foundation sia per il <b>prezzo finale RMES</b>: anche se i 5 fattori porterebbero più in basso, il prezzo suggerito è bloccato al floor. (L'override manuale può comunque andare dove vuoi tu.) Markup OTA = % che le OTA aggiungono al Beddy_eq (default 12%). Elasticità = sensibilità RN ↔ prezzo (default 1.0).</li>
-          <li><b>Ⓒ Pesi e offset compset</b>. Quali competitor includere, con che peso (0-100%) e che offset (€). Pesi alimentano D·Compset RMES + cap mercato Foundation. Offset solo Foundation.</li>
+          <li><b>Ⓑ Base / Floor / Markup canale / Elasticità</b>. Base = prezzo annuale fair (default Firenze 220, Condotta 280, Alfani 270, David's 145). Floor = limite assoluto sotto cui il prezzo non scende mai (default per struttura: Condotta 200, Alfani 200, Firenze 150, David's 100). Vale sia per Foundation sia per il <b>prezzo finale RMES</b>: anche se i 5 fattori porterebbero più in basso, il prezzo suggerito è bloccato al floor. (L'override manuale può comunque andare dove vuoi tu.) Markup per canale (3 tipi configurabili, usati sia per il posizionamento Expedia sia per lo storico vendite per canale): <b>Expedia/altri 17%</b> (Expedia e ogni canale non specificato sotto), <b>Booking 13%</b>, <b>Airbnb/VRBO 10%</b>. Le percentuali non sono fisse: modificabili qui. Elasticità = sensibilità RN ↔ prezzo (default 1.0).</li>
+          <li><b>Ⓒ Pesi e offset compset</b>. Quali competitor includere, con che peso (0-100%) e che offset (€). Peso e offset si applicano <b>sia</b> al fattore E·Compset di RMES <b>sia</b> al cap mercato del Foundation (stessa configurazione condivisa). I valori di default (pesi e offset per le 4 strutture) sono precaricati; restano modificabili qui.</li>
           <li><b>Ⓓ Audit override post-chiusura</b>. Per ogni giorno chiuso con override attivo, confronto override vs prezzo RMES snapshot. Δ Revenue mostra chi avrebbe fatto meglio (assumendo stesse RN).</li>
           <li><b>Ⓔ Supplementi RT per mese</b> (read-only). Tabella 12 mesi × N RT con i supplementi che il sistema applica automaticamente a Foundation per le RT non-base. Derivati dallo storico, separati per stagione alta/bassa.</li>
         </ul>
@@ -1637,7 +1637,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">ADR</dt>
           <dd style="margin:2px 0 8px 18px">Average Daily Rate = Revenue / RN. Prezzo medio per camera venduta.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Beddy_eq</dt>
-          <dd style="margin:2px 0 8px 18px">Tariffa equivalente Beddy = prezzo netto del markup OTA. Usata per confronti omogenei. Conversione Expedia → Beddy_eq: <code>Expedia_lordo ÷ 1.12 ÷ 0.90</code>. Il /1.12 toglie il markup OTA (default 12%, config in Ⓑ); il /0.90 toglie lo sconto della non-rimborsabile.</dd>
+          <dd style="margin:2px 0 8px 18px">Tariffa equivalente Beddy = prezzo netto del markup OTA. Usata per confronti omogenei. Conversione Expedia → Beddy_eq: <code>Expedia_lordo ÷ (1 + markup) ÷ 0.90</code>. Il markup non è fisso: è il markup "Expedia/altri" configurabile in Ⓑ (default 17%); il /0.90 toglie lo sconto della non-rimborsabile. Se la baseRT è esaurita quel giorno, viene inoltre sottratto il supplemento della prima stanza superiore disponibile (il prezzo Expedia visto non è del tipo base).</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">baseRT</dt>
           <dd style="margin:2px 0 8px 18px">Room Type principale di una struttura (quella con più stanze, più dati storici): Firenze → Camera Matrim. Deluxe, Condotta → Bilocale, Alfani → Classic. È l'unica RT su cui Foundation viene calcolato dai 6 step; le altre ereditano via supplemento mensile.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Compset</dt>
@@ -25558,8 +25558,11 @@ function loadData(csvText){
                       : (struct === 'Condotta 16') ? 'condotta'
                       : (struct === 'Palazzo Alfani') ? 'alfani'
                       : (struct === "Florence David's Apartament") ? 'davids' : null;
-    const _markupPct = (_struct2Key && typeof fp_getOtaMarkup === 'function')
-                    ? fp_getOtaMarkup(_struct2Key) : 12;
+    // Markup canale: ogni canale OTA ha il suo markup (Expedia/altri, Booking, Airbnb/VRBO),
+    // configurabile in Ⓑ. I canali diretti hanno markup 0.
+    const _markupPct = (typeof fp_markupForChannel === 'function')
+                    ? fp_markupForChannel(canale)
+                    : ((_struct2Key && typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(_struct2Key) : 12);
     const channelMarkup = isDirect ? 0 : (_markupPct / 100);
     const revPerRoomNightCaricato = revPerRoomNight / (1 + channelMarkup);
 
@@ -28239,18 +28242,64 @@ function expYmdKey(ymdNum){
 //
 // Il parametro structKey è opzionale; se assente uso 12% (default). Se presente,
 // uso il markup configurato per la struttura nella tab RMES.
-function expToBeddyFlex(expediaPrice, structKey){
+function expToBeddyFlex(expediaPrice, structKey, dateISO){
   if (expediaPrice == null || !isFinite(expediaPrice)) return null;
-  const markupPct = (structKey && typeof fp_getOtaMarkup === 'function')
-                  ? fp_getOtaMarkup(structKey) : 12;
+  // Markup "Expedia/altri" configurabile (default 17%), non più fisso.
+  const markupPct = (typeof fp_getChannelMarkups === 'function')
+                  ? fp_getChannelMarkups().expedia
+                  : ((structKey && typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(structKey) : 17);
   const markup = 1 + markupPct / 100;
-  return expediaPrice / (markup * 0.90);
+  // Aggiustamento "quale stanza": se la baseRT è chiusa quel giorno, il prezzo Expedia
+  // visibile è verosimilmente di una RT superiore ancora disponibile. Sottraggo il suo
+  // supplemento per riportare a Beddy_eq della baseRT (confronto omogeneo col compset/Foundation).
+  let suppl = 0;
+  if (dateISO && structKey && typeof fp_expediaRoomSupplement === 'function'){
+    try { suppl = fp_expediaRoomSupplement(structKey, dateISO) || 0; } catch(e){ suppl = 0; }
+  }
+  const beddy = expediaPrice / (markup * 0.90);
+  return Math.max(0, beddy - suppl);
+}
+
+// Stima il supplemento (€ Beddy_eq) della RT che Expedia sta probabilmente mostrando
+// quel giorno: la più economica ancora DISPONIBILE (OTB < inventario), in ordine di
+// supplemento crescente. Se la baseRT è disponibile → supplemento 0 (nessun aggiustamento).
+function fp_expediaRoomSupplement(structKey, dateISO){
+  if (typeof aggPricingDaily !== 'function') return 0;
+  let Apri;
+  try { const ymdN = parseInt(dateISO.replace(/-/g,'')); Apri = aggPricingDaily(structKey, ymdN, 1); } catch(e){ return 0; }
+  if (!Apri || !Apri.baseRT) return 0;
+  const baseRT = Apri.baseRT;
+  const month = parseInt(dateISO.slice(5,7));
+  const highSeason = new Set(Apri.highSeason || []);
+  function suppOf(rt){
+    if (rt === baseRT) return 0;
+    const s = (Apri.supplementoStagione || {})[rt];
+    if (!s) return 0;
+    return highSeason.has(month) ? (s.alta||0) : (s.bassa||0);
+  }
+  // Ordino le RT per supplemento crescente (baseRT prima)
+  const rts = (Apri.rtList || [baseRT]).slice().sort((a,b)=> suppOf(a) - suppOf(b));
+  // Trovo la prima RT ancora disponibile (OTB < inventario)
+  for (const rt of rts){
+    const inv = (typeof fp_invForRT === 'function') ? fp_invForRT(structKey, rt) : 1;
+    const otb = (typeof fp_rnOtbForDay === 'function') ? fp_rnOtbForDay(structKey, rt, dateISO) : 0;
+    if (otb < inv){
+      // Questa è la RT più economica disponibile: il prezzo Expedia è verosimilmente suo.
+      return suppOf(rt);
+    }
+  }
+  // Tutte chiuse: uso la RT più costosa (l'ultima vendibile)
+  return suppOf(rts[rts.length - 1]);
 }
 
 // Helper: ritorna il moltiplicatore "Expedia → Beddy_eq" (= 1 / (markup × 0.90))
 // per una struttura. Utile dove serve calcolare velocemente più valori.
 function fp_expToBeddyDivisor(structKey){
-  const markupPct = (typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(structKey) : 12;
+  // Posizionamento online: il mio prezzo Expedia → Beddy_eq.
+  // Usa il markup "Expedia/altri" (configurabile, default 17%), non più una % fissa.
+  const markupPct = (typeof fp_getChannelMarkups === 'function')
+                  ? fp_getChannelMarkups().expedia
+                  : ((typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(structKey) : 17);
   return (1 + markupPct/100) * 0.90;
 }
 
@@ -28290,7 +28339,7 @@ function expContext(ymdNum, structSel){
   return {
     ymd: k,
     myPriceExpedia: myPrice,
-    myPriceBeddy: expToBeddyFlex(myPrice),
+    myPriceBeddy: expToBeddyFlex(myPrice, structSel, k),
     compsetAvg: compAvg,
     compsetAvgBeddy: expToBeddyFlex(compAvg),
     searchCurrent: searchCur,
@@ -28542,13 +28591,14 @@ let SELL_RMES_W_ALL = (function(){
     if (oldRaw){
       const oldW = JSON.parse(oldRaw);
       const seed = Object.assign({}, SELL_RMES_W_DEFAULT, oldW);
-      return { firenze: Object.assign({}, seed), condotta: Object.assign({}, seed), alfani: Object.assign({}, seed) };
+      return { firenze: Object.assign({}, seed), condotta: Object.assign({}, seed), alfani: Object.assign({}, seed), davids: Object.assign({}, seed) };
     }
   } catch(e){}
   return {
     firenze:  Object.assign({}, SELL_RMES_W_DEFAULT),
     condotta: Object.assign({}, SELL_RMES_W_DEFAULT),
     alfani:   Object.assign({}, SELL_RMES_W_DEFAULT),
+    davids:   Object.assign({}, SELL_RMES_W_DEFAULT),
   };
 })();
 function saveRmesWeights(){
@@ -30048,7 +30098,47 @@ function fp_estimateElasticity(structKey){
 // === Markup OTA configurabile per struttura ===
 // Valore in percentuale (es. 12 = 12%). Usato per convertire Beddy_eq → prezzo OTA
 // (prezzo_OTA = Beddy_eq × (1 + markup/100)) e viceversa (storico Beddy_eq da prezzi lordi OTA).
-const FP_OTA_MARKUP_DEFAULTS = { firenze: 12, condotta: 12, alfani: 12 };
+const FP_OTA_MARKUP_DEFAULTS = { firenze: 12, condotta: 12, alfani: 12, davids: 12 };
+
+// === Markup per CANALE (3 tipi configurabili) ===
+// Usati per: (1) lo storico vendite per canale (riportare il lordo OTA al netto Beddy_eq),
+//            (2) il posizionamento prezzo online Expedia (markup "Expedia/altri").
+// La percentuale NON è fissa: è modificabile dall'utente in Impostazioni (tab RMES → Ⓑ).
+const FP_CHANNEL_MARKUP_KEY = 'rmes_channel_markup_v1';
+const FP_CHANNEL_MARKUP_DEFAULTS = {
+  expedia: 17,   // Expedia e canali non specificati sotto (anche posizionamento online)
+  booking: 13,   // Booking
+  airbnb: 10     // Airbnb / VRBO
+};
+function fp_getChannelMarkups(){
+  let obj = {};
+  try { const raw = localStorage.getItem(FP_CHANNEL_MARKUP_KEY); if (raw) obj = JSON.parse(raw) || {}; } catch(e){}
+  return {
+    expedia: (obj.expedia != null && isFinite(obj.expedia)) ? +obj.expedia : FP_CHANNEL_MARKUP_DEFAULTS.expedia,
+    booking: (obj.booking != null && isFinite(obj.booking)) ? +obj.booking : FP_CHANNEL_MARKUP_DEFAULTS.booking,
+    airbnb:  (obj.airbnb  != null && isFinite(obj.airbnb))  ? +obj.airbnb  : FP_CHANNEL_MARKUP_DEFAULTS.airbnb
+  };
+}
+function fp_setChannelMarkup(kind, pct){
+  let obj = {};
+  try { const raw = localStorage.getItem(FP_CHANNEL_MARKUP_KEY); if (raw) obj = JSON.parse(raw) || {}; } catch(e){}
+  obj[kind] = +pct;
+  try { localStorage.setItem(FP_CHANNEL_MARKUP_KEY, JSON.stringify(obj)); } catch(e){}
+}
+// Mappa un nome canale (colonna "Canale") al markup % corretto.
+// Diretto/Beddy → 0. Booking → markup booking. Airbnb/VRBO → markup airbnb.
+// Expedia + qualsiasi altro OTA → markup expedia (default/catch-all).
+function fp_markupForChannel(canale){
+  const c = (canale || '').toLowerCase();
+  if (c === 'beddy' || c === 'diretto' || c === '—' || c === '' || c.indexOf('diret') !== -1 ||
+      c.indexOf('sito web') !== -1 || c.indexOf('front') !== -1 || c.indexOf('booking engine') !== -1){
+    return 0;  // canale diretto: nessun markup OTA
+  }
+  const m = fp_getChannelMarkups();
+  if (c.indexOf('booking') !== -1) return m.booking;       // Booking.com
+  if (c.indexOf('airbnb') !== -1 || c.indexOf('vrbo') !== -1) return m.airbnb;  // Airbnb/VRBO
+  return m.expedia;  // Expedia + tutti gli altri OTA non specificati
+}
 function fp_getOtaMarkup(structKey){
   try {
     const raw = localStorage.getItem(FP_OTA_MARKUP_KEY);
@@ -30073,9 +30163,11 @@ function fp_recalcMarkupOnBookings(){
   if (typeof BOOKINGS === 'undefined') return;
   for (const b of BOOKINGS){
     if (!b.structKey) continue;
-    const isDirect = (b.canale === 'Beddy' || b.canale === 'Diretto' || b.canale === '—' || b.canale === '');
-    const markupPct = fp_getOtaMarkup(b.structKey);
-    const newMarkup = isDirect ? 0 : (markupPct / 100);
+    // Markup per-canale (Expedia/altri, Booking, Airbnb/VRBO). Diretto → 0.
+    const markupPct = (typeof fp_markupForChannel === 'function')
+                    ? fp_markupForChannel(b.canale)
+                    : fp_getOtaMarkup(b.structKey);
+    const newMarkup = markupPct / 100;
     b.channelMarkup = newMarkup;
     b.revPerNightCaricato = b.revPerNight / (1 + newMarkup);
   }
@@ -30520,14 +30612,27 @@ function fp_getCompsetConfig(structKey, competName){
     }
   } catch(e){}
   let offset = 0;
+  let _offsetFound = false;
   try {
     const raw = localStorage.getItem(FP_COMPSET_OFFSETS_KEY);
     if (raw){
       const obj = JSON.parse(raw);
       const s = obj[structKey];
-      if (s && typeof s[competName] === 'number') offset = s[competName];
+      if (s && typeof s[competName] === 'number'){ offset = s[competName]; _offsetFound = true; }
     }
   } catch(e){}
+  if (!_offsetFound){
+    // Default offset (€) dal compset caricato, usato se l'utente non ha salvato un valore.
+    const FP_COMPSET_OFFSET_DEFAULTS = {
+      condotta: {"Residenza Marchesi Pontenani":50,"Palazzo Alfani al David":0,"Florence Art Apartments":0,"Casa del Sarto":50,"Granduomo Charming Accomodation":20,"Residence Hilda":0,"Ricasoli Garden Relais":0,"Residenza Della Signoria":20},
+      firenze: {"Palazzo Alfani al David":-50,"Relais Condotta":50,"Residenza dei Pucci":50,"La Maison du Sage":-20,"Velona's Jungle Luxury Suites":0,"Residenza La Musa Amarcord":0,"Ricasoli Garden Relais":0},
+      alfani: {"Chic Stay Boutique Apartments":0,"Martelli 6 Suites and Apartments":0,"Tornabuoni Suites Collection":-30,"Ricasoli Garden Relais":20,"Solo Experience Hotel":30,"Residenza Marchesi Pontenani":50,"Florence Art Apartments":0,"Granduomo Charming Accomodation":-20,"Residence Hilda":0,"Condotta 16 Apartments":0,"Casa del Sarto":0},
+      davids: {"B&B Stanze Guelfe":10,"Residenza Fanti":-20,"RFC Repubblica Florence Core B&B":-100,"Althea Rooms":0,"Apollo Guest House":0,"Aramis Deluxe Rooms":-40,"Holiday Rooms Florence":0,"La Locandiera B&B":-20,"La Tana dei Leoni B&B":0,"Locanda il Salimbecco":0,"Residenza San Lorenzo":0}
+    };
+    if (FP_COMPSET_OFFSET_DEFAULTS[structKey] && typeof FP_COMPSET_OFFSET_DEFAULTS[structKey][competName] === 'number'){
+      offset = FP_COMPSET_OFFSET_DEFAULTS[structKey][competName];
+    }
+  }
   return { peso: peso, offset: offset };
 }
 function fp_setCompsetOffset(structKey, competName, offset){
@@ -32060,7 +32165,9 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<div class="panel-body" style="padding:12px 16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">';
   h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#7a4f1c">Base price</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)"><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="10" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
-  h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#3b6b9a">Markup OTA</b>: <input type="number" id="fp-ota-markup-input" min="0" max="50" step="1" style="width:60px;padding:6px 8px;border:1px solid #3b6b9a;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef4fa"> %</label>';
+  h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#3a6b6b">Markup Expedia/altri</b>: <input type="number" id="fp-mk-expedia" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #3a6b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef6f6"> %</label>';
+  h += '<label style="font-size:12px;color:var(--ink-2)" title="Markup Booking.com per lo storico canali"><b style="color:#1e4a6b">Markup Booking</b>: <input type="number" id="fp-mk-booking" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #1e4a6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef4fa"> %</label>';
+  h += '<label style="font-size:12px;color:var(--ink-2)" title="Markup Airbnb/VRBO per lo storico canali"><b style="color:#a83b6b">Markup Airbnb/VRBO</b>: <input type="number" id="fp-mk-airbnb" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #a83b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#faeef4"> %</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Elasticità prezzo: se il prezzo cambia del X%, le RN attese cambiano in senso opposto di X% × elasticità. Default 1.0 (ratio 1:1). Es: 0.5 = mercato poco elastico, 1.5 = molto elastico."><b style="color:#a83b3b">Elasticità prezzo</b>: <input type="number" id="fp-elasticity-input" min="0" max="3" step="0.1" style="width:60px;padding:6px 8px;border:1px solid #a83b3b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fdeef0"> :1</label>';
   h += '<button id="fp-elasticity-estimate" type="button" style="font-size:11px;padding:6px 10px;border:1px solid #a83b3b;border-radius:4px;background:#fff;color:#a83b3b;cursor:pointer;font-family:\'DM Sans\',sans-serif" title="Stima l\'elasticità dai dati storici degli ultimi 24 mesi">📊 Stima dai dati</button>';
   h += '<span style="font-size:11px;color:var(--ink-3);font-style:italic">Premi "Ricalcola Foundation" sotto per applicare</span>';
@@ -32121,8 +32228,10 @@ function fp_renderFoundationConfigBox(structKey){
   // Populate base + floor + ota markup + elasticity
   document.getElementById('fp-base-input').value = fp_getBasePrice(structKey);
   document.getElementById('fp-floor-input').value = fp_getFloor(structKey);
-  const otaInp = document.getElementById('fp-ota-markup-input');
-  if (otaInp) otaInp.value = fp_getOtaMarkup(structKey);
+  const _mk = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups() : {expedia:17,booking:13,airbnb:10};
+  const _mkE = document.getElementById('fp-mk-expedia'); if (_mkE) _mkE.value = _mk.expedia;
+  const _mkB = document.getElementById('fp-mk-booking'); if (_mkB) _mkB.value = _mk.booking;
+  const _mkA = document.getElementById('fp-mk-airbnb');  if (_mkA) _mkA.value = _mk.airbnb;
   const elInp = document.getElementById('fp-elasticity-input');
   if (elInp) elInp.value = fp_getElasticity(structKey);
   
@@ -32481,12 +32590,14 @@ function fp_renderFoundationConfigBox(structKey){
     if (isFinite(baseVal)) fp_setBasePrice(structKey, baseVal);
     const floorVal = parseFloat(document.getElementById('fp-floor-input').value);
     if (isFinite(floorVal)) fp_setFloor(structKey, floorVal);
-    const otaVal = parseFloat((document.getElementById('fp-ota-markup-input')||{}).value);
-    if (isFinite(otaVal) && otaVal >= 0 && otaVal <= 50){
-      fp_setOtaMarkup(structKey, otaVal);
-      // Ricalcola revPerNightCaricato sui BOOKINGS esistenti col nuovo markup
-      if (typeof fp_recalcMarkupOnBookings === 'function') fp_recalcMarkupOnBookings();
-    }
+    const _mkExpVal = parseFloat((document.getElementById('fp-mk-expedia')||{}).value);
+    const _mkBokVal = parseFloat((document.getElementById('fp-mk-booking')||{}).value);
+    const _mkAirVal = parseFloat((document.getElementById('fp-mk-airbnb')||{}).value);
+    let _mkChanged = false;
+    if (isFinite(_mkExpVal) && _mkExpVal >= 0 && _mkExpVal <= 50){ fp_setChannelMarkup('expedia', _mkExpVal); _mkChanged = true; }
+    if (isFinite(_mkBokVal) && _mkBokVal >= 0 && _mkBokVal <= 50){ fp_setChannelMarkup('booking', _mkBokVal); _mkChanged = true; }
+    if (isFinite(_mkAirVal) && _mkAirVal >= 0 && _mkAirVal <= 50){ fp_setChannelMarkup('airbnb', _mkAirVal); _mkChanged = true; }
+    if (_mkChanged && typeof fp_recalcMarkupOnBookings === 'function') fp_recalcMarkupOnBookings();
     const elVal = parseFloat((document.getElementById('fp-elasticity-input')||{}).value);
     if (isFinite(elVal) && elVal >= 0 && elVal <= 3) fp_setElasticity(structKey, elVal);
     // Salvo peso (via setWeight legacy, condiviso con D·Compset RMES) E offset (Foundation)
@@ -37683,9 +37794,12 @@ function saveRateWeights(weights){
 function getWeight(struct, compName){
   const w = loadRateWeights();
   if (w[struct] && w[struct][compName] != null) return w[struct][compName];
-  // Default per-competitor (usato se l'utente non ha salvato un peso custom)
+  // Default per-competitor (peso 0..1) usato se l'utente non ha salvato un peso custom.
   const RATE_WEIGHT_DEFAULTS = {
-    davids: { 'RFC Repubblica Florence Core B&B': 0 }
+    condotta: {"Residenza Marchesi Pontenani":0.5,"Palazzo Alfani al David":1.0,"Florence Art Apartments":1.0,"Casa del Sarto":0.2,"Granduomo Charming Accomodation":1.0,"Residence Hilda":1.0,"Ricasoli Garden Relais":0.0,"Residenza Della Signoria":0.5},
+    firenze: {"Palazzo Alfani al David":0.5,"Relais Condotta":0.5,"Residenza dei Pucci":1.0,"La Maison du Sage":1.0,"Velona's Jungle Luxury Suites":1.0,"Residenza La Musa Amarcord":1.0,"Ricasoli Garden Relais":1.0},
+    alfani: {"Chic Stay Boutique Apartments":0.0,"Martelli 6 Suites and Apartments":0.0,"Tornabuoni Suites Collection":1.0,"Ricasoli Garden Relais":0.9,"Solo Experience Hotel":0.9,"Residenza Marchesi Pontenani":0.9,"Florence Art Apartments":1.0,"Granduomo Charming Accomodation":0.9,"Residence Hilda":1.0,"Condotta 16 Apartments":1.0,"Casa del Sarto":1.0},
+    davids: {"B&B Stanze Guelfe":1.0,"Residenza Fanti":0.9,"RFC Repubblica Florence Core B&B":0.1,"Althea Rooms":0.0,"Apollo Guest House":1.0,"Aramis Deluxe Rooms":0.7,"Holiday Rooms Florence":0.0,"La Locandiera B&B":0.8,"La Tana dei Leoni B&B":0.0,"Locanda il Salimbecco":0.0,"Residenza San Lorenzo":0.0}
   };
   if (RATE_WEIGHT_DEFAULTS[struct] && RATE_WEIGHT_DEFAULTS[struct][compName] != null){
     return RATE_WEIGHT_DEFAULTS[struct][compName];
