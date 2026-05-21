@@ -968,7 +968,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="panel">
       <div class="panel-head">
         <div>
-          <h3>Monthly forecast — property aggregate</h3>
+          <h3>Monthly KPI & Forecast</h3>
           <div class="panel-sub" id="fcst-monthly-sub">12 months · OCC · ADR · Revenue forecast · confronto vs Final LY</div>
         </div>
         <div style="display:flex;align-items:center;gap:14px;font-size:11px;color:var(--ink-2);user-select:none">
@@ -1265,7 +1265,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>② RMES total cap <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-th-sub">property: —</span></h3>
-          <div class="panel-sub"><b>Linear system</b>: the RMES price = source × (1 + Σ peso × deviazione). Each individual deviation is clamped to ±50%, the total sum is limited by the Cap below. Default 30%: the final price won't deviate by more than 30% from Foundation, even if all 5 factors point in the same direction.</div>
+          <div class="panel-sub"><b>Linear system</b>: the RMES price = source × (1 + Σ weight × deviation). Each individual deviation is clamped to ±50%, the total sum is limited by the Cap below. Default 30%: the final price won't deviate by more than 30% from Foundation, even if all 5 factors point in the same direction.</div>
         </div>
         <div style="display:flex;gap:8px">
           <button id="rmes-tab-th-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset to 30%</button>
@@ -1284,7 +1284,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head" style="border-bottom:1px solid rgba(195,131,59,.25)">
         <div>
           <h3 style="color:#7a4f1c">⚡ Foundation Pricing <span style="font-size:10px;font-weight:600;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:3px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">active</span></h3>
-          <div class="panel-sub" style="margin-top:6px"><b>Foundation is the source of the RMES price.</b> For each day and each RT, I compute a structural price from: LY history × target growth × pace × time curve × compset market cap × floor/base lift. The final RMES price is <code>Foundation × (1 + Σ weights × deviations of the 5 factors)</code>. La vecchia cascata (actual Beddy → My Expedia → Compset → ADR OTB → ADR Final LY) è ora <b>solo fallback</b> for days where Foundation cannot compute a price (e.g. no LY same-DOW same-month data available).</div>
+          <div class="panel-sub" style="margin-top:6px"><b>Foundation is the source of the RMES price.</b> For each day and each RT, I compute a structural price from: LY history × target growth × pace × time curve × compset market cap × floor/base lift. The final RMES price is <code>Foundation × (1 + Σ weights × deviations of the 5 factors)</code>. The old cascade (actual Beddy → My Expedia → Compset → ADR OTB → ADR Final LY) is now <b>fallback only</b> for days where Foundation cannot compute a price (e.g. no LY same-DOW same-month data available).</div>
         </div>
       </div>
       <div class="panel-body" style="padding:14px 16px">
@@ -24761,7 +24761,7 @@ function _getPaceAggBoth(){
   return byStayMonth;
 }
 // Invalida cache quando i dati cambiano (es. reload CSV)
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; }
 
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
@@ -24781,9 +24781,16 @@ function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; }
    Ritorna: { ymdNum: { price, source, suppApplied, multFinale, pricesByRT, mlosByRT, multsByRT } }
    Usa SELL_RMES_W (pesi correnti per struttura).
 */
+let _RMESMAP_TICK = {};  // cache per-render di computeRMESPriceMap, svuotata a inizio renderAll (zero rischio stantio)
+let _SELL_RENDER_TOKEN = 0;  // token per annullare render Sell Strategy obsoleti (cambio struttura rapido)
 function computeRMESPriceMap(sel, startYmd, rangeDays){
   const out = {};
   if (sel === 'both') return out;  // RMES non significativo aggregato
+
+  // CACHE per-tick: dentro lo stesso renderAll, sell strategy e forecast chiedono
+  // la stessa mappa con gli stessi argomenti → calcolala una volta sola.
+  const _rmKey = sel + '|' + startYmd + '|' + rangeDays;
+  if (_RMESMAP_TICK && _RMESMAP_TICK[_rmKey] !== undefined) return _RMESMAP_TICK[_rmKey];
 
   // Floor della struttura: the final RMES price cannot nei scendere sotto questo valore.
   const _structFloor = (typeof fp_getFloor === 'function') ? fp_getFloor(sel) : 0;
@@ -25460,6 +25467,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     // Salvo i moltiplicatori per RT sulla row così sono accessibili dal render principale
     r._multsByRT = _mults_byRT;
   }
+  if (_RMESMAP_TICK) _RMESMAP_TICK[_rmKey] = out;
   return out;
 }
 
@@ -28432,6 +28440,35 @@ function renderSellStrategy(sel){
   const chipEl = document.getElementById('sell-struct-chip');
   if (chipEl) chipEl.textContent = structLabel(sel);
 
+  // Pulsante "⚡ Compute Foundation" (calcolo on-demand per la struttura corrente)
+  const _cfBtn = document.getElementById('sell-compute-foundation');
+  if (_cfBtn){
+    const _isComp = (sel === 'both')
+      ? ['firenze','condotta','alfani','davids'].every(function(k){ return fp_isStructComputed(k); })
+      : fp_isStructComputed(sel);
+    if (_isComp){
+      _cfBtn.textContent = '✓ Foundation ready';
+      _cfBtn.style.background = 'transparent';
+      _cfBtn.style.color = 'var(--ink-3)';
+      _cfBtn.style.borderColor = 'var(--line)';
+    } else {
+      _cfBtn.textContent = '⚡ Compute Foundation';
+      _cfBtn.style.background = 'var(--accent)';
+      _cfBtn.style.color = '#fff';
+      _cfBtn.style.borderColor = 'var(--accent)';
+    }
+    _cfBtn.onclick = function(){
+      _cfBtn.textContent = '… computing';
+      _cfBtn.disabled = true;
+      var _sk = CURRENT_STRUCT;
+      setTimeout(function(){
+        try { fp_ensureStruct(_sk); } catch(e){ console.error('compute foundation', e); }
+        _cfBtn.disabled = false;
+        renderSellStrategy(_sk);
+      }, 30);
+    };
+  }
+
   // Always default the start date to today on every render, UNLESS the user
   // has manually picked a date this session. So:
   // - on first render → today
@@ -30989,6 +31026,7 @@ function priceVsSoldHTML(newPrice, soldAdr, compact){
   return `<br><small style="font-size:${fz}px;color:${color};font-weight:500">vs ${fmtEUR(soldAdr)} · ${sign}${eurTxt}€ ${sign}${pctTxt}%</small>`;
 }
 
+let _APD_CACHE = {};  // cache di aggPricingDaily, invalidata al reload dati (_invalidatePaceAggCache)
 function aggPricingDaily(sel, startYmdNum, rangeDays){
   if (sel === 'both'){
     return { isBoth:true, perStruct:{
@@ -30997,6 +31035,10 @@ function aggPricingDaily(sel, startYmdNum, rangeDays){
       alfani:   aggPricingDaily('alfani', startYmdNum, rangeDays),
     }};
   }
+
+  // CACHE: stessi input → stesso risultato (invalidata al reload dati). Velocizza i render ripetuti.
+  const _apdKey = sel + '|' + startYmdNum + '|' + rangeDays;
+  if (_APD_CACHE && _APD_CACHE[_apdKey] !== undefined) return _APD_CACHE[_apdKey];
 
   const structKey = CFG.structures[sel].key;
   const roomsMap  = CFG.structures[sel].rooms;
@@ -31600,46 +31642,20 @@ function aggPricingDaily(sel, startYmdNum, rangeDays){
     : 0;
   yearTotals.occAvg = yearTotals.capacity>0 ? yearTotals.rnTarget/yearTotals.capacity : 0;
 
-  return {
+  const _apdResult = {
     isBoth:false, structSel:sel, structKey,
     rtList, mixRev, rows, annualByRT, yearTotals,
     baseRT, histAdr, histAdrCar, supplementoStorico, supplementoStagione, mixBookingByRT, mixNonRimbByRT,
     highSeason: [...HIGH_SEASON],
     rangeDays, startYmd: startYmdNum,
   };
+  if (_APD_CACHE) _APD_CACHE[_apdKey] = _apdResult;
+  return _apdResult;
 }
 
 function renderPricing(sel){
   const chipEl = document.getElementById('pri-struct-chip');
   if (chipEl) chipEl.textContent = structLabel(sel);
-
-  // Pulsante "⚡ Compute Foundation" (calcolo on-demand per la struttura corrente)
-  const _cfBtn = document.getElementById('sell-compute-foundation');
-  if (_cfBtn){
-    const _computed = (sel === 'both')
-      ? ['firenze','condotta','alfani','davids'].every(k=>fp_isStructComputed(k))
-      : fp_isStructComputed(sel);
-    if (_computed){
-      _cfBtn.textContent = '✓ Foundation ready';
-      _cfBtn.style.background = 'transparent';
-      _cfBtn.style.color = 'var(--ink-3)';
-      _cfBtn.style.borderColor = 'var(--line)';
-    } else {
-      _cfBtn.textContent = '⚡ Compute Foundation';
-      _cfBtn.style.background = 'var(--accent)';
-      _cfBtn.style.color = '#fff';
-      _cfBtn.style.borderColor = 'var(--accent)';
-    }
-    _cfBtn.onclick = function(){
-      _cfBtn.textContent = '… computing';
-      _cfBtn.disabled = true;
-      setTimeout(function(){
-        try { fp_ensureStruct(CURRENT_STRUCT); } catch(e){ console.error(e); }
-        _cfBtn.disabled = false;
-        renderPricing(CURRENT_STRUCT);
-      }, 30);
-    };
-  }
 
   if (!PRI_START_USER_SET){
     const t = new Date(TODAY); t.setHours(0,0,0,0);
@@ -34186,7 +34202,7 @@ function _renderRmesLmfBox(sel){
       '</div>' +
       '<div style="padding:8px 14px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center">' +
         '<button id="rmes-lmf-reset" style="font-size:11px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-2);cursor:pointer">\u21ba Reset default</button>' +
-        '<span style="font-size:11px;color:var(--ink-3)">Le modifiche si salvano col bottone \u201cApply changes\u201d in fondo alla tab.</span>' +
+        '<span style="font-size:11px;color:var(--ink-3)">Changes are saved with the \u201cApply changes\u201d button at the bottom of the tab.</span>' +
       '</div>' +
     '</div>';
   // wire input → mark dirty
@@ -36018,16 +36034,37 @@ function updateChips(){
 }
 
 function renderAll(){
+  if (typeof _RMESMAP_TICK !== 'undefined') _RMESMAP_TICK = {};  // reset cache per-render
   updateChips();
-  if (typeof fp_ensureStruct === 'function' && typeof CURRENT_STRUCT !== 'undefined') fp_ensureStruct(CURRENT_STRUCT);
   // renderPricing(CURRENT_STRUCT);  // Old: vecchia tab Prezzi rimossa, ora è tab RMES Config
   if (typeof renderRMESConfigTab === 'function') renderRMESConfigTab();
   renderOTB(CURRENT_STRUCT);
   RT_VISIBLE = null;  // reset filter on struct change
   renderRT(CURRENT_STRUCT);
-  if (typeof renderForecast === 'function') renderForecast(CURRENT_STRUCT);
+  // Forecast LAZY: costoso (orizzonte lungo). Lo calcoliamo subito solo se la sua tab è
+  // quella attiva; altrimenti lo marchiamo "dirty" e verrà calcolato all'apertura (setTab).
+  _FCST_DIRTY = true;
+  if (CURRENT_TAB === 'fcst' && typeof renderForecast === 'function'){
+    renderForecast(CURRENT_STRUCT); _FCST_DIRTY = false;
+  }
   renderPickup(CURRENT_STRUCT);
-  renderSellStrategy(CURRENT_STRUCT);
+  // OPZIONE A — Sell Strategy NON BLOCCANTE: la tabella RMES è il calcolo più pesante.
+  // Mostriamo subito un placeholder e scheduliamo il render vero dopo un paint,
+  // così il cambio struttura/tab è percepito come immediato e la UI non si congela.
+  if (typeof renderSellStrategy === 'function'){
+    var _sk = CURRENT_STRUCT;
+    var _wrap = document.getElementById('sell-table-wrap');
+    if (_wrap){
+      _wrap.innerHTML = '<div style="padding:40px;text-align:center;color:var(--ink-3);font-family:\'DM Mono\',monospace;font-size:13px">⏳ Computing prices…</div>';
+    }
+    _SELL_RENDER_TOKEN++;
+    var _myToken = _SELL_RENDER_TOKEN;
+    setTimeout(function(){
+      // se nel frattempo l'utente ha cambiato di nuovo struttura, salta questo render obsoleto
+      if (_myToken !== _SELL_RENDER_TOKEN) return;
+      try { renderSellStrategy(_sk); } catch(e){ console.error('renderSellStrategy', e); }
+    }, 0);
+  }
   renderHistorico(CURRENT_STRUCT);
   if (typeof renderCancellations === 'function') renderCancellations(CURRENT_STRUCT);
   if (typeof renderBookingWindowOTB === 'function') renderBookingWindowOTB(CURRENT_STRUCT);
@@ -36042,15 +36079,21 @@ function setStructure(sel){
   document.querySelectorAll('.struct-pill').forEach(p=>{
     p.classList.toggle('active', p.dataset.s===sel);
   });
-  // ON-DEMAND: calcola Foundation per la struttura appena selezionata se non ancora fatto
-  if (typeof fp_ensureStruct === 'function') fp_ensureStruct(sel);
   renderAll();
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
 
+let CURRENT_TAB = 'sell';
+let _FCST_DIRTY = true;  // il Forecast va ricalcolato (struttura cambiata o dati ricaricati)
 function setTab(name){
+  CURRENT_TAB = name;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
+  // LAZY: il Forecast è costoso (orizzonte lungo). Lo calcoliamo solo quando si apre la sua tab,
+  // e solo se "sporco" (struttura cambiata dall'ultimo calcolo).
+  if (name === 'fcst' && _FCST_DIRTY && typeof renderForecast === 'function'){
+    try { renderForecast(CURRENT_STRUCT); _FCST_DIRTY = false; } catch(e){ console.error('renderForecast', e); }
+  }
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
 
