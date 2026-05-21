@@ -1619,7 +1619,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>① Pesi dei 5 fattori</b> (default 20% × 5 = 100%). Bottoni Reset 20%×5 sulla struttura corrente o su tutte le strutture.</li>
           <li><b>② Cap totale RMES</b> (default ±30%). Limita di quanto il prezzo finale può discostarsi da Foundation, anche se tutti i fattori puntano nella stessa direzione.</li>
           <li><b>Ⓐ Target growth per mese</b> (default +5% × 12). Crescita Revenue vs LY per ogni mese.</li>
-          <li><b>Ⓑ Base / Floor / Markup OTA / Elasticità</b>. Base = prezzo annuale fair (default Firenze 220, Condotta 280, Alfani 270). Floor = limite assoluto sotto cui il prezzo non scende mai (default per struttura: Condotta 200, Alfani 200, Firenze 150, David's 100). Vale sia per Foundation sia per il <b>prezzo finale RMES</b>: anche se i 5 fattori porterebbero più in basso, il prezzo suggerito è bloccato al floor. (L'override manuale può comunque andare dove vuoi tu.) Markup OTA = % che le OTA aggiungono al Beddy_eq (default 12%). Elasticità = sensibilità RN ↔ prezzo (default 1.0).</li>
+          <li><b>Ⓑ Base / Floor / Markup OTA / Elasticità</b>. Base = prezzo annuale fair (default Firenze 220, Condotta 280, Alfani 270, David's 145). Floor = limite assoluto sotto cui il prezzo non scende mai (default per struttura: Condotta 200, Alfani 200, Firenze 150, David's 100). Vale sia per Foundation sia per il <b>prezzo finale RMES</b>: anche se i 5 fattori porterebbero più in basso, il prezzo suggerito è bloccato al floor. (L'override manuale può comunque andare dove vuoi tu.) Markup OTA = % che le OTA aggiungono al Beddy_eq (default 12%). Elasticità = sensibilità RN ↔ prezzo (default 1.0).</li>
           <li><b>Ⓒ Pesi e offset compset</b>. Quali competitor includere, con che peso (0-100%) e che offset (€). Pesi alimentano D·Compset RMES + cap mercato Foundation. Offset solo Foundation.</li>
           <li><b>Ⓓ Audit override post-chiusura</b>. Per ogni giorno chiuso con override attivo, confronto override vs prezzo RMES snapshot. Δ Revenue mostra chi avrebbe fatto meglio (assumendo stesse RN).</li>
           <li><b>Ⓔ Supplementi RT per mese</b> (read-only). Tabella 12 mesi × N RT con i supplementi che il sistema applica automaticamente a Foundation per le RT non-base. Derivati dallo storico, separati per stagione alta/bassa.</li>
@@ -30453,7 +30453,7 @@ function fp_auditAggregate(records){
 }
 
 // Default per struttura: scelti coerenti con storico medio (€)
-const FP_BASE_PRICE_DEFAULTS = { firenze: 220, condotta: 280, alfani: 270 };
+const FP_BASE_PRICE_DEFAULTS = { firenze: 220, condotta: 280, alfani: 270, davids: 145 };
 
 function fp_getBasePrice(structKey){
   try {
@@ -37683,6 +37683,13 @@ function saveRateWeights(weights){
 function getWeight(struct, compName){
   const w = loadRateWeights();
   if (w[struct] && w[struct][compName] != null) return w[struct][compName];
+  // Default per-competitor (usato se l'utente non ha salvato un peso custom)
+  const RATE_WEIGHT_DEFAULTS = {
+    davids: { 'RFC Repubblica Florence Core B&B': 0 }
+  };
+  if (RATE_WEIGHT_DEFAULTS[struct] && RATE_WEIGHT_DEFAULTS[struct][compName] != null){
+    return RATE_WEIGHT_DEFAULTS[struct][compName];
+  }
   return 1.0;  // default 100%
 }
 function setWeight(struct, compName, value){
