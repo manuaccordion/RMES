@@ -28470,7 +28470,7 @@ function beddyExpediaRatio(sel, lookbackDays){
     const expMy = expMyMap[key];
     if (expMy == null || expMy <= 0) continue;
     // Converto expedia a equivalente Beddy flessibile
-    const expBeddyEq = expToBeddyFlex(expMy);
+    const expBeddyEq = expToBeddyFlex(expMy, sel);
     if (!expBeddyEq) continue;
     ratios.push(beddy / expBeddyEq);
   }
@@ -29417,7 +29417,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
 
     // === Sorgente Expedia "pulita" Beddy-eq ===
     // Conversione: prezzo Expedia (lordo, flessibile) → Beddy_eq (non rimborsabile, no markup OTA)
-    //   /(1 + markup) = toglie markup OTA (configurabile in tab RMES, default 12%)
+    //   /(1 + markup) = toglie markup OTA (configurabile in tab RMES, default 17%)
     //   /0.90 = riporta da flessibile a non rimborsabile (10% meno)
     // Beddy = sito diretto, nessun ratio storico applicato.
     let _sourceExpediaBeddyEq = null;
@@ -30957,7 +30957,7 @@ function fp_computeMarketCap(structKey, targetDateISO){
                 : EXPEDIA_DATA.competitors;
   if (!compMap) return null;
   // Divisore per convertire Expedia raw → Beddy_eq usando il markup configurato per la struttura
-  // (default 12%): /(1+markup/100) /0.90. Beddy = sito diretto, nessun ratio storico.
+  // (default 17%): /(1+markup/100) /0.90. Beddy = sito diretto, nessun ratio storico.
   const divisor = fp_expToBeddyDivisor(structKey);
   let weightedSum = 0, weightSum = 0;
   const details = [];
@@ -33460,7 +33460,7 @@ function renderSellStrategy(sel){
         const expBeddyEq = exp2.myPriceBeddy;
         stepSorgente = `[1] SORGENTE: Mio prezzo Expedia\n` +
                        `    Prezzo visibile su Expedia: ${fmtEUR(expRaw)}\n` +
-                       `    Conversione a Beddy_eq: ${fmtEUR(expRaw)} ÷ 1.12 (markup OTA) ÷ 0.90 (sconto non rimb.) = ${fmtEUR(expBeddyEq)}\n`;
+                       `    Conversione a Beddy_eq: ${fmtEUR(expRaw)} ÷ markup Expedia ÷ 0.90 (sconto non rimb.) = ${fmtEUR(expBeddyEq)}\n`;
         if (baseSuppApplied > 0 && expedia_rt_shown){
           const isHigh = _suppData && _suppData.highSeason.has(r.mo);
           const stagionLbl = isHigh ? 'alta' : 'bassa';
@@ -33473,7 +33473,7 @@ function renderSellStrategy(sel){
         const csBeddyEq = exp2.compsetAvgBeddy;
         stepSorgente = `[1] SORGENTE: Compset Expedia (no mio prezzo disponibile)\n` +
                        `    Media compset Expedia: ${fmtEUR(csRaw)}\n` +
-                       `    Conversione a Beddy eq.: ${fmtEUR(csRaw)} ÷ 1.12 ÷ 0.90 = ${fmtEUR(csBeddyEq)}\n`;
+                       `    Conversione a Beddy eq.: ${fmtEUR(csRaw)} ÷ markup Expedia ÷ 0.90 = ${fmtEUR(csBeddyEq)}\n`;
         if (baseSuppApplied > 0 && expedia_rt_shown){
           const isHigh = _suppData && _suppData.highSeason.has(r.mo);
           const stagionLbl = isHigh ? 'alta' : 'bassa';
@@ -36078,7 +36078,7 @@ function renderPricing(sel){
     // After the BASE RT row, append 3 Expedia market rows (only for Condotta 16 and Palazzo Alfani)
     if (isBase && (sel === 'condotta' || sel === 'alfani')){
       // Row: Mio prezzo Expedia (riportato a Beddy flex per confronto)
-      html += `<tr style="background:rgba(58,107,107,.04)"><td class="cell-mono pri-rt-name-col" style="background:rgba(58,107,107,.08);position:sticky;left:0;z-index:2;font-weight:500;border-right:2px solid #3b6b6b;font-size:10px;color:#3b6b6b" title="Prezzo camera base su Expedia, riportato a Beddy flessibile (= prezzo_expedia / 1.12 / 0.90)">📊 Mio prezzo (Beddy eq.)</td>`;
+      html += `<tr style="background:rgba(58,107,107,.04)"><td class="cell-mono pri-rt-name-col" style="background:rgba(58,107,107,.08);position:sticky;left:0;z-index:2;font-weight:500;border-right:2px solid #3b6b6b;font-size:10px;color:#3b6b6b" title="Prezzo camera base su Expedia, riportato a Beddy flessibile (= prezzo_expedia ÷ markup Expedia ÷ 0.90)">📊 Mio prezzo (Beddy eq.)</td>`;
       for (const r of A.rows){
         const exp = expContext(r.ymd, sel);
         const isWE = (r.dow===5 || r.dow===6 || r.dow===0);
