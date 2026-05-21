@@ -1393,7 +1393,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b style="color:#3b6b9a">Firenze Suite</b> — 8 camere · PMS Beddy</li>
           <li><b style="color:#3d7a4b">Condotta 16</b> — 7 appartamenti · PMS Beddy</li>
           <li><b style="color:#8e5fa8">Palazzo Alfani</b> — 9 camere · PMS Beddy (inventario time-aware dal 01/02/2025)</li>
-          <li><b style="color:#c0392b">Florence David's</b> — 3 appartamenti (Verde/Senape/Blu) · PMS <b>Krossbooking</b>. Non ha un budget di bilancio: il "budget" è un <b>forecast</b> = revenue stesso mese LY +8%.</li>
+          <li><b style="color:#c0392b">Florence David's</b> — 3 appartamenti (Verde/Senape/Blu, baseRT <b>Senape</b>) · PMS <b>Krossbooking</b>. Non ha un budget di bilancio: il "budget" è un <b>forecast</b> = revenue stesso mese LY +8%. <b>Vendita "Appartamento"</b>: in alcuni giorni l'intera unità si vende come un blocco unico (tutte e 3 le stanze insieme) invece che a stanza singola. In questi casi la prenotazione occupa Verde + Senape + Blu per quelle notti (struttura al 100%) e il revenue viene ripartito sulle 3 stanze.</li>
         </ul>
 
         <h4 style="margin:18px 0 8px 0;color:#5a3a14">Lettura della tabella (sinistra → destra)</h4>
@@ -1416,7 +1416,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li>Firenze Suite → <b>Camera Matrim. Deluxe</b> (4 stanze su 8)</li>
           <li>Condotta 16 → <b>Bilocale</b> (3 stanze su 7)</li>
           <li>Palazzo Alfani → <b>Classic</b> (3 stanze su 9, dal 01/02/2025)</li>
-          <li>Florence David's → <b>Verde</b> (1 stanza su 3)</li>
+          <li>Florence David's → <b>Senape</b> (1 appartamento su 3)</li>
         </ul>
         <p>Per la baseRT, Foundation usa i 6 step completi. Per le RT non-base (Suite, Suite con Terrazza, Trilocale, Attico, Superior, Junior Suite, Deluxe), Foundation NON viene ricalcolato dai 6 step; si usa la scorciatoia:</p>
         <p style="padding:8px 12px;background:#f8f8f5;border-left:3px solid #3b6b9a;font-family:'DM Mono',monospace;font-size:12px;text-align:center"><b>Foundation_RT = Foundation_baseRT + supplemento_RT_mese</b></p>
@@ -12415,6 +12415,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 2128/2026,5094580283,23/04/2026 19:16:48,,Booking,,ivana.dragas0@gmail.com,+385989260022,,Senape,Senape - Non Rimborsabile OTA,14/05/2026,17/05/2026,3,,EUR,657.84,657.84,,Florence David's Apartament,Confermate,,54.00,,,3,,
 2164/2026,5743326687,13/05/2026 09:46:13,,Booking,,jvalad.777069@guest.booking.com,+33672261093,,Senape,Senape - Standard,13/05/2026,14/05/2026,1,,EUR,115.45,115.45,,Florence David's Apartament,Confermate,,12.00,,,2,,
 2137/2026,6077477107,29/04/2026 20:21:14,,Booking,,celine_godfroid@hotmail.com,+41786077629,,Blu,Blu - Non Rimborsabile OTA,13/05/2026,15/05/2026,2,,EUR,359.58,359.58,,Florence David's Apartament,Confermate,,12.00,,,1,,
+2023/2026,,10/02/2026 18:16:44,2026-03-18 14:32:12.988911,Booking Engine,,annemartinhill@gmail.com,+11 773 209 5312,,"Verde, Senape, Blu",Appartamento  - Standard,13/05/2026,17/05/2026,4,,EUR,3809.42,3809.42,,Florence David's Apartament,Cancellate,,0.00,,,7,,
 2153/2026,5146648139,07/05/2026 22:04:05,,Booking,,nechifor.antonio@yahoo.com,+40742380208,,Blu,Blu - Non Rimborsabile OTA,12/05/2026,13/05/2026,1,,EUR,130.98,130.98,,Florence David's Apartament,Confermate,,12.00,,,2,,
 2130/2026,,26/04/2026 05:23:51,,Booking Engine,,jreddin11@gmail.com,+12629015824,,Senape,Senape - Non Rimborsabile BE,11/05/2026,13/05/2026,2,,EUR,305.71,305.71,,Florence David's Apartament,Confermate,,24.00,,,2,,
 2088/2026,2425798461,29/03/2026 02:02:00,2026-03-29 21:39:39.377585,Expedia,Expedia,qhlx647vwe@m.expediapartnercentral.com,+1 1111111111,,Senape,Senape - Standard,10/05/2026,14/05/2026,4,,EUR,683.36,683.36,,Florence David's Apartament,Cancellate,,48.00,,,2,,
@@ -12478,6 +12479,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 2055/2026,5586892046,08/03/2026 16:25:45,,Booking,,nadiaravera.68@gmail.com,+393314397121,,Senape,Senape - Standard,04/04/2026,05/04/2026,1,,EUR,215.63,215.63,,Florence David's Apartament,Confermate,,18.00,,,3,,
 2048/2026,6598280561,07/03/2026 17:53:14,,Booking,,theatk@hotmail.com,+31686285279,,Blu,Blu - Non Rimborsabile OTA,04/04/2026,06/04/2026,2,,EUR,345.43,345.43,,Florence David's Apartament,Confermate,,24.00,,,2,,
 2051/2026,6598232263,08/03/2026 12:37:25,,Booking,,stojanivski.j@gmail.com,+38978589890,,Verde,Verde - Non Rimborsabile OTA,03/04/2026,06/04/2026,3,,EUR,463.59,463.59,,Florence David's Apartament,Confermate,,36.00,,,2,,
+2096/2026,,02/04/2026 11:35:18,,Booking Engine,,masciab@mail.ru,+7549384607,,"Senape, Verde","Senape - Non Rimborsabile OTA, Verde - Standard",02/04/2026,03/04/2026,1,,EUR,423.25,423.25,,Florence David's Apartament,Confermate,,24.00,,,4,,
 2085/2026,2424873044,27/03/2026 17:21:00,,Expedia,,shoshana@teamepstein.com,+4543170637,,Blu,Blu - Non Rimborsabile OTA,02/04/2026,04/04/2026,2,,EUR,210.90,210.90,,Florence David's Apartament,Confermate,,24.00,,,2,,
 2052/2026,6598293389,08/03/2026 14:03:42,,Booking,,vtashkova@abv.bg,+359882224525,,Blu,Blu - Non Rimborsabile OTA,31/03/2026,02/04/2026,2,,EUR,198.23,198.23,,Florence David's Apartament,Confermate,,24.00,,,2,,
 2037/2026,5634003531,23/02/2026 16:35:28,,Booking,,fdegra.954076@guest.booking.com,+393791360668,,Senape,Senape - Standard,31/03/2026,02/04/2026,2,,EUR,258.99,258.99,,Florence David's Apartament,Confermate,,24.00,,,3,,
@@ -12922,6 +12924,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 1602/2025,4553075459,03/05/2025 22:36:58,2025-05-26 22:26:18.974924,Booking,,ranacl.926777@guest.booking.com,+39 348 392 0047,,Verde,Verde - Standard,01/06/2025,02/06/2025,1,,EUR,132.26,132.26,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 1601/2025,4523335119,03/05/2025 18:48:09,,Booking,,gtrico.640208@guest.booking.com,+393387905986,,Blu,Blu - Standard,01/06/2025,02/06/2025,1,,EUR,116.42,116.42,,Florence David's Apartament,Confermate,,12.00,,,2,,
 1562/2025,4662893340,17/04/2025 14:39:37,,Booking,,katia.paris81@gmail.com,+393925633201,,Senape,Senape - Standard,01/06/2025,02/06/2025,1,,EUR,178.20,178.20,,Florence David's Apartament,Confermate,,12.00,,,3,,
+1291/2024,4839376183,21/10/2024 14:25:12,,Booking,,kstrei.619521@guest.booking.com,+4369910621795,,"Verde, Senape, Blu",Appartamento  - Standard,29/05/2025,01/06/2025,3,,EUR,1919.70,1919.70,,Florence David's Apartament,Confermate,,108.00,,,6,,
 1596/2025,4523377260,03/05/2025 13:42:55,,Booking,,aherre.361642@guest.booking.com,+50761403326,,Verde,Verde - Standard,28/05/2025,29/05/2025,1,,EUR,125.14,125.14,,Florence David's Apartament,Confermate,,12.00,,,2,,
 1637/2025,6350177982,25/05/2025 09:49:25,,Booking,,fcaval.527510@guest.booking.com,+393668112872,,Blu,Blu - Standard,27/05/2025,29/05/2025,2,,EUR,207.50,207.50,,Florence David's Apartament,Confermate,,24.00,,,2,,
 1581/2025,4848859528,26/04/2025 07:26:49,2025-05-22 08:58:49.69332,Booking,,linda.kjj@hotmail.com,+32485691061,,Blu,Blu - Standard,27/05/2025,29/05/2025,2,,EUR,303.83,303.83,,Florence David's Apartament,Cancellate,,0.00,,,2,,
@@ -13080,6 +13083,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 1410/2025,4927679437,12/01/2025 21:52:37,,Booking,,albablaal@gmail.com,+34645012912,,Blu,Blu - Standard,06/03/2025,08/03/2025,2,,EUR,186.22,186.22,,Florence David's Apartament,Confermate,,24.00,,,2,,
 1376/2024,4889907840,15/12/2024 19:38:13,,Booking,,balema.328163@guest.booking.com,+34670432758,,Verde,Verde - Non Rimborsabile OTA,06/03/2025,10/03/2025,4,,EUR,344.81,344.81,,Florence David's Apartament,Confermate,,48.00,,,2,,
 1458/2025,4825496506,09/02/2025 08:28:02,,Booking,,cdiaco.641904@guest.booking.com,+40 741 063 838,,Senape,Senape - Standard,05/03/2025,07/03/2025,2,,EUR,188.89,188.89,,Florence David's Apartament,Confermate,,24.00,,,2,,
+1413/2025,4447909811,14/01/2025 08:54:04,2025-01-26 14:20:15.631995,Booking,,ruy.437995@guest.booking.com,+63 998 401 0505,,"Verde, Senape","Verde - Standard, Senape - Standard",04/03/2025,06/03/2025,2,,EUR,445.50,445.50,,Florence David's Apartament,Cancellate,,0.00,,,3,,
 1479/2025,4730631729,28/02/2025 16:42:05,2025-02-28 17:30:23.519099,Booking,,dbatti.100093@guest.booking.com,+39 320 671 2325,,Senape,Senape - Standard,03/03/2025,05/03/2025,2,,EUR,190.18,190.18,,Florence David's Apartament,Cancellate,,0.00,,,3,,
 1409/2025,4620395092,12/01/2025 18:01:14,,Booking,,dvince.570917@guest.booking.com,+33661655292,,Blu,Blu - Non Rimborsabile OTA,03/03/2025,05/03/2025,2,,EUR,156.60,156.60,,Florence David's Apartament,Confermate,,24.00,,,2,,
 1407/2025,4328108995,10/01/2025 22:09:55,,Booking,,rossellascialdone@virgilio.it,+393291045218,,Senape,Senape - Standard,01/03/2025,03/03/2025,2,,EUR,233.68,233.68,,Florence David's Apartament,Confermate,,24.00,,,3,,
@@ -13158,6 +13162,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 1369/2024,4682452045,09/12/2024 16:10:58,,Booking,,jdunba.123021@guest.booking.com,+61 438 234 789,,Verde,Verde - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,,EUR,335.20,335.20,,Florence David's Apartament,Confermate,,22.00,,,2,,
 1345/2024,4850594200,23/11/2024 20:04:57,,Booking,,echapu.934847@guest.booking.com,+33 8363955,,Blu,Blu - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,,EUR,352.03,352.03,,Florence David's Apartament,Confermate,,22.00,,,2,,
 1329/2024,4467901680,16/11/2024 16:55:52,,Booking,,enispulaha@gmail.com,+39 366 539 7055,,Senape,Senape - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,,EUR,436.56,436.56,,Florence David's Apartament,Confermate,,33.00,,,3,,
+1327/2024,4683729592,14/11/2024 22:06:53,2024-11-16 10:25:11.615072,Booking,,amotto.360600@guest.booking.com,+39 392 199 9808,,"Verde, Senape, Blu",Appartamento  - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,,EUR,1338.22,1338.22,,Florence David's Apartament,Cancellate,,0.00,,,7,,
 1390/2024,4728359083,29/12/2024 17:52:23,,Booking,,bmarco.256684@guest.booking.com,+39 340 115 3211,,Verde,Verde - Non Rimborsabile OTA,30/12/2024,31/12/2024,1,,EUR,92.22,92.22,,Florence David's Apartament,Confermate,,11.00,,,2,,
 1355/2024,4613986296,28/11/2024 18:50:10,2024-11-29 22:07:46.523653,Booking,,gfabri.580954@guest.booking.com,+39 329 724 1324,,Verde,Verde - Non Rimborsabile OTA,30/12/2024,01/01/2025,2,,EUR,443.72,443.72,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 1386/2024,4610737202,25/12/2024 15:46:25,,Booking,,kmarti.730535@guest.booking.com,+61 488 260 191,,Senape,Senape - Non Rimborsabile OTA,29/12/2024,31/12/2024,2,,EUR,249.38,249.38,,Florence David's Apartament,Confermate,,33.00,,,3,,
@@ -13188,6 +13193,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 1314/2024,,04/11/2024 22:19:35,,Booking Engine,,elisabetta.disanto@icloud.com,+393403681964,,Verde,Verde - Standard,12/12/2024,15/12/2024,3,,EUR,304.00,304.00,,Florence David's Apartament,Confermate,,33.00,,,2,,
 1313/2024,4861795918,04/11/2024 19:38:46,,Booking,,flanni.736071@guest.booking.com,+39 388 186 5198,,Blu,Blu - Non Rimborsabile OTA,12/12/2024,14/12/2024,2,,EUR,142.74,142.74,,Florence David's Apartament,Confermate,,22.00,,,2,,
 1342/2024,4576974542,20/11/2024 18:35:57,,Booking,,cxingm.699771@guest.booking.com,+86 3463013134,,Senape,Senape - Non Rimborsabile OTA,11/12/2024,14/12/2024,3,,EUR,229.34,229.34,,Florence David's Apartament,Confermate,,33.00,,,2,,
+1373/2024,4981592799,09/12/2024 21:21:22,2024-12-10 00:28:22.334693,Booking,,sbadar.655475@guest.booking.com,+39 338 286 9705,,"Verde, Senape, Blu",Appartamento  - Standard,09/12/2024,11/12/2024,2,,EUR,445.50,445.50,,Florence David's Apartament,Cancellate,,0.00,,,5,,
 1248/2024,4445311207,07/10/2024 12:45:49,2024-12-02 04:58:11.660601,Booking,,hdeniz.118570@guest.booking.com,+90 553 620 92 65,,Blu,Blu - Standard,09/12/2024,11/12/2024,2,,EUR,207.90,207.90,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 1349/2024,4651868573,25/11/2024 13:16:08,2024-12-04 09:31:48.80048,Booking,,lhafed.427883@guest.booking.com,+393512879435,,Verde,Verde - Standard,08/12/2024,11/12/2024,3,,EUR,222.76,222.76,,Florence David's Apartament,Cancellate,,0.00,,,1,,
 1344/2024,4335699490,23/11/2024 13:53:20,2024-11-25 10:25:04.189156,Booking,,lhafed.356731@guest.booking.com,+393512879435,,Verde,Verde - Non Rimborsabile OTA,08/12/2024,11/12/2024,3,,EUR,200.47,200.47,,Florence David's Apartament,Cancellate,,0.00,,,1,,
@@ -13321,6 +13327,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 1176/2024,4488209779,27/08/2024 20:02:24,2024-09-05 04:50:42.5142,Booking,,wchen.708689@guest.booking.com,+86 138 2602 8672,,Blu,Blu - Standard,01/10/2024,03/10/2024,2,,EUR,374.22,374.22,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 1164/2024,4338733581,18/08/2024 16:34:21,2024-08-27 18:59:35.304197,Booking,,shuang.737982@guest.booking.com,+86 185 7462 0063,,Blu,Blu - Standard,30/09/2024,03/10/2024,3,,EUR,523.02,523.02,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 1155/2024,4322927882,11/08/2024 01:24:21,,Booking,,mtorre.958992@guest.booking.com,+56 9 6674 3659,,Senape,Senape - Standard,30/09/2024,02/10/2024,2,,EUR,422.66,422.66,,Florence David's Apartament,Confermate,,33.00,,,3,,
+1078/2024,4500928253,07/06/2024 18:27:14,2024-06-14 07:26:41.916606,Booking,,dzhao.184761@guest.booking.com,+86 8617665223240,,"Verde, Senape, Blu",Appartamento  - Standard,30/09/2024,02/10/2024,2,,EUR,1356.66,1356.66,,Florence David's Apartament,Cancellate,,0.00,,,6,,
 1217/2024,4716615501,27/09/2024 10:10:22,,Booking,,ediaz.546085@guest.booking.com,+57 310 5871168,,Verde,Verde - Non Rimborsabile OTA,29/09/2024,02/10/2024,3,,EUR,523.02,523.02,,Florence David's Apartament,Confermate,,33.00,,,2,,
 1216/2024,,26/09/2024 20:27:32,,FrontOffice,,,,,Blu,Blu - Standard,29/09/2024,02/10/2024,3,,EUR,417.00,417.00,,Florence David's Apartament,Confermate,,33.00,,,2,,
 1160/2024,4627807671,14/08/2024 16:50:41,2024-08-14 16:55:16.163824,Booking,,kstavr.488082@guest.booking.com,+357 99 407131,,Blu,Blu - Standard,29/09/2024,04/10/2024,5,,EUR,859.82,859.82,,Florence David's Apartament,Cancellate,,0.00,,,1,,
@@ -13452,7 +13459,9 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 1020/2024,4491799984,05/05/2024 01:50:53,,Booking,,mhuang.188505@guest.booking.com,+1 352 286 2706,,Blu,Blu - Non Rimborsabile OTA,18/06/2024,20/06/2024,2,,EUR,303.12,303.12,,Florence David's Apartament,Confermate,,22.00,,,2,,
 1043/2024,4781100767,18/05/2024 11:57:19,2024-06-03 08:22:47.278289,Booking,,pshah.700824@guest.booking.com,+91 95453 09191,,Blu,Blu - Standard,17/06/2024,18/06/2024,1,,EUR,187.11,187.11,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 1009/2024,4958105042,30/04/2024 16:31:05,,Booking,,dthomp.273084@guest.booking.com,+1 908 894 0505,,Senape,Senape - Standard,17/06/2024,20/06/2024,3,,EUR,704.43,704.43,,Florence David's Apartament,Confermate,,49.50,,,3,,
+933/2024,4203523406,17/03/2024 06:29:40,2024-04-29 01:01:18.173695,Booking,,msierr.319202@guest.booking.com,+1 206 948 4101,,"Verde, Senape, Blu",Appartamento  - Standard,17/06/2024,21/06/2024,4,,EUR,2534.40,2534.40,,Florence David's Apartament,Cancellate,,0.00,,,4,,
 1076/2024,4976849991,07/06/2024 00:06:57,,Booking,,gevely.105946@guest.booking.com,+356 9991 4352,,Blu,Blu - Non Rimborsabile OTA,16/06/2024,18/06/2024,2,,EUR,263.02,263.02,,Florence David's Apartament,Confermate,,11.00,,,1,,
+1064/2024,4405901919,27/05/2024 13:36:23,2024-05-29 19:11:32.920888,Booking,,mencoy.738028@guest.booking.com,+39 347 593 4548,,"Blu, Senape","Blu - Standard, Senape - Standard",16/06/2024,17/06/2024,1,,EUR,416.11,416.11,,Florence David's Apartament,Cancellate,,0.00,,,5,,
 1022/2024,4589521124,05/05/2024 10:59:06,,Booking,,acholm.303492@guest.booking.com,+44 7766 051680,,Verde,Verde - Non Rimborsabile OTA,16/06/2024,19/06/2024,3,,EUR,540.84,540.84,,Florence David's Apartament,Confermate,,16.50,,,1,,
 1074/2024,4860354858,04/06/2024 22:56:37,,Booking,,ttsche.255197@guest.booking.com,+41 788396462,,Blu,Blu - Non Rimborsabile OTA,15/06/2024,16/06/2024,1,,EUR,183.64,183.64,,Florence David's Apartament,Confermate,,11.00,,,2,,
 1050/2024,4695296367,19/05/2024 18:26:05,,Booking,,gpelel.627197@guest.booking.com,+39 347 644 3784,,Senape,Senape - Standard,15/06/2024,16/06/2024,1,,EUR,263.52,263.52,,Florence David's Apartament,Confermate,,16.50,,,3,,
@@ -13559,8 +13568,10 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 911/2024,4007602096,04/03/2024 11:06:31,2024-04-19 15:51:06.075541,Booking,,mdinle.318185@guest.booking.com,+90 536 730 59 41,,Blu,Blu - Standard,24/04/2024,26/04/2024,2,,EUR,318.00,318.00,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 869/2024,4245088518,22/01/2024 15:16:17,2024-04-02 09:10:58.098927,Booking,,mcrist.581931@guest.booking.com,+40 723 247 592,,Verde,Verde - Standard,23/04/2024,27/04/2024,4,,EUR,698.40,698.40,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 868/2024,4202297339,22/01/2024 13:44:52,2024-01-22 15:15:05.35422,Booking,,mcrist.193761@guest.booking.com,+40 723 247 592,,Verde,Verde - Standard,23/04/2024,27/04/2024,4,,EUR,698.40,698.40,,Florence David's Apartament,Cancellate,,0.00,,,2,,
+845/2024,4171397764,11/01/2024 04:28:53,2024-01-13 04:41:11.768118,Booking,,jchong.228293@guest.booking.com,+1 416 554 5422,,"Verde, Senape, Blu","Appartamento  - Standard, Verde - Standard",22/04/2024,25/04/2024,3,,EUR,2144.00,2144.00,,Florence David's Apartament,Cancellate,,0.00,,,7,,
 954/2024,4946514315,26/03/2024 08:27:38,,Booking,,fdeamb.776585@guest.booking.com,+39 338 384 0322,,Verde,Verde - Standard,20/04/2024,22/04/2024,2,,EUR,403.00,403.00,,Florence David's Apartament,Confermate,,22.00,,,2,,
 915/2024,4046633909,06/03/2024 21:49:04,,Booking,,ekousa.557109@guest.booking.com,+30 698 348 8424,,Blu,Blu - Standard,20/04/2024,22/04/2024,2,,EUR,304.20,304.20,,Florence David's Apartament,Confermate,,22.00,,,2,,
+849/2024,4243215995,13/01/2024 04:46:46,2024-01-29 05:12:26.142029,Booking,,jchong.375364@guest.booking.com,+1 416 554 5422,,"Verde, Senape, Blu","Appartamento  - Standard, Verde - Standard",20/04/2024,23/04/2024,3,,EUR,2224.00,2224.00,,Florence David's Apartament,Cancellate,,0.00,,,7,,
 910/2024,4209501876,04/03/2024 08:31:52,,Booking,,cyu.787756@guest.booking.com,+886 905 360 152,,Senape,Senape - Standard,19/04/2024,22/04/2024,3,,EUR,591.30,591.30,,Florence David's Apartament,Confermate,,49.50,,,3,,
 988/2024,,15/04/2024 11:42:38,,Booking Engine,,pellegrini.aspi@gmail.com,+393393621958,,Senape,Senape - Standard,18/04/2024,19/04/2024,1,,EUR,199.00,199.00,,Florence David's Apartament,Confermate,,5.50,,,1,,
 952/2024,4738588310,25/03/2024 00:56:56,,Booking,,shuang.920028@guest.booking.com,+44 7552 929530,,Verde,Verde - Non Rimborsabile OTA,18/04/2024,20/04/2024,2,,EUR,334.53,334.53,,Florence David's Apartament,Confermate,,22.00,,,2,,
@@ -13587,6 +13598,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 870/2024,4068506791,24/01/2024 07:39:06,,Booking,,tschwa.795931@guest.booking.com,+43 660 1633603,,Verde,Verde - Non Rimborsabile OTA,03/04/2024,05/04/2024,2,,EUR,312.66,312.66,,Florence David's Apartament,Confermate,,22.00,,,2,,
 941/2024,4110498745,20/03/2024 18:30:10,2024-03-28 16:37:56.291629,Booking,,vibane.521462@guest.booking.com,+34 654 06 19 81,,Senape,Senape - Standard,02/04/2024,04/04/2024,2,,EUR,349.20,349.20,,Florence David's Apartament,Cancellate,,0.00,,,3,,
 881/2024,4117901904,09/02/2024 04:59:33,,Booking,,kpark.320841@guest.booking.com,+82 2035640799,,Blu,Blu - Standard,02/04/2024,06/04/2024,4,,EUR,772.20,772.20,,Florence David's Apartament,Confermate,,44.00,,,2,,
+937/2024,4033395177,18/03/2024 02:02:09,,Booking,,gbandi.331375@guest.booking.com,+1 801 541 2719,,"Verde, Senape","Verde - Non Rimborsabile OTA, Senape - Non Rimborsabile OTA",30/03/2024,01/04/2024,2,,EUR,824.40,824.40,,Florence David's Apartament,Confermate,,44.00,,,4,,
 934/2024,,17/03/2024 12:12:00,,Booking Engine,,ale.titone93@gmail.com,+393405783668,,Blu,Blu - Non Rimborsabile OTA,30/03/2024,01/04/2024,2,,EUR,367.20,367.20,,Florence David's Apartament,Confermate,,22.00,,,2,,
 826/2024,4036114860,04/01/2024 21:54:38,2024-03-16 13:14:07.63535,Booking,,lfarra.779322@guest.booking.com,+39 348 013 7675,,Senape,Senape - Standard,30/03/2024,01/04/2024,2,,EUR,238.00,238.00,,Florence David's Apartament,Cancellate,,0.00,,,3,,
 960/2024,HMP9HPBJ5W,29/03/2024 17:42:58,,Airbnb,Airbnb,,+4915770772516,,Verde,Verde - Standard,29/03/2024,30/03/2024,1,,EUR,129.90,129.90,,Florence David's Apartament,Confermate,,0.00,,,1,,
@@ -13619,6 +13631,7 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 878/2024,4106386646,30/01/2024 10:04:09,,Booking,,gcaiaz.492164@guest.booking.com,+39 349 933 7435,,Senape,Senape - Non Rimborsabile OTA,08/03/2024,10/03/2024,2,,EUR,261.18,261.18,,Florence David's Apartament,Confermate,,33.00,,,3,,
 865/2024,4245057820,21/01/2024 19:15:29,,Booking,,sshaik.257627@guest.booking.com,+44 7706924787,,Blu,Blu - Standard,08/03/2024,10/03/2024,2,,EUR,223.20,223.20,,Florence David's Apartament,Confermate,,22.00,,,2,,
 904/2024,4073406643,02/03/2024 20:07:22,,Booking,,imilio.565897@guest.booking.com,+30 6982401162,,Senape,Senape - Standard,07/03/2024,08/03/2024,1,,EUR,125.10,125.10,,Florence David's Apartament,Confermate,,11.00,,,3,,
+898/2024,,01/03/2024 16:17:08,,FrontOffice,,ramaroberta60@gmail.com,,,"Blu, Verde","Blu - Standard, Verde - Standard",05/03/2024,07/03/2024,2,,EUR,308.00,308.00,,Florence David's Apartament,Confermate,,22.00,,,2,,
 893/2024,4223507126,25/02/2024 21:37:31,2024-02-28 19:05:30.894809,Booking,,smarin.121163@guest.booking.com,+39 333 616 6190,,Verde,Verde - Standard,05/03/2024,07/03/2024,2,,EUR,205.20,205.20,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 883/2024,4082551861,13/02/2024 09:36:20,2024-02-17 18:32:48.981001,Booking,,lbalog.908335@guest.booking.com,+421 903 860 441,,Senape,Senape - Standard,04/03/2024,06/03/2024,2,,EUR,223.20,223.20,,Florence David's Apartament,Cancellate,,0.00,,,2,,
 896/2024,4204758010,29/02/2024 20:44:31,,Booking,,smanci.520340@guest.booking.com,+39 338 869 2331,,Verde,Verde - Non Rimborsabile OTA,02/03/2024,03/03/2024,1,,EUR,108.54,108.54,,Florence David's Apartament,Confermate,,11.00,,,2,,
@@ -13658,15 +13671,19 @@ n.3093769010,n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,,,,Appartame
 831/2024,,06/01/2024 12:57:18,,FrontOffice,,info@dimorasansebastiano.com,+393392455649,,Verde,Verde - Standard,21/01/2024,23/01/2024,2,,EUR,130.00,130.00,,Florence David's Apartament,Confermate,,22.00,,,2,,
 827/2024,4036145821,05/01/2024 00:06:24,,Booking,,lroden.209250@guest.booking.com,+34 635 06 09 25,,Blu,Blu - Non Rimborsabile OTA,20/01/2024,22/01/2024,2,,EUR,127.98,127.98,,Florence David's Apartament,Confermate,,22.00,,,2,,
 862/2024,4064665238,18/01/2024 21:04:40,,Booking,,quvenn.160087@guest.booking.com,+34655321308,,Verde,Verde - Non Rimborsabile OTA,19/01/2024,21/01/2024,2,,EUR,147.26,147.26,,Florence David's Apartament,Confermate,,22.00,,,2,,
+856/2024,4028931325,15/01/2024 04:14:42,2024-01-16 18:41:57.394159,Booking,,dmouss.316708@guest.booking.com,+39 350 982 9262,,"Verde, Senape, Blu",Appartamento  - Standard,15/01/2024,17/01/2024,2,,EUR,372.60,372.60,,Florence David's Apartament,Cancellate,,0.00,,,4,,
+848/2024,4071611630,12/01/2024 16:23:27,2024-01-17 11:13:15.206305,Booking,,dmouss.263437@guest.booking.com,+39 350 982 9262,,"Verde, Senape, Blu",Appartamento  - Standard,12/01/2024,15/01/2024,3,,EUR,761.00,761.00,,Florence David's Apartament,Cancellate,,0.00,,,4,,
 819/2023,,15/12/2023 16:37:11,,Booking Engine,Magellano SRL,raffaele.chello@gruppochello.com,+393392784699,,Blu,Blu - Non Rimborsabile OTA,09/01/2024,11/01/2024,2,,EUR,358.20,358.20,,Florence David's Apartament,Confermate,,11.00,,,1,,
 818/2023,,15/12/2023 16:35:30,,Booking Engine,Magellano SRL,raffaele.chello@gruppochello.com,+393392784699,,Senape,Senape - Non Rimborsabile OTA,09/01/2024,11/01/2024,2,,EUR,394.20,394.20,,Florence David's Apartament,Confermate,,22.00,,,2,,
 817/2023,,15/12/2023 16:26:53,,Booking Engine,Magellano SRL,CORRADO.CHELLO@GRUPPOCHELLO.COM,+39336694706,,Verde,Verde - Non Rimborsabile OTA,09/01/2024,10/01/2024,1,,EUR,188.10,188.10,,Florence David's Apartament,Confermate,,5.50,,,1,,
+788/2023,4286759843,24/11/2023 09:12:31,,Booking,,abarbu.456916@guest.booking.com,+39 329 812 9983,,"Verde, Senape, Blu",Appartamento  - Standard,04/01/2024,06/01/2024,2,,EUR,808.77,808.77,,Florence David's Apartament,Confermate,,66.00,,,7,,
 825/2024,4014631199,02/01/2024 10:26:48,,Booking,,lcasol.263315@guest.booking.com,+41 76 275 14 04,,Blu,Blu - Standard,02/01/2024,04/01/2024,2,,EUR,142.20,142.20,,Florence David's Apartament,Confermate,,22.00,,,2,,
 766/2023,4056973504,05/11/2023 14:19:25,,Booking,,mespos.975751@guest.booking.com,+33 7 88 24 67 13,,Senape,Senape - Standard,02/01/2024,04/01/2024,2,,EUR,232.20,232.20,,Florence David's Apartament,Confermate,,22.00,,,3,,
 764/2023,4041744468,03/11/2023 10:08:42,,Booking,,gdimit.686193@guest.booking.com,+30 697 556 3925,,Verde,Verde - Non Rimborsabile OTA,02/01/2024,04/01/2024,2,,EUR,176.58,176.58,,Florence David's Apartament,Confermate,,22.00,,,2,,
 807/2023,4143184768,02/12/2023 15:37:25,,Booking,,emonte.815100@guest.booking.com,+39 339 509 6896,,Senape,Senape - Standard,31/12/2023,02/01/2024,2,,EUR,578.00,578.00,,Florence David's Apartament,Confermate,,22.00,,,3,,
 810/2023,,04/12/2023 16:14:04,,Booking Engine,,milano@robediviaggio.it,+393914950249,,Verde,Verde - Non Rimborsabile OTA,30/12/2023,01/01/2024,2,,EUR,484.20,484.20,,Florence David's Apartament,Confermate,,22.00,,,2,,
 801/2023,4077940336,30/11/2023 08:49:39,,Booking,,vbarra.772139@guest.booking.com,+39 347 607 6622,,Blu,Blu - Non Rimborsabile OTA,30/12/2023,01/01/2024,2,,EUR,403.20,403.20,,Florence David's Apartament,Confermate,,22.00,,,2,,
+765/2023,4063405313,04/11/2023 13:55:06,2023-11-10 16:15:18.061145,Booking,,ppalli.318626@guest.booking.com,+39 340 061 1069,,"Blu, Senape, Verde","Blu - Standard, Appartamento  - Standard, Senape - Standard, Verde - Standard",30/12/2023,01/01/2024,2,,EUR,4688.00,4688.00,,Florence David's Apartament,Cancellate,,0.00,,,14,,
 `;
 const AIRDNA_CSV = `"Date","Booked Listings","Daily Rate"
 "2026-05-18","2210","248.66"
@@ -25273,7 +25290,7 @@ const CFG = {
                 } },
     davids:   { key:"Florence David's Apartament", label:"Florence David's", color:'#c0392b',
                 rooms:{'Verde':1,'Senape':1,'Blu':1},
-                baseRT:'Verde',
+                baseRT:'Senape',
                 roomsTotal:3, rnYear:1095,
                 // David's NON ha un budget di bilancio: il "budget" è un FORECAST
                 // calcolato = revenue LY stesso mese × (1 + _DAVIDS_BUDGET_GROWTH).
@@ -25503,7 +25520,8 @@ function loadData(csvText){
     //   I multi-camera reali ("Classic, Superior") restano intatti (entrambi validi).
     const _structKeyForRooms = (struct === CFG.structures.firenze.key) ? 'firenze'
                              : (struct === CFG.structures.condotta.key) ? 'condotta'
-                             : (struct === CFG.structures.alfani.key) ? 'alfani' : null;
+                             : (struct === CFG.structures.alfani.key) ? 'alfani'
+                             : (struct === CFG.structures.davids.key) ? 'davids' : null;
     const _validRoomsForStruct = (_structKeyForRooms && typeof structRoomsFor === 'function')
       ? Object.keys(structRoomsFor(_structKeyForRooms) || {}) : null;
     let alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
@@ -37809,8 +37827,9 @@ function renderRateShopper(){
       const myMap = (sd.key === 'condotta') ? (EXPEDIA_DATA && EXPEDIA_DATA.condotta)
                   : (sd.key === 'alfani')   ? (EXPEDIA_DATA && EXPEDIA_DATA.alfani)
                   : (sd.key === 'firenze')  ? (EXPEDIA_DATA && EXPEDIA_DATA.firenze)
+                  : (sd.key === 'davids')   ? (EXPEDIA_DATA && EXPEDIA_DATA.davids)
                   : null;
-      const myLabels = { firenze:'Firenze Suite', condotta:'Condotta 16 Apartments', alfani:'Palazzo Alfani al David' };
+      const myLabels = { firenze:'Firenze Suite', condotta:'Condotta 16 Apartments', alfani:'Palazzo Alfani al David', davids:"Florence David's" };
 
       html += `<div style="overflow-x:auto;max-height:60vh;overflow-y:auto"><table class="data" style="font-size:11px;white-space:nowrap">
         <thead>
