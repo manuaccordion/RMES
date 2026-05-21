@@ -1450,12 +1450,14 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Per periodo (più giorni)</b>: nel pannello sopra la tabella, sezione <b style="color:#8e5fa8">Override per periodo</b>, scegli <b>Dal / Al</b>, un prezzo €, e applica con <b>🖋 Foundation</b> (forza la base, RMES reagisce sopra) o <b>🔒 Prezzo finale</b> (forza il prezzo pubblicato, RMES ignorato per quei giorni). <b>↺ Reset periodo</b> rimuove entrambi sul range. Tutto agisce sulla baseRT; le altre RT ereditano il valore + supplemento.</li>
         </ul>
 
-        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Modale RMES (click sulla cella prezzo)</h4>
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">Due modali distinte: Foundation e RMES</h4>
+        <p>Il dettaglio del calcolo è separato per colonna, così ogni cella apre solo ciò che la riguarda:</p>
         <ul style="margin:0 0 8px 18px;padding:0">
-          <li>Mostra Foundation effettivo, i 5 fattori uno per uno con i numeri, prezzo suggerito.</li>
-          <li><b>Importante</b>: i numeri dei fattori (RN, OCC, ADR, pace, ricerche) sono <b>aggregati della struttura</b>, NON specifici della RT visualizzata. Es. "RN 3 / cap 8" = 3 camere su 8 totali della struttura.</li>
-          <li>Input per inserire prezzo finale diverso dal suggerito (override puntuale) con 💾 Salva.</li>
-          <li>Simulazione revenue live: se cambi il prezzo, ti mostra l'impatto stimato (usa elasticità configurata).</li>
+          <li><b>Click sulla cella Foundation</b> → dettaglio del <b>solo Foundation</b> (i 6 step: ancora storica, target revenue, RN attese, cap mercato, floor + base lift). Da qui imposti anche l'override Foundation della baseRT.</li>
+          <li><b>Click sulla cella RMES</b> → dettaglio del <b>solo RMES</b>: il valore Foundation di partenza (numero, senza i suoi 6 step), poi i 5 fattori uno per uno con i numeri, il moltiplicatore composto e il prezzo suggerito. Qui inserisci anche l'override del prezzo finale (💾 Salva) con simulazione revenue live.</li>
+        </ul>
+        <ul style="margin:0 0 8px 18px;padding:0">
+          <li><b>Importante</b>: nella modale RMES i numeri dei fattori (RN, OCC, ADR, pace, ricerche) sono <b>aggregati della struttura</b>, NON specifici della RT visualizzata. Es. "RN 3 / cap 8" = 3 camere su 8 totali della struttura.</li>
         </ul>
 
         <p style="margin:14px 0 0 0;padding:10px 14px;background:#fef8ed;border-left:3px solid #c4823b"><b>In pratica</b>: ogni mattina apri Sell Strategy, scorri 7-14 giorni, controlli i giorni con cella RMES verde (alzare) o rossa (abbassare). Override solo se sai cose che il sistema non sa (eventi, situazioni particolari): puntuale per il singolo giorno, oppure per periodo quando vuoi fissare un prezzo su un intervallo (es. un ponte, una fiera) senza andare giorno per giorno.</p>
@@ -31094,7 +31096,7 @@ function fp_computeAll(progressCallback){
   
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const horizonDays = 365;
-  const structKeys = ['firenze', 'condotta', 'alfani'];
+  const structKeys = ['firenze', 'condotta', 'alfani', 'davids'];
   
   let totalCells = 0, doneCells = 0;
   for (const sk of structKeys){
@@ -31344,7 +31346,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   // Header
   h += '<div style="padding:16px 22px;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#fafaf8,#fff)">';
   h += '<div>';
-  h += '<div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px">Foundation Pricing · dettaglio calcolo</div>';
+  h += '<div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px">RMES · dettaglio calcolo</div>';
   h += '<div style="font-size:16px;font-weight:700">' + dateLbl + ' (' + dowLbl + ') · ' + rt + ' · ' + structLbl + '</div>';
   h += '</div>';
   h += '<button onclick="document.getElementById(\'fp-detail-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
@@ -31426,7 +31428,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const fpLabel = hasFoundationOverride ? 'Foundation (override manuale)' : 'Foundation (sorgente, calcolato)';
       const fpSub = hasFoundationOverride
         ? 'Override Foundation attivo · prezzo sorgente impostato manualmente · i 5 fattori si applicano sopra'
-        : 'Prezzo strutturale del giorno · clicca toggle sotto per il dettaglio';
+        : 'Prezzo strutturale di partenza · per il dettaglio del calcolo apri la cella Foundation';
       rmesSection += '<div style="padding:14px 16px;background:'+fpBg+';border:1px solid '+fpBorder+';border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
       rmesSection += '<div>';
       rmesSection += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:'+fpLabelCol+';font-weight:700;margin-bottom:2px">'+fpIcon+' '+fpLabel+'</div>';
@@ -31647,12 +31649,8 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       // (Vecchio box "Prezzo suggerito RMES" sostituito dai 2 box sopra)
       
-      // Bottone "Vai al dettaglio Foundation (6 step)" → apre la modale Foundation-only
-      if (!d.longHorizon){
-        rmesSection += '<div style="text-align:center;margin-bottom:8px">';
-        rmesSection += '<button id="fp-show-detail-toggle" style="padding:8px 16px;border:1px solid #c4823b;background:#fef8ed;color:#7a4f1c;border-radius:4px;cursor:pointer;font-size:12px;font-family:\'DM Sans\',sans-serif;font-weight:600">⚡ Vedi dettaglio Foundation (6 step)</button>';
-        rmesSection += '</div>';
-      }
+      // NB: il dettaglio del calcolo Foundation (6 step) si apre dalla cella Foundation, non da qui.
+
     }
   } catch(e){ console.error('PARTE RMES rendering failed', e); }
   h += rmesSection;
@@ -31662,18 +31660,6 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   h += '</div></div>';  // /modal /bg
   
   document.body.insertAdjacentHTML('beforeend', h);
-  
-  // Wire bottone "Vedi dettaglio Foundation": chiude modale RMES, apre modale Foundation-only
-  const togBtn = document.getElementById('fp-show-detail-toggle');
-  if (togBtn){
-    togBtn.onclick = function(){
-      const modal = document.getElementById('fp-detail-modal');
-      if (modal) modal.remove();
-      if (typeof fp_showFoundationOnlyModal === 'function'){
-        fp_showFoundationOnlyModal(structKey, rt, dateISO);
-      }
-    };
-  }
   
   // ===== Listener box "Prezzo finale pubblicato" =====
   const finalInp = document.getElementById('fp-final-input');
@@ -32685,7 +32671,7 @@ function renderSellStrategy(sel){
   const dowIT = ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
   // Mostra il blocco "Mercato Expedia" per tutte le strutture: Firenze Suite (compset Firenze area),
   // Condotta 16 (compset Condotta area), Palazzo Alfani (compset Alfani area).
-  const showExp = (sel === 'condotta' || sel === 'alfani' || sel === 'firenze');
+  const showExp = (sel === 'condotta' || sel === 'alfani' || sel === 'firenze' || sel === 'davids');
   // La colonna "Beddy" è nascosta dalla tabella: il prezzo Beddy reale viene comunque usato internamente
   // come sorgente primaria nella cascata RMES e per il calcolo della correlazione Beddy ↔ Expedia.
   // Una volta che la correlazione è stabile (caricamento prezzi solo oggi), non serve mostrare la colonna.
