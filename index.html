@@ -1615,7 +1615,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Target Revenue</b>: anchor × monthly target growth (default +5%, configurable in Ⓐ).</li>
           <li><b>Expected RN at close</b>: estimate of how many nights will sell in total at close = <b>typical LY final fill</b> (median RN sold/day same-DOW same-month) <b>× pace</b> of this year, never less than the OTB already acquired and never above inventory. Expected pickup is the difference (expected RN − OTB). The residual target revenue is divided over these remaining nights → target closing ADR. <i>(Note: "residual LY pickup" is no longer used, as it was distorted when LY closed full — if last year was already full and this year you're empty, you still have to sell.)</i></li>
           <li><b>Booking window + time curve</b>: adjusted P_raw.</li>
-          <li><b>Compset market cap</b>: range [×0.80, ×1.20] on the weighted competitor average (with offset).</li>
+          <li><b>Compset market cap</b>: caps the structural price within a band around the weighted competitor average (with offset). The band is <b>time-aware based on days before check-in</b>:
+            <ul style="margin:6px 0 0 18px;padding:0">
+              <li><b>≤ 60 days before check-in</b> (short term): conservative band <b>[×0.80, ×0.90]</b>. The price is never allowed above 90% of the compset average — we deliberately stay below the market to drive short-term pickup.</li>
+              <li><b>≥ 61 days before check-in</b> (medium/long term): normal band <b>[×0.80, ×1.20]</b>, as before.</li>
+            </ul>
+            The floor (×0.80) is the same in both cases; only the upper bound changes. Note: the cap only <i>limits</i> the price — if the computed price is already inside the band, it is left unchanged.</li>
           <li><b>Floor (hard) + Base lift (soft)</b>: absolute limits. Configurable in Ⓑ.</li>
         </ol>
         <p><b>Far mode</b> (>180d): simplified = max(Base, LY_median) × growth.</p>
@@ -49590,7 +49595,7 @@ function fp_computePickupLYResiduo(structKey, rt, targetDateISO){
 }
 
 /* 3.7: Cap di mercato */
-function fp_computeMarketCap(structKey, targetDateISO){
+function fp_computeMarketCap(structKey, targetDateISO, daysToArrival){
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return null;
   const compMap = (structKey === 'alfani') ? EXPEDIA_DATA.competitors_alfani
                 : (structKey === 'firenze') ? EXPEDIA_DATA.competitors_firenze
@@ -49615,7 +49620,12 @@ function fp_computeMarketCap(structKey, targetDateISO){
   }
   if (weightSum === 0) return null;
   const ref = weightedSum / weightSum;
-  return { ref: ref, min: ref * 0.80, max: ref * 1.20, nCompet: details.length, details: details };
+  // Compset cap: nei primi 60 giorni prima del check-in siamo più conservativi
+  // (tetto ×0.90 sul compset). Dal 61° giorno in poi tetto normale ×1.20.
+  // Il pavimento resta sempre ×0.80.
+  const FP_CONSERV_WINDOW_DAYS = 60;
+  const capHi = (typeof daysToArrival === 'number' && daysToArrival <= FP_CONSERV_WINDOW_DAYS) ? 0.90 : 1.20;
+  return { ref: ref, min: ref * 0.80, max: ref * capHi, capHi: capHi, conservative: capHi < 1.20, nCompet: details.length, details: details };
 }
 
 /* Helpers ADR/RN OTB */
@@ -49854,7 +49864,7 @@ function fp_computePrice(structKey, rt, targetDateISO){
   // Curva booking ancora calcolata per display nella modale (NON usata nella formula)
   detail.pos = fp_positionInCurve(structKey, daysToArrival);
   
-  const mcap = fp_computeMarketCap(structKey, targetDateISO);
+  const mcap = fp_computeMarketCap(structKey, targetDateISO, daysToArrival);
   detail.marketCap = mcap;
   
   let pCapped = pGrezzo;
@@ -50828,7 +50838,7 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
       const m = dd.marketCap;
       h += '<table style="width:100%;border-collapse:collapse;font-size:12px"><tr><td style="padding:3px 6px;color:#666;width:55%">Active competitors (weight > 0)</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">' + m.nCompet + '</td></tr>';
       h += '<tr><td style="padding:3px 6px;color:#666">Compset reference Beddy_eq</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(m.ref) + '</td></tr>';
-      h += '<tr><td style="padding:3px 6px;color:#666">Allowed range [×0.80, ×1.20]</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">[' + fmt(m.min) + ', ' + fmt(m.max) + ']</td></tr>';
+      h += '<tr><td style="padding:3px 6px;color:#666">Allowed range [×0.80, ×' + (m.capHi != null ? m.capHi.toFixed(2) : '1.20') + ']' + (m.conservative ? ' <span style="color:#c4823b;font-style:italic">(conservative ≤60d)</span>' : '') + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace">[' + fmt(m.min) + ', ' + fmt(m.max) + ']</td></tr>';
       const capped = (dd.pCapped !== dd.pGrezzo);
       h += '<tr><td style="padding:3px 6px;color:#666">P_capped' + (capped ? ' <span style="color:#c4823b;font-style:italic">(capped!)</span>' : '') + '</td><td style="padding:3px 6px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:' + (capped?'700':'400') + '">' + fmt(dd.pCapped) + '</td></tr>';
       h += '</table>';
@@ -50914,7 +50924,7 @@ function fp_renderFoundationConfigBox(structKey){
   // ----- Section C: Pesi (0-100%) + Offset € competitor — fonte unica per D · Online Pricing RMES e cap mercato Foundation -----
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓒ Compset competitor weights and offsets <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub"><b>Weight</b> (0-100%, default 100): how much a competitor counts in the compset average. Used both by the <b>D · Online Pricing RMES factor</b> and by the <b>Foundation market cap</b>. Weight = 0 excludes the competitor. <b>Offset €</b> (default 0, Foundation only): e.g. -10 = "I want to stay €10 below this competitor". Foundation market reference = Σ(weight × (compset_price_Beddy_eq + offset)) / Σ(weight). Range cap Foundation: [×0.80, ×1.20].</div></div>';
+  h += '<div class="panel-sub"><b>Weight</b> (0-100%, default 100): how much a competitor counts in the compset average. Used both by the <b>D · Online Pricing RMES factor</b> and by the <b>Foundation market cap</b>. Weight = 0 excludes the competitor. <b>Offset €</b> (default 0, Foundation only): e.g. -10 = "I want to stay €10 below this competitor". Foundation market reference = Σ(weight × (compset_price_Beddy_eq + offset)) / Σ(weight). Foundation cap band: [×0.80, ×1.20] normally, but [×0.80, ×0.90] within 60 days before check-in (more conservative in the short term).</div></div>';
   h += '<button id="fp-reset-pesi-100" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:\'DM Sans\',sans-serif;align-self:flex-start">reset weights to 100%</button>';
   h += '</div>';
   h += '<div class="panel-body" style="padding:8px 16px"><table id="fp-comp-table" style="width:100%;border-collapse:collapse;font-size:12px"><thead style="background:#f8f8f5"><tr><th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2)">Competitor</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:110px">Weight (0-100%)</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:120px">Offset €</th></tr></thead><tbody></tbody></table></div></div>';
