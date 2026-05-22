@@ -344,6 +344,8 @@ table.data.sell-table .sell-grp-expedia-sub:not(:first-of-type){border-left:1px 
 /* Gruppo RMES (arancio scuro evidenziato) */
 /* Foundation Pricing — colonna shadow */
 table.data.sell-table tbody td.sell-block-fp{font-size:12px;font-family:'DM Mono',monospace}
+/* Colonna Foundation nascosta: il calcolo Foundation resta visibile cliccando la cella RMES (dettaglio 6-step + moltiplicatori). */
+table.data.sell-table thead th.sell-grp-fp, table.data.sell-table tbody td.sell-block-fp{display:none}
 table.data.sell-table thead th.sell-grp-fp{background:rgba(195,131,59,.18);color:#5a3a14;border-left:3px solid #c4823b;font-weight:700}
 table.data.sell-table thead th.sell-grp-fp-sub{font-size:10px;letter-spacing:.04em}
 table.data.sell-table tbody td.sell-block-fp:hover{background:rgba(195,131,59,.16) !important}
@@ -1384,7 +1386,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         </ul>
 
         <h4 style="margin:18px 0 8px 0;color:#5a3a14">Reading the table (left → right)</h4>
-        <p>One row = one future day. The column order is: <b>Date → OTB → Pickup → STLY → Pickup STLY → Expedia Market → Foundation → RMES</b>.</p>
+        <p>One row = one future day. The column order is: <b>Date → OTB → Pickup → STLY → Pickup STLY → Expedia Market → RMES</b> (the Foundation column is hidden — click an RMES cell to see its full Foundation build-up).</p>
         <ol style="margin:0 0 12px 18px;padding:0">
           <li><b>Date · Event · DoW</b> — the day, the day of week (weekends coloured), any configured events.</li>
           <li><b style="color:#c4823b">OTB to date</b> — RN sold, OCC %, average ADR. The snapshot of right now. <b>Click the RN</b> to see every booking already on the books for that night.</li>
@@ -1392,8 +1394,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b style="color:#3a6b6b">STLY (−364)</b> — where you stood at the same lead time last year. Day-of-week comparison (if today is Friday, it shows the Friday 52 weeks ago). <b>Click the RN</b> to see the bookings that were on the books that night a year ago.</li>
           <li><b style="color:#888">Pickup STLY</b> — pickup over the same Ndays a year ago. Compare the 2 pickup columns to see whether you're doing better.</li>
           <li><b style="color:#3a6b6b">Expedia Market (Mine · Compset)</b> — across all properties. <b>Mine</b> = my Expedia price (Expedia converted to Beddy_eq by removing the OTA markup (configurable, not a fixed %) and the margin. Also, if the baseRT is <b>sold out</b> that day, the visible Expedia price is likely from a higher room type: the system subtracts its supplement to bring it back to the baseRT-equivalent value. <b>Compset</b> = weighted average of the chosen competitors (weight and offset configurable in tab RMES → Ⓒ).</li>
-          <li><b style="color:#c4823b">⚡ Foundation</b> — the structural price of the day, computed from the 6 steps (see the RMES section below). Clickable for detail. <b>baseRT only</b>: click to open the calculation detail.</li>
-          <li><b style="color:#c4823b">RMES</b> — the final suggested price = Foundation × multiplier (the 5 factors). M1/M2 = suggested MLOS. Clickable for the full modal.</li>
+          <li><b style="color:#c4823b">RMES</b> — the final suggested price = Foundation × multiplier (the 5 factors). M1/M2 = suggested MLOS. <b>Click the cell</b> to open the full detail: the Foundation 6-step build-up <i>and</i> the RMES factors. (The separate Foundation column is hidden for clarity — its calculation now lives inside this RMES cell.)</li>
         </ol>
 
         <h4 style="margin:18px 0 8px 0;color:#5a3a14">Per-Room-Type price architecture (important)</h4>
@@ -27354,7 +27355,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const fpLabel = hasFoundationOverride ? 'Foundation (override manuale)' : 'Foundation (source, computed)';
       const fpSub = hasFoundationOverride
         ? 'Foundation override active · source price set manually · the 5 factors apply on top'
-        : 'Structural starting price · for the calculation detail open the Foundation cell';
+        : 'Structural starting price · click "Show 6-step calculation" for the build-up';
       rmesSection += '<div style="padding:14px 16px;background:'+fpBg+';border:1px solid '+fpBorder+';border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
       rmesSection += '<div>';
       rmesSection += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:'+fpLabelCol+';font-weight:700;margin-bottom:2px">'+fpIcon+' '+fpLabel+'</div>';
@@ -27363,7 +27364,10 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '<div style="font-size:10.5px;color:#888;margin-top:2px">Computed Foundation would be: <span style="font-family:\'DM Mono\',monospace;text-decoration:line-through">'+fmt(fpPriceSourceCalc)+'</span></div>';
       }
       rmesSection += '</div>';
+      rmesSection += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">';
       rmesSection += '<div style="font-size:20px;font-weight:700;color:'+fpPriceCol+';font-family:\'DM Mono\',monospace">' + fmt(fpPriceSource) + '</div>';
+      rmesSection += '<button id="fp-show-6step" style="font-family:\'DM Mono\',monospace;font-size:11px;padding:5px 12px;border:1px solid '+fpBorder+';border-radius:5px;background:transparent;color:'+fpLabelCol+';cursor:pointer;font-weight:700">⚡ Show 6-step calculation</button>';
+      rmesSection += '</div>';
       rmesSection += '</div>';
       
       // ----- Tabella 5 fattori -----
@@ -27640,6 +27644,14 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   
   document.body.insertAdjacentHTML('beforeend', h);
   
+  // Bottone "⚡ Show 6-step calculation": apre il dettaglio Foundation (6 step) per questa cella
+  const _btn6step = document.getElementById('fp-show-6step');
+  if (_btn6step){
+    _btn6step.onclick = function(){
+      if (typeof fp_showFoundationOnlyModal === 'function') fp_showFoundationOnlyModal(structKey, rt, dateISO);
+    };
+  }
+  
   // ===== Listener box "Final price pubblicato" =====
   const finalInp = document.getElementById('fp-final-input');
   const finalSave = document.getElementById('fp-final-save');
@@ -27768,7 +27780,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
    NON mostra i 5 fattori RMES (per quelli c'è fp_showDetailModal). */
 function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   // Rimuovi modale esistente se c'è
-  const existing = document.getElementById('fp-detail-modal');
+  const existing = document.getElementById('fp-fnd-only-modal');
   if (existing) existing.remove();
 
   // Ottieni il calcolo Foundation
@@ -27798,7 +27810,7 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   const isBaseRT = (baseRT_struct && rt === baseRT_struct);
 
   let h = '';
-  h += '<div class="fp-modal-bg" id="fp-detail-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto" onclick="if(event.target===this){this.remove()}">';
+  h += '<div class="fp-modal-bg" id="fp-fnd-only-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10001;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto" onclick="if(event.target===this){this.remove()}">';
   h += '<div class="fp-modal" style="background:#fff;border-radius:8px;max-width:720px;width:100%;font-family:\'DM Sans\',sans-serif;font-size:13px;line-height:1.5;color:#222;box-shadow:0 8px 32px rgba(0,0,0,.3)">';
   // Header
   h += '<div style="padding:16px 22px;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#fef8ed,#fff)">';
@@ -27806,7 +27818,7 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   h += '<div style="font-size:12px;color:#7a4f1c;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px">⚡ Foundation Pricing · calculation detail (6 steps)</div>';
   h += '<div style="font-size:16px;font-weight:700">' + dateLbl + ' (' + dowLbl + ') · ' + rt + ' · ' + structLbl + '</div>';
   h += '</div>';
-  h += '<button onclick="document.getElementById(\'fp-detail-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
+  h += '<button onclick="document.getElementById(\'fp-fnd-only-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
   h += '</div>';
 
   h += '<div style="padding:18px 22px">';
@@ -28666,16 +28678,7 @@ function renderSellStrategy(sel){
   if (subEl){
     const snapDateD = ymdToDate(A.snapYmd);
     const stlyDateD = ymdToDate(A.stlyTodayYmd);
-    subEl.innerHTML = `OTB to date vs Pickup last ${A.pickupDaysAgo}d (snapshot ${pad2(snapDateD.getDate())}/${pad2(snapDateD.getMonth()+1)}) · STLY (snapshot ${pad2(stlyDateD.getDate())}/${pad2(stlyDateD.getMonth()+1)}) · RMES v5: 5 property-level factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia))<br>` +
-      `<span style="font-size:10.5px;color:var(--ink-3)">Column groups (coloured left border): ` +
-      `<span style="border-left:3px solid #c4823b;padding-left:6px;margin-right:10px">OTB</span>` +
-      `<span style="border-left:3px solid #8e5fa8;padding-left:6px;margin-right:10px">Pickup</span>` +
-      `<span style="border-left:3px solid #3b6b6b;padding-left:6px;margin-right:10px">STLY</span>` +
-      `<span style="border-left:3px solid #888;padding-left:6px;margin-right:10px">Pickup STLY</span>` +
-      `<span style="border-left:3px solid #1e6b4a;padding-left:6px;margin-right:10px">Beddy</span>` +
-      `<span style="border-left:3px solid #3a6b6b;padding-left:6px;margin-right:10px">Expedia</span>` +
-      `<span style="border-left:3px solid #c4823b;padding-left:6px;margin-right:10px">RMES</span>` +
-      `</span>`;
+    subEl.innerHTML = `OTB to date vs Pickup last ${A.pickupDaysAgo}d (snapshot ${pad2(snapDateD.getDate())}/${pad2(snapDateD.getMonth()+1)}) · STLY (snapshot ${pad2(stlyDateD.getDate())}/${pad2(stlyDateD.getMonth()+1)})`;
   }
 
   // Cache for drilldown
@@ -28857,7 +28860,7 @@ function renderSellStrategy(sel){
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + (showExp ? '<th colspan="2" class="sell-grp sell-grp-expedia">Expedia Market</th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Foundation Pricing: structural price of the day (RMES source). Click the cell for the calculation detail. Other RTs show a derived value (Foundation baseRT + monthly supplement), read-only.">Foundation</th>'
-    + '<th colspan="' + _rmesGroupCols + '" class="sell-grp sell-grp-rmes" title="RMES v5 system: Foundation (source) × composite multiplier from 5 factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)), all at property levela.">RMES <span class="sell-th-sub">Foundation · suggested · M[MLOS]</span></th>'
+    + '<th colspan="' + _rmesGroupCols + '" class="sell-grp sell-grp-rmes" title="RMES v5 system: Foundation (source) × composite multiplier from 5 factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)), all at property levela.">RMES <span class="sell-th-sub">suggested · M[MLOS] · click for Foundation detail</span></th>'
     + '</tr>'
     // === RIGA 2: sub-headers ===
     + '<tr class="sell-thead-subs">'
@@ -29624,7 +29627,7 @@ function renderSellStrategy(sel){
       }
       const mainColor = (mainRT === baseRT && typeof baseColor !== 'undefined') ? baseColor : 'var(--ink)';
       // Tooltip minimale: solo titolo + invito al click. Il dettaglio è nella modale.
-      const mainTip = `${mainRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}  →  Click for RMES detail`;
+      const mainTip = `${mainRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}  →  Click for the full detail (Foundation 6-step + RMES factors)`;
       
       // === Variazione vs Foundation (colore + diff in €) ===
       // mainPNum è il price RMES numerico effective (priorità _pricesByRT, fallback prezzoRMES per baseRT)
@@ -30120,28 +30123,65 @@ function openSellPickupDrill(rowIdx, kind){
   document.getElementById('modal-sub').textContent = subLbl;
 
   const dateColLbl = (kind === 'cancel' || kind === 'cancelStly') ? 'Data cancel.' : 'Data bk';
-  let html = `<table>
+  let html;
+  if (kind === 'otb' || kind === 'otbStly'){
+    // Vista AGGREGATA: totali per Channel e per Room (RN + revenue + prezzo medio).
+    function _aggBy(keyFn){
+      const m = {};
+      for (const b of rows){
+        const k = keyFn(b) || '—';
+        if (!m[k]) m[k] = {rn:0, rev:0};
+        m[k].rn  += 1;
+        m[k].rev += b.revPerNight;
+      }
+      return Object.entries(m)
+        .map(([k,v]) => ({ k, rn:v.rn, rev:v.rev, avg: v.rn>0 ? v.rev/v.rn : 0 }))
+        .sort((a,b) => b.rev - a.rev);
+    }
+    const byChannel = _aggBy(b => b.canale);
+    const byRoom    = _aggBy(b => b.room);
+    function _aggTable(title, label, arr){
+      let t = `<table style="margin-bottom:18px"><thead><tr>`
+            + `<th>${label}</th><th class="num">RN</th><th class="num">Revenue</th><th class="num">Avg/night</th>`
+            + `</tr></thead><tbody>`;
+      for (const r2 of arr){
+        t += `<tr><td>${escapeHtml(r2.k)}</td>`
+           + `<td class="num">${r2.rn}</td>`
+           + `<td class="num">${fmtEUR(r2.rev)}</td>`
+           + `<td class="num">${fmtEUR(r2.avg)}</td></tr>`;
+      }
+      if (!arr.length) t += `<tr><td colspan="4" style="text-align:center;color:var(--ink-3);padding:24px">No data for this night</td></tr>`;
+      t += `<tr style="font-weight:700;border-top:2px solid var(--line)"><td>Total</td>`
+         + `<td class="num">${totRn}</td><td class="num">${fmtEUR(totRev)}</td>`
+         + `<td class="num">${fmtEUR(totRn>0?totRev/totRn:0)}</td></tr>`;
+      t += `</tbody></table>`;
+      return `<div style="font-size:12px;font-weight:700;color:var(--ink-2);margin:0 0 6px 0;text-transform:uppercase;letter-spacing:.05em">${title}</div>` + t;
+    }
+    html = _aggTable('By channel', 'Channel', byChannel) + _aggTable('By room type', 'Room', byRoom);
+  } else {
+    html = `<table>
     <thead><tr>
       <th>${dateColLbl}</th><th>Property</th><th>Room</th><th>Arrival</th><th>Nights</th><th>Source</th><th>Channel</th><th>Guest</th><th class="num">Rev/night</th>
     </tr></thead><tbody>`;
-  for (const b of rows){
-    const dateShown = ((kind === 'cancel' || kind === 'cancelStly') && b.cancelYmd) ? ymdToDate(b.cancelYmd) : b.dBook;
-    // Per pkStly / cancelStly: arrivo mostrato è la data shiftata +364 (= corrispondente notte 2026)
-    const arrivoShown = (kind === 'pkStly' || kind === 'cancelStly') ? addDays(b.dIn, 364) : b.dIn;
-    html += `<tr>
-      <td class="num">${fmtDateIT(dateShown)}</td>
-      <td>${escapeHtml(b.struct)}</td>
-      <td>${escapeHtml(b.room)}</td>
-      <td class="num">${fmtDateIT(arrivoShown)}</td>
-      <td class="num">${b.notti}</td>
-      <td>${escapeHtml(b.prov)}</td>
-      <td>${escapeHtml(b.canale)}</td>
-      <td>${escapeHtml(b.guest||'—')}</td>
-      <td class="num">${fmtEUR(b.revPerNight)}</td>
-    </tr>`;
+    for (const b of rows){
+      const dateShown = ((kind === 'cancel' || kind === 'cancelStly') && b.cancelYmd) ? ymdToDate(b.cancelYmd) : b.dBook;
+      // Per pkStly / cancelStly: arrivo mostrato è la data shiftata +364 (= corrispondente notte 2026)
+      const arrivoShown = (kind === 'pkStly' || kind === 'cancelStly') ? addDays(b.dIn, 364) : b.dIn;
+      html += `<tr>
+        <td class="num">${fmtDateIT(dateShown)}</td>
+        <td>${escapeHtml(b.struct)}</td>
+        <td>${escapeHtml(b.room)}</td>
+        <td class="num">${fmtDateIT(arrivoShown)}</td>
+        <td class="num">${b.notti}</td>
+        <td>${escapeHtml(b.prov)}</td>
+        <td>${escapeHtml(b.canale)}</td>
+        <td>${escapeHtml(b.guest||'—')}</td>
+        <td class="num">${fmtEUR(b.revPerNight)}</td>
+      </tr>`;
+    }
+    if (!rows.length) html += `<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:30px">No data for this night</td></tr>`;
+    html += '</tbody>';
   }
-  if (!rows.length) html += `<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:30px">No data for this night</td></tr>`;
-  html += '</tbody>';
   document.getElementById('modal-body').innerHTML = html;
   document.getElementById('modal-foot-l').textContent = `${rows.length} bookings · ${totRn} RN on this night`;
   document.getElementById('modal-foot-r').textContent = fmtEUR(totRev);
