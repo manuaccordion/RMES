@@ -1387,9 +1387,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p>One row = one future day. The column order is: <b>Date → OTB → Pickup → STLY → Pickup STLY → Expedia Market → Foundation → RMES</b>.</p>
         <ol style="margin:0 0 12px 18px;padding:0">
           <li><b>Date · Event · DoW</b> — the day, the day of week (weekends coloured), any configured events.</li>
-          <li><b style="color:#c4823b">OTB to date</b> — RN sold, OCC %, average ADR. The snapshot of right now.</li>
+          <li><b style="color:#c4823b">OTB to date</b> — RN sold, OCC %, average ADR. The snapshot of right now. <b>Click the RN</b> to see every booking already on the books for that night.</li>
           <li><b style="color:#7a3a8e">Pickup Ndays</b> — recent trend: new, cancelled, ΔRN, new ADR. Configurable at 1/3/7/14/28 days. New and Cancelled are clickable for the list.</li>
-          <li><b style="color:#3a6b6b">STLY (−364)</b> — where you stood at the same lead time last year. Day-of-week comparison (if today is Friday, it shows the Friday 52 weeks ago).</li>
+          <li><b style="color:#3a6b6b">STLY (−364)</b> — where you stood at the same lead time last year. Day-of-week comparison (if today is Friday, it shows the Friday 52 weeks ago). <b>Click the RN</b> to see the bookings that were on the books that night a year ago.</li>
           <li><b style="color:#888">Pickup STLY</b> — pickup over the same Ndays a year ago. Compare the 2 pickup columns to see whether you're doing better.</li>
           <li><b style="color:#3a6b6b">Expedia Market (Mine · Compset)</b> — across all properties. <b>Mine</b> = my Expedia price (Expedia converted to Beddy_eq by removing the OTA markup (configurable, not a fixed %) and the margin. Also, if the baseRT is <b>sold out</b> that day, the visible Expedia price is likely from a higher room type: the system subtracts its supplement to bring it back to the baseRT-equivalent value. <b>Compset</b> = weighted average of the chosen competitors (weight and offset configurable in tab RMES → Ⓒ).</li>
           <li><b style="color:#c4823b">⚡ Foundation</b> — the structural price of the day, computed from the 6 steps (see the RMES section below). Clickable for detail. <b>baseRT only</b>: click to open the calculation detail.</li>
@@ -23900,10 +23900,17 @@ function expToBeddyFlex(expediaPrice, structKey, dateISO){
 // Stima il supplemento (€ Beddy_eq) della RT che Expedia sta probabilmente mostrando
 // quel giorno: la più economica ancora DISPONIBILE (OTB < inventario), in ordine di
 // supplemento crescente. Se la baseRT è disponibile → supplemento 0 (nessun aggiustamento).
+let _EXP_SUPP_AGG_CACHE = {};  // cache per-struttura dei campi struttura-level usati da fp_expediaRoomSupplement
 function fp_expediaRoomSupplement(structKey, dateISO){
   if (typeof aggPricingDaily !== 'function') return 0;
-  let Apri;
-  try { const ymdN = parseInt(dateISO.replace(/-/g,'')); Apri = aggPricingDaily(structKey, ymdN, 1); } catch(e){ return 0; }
+  // I campi usati qui (baseRT, rtList, supplementoStagione, highSeason) sono struttura-level,
+  // NON dipendono dal giorno → calcoliamo l'aggregato UNA volta per struttura e lo riusiamo.
+  let Apri = _EXP_SUPP_AGG_CACHE[structKey];
+  if (Apri === undefined){
+    try { const ymdN = parseInt(dateISO.replace(/-/g,'')); Apri = aggPricingDaily(structKey, ymdN, 1); }
+    catch(e){ Apri = null; }
+    _EXP_SUPP_AGG_CACHE[structKey] = Apri;
+  }
   if (!Apri || !Apri.baseRT) return 0;
   const baseRT = Apri.baseRT;
   const month = parseInt(dateISO.slice(5,7));
@@ -24710,7 +24717,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     stlyAdr: cum.stly.rn>0 ? cum.stly.rev/cum.stly.rn : NaN,
   };
 
-  return { rows, totals, snapYmd, snapStlyYmd, stlyTodayYmd, startYmd: startYmdNum, rangeDays, pickupDaysAgo };
+  return { rows, totals, snapYmd, snapStlyYmd, stlyTodayYmd, startYmd: startYmdNum, rangeDays, pickupDaysAgo, structSel: sel };
 }
 
 /* helper to build a YYYY-MM-DD string from YMD num */
@@ -24761,7 +24768,7 @@ function _getPaceAggBoth(){
   return byStayMonth;
 }
 // Invalida cache quando i dati cambiano (es. reload CSV)
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; }
 
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
@@ -26458,7 +26465,20 @@ function _globalSupplementForRT(structKey, rt, month){
 
 
 /* 3.1 + 3.2: Ancora storica (mediana ADR/RN, fallback mese intero) */
+let _ANCHOR_LY_CACHE = {};  // cache di fp_computeAnchorLY, keyed su struct|rt|mese|dow (invalidata al reload dati)
 function fp_computeAnchorLY(structKey, rt, targetDateISO){
+  if (!targetDateISO) return null;
+  const _td = new Date(targetDateISO + 'T00:00:00');
+  if (isNaN(_td.getTime())) return _fp_computeAnchorLY_impl(structKey, rt, targetDateISO);
+  // L'ancora dipende solo da (struttura, rt, mese, giorno-settimana), NON dalla data esatta:
+  // tutti i lunedì dello stesso mese danno lo stesso risultato → cache.
+  const _ak = structKey + '|' + rt + '|' + (_td.getMonth()+1) + '|' + _td.getDay();
+  if (_ANCHOR_LY_CACHE[_ak] !== undefined) return _ANCHOR_LY_CACHE[_ak];
+  const _r = _fp_computeAnchorLY_impl(structKey, rt, targetDateISO);
+  _ANCHOR_LY_CACHE[_ak] = _r;
+  return _r;
+}
+function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   if (!targetDateISO || typeof BOOKINGS === 'undefined') return null;
   const td = new Date(targetDateISO + 'T00:00:00');
   if (isNaN(td.getTime())) return null;
@@ -29679,7 +29699,7 @@ function renderSellStrategy(sel){
       <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
       <td${dateStyle}>${dowIT[r.dow]}</td>
       <!-- OTB -->
-      <td class="cell-mono ${rnCmpCls} sell-grp-otb-cell">${r.curRn}</td>
+      <td class="cell-mono ${rnCmpCls} sell-grp-otb-cell">${r.curRn>0?`<span class="sell-pickup-link" data-row="${i}" data-kind="otb" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">${r.curRn}</span>`:r.curRn}</td>
       <td class="cell-mono">${fmtPct(r.curOcc,0)}</td>
       <td class="cell-mono ${adrCmpCls}">${isFinite(r.curAdr)?fmtEUR(r.curAdr):'—'}</td>
       <!-- Pickup OTB (4 colonne, niente ΔRev) -->
@@ -29688,7 +29708,7 @@ function renderSellStrategy(sel){
       <td class="cell-mono ${pkRnCls}">${pkRnCellInner}</td>
       <td class="cell-mono">${pkAdrTxt}</td>
       <!-- STLY (RN, OCC, ADR — no Revenue) -->
-      <td class="cell-mono cell-flat sell-grp-stly-cell">${r.stlyRn}</td>
+      <td class="cell-mono cell-flat sell-grp-stly-cell">${r.stlyRn>0?`<span class="sell-pickup-link" data-row="${i}" data-kind="otbStly" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">${r.stlyRn}</span>`:r.stlyRn}</td>
       <td class="cell-mono cell-flat">${fmtPct(r.stlyOcc,0)}</td>
       <td class="cell-mono cell-flat">${isFinite(r.stlyAdr)?fmtEUR(r.stlyAdr):'—'}</td>
       <!-- Pickup STLY (4 colonne) -->
@@ -30021,6 +30041,34 @@ function renderSellStrategy(sel){
 
 /* Drilldown modal for Sell Strategy pickup/cancel cell.
    kind: 'pk' (nuove prenotazioni) | 'cancel' (cancellazioni nel pickup window) */
+function _sellBookingsForNight(r, isStly){
+  // Ritorna le room-bookings CONFERMATE che includono la notte di questa riga.
+  // OTB: la notte stessa (r.date). STLY: la notte di un anno fa (-364 giorni).
+  // Calcolato al volo (on-demand) per non tenere liste in memoria a regime.
+  const out = [];
+  if (typeof BOOKINGS === 'undefined') return out;
+  const sel = (SELL_LAST_AGG && SELL_LAST_AGG.structSel) ? SELL_LAST_AGG.structSel : CURRENT_STRUCT;
+  const keys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : null;
+  const _rtFilter = (typeof SELL_RT_FILTER !== 'undefined') ? SELL_RT_FILTER : null;
+  // notte target
+  let nightDate = new Date(r.date);
+  if (isStly) nightDate.setDate(nightDate.getDate() - 364);
+  const nightStart = startOfDay(nightDate).getTime();
+  for (const b of BOOKINGS){
+    if (b.cancelled) continue;
+    if (keys && !keys.has(b.struct)) continue;
+    if (!keys && b.struct !== sel) continue;
+    if (_rtFilter && b.room !== _rtFilter) continue;
+    // la prenotazione include la notte target? (dIn <= night < dOut)
+    const inT = startOfDay(b.dIn).getTime();
+    const outT = startOfDay(b.dOut).getTime();
+    if (inT <= nightStart && nightStart < outT){
+      out.push(b);
+    }
+  }
+  return out;
+}
+
 function openSellPickupDrill(rowIdx, kind){
   if (!SELL_LAST_AGG) return;
   const r = SELL_LAST_AGG.rows[rowIdx];
@@ -30030,6 +30078,11 @@ function openSellPickupDrill(rowIdx, kind){
   if (kind === 'cancel') sourceRows = r.cancelRows || [];
   else if (kind === 'pkStly') sourceRows = r.pkRowsStly || [];
   else if (kind === 'cancelStly') sourceRows = r.cancelRowsStly || [];
+  else if (kind === 'otb' || kind === 'otbStly'){
+    // ON-DEMAND (zero peso a regime): la lista delle prenotazioni "già dentro" quella notte
+    // viene costruita al volo SOLO al click, scorrendo i BOOKINGS una volta.
+    sourceRows = _sellBookingsForNight(r, kind === 'otbStly');
+  }
   else sourceRows = r.pkRows || [];
   const rows = [...sourceRows].sort((a,b)=> b.bookYmd - a.bookYmd);
 
@@ -30051,6 +30104,14 @@ function openSellPickupDrill(rowIdx, kind){
     const stlyDateLbl = `${pad2(stlyDate.getDate())}/${pad2(stlyDate.getMonth()+1)}/${stlyDate.getFullYear()}`;
     titleLbl = `Cancelled STLY · night ${stlyDateLbl}`;
     subLbl = `${rows.length} room-bookings CANCELLED in the STLY pickup window (last ${SELL_LAST_AGG.pickupDaysAgo}d, but a year ago) that included the STLY night`;
+  } else if (kind === 'otb'){
+    titleLbl = `On the books · night ${dateLbl}`;
+    subLbl = `${rows.length} room-bookings confirmed (OTB) that include this night`;
+  } else if (kind === 'otbStly'){
+    const stlyDate = new Date(r.date); stlyDate.setDate(stlyDate.getDate() - 364);
+    const stlyDateLbl = `${pad2(stlyDate.getDate())}/${pad2(stlyDate.getMonth()+1)}/${stlyDate.getFullYear()}`;
+    titleLbl = `On the books STLY · night ${stlyDateLbl}`;
+    subLbl = `${rows.length} room-bookings that were confirmed (OTB) on the STLY night, one year ago`;
   } else {
     titleLbl = `Pickup · night ${dateLbl}`;
     subLbl = `${rows.length} room-bookings that came in during the last ${SELL_LAST_AGG.pickupDaysAgo}d that include this night`;
@@ -35804,12 +35865,12 @@ function niceCeil(v){
    CHAT AI - rule-based revenue assistant
    ============================================================ */
 const CHAT_SUGG = [
-  'Revenue luglio',
+  'July revenue',
   'Top channel Firenze',
   'ADR Suite',
-  'Pickup ultima settimana',
-  'Gap budget Condotta',
-  'Variazione vs STLY',
+  'Pickup last week',
+  'Budget gap Condotta',
+  'Change vs STLY',
 ];
 
 function initChat(){
@@ -36005,14 +36066,14 @@ function answerChat(q){
   }
 
   // default
-  return ctx + `Posso aiutarti con:<br>
-  • <b>Month</b>: "revenue luglio", "ADR agosto"<br>
+  return ctx + `I can help with:<br>
+  • <b>Month</b>: "July revenue", "August ADR"<br>
   • <b>Channel</b>: "top channel", "Booking vs Website"<br>
   • <b>Room type</b>: "ADR Suite", "OCC Bilocale"<br>
-  • <b>Budget</b>: "gap budget", "achievement"<br>
+  • <b>Budget</b>: "budget gap", "achievement"<br>
   • <b>Pickup</b>: "weekly pickup", "last 4 weeks"<br>
   • <b>STLY</b>: "vs STLY", "year change"<br>
-  • <b>Property</b>: add <i>"Firenze"</i>, <i>"Condotta"</i> o <i>"entrambe"</i> a qualsiasi domanda per cambiare struttura solo per quella risposta.`;
+  • <b>Property</b>: add <i>"Firenze"</i>, <i>"Condotta"</i> or <i>"both"</i> to any question to switch property just for that answer.`;
 }
 
 /* ============================================================
