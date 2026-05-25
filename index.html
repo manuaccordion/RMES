@@ -1066,7 +1066,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
     <div id="big-hero" class="big-hero"></div>
     <div class="big-chart-wrap">
-      <div class="big-chart-title">Pickup — room nights booked per day (last 7 days)</div>
+      <div class="big-chart-title" id="big-chart-title">Pickup — room nights booked per day (last 7 days)</div>
       <div id="big-chart"></div>
     </div>
     <div id="big-grid"></div>
@@ -1417,16 +1417,16 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p>The landing tab: a visual snapshot of what is happening before diving into the detailed tabs. It follows the property selector at the top (single property or All) and the <b>Pickup window</b> toggle (1 day default · 7 days) controls the recency window used by the pickup-based cards.</p>
         <p>Layout, top to bottom:</p>
         <ul style="margin:6px 0 0 18px;padding:0">
-          <li><b>Hero row</b> (4 icon boxes): recent pickup (RN), Revenue 2026 (OTB), OCC 2026, and compset rank over the next 30 days. The first three show a small <b>STLY comparison</b> underneath (same weekday, -364 days) with a green/red arrow; the rank box has no STLY.</li>
+          <li><b>Hero row</b> (4 icon boxes): recent pickup (RN), Revenue 2026 (OTB), OCC 2026, and compset rank over the next 7 days (with All, it's the average of the 4 properties). The first three show a small <b>STLY comparison</b> underneath (same weekday, -364 days) with a green/red arrow; the rank box has no STLY.</li>
           <li><b>Pickup chart</b>: room nights booked per day over the last 7 days, centred, with today's bar highlighted in the accent colour.</li>
-          <li><b>6 colour-coded cards</b> (3 + 3 grid), each with an icon and clickable, opening the matching tab. All pickup-based cards react to the 1/7 day toggle. When the property selector is on <b>All</b>, every card (and the pickup hero box) shows a small <b>“by property”</b> badge; clicking it opens a clean colour-coded panel (RMES style) with the per-hotel breakdown of <b>that card's own metric</b> — pickup RN for Sell/Overview/OCC&amp;Pickup, revenue OTB→forecast for Forecast, cancellation RN for CXLTrend, compset position for Rate Shopper:
+          <li><b>6 colour-coded cards</b> (3 + 3 grid), each with an icon and clickable, opening the matching tab. All pickup-based cards react to the 1/7 day toggle. When the property selector is on <b>All</b>, every card and every hero box (and the pickup chart) shows a small <b>“by property”</b> badge; clicking it opens a clean colour-coded panel (RMES style) with the per-hotel breakdown of <b>that element's own metric</b> — pickup RN, Revenue 2026, OCC 2026, compset rank/position, forecast revenue, and cancellation RN:
             <ul style="margin:4px 0 0 18px;padding:0">
               <li><b>Sell Strategy</b>: the top 3 days by room nights booked in the selected window.</li>
-              <li><b>Overview</b>: the 3 stay-months that moved the most (by recent pickup).</li>
-              <li><b>Forecast</b>: revenue per day still needed to close the current month, the average €/day picked up over the last 14 days, and OTB → forecast.</li>
+              <li><b>Overview</b>: the 3 stay-months (with year) that moved the most by recent pickup.</li>
+              <li><b>Forecast</b> (title shows the current month): revenue per day still needed to close it, the average €/day picked up over the last 14 days, and OTB → forecast.</li>
               <li><b>CXLTrend</b>: top 3 months (current month onwards only, future cancellations) with the most cancellations.</li>
-              <li><b>Rate Shopper</b>: average position among competitors over the next 30 days (e.g. 3rd / 8) and average gap vs the compset ("in line" when within ±1%).</li>
-              <li><b>OCC &amp; Pickup</b> (merged): pickup RN of the window vs last year and the top-selling room — links to both the OCC by Room Type and Pickup Matrix tabs.</li>
+              <li><b>Rate Shopper</b>: average position among competitors over the next 7 days (e.g. 3rd / 8; with All it's the average of the 4 properties) and average gap vs the compset ("in line" when within ±1%).</li>
+              <li><b>OCC &amp; Pickup</b> (merged): the top 3 room types by room nights in the window (so it doesn't repeat the Sell Strategy) — links to both the OCC by Room Type and Pickup Matrix tabs.</li>
             </ul>
           </li>
         </ul>
@@ -1651,7 +1651,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <span style="margin-left:14px;color:#7a4f1c">• <b>Case 1</b> (ADR &lt; LY): recovery, raise. dev = -(ratio - 1) positive.</span><br>
             <span style="margin-left:14px;color:#7a4f1c">• <b>Case 2</b> (ADR ≥ LY AND OCC ≥ LY): all good, neutral. dev = 0.</span><br>
             <span style="margin-left:14px;color:#7a4f1c">• <b>Case 3</b> (ADR ≥ LY but OCC &lt; LY): brake softened by target growth. dev = -((ADR/STLY -1) - target_growth/100). Never positive (never raises in Case 3).</span></li>
-          <li><b style="color:#8e5fa8">C · Pace Trend</b>: pickup over the last 4 weeks of the current month vs the same STLY period. The 4 weeks are <b>weighted, giving more weight to the most recent week</b> (W1 10% · W2 20% · W3 30% · W4 40%, where W4 is the latest week). The ratio is weighted; the room-night counts shown in the detail modal are the real (unweighted) ones. Fallback hierarchy:<br>
+          <li><b style="color:#8e5fa8">C · Pace Trend</b>: pickup over the last 4 weeks of the current month vs the same STLY period. The 4 weeks are <b>weighted, giving more weight to the most recent week</b> (W1 10% · W2 20% · W3 30% · W4 40%, where W4 is the latest week). The ratio uses the weighted pickup; the room-night counts shown elsewhere are the real (unweighted) ones. Fallback hierarchy:<br>
             <span style="margin-left:14px;color:#5a3a7a">1. Property 4w month pace. 2. Property-aggregate 4w month pace (badge <b>P̄</b>). 3. Property annual pace only if |dev| ≤ 15%. 4. Neutralized (weight redistributed).</span></li>
           <li><b style="color:#1e6b4a">D · Online Pricing</b>: my Expedia price vs compset average (weighted by competitor weights). <b>Inverted logic</b>: <code>dev = -((my_Expedia / avg_compset) − 1)</code>. If I'm cheaper → positive dev → I can raise.</li>
           <li><b style="color:#a83b3b">E · Demand (Expedia)</b>: that day's Expedia searches vs the <b>month median</b> (not vs the annual average). <code>dev = (search_cur − month_median) / month_median</code>. Search peaks = push, troughs = brake.</li>
@@ -44128,6 +44128,8 @@ const CFG = {
 
 /* David's: budget = forecast (LY × growth). Vedi _davidsBudgetForecast(). */
 const _DAVIDS_BUDGET_GROWTH = 1.08;
+// C·Pace: pesi delle 4 settimane di pickup (indice 3 = settimana più recente)
+const PACE_WEEK_WEIGHTS = [0.10, 0.20, 0.30, 0.40];
 
 /* -------- DATES -------- */
 const TODAY = new Date();
@@ -49816,30 +49818,63 @@ function fp_computePace(structKey, rt, targetDateISO){
   const structName = fp_structName(structKey);
   const tdYmd = ymd(td), tdLYYmd = ymd(tdLY);
   const todayYmd = ymd(today), todayLYYmd = ymd(todayLY);
-  
+
+  // Soglie delle ultime 4 settimane per la data di PRENOTAZIONE (bookYmd), pesate:
+  // W1 (più vecchia) 10% · W2 20% · W3 30% · W4 (più recente) 40%.
+  // PACE_WEEK_WEIGHTS[3] = settimana più recente.
+  // helper: settimana (0..3) di un bookYmd rispetto a una data di riferimento; -2 se più vecchio di 28gg
+  function weekOf(bookYmd, refTodayYmd){
+    // calcolo giorni-fa in modo robusto via date
+    const by = new Date(parseInt(String(bookYmd).slice(0,4)), parseInt(String(bookYmd).slice(4,6))-1, parseInt(String(bookYmd).slice(6,8)));
+    const ref = new Date(parseInt(String(refTodayYmd).slice(0,4)), parseInt(String(refTodayYmd).slice(4,6))-1, parseInt(String(refTodayYmd).slice(6,8)));
+    const daysAgo = Math.floor((ref - by) / 86400000);
+    if (daysAgo < 0) return -1;
+    if (daysAgo <= 6) return 3;   // settimana più recente
+    if (daysAgo <= 13) return 2;
+    if (daysAgo <= 20) return 1;
+    if (daysAgo <= 27) return 0;  // settimana più vecchia delle 4
+    return -2;                    // più vecchio di 28gg (pickup "di fondo")
+  }
+  const W = (typeof PACE_WEEK_WEIGHTS !== 'undefined' && PACE_WEEK_WEIGHTS.length===4) ? PACE_WEEK_WEIGHTS : [0.10,0.20,0.30,0.40];
+
+  // Conteggi: rn totali (reali, per smoothing) + rn pesati (per il ratio).
   let rnNow = 0, rnLY = 0;
+  let wNow = 0, wLY = 0;          // somme pesate del pickup ultime 4 settimane
+  let baseNow = 0, baseLY = 0;    // pickup "di fondo" (>28gg): contribuisce a peso pieno 1.0
   for (const b of BOOKINGS){
     if (b.struct !== structName) continue;
     if (b.stato !== 'Confermate') continue;
     if (b.room !== rt) continue;
     if (!b.dIn || !b.dOut || !b.bookYmd) continue;
     const ciYmd = ymd(b.dIn), coYmd = ymd(b.dOut);
-    if (b.bookYmd <= todayYmd && ciYmd <= tdYmd && coYmd > tdYmd) rnNow++;
-    if (b.bookYmd <= todayLYYmd && ciYmd <= tdLYYmd && coYmd > tdLYYmd) rnLY++;
+    if (b.bookYmd <= todayYmd && ciYmd <= tdYmd && coYmd > tdYmd){
+      rnNow++;
+      const wk = weekOf(b.bookYmd, todayYmd);
+      if (wk >= 0) wNow += W[wk]; else if (wk === -2) baseNow += 1.0;
+    }
+    if (b.bookYmd <= todayLYYmd && ciYmd <= tdLYYmd && coYmd > tdLYYmd){
+      rnLY++;
+      const wk = weekOf(b.bookYmd, todayLYYmd);
+      if (wk >= 0) wLY += W[wk]; else if (wk === -2) baseLY += 1.0;
+    }
   }
   if (rnLY === 0) return 1.0;
-  
-  let pace = rnNow / rnLY;
-  
-  // SMOOTHING per dati piccoli: se rnLY < 4, applica sqrt per tirare il pace verso 1
-  //   (es. raw 1.50, sqrt = 1.22 — meno aggressivo)
-  //   (es. raw 3.00, sqrt = 1.73 — ancora più stretto del clamp)
-  //   (es. raw 0.50, sqrt = 0.71)
-  // Su dati piccoli (rnLY ≤ 3) un pace estremo è quasi sempre rumore.
+
+  // Pace pesato: rapporto tra pickup pesato corrente e STLY (più il fondo a peso pieno).
+  // Se non c'è pickup recente né STLY recente, ricado sul rapporto grezzo rnNow/rnLY.
+  const numNow = wNow + baseNow;
+  const numLY  = wLY  + baseLY;
+  let pace;
+  if (numLY > 0 && numNow > 0){
+    pace = numNow / numLY;
+  } else {
+    pace = rnNow / rnLY;   // fallback al pace non pesato
+  }
+
+  // SMOOTHING per dati piccoli (rnLY < 4): sqrt per tirare verso 1.
   if (rnLY < 4){
     pace = Math.sqrt(pace);
   }
-  
   // CLAMP esterno: [0.70, 1.30]
   return Math.max(0.70, Math.min(1.30, pace));
 }
@@ -59427,7 +59462,7 @@ function _bigPickupAgg(sel, nDays){
   return {
     totRn, totRev,
     channels: top(byChannel),
-    months: top(byMonth,(ym)=>{const mm=+ym.split('-')[1]; return CFG.monthsITLong?CFG.monthsITLong[mm-1]:ym;}),
+    months: top(byMonth,(ym)=>{const p=ym.split('-'); const mm=+p[1]; return (CFG.monthsITLong?CFG.monthsITLong[mm-1]:ym)+' '+p[0];}),
     rooms: top(byRoom),
   };
 }
@@ -59472,13 +59507,28 @@ function _bigBreakdownData(kind, nDays){
   }
   if (kind === 'rate'){
     const rows=[];
-    BIG_STRUCTS.forEach(s=>{ let txt='—', bar=0; try{ const p=_bigCompsetRank(s.k,30); if(p&&p.rank){ txt=`${p.rank}° / ${p.total}`; bar=(p.total-p.rank+1)/p.total*100; } }catch(e){} rows.push({name:s.name,color:s.color,main:txt,pct:null,barPct:bar}); });
-    return { title:'Compset position by property', sub:'next 30 days (1° = cheapest)', rows };
+    BIG_STRUCTS.forEach(s=>{ let txt='—', bar=0; try{ const p=_bigCompsetRankOne(s.k,7); if(p&&p.rank){ txt=`${p.rank}° / ${p.total}`; bar=(p.total-p.rank+1)/p.total*100; } }catch(e){} rows.push({name:s.name,color:s.color,main:txt,pct:null,barPct:bar}); });
+    return { title:'Compset position by property', sub:'next 7 days (1° = cheapest)', rows };
+  }
+  if (kind === 'revenue'){
+    const rows=[]; let maxV=1;
+    BIG_STRUCTS.forEach(s=>{ let v=0; try{ const A=aggOTBYearly(s.k); if(A&&A.tot)v=A.tot.revC||0; }catch(e){} maxV=Math.max(maxV,v); rows.push({name:s.name,color:s.color,v}); });
+    const total = rows.reduce((a,r)=>a+r.v,0)||1;
+    return { title:'Revenue 2026 by property', sub:`OTB · ${fmtEUR(total)} total`,
+      rows: rows.map(r=>({name:r.name,color:r.color,main:fmtEUR(r.v),pct:r.v/total*100,barPct:r.v/maxV*100})) };
+  }
+  if (kind === 'occ'){
+    const rows=[];
+    BIG_STRUCTS.forEach(s=>{ let v=null; try{ const A=aggOTBYearly(s.k); if(A&&A.tot)v=A.tot.occC; }catch(e){} rows.push({name:s.name,color:s.color,v}); });
+    return { title:'OCC 2026 by property', sub:'occupancy year-to-date',
+      rows: rows.map(r=>({name:r.name,color:r.color,main:r.v!=null?fmtPct(r.v,1):'—',pct:null,barPct:r.v!=null?r.v*100:0})) };
   }
   return null;
 }
 
 function _bigShowBreakdown(kind, nDays){
+  // pickup7 = breakdown pickup forzato a 7 giorni (dal grafico)
+  if (kind === 'pickup7'){ kind = 'pickup'; nDays = 7; }
   const data = _bigBreakdownData(kind, nDays);
   if (!data) return;
   const existing = document.getElementById('big-breakdown-modal');
@@ -59544,9 +59594,8 @@ function _bigPickupVsLY(sel, nDays){
   return { cur, ly, deltaPct: ly>0 ? (cur-ly)/ly*100 : null };
 }
 
-function _bigCompsetRank(sel, horizonDays){
+function _bigCompsetRankOne(sk, horizonDays){
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return null;
-  const sk = (sel==='both') ? 'condotta' : sel;
   const myMap = EXPEDIA_DATA[sk];
   let compMap = EXPEDIA_DATA['competitors_'+sk] || (sk==='condotta'?EXPEDIA_DATA.competitors:null);
   if (!myMap || !compMap) return null;
@@ -59567,6 +59616,21 @@ function _bigCompsetRank(sel, horizonDays){
   }
   if (!rankCnt) return null;
   return { rank: Math.round(rankSum/rankCnt), total: totalComp, gapPct: gapCnt? gapSum/gapCnt : null };
+}
+
+function _bigCompsetRank(sel, horizonDays){
+  if (sel !== 'both') return _bigCompsetRankOne(sel, horizonDays);
+  // ALL: media dei rank delle 4 strutture (ognuna nel proprio compset)
+  const keys = ['firenze','condotta','alfani','davids'];
+  let rankSum=0, totSum=0, gapSum=0, n=0, gn=0;
+  for (const k of keys){
+    const r = _bigCompsetRankOne(k, horizonDays);
+    if (!r) continue;
+    rankSum += r.rank; totSum += r.total; n++;
+    if (r.gapPct!=null){ gapSum += r.gapPct; gn++; }
+  }
+  if (!n) return null;
+  return { rank: Math.round(rankSum/n), total: Math.round(totSum/n), gapPct: gn? gapSum/gn : null, isAvg:true };
 }
 
 function _bigForecast14d(sel){
@@ -59632,7 +59696,7 @@ function renderBigPicture(){
   // ---- HERO ----
   let revOtb=null, occYear=null, revP=null, occP=null;
   try { const A = aggOTBYearly(sel); if (A && A.tot){ revOtb=A.tot.revC; occYear=A.tot.occC; revP=A.tot.revP; occP=A.tot.occP; } } catch(e){}
-  const rank = _bigCompsetRank(sel, 30);
+  const rank = _bigCompsetRank(sel, 7);
   const pkVs = _bigPickupVsLY(sel, n);
   const _stly = (cur, prev, fmt)=>{
     if (prev==null || !isFinite(prev)) return '';
@@ -59644,9 +59708,9 @@ function renderBigPicture(){
   };
   const heroItems = [
     {label:`Pickup (${winLbl})`, val:`+${agg.totRn} RN`, sub: _stly(pkVs.cur, pkVs.ly, (x)=>`${x} RN`), byProp: isBoth?'pickup':null},
-    revOtb!=null ? {label:'Revenue 2026 (OTB)', val: fmtEUR(revOtb), sub:_stly(revOtb, revP, fmtEUR)} : null,
-    occYear!=null ? {label:'OCC 2026', val: fmtPct(occYear,1), sub:_stly(occYear, occP, (x)=>fmtPct(x,1))} : null,
-    rank ? {label:'Compset rank (30d)', val:`${rank.rank}° / ${rank.total}`} : null
+    revOtb!=null ? {label:'Revenue 2026 (OTB)', val: fmtEUR(revOtb), sub:_stly(revOtb, revP, fmtEUR), byProp: isBoth?'revenue':null} : null,
+    occYear!=null ? {label:'OCC 2026', val: fmtPct(occYear,1), sub:_stly(occYear, occP, (x)=>fmtPct(x,1)), byProp: isBoth?'occ':null} : null,
+    rank ? {label:'Compset rank (7d)', val:`${rank.rank}° / ${rank.total}`, byProp: isBoth?'rate':null} : null
   ].filter(Boolean);
   const heroEl = document.getElementById('big-hero');
   if (heroEl) heroEl.innerHTML = heroItems.map((h,i)=>`<div class="big-hero-item">
@@ -59685,7 +59749,8 @@ function renderBigPicture(){
       const m = F.monthly[curKey];
       if (m.otbRev!=null && m.fcstRev!=null){
         const made14 = _bigForecast14d(sel);
-        cards.push(_bigCard({ title:'Forecast', theme:'fcst', big:true, tabs:[{label:'Forecast',tab:'fcst'}], lines:[
+        const moName = (CFG.monthsITLong?CFG.monthsITLong[today.getMonth()]:'')+' '+today.getFullYear();
+        cards.push(_bigCard({ title:`Forecast — ${moName}`, theme:'fcst', big:true, tabs:[{label:'Forecast',tab:'fcst'}], lines:[
           {k:'Needed / day', v:(m.eurPerDayToClose!=null && m.eurPerDayToClose>0)?fmtEUR(m.eurPerDayToClose):'✓ reached'},
           {k:'€/day pickup (14d)', v: fmtEUR(made14/14)},
           {k:'OTB → Forecast', v: `${fmtEUR(m.otbRev)} → ${fmtEUR(m.fcstRev)}`}
@@ -59717,25 +59782,21 @@ function renderBigPicture(){
 
   // 5. RATE SHOPPER → rank + gap (più chiaro)
   try {
-    const pos = _bigCompsetRank(sel, 30);
+    const pos = _bigCompsetRank(sel, 7);
     if (pos && pos.rank){
       let gapTxt='—';
       if (pos.gapPct!=null){ const g=pos.gapPct; gapTxt = Math.abs(g)<1 ? 'in line' : `${g>0?'+':''}${g.toFixed(1)}%`; }
       cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', big:true, tabs:[{label:'Rate Shopper',tab:'rate'}], lines:[
-        {k:'Position (next 30d)', v:`${pos.rank}° / ${pos.total}`},
+        {k:'Position (next 7d)', v:`${pos.rank}° / ${pos.total}`},
         {k:'Avg vs compset', v: gapTxt}
       ], byProp: isBoth?'rate':null}));
     } else cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', tabs:[{label:'Rate Shopper',tab:'rate'}], empty:true }));
   } catch(e){ cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', tabs:[{label:'Rate Shopper',tab:'rate'}], empty:true })); }
 
-  // 6. OCC & PICKUP → RN totali finestra + top room + vs LY (rispetta 1/7)
+  // 6. OCC & PICKUP → top room type per RN (finestra), non ripete il pickup totale
   try {
-    const vs = _bigPickupVsLY(sel, n);
-    const topRoom = agg.rooms[0];
-    const lines = [
-      {k:`Pickup RN (${winLbl})`, v:`${agg.totRn}`, sub: vs.deltaPct!=null?`${vs.deltaPct>0?'+':''}${vs.deltaPct.toFixed(0)}% vs LY`:''}
-    ];
-    if (topRoom) lines.push({k:'Top room', v: topRoom.label, sub:`${topRoom.rn} RN`});
+    const top = agg.rooms.slice(0,3);
+    const lines = _bigTop3(top.map((r,i)=>({k:`${i+1}. ${r.label}`, v:`${r.rn} RN`})), 'RN');
     cards.push(_bigCard({ title:'OCC & Pickup', theme:'occpk', big:true, tabs:[{label:'OCC',tab:'rt'},{label:'Pickup',tab:'pk'}], lines, byProp: isBoth?'pickup':null }));
   } catch(e){ cards.push(_bigCard({ title:'OCC & Pickup', theme:'occpk', tabs:[{label:'OCC',tab:'rt'},{label:'Pickup',tab:'pk'}], empty:true })); }
 
@@ -59752,6 +59813,13 @@ function renderBigPicture(){
 function _bigRenderChart(sel){
   const host = document.getElementById('big-chart');
   if (!host) return;
+  const titleEl = document.getElementById('big-chart-title');
+  if (titleEl){
+    const base = 'Pickup — room nights booked per day (last 7 days)';
+    titleEl.innerHTML = (sel==='both')
+      ? `${base} <span class="big-byprop" data-bigbreakdown="pickup7" style="font-size:10px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>`
+      : base;
+  }
   const days = _bigPickupByDay(sel, 7);
   const maxRn = Math.max(1, ...days.map(d=>d.rn));
   // SVG con coordinate reali in px, centrato
