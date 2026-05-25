@@ -47941,17 +47941,21 @@ function _getPaceAggBoth(){
   if (typeof aggPickup !== 'function') return null;
   const pkAgg = aggPickup('both');
   const PACE_WEEK_INDEXES = [0, 1, 2, 3];
+  // Pesi settimana: indice 0 = settimana più vecchia, indice 3 = più recente (W4).
+  const _PW = (typeof PACE_WEEK_WEIGHTS !== 'undefined' && PACE_WEEK_WEIGHTS.length===4) ? PACE_WEEK_WEIGHTS : [0.10,0.20,0.30,0.40];
   const byStayMonth = {};  // ym → { rawMult, ratio, pickupCur, pickupStly }
   if (pkAgg && pkAgg.sm && pkAgg.smS){
     const allMonths = new Set([...Object.keys(pkAgg.sm), ...Object.keys(pkAgg.smS)]);
     for (const ym of allMonths){
-      let mCur = 0, mStly = 0;
+      let mCur = 0, mStly = 0;          // RN reali (per display)
+      let wCur = 0, wStly = 0;          // RN pesati (per il ratio)
       for (const i of PACE_WEEK_INDEXES){
-        if (pkAgg.sm[ym] && pkAgg.sm[ym][i]) mCur  += pkAgg.sm[ym][i].rn;
-        if (pkAgg.smS[ym] && pkAgg.smS[ym][i]) mStly += pkAgg.smS[ym][i].rn;
+        if (pkAgg.sm[ym] && pkAgg.sm[ym][i]) { mCur  += pkAgg.sm[ym][i].rn;  wCur  += pkAgg.sm[ym][i].rn  * _PW[i]; }
+        if (pkAgg.smS[ym] && pkAgg.smS[ym][i]) { mStly += pkAgg.smS[ym][i].rn; wStly += pkAgg.smS[ym][i].rn * _PW[i]; }
       }
       if (mStly > 0 && mCur > 0){
-        const ratio = mCur / mStly;
+        // ratio pesato: dà più peso al pickup delle settimane recenti
+        const ratio = (wStly > 0) ? (wCur / wStly) : (mCur / mStly);
         const rawMult = (typeof applyThresholds === 'function') ? applyThresholds(ratio, 'pace') : 1;
         byStayMonth[ym] = { rawMult, ratio, pickupCur: mCur, pickupStly: mStly };
       }
@@ -50655,8 +50659,10 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Stay-month pickup (last 4 weeks) cur vs STLY, multi-level</div>';
           const pi = dbg.paceInfo || {};
           if (pi.pickupCur != null && pi.pickupStly != null){
-            h += '<div>Pickup 4w current month: <b>'+pi.pickupCur+' RN</b> · STLY: <b>'+pi.pickupStly+' RN</b></div>';
-            if (pi.pickupStly > 0){
+            h += '<div>Pickup 4w current month: <b>'+pi.pickupCur+' RN</b> · STLY: <b>'+pi.pickupStly+' RN</b> <span style="color:#999">(real RN)</span></div>';
+            if (pi.ratio != null){
+              h += '<div>Weighted ratio: <b>'+pi.ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(pi.ratio-1,1)+'</b> <span style="color:#999">(recent week weighted: W1 10% · W2 20% · W3 30% · W4 40%)</span></div>';
+            } else if (pi.pickupStly > 0){
               const ratio = pi.pickupCur / pi.pickupStly;
               h += '<div>Ratio pickup: <b>'+ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(ratio-1,1)+'</b></div>';
             }
