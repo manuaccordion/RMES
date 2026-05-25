@@ -729,6 +729,26 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   table.data{font-size:10px}
   table.data th,table.data td{padding:5px 5px;font-size:10px}
 }
+/* ===== BIG PICTURE ===== */
+.big-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:6px 0 18px}
+.big-hero-item{display:flex;align-items:center;gap:13px;background:linear-gradient(135deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.big-hero-icon{font-size:26px;flex-shrink:0;width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border-radius:10px;border:1px solid var(--line)}
+.big-hero-txt{min-width:0}
+.big-hero-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:600;margin-bottom:3px}
+.big-hero-val{font-size:25px;font-weight:800;color:var(--ink);line-height:1;font-family:'DM Mono',monospace}
+.big-hero-sub{font-size:10.5px;color:var(--ink-3);margin-top:5px;font-family:'DM Mono',monospace;font-weight:500}
+.big-chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px 6px;margin-bottom:18px}
+.big-chart-title{font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
+#big-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){#big-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){#big-grid{grid-template-columns:1fr}}
+.big-card{border-radius:12px;padding:16px 18px;transition:transform .15s ease,box-shadow .15s ease;cursor:default}
+.big-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+.big-card-link{cursor:pointer;font-weight:700;transition:opacity .15s}
+.big-byprop{transition:opacity .15s}
+.big-byprop:hover{opacity:.7}
+.big-card-link:hover{opacity:.65;text-decoration:underline}
+@media(max-width:600px){.big-hero-val{font-size:24px}.big-card{padding:13px 14px}}
 </style>
 </head>
 <body>
@@ -762,14 +782,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
   <!-- ============ NAV ============ -->
   <nav class="nav" role="tablist">
-    <button class="tab active" data-tab="sell"><span class="num">1</span>Sell Strategy</button>
+    <button class="tab active" data-tab="big"><span class="num">★</span>Big Picture</button>
+    <button class="tab" data-tab="sell"><span class="num">1</span>Sell Strategy</button>
     <button class="tab" data-tab="otb"><span class="num">2</span>Overview</button>
     <button class="tab" data-tab="fcst"><span class="num">3</span>Forecast</button>
     <button class="tab" data-tab="hist" style="display:none"><span class="num">5</span>Historical Data</button>
     <button class="tab" data-tab="pk"><span class="num">4</span>Pickup Matrix</button>
     <button class="tab" data-tab="cancel"><span class="num">5</span>CXLTrend</button>
-    <button class="tab" data-tab="rate"><span class="num">6</span>Rate Shopper</button>
-    <button class="tab" data-tab="rt"><span class="num">7</span>OCC by Room Type</button>
+    <button class="tab" data-tab="rt"><span class="num">6</span>OCC by Room Type</button>
+    <button class="tab" data-tab="rate"><span class="num">7</span>Rate Shopper</button>
     <button class="tab" data-tab="abnb"><span class="num">8</span>Airbnb</button>
     <button class="tab" data-tab="pri"><span class="num">9</span>RMES</button>
     <button class="tab" data-tab="instr"><span class="num">📖</span>Playbook</button>
@@ -1033,7 +1054,24 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
   <!-- ============ SECTION 5: (rimossa - era AirDNA Demand) ============ -->
   <!-- ============ SECTION 6: SELL STRATEGY ============ -->
-  <section class="tab-panel active" id="panel-sell">
+  <section class="tab-panel active" id="panel-big">
+    <div class="section-head">
+      <div>
+        <h2>Big Picture</h2>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:11px;color:var(--ink-3)">Pickup window</label>
+        <div id="big-window-pills" style="display:flex;gap:6px"></div>
+      </div>
+    </div>
+    <div id="big-hero" class="big-hero"></div>
+    <div class="big-chart-wrap">
+      <div class="big-chart-title">Pickup — room nights booked per day (last 7 days)</div>
+      <div id="big-chart"></div>
+    </div>
+    <div id="big-grid"></div>
+  </section>
+  <section class="tab-panel" id="panel-sell">
     <div class="section-head">
       <div>
         <h2>Sell Strategy <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px" id="sell-range-label">—</span></h2>
@@ -1358,18 +1396,43 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="panel" style="background:#fafaf8;border:1px solid var(--line);margin-bottom:18px">
       <div class="panel-body" style="padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
         <span style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Indice rapido</span>
+        <a href="#instr-big"    style="font-size:12px;color:#8e5fa8;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">★ Big Picture</a>
         <a href="#instr-sell"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">① Sell Strategy</a>
         <a href="#instr-cancel" style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">② CXLTrend</a>
         <a href="#instr-otb"    style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">③ Overview</a>
         <a href="#instr-fcst"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">④ Forecast</a>
         <a href="#instr-pk"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑤ Pickup Matrix</a>
-        <a href="#instr-rate"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑥ Rate Shopper</a>
-        <a href="#instr-rt"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑦ OCC per RT</a>
+        <a href="#instr-rt"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑥ OCC per RT</a>
+        <a href="#instr-rate"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑦ Rate Shopper</a>
         <a href="#instr-abnb"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑧ Airbnb</a>
         <a href="#instr-rmes"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑨ RMES (config)</a>
         <a href="#instr-glossario" style="font-size:12px;color:#7a4f1c;font-weight:600;text-decoration:none;padding:4px 10px;background:#fef8ed;border:1px solid #c4823b;border-radius:4px">📚 Glossary</a>
       </div>
     </div>
+
+    <!-- ============ ★ BIG PICTURE ============ -->
+    <details id="instr-big" open class="panel" style="margin-bottom:14px;border-left:3px solid #8e5fa8">
+      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a3a7a;background:#faf7fc">★ Big Picture — the snapshot of what is happening now</summary>
+      <div style="padding:14px 18px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+        <p>The landing tab: a visual snapshot of what is happening before diving into the detailed tabs. It follows the property selector at the top (single property or All) and the <b>Pickup window</b> toggle (1 day default · 7 days) controls the recency window used by the pickup-based cards.</p>
+        <p>Layout, top to bottom:</p>
+        <ul style="margin:6px 0 0 18px;padding:0">
+          <li><b>Hero row</b> (4 icon boxes): recent pickup (RN), Revenue 2026 (OTB), OCC 2026, and compset rank over the next 30 days. The first three show a small <b>STLY comparison</b> underneath (same weekday, -364 days) with a green/red arrow; the rank box has no STLY.</li>
+          <li><b>Pickup chart</b>: room nights booked per day over the last 7 days, centred, with today's bar highlighted in the accent colour.</li>
+          <li><b>6 colour-coded cards</b> (3 + 3 grid), each with an icon and clickable, opening the matching tab. All pickup-based cards react to the 1/7 day toggle. When the property selector is on <b>All</b>, every card (and the pickup hero box) shows a small <b>“by property”</b> badge; clicking it opens a clean colour-coded panel (RMES style) with the per-hotel breakdown of <b>that card's own metric</b> — pickup RN for Sell/Overview/OCC&amp;Pickup, revenue OTB→forecast for Forecast, cancellation RN for CXLTrend, compset position for Rate Shopper:
+            <ul style="margin:4px 0 0 18px;padding:0">
+              <li><b>Sell Strategy</b>: the top 3 days by room nights booked in the selected window.</li>
+              <li><b>Overview</b>: the 3 stay-months that moved the most (by recent pickup).</li>
+              <li><b>Forecast</b>: revenue per day still needed to close the current month, the average €/day picked up over the last 14 days, and OTB → forecast.</li>
+              <li><b>CXLTrend</b>: top 3 months (current month onwards only, future cancellations) with the most cancellations.</li>
+              <li><b>Rate Shopper</b>: average position among competitors over the next 30 days (e.g. 3rd / 8) and average gap vs the compset ("in line" when within ±1%).</li>
+              <li><b>OCC &amp; Pickup</b> (merged): pickup RN of the window vs last year and the top-selling room — links to both the OCC by Room Type and Pickup Matrix tabs.</li>
+            </ul>
+          </li>
+        </ul>
+        <p style="margin-top:6px;color:var(--ink-3)">The <b>Pickup window</b> toggle (1 day default · 7 days) drives the hero pickup box, the Sell Strategy / Overview / OCC &amp; Pickup cards. If a card has no data it shows "no movement" instead of being hidden.</p>
+      </div>
+    </details>
 
     <!-- ============ ① SELL STRATEGY ============ -->
     <details id="instr-sell" open class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
@@ -1588,7 +1651,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <span style="margin-left:14px;color:#7a4f1c">• <b>Case 1</b> (ADR &lt; LY): recovery, raise. dev = -(ratio - 1) positive.</span><br>
             <span style="margin-left:14px;color:#7a4f1c">• <b>Case 2</b> (ADR ≥ LY AND OCC ≥ LY): all good, neutral. dev = 0.</span><br>
             <span style="margin-left:14px;color:#7a4f1c">• <b>Case 3</b> (ADR ≥ LY but OCC &lt; LY): brake softened by target growth. dev = -((ADR/STLY -1) - target_growth/100). Never positive (never raises in Case 3).</span></li>
-          <li><b style="color:#8e5fa8">C · Pace Trend</b>: pickup over the last 4 weeks of the current month vs the same STLY period. Fallback hierarchy:<br>
+          <li><b style="color:#8e5fa8">C · Pace Trend</b>: pickup over the last 4 weeks of the current month vs the same STLY period. The 4 weeks are <b>weighted, giving more weight to the most recent week</b> (W1 10% · W2 20% · W3 30% · W4 40%, where W4 is the latest week). The ratio is weighted; the room-night counts shown in the detail modal are the real (unweighted) ones. Fallback hierarchy:<br>
             <span style="margin-left:14px;color:#5a3a7a">1. Property 4w month pace. 2. Property-aggregate 4w month pace (badge <b>P̄</b>). 3. Property annual pace only if |dev| ≤ 15%. 4. Neutralized (weight redistributed).</span></li>
           <li><b style="color:#1e6b4a">D · Online Pricing</b>: my Expedia price vs compset average (weighted by competitor weights). <b>Inverted logic</b>: <code>dev = -((my_Expedia / avg_compset) − 1)</code>. If I'm cheaper → positive dev → I can raise.</li>
           <li><b style="color:#a83b3b">E · Demand (Expedia)</b>: that day's Expedia searches vs the <b>month median</b> (not vs the annual average). <code>dev = (search_cur − month_median) / month_median</code>. Search peaks = push, troughs = brake.</li>
@@ -47268,7 +47331,7 @@ function beddyExpediaRatio(sel, lookbackDays){
 // State
 let SELL_START_YMD = null;       // chosen start date (YMD num)
 let SELL_START_USER_SET = false; // true once the user manually picks a date in this session
-let SELL_RANGE_DAYS = 90;        // 30 | 60 | 90 | 180 | 365
+let SELL_RANGE_DAYS = 180;        // 30 | 60 | 90 | 180 | 365
 let SELL_PICKUP_DAYS = 1;        // N days for pickup snapshot
 let SELL_LAST_AGG = null;        // last aggregation result (for drilldown lookups)
 let SELL_RT_FILTER = null;       // null = tutte le RT (default); altrimenti nome RT specifica (es. "Bilocale")
@@ -50510,7 +50573,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const factors = [
         {key:'occ_mult',   naKey:'occ',   code:'A', name:'Demand (occ)',     color:'#3b6b9a', desc:'current-day OCC vs STLY -364d'},
         {key:'price_mult', naKey:'price', code:'B', name:'Demand (Price)',   color:'#c4823b', desc:'current-day ADR vs STLY (3 conditional cases)'},
-        {key:'pace_mult',  naKey:'pace',  code:'C', name:'Pace Trend',    color:'#8e5fa8', desc:'Pickup 4w current month vs STLY + OCC check'},
+        {key:'pace_mult',  naKey:'pace',  code:'C', name:'Pace Trend',    color:'#8e5fa8', desc:'Pickup 4w current month vs STLY (recent week weighted) + OCC check'},
         {key:'comp_mult',  naKey:'comp',  code:'D', name:'Online Pricing', color:'#1e6b4a', desc:'My Expedia vs compset average (invertito)'},
         {key:'air_mult',   naKey:'air',   code:'E', name:'Demand (Expedia)',  color:'#a83b3b', desc:'Expedia searches vs month median'}
       ];
@@ -57213,7 +57276,7 @@ function _renderRmesWeightsBox(sel){
   const factors = [
     { key:'occ',    letter:'A', label:'Demand (occ)',     color:'#3b6b9a', desc:'OCC today vs STLY -364d' },
     { key:'price',  letter:'B', label:'Demand (Price)',   color:'#c4823b', desc:'ADR OTB vs STLY (3 cases)' },
-    { key:'pace',   letter:'C', label:'Pace Trend',    color:'#8e5fa8', desc:'pickup 4w month vs STLY' },
+    { key:'pace',   letter:'C', label:'Pace Trend',    color:'#8e5fa8', desc:'pickup 4w month vs STLY (recent week weighted)' },
     { key:'comp',   letter:'D', label:'Online Pricing', color:'#1e6b4a', desc:'my Exp vs compset (inverted)' },
     { key:'airdna', letter:'E', label:'Demand (Expedia)',  color:'#a83b3b', desc:'Expedia searches vs month median' },
   ];
@@ -59269,6 +59332,9 @@ function updateChips(){
 function renderAll(){
   if (typeof _RMESMAP_TICK !== 'undefined') _RMESMAP_TICK = {};  // reset cache per-render
   updateChips();
+  if (CURRENT_TAB === 'big' && typeof renderBigPicture === 'function'){
+    try { renderBigPicture(); } catch(e){ console.error('renderBigPicture', e); }
+  }
   // renderPricing(CURRENT_STRUCT);  // Old: vecchia tab Prezzi rimossa, ora è tab RMES Config
   if (typeof renderRMESConfigTab === 'function') renderRMESConfigTab();
   renderOTB(CURRENT_STRUCT);
@@ -59316,12 +59382,420 @@ function setStructure(sel){
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
 
-let CURRENT_TAB = 'sell';
+let CURRENT_TAB = 'big';
 let _FCST_DIRTY = true;  // il Forecast va ricalcolato (struttura cambiata o dati ricaricati)
+
+/* ============ BIG PICTURE TAB ============ */
+let BIG_PICKUP_DAYS = 1;   // 1 (default) | 7
+
+const BIG_CARD_THEMES = {
+  sell:   {accent:'#c4823b', bg:'linear-gradient(135deg,#fff6ea,#fdeccf)', ink:'#7a4e16', icon:'📈'},
+  otb:    {accent:'#3b6b9a', bg:'linear-gradient(135deg,#eef4fb,#dce9f6)', ink:'#244b6e', icon:'🗓️'},
+  fcst:   {accent:'#3d7a4b', bg:'linear-gradient(135deg,#edf6ef,#d9eddf)', ink:'#235033', icon:'🎯'},
+  cancel: {accent:'#b0464b', bg:'linear-gradient(135deg,#fdeded,#f8dada)', ink:'#7a2b2f', icon:'✖️'},
+  rate:   {accent:'#8e5fa8', bg:'linear-gradient(135deg,#f6f0fa,#e9dcf2)', ink:'#5a3a7a', icon:'🏷️'},
+  occpk:  {accent:'#1f8a8a', bg:'linear-gradient(135deg,#ebf7f7,#d4eded)', ink:'#155e5e', icon:'🛏️'}
+};
+const BIG_HERO_ICONS = ['⚡','💶','📊','🏆'];
+
+function _bigProvLabel(p){ return (p==='Non Specificato' ? 'Sito web' : p); }
+
+// Aggregazione pickup sugli ultimi nDays giorni (per booking date), dai BOOKINGS.
+// Ritorna pickup per canale, per stay-month, per room-type, per giorno-di-prenotazione + totali.
+function _bigPickupAgg(sel, nDays){
+  const ks = new Set(structKeysFor(sel));
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const hiYmd = +ymd(today);
+  const loDate = new Date(today); loDate.setDate(loDate.getDate()-(nDays-1));
+  const loYmd = +ymd(loDate);
+  const byChannel={}, byMonth={}, byRoom={}, byStayDay={};
+  let totRn=0, totRev=0;
+  for (const b of BOOKINGS){
+    if (b.cancelled) continue;
+    if (!ks.has(b.struct)) continue;
+    if (b.bookYmd < loYmd || b.bookYmd > hiYmd) continue;
+    const rn = b.notti||0, rev = b.revTotal||0;
+    totRn += rn; totRev += rev;
+    const ch = _bigProvLabel(b.prov||b.canale||'?');
+    byChannel[ch] = (byChannel[ch]||0) + rn;
+    const rm = b.room||'?';
+    byRoom[rm] = (byRoom[rm]||0) + rn;
+    // stay-month dal check-in
+    if (b.dIn){ const d=new Date(b.dIn); const ym=`${d.getUTCFullYear()}-${pad2(d.getUTCMonth()+1)}`; byMonth[ym]=(byMonth[ym]||0)+rn; }
+  }
+  const top = (obj,labelFn)=> Object.keys(obj).map(k=>({key:k,label:labelFn?labelFn(k):k,rn:obj[k]})).filter(x=>x.rn>0).sort((a,b)=>b.rn-a.rn);
+  return {
+    totRn, totRev,
+    channels: top(byChannel),
+    months: top(byMonth,(ym)=>{const mm=+ym.split('-')[1]; return CFG.monthsITLong?CFG.monthsITLong[mm-1]:ym;}),
+    rooms: top(byRoom),
+  };
+}
+
+// Lista strutture con colori (per i breakdown by-property)
+const BIG_STRUCTS = [
+  {k:'firenze',  name:'Firenze Suite',    color:'#3b6b9a'},
+  {k:'condotta', name:'Condotta 16',      color:'#3d7a4b'},
+  {k:'alfani',   name:'Palazzo Alfani',   color:'#8e5fa8'},
+  {k:'davids',   name:"Florence David's", color:'#c0392b'}
+];
+function _bigStructKey(slug){ return CFG.structures[slug] ? CFG.structures[slug].key : slug; }
+
+// Breakdown per hotel della metrica indicata.
+// kind: 'pickup' (RN ultimi N gg) | 'forecast' (revenue+forecast mese corrente) |
+//       'cancel' (cancel RN dal mese in corso) | 'rate' (posizione compset 30gg)
+// Ritorna { title, sub, rows:[{name,color,main,pct,barPct}] } o null.
+function _bigBreakdownData(kind, nDays){
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  if (kind === 'pickup'){
+    const hi=+ymd(today), lo=+ymd(new Date(today.getTime()-(nDays-1)*864e5));
+    const tot={}; BIG_STRUCTS.forEach(s=>tot[_bigStructKey(s.k)]=0);
+    for (const b of BOOKINGS){ if(b.cancelled)continue; const key=b.struct; if(tot[key]===undefined)continue; if(b.bookYmd>=lo&&b.bookYmd<=hi) tot[key]+=b.notti||0; }
+    const total = Object.values(tot).reduce((a,b)=>a+b,0)||1;
+    return { title:'Pickup by property', sub:`last ${nDays===7?'7 days':'day'} · ${total} RN total`,
+      rows: BIG_STRUCTS.map(s=>{const v=tot[_bigStructKey(s.k)]; return {name:s.name,color:s.color,main:`${v} RN`,pct:v/total*100,barPct:v/total*100};}) };
+  }
+  if (kind === 'cancel'){
+    const curYmNum = today.getFullYear()*100 + (today.getMonth()+1);
+    const tot={}; BIG_STRUCTS.forEach(s=>tot[s.k]=0);
+    BIG_STRUCTS.forEach(s=>{ try{ const C=aggCancellations(s.k); if(C&&C.monthlyArr){ tot[s.k]=C.monthlyArr.filter(r=>+r.ym>=curYmNum).reduce((a,r)=>a+(r.cancelRn||0),0); } }catch(e){} });
+    const total = Object.values(tot).reduce((a,b)=>a+b,0)||1;
+    return { title:'Cancellations by property', sub:`current month onwards · ${total} RN total`,
+      rows: BIG_STRUCTS.map(s=>({name:s.name,color:s.color,main:`${tot[s.k]} RN`,pct:tot[s.k]/total*100,barPct:tot[s.k]/total*100})) };
+  }
+  if (kind === 'forecast'){
+    const curKey = `${today.getFullYear()}${pad2(today.getMonth()+1)}`;
+    const rows=[]; let maxFc=1;
+    BIG_STRUCTS.forEach(s=>{ let fc=0,otb=0; try{ const F=aggForecast(s.k); if(F&&F.monthly&&F.monthly[curKey]){ fc=F.monthly[curKey].fcstRev||0; otb=F.monthly[curKey].otbRev||0; } }catch(e){} maxFc=Math.max(maxFc,fc); rows.push({name:s.name,color:s.color,fc,otb}); });
+    return { title:'Forecast by property', sub:'current month · OTB → forecast',
+      rows: rows.map(r=>({name:r.name,color:r.color,main:`${fmtEUR(r.otb)} → ${fmtEUR(r.fc)}`,pct:null,barPct:r.fc/maxFc*100})) };
+  }
+  if (kind === 'rate'){
+    const rows=[];
+    BIG_STRUCTS.forEach(s=>{ let txt='—', bar=0; try{ const p=_bigCompsetRank(s.k,30); if(p&&p.rank){ txt=`${p.rank}° / ${p.total}`; bar=(p.total-p.rank+1)/p.total*100; } }catch(e){} rows.push({name:s.name,color:s.color,main:txt,pct:null,barPct:bar}); });
+    return { title:'Compset position by property', sub:'next 30 days (1° = cheapest)', rows };
+  }
+  return null;
+}
+
+function _bigShowBreakdown(kind, nDays){
+  const data = _bigBreakdownData(kind, nDays);
+  if (!data) return;
+  const existing = document.getElementById('big-breakdown-modal');
+  if (existing) existing.remove();
+  let rowsHtml = '';
+  data.rows.forEach(d=>{
+    const pctTxt = (d.pct!=null) ? ` <span style="color:#888;font-weight:500;font-size:11px">(${d.pct.toFixed(0)}%)</span>` : '';
+    rowsHtml += '<div style="margin:10px 0">'
+      + '<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">'
+      + '<span style="font-weight:700;color:'+d.color+'">'+d.name+'</span>'
+      + '<span style="font-family:\'DM Mono\',monospace;font-weight:700;font-size:12px">'+d.main+pctTxt+'</span>'
+      + '</div>'
+      + '<div style="height:9px;background:#eee;border-radius:5px;overflow:hidden">'
+      + '<div style="height:100%;width:'+Math.max(0,Math.min(100,d.barPct||0)).toFixed(1)+'%;background:'+d.color+';border-radius:5px"></div>'
+      + '</div></div>';
+  });
+  let h = '<div class="fp-modal-bg" id="big-breakdown-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:60px 20px;overflow-y:auto" onclick="if(event.target===this){this.remove()}">';
+  h += '<div style="background:#fff;border-radius:12px;max-width:460px;width:100%;font-family:\'DM Sans\',sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.3);overflow:hidden">';
+  h += '<div style="padding:16px 22px;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#faf7fc,#fff)">';
+  h += '<div><div style="font-weight:800;font-size:15px;color:#5a3a7a">'+data.title+'</div>'
+    + '<div style="font-size:11px;color:#888;margin-top:2px">'+data.sub+'</div></div>';
+  h += '<div onclick="document.getElementById(\'big-breakdown-modal\').remove()" style="cursor:pointer;font-size:20px;color:#888;line-height:1;padding:2px 6px">×</div>';
+  h += '</div>';
+  h += '<div style="padding:18px 22px">'+rowsHtml+'</div>';
+  h += '</div></div>';
+  const wrap = document.createElement('div');
+  wrap.innerHTML = h;
+  document.body.appendChild(wrap.firstChild);
+}
+
+
+// pickup room-nights per ciascuno degli ultimi N giorni (per il grafico)
+function _bigPickupByDay(sel, nDays){
+  const ks = new Set(structKeysFor(sel));
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const days = [];
+  for (let i=nDays-1; i>=0; i--){
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    days.push({ ymdNum:+ymd(d), rn:0, rev:0, label:`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}` });
+  }
+  const idx={}; days.forEach(x=>idx[x.ymdNum]=x);
+  for (const b of BOOKINGS){
+    if (b.cancelled) continue;
+    if (!ks.has(b.struct)) continue;
+    const slot = idx[b.bookYmd];
+    if (slot){ slot.rn += (b.notti||0); slot.rev += (b.revTotal||0); }
+  }
+  return days;
+}
+
+// pickup degli ultimi N giorni con confronto allo stesso periodo STLY (per OCC & Pickup card)
+function _bigPickupVsLY(sel, nDays){
+  const ks = new Set(structKeysFor(sel));
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const hi=+ymd(today), lo=+ymd(new Date(today.getTime()-(nDays-1)*864e5));
+  const hiLY=+ymd(new Date(today.getTime()-364*864e5)), loLY=+ymd(new Date(today.getTime()-(364+nDays-1)*864e5));
+  let cur=0, ly=0;
+  for (const b of BOOKINGS){
+    if (b.cancelled || !ks.has(b.struct)) continue;
+    if (b.bookYmd>=lo && b.bookYmd<=hi) cur += b.notti||0;
+    if (b.bookYmd>=loLY && b.bookYmd<=hiLY) ly += b.notti||0;
+  }
+  return { cur, ly, deltaPct: ly>0 ? (cur-ly)/ly*100 : null };
+}
+
+function _bigCompsetRank(sel, horizonDays){
+  if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return null;
+  const sk = (sel==='both') ? 'condotta' : sel;
+  const myMap = EXPEDIA_DATA[sk];
+  let compMap = EXPEDIA_DATA['competitors_'+sk] || (sk==='condotta'?EXPEDIA_DATA.competitors:null);
+  if (!myMap || !compMap) return null;
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  let rankSum=0, rankCnt=0, gapSum=0, gapCnt=0, totalComp=0;
+  for (let off=0; off<horizonDays; off++){
+    const d = new Date(today); d.setDate(d.getDate()+off);
+    const iso = d.toISOString().slice(0,10);
+    const mine = myMap[iso];
+    if (mine == null) continue;
+    const prices=[];
+    for (const cn of Object.keys(compMap)){ const v=compMap[cn]?compMap[cn][iso]:null; if(v!=null)prices.push(v); }
+    if (!prices.length) continue;
+    totalComp = Math.max(totalComp, prices.length+1);
+    rankSum += prices.filter(p=>p<mine).length + 1; rankCnt++;
+    const avg = prices.reduce((a,b)=>a+b,0)/prices.length;
+    if (avg>0){ gapSum += (mine-avg)/avg*100; gapCnt++; }
+  }
+  if (!rankCnt) return null;
+  return { rank: Math.round(rankSum/rankCnt), total: totalComp, gapPct: gapCnt? gapSum/gapCnt : null };
+}
+
+function _bigForecast14d(sel){
+  // revenue prenotato negli ultimi 14 giorni (booking date) per il mese in corso
+  const ks = new Set(structKeysFor(sel));
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const lo=+ymd(new Date(today.getTime()-13*864e5)), hi=+ymd(today);
+  let rev=0;
+  for (const b of BOOKINGS){
+    if (b.cancelled || !ks.has(b.struct)) continue;
+    if (b.bookYmd>=lo && b.bookYmd<=hi) rev += b.revTotal||0;
+  }
+  return rev;
+}
+
+// riempie sempre a 3 righe: items già {k,v}, manca → "N." / "0"
+function _bigTop3(items, unit){
+  const out = [];
+  for (let i=0;i<3;i++){
+    if (items[i]) out.push(items[i]);
+    else out.push({k:`${i+1}.`, v:`0${unit?(' '+unit):''}`});
+  }
+  return out;
+}
+
+function _bigCard(o){
+  const th = BIG_CARD_THEMES[o.theme] || {accent:'#888', bg:'#fff', ink:'#333', icon:''};
+  const links = (o.tabs||[]).map(t=>`<span class="big-card-link" data-bigtab="${t.tab}" style="color:${th.accent}">${t.label} →</span>`).join('<span style="color:var(--ink-3);margin:0 4px">·</span>');
+  let body;
+  if (o.empty){
+    body = `<div style="color:var(--ink-3);font-size:13px;padding:14px 0;text-align:center">no movement</div>`;
+  } else {
+    body = (o.lines||[]).map((l,i)=>{
+      const big = (i===0 && o.big);
+      const vStyle = big ? `font-size:24px;font-weight:800;color:${th.ink};line-height:1.1` : `font-size:14px;font-weight:700;color:${th.ink}`;
+      const sub = l.sub ? `<span style="color:var(--ink-3);font-size:11px;font-weight:500;margin-left:5px">${l.sub}</span>` : '';
+      return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:${big?'2px 0 6px':'4px 0'};${(i>0||!o.big)?'border-top:1px solid rgba(0,0,0,.06)':''}">
+        <span style="font-size:12px;color:var(--ink-2)">${l.k}</span>
+        <span style="font-family:'DM Mono',monospace;${vStyle};text-align:right">${l.v}${sub}</span>
+      </div>`;
+    }).join('');
+  }
+  return `<div class="big-card" style="background:${th.bg};border:1px solid ${th.accent}33;border-left:4px solid ${th.accent}">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:18px">${th.icon}</span>
+      <div style="font-weight:800;font-size:14px;color:${th.ink};letter-spacing:.01em">${o.title}</div>
+      ${o.byProp?`<span class="big-byprop" data-bigbreakdown="${o.byProp}" style="margin-left:auto;font-size:10px;font-weight:700;color:${th.accent};background:${th.accent}1a;border:1px solid ${th.accent}55;border-radius:10px;padding:2px 8px;cursor:pointer">by property</span>`:''}
+    </div>
+    <div>${body}</div>
+    <div style="margin-top:10px;font-size:11px;font-weight:700">${links}</div>
+  </div>`;
+}
+
+function renderBigPicture(){
+  const host = document.getElementById('big-grid');
+  if (!host) return;
+  const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'firenze';
+  const n = (BIG_PICKUP_DAYS===7) ? 7 : 1;
+  const winLbl = (n===7?'7d':'1d');
+  const agg = _bigPickupAgg(sel, n);
+  const isBoth = (sel === 'both');
+
+  // ---- HERO ----
+  let revOtb=null, occYear=null, revP=null, occP=null;
+  try { const A = aggOTBYearly(sel); if (A && A.tot){ revOtb=A.tot.revC; occYear=A.tot.occC; revP=A.tot.revP; occP=A.tot.occP; } } catch(e){}
+  const rank = _bigCompsetRank(sel, 30);
+  const pkVs = _bigPickupVsLY(sel, n);
+  const _stly = (cur, prev, fmt)=>{
+    if (prev==null || !isFinite(prev)) return '';
+    const pct = (prev!==0) ? (cur-prev)/prev*100 : null;
+    const arrow = (pct==null) ? '' : (pct>=0 ? '▲' : '▼');
+    const col = (pct==null) ? 'var(--ink-3)' : (pct>=0 ? '#3d7a4b' : '#b0464b');
+    const pctTxt = (pct==null) ? '' : ` ${arrow}${Math.abs(pct).toFixed(0)}%`;
+    return `STLY ${fmt(prev)}<span style="color:${col}">${pctTxt}</span>`;
+  };
+  const heroItems = [
+    {label:`Pickup (${winLbl})`, val:`+${agg.totRn} RN`, sub: _stly(pkVs.cur, pkVs.ly, (x)=>`${x} RN`), byProp: isBoth?'pickup':null},
+    revOtb!=null ? {label:'Revenue 2026 (OTB)', val: fmtEUR(revOtb), sub:_stly(revOtb, revP, fmtEUR)} : null,
+    occYear!=null ? {label:'OCC 2026', val: fmtPct(occYear,1), sub:_stly(occYear, occP, (x)=>fmtPct(x,1))} : null,
+    rank ? {label:'Compset rank (30d)', val:`${rank.rank}° / ${rank.total}`} : null
+  ].filter(Boolean);
+  const heroEl = document.getElementById('big-hero');
+  if (heroEl) heroEl.innerHTML = heroItems.map((h,i)=>`<div class="big-hero-item">
+      <div class="big-hero-icon">${BIG_HERO_ICONS[i]||''}</div>
+      <div class="big-hero-txt" style="flex:1"><div class="big-hero-label">${h.label}${h.byProp?` <span class="big-byprop" data-bigbreakdown="${h.byProp}" style="font-size:9px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 6px;cursor:pointer;margin-left:4px;text-transform:none;letter-spacing:0">by property</span>`:''}</div>
+      <div class="big-hero-val">${h.val}</div>${h.sub?`<div class="big-hero-sub">${h.sub}</div>`:''}</div>
+    </div>`).join('');
+
+  // ---- GRAFICO (sempre 7 giorni per contesto) ----
+  try { _bigRenderChart(sel); } catch(e){ const c=document.getElementById('big-chart'); if(c)c.innerHTML=''; }
+
+  // ---- 6 CASELLE ----
+  const cards = [];
+
+  // 1. SELL STRATEGY → top 3 GIORNI con più RN (rispetta 1/7)
+  try {
+    const pdays = _bigPickupByDay(sel, n).filter(d=>d.rn>0).sort((a,b)=>b.rn-a.rn).slice(0,3);
+    const lines = _bigTop3(pdays.map((d,i)=>({k:`${i+1}. ${d.label}`, v:`+${d.rn} RN`})), 'RN');
+    cards.push(_bigCard({ title:'Sell Strategy', theme:'sell', big:true, tabs:[{label:'Sell',tab:'sell'}], lines, byProp: isBoth?'pickup':null }));
+  } catch(e){ cards.push(_bigCard({ title:'Sell Strategy', theme:'sell', tabs:[{label:'Sell',tab:'sell'}], empty:true })); }
+
+  // 2. OVERVIEW → 3 mesi con più pickup (rispetta 1/7)
+  try {
+    const top = agg.months.slice(0,3);
+    const lines = _bigTop3(top.map((c,i)=>({k:`${i+1}. ${c.label}`, v:`+${c.rn} RN`})), 'RN');
+    cards.push(_bigCard({ title:'Overview', theme:'otb', big:true, tabs:[{label:'Overview',tab:'otb'}], lines, byProp: isBoth?'pickup':null }));
+  } catch(e){ cards.push(_bigCard({ title:'Overview', theme:'otb', tabs:[{label:'Overview',tab:'otb'}], empty:true })); }
+
+  // 3. FORECAST → needed/day + fatto negli ultimi 14gg
+  try {
+    const today = new Date(TODAY);
+    const curKey = `${today.getFullYear()}${pad2(today.getMonth()+1)}`;
+    const F = aggForecast(sel);
+    let done=false;
+    if (F && F.monthly && F.monthly[curKey]){
+      const m = F.monthly[curKey];
+      if (m.otbRev!=null && m.fcstRev!=null){
+        const made14 = _bigForecast14d(sel);
+        cards.push(_bigCard({ title:'Forecast', theme:'fcst', big:true, tabs:[{label:'Forecast',tab:'fcst'}], lines:[
+          {k:'Needed / day', v:(m.eurPerDayToClose!=null && m.eurPerDayToClose>0)?fmtEUR(m.eurPerDayToClose):'✓ reached'},
+          {k:'€/day pickup (14d)', v: fmtEUR(made14/14)},
+          {k:'OTB → Forecast', v: `${fmtEUR(m.otbRev)} → ${fmtEUR(m.fcstRev)}`}
+        ], byProp: isBoth?'forecast':null}));
+        done=true;
+      }
+    }
+    if (!done) cards.push(_bigCard({ title:'Forecast', theme:'fcst', tabs:[{label:'Forecast',tab:'fcst'}], empty:true }));
+  } catch(e){ cards.push(_bigCard({ title:'Forecast', theme:'fcst', tabs:[{label:'Forecast',tab:'fcst'}], empty:true })); }
+
+  // 4. CXLTREND → solo dal mese in corso in poi, top 3 mesi
+  try {
+    const today = new Date(TODAY);
+    const curYmNum = today.getFullYear()*100 + (today.getMonth()+1);   // YYYYMM
+    const C = aggCancellations(sel);
+    const lines=[];
+    if (C && C.monthlyArr && C.monthlyArr.length){
+      const future = C.monthlyArr.filter(r=> +r.ym >= curYmNum && (r.cancelRn||0)>0);
+      future.sort((a,b)=>(b.cancelRn||0)-(a.cancelRn||0));
+      for (let i=0;i<3;i++){
+        const r = future[i];
+        if (r){ const y=String(r.ym).slice(0,4); const mm=+String(r.ym).slice(4,6); lines.push({k:`${i+1}. ${CFG.monthsITLong?CFG.monthsITLong[mm-1]:mm} ${y}`, v:`${r.cancelRn} RN`}); }
+        else lines.push({k:`${i+1}.`, v:'0 RN'});
+      }
+    }
+    cards.push(lines.length ? _bigCard({ title:'CXLTrend', theme:'cancel', big:true, tabs:[{label:'CXLTrend',tab:'cancel'}], lines, byProp: isBoth?'cancel':null })
+      : _bigCard({ title:'CXLTrend', theme:'cancel', tabs:[{label:'CXLTrend',tab:'cancel'}], empty:true }));
+  } catch(e){ cards.push(_bigCard({ title:'CXLTrend', theme:'cancel', tabs:[{label:'CXLTrend',tab:'cancel'}], empty:true })); }
+
+  // 5. RATE SHOPPER → rank + gap (più chiaro)
+  try {
+    const pos = _bigCompsetRank(sel, 30);
+    if (pos && pos.rank){
+      let gapTxt='—';
+      if (pos.gapPct!=null){ const g=pos.gapPct; gapTxt = Math.abs(g)<1 ? 'in line' : `${g>0?'+':''}${g.toFixed(1)}%`; }
+      cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', big:true, tabs:[{label:'Rate Shopper',tab:'rate'}], lines:[
+        {k:'Position (next 30d)', v:`${pos.rank}° / ${pos.total}`},
+        {k:'Avg vs compset', v: gapTxt}
+      ], byProp: isBoth?'rate':null}));
+    } else cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', tabs:[{label:'Rate Shopper',tab:'rate'}], empty:true }));
+  } catch(e){ cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', tabs:[{label:'Rate Shopper',tab:'rate'}], empty:true })); }
+
+  // 6. OCC & PICKUP → RN totali finestra + top room + vs LY (rispetta 1/7)
+  try {
+    const vs = _bigPickupVsLY(sel, n);
+    const topRoom = agg.rooms[0];
+    const lines = [
+      {k:`Pickup RN (${winLbl})`, v:`${agg.totRn}`, sub: vs.deltaPct!=null?`${vs.deltaPct>0?'+':''}${vs.deltaPct.toFixed(0)}% vs LY`:''}
+    ];
+    if (topRoom) lines.push({k:'Top room', v: topRoom.label, sub:`${topRoom.rn} RN`});
+    cards.push(_bigCard({ title:'OCC & Pickup', theme:'occpk', big:true, tabs:[{label:'OCC',tab:'rt'},{label:'Pickup',tab:'pk'}], lines, byProp: isBoth?'pickup':null }));
+  } catch(e){ cards.push(_bigCard({ title:'OCC & Pickup', theme:'occpk', tabs:[{label:'OCC',tab:'rt'},{label:'Pickup',tab:'pk'}], empty:true })); }
+
+  host.innerHTML = cards.join('');
+  document.querySelectorAll('#panel-big [data-bigtab]').forEach(el=>{
+    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); if (typeof setTab==='function') setTab(el.dataset.bigtab); });
+  });
+  document.querySelectorAll('#panel-big [data-bigbreakdown]').forEach(el=>{
+    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); _bigShowBreakdown(el.dataset.bigbreakdown, n); });
+  });
+  _bigRenderWindowPills();
+}
+
+function _bigRenderChart(sel){
+  const host = document.getElementById('big-chart');
+  if (!host) return;
+  const days = _bigPickupByDay(sel, 7);
+  const maxRn = Math.max(1, ...days.map(d=>d.rn));
+  // SVG con coordinate reali in px, centrato
+  const W=560, H=200, padL=30, padR=20, padTop=24, padBot=34;
+  const plotW=W-padL-padR, plotH=H-padTop-padBot;
+  const slot=plotW/days.length, bw=Math.min(46, slot*0.6);
+  let bars='', grid='';
+  // griglia orizzontale (3 linee)
+  for (let g=0; g<=2; g++){
+    const val=Math.round(maxRn*(g/2)); const y=padTop+plotH-(plotH*(g/2));
+    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+    grid += `<text x="${padL-6}" y="${y+3}" font-size="10" text-anchor="end" fill="var(--ink-3)" font-family="'DM Mono',monospace">${val}</text>`;
+  }
+  days.forEach((d,i)=>{
+    const h = d.rn>0 ? (d.rn/maxRn)*plotH : 0;
+    const x = padL + i*slot + (slot-bw)/2;
+    const y = padTop + plotH - h;
+    const isToday = i===days.length-1;
+    bars += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="3" fill="${isToday?'var(--accent)':'#c9b89a'}"><title>${d.label}: ${d.rn} RN</title></rect>`;
+    if (d.rn>0) bars += `<text x="${x+bw/2}" y="${y-5}" font-size="11" text-anchor="middle" fill="var(--ink-2)" font-weight="600" font-family="'DM Mono',monospace">${d.rn}</text>`;
+    bars += `<text x="${x+bw/2}" y="${H-12}" font-size="10" text-anchor="middle" fill="var(--ink-3)" font-family="'DM Mono',monospace">${d.label}</text>`;
+  });
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:680px;height:auto;display:block;margin:0 auto">${grid}${bars}</svg>`;
+}
+
+function _bigRenderWindowPills(){
+  const el = document.getElementById('big-window-pills');
+  if (!el) return;
+  const opts = [{n:1,l:'1 day'},{n:7,l:'7 days'}];
+  el.innerHTML = opts.map(o=>`<button class="bw-mpill" data-bigwin="${o.n}" style="${o.n===BIG_PICKUP_DAYS?'background:var(--accent);color:#fff;border-color:var(--accent)':''}">${o.l}</button>`).join('');
+  el.querySelectorAll('[data-bigwin]').forEach(b=>{
+    b.addEventListener('click', ()=>{ BIG_PICKUP_DAYS = +b.dataset.bigwin; renderBigPicture(); });
+  });
+}
+
+
+
 function setTab(name){
   CURRENT_TAB = name;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
+  if (name === 'big' && typeof renderBigPicture === 'function'){
+    try { renderBigPicture(); } catch(e){ console.error('renderBigPicture', e); }
+  }
   // LAZY: il Forecast è costoso (orizzonte lungo). Lo calcoliamo solo quando si apre la sua tab,
   // e solo se "sporco" (struttura cambiata dall'ultimo calcolo).
   if (name === 'fcst' && _FCST_DIRTY && typeof renderForecast === 'function'){
