@@ -70,7 +70,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 main{flex:1;padding:8px 16px 24px}
 .section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--org-deep);margin:14px 2px 8px}
 
-.day-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1.5px solid var(--line);
+.day-card{display:flex;flex-wrap:wrap;align-items:center;gap:14px;background:var(--card);border:1.5px solid var(--line);
   border-radius:16px;padding:14px 16px;margin-bottom:9px;box-shadow:var(--shadow);transition:all .12s;position:relative;overflow:hidden}
 .day-card:active{transform:scale(.985)}
 .day-card .edge{position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--org-soft),var(--org))}
@@ -78,12 +78,34 @@ main{flex:1;padding:8px 16px 24px}
 .day-card .date-blk .dc-dow{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.03em}
 .day-card .date-blk .dc-day{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;line-height:1;color:var(--org-deep)}
 .day-card .date-blk .dc-mo{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600}
-.day-card .price-blk{flex:1;text-align:right}
-.day-card .price-blk .pc-price{font-family:'DM Mono',monospace;font-size:23px;font-weight:500;line-height:1.05;color:var(--ink)}
-.day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
-.day-card .price-blk .pc-comp{font-size:10.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
-.day-card .price-blk .pc-comp .delta-up{color:var(--up)} .day-card .price-blk .pc-comp .delta-down{color:var(--down)}
-.day-card .price-blk .pc-comp-na{opacity:.6;font-style:italic}
+.day-card .price-blk{flex:1;text-align:right;min-width:0}
+.day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:4px}
+/* two-column Mine | Compset compare */
+.pc-compare{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.pc-compare .pcc-col{text-align:center}
+.pc-compare .pcc-lab{font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
+.pc-compare .pcc-val{font-family:'DM Mono',monospace;font-size:21px;font-weight:500;line-height:1.05;color:var(--ink)}
+.pc-compare .pcc-val.pcc-comp{font-size:16px;color:var(--muted)}
+.pc-compare .pcc-arrow{display:flex;flex-direction:column;align-items:center;font-size:15px;font-weight:700;line-height:1}
+.pc-compare .pcc-arrow .pcc-diff{font-family:'DM Mono',monospace;font-size:9.5px;font-weight:600;margin-top:1px}
+.pc-compare .pcc-arrow.cmp-good{color:var(--up)}     /* green = I'm lower than compset (more competitive) */
+.pc-compare .pcc-arrow.cmp-bad{color:var(--down)}    /* red = I'm higher than compset */
+.pc-compare .pcc-arrow.cmp-flat{color:var(--flat)}
+.pc-compare .pcc-rank{flex-basis:100%;text-align:right;font-family:'DM Mono',monospace;font-size:10px;color:var(--org-deep);font-weight:700;margin-top:1px}
+.pc-compare.pc-compare-na .pcc-na{font-size:10.5px;color:var(--muted);font-style:italic;align-self:flex-end}
+/* pencil override icon on the card */
+.day-card .pc-edit{flex:0 0 auto;width:34px;height:34px;border-radius:10px;background:var(--org-tint);border:1px solid var(--org-tint2);font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;margin-left:2px}
+.day-card .pc-edit:active{transform:scale(.92)}
+.day-card .pc-edit.has-ovr{background:var(--org);border-color:var(--org)}
+/* inline override box that drops down inside the card */
+.card-ovr{flex-basis:100%;order:99;margin-top:10px;padding-top:10px;border-top:1px dashed var(--org-tint2)}
+.card-ovr .co-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.card-ovr .co-row:first-child{margin-top:0}
+.card-ovr .co-lab{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
+.card-ovr .co-input{flex:1;min-width:0;padding:9px 10px;border:1.5px solid var(--org);border-radius:10px;font-family:'DM Mono',monospace;font-size:15px;text-align:right;background:#fff;color:var(--ink);font-weight:500}
+.card-ovr .co-btn{padding:9px 14px;border-radius:10px;background:linear-gradient(135deg,var(--org),var(--org-deep));color:#fff;font-weight:700;font-size:12px;white-space:nowrap}
+.card-ovr .co-btn:active{transform:scale(.96)}
+.card-ovr .co-btn.co-reset{background:#fff;color:var(--org-deep);border:1.5px solid var(--org-tint2)}
 .day-card .chev{flex:0 0 auto;color:var(--org-soft);font-size:18px;font-weight:700}
 .day-card.wknd{background:var(--org-tint)}
 .badge-ovr{position:absolute;top:8px;right:14px;font-size:8.5px;font-weight:700;text-transform:uppercase;background:var(--org);color:#fff;padding:2px 6px;border-radius:5px;letter-spacing:.04em}
@@ -358,21 +380,76 @@ function mobRenderDays(){
     const expPrice=mobToExpedia(r.price, MOB.struct);
     const comp=mobCompsetAvg(MOB.struct, iso);
     const rk=mobCompRank(MOB.struct, iso, expPrice);
-    const rkHtml=rk?` · <span class="pc-rank">${rk.rank}/${rk.total}</span>`:'';
-    let cmpHtml='';
+    // two-column compare: Mine | Compset. Per your choice, GREEN = I'm LOWER than compset (more competitive).
+    let compareHtml='';
     if(comp!=null && expPrice!=null){
-      const diff=expPrice-comp; const cls=diff>0?'delta-up':(diff<0?'delta-down':'delta-flat'); const ar=diff>0?'▲':(diff<0?'▼':'•');
-      cmpHtml=`<div class="pc-comp">compset ${fmtEUR(comp)} <span class="${cls}">${ar} ${(diff>=0?'+':'')}${fmtEUR(diff)}</span>${rkHtml}</div>`;
-    } else { cmpHtml=`<div class="pc-comp pc-comp-na">compset n/d${rkHtml}</div>`; }
+      const diff=expPrice-comp;            // <0 means I'm cheaper
+      const lower = diff<0;                // cheaper than market
+      const cls = (Math.abs(diff)<0.5) ? 'cmp-flat' : (lower ? 'cmp-good' : 'cmp-bad'); // good=green=lower
+      const ar  = (Math.abs(diff)<0.5) ? '•' : (lower ? '▼' : '▲');
+      const rkTxt = rk ? `${rk.rank}/${rk.total}` : '';
+      compareHtml=`<div class="pc-compare">
+        <div class="pcc-col"><div class="pcc-lab">Mine</div><div class="pcc-val">${fmtEUR(expPrice)}</div></div>
+        <div class="pcc-arrow ${cls}">${ar}<span class="pcc-diff">${(diff>=0?'+':'')}${fmtEUR(diff)}</span></div>
+        <div class="pcc-col"><div class="pcc-lab">Compset</div><div class="pcc-val pcc-comp">${fmtEUR(comp)}</div></div>
+        ${rkTxt?`<div class="pcc-rank">${rkTxt}</div>`:''}
+      </div>`;
+    } else {
+      compareHtml=`<div class="pc-compare pc-compare-na">
+        <div class="pcc-col"><div class="pcc-lab">Mine</div><div class="pcc-val">${expPrice!=null?fmtEUR(expPrice):'—'}</div></div>
+        <div class="pcc-na">compset n/d</div>
+      </div>`;
+    }
     return `<div class="day-card ${isWeekendYmd(yn)?'wknd':''}" data-day="${yn}"><div class="edge"></div>
       ${anyOvr?'<div class="badge-ovr">override</div>':''}
       <div class="date-blk"><div class="dc-dow">${DOW_SHORT[d.getDay()]}${isT?' ·':''}</div><div class="dc-day">${d.getDate()}</div><div class="dc-mo">${MO_SHORT[d.getMonth()]}</div></div>
-      <div class="price-blk"><div class="pc-label">Expedia price</div><div class="pc-price">${expPrice!=null?fmtEUR(expPrice):'—'}</div>${cmpHtml}</div>
+      <div class="price-blk"><div class="pc-label">Expedia price · vs compset</div>${compareHtml}</div>
+      <button class="pc-edit ${anyOvr?'has-ovr':''}" data-edit="${yn}" title="Override price" aria-label="Override price">✏️</button>
       <div class="chev">›</div></div>`;
   }).join('');
-  list.querySelectorAll('.day-card').forEach(c=> c.addEventListener('click', ()=> mobOpenDay(+c.dataset.day, map[+c.dataset.day])));
+  list.querySelectorAll('.day-card').forEach(c=> c.addEventListener('click', (ev)=>{
+    if(ev.target.closest('.pc-edit') || ev.target.closest('.card-ovr')) return; // taps inside the edit control don't open the drill-in
+    mobOpenDay(+c.dataset.day, map[+c.dataset.day]);
+  }));
+  list.querySelectorAll('.pc-edit').forEach(btn=> btn.addEventListener('click', (ev)=>{ ev.stopPropagation(); mobToggleCardOverride(+btn.dataset.edit, btn.closest('.day-card'), map); }));
 }
 function mobFmtDate(yn){ const d=ymdNumToDate(yn); return DOW_SHORT[d.getDay()]+' '+d.getDate()+' '+MO_SHORT[d.getMonth()]; }
+/* quick override directly on the card (opened by the pencil icon). Price entered in Beddy space, like the drill-in. */
+function mobToggleCardOverride(yn, cardEl, map){
+  if(!cardEl) return;
+  const existing = cardEl.querySelector('.card-ovr');
+  if(existing){ existing.remove(); return; } // toggle off if already open
+  const baseRT = mobBaseRT(MOB.struct);
+  const r = map[yn] || MOB.lastRow;
+  const suggested = (r && r.rmesSuggestedByRT && baseRT!=null && r.rmesSuggestedByRT[baseRT]!=null) ? r.rmesSuggestedByRT[baseRT] : (r?r.price:null);
+  let curOvr=null; try{ const o=fp_getOverride(MOB.struct, ymdNumToISO(yn), baseRT); if(o&&o.price!=null&&isFinite(o.price)) curOvr=o.price; }catch(e){}
+  const box=document.createElement('div');
+  box.className='card-ovr';
+  box.innerHTML=`<div class="co-row">
+      <span class="co-lab">Override <b>${escapeHtml(baseRT||'base')}</b> · RMES ${suggested!=null?fmtEUR(suggested):'—'} (Beddy)</span>
+    </div>
+    <div class="co-row">
+      <input class="co-input" type="number" inputmode="decimal" placeholder="${suggested!=null?Math.round(suggested):''}" value="${curOvr!=null?curOvr:''}">
+      <button class="co-btn co-save">Save</button>
+      ${curOvr!=null?'<button class="co-btn co-reset">Reset</button>':''}
+    </div>`;
+  cardEl.appendChild(box);
+  const inp=box.querySelector('.co-input'); if(inp){ inp.focus(); }
+  box.querySelector('.co-save').addEventListener('click', (ev)=>{
+    ev.stopPropagation();
+    const v=parseFloat(inp.value);
+    try{ fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, (isFinite(v)&&v>0)?v:null, null); }catch(e){ console.error(e); }
+    mobInvalidateRmesCache();
+    mobRenderDays(); // re-render the list so Expedia price + position + badge update
+  });
+  const resetBtn=box.querySelector('.co-reset');
+  if(resetBtn) resetBtn.addEventListener('click',(ev)=>{
+    ev.stopPropagation();
+    try{ fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, null, null); }catch(e){}
+    mobInvalidateRmesCache();
+    mobRenderDays();
+  });
+}
 function mobEmpty(ico,msg){ return `<div class="empty"><div class="e-ico">${ico}</div>${escapeHtml(msg)}</div>`; }
 
 function mobOpenDay(yn, rmesRow){
@@ -418,8 +495,8 @@ function mobOpenDay(yn, rmesRow){
   html+=mobShRow('ADR (booked)', (isFinite(otbAdr)&&otbAdr>0?fmtAdr(otbAdr):'—'), mobDeltaPct(otbAdr, stlyAdr));
   html+=`</div>`;
   if(rmesRow && rmesRow.pricesByRT && Object.keys(rmesRow.pricesByRT).length){
-    const ordered=Object.keys(rmesRow.pricesByRT).sort((a,b)=>(rmesRow.pricesByRT[b]||0)-(rmesRow.pricesByRT[a]||0));
-    html+=`<div class="sh-group"><div class="sh-group-t">Room categories · highest price first</div>`;
+    const ordered=Object.keys(rmesRow.pricesByRT).sort((a,b)=>(rmesRow.pricesByRT[a]||0)-(rmesRow.pricesByRT[b]||0));
+    html+=`<div class="sh-group"><div class="sh-group-t">Room categories · lowest price first</div>`;
     for(const rt of ordered){
       const isBase=(rt===baseRT); const ovr=rmesRow.overrideUsedByRT && rmesRow.overrideUsedByRT[rt];
       html+=`<div class="rt-chip ${isBase?'is-base':''}"><span class="rtc-name">${escapeHtml(rt)}${isBase?' ★':''}${ovr?' ·ovr':''}</span><span class="rtc-price">${fmtEUR(rmesRow.pricesByRT[rt])}</span></div>`;
