@@ -87,13 +87,13 @@ main{flex:1;padding:8px 16px 24px}
 .pc-occrow .pcc-arrow{font-size:15px;font-weight:700}
 .pc-occrow .pcc-arrow.occ-good{color:var(--up)} .pc-occrow .pcc-arrow.occ-bad{color:var(--down)} .pc-occrow .pcc-arrow.occ-flat{color:var(--flat)}
 /* two-column Mine | Compset compare */
-.pc-compare{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
-.pc-compare .pcc-col{text-align:center}
+.pc-compare{display:flex;align-items:center;justify-content:flex-end;gap:4px}
+.pc-compare .pcc-col{text-align:center;width:78px;flex:0 0 78px}
+.pc-compare .pcc-arrow{width:24px;flex:0 0 24px}
 .pc-compare .pcc-lab{font-size:8.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
 .pc-compare .pcc-val{font-family:'DM Mono',monospace;font-size:21px;font-weight:500;line-height:1.05;color:var(--ink)}
 .pc-compare .pcc-val.pcc-comp{font-size:16px;color:var(--muted)}
-.pc-compare .pcc-arrow{display:flex;flex-direction:column;align-items:center;font-size:15px;font-weight:700;line-height:1}
-.pc-compare .pcc-arrow .pcc-diff{font-family:'DM Mono',monospace;font-size:9.5px;font-weight:600;margin-top:1px}
+.pc-compare .pcc-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:16px;font-weight:700;line-height:1}
 .pc-compare .pcc-arrow.cmp-good{color:var(--up)}     /* green = I'm lower than compset (more competitive) */
 .pc-compare .pcc-arrow.cmp-bad{color:var(--down)}    /* red = I'm higher than compset */
 .pc-compare .pcc-arrow.cmp-flat{color:var(--flat)}
@@ -432,7 +432,7 @@ function mobRenderDays(){
       const ar  = (Math.abs(diff)<0.5) ? '•' : (lower ? '▼' : '▲');
       compareHtml=`<div class="pc-compare">
         <div class="pcc-col"><div class="pcc-lab">Mine</div><div class="pcc-val">${fmtEUR(expPrice)}</div></div>
-        <div class="pcc-arrow ${cls}">${ar}<span class="pcc-diff">${(diff>=0?'+':'')}${fmtEUR(diff)}</span></div>
+        <div class="pcc-arrow ${cls}">${ar}</div>
         <div class="pcc-col"><div class="pcc-lab">Comp</div><div class="pcc-val pcc-comp">${fmtEUR(comp)}</div></div>
       </div>`;
     } else {
