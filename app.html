@@ -451,7 +451,7 @@ function mobRenderDays(){
     return `<div class="day-card ${isWeekendYmd(yn)?'wknd':''}" data-day="${yn}"><div class="edge"></div>
       ${anyOvr?'<div class="badge-ovr">override</div>':''}
       <div class="date-blk"><div class="dc-dow">${DOW_SHORT[d.getDay()]}${isT?' ·':''}</div><div class="dc-day">${d.getDate()}</div><div class="dc-mo">${MO_SHORT[d.getMonth()]}</div></div>
-      <div class="price-blk">${occHtml}<div class="pc-label">Price vs comp</div>${compareHtml}${metaHtml}</div>
+      <div class="price-blk">${occHtml}${compareHtml}${metaHtml}</div>
       <button class="pc-edit ${anyOvr?'has-ovr':''}" data-edit="${yn}" title="Override price" aria-label="Override price">✏️</button>
       <div class="chev">›</div></div>`;
   }).join('');
