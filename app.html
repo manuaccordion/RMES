@@ -255,7 +255,7 @@ main{flex:1;padding:8px 16px 24px}
 <div id="app">
   <div class="app-head">
     <div class="app-title"><span class="dot"></span>RMES <span class="lite">Mobile</span></div>
-    <div class="app-sub" id="head-sub">Revenue Intelligence · loading…</div>
+    <div class="app-sub" id="head-sub">Revenue Intelligence</div>
   </div>
   <div class="struct-row" id="struct-row"></div>
   <div class="panel active" id="panel-days">
@@ -924,7 +924,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if (typeof AIRDNA_CSV !== 'undefined') loadAirdna(AIRDNA_CSV);
     if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
     if (typeof fp_ensureStruct === 'function') fp_ensureStruct(MOB.struct);
-    document.getElementById('head-sub').textContent = 'Revenue Intelligence · '+(BOOKINGS?BOOKINGS.length.toLocaleString('en-GB'):'0')+' bookings';
+    document.getElementById('head-sub').textContent = 'Revenue Intelligence';
     mobRenderStructPills(); mobRenderAll();
   } catch(e){ console.error(e); document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }
 });
