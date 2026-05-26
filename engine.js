@@ -6672,7 +6672,7 @@ function renderSellStrategy(sel){
     + (showExp
        ? '<th class="sell-grp-expedia-sub" title="My Expedia price">Mine</th>'
          + '<th class="sell-grp-expedia-sub" title="Expedia compset average">Compset</th>'
-         + '<th class="sell-grp-expedia-sub" title="RMES price converted to Expedia space, with market position vs compset (1 = cheapest)">RMES&rarr;Exp</th>'
+         + '<th class="sell-grp-expedia-sub" style="background:rgba(210,105,30,.10);border-left:2px solid rgba(210,105,30,.35)" title="RMES price converted to Expedia space, with market position vs compset (1 = cheapest)">RMES&rarr;Exp</th>'
        : '')
     + (function(){
         const baseRT = _suppData ? _suppData.baseRT : null;
@@ -6781,9 +6781,9 @@ function renderSellStrategy(sel){
               posCls = (Math.abs(d) < 0.5) ? '' : (d < 0 ? 'cell-pos' : 'cell-neg');
             }
             const rmesExpTip = 'RMES price in Expedia space (RMES Beddy \u00d7 ' + divisor.toFixed(3) + ')' + (rk ? ' \u00b7 position ' + posTxt + ' (1 = cheapest)' : '');
-            rmesExpCell = '<td class="cell-mono ' + posCls + '" style="background:rgba(58,107,107,.04)" title="' + rmesExpTip + '">' + rmesExpTxt + (posTxt ? '<br><span style="font-size:9px;font-weight:400">' + posTxt + '</span>' : '') + '</td>';
+            rmesExpCell = '<td class="cell-mono ' + posCls + '" style="background:rgba(210,105,30,.08);border-left:2px solid rgba(210,105,30,.35)" title="' + rmesExpTip + '">' + rmesExpTxt + (posTxt ? '<br><span style="font-size:9px;font-weight:400">' + posTxt + '</span>' : '') + '</td>';
           } else {
-            rmesExpCell = '<td class="cell-mono cell-flat sell-block-expedia" style="background:rgba(58,107,107,.04);text-align:center">\u2014</td>';
+            rmesExpCell = '<td class="cell-mono cell-flat" style="background:rgba(210,105,30,.08);border-left:2px solid rgba(210,105,30,.35);text-align:center">\u2014</td>';
           }
         }
         expCells =

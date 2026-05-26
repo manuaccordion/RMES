@@ -81,11 +81,11 @@ main{flex:1;padding:8px 16px 24px}
 .day-card .price-blk{flex:1;text-align:right;min-width:0}
 .day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:4px}
 /* occupancy line above the price */
-.pc-occ{font-size:16px;font-family:'DM Mono',monospace;color:var(--ink);font-weight:500;margin-bottom:5px}
-.pc-occ .pc-occ-stly{color:var(--muted);font-weight:400}
-.pc-occ .occ-good{color:var(--up);font-weight:700}
-.pc-occ .occ-bad{color:var(--down);font-weight:700}
-.pc-occ .occ-flat{color:var(--flat)}
+.pc-occrow{margin-bottom:6px}
+.pc-occrow .pcc-occval{font-family:'DM Mono',monospace;font-size:21px;font-weight:500;line-height:1.05;color:var(--ink)}
+.pc-occrow .pcc-occval.pcc-occstly{font-size:16px;color:var(--muted)}
+.pc-occrow .pcc-arrow{font-size:15px;font-weight:700}
+.pc-occrow .pcc-arrow.occ-good{color:var(--up)} .pc-occrow .pcc-arrow.occ-bad{color:var(--down)} .pc-occrow .pcc-arrow.occ-flat{color:var(--flat)}
 /* two-column Mine | Compset compare */
 .pc-compare{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .pc-compare .pcc-col{text-align:center}
@@ -442,14 +442,18 @@ function mobRenderDays(){
         <div class="pcc-col"><div class="pcc-lab">Comp</div><div class="pcc-val pcc-comp">n/d</div></div>
       </div>`;
     }
-    // occupancy line (above the price): OCC OTB vs STLY with coloured arrow (green = filling better)
+    // occupancy line — same 3-column grid as the price row, so CY sits above Mine and STLY above Comp
     const occ=occByDay[yn]||{cur:null,stly:null};
     let occHtml='';
     if(occ.cur!=null || occ.stly!=null){
       const c=occ.cur!=null?Math.round(occ.cur*100):null, s=occ.stly!=null?Math.round(occ.stly*100):null;
       let arr='', acls='occ-flat';
       if(c!=null && s!=null){ const dd=c-s; if(dd>0.5){arr='▲';acls='occ-good';} else if(dd<-0.5){arr='▼';acls='occ-bad';} else {arr='•';acls='occ-flat';} }
-      occHtml=`<div class="pc-occ">OCC ${c!=null?c+'%':'—'} <span class="${acls}">${arr}</span> <span class="pc-occ-stly">vs ${s!=null?s+'%':'—'}</span></div>`;
+      occHtml=`<div class="pc-compare pc-occrow">
+        <div class="pcc-col"><div class="pcc-lab">CY</div><div class="pcc-occval">${c!=null?c+'%':'—'}</div></div>
+        <div class="pcc-arrow ${acls}">${arr}</div>
+        <div class="pcc-col"><div class="pcc-lab">STLY</div><div class="pcc-occval pcc-occstly">${s!=null?s+'%':'—'}</div></div>
+      </div>`;
     }
     return `<div class="day-card ${isWeekendYmd(yn)?'wknd':''}" data-day="${yn}"><div class="edge"></div>
       ${anyOvr?'<div class="badge-ovr">override</div>':''}
