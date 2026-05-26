@@ -80,6 +80,12 @@ main{flex:1;padding:8px 16px 24px}
 .day-card .date-blk .dc-mo{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600}
 .day-card .price-blk{flex:1;text-align:right;min-width:0}
 .day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:4px}
+/* occupancy line above the price */
+.pc-occ{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink);font-weight:500;margin-bottom:5px}
+.pc-occ .pc-occ-stly{color:var(--muted);font-weight:400}
+.pc-occ .occ-good{color:var(--up);font-weight:700}
+.pc-occ .occ-bad{color:var(--down);font-weight:700}
+.pc-occ .occ-flat{color:var(--flat)}
 /* two-column Mine | Compset compare */
 .pc-compare{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .pc-compare .pcc-col{text-align:center}
@@ -91,7 +97,11 @@ main{flex:1;padding:8px 16px 24px}
 .pc-compare .pcc-arrow.cmp-good{color:var(--up)}     /* green = I'm lower than compset (more competitive) */
 .pc-compare .pcc-arrow.cmp-bad{color:var(--down)}    /* red = I'm higher than compset */
 .pc-compare .pcc-arrow.cmp-flat{color:var(--flat)}
-.pc-compare .pcc-rank{flex-basis:100%;text-align:right;font-family:'DM Mono',monospace;font-size:10px;color:var(--org-deep);font-weight:700;margin-top:1px}
+.pc-compare .pcc-meta{flex-basis:100%;display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:1px}
+.pc-compare .pcc-rank{font-family:'DM Mono',monospace;font-size:10px;color:var(--org-deep);font-weight:700}
+.pc-compare .pcc-pk{font-family:'DM Mono',monospace;font-size:10px;font-weight:700}
+.pc-compare .pcc-pk .pcc-pk-lab{color:var(--muted);font-weight:400;font-size:9px}
+.pc-compare .pcc-pk.occ-good{color:var(--up)} .pc-compare .pcc-pk.occ-bad{color:var(--down)} .pc-compare .pcc-pk.occ-flat{color:var(--flat)}
 .pc-compare.pc-compare-na .pcc-na{font-size:10.5px;color:var(--muted);font-style:italic;align-self:flex-end}
 /* pencil override icon on the card */
 .day-card .pc-edit{flex:0 0 auto;width:34px;height:34px;border-radius:10px;background:var(--org-tint);border:1px solid var(--org-tint2);font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;margin-left:2px}
@@ -112,6 +122,12 @@ main{flex:1;padding:8px 16px 24px}
 
 .mo-card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px;margin-bottom:11px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .mo-card.is-cur{border-color:var(--org);box-shadow:0 3px 14px rgba(210,105,30,.18)}
+/* revenue vs comparison tint */
+.mo-card.mo-better{background:#eef7ee;border-color:#cfe6cf}
+.mo-card.mo-worse{background:#fbeded;border-color:#f0d2d2}
+.mo-card.mo-equal{background:var(--card)}
+.mo-card.is-cur.mo-better{border-color:var(--org)}
+.mo-card.is-cur.mo-worse{border-color:var(--org)}
 .mo-card .mo-edge{position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--org-soft),var(--org));opacity:0}
 .mo-card.is-cur .mo-edge{opacity:1}
 .mo-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
@@ -373,6 +389,16 @@ function mobRenderDays(){
   let map; try{ map=computeRMESPriceMap(MOB.struct,start,7); }catch(e){ console.error(e); list.innerHTML=mobEmpty('⚠️','Could not compute prices.'); return; }
   const keys=Object.keys(map).map(Number).sort((a,b)=>a-b);
   if(!keys.length){ list.innerHTML=mobEmpty('📭','No price data for this window.'); return; }
+  // occupancy OTB vs STLY per day (snapshot now) + pickup last 7 days vs STLY per day
+  let occByDay={}, pkByDay={};
+  try{
+    const A=aggSellStrategy(MOB.struct, start, 7, 0);
+    if(A&&A.rows) A.rows.forEach(r=>{ occByDay[r.ymd]={ cur:(isFinite(r.curOcc)?r.curOcc:null), stly:(isFinite(r.stlyOcc)?r.stlyOcc:null) }; });
+  }catch(e){ console.error('occByDay',e); }
+  try{
+    const P=aggSellStrategy(MOB.struct, start, 7, 7); // pickup window = last 7 days
+    if(P&&P.rows) P.rows.forEach(r=>{ pkByDay[r.ymd]={ cur:(isFinite(r.pkRn)?r.pkRn:null), stly:(isFinite(r.pkRnStly)?r.pkRnStly:null) }; });
+  }catch(e){ console.error('pkByDay',e); }
   list.innerHTML=keys.map(yn=>{
     const r=map[yn]; const d=ymdNumToDate(yn); const isT=(yn===today);
     const anyOvr=r.overrideUsedByRT && Object.values(r.overrideUsedByRT).some(v=>v);
@@ -388,11 +414,18 @@ function mobRenderDays(){
       const cls = (Math.abs(diff)<0.5) ? 'cmp-flat' : (lower ? 'cmp-good' : 'cmp-bad'); // good=green=lower
       const ar  = (Math.abs(diff)<0.5) ? '•' : (lower ? '▼' : '▲');
       const rkTxt = rk ? `${rk.rank}/${rk.total}` : '';
+      // pickup last 7 days delta vs STLY (small arrow): green = better than STLY
+      const pk=pkByDay[yn]||{cur:null,stly:null};
+      let pkHtml='';
+      if(pk.cur!=null && pk.stly!=null && (pk.cur!==0 || pk.stly!==0)){
+        const dd=pk.cur-pk.stly; const pcls=dd>0?'occ-good':(dd<0?'occ-bad':'occ-flat'); const par=dd>0?'▲':(dd<0?'▼':'•');
+        pkHtml=`<span class="pcc-pk ${pcls}">${par}${dd>0?'+':''}${dd} <span class="pcc-pk-lab">p/u</span></span>`;
+      }
       compareHtml=`<div class="pc-compare">
         <div class="pcc-col"><div class="pcc-lab">Mine</div><div class="pcc-val">${fmtEUR(expPrice)}</div></div>
         <div class="pcc-arrow ${cls}">${ar}<span class="pcc-diff">${(diff>=0?'+':'')}${fmtEUR(diff)}</span></div>
         <div class="pcc-col"><div class="pcc-lab">Compset</div><div class="pcc-val pcc-comp">${fmtEUR(comp)}</div></div>
-        ${rkTxt?`<div class="pcc-rank">${rkTxt}</div>`:''}
+        <div class="pcc-meta">${rkTxt?`<span class="pcc-rank">€ ${rkTxt}</span>`:''}${pkHtml}</div>
       </div>`;
     } else {
       compareHtml=`<div class="pc-compare pc-compare-na">
@@ -400,10 +433,19 @@ function mobRenderDays(){
         <div class="pcc-na">compset n/d</div>
       </div>`;
     }
+    // occupancy line (above the price): OCC OTB vs STLY with coloured arrow (green = higher = filling better)
+    const occ=occByDay[yn]||{cur:null,stly:null};
+    let occHtml='';
+    if(occ.cur!=null || occ.stly!=null){
+      const c=occ.cur!=null?Math.round(occ.cur*100):null, s=occ.stly!=null?Math.round(occ.stly*100):null;
+      let arr='', acls='occ-flat';
+      if(c!=null && s!=null){ const dd=c-s; if(dd>0.5){arr='▲';acls='occ-good';} else if(dd<-0.5){arr='▼';acls='occ-bad';} else {arr='•';acls='occ-flat';} }
+      occHtml=`<div class="pc-occ">OCC ${c!=null?c+'%':'—'} <span class="${acls}">${arr}</span> <span class="pc-occ-stly">vs ${s!=null?s+'%':'—'}</span></div>`;
+    }
     return `<div class="day-card ${isWeekendYmd(yn)?'wknd':''}" data-day="${yn}"><div class="edge"></div>
       ${anyOvr?'<div class="badge-ovr">override</div>':''}
       <div class="date-blk"><div class="dc-dow">${DOW_SHORT[d.getDay()]}${isT?' ·':''}</div><div class="dc-day">${d.getDate()}</div><div class="dc-mo">${MO_SHORT[d.getMonth()]}</div></div>
-      <div class="price-blk"><div class="pc-label">Expedia price · vs compset</div>${compareHtml}</div>
+      <div class="price-blk">${occHtml}<div class="pc-label">Expedia price · vs compset</div>${compareHtml}</div>
       <button class="pc-edit ${anyOvr?'has-ovr':''}" data-edit="${yn}" title="Override price" aria-label="Override price">✏️</button>
       <div class="chev">›</div></div>`;
   }).join('');
@@ -722,7 +764,13 @@ function mobRenderMonth(){
   const pastRows = rows.filter(mr=>mr.m<curMo);
   const cardFor = (mr)=>{
     const dd=monthData(mr); const isCur=mr.m===curMo;
-    return `<div class="mo-card ${isCur?'is-cur':''}"><div class="mo-edge"></div>
+    // background tint by revenue vs comparison: green = higher, white = equal, red = lower
+    let tint='';
+    if(dd.rev!=null && dd.revCmp!=null && isFinite(dd.rev) && isFinite(dd.revCmp) && dd.revCmp>0){
+      const d=(dd.rev-dd.revCmp)/dd.revCmp;
+      tint = d>0.01 ? 'mo-better' : (d<-0.01 ? 'mo-worse' : 'mo-equal');
+    }
+    return `<div class="mo-card ${isCur?'is-cur':''} ${tint}"><div class="mo-edge"></div>
       <div class="mo-head"><div class="mo-name">${MO_FULL[mr.m-1]}${isCur?'<span class="now-tag">• now</span>':''}</div></div>
       ${mobMetric('Revenue', dd.rev, dd.revCmp, dd.cmpLab, 'eur', true)}
       ${mobMetric('ADR', dd.adr, dd.adrCmp, dd.cmpLab, 'eur', false)}
