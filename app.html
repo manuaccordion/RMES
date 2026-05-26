@@ -78,6 +78,7 @@ main{flex:1;padding:8px 16px 24px}
 .day-card .date-blk .dc-dow{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.03em}
 .day-card .date-blk .dc-day{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;line-height:1;color:var(--org-deep)}
 .day-card .date-blk .dc-mo{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600}
+.day-card .date-blk .dc-rank{font-size:10px;color:var(--ink);font-family:'DM Mono',monospace;font-weight:700;margin-top:4px}
 .day-card .price-blk{flex:1;text-align:right;min-width:0}
 .day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:4px}
 /* occupancy line above the price */
@@ -99,7 +100,8 @@ main{flex:1;padding:8px 16px 24px}
 .pc-compare .pcc-arrow.cmp-flat{color:var(--flat)}
 .pc-compare .pcc-meta{flex-basis:100%;display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:1px}
 /* meta row: € rank + pickup, fixed two columns with title above */
-.pc-meta{margin-top:7px}
+.pc-meta{margin-top:5px}
+.pc-meta + .pc-meta{margin-top:2px}
 .pc-meta .pcm-col{text-align:center;min-width:42px}
 .pc-meta .pcm-lab{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
 .pc-meta .pcm-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--ink);margin-top:1px}
@@ -399,7 +401,7 @@ function mobRenderDays(){
   let occByDay={}, pkByDay={};
   try{
     const A=aggSellStrategy(MOB.struct, start, 7, 0);
-    if(A&&A.rows) A.rows.forEach(r=>{ occByDay[r.ymd]={ cur:(isFinite(r.curOcc)?r.curOcc:null), stly:(isFinite(r.stlyOcc)?r.stlyOcc:null) }; });
+    if(A&&A.rows) A.rows.forEach(r=>{ occByDay[r.ymd]={ cur:(isFinite(r.curOcc)?r.curOcc:null), stly:(isFinite(r.stlyOcc)?r.stlyOcc:null), adrCur:(isFinite(r.curAdr)&&r.curRn>0?r.curAdr:null), adrStly:(isFinite(r.stlyAdr)&&r.stlyRn>0?r.stlyAdr:null) }; });
   }catch(e){ console.error('occByDay',e); }
   try{
     const P=aggSellStrategy(MOB.struct, start, 7, 7); // pickup window = last 7 days
@@ -412,25 +414,33 @@ function mobRenderDays(){
     const expPrice=mobToExpedia(r.price, MOB.struct);
     const comp=mobCompsetAvg(MOB.struct, iso);
     const rk=mobCompRank(MOB.struct, iso, expPrice);
-    // pickup last 7 days vs STLY — ALWAYS shown (even 0/0), fixed position with title above
+    const occ=occByDay[yn]||{cur:null,stly:null,adrCur:null,adrStly:null};
+    // OCC delta vs STLY (percentage points), green = filling better
+    let occVal='—', occcls='occ-flat';
+    if(occ.cur!=null && occ.stly!=null){
+      const od=Math.round((occ.cur-occ.stly)*100); occcls=od>0?'occ-good':(od<0?'occ-bad':'occ-flat'); const oar=od>0?'▲':(od<0?'▼':'•');
+      occVal=`${oar}${od>0?'+':''}${od}pp`;
+    }
+    // pickup last 7 days delta vs STLY
     const pk=pkByDay[yn]||{cur:null,stly:null};
     const pkc=(pk.cur!=null?pk.cur:0), pks=(pk.stly!=null?pk.stly:0);
     const pkd=pkc-pks; const pkcls=pkd>0?'occ-good':(pkd<0?'occ-bad':'occ-flat'); const pkar=pkd>0?'▲':(pkd<0?'▼':'•');
     const pkVal=`${pkar}${pkd>0?'+':''}${pkd}`;
-    // price rank — ALWAYS shown, fixed position with title above
+    // price rank (1 = cheapest)
     const rkVal = rk ? `${rk.rank}/${rk.total}` : '—';
-    const metaHtml=`<div class="pc-compare pc-meta">
-      <div class="pcc-col"><div class="pcm-lab">€ rank</div><div class="pcm-val">${rkVal}</div></div>
-      <div class="pcc-arrow"></div>
-      <div class="pcc-col"><div class="pcm-lab">p/u 7d</div><div class="pcm-val ${pkcls}">${pkVal}</div></div>
-    </div>`;
-    // two-column compare: Mine | Compset. GREEN = I'm LOWER than compset (more competitive).
+    // Delta ADR booked vs STLY (absolute €), green = higher ADR this year
+    const adrC=occ.adrCur, adrS=occ.adrStly;
+    let adrVal='—', adrcls='occ-flat';
+    if(adrC!=null && adrS!=null){
+      const ad=adrC-adrS; adrcls=ad>0.5?'occ-good':(ad<-0.5?'occ-bad':'occ-flat'); const adar=ad>0.5?'▲':(ad<-0.5?'▼':'•');
+      adrVal=`${adar}${fmtEUR(Math.abs(ad))}`;
+    }
+    // price row (big): Mine | Comp
     let compareHtml='';
     if(comp!=null && expPrice!=null){
       const diff=expPrice-comp;
-      const lower = diff<0;
-      const cls = (Math.abs(diff)<0.5) ? 'cmp-flat' : (lower ? 'cmp-good' : 'cmp-bad');
-      const ar  = (Math.abs(diff)<0.5) ? '•' : (lower ? '▼' : '▲');
+      const cls = (Math.abs(diff)<0.5) ? 'cmp-flat' : (diff<0 ? 'cmp-good' : 'cmp-bad');
+      const ar  = (Math.abs(diff)<0.5) ? '•' : (diff<0 ? '▼' : '▲');
       compareHtml=`<div class="pc-compare">
         <div class="pcc-col"><div class="pcc-lab">Mine</div><div class="pcc-val">${fmtEUR(expPrice)}</div></div>
         <div class="pcc-arrow ${cls}">${ar}</div>
@@ -443,23 +453,21 @@ function mobRenderDays(){
         <div class="pcc-col"><div class="pcc-lab">Comp</div><div class="pcc-val pcc-comp">n/d</div></div>
       </div>`;
     }
-    // occupancy line — same 3-column grid as the price row, so CY sits above Mine and STLY above Comp
-    const occ=occByDay[yn]||{cur:null,stly:null};
-    let occHtml='';
-    if(occ.cur!=null || occ.stly!=null){
-      const c=occ.cur!=null?Math.round(occ.cur*100):null, s=occ.stly!=null?Math.round(occ.stly*100):null;
-      let arr='', acls='occ-flat';
-      if(c!=null && s!=null){ const dd=c-s; if(dd>0.5){arr='▲';acls='occ-good';} else if(dd<-0.5){arr='▼';acls='occ-bad';} else {arr='•';acls='occ-flat';} }
-      occHtml=`<div class="pc-compare pc-occrow">
-        <div class="pcc-col"><div class="pcc-lab">CY</div><div class="pcc-occval">${c!=null?c+'%':'—'}</div></div>
-        <div class="pcc-arrow ${acls}">${arr}</div>
-        <div class="pcc-col"><div class="pcc-lab">STLY</div><div class="pcc-occval pcc-occstly">${s!=null?s+'%':'—'}</div></div>
+    // two small delta rows under the prices: (OCCΔ, p/u) under Mine · (ADRΔ, rank) under Comp
+    const metaHtml=`<div class="pc-compare pc-meta">
+        <div class="pcc-col"><div class="pcm-lab">OCC Δ</div><div class="pcm-val ${occcls}">${occVal}</div></div>
+        <div class="pcc-arrow"></div>
+        <div class="pcc-col"><div class="pcm-lab">ADR Δ</div><div class="pcm-val ${adrcls}">${adrVal}</div></div>
+      </div>
+      <div class="pc-compare pc-meta">
+        <div class="pcc-col"><div class="pcm-lab">p/u 7d</div><div class="pcm-val ${pkcls}">${pkVal}</div></div>
+        <div class="pcc-arrow"></div>
+        <div class="pcc-col"><div class="pcm-lab">€ rank</div><div class="pcm-val">${rkVal}</div></div>
       </div>`;
-    }
     return `<div class="day-card ${isWeekendYmd(yn)?'wknd':''}" data-day="${yn}"><div class="edge"></div>
       ${anyOvr?'<div class="badge-ovr">override</div>':''}
       <div class="date-blk"><div class="dc-dow">${DOW_SHORT[d.getDay()]}${isT?' ·':''}</div><div class="dc-day">${d.getDate()}</div><div class="dc-mo">${MO_SHORT[d.getMonth()]}</div></div>
-      <div class="price-blk">${occHtml}${compareHtml}${metaHtml}</div>
+      <div class="price-blk">${compareHtml}${metaHtml}</div>
       <button class="pc-edit ${anyOvr?'has-ovr':''}" data-edit="${yn}" title="Override price" aria-label="Override price">✏️</button>
       <div class="chev">›</div></div>`;
   }).join('');
