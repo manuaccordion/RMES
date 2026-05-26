@@ -99,7 +99,7 @@ main{flex:1;padding:8px 16px 24px}
 .pc-compare .pcc-arrow.cmp-flat{color:var(--flat)}
 .pc-compare .pcc-meta{flex-basis:100%;display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:1px}
 /* meta row: € rank + pickup, fixed two columns with title above */
-.pc-meta{display:flex;justify-content:flex-end;gap:16px;margin-top:7px}
+.pc-meta{margin-top:7px}
 .pc-meta .pcm-col{text-align:center;min-width:42px}
 .pc-meta .pcm-lab{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
 .pc-meta .pcm-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--ink);margin-top:1px}
@@ -419,9 +419,10 @@ function mobRenderDays(){
     const pkVal=`${pkar}${pkd>0?'+':''}${pkd}`;
     // price rank — ALWAYS shown, fixed position with title above
     const rkVal = rk ? `${rk.rank}/${rk.total}` : '—';
-    const metaHtml=`<div class="pc-meta">
-      <div class="pcm-col"><div class="pcm-lab">€ rank</div><div class="pcm-val">${rkVal}</div></div>
-      <div class="pcm-col"><div class="pcm-lab">p/u 7d</div><div class="pcm-val ${pkcls}">${pkVal}</div></div>
+    const metaHtml=`<div class="pc-compare pc-meta">
+      <div class="pcc-col"><div class="pcm-lab">€ rank</div><div class="pcm-val">${rkVal}</div></div>
+      <div class="pcc-arrow"></div>
+      <div class="pcc-col"><div class="pcm-lab">p/u 7d</div><div class="pcm-val ${pkcls}">${pkVal}</div></div>
     </div>`;
     // two-column compare: Mine | Compset. GREEN = I'm LOWER than compset (more competitive).
     let compareHtml='';
