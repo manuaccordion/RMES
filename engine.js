@@ -6332,6 +6332,22 @@ function fp_renderFoundationConfigBox(structKey){
 /* ============================================================
    END FOUNDATION PRICING — UI
    ============================================================ */
+/* market position for a day in Sell Strategy — same logic as Big Picture / mobile app:
+   rank = (competitors priced below my Expedia price) + 1, out of (competitors priced + me). 1 = cheapest. */
+function _sellCompRank(structKey, iso, myExpedia){
+  if (myExpedia == null || !isFinite(myExpedia)) return null;
+  if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return null;
+  const compMap = (structKey === 'alfani') ? EXPEDIA_DATA.competitors_alfani
+                : (structKey === 'firenze') ? EXPEDIA_DATA.competitors_firenze
+                : (structKey === 'davids') ? EXPEDIA_DATA.competitors_davids
+                : EXPEDIA_DATA.competitors;
+  if (!compMap) return null;
+  const prices = [];
+  for (const cn in compMap){ const v = compMap[cn] ? compMap[cn][iso] : null; if (v != null && isFinite(v) && v > 0) prices.push(v); }
+  if (!prices.length) return null;
+  const rank = prices.filter(p => p < myExpedia).length + 1;
+  return { rank, total: prices.length + 1 };
+}
 function renderSellStrategy(sel){
   const chipEl = document.getElementById('sell-struct-chip');
   if (chipEl) chipEl.textContent = structLabel(sel);
@@ -6634,7 +6650,7 @@ function renderSellStrategy(sel){
     + '<th colspan="3" class="sell-grp sell-grp-stly">STLY (-364)</th>'
     + '<th colspan="4" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
-    + (showExp ? '<th colspan="2" class="sell-grp sell-grp-expedia">Expedia Market</th>' : '')
+    + (showExp ? '<th colspan="3" class="sell-grp sell-grp-expedia">Expedia Market</th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Foundation Pricing: structural price of the day (RMES source). Click the cell for the calculation detail. Other RTs show a derived value (Foundation baseRT + monthly supplement), read-only.">Foundation</th>'
     + '<th colspan="' + _rmesGroupCols + '" class="sell-grp sell-grp-rmes" title="RMES v5 system: Foundation (source) × composite multiplier from 5 factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)), all at property levela.">RMES <span class="sell-th-sub">suggested · M[MLOS] · click for Foundation detail</span></th>'
     + '</tr>'
@@ -6656,6 +6672,7 @@ function renderSellStrategy(sel){
     + (showExp
        ? '<th class="sell-grp-expedia-sub" title="My Expedia price">Mine</th>'
          + '<th class="sell-grp-expedia-sub" title="Expedia compset average">Compset</th>'
+         + '<th class="sell-grp-expedia-sub" title="RMES price converted to Expedia space, with market position vs compset (1 = cheapest)">RMES&rarr;Exp</th>'
        : '')
     + (function(){
         const baseRT = _suppData ? _suppData.baseRT : null;
@@ -6747,11 +6764,34 @@ function renderSellStrategy(sel){
             myTooltip += ` · YoY ${(exp.searchYoY>=0?'+':'')}${(exp.searchYoY*100).toFixed(0)}%`;
           }
         }
+        // RMES price converted to Expedia space + market position vs compset
+        let rmesExpCell;
+        {
+          const rmesBeddy = (_rmesMapForAlignment && _rmesMapForAlignment[r.ymd] && isFinite(_rmesMapForAlignment[r.ymd].price)) ? _rmesMapForAlignment[r.ymd].price : null;
+          const divisor = (typeof fp_expToBeddyDivisor === 'function') ? fp_expToBeddyDivisor(sel) : 1.053;
+          const rmesExp = (rmesBeddy != null) ? rmesBeddy * divisor : null;
+          if (rmesExp != null){
+            const rmesExpTxt = fmtEUR(rmesExp);
+            let posTxt = '', posCls = '';
+            const rk = _sellCompRank(sel, r.ymd.toString().slice(0,4)+'-'+r.ymd.toString().slice(4,6)+'-'+r.ymd.toString().slice(6,8), rmesExp);
+            if (rk){ posTxt = rk.rank + '/' + rk.total; }
+            // colour vs compset average: green if my RMES-Expedia is below compset (more competitive)
+            if (cAvg != null && isFinite(cAvg)){
+              const d = rmesExp - cAvg;
+              posCls = (Math.abs(d) < 0.5) ? '' : (d < 0 ? 'cell-pos' : 'cell-neg');
+            }
+            const rmesExpTip = 'RMES price in Expedia space (RMES Beddy \u00d7 ' + divisor.toFixed(3) + ')' + (rk ? ' \u00b7 position ' + posTxt + ' (1 = cheapest)' : '');
+            rmesExpCell = '<td class="cell-mono ' + posCls + '" style="background:rgba(58,107,107,.04)" title="' + rmesExpTip + '">' + rmesExpTxt + (posTxt ? '<br><span style="font-size:9px;font-weight:400">' + posTxt + '</span>' : '') + '</td>';
+          } else {
+            rmesExpCell = '<td class="cell-mono cell-flat sell-block-expedia" style="background:rgba(58,107,107,.04);text-align:center">\u2014</td>';
+          }
+        }
         expCells =
           `<td class="cell-mono sell-block-expedia" style="background:rgba(58,107,107,.04)" title="${myTooltip}">${myTxt}</td>` +
-          `<td class="cell-mono ${diffCls}" style="background:rgba(58,107,107,.04)" title="${avgTooltip}">${avgTxt}${avgBadge}<br><span style="font-size:9px;font-weight:400">${diffTxt}</span></td>`;
+          `<td class="cell-mono ${diffCls}" style="background:rgba(58,107,107,.04)" title="${avgTooltip}">${avgTxt}${avgBadge}<br><span style="font-size:9px;font-weight:400">${diffTxt}</span></td>` +
+          rmesExpCell;
       } else {
-        expCells = `<td class="cell-mono cell-flat sell-block-expedia" colspan="2" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
+        expCells = `<td class="cell-mono cell-flat sell-block-expedia" colspan="3" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
       }
     }
     let cellMercato = '';

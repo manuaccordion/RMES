@@ -81,7 +81,7 @@ main{flex:1;padding:8px 16px 24px}
 .day-card .price-blk{flex:1;text-align:right;min-width:0}
 .day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:4px}
 /* occupancy line above the price */
-.pc-occ{font-size:11px;font-family:'DM Mono',monospace;color:var(--ink);font-weight:500;margin-bottom:5px}
+.pc-occ{font-size:16px;font-family:'DM Mono',monospace;color:var(--ink);font-weight:500;margin-bottom:5px}
 .pc-occ .pc-occ-stly{color:var(--muted);font-weight:400}
 .pc-occ .occ-good{color:var(--up);font-weight:700}
 .pc-occ .occ-bad{color:var(--down);font-weight:700}
@@ -102,7 +102,7 @@ main{flex:1;padding:8px 16px 24px}
 .pc-meta{display:flex;justify-content:flex-end;gap:16px;margin-top:7px}
 .pc-meta .pcm-col{text-align:center;min-width:42px}
 .pc-meta .pcm-lab{font-size:8px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
-.pc-meta .pcm-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--org-deep);margin-top:1px}
+.pc-meta .pcm-val{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:var(--ink);margin-top:1px}
 .pc-meta .pcm-val.occ-good{color:var(--up)} .pc-meta .pcm-val.occ-bad{color:var(--down)} .pc-meta .pcm-val.occ-flat{color:var(--flat)}
 .pc-compare.pc-compare-na .pcc-na{font-size:10.5px;color:var(--muted);font-style:italic;align-self:flex-end}
 /* pencil override icon on the card */
@@ -156,6 +156,9 @@ main{flex:1;padding:8px 16px 24px}
 .mm-d{font-weight:600;margin-left:3px}
 /* year total card */
 .mo-card.mo-year{background:linear-gradient(135deg,var(--org-tint),var(--card));border-color:var(--org-tint2)}
+.mo-card.mo-year.mo-better{background:#eef7ee;border-color:#cfe6cf}
+.mo-card.mo-year.mo-worse{background:#fbeded;border-color:#f0d2d2}
+.mo-card.mo-year.mo-equal{background:var(--card);border-color:var(--line)}
 .mo-card.mo-year .mo-edge{opacity:1}
 .mo-yearnote{font-size:9.5px;color:var(--muted);font-style:italic;margin-top:8px;line-height:1.4}
 /* past-months drill */
@@ -757,8 +760,13 @@ function mobRenderMonth(){
     if(dd.revCmp!=null) yRevCmp+=dd.revCmp;
   });
   // year ADR/OCC: weight by room-nights where available (approx via revenue/adr); keep simple = average of months present
+  // year total revenue tint (same logic as months): green above comparison, white equal, red below
+  let yearRev=0, yearRevCmp=0, yHasRev=false, yHasCmp=false;
+  rows.forEach(mr=>{ const d=monthData(mr); if(d.rev!=null){yearRev+=d.rev;yHasRev=true;} if(d.revCmp!=null){yearRevCmp+=d.revCmp;yHasCmp=true;} });
+  let yearTint='';
+  if(yHasRev && yHasCmp && yearRevCmp>0){ const yd=(yearRev-yearRevCmp)/yearRevCmp; yearTint = yd>0.01?'mo-better':(yd<-0.01?'mo-worse':'mo-equal'); }
   const yearMetricsHtml = mobYearTotals(rows, monthData, isF);
-  html += `<div class="mo-card mo-year"><div class="mo-edge"></div>
+  html += `<div class="mo-card mo-year ${yearTint}"><div class="mo-edge"></div>
     <div class="mo-head"><div class="mo-name">${curY} <span style="font-size:11px;color:var(--muted);font-weight:600">full year</span></div>
       <div class="mo-occbig"><div class="ob-lab">${isF?'forecast':'on the books'}</div></div></div>
     ${yearMetricsHtml}
