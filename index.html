@@ -59479,7 +59479,7 @@ function _bigPickupTreeForDay(sel, dayYmd){
     if (b.cancelled || !ks.has(b.struct)) continue;
     if (dayYmd==='all' ? (b.bookYmd<lo || b.bookYmd>hi) : (b.bookYmd!==dayYmd)) continue;
     const rn=b.notti||0, rev=b.revTotal||0; totRn+=rn; totRev+=rev;
-    const ch=_bigProvLabel(b.prov||b.canale||'?'); byChannel[ch]=(byChannel[ch]||0)+rn;
+    const ch=(b.canale||'?'); byChannel[ch]=(byChannel[ch]||0)+rn;
     const rm=b.room||'?'; byRoom[rm]=(byRoom[rm]||0)+rn;
     if (b.dIn){
       const d=new Date(b.dIn);
