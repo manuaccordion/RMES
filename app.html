@@ -3,16 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#1a1a1a">
+<meta name="theme-color" content="#d2691e">
 <title>RMES Mobile — Revenue Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4f1ea; --card:#fffdf8; --ink:#1f1c17; --muted:#8a8377; --line:#e6e0d4;
-  --accent:#8b6f47; --up:#3d7a4b; --down:#b5483a; --flat:#8a8377;
-  --shadow:0 1px 3px rgba(30,25,18,.06),0 4px 16px rgba(30,25,18,.05);
+  --org:#d2691e; --org-deep:#a8521a; --org-soft:#f3a259; --org-tint:#fbe9d8; --org-tint2:#f7d9bf;
+  --bg:#fdf6ef; --card:#fffdfa; --ink:#2a1d12; --muted:#9a8470; --line:#f0e2d3;
+  --up:#3d7a4b; --down:#c0492f; --flat:#9a8470;
+  --shadow:0 1px 3px rgba(120,70,20,.07),0 6px 20px rgba(120,70,20,.07);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
@@ -22,145 +23,159 @@ h1,h2,h3{font-family:'Playfair Display',serif;font-weight:600;letter-spacing:-.0
 .mono{font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 
-/* ---- App shell ---- */
-#app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;
-  padding-bottom:72px}
+#app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding-bottom:74px}
 
-/* ---- Header ---- */
-.app-head{position:sticky;top:0;z-index:30;background:linear-gradient(180deg,var(--bg) 70%,rgba(244,241,234,.85));
-  padding:14px 16px 8px;backdrop-filter:blur(8px)}
-.app-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}
-.app-title .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(139,111,71,.15)}
-.app-sub{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px;letter-spacing:.02em}
+.app-head{position:sticky;top:0;z-index:30;
+  background:linear-gradient(135deg,var(--org) 0%,var(--org-deep) 100%);
+  padding:16px 18px 14px;color:#fff;box-shadow:0 2px 12px rgba(168,82,26,.25)}
+.app-title{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;display:flex;align-items:center;gap:9px}
+.app-title .dot{width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25)}
+.app-title .lite{font-weight:400;opacity:.85;font-size:14px}
+.app-sub{font-size:11px;opacity:.9;font-family:'DM Mono',monospace;margin-top:3px;letter-spacing:.02em}
 
-/* ---- Structure pills ---- */
-.struct-row{display:flex;gap:7px;overflow-x:auto;padding:10px 16px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.struct-row{display:flex;gap:7px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .struct-row::-webkit-scrollbar{display:none}
-.spill{flex:0 0 auto;padding:8px 14px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);
+.spill{flex:0 0 auto;padding:8px 15px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);
   font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;transition:all .15s;box-shadow:var(--shadow)}
-.spill.active{color:#fff;border-color:transparent}
+.spill.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--org),var(--org-deep));box-shadow:0 3px 10px rgba(168,82,26,.3)}
 
-/* ---- Calendar strip ---- */
-.cal-wrap{padding:6px 16px 2px}
-.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.cal-month{font-family:'Playfair Display',serif;font-size:16px;font-weight:600}
+.cal-wrap{padding:8px 16px 2px}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.cal-month{font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--org-deep)}
 .cal-nav{display:flex;gap:6px}
-.cal-btn{width:34px;height:34px;border-radius:10px;background:var(--card);border:1.5px solid var(--line);
-  display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink);box-shadow:var(--shadow)}
+.cal-btn{width:34px;height:34px;border-radius:10px;background:var(--card);border:1.5px solid var(--org-tint2);
+  display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--org);box-shadow:var(--shadow);font-weight:700}
 .cal-btn:active{transform:scale(.94)}
-.cal-btn.today-btn{width:auto;padding:0 12px;font-size:12px;font-weight:600;font-family:'DM Sans'}
+.cal-btn.today-btn{width:auto;padding:0 13px;font-size:12px;font-weight:700;font-family:'DM Sans'}
 .cal-strip{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}
 .cal-strip::-webkit-scrollbar{display:none}
 .cal-day{flex:0 0 auto;width:46px;padding:8px 0;border-radius:12px;background:var(--card);border:1.5px solid var(--line);
   text-align:center;box-shadow:var(--shadow);transition:all .12s}
 .cal-day .dow{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600;letter-spacing:.03em}
 .cal-day .dnum{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;margin-top:1px}
-.cal-day.sel{border-color:transparent;color:#fff}
+.cal-day.sel{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--org),var(--org-deep))}
+.cal-day.sel .dow{color:rgba(255,255,255,.9)}
 .cal-day.is-today .dnum{position:relative}
-.cal-day.is-today .dnum::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
-  width:4px;height:4px;border-radius:50%;background:currentColor}
-.cal-day.wknd:not(.sel){background:#faf6ee}
+.cal-day.is-today .dnum::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:currentColor}
+.cal-day.wknd:not(.sel){background:var(--org-tint)}
 
-/* ---- Tabs (bottom) ---- */
 .tabbar{position:fixed;bottom:0;left:0;right:0;z-index:40;display:flex;justify-content:center;
-  background:rgba(255,253,248,.92);backdrop-filter:blur(12px);border-top:1px solid var(--line);
+  background:rgba(255,253,250,.94);backdrop-filter:blur(12px);border-top:1px solid var(--org-tint2);
   padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
 .tabbar-inner{display:flex;gap:4px;max-width:480px;width:100%;padding:0 16px}
-.tabbtn{flex:1;padding:8px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:3px;
-  font-size:11px;font-weight:600;color:var(--muted);transition:all .15s}
+.tabbtn{flex:1;padding:8px 4px;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);transition:all .15s}
 .tabbtn .ico{font-size:18px;line-height:1}
-.tabbtn.active{color:var(--accent);background:rgba(139,111,71,.08)}
+.tabbtn.active{color:var(--org);background:var(--org-tint)}
 
-/* ---- Content ---- */
 main{flex:1;padding:8px 16px 24px}
-.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
-  margin:14px 2px 8px}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--org-deep);margin:14px 2px 8px}
 
-/* ---- 7-day price list ---- */
 .day-card{display:flex;align-items:center;gap:14px;background:var(--card);border:1.5px solid var(--line);
-  border-radius:16px;padding:14px 16px;margin-bottom:9px;box-shadow:var(--shadow);transition:all .12s;
-  position:relative;overflow:hidden}
+  border-radius:16px;padding:14px 16px;margin-bottom:9px;box-shadow:var(--shadow);transition:all .12s;position:relative;overflow:hidden}
 .day-card:active{transform:scale(.985)}
-.day-card .edge{position:absolute;left:0;top:0;bottom:0;width:4px}
+.day-card .edge{position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--org-soft),var(--org))}
 .day-card .date-blk{flex:0 0 auto;text-align:center;min-width:46px}
 .day-card .date-blk .dc-dow{font-size:11px;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.03em}
-.day-card .date-blk .dc-day{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;line-height:1}
+.day-card .date-blk .dc-day{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;line-height:1;color:var(--org-deep)}
 .day-card .date-blk .dc-mo{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:600}
 .day-card .price-blk{flex:1;text-align:right}
-.day-card .price-blk .pc-price{font-family:'DM Mono',monospace;font-size:23px;font-weight:500;line-height:1.05}
+.day-card .price-blk .pc-price{font-family:'DM Mono',monospace;font-size:23px;font-weight:500;line-height:1.05;color:var(--ink)}
 .day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
-.day-card .chev{flex:0 0 auto;color:var(--line);font-size:18px}
-.day-card.wknd{background:#faf6ee}
-.badge-ovr{position:absolute;top:8px;right:14px;font-size:8.5px;font-weight:700;text-transform:uppercase;
-  background:var(--accent);color:#fff;padding:2px 6px;border-radius:5px;letter-spacing:.04em}
+.day-card .chev{flex:0 0 auto;color:var(--org-soft);font-size:18px;font-weight:700}
+.day-card.wknd{background:var(--org-tint)}
+.badge-ovr{position:absolute;top:8px;right:14px;font-size:8.5px;font-weight:700;text-transform:uppercase;background:var(--org);color:#fff;padding:2px 6px;border-radius:5px;letter-spacing:.04em}
 
-/* ---- Monthly overview ---- */
-.mo-card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;
-  margin-bottom:9px;box-shadow:var(--shadow)}
-.mo-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.mo-name{font-family:'Playfair Display',serif;font-size:17px;font-weight:600}
-.mo-occ{font-family:'DM Mono',monospace;font-size:12px;padding:3px 9px;border-radius:999px;font-weight:500}
-.mo-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.mo-cell{text-align:center;padding:8px 4px;border-radius:10px;background:var(--bg)}
-.mo-cell .mc-lab{font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700}
-.mo-cell .mc-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;margin-top:2px}
-.mo-delta{font-size:10px;font-family:'DM Mono',monospace;margin-top:3px;font-weight:500}
+.mo-card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px;margin-bottom:11px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.mo-card.is-cur{border-color:var(--org);box-shadow:0 3px 14px rgba(210,105,30,.18)}
+.mo-card .mo-edge{position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(180deg,var(--org-soft),var(--org));opacity:0}
+.mo-card.is-cur .mo-edge{opacity:1}
+.mo-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.mo-name{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--ink)}
+.mo-name .now-tag{font-size:11px;color:var(--org);font-weight:700;font-family:'DM Sans';margin-left:6px}
+.mo-occbig{text-align:right}
+.mo-occbig .ob-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
+.mo-occbig .ob-lab{font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:700;letter-spacing:.04em}
 
+.metric{margin-bottom:13px}
+.metric:last-child{margin-bottom:0}
+.metric .m-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px}
+.metric .m-lab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep)}
+.metric.primary .m-big{font-family:'DM Mono',monospace;font-size:30px;font-weight:500;line-height:1;color:var(--ink)}
+.metric.secondary .m-big{font-family:'DM Mono',monospace;font-size:19px;font-weight:500;line-height:1;color:var(--ink)}
+.metric .cmp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:7px}
+.cmp{background:var(--bg);border-radius:9px;padding:6px 4px;text-align:center}
+.metric.primary .cmp{background:var(--org-tint)}
+.cmp .cmp-lab{font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:700}
+.cmp .cmp-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;margin-top:1px}
+.cmp .cmp-d{font-size:9px;font-family:'DM Mono',monospace;margin-top:1px;font-weight:500}
 .delta-up{color:var(--up)} .delta-down{color:var(--down)} .delta-flat{color:var(--flat)}
 
-/* ---- Drill-in modal ---- */
-.sheet-bg{position:fixed;inset:0;z-index:50;background:rgba(20,17,12,.45);backdrop-filter:blur(2px);
-  opacity:0;pointer-events:none;transition:opacity .22s}
+.sheet-bg{position:fixed;inset:0;z-index:50;background:rgba(60,30,5,.42);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .22s}
 .sheet-bg.show{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:480px;margin:0 auto;
-  background:var(--card);border-radius:22px 22px 0 0;padding:8px 18px calc(24px + env(safe-area-inset-bottom));
-  transform:translateY(100%);transition:transform .26s cubic-bezier(.32,.72,0,1);max-height:88vh;overflow-y:auto;
-  box-shadow:0 -8px 40px rgba(20,17,12,.18)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:480px;margin:0 auto;background:var(--card);
+  border-radius:24px 24px 0 0;padding:8px 18px calc(24px + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .26s cubic-bezier(.32,.72,0,1);max-height:90vh;overflow-y:auto;
+  box-shadow:0 -8px 44px rgba(60,30,5,.22);border-top:4px solid var(--org)}
 .sheet.show{transform:translateY(0)}
-.sheet-grip{width:38px;height:4px;border-radius:99px;background:var(--line);margin:6px auto 14px}
-.sheet h2{font-family:'Playfair Display',serif;font-size:21px;margin-bottom:2px}
+.sheet-grip{width:40px;height:4px;border-radius:99px;background:var(--org-tint2);margin:6px auto 14px}
+.sheet h2{font-family:'Playfair Display',serif;font-size:21px;margin-bottom:2px;color:var(--org-deep)}
 .sheet .sh-sub{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:16px}
-.sh-hero{text-align:center;padding:16px;border-radius:16px;background:var(--bg);margin-bottom:16px}
-.sh-hero .shh-lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
-.sh-hero .shh-price{font-family:'DM Mono',monospace;font-size:38px;font-weight:500;line-height:1.05;margin-top:4px}
+.sh-hero{text-align:center;padding:18px;border-radius:18px;background:linear-gradient(135deg,var(--org-tint),var(--org-tint2));margin-bottom:16px;border:1px solid var(--org-tint2)}
+.sh-hero .shh-lab{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--org-deep);font-weight:700}
+.sh-hero .shh-price{font-family:'DM Mono',monospace;font-size:40px;font-weight:500;line-height:1.05;margin-top:4px;color:var(--org-deep)}
 .sh-hero .shh-src{font-size:11px;color:var(--muted);margin-top:4px}
 .sh-row{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line)}
 .sh-row:last-child{border-bottom:none}
 .sh-row .shr-lab{font-size:13px;color:var(--ink);font-weight:500}
-.sh-row .shr-lab small{display:block;color:var(--muted);font-size:10.5px;font-weight:400}
 .sh-row .shr-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;text-align:right}
 .sh-group{margin-top:18px}
-.sh-group-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
-.fp-step{display:flex;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);align-items:flex-start}
-.fp-step .fps-n{flex:0 0 auto;width:22px;height:22px;border-radius:7px;background:var(--bg);color:var(--accent);
-  font-family:'DM Mono',monospace;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center}
-.fp-step .fps-body{flex:1}
-.fp-step .fps-lab{font-size:12.5px;font-weight:500}
-.fp-step .fps-desc{font-size:11px;color:var(--muted);margin-top:1px}
-.fp-step .fps-val{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;white-space:nowrap}
-.rt-chip{display:flex;justify-content:space-between;padding:9px 12px;border-radius:10px;background:var(--bg);margin-bottom:6px}
-.rt-chip .rtc-name{font-size:12.5px;font-weight:500} .rt-chip .rtc-price{font-family:'DM Mono',monospace;font-size:13px;font-weight:500}
+.sh-group-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep);margin-bottom:4px}
+.rt-chip{display:flex;justify-content:space-between;align-items:center;padding:10px 13px;border-radius:11px;background:var(--org-tint);margin-bottom:6px;border:1px solid var(--org-tint2)}
+.rt-chip .rtc-name{font-size:12.5px;font-weight:600;color:var(--ink)}
+.rt-chip .rtc-price{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--org-deep)}
+.rt-chip.is-base{background:linear-gradient(135deg,var(--org-soft),var(--org));border-color:transparent}
+.rt-chip.is-base .rtc-name,.rt-chip.is-base .rtc-price{color:#fff}
 
-/* ---- Empty / loading ---- */
+.btn-expand{width:100%;margin-top:8px;padding:13px;border-radius:13px;background:linear-gradient(135deg,var(--org),var(--org-deep));color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(168,82,26,.3)}
+.btn-expand:active{transform:scale(.98)}
+.btn-expand .be-ico{font-size:16px}
+
+.fp-step{display:flex;gap:11px;padding:11px 2px;border-bottom:1px solid var(--line);align-items:flex-start}
+.fp-step:last-child{border-bottom:none}
+.fp-step .fps-n{flex:0 0 auto;width:24px;height:24px;border-radius:8px;background:linear-gradient(135deg,var(--org-soft),var(--org));color:#fff;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center}
+.fp-step .fps-body{flex:1}
+.fp-step .fps-lab{font-size:12.5px;font-weight:600;color:var(--ink)}
+.fp-step .fps-desc{font-size:11px;color:var(--muted);margin-top:1px;line-height:1.4}
+.fp-step .fps-val{font-family:'DM Mono',monospace;font-size:13.5px;font-weight:500;white-space:nowrap;color:var(--org-deep);text-align:right}
+.fac{display:flex;gap:11px;padding:11px 2px;border-bottom:1px solid var(--line);align-items:center}
+.fac:last-child{border-bottom:none}
+.fac .fac-code{flex:0 0 auto;width:26px;height:26px;border-radius:8px;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace}
+.fac .fac-body{flex:1}
+.fac .fac-name{font-size:12.5px;font-weight:600;color:var(--ink)}
+.fac .fac-desc{font-size:10.5px;color:var(--muted);margin-top:1px}
+.fac .fac-mult{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;white-space:nowrap}
+.fac .fac-na{font-size:10px;color:var(--muted);font-style:italic}
+.fac-final{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:13px;border-radius:13px;background:linear-gradient(135deg,var(--org-tint),var(--org-tint2));border:1px solid var(--org-tint2)}
+.fac-final .ff-lab{font-size:12px;font-weight:700;color:var(--org-deep);text-transform:uppercase;letter-spacing:.04em}
+.fac-final .ff-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--org-deep)}
+
 .empty{text-align:center;padding:48px 20px;color:var(--muted)}
 .empty .e-ico{font-size:34px;margin-bottom:10px;opacity:.5}
-.spinner{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;
-  animation:spin .8s linear infinite;margin:40px auto}
+.spinner{width:30px;height:30px;border:3px solid var(--org-tint2);border-top-color:var(--org);border-radius:50%;animation:spin .8s linear infinite;margin:40px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 .panel{display:none} .panel.active{display:block;animation:fade .25s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.collapse{overflow:hidden;max-height:0;transition:max-height .35s ease}
+.collapse.open{max-height:4000px}
 </style>
 </head>
 <body>
 <div id="app">
   <div class="app-head">
-    <div class="app-title"><span class="dot" id="head-dot"></span>RMES <span style="font-weight:400;color:var(--muted);font-size:14px">Mobile</span></div>
+    <div class="app-title"><span class="dot"></span>RMES <span class="lite">Mobile</span></div>
     <div class="app-sub" id="head-sub">Revenue Intelligence · loading…</div>
   </div>
-
   <div class="struct-row" id="struct-row"></div>
-
-  <!-- PANEL: 7-day prices -->
   <div class="panel active" id="panel-days">
     <div class="cal-wrap">
       <div class="cal-head">
@@ -178,319 +193,244 @@ main{flex:1;padding:8px 16px 24px}
       <div id="days-list"><div class="spinner"></div></div>
     </main>
   </div>
-
-  <!-- PANEL: monthly overview -->
   <div class="panel" id="panel-month">
     <main>
-      <div class="section-label">Monthly overview · OTB vs STLY vs Last Year</div>
+      <div class="section-label">Monthly · OTB vs STLY · LY · Forecast</div>
       <div id="month-list"><div class="spinner"></div></div>
     </main>
   </div>
 </div>
-
-<!-- Bottom tab bar -->
 <div class="tabbar"><div class="tabbar-inner">
   <button class="tabbtn active" data-tab="days"><span class="ico">📅</span>Daily Price</button>
   <button class="tabbtn" data-tab="month"><span class="ico">📊</span>Monthly</button>
 </div></div>
-
-<!-- Drill-in sheet -->
 <div class="sheet-bg" id="sheet-bg"></div>
 <div class="sheet" id="sheet"><div class="sheet-grip"></div><div id="sheet-body"></div></div>
 
 <script src="data.js"></script>
 <script src="engine.js"></script>
 <script>
-/* ============================================================
-   RMES MOBILE APP — reuses engine.js (same RMES logic as dashboard)
-   Render functions prefixed mob* to avoid collision with engine.
-   ============================================================ */
-const MOB = {
-  struct: 'firenze',
-  winStart: null,   // ymd number of first day shown (null = today)
-  tab: 'days',
-};
+/* RMES MOBILE APP v2 — reuses engine.js (same RMES logic as the dashboard).
+   Orange theme everywhere; day drill-in with a 2nd inner click → Foundation 6 steps
+   + 5 RMES factors; room categories ordered by price; monthly overview with OTB big
+   + STLY / LY / Forecast small for Revenue, ADR and Occupancy. */
+const MOB = { struct:'firenze', winStart:null, tab:'days', lastDay:null, lastRow:null };
 const MOB_STRUCTS = ['firenze','condotta','alfani','davids'];
 const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MO_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MO_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-
-function mobColor(sk){ return (CFG.structures[sk] && CFG.structures[sk].color) || 'var(--accent)'; }
+const MOB_TARGET_CASE = { target_superato:'target exceeded', vicino_target:'near target', sotto_target:'below target' };
+const MOB_FACTORS = [
+  {key:'occ_mult',   naKey:'occ',   code:'A', name:'Demand (occupancy)', desc:'Current-day OCC vs STLY (-364d)',            color:'#d2691e'},
+  {key:'price_mult', naKey:'price', code:'B', name:'Demand (price)',      desc:'Current-day ADR vs STLY',                   color:'#c4823b'},
+  {key:'pace_mult',  naKey:'pace',  code:'C', name:'Pace trend',          desc:'4-week pickup vs STLY (recent weeks weighted)', color:'#a8521a'},
+  {key:'comp_mult',  naKey:'comp',  code:'D', name:'Online pricing',      desc:'My Expedia vs compset average (inverted)',  color:'#b5651d'},
+  {key:'air_mult',   naKey:'air',   code:'E', name:'Demand (Expedia)',    desc:'Expedia searches vs month median',          color:'#cd853f'},
+];
 function mobLabel(sk){ return (CFG.structures[sk] && CFG.structures[sk].label) || sk; }
 function mobBaseRT(sk){ return (CFG.structures[sk] && CFG.structures[sk].baseRT) || null; }
-
-/* date helpers (work in ymd-number space like the engine) */
 function ymdNumToDate(n){ return new Date(Math.floor(n/10000), Math.floor((n%10000)/100)-1, n%100); }
 function dateToYmdNum(d){ return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
-function todayYmdNum(){ const d=new Date(); return dateToYmdNum(d); }
+function todayYmdNum(){ return dateToYmdNum(new Date()); }
 function addDaysYmd(n, days){ const d=ymdNumToDate(n); d.setDate(d.getDate()+days); return dateToYmdNum(d); }
 function isWeekendYmd(n){ const dow=ymdNumToDate(n).getDay(); return dow===0||dow===6; }
+function ymdNumToISO(n){ const s=String(n); return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8); }
 
-/* ---- set accent color across UI for current structure ---- */
-function mobApplyAccent(){
-  const c = mobColor(MOB.struct);
-  document.documentElement.style.setProperty('--accent', c);
-  document.getElementById('head-dot').style.background = c;
-  document.getElementById('head-dot').style.boxShadow = '0 0 0 4px '+mobHexAlpha(c,0.15);
-}
-function mobHexAlpha(hex, a){
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if(!m) return 'rgba(139,111,71,'+a+')';
-  return 'rgba('+parseInt(m[1],16)+','+parseInt(m[2],16)+','+parseInt(m[3],16)+','+a+')';
-}
-
-/* ---- structure pills ---- */
 function mobRenderStructPills(){
   const row = document.getElementById('struct-row');
-  row.innerHTML = MOB_STRUCTS.map(sk=>{
-    const active = sk===MOB.struct;
-    const c = mobColor(sk);
-    const styl = active ? `style="background:${c}"` : '';
-    return `<button class="spill ${active?'active':''}" data-struct="${sk}" ${styl}>${escapeHtml(mobLabel(sk))}</button>`;
-  }).join('');
-  row.querySelectorAll('.spill').forEach(b=>{
-    b.addEventListener('click', ()=>{ mobSetStruct(b.dataset.struct); });
-  });
+  row.innerHTML = MOB_STRUCTS.map(sk=>`<button class="spill ${sk===MOB.struct?'active':''}" data-struct="${sk}">${escapeHtml(mobLabel(sk))}</button>`).join('');
+  row.querySelectorAll('.spill').forEach(b=> b.addEventListener('click', ()=> mobSetStruct(b.dataset.struct)));
 }
 function mobSetStruct(sk){
   if(sk===MOB.struct) return;
-  MOB.struct = sk;
-  MOB.winStart = null;          // reset to today on structure change
+  MOB.struct=sk; MOB.winStart=null;
   if(typeof fp_ensureStruct==='function'){ try{ fp_ensureStruct(sk); }catch(e){ console.error(e); } }
   if(typeof setStructure==='function'){ try{ setStructure(sk); }catch(e){} }
-  mobApplyAccent();
-  mobRenderStructPills();
-  mobRenderAll();
+  mobRenderStructPills(); mobRenderAll();
 }
-
-/* ---- calendar strip (14 days from window start, tap to jump) ---- */
 function mobRenderCalendar(){
   const start = MOB.winStart || todayYmdNum();
   const today = todayYmdNum();
   const firstDate = ymdNumToDate(start);
   document.getElementById('cal-month').textContent = MO_FULL[firstDate.getMonth()]+' '+firstDate.getFullYear();
-  const strip = document.getElementById('cal-strip');
-  let html = '';
+  let html='';
   for(let i=0;i<14;i++){
-    const yn = addDaysYmd(start, i);
-    const d = ymdNumToDate(yn);
-    const sel = (i===0);
-    const isToday = (yn===today);
-    const wknd = isWeekendYmd(yn);
-    const styl = sel ? `style="background:${mobColor(MOB.struct)}"` : '';
-    html += `<button class="cal-day ${sel?'sel':''} ${isToday?'is-today':''} ${wknd?'wknd':''}" data-cal="${yn}" ${styl}>
+    const yn=addDaysYmd(start,i); const d=ymdNumToDate(yn);
+    html += `<button class="cal-day ${i===0?'sel':''} ${yn===today?'is-today':''} ${isWeekendYmd(yn)?'wknd':''}" data-cal="${yn}">
       <div class="dow">${DOW_SHORT[d.getDay()]}</div><div class="dnum">${d.getDate()}</div></button>`;
   }
-  strip.innerHTML = html;
-  strip.querySelectorAll('.cal-day').forEach(b=>{
-    b.addEventListener('click', ()=>{ MOB.winStart = +b.dataset.cal; mobRenderAll(); });
-  });
+  const strip=document.getElementById('cal-strip'); strip.innerHTML=html;
+  strip.querySelectorAll('.cal-day').forEach(b=> b.addEventListener('click', ()=>{ MOB.winStart=+b.dataset.cal; mobRenderAll(); }));
 }
-
-/* ---- 7-day price list ---- */
 function mobRenderDays(){
-  const list = document.getElementById('days-list');
-  const start = MOB.winStart || todayYmdNum();
-  const today = todayYmdNum();
-  const lab = document.getElementById('days-label');
-  lab.textContent = (start===today)
-    ? 'Suggested price · next 7 days'
-    : 'Suggested price · 7 days from '+mobFmtDate(start);
-  let map;
-  try { map = computeRMESPriceMap(MOB.struct, start, 7); }
-  catch(e){ console.error(e); list.innerHTML = mobEmpty('⚠️','Could not compute prices.'); return; }
-  const keys = Object.keys(map).map(Number).sort((a,b)=>a-b);
-  if(!keys.length){ list.innerHTML = mobEmpty('📭','No price data for this window.'); return; }
-  const c = mobColor(MOB.struct);
-  list.innerHTML = keys.map(yn=>{
-    const r = map[yn];
-    const d = ymdNumToDate(yn);
-    const wknd = isWeekendYmd(yn);
-    const isT = (yn===today);
-    const anyOvr = r.overrideUsedByRT && Object.values(r.overrideUsedByRT).some(v=>v);
-    return `<div class="day-card ${wknd?'wknd':''}" data-day="${yn}">
-      <div class="edge" style="background:${c}"></div>
+  const list=document.getElementById('days-list');
+  const start=MOB.winStart||todayYmdNum(); const today=todayYmdNum();
+  document.getElementById('days-label').textContent=(start===today)?'Suggested price · next 7 days':'Suggested price · 7 days from '+mobFmtDate(start);
+  let map; try{ map=computeRMESPriceMap(MOB.struct,start,7); }catch(e){ console.error(e); list.innerHTML=mobEmpty('⚠️','Could not compute prices.'); return; }
+  const keys=Object.keys(map).map(Number).sort((a,b)=>a-b);
+  if(!keys.length){ list.innerHTML=mobEmpty('📭','No price data for this window.'); return; }
+  list.innerHTML=keys.map(yn=>{
+    const r=map[yn]; const d=ymdNumToDate(yn); const isT=(yn===today);
+    const anyOvr=r.overrideUsedByRT && Object.values(r.overrideUsedByRT).some(v=>v);
+    return `<div class="day-card ${isWeekendYmd(yn)?'wknd':''}" data-day="${yn}"><div class="edge"></div>
       ${anyOvr?'<div class="badge-ovr">override</div>':''}
-      <div class="date-blk">
-        <div class="dc-dow">${DOW_SHORT[d.getDay()]}${isT?' ·':''}</div>
-        <div class="dc-day" style="color:${c}">${d.getDate()}</div>
-        <div class="dc-mo">${MO_SHORT[d.getMonth()]}</div>
-      </div>
-      <div class="price-blk">
-        <div class="pc-label">RMES price</div>
-        <div class="pc-price">${fmtEUR(r.price)}</div>
-      </div>
-      <div class="chev">›</div>
-    </div>`;
+      <div class="date-blk"><div class="dc-dow">${DOW_SHORT[d.getDay()]}${isT?' ·':''}</div><div class="dc-day">${d.getDate()}</div><div class="dc-mo">${MO_SHORT[d.getMonth()]}</div></div>
+      <div class="price-blk"><div class="pc-label">RMES price</div><div class="pc-price">${fmtEUR(r.price)}</div></div>
+      <div class="chev">›</div></div>`;
   }).join('');
-  list.querySelectorAll('.day-card').forEach(card=>{
-    card.addEventListener('click', ()=> mobOpenDay(+card.dataset.day, map[+card.dataset.day]));
-  });
+  list.querySelectorAll('.day-card').forEach(c=> c.addEventListener('click', ()=> mobOpenDay(+c.dataset.day, map[+c.dataset.day])));
 }
 function mobFmtDate(yn){ const d=ymdNumToDate(yn); return DOW_SHORT[d.getDay()]+' '+d.getDate()+' '+MO_SHORT[d.getMonth()]; }
 function mobEmpty(ico,msg){ return `<div class="empty"><div class="e-ico">${ico}</div>${escapeHtml(msg)}</div>`; }
 
-/* ---- drill-in: day detail (RMES + Foundation + OTB + STLY) ---- */
 function mobOpenDay(yn, rmesRow){
-  const d = ymdNumToDate(yn);
-  const c = mobColor(MOB.struct);
-  // pull STLY / OTB detail from aggSellStrategy for this single day window
-  let sellRow = null;
-  try {
-    const A = aggSellStrategy(MOB.struct, yn, 1, 1);
-    if(A && A.rows && A.rows.length) sellRow = A.rows[0];
-  } catch(e){ console.error('sellRow', e); }
-
-  const occ = (rmesRow && isFinite(rmesRow.curOcc)) ? Math.round(rmesRow.curOcc*100)+'%' : '—';
-  const otbRn = sellRow ? sellRow.curRn : (rmesRow?rmesRow.curRn:null);
-  const cap = sellRow ? sellRow.cap : (rmesRow?rmesRow.cap:null);
-  const otbAdr = sellRow ? sellRow.curAdr : null;
-  const stlyRn = sellRow ? sellRow.stlyRn : null;
-  const stlyOcc = sellRow ? sellRow.stlyOcc : null;
-  const stlyAdr = sellRow ? sellRow.stlyAdr : null;
-
-  // Foundation build-up (per base RT)
-  const baseRT = mobBaseRT(MOB.struct);
-  const foundBase = (rmesRow && rmesRow.foundationByRT && baseRT!=null && rmesRow.foundationByRT[baseRT]!=null)
-    ? rmesRow.foundationByRT[baseRT] : (rmesRow && rmesRow.foundationByRT ? Object.values(rmesRow.foundationByRT)[0] : null);
-  const multFin = (rmesRow && isFinite(rmesRow.multFinale)) ? rmesRow.multFinale : null;
-
-  let html = `<h2 style="color:${c}">${DOW_SHORT[d.getDay()]} ${d.getDate()} ${MO_FULL[d.getMonth()]} ${d.getFullYear()}</h2>
+  MOB.lastDay=yn; MOB.lastRow=rmesRow; MOB_DETAIL_OPEN=false;
+  const d=ymdNumToDate(yn);
+  let sellRow=null;
+  try{ const A=aggSellStrategy(MOB.struct,yn,1,1); if(A&&A.rows&&A.rows.length) sellRow=A.rows[0]; }catch(e){ console.error('sellRow',e); }
+  const occ=(rmesRow&&isFinite(rmesRow.curOcc))?Math.round(rmesRow.curOcc*100)+'%':'—';
+  const otbRn=sellRow?sellRow.curRn:(rmesRow?rmesRow.curRn:null);
+  const cap=sellRow?sellRow.cap:(rmesRow?rmesRow.cap:null);
+  const otbAdr=sellRow?sellRow.curAdr:null;
+  const stlyRn=sellRow?sellRow.stlyRn:null, stlyOcc=sellRow?sellRow.stlyOcc:null, stlyAdr=sellRow?sellRow.stlyAdr:null;
+  const baseRT=mobBaseRT(MOB.struct);
+  let html=`<h2>${DOW_SHORT[d.getDay()]} ${d.getDate()} ${MO_FULL[d.getMonth()]} ${d.getFullYear()}</h2>
     <div class="sh-sub">${escapeHtml(mobLabel(MOB.struct))} · base ${escapeHtml(baseRT||'—')}</div>
-    <div class="sh-hero">
-      <div class="shh-lab">RMES suggested price</div>
-      <div class="shh-price" style="color:${c}">${fmtEUR(rmesRow?rmesRow.price:NaN)}</div>
-      <div class="shh-src">source: ${escapeHtml(rmesRow&&rmesRow.source?rmesRow.source:'—')}</div>
-    </div>`;
-
-  // OTB / STLY block
-  html += `<div class="sh-group"><div class="sh-group-t">On the books · vs STLY (−364, same weekday)</div>`;
-  html += mobShRow('Occupancy', occ, mobDeltaPct(rmesRow?rmesRow.curOcc:null, stlyOcc, true));
-  html += mobShRow('Room-nights', (otbRn!=null?fmtNum(otbRn):'—')+(cap!=null?' / '+cap:''), mobDeltaAbs(otbRn, stlyRn));
-  html += mobShRow('ADR (booked)', (isFinite(otbAdr)&&otbAdr>0?fmtAdr(otbAdr):'—'), mobDeltaPct(otbAdr, stlyAdr));
-  html += `</div>`;
-
-  // STLY summary
-  html += `<div class="sh-group"><div class="sh-group-t">Same time last year</div>`;
-  html += mobShRow('STLY occupancy', (stlyOcc!=null?Math.round(stlyOcc*100)+'%':'—'), '');
-  html += mobShRow('STLY room-nights', (stlyRn!=null?fmtNum(stlyRn):'—'), '');
-  html += mobShRow('STLY ADR', (isFinite(stlyAdr)&&stlyAdr>0?fmtAdr(stlyAdr):'—'), '');
-  html += `</div>`;
-
-  // Foundation build-up
-  html += `<div class="sh-group"><div class="sh-group-t">Foundation → RMES</div>`;
-  html += mobShRow('Foundation (base RT)', (foundBase!=null?fmtEUR(foundBase):'—'),'<small>opening price before factors</small>',true);
-  html += mobShRow('RMES multiplier', (multFin!=null?'×'+(Math.round(multFin*1000)/1000):'—'),'<small>5 factors combined, capped</small>',true);
-  html += mobShRow('Final RMES', fmtEUR(rmesRow?rmesRow.price:NaN), '', true);
-  html += `</div>`;
-
-  // Prices by room type
+    <div class="sh-hero"><div class="shh-lab">RMES suggested price</div>
+      <div class="shh-price">${fmtEUR(rmesRow?rmesRow.price:NaN)}</div>
+      <div class="shh-src">source: ${escapeHtml(rmesRow&&rmesRow.source?rmesRow.source:'—')}</div></div>`;
+  html+=`<div class="sh-group"><div class="sh-group-t">On the books · vs STLY (-364, same weekday)</div>`;
+  html+=mobShRow('Occupancy', occ, mobDeltaPct(rmesRow?rmesRow.curOcc:null, stlyOcc, true));
+  html+=mobShRow('Room-nights', (otbRn!=null?fmtNum(otbRn):'—')+(cap!=null?' / '+cap:''), mobDeltaAbs(otbRn, stlyRn));
+  html+=mobShRow('ADR (booked)', (isFinite(otbAdr)&&otbAdr>0?fmtAdr(otbAdr):'—'), mobDeltaPct(otbAdr, stlyAdr));
+  html+=`</div>`;
   if(rmesRow && rmesRow.pricesByRT && Object.keys(rmesRow.pricesByRT).length){
-    html += `<div class="sh-group"><div class="sh-group-t">Suggested price by room type</div>`;
-    for(const rt in rmesRow.pricesByRT){
-      const ovr = rmesRow.overrideUsedByRT && rmesRow.overrideUsedByRT[rt];
-      html += `<div class="rt-chip"><span class="rtc-name">${escapeHtml(rt)}${ovr?' <small style="color:var(--accent)">override</small>':''}</span>
-        <span class="rtc-price">${fmtEUR(rmesRow.pricesByRT[rt])}</span></div>`;
+    const ordered=Object.keys(rmesRow.pricesByRT).sort((a,b)=>(rmesRow.pricesByRT[b]||0)-(rmesRow.pricesByRT[a]||0));
+    html+=`<div class="sh-group"><div class="sh-group-t">Room categories · highest price first</div>`;
+    for(const rt of ordered){
+      const isBase=(rt===baseRT); const ovr=rmesRow.overrideUsedByRT && rmesRow.overrideUsedByRT[rt];
+      html+=`<div class="rt-chip ${isBase?'is-base':''}"><span class="rtc-name">${escapeHtml(rt)}${isBase?' ★':''}${ovr?' ·ovr':''}</span><span class="rtc-price">${fmtEUR(rmesRow.pricesByRT[rt])}</span></div>`;
     }
-    html += `</div>`;
+    html+=`</div>`;
   }
-
-  document.getElementById('sheet-body').innerHTML = html;
+  html+=`<button class="btn-expand" id="mob-expand"><span class="be-ico">⚡</span> Show Foundation &amp; RMES detail</button><div class="collapse" id="mob-detail"></div>`;
+  document.getElementById('sheet-body').innerHTML=html;
+  document.getElementById('mob-expand').addEventListener('click', mobToggleDetail);
   mobOpenSheet();
 }
-function mobShRow(lab, val, sub, plain){
-  const labHtml = sub ? `${escapeHtml(lab)}${sub}` : escapeHtml(lab);
-  return `<div class="sh-row"><span class="shr-lab">${labHtml}</span><span class="shr-val">${val}</span></div>`;
+let MOB_DETAIL_OPEN=false;
+function mobToggleDetail(){
+  const box=document.getElementById('mob-detail'); const btn=document.getElementById('mob-expand');
+  MOB_DETAIL_OPEN=!MOB_DETAIL_OPEN;
+  if(MOB_DETAIL_OPEN){
+    box.innerHTML=mobBuildDetailHTML(MOB.lastDay, MOB.lastRow); box.classList.add('open');
+    btn.innerHTML='<span class="be-ico">▲</span> Hide Foundation &amp; RMES detail';
+    setTimeout(()=>{ try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){} },120);
+  } else {
+    box.classList.remove('open'); btn.innerHTML='<span class="be-ico">⚡</span> Show Foundation &amp; RMES detail';
+  }
 }
-function mobDeltaPct(cur, prev, isShare){
+function mobBuildDetailHTML(yn, rmesRow){
+  const baseRT=mobBaseRT(MOB.struct); const iso=ymdNumToISO(yn);
+  let html='';
+  let fpR=null; try{ fpR=fp_computePrice(MOB.struct, baseRT, iso); }catch(e){ console.error('fp_computePrice',e); }
+  const det=fpR?fpR.detail:null;
+  html+=`<div class="sh-group"><div class="sh-group-t">Foundation · how the opening price is built</div>`;
+  if(det){
+    const steps=[];
+    if(det.anchor && det.anchor.medianADR!=null) steps.push(['①','Historical anchor','Median LY ADR, same weekday &amp; month'+(det.anchor.nObs!=null?' ('+det.anchor.nObs+' obs)':''), fmtAdr(det.anchor.medianADR)]);
+    else steps.push(['①','Historical anchor','No LY data — base price used', det.basePrice!=null?fmtAdr(det.basePrice):'—']);
+    if(det.targetGrowthPct!=null) steps.push(['②','Target growth','Revenue target vs LY', (det.targetGrowthPct>=0?'+':'')+det.targetGrowthPct+'%']);
+    if(det.rnAtteseChiusura!=null || det.adrTargetChiusura!=null) steps.push(['③','Expected RN &amp; closing ADR', (det.rnAtteseChiusura!=null?Math.round(det.rnAtteseChiusura)+' RN expected':'')+(det.adrTargetCase?' · '+escapeHtml(MOB_TARGET_CASE[det.adrTargetCase]||det.adrTargetCase):''), det.adrTargetChiusura!=null?fmtAdr(det.adrTargetChiusura):'—']);
+    if(det.marketCap && det.marketCap.nCompet>0) steps.push(['④','Market cap (compset)','Capped to compset band ['+fmtAdr(det.marketCap.min)+'–'+fmtAdr(det.marketCap.max)+']', det.pCapped!=null?fmtAdr(det.pCapped):'—']);
+    else steps.push(['④','Market cap (compset)','No compset price — cap skipped', det.pGrezzo!=null?fmtAdr(det.pGrezzo):'—']);
+    steps.push(['⑤','Floor','Hard minimum price', det.floor!=null?fmtAdr(det.floor):'—']);
+    const fpFinal=(fpR&&isFinite(fpR.price))?fpR.price:(det.priceFinal!=null?det.priceFinal:null);
+    steps.push(['⑥','Foundation price','Opening price before the 5 factors', fpFinal!=null?fmtEUR(fpFinal):'—']);
+    for(const s of steps) html+=`<div class="fp-step"><div class="fps-n">${s[0]}</div><div class="fps-body"><div class="fps-lab">${s[1]}</div><div class="fps-desc">${s[2]}</div></div><div class="fps-val">${s[3]}</div></div>`;
+  } else { html+=`<div class="fp-step"><div class="fps-body"><div class="fps-desc">Foundation detail not available for this day.</div></div></div>`; }
+  html+=`</div>`;
+  const mults=(rmesRow&&rmesRow.multsByRT&&baseRT!=null&&rmesRow.multsByRT[baseRT])?rmesRow.multsByRT[baseRT]:(rmesRow&&rmesRow.multsByRT?Object.values(rmesRow.multsByRT)[0]:null);
+  html+=`<div class="sh-group"><div class="sh-group-t">RMES factors · applied over Foundation</div>`;
+  if(mults){
+    const na=mults._naReasons||{};
+    for(const f of MOB_FACTORS){
+      const m=mults[f.key]; const isNa=na[f.naKey]!=null; const devPct=(m!=null&&isFinite(m))?Math.round((m-1)*1000)/10:null;
+      const valHtml=isNa?`<span class="fac-na">n/a</span>`:`<span class="fac-mult" style="color:${devPct>0.1?'var(--up)':(devPct<-0.1?'var(--down)':'var(--flat)')}">×${(m!=null?Math.round(m*1000)/1000:1)}</span>`;
+      html+=`<div class="fac"><div class="fac-code" style="background:${f.color}">${f.code}</div><div class="fac-body"><div class="fac-name">${f.name}</div><div class="fac-desc">${f.desc}${isNa?' · '+escapeHtml(String(na[f.naKey])):''}</div></div>${valHtml}</div>`;
+    }
+    if(mults.multFinale!=null) html+=`<div class="fac-final"><span class="ff-lab">Combined multiplier (capped)</span><span class="ff-val">×${Math.round(mults.multFinale*1000)/1000}</span></div>`;
+  } else { html+=`<div class="fac"><div class="fac-body"><div class="fac-desc">Factor detail not available.</div></div></div>`; }
+  html+=`</div>`;
+  html+=`<div class="fac-final" style="margin-top:14px;background:linear-gradient(135deg,var(--org),var(--org-deep))"><span class="ff-lab" style="color:#fff">Final RMES price</span><span class="ff-val" style="color:#fff">${fmtEUR(rmesRow?rmesRow.price:NaN)}</span></div>`;
+  return html;
+}
+function mobShRow(lab,val,sub){ return `<div class="sh-row"><span class="shr-lab">${escapeHtml(lab)}</span><span class="shr-val">${val}${sub||''}</span></div>`; }
+function mobDeltaPct(cur,prev,isShare){
   if(cur==null||prev==null||!isFinite(cur)||!isFinite(prev)||prev===0) return '';
-  const d = isShare ? (cur-prev)*100 : ((cur-prev)/prev*100);
-  const cls = d>0.5?'delta-up':(d<-0.5?'delta-down':'delta-flat');
-  const arr = d>0.5?'▲':(d<-0.5?'▼':'•');
-  return `<span class="mo-delta ${cls}" style="margin-left:8px">${arr} ${(d>=0?'+':'')}${(Math.round(d*10)/10)}${isShare?'pp':'%'}</span>`;
+  const dd=isShare?(cur-prev)*100:((cur-prev)/prev*100);
+  const cls=dd>0.5?'delta-up':(dd<-0.5?'delta-down':'delta-flat'); const arr=dd>0.5?'▲':(dd<-0.5?'▼':'•');
+  return `<span class="cmp-d ${cls}" style="margin-left:8px">${arr} ${(dd>=0?'+':'')}${(Math.round(dd*10)/10)}${isShare?'pp':'%'}</span>`;
 }
-function mobDeltaAbs(cur, prev){
+function mobDeltaAbs(cur,prev){
   if(cur==null||prev==null||!isFinite(cur)||!isFinite(prev)) return '';
-  const d = cur-prev;
-  const cls = d>0?'delta-up':(d<0?'delta-down':'delta-flat');
-  const arr = d>0?'▲':(d<0?'▼':'•');
-  return `<span class="mo-delta ${cls}" style="margin-left:8px">${arr} ${fmtDelta(d)}</span>`;
+  const dd=cur-prev; const cls=dd>0?'delta-up':(dd<0?'delta-down':'delta-flat'); const arr=dd>0?'▲':(dd<0?'▼':'•');
+  return `<span class="cmp-d ${cls}" style="margin-left:8px">${arr} ${fmtDelta(dd)}</span>`;
 }
-
-/* ---- monthly overview ---- */
 function mobRenderMonth(){
-  const list = document.getElementById('month-list');
-  let agg;
-  try { agg = aggOTBYearly(MOB.struct); }
-  catch(e){ console.error(e); list.innerHTML = mobEmpty('⚠️','Could not load monthly data.'); return; }
-  if(!agg || !agg.monthRows){ list.innerHTML = mobEmpty('📭','No monthly data.'); return; }
-  const c = mobColor(MOB.struct);
-  const now = new Date(); const curMo = now.getMonth()+1;
-  list.innerHTML = agg.monthRows.map(mr=>{
-    const occPct = isFinite(mr.occC) ? Math.round(mr.occC*100) : 0;
-    const occCls = occPct>=70?'delta-up':(occPct>=40?'delta-flat':'delta-down');
-    const dRev = isFinite(mr.dRevPct) ? Math.round(mr.dRevPct*100) : null;
-    const dRevCls = dRev>0?'delta-up':(dRev<0?'delta-down':'delta-flat');
-    const isCur = mr.m===curMo;
-    return `<div class="mo-card" ${isCur?`style="border-color:${c}"`:''}>
-      <div class="mo-head">
-        <div class="mo-name">${MO_FULL[mr.m-1]}${isCur?' <span style="font-size:11px;color:'+c+'">• now</span>':''}</div>
-        <div class="mo-occ ${occCls}" style="background:var(--bg)">${occPct}% OCC</div>
-      </div>
-      <div class="mo-grid">
-        <div class="mo-cell"><div class="mc-lab">OTB</div><div class="mc-val">${fmtEUR(mr.revC)}</div>
-          ${dRev!=null?`<div class="mo-delta ${dRevCls}">${dRev>0?'+':''}${dRev}% vs STLY</div>`:''}</div>
-        <div class="mo-cell"><div class="mc-lab">STLY</div><div class="mc-val">${fmtEUR(mr.revP)}</div></div>
-        <div class="mo-cell"><div class="mc-lab">Last Year</div><div class="mc-val">${fmtEUR(mr.revF)}</div></div>
-      </div>
+  const list=document.getElementById('month-list');
+  let agg,fcst;
+  try{ agg=aggOTBYearly(MOB.struct); }catch(e){ console.error(e); list.innerHTML=mobEmpty('⚠️','Could not load monthly data.'); return; }
+  try{ fcst=aggForecast(MOB.struct); }catch(e){ console.error('fcst',e); fcst=null; }
+  if(!agg||!agg.monthRows){ list.innerHTML=mobEmpty('📭','No monthly data.'); return; }
+  const now=new Date(); const curMo=now.getMonth()+1, curY=now.getFullYear();
+  const fcMonthly=(fcst&&fcst.monthly)?fcst.monthly:{};
+  const roomsTot=(CFG.structures[MOB.struct]&&CFG.structures[MOB.struct].roomsTotal)?CFG.structures[MOB.struct].roomsTotal:1;
+  list.innerHTML=agg.monthRows.map(mr=>{
+    const fc=fcMonthly[curY*100+mr.m]||null; const isCur=mr.m===curMo;
+    const occC=isFinite(mr.occC)?mr.occC:null, occP=isFinite(mr.occP)?mr.occP:null, occLY=isFinite(mr.occF)?mr.occF:null;
+    const occFc=(fc&&fc.fcstRn!=null&&fc.days)?(fc.fcstRn/(roomsTot*fc.days)):null;
+    const adrC=isFinite(mr.adrC)?mr.adrC:null, adrP=isFinite(mr.adrP)?mr.adrP:null, adrLY=isFinite(mr.adrF)?mr.adrF:null;
+    const adrFc=(fc&&fc.fcstRn>0)?(fc.fcstRev/fc.fcstRn):null;
+    const revC=isFinite(mr.revC)?mr.revC:null, revP=isFinite(mr.revP)?mr.revP:null, revLY=isFinite(mr.revF)?mr.revF:null;
+    const revFc=(fc&&fc.fcstRev!=null)?fc.fcstRev:null;
+    const occBig=occC!=null?Math.round(occC*100)+'%':'—';
+    return `<div class="mo-card ${isCur?'is-cur':''}"><div class="mo-edge"></div>
+      <div class="mo-head"><div class="mo-name">${MO_FULL[mr.m-1]}${isCur?'<span class="now-tag">• now</span>':''}</div>
+        <div class="mo-occbig"><div class="ob-val">${occBig}</div><div class="ob-lab">occupancy</div></div></div>
+      ${mobMetric('Revenue OTB', revC, revP, revLY, revFc, 'eur', true)}
+      ${mobMetric('ADR', adrC, adrP, adrLY, adrFc, 'eur', false)}
+      ${mobMetric('Occupancy', occC, occP, occLY, occFc, 'pct', false)}
     </div>`;
   }).join('');
 }
-
-/* ---- sheet open/close ---- */
+function mobMetric(label,cur,stly,ly,fcst,kind,primary){
+  const fmtV=(v)=>{ if(v==null||!isFinite(v)) return '—'; return kind==='eur'?fmtEUR(v):(kind==='pct'?Math.round(v*100)+'%':fmtNum(v)); };
+  const cell=(lab,val,delta)=>`<div class="cmp"><div class="cmp-lab">${lab}</div><div class="cmp-val">${fmtV(val)}</div>${delta}</div>`;
+  const dPct=(a,b)=>{ if(a==null||b==null||!isFinite(a)||!isFinite(b)||b===0) return '<div class="cmp-d delta-flat">—</div>';
+    const d=kind==='pct'?(a-b)*100:((a-b)/b*100); const cls=d>0.5?'delta-up':(d<-0.5?'delta-down':'delta-flat'); const ar=d>0.5?'▲':(d<-0.5?'▼':'•');
+    return `<div class="cmp-d ${cls}">${ar}${(d>=0?'+':'')}${Math.round(d)}${kind==='pct'?'pp':'%'}</div>`; };
+  return `<div class="metric ${primary?'primary':'secondary'}"><div class="m-top"><span class="m-lab">${label}</span><span class="m-big">${fmtV(cur)}</span></div>
+    <div class="cmp-row">${cell('STLY',stly,dPct(cur,stly))}${cell('Last Yr',ly,dPct(cur,ly))}${cell('Forecast',fcst,dPct(cur,fcst))}</div></div>`;
+}
 function mobOpenSheet(){ document.getElementById('sheet-bg').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
-function mobCloseSheet(){ document.getElementById('sheet-bg').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); }
-
-/* ---- tab switch ---- */
-function mobSetTab(t){
-  MOB.tab = t;
-  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active', b.dataset.tab===t));
-  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+t));
-  mobRenderAll();
-}
-
-/* ---- render dispatcher ---- */
-function mobRenderAll(){
-  if(MOB.tab==='days'){ mobRenderCalendar(); mobRenderDays(); }
-  else if(MOB.tab==='month'){ mobRenderMonth(); }
-}
-
-/* ---- boot ---- */
+function mobCloseSheet(){ document.getElementById('sheet-bg').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); MOB_DETAIL_OPEN=false; }
+function mobSetTab(t){ MOB.tab=t; document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t)); document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t)); mobRenderAll(); }
+function mobRenderAll(){ if(MOB.tab==='days'){ mobRenderCalendar(); mobRenderDays(); } else if(MOB.tab==='month'){ mobRenderMonth(); } }
 document.addEventListener('DOMContentLoaded', ()=>{
-  // calendar nav
-  document.getElementById('cal-prev').addEventListener('click', ()=>{ MOB.winStart = addDaysYmd(MOB.winStart||todayYmdNum(), -7); mobRenderAll(); });
-  document.getElementById('cal-next').addEventListener('click', ()=>{
-    const cap = addDaysYmd(todayYmdNum(), 365);
-    const next = addDaysYmd(MOB.winStart||todayYmdNum(), 7);
-    MOB.winStart = (next>cap)?cap:next; mobRenderAll();
-  });
+  document.getElementById('cal-prev').addEventListener('click', ()=>{ MOB.winStart=addDaysYmd(MOB.winStart||todayYmdNum(),-7); mobRenderAll(); });
+  document.getElementById('cal-next').addEventListener('click', ()=>{ const cap=addDaysYmd(todayYmdNum(),365); const nx=addDaysYmd(MOB.winStart||todayYmdNum(),7); MOB.winStart=(nx>cap)?cap:nx; mobRenderAll(); });
   document.getElementById('cal-today').addEventListener('click', ()=>{ MOB.winStart=null; mobRenderAll(); });
   document.querySelectorAll('.tabbtn').forEach(b=> b.addEventListener('click', ()=> mobSetTab(b.dataset.tab)));
   document.getElementById('sheet-bg').addEventListener('click', mobCloseSheet);
-
   try {
     loadData(EMBEDDED_CSV);
     if (typeof AIRDNA_CSV !== 'undefined') loadAirdna(AIRDNA_CSV);
     if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
     if (typeof fp_ensureStruct === 'function') fp_ensureStruct(MOB.struct);
     document.getElementById('head-sub').textContent = 'Revenue Intelligence · '+(BOOKINGS?BOOKINGS.length.toLocaleString('en-GB'):'0')+' bookings';
-    mobApplyAccent();
-    mobRenderStructPills();
-    mobRenderAll();
-  } catch(e){
-    console.error(e);
-    document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message));
-  }
+    mobRenderStructPills(); mobRenderAll();
+  } catch(e){ console.error(e); document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }
 });
 </script>
 </body>
