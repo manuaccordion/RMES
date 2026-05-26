@@ -81,6 +81,9 @@ main{flex:1;padding:8px 16px 24px}
 .day-card .price-blk{flex:1;text-align:right}
 .day-card .price-blk .pc-price{font-family:'DM Mono',monospace;font-size:23px;font-weight:500;line-height:1.05;color:var(--ink)}
 .day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.day-card .price-blk .pc-comp{font-size:10.5px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px}
+.day-card .price-blk .pc-comp .delta-up{color:var(--up)} .day-card .price-blk .pc-comp .delta-down{color:var(--down)}
+.day-card .price-blk .pc-comp-na{opacity:.6;font-style:italic}
 .day-card .chev{flex:0 0 auto;color:var(--org-soft);font-size:18px;font-weight:700}
 .day-card.wknd{background:var(--org-tint)}
 .badge-ovr{position:absolute;top:8px;right:14px;font-size:8.5px;font-weight:700;text-transform:uppercase;background:var(--org);color:#fff;padding:2px 6px;border-radius:5px;letter-spacing:.04em}
@@ -96,18 +99,27 @@ main{flex:1;padding:8px 16px 24px}
 .mo-occbig .ob-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500}
 .mo-occbig .ob-lab{font-size:9px;text-transform:uppercase;color:var(--muted);font-weight:700;letter-spacing:.04em}
 
-.metric{margin-bottom:13px}
-.metric:last-child{margin-bottom:0}
-.metric .m-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:5px}
-.metric .m-lab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep)}
-.metric.primary .m-big{font-family:'DM Mono',monospace;font-size:30px;font-weight:500;line-height:1;color:var(--ink)}
-.metric.secondary .m-big{font-family:'DM Mono',monospace;font-size:19px;font-weight:500;line-height:1;color:var(--ink)}
-.metric .cmp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:7px}
-.cmp{background:var(--bg);border-radius:9px;padding:6px 4px;text-align:center}
-.metric.primary .cmp{background:var(--org-tint)}
-.cmp .cmp-lab{font-size:8.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:700}
-.cmp .cmp-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;margin-top:1px}
-.cmp .cmp-d{font-size:9px;font-family:'DM Mono',monospace;margin-top:1px;font-weight:500}
+/* monthly view toggle */
+.mv-toggle{display:flex;gap:6px;margin-bottom:12px}
+.mv-btn{flex:1;padding:10px 8px;border-radius:12px;background:var(--card);border:1.5px solid var(--line);font-size:14px;font-weight:700;color:var(--muted);box-shadow:var(--shadow);line-height:1.1}
+.mv-btn span{display:block;font-size:9.5px;font-weight:600;opacity:.8;margin-top:2px;text-transform:none;letter-spacing:0}
+.mv-btn.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--org),var(--org-deep));box-shadow:0 3px 10px rgba(168,82,26,.3)}
+/* stacked metric: label, big value, comparison underneath */
+.mm{padding:9px 0;border-bottom:1px solid var(--line)}
+.mm:last-child{border-bottom:none}
+.mm-lab{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep)}
+.mm-vals{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:3px}
+.mm .mm-big{font-family:'DM Mono',monospace;font-size:19px;font-weight:500;color:var(--ink);line-height:1}
+.mm.primary .mm-big{font-size:27px}
+.mm-cmp{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-align:right;white-space:nowrap}
+.mm-d{font-weight:600;margin-left:3px}
+/* year total card */
+.mo-card.mo-year{background:linear-gradient(135deg,var(--org-tint),var(--card));border-color:var(--org-tint2)}
+.mo-card.mo-year .mo-edge{opacity:1}
+.mo-yearnote{font-size:9.5px;color:var(--muted);font-style:italic;margin-top:8px;line-height:1.4}
+/* past-months drill */
+.mo-drill{width:100%;padding:11px;border-radius:12px;background:var(--card);border:1.5px dashed var(--org-tint2);color:var(--org-deep);font-weight:700;font-size:12px;margin-bottom:11px;box-shadow:var(--shadow)}
+.mo-drill:active{transform:scale(.99)}
 .delta-up{color:var(--up)} .delta-down{color:var(--down)} .delta-flat{color:var(--flat)}
 
 .sheet-bg{position:fixed;inset:0;z-index:50;background:rgba(60,30,5,.42);backdrop-filter:blur(2px);opacity:0;pointer-events:none;transition:opacity .22s}
@@ -127,6 +139,8 @@ main{flex:1;padding:8px 16px 24px}
 .sh-row{display:flex;justify-content:space-between;align-items:center;padding:11px 2px;border-bottom:1px solid var(--line)}
 .sh-row:last-child{border-bottom:none}
 .sh-row .shr-lab{font-size:13px;color:var(--ink);font-weight:500}
+.sh-row .shr-lab small{display:block;font-size:10.5px;color:var(--muted);font-weight:400;margin-top:1px}
+.day-card .price-blk .pc-comp .pc-rank{color:var(--org-deep);font-weight:700}
 .sh-row .shr-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;text-align:right}
 .sh-group{margin-top:18px}
 .sh-group-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep);margin-bottom:4px}
@@ -167,6 +181,28 @@ main{flex:1;padding:8px 16px 24px}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .collapse{overflow:hidden;max-height:0;transition:max-height .35s ease}
 .collapse.open{max-height:4000px}
+#rate-chart{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px 8px 6px;box-shadow:var(--shadow);margin-bottom:12px}
+.rate-legend{display:flex;flex-wrap:wrap;gap:12px;padding:0 4px;margin-bottom:8px}
+.rate-legend .rl-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink);font-weight:500}
+.rate-legend .rl-line{width:16px;height:3px;border-radius:2px;display:inline-block}
+.rate-legend .rl-dash{width:16px;height:0;border-top:2px dashed var(--muted)}
+.rate-legend .rl-area{width:14px;height:11px;border-radius:3px;opacity:.18;display:inline-block}
+.rate-note{font-size:10.5px;color:var(--muted);line-height:1.45;padding:0 4px}
+/* override section in drill-in */
+.ovr-box{margin-top:18px;padding:14px;border-radius:14px;background:var(--org-tint);border:1px solid var(--org-tint2)}
+.ovr-box .ovr-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep);margin-bottom:8px}
+.ovr-row{display:flex;gap:8px;align-items:center}
+.ovr-row .ovr-cur{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);flex:1}
+.ovr-input{width:96px;padding:9px 10px;border:1.5px solid var(--org);border-radius:10px;font-family:'DM Mono',monospace;font-size:15px;text-align:right;background:#fff;color:var(--ink);font-weight:500}
+.ovr-btn{padding:9px 14px;border-radius:10px;background:linear-gradient(135deg,var(--org),var(--org-deep));color:#fff;font-weight:700;font-size:12px}
+.ovr-btn:active{transform:scale(.97)}
+.ovr-btn.ovr-reset{background:#fff;color:var(--org-deep);border:1.5px solid var(--org-tint2)}
+.ovr-sim{margin-top:12px;padding-top:12px;border-top:1px dashed var(--org-tint2)}
+.ovr-sim .ovr-sim-t{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--org-deep);margin-bottom:6px}
+.ovr-sim-row{display:flex;justify-content:space-between;padding:5px 0;font-size:12px}
+.ovr-sim-row .osr-lab{color:var(--ink)}
+.ovr-sim-row .osr-val{font-family:'DM Mono',monospace;font-weight:500}
+.ovr-active-badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;background:var(--org);color:#fff;padding:2px 7px;border-radius:5px;margin-left:6px}
 </style>
 </head>
 <body>
@@ -195,14 +231,22 @@ main{flex:1;padding:8px 16px 24px}
   </div>
   <div class="panel" id="panel-month">
     <main>
-      <div class="section-label">Monthly · OTB vs STLY · LY · Forecast</div>
+      <div class="section-label">Monthly · year total + month by month</div>
       <div id="month-list"><div class="spinner"></div></div>
+    </main>
+  </div>
+  <div class="panel" id="panel-rate">
+    <main>
+      <div class="section-label" id="rate-label">Rate Shopper · your Expedia price vs compset · next 7 days</div>
+      <div id="rate-chart"><div class="spinner"></div></div>
+      <div id="rate-legend"></div>
     </main>
   </div>
 </div>
 <div class="tabbar"><div class="tabbar-inner">
   <button class="tabbtn active" data-tab="days"><span class="ico">📅</span>Daily Price</button>
   <button class="tabbtn" data-tab="month"><span class="ico">📊</span>Monthly</button>
+  <button class="tabbtn" data-tab="rate"><span class="ico">📈</span>Rate Shopper</button>
 </div></div>
 <div class="sheet-bg" id="sheet-bg"></div>
 <div class="sheet" id="sheet"><div class="sheet-grip"></div><div id="sheet-body"></div></div>
@@ -214,7 +258,7 @@ main{flex:1;padding:8px 16px 24px}
    Orange theme everywhere; day drill-in with a 2nd inner click → Foundation 6 steps
    + 5 RMES factors; room categories ordered by price; monthly overview with OTB big
    + STLY / LY / Forecast small for Revenue, ADR and Occupancy. */
-const MOB = { struct:'firenze', winStart:null, tab:'days', lastDay:null, lastRow:null };
+const MOB = { struct:'firenze', winStart:null, tab:'days', lastDay:null, lastRow:null, monthView:'otb', monthPast:false };
 const MOB_STRUCTS = ['firenze','condotta','alfani','davids'];
 const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MO_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -229,6 +273,44 @@ const MOB_FACTORS = [
 ];
 function mobLabel(sk){ return (CFG.structures[sk] && CFG.structures[sk].label) || sk; }
 function mobBaseRT(sk){ return (CFG.structures[sk] && CFG.structures[sk].baseRT) || null; }
+/* ---- Expedia helpers (reuse engine conversion + EXPEDIA_DATA, same logic as the dashboard) ---- */
+function mobExpDivisor(sk){ try{ return (typeof fp_expToBeddyDivisor==='function')?fp_expToBeddyDivisor(sk):1.053; }catch(e){ return 1.053; } }
+function mobToExpedia(beddyPrice, sk){ if(beddyPrice==null||!isFinite(beddyPrice)) return null; return beddyPrice * mobExpDivisor(sk); }
+function mobCompsetAvg(sk, iso){
+  if(typeof EXPEDIA_DATA==='undefined'||!EXPEDIA_DATA) return null;
+  let m=null;
+  if(sk==='condotta') m=EXPEDIA_DATA.compset_avg;
+  else if(sk==='alfani') m=EXPEDIA_DATA.compset_avg_alfani;
+  else if(sk==='davids') m=EXPEDIA_DATA.compset_avg_davids;
+  else m=EXPEDIA_DATA.compset_avg_firenze;
+  const v=m?m[iso]:null; return (v!=null&&isFinite(v)&&v>0)?v:null;
+}
+function mobCompetitors(sk){
+  if(typeof EXPEDIA_DATA==='undefined'||!EXPEDIA_DATA) return null;
+  if(sk==='condotta') return EXPEDIA_DATA.competitors;
+  if(sk==='alfani') return EXPEDIA_DATA.competitors_alfani;
+  if(sk==='davids') return EXPEDIA_DATA.competitors_davids;
+  return EXPEDIA_DATA.competitors_firenze;
+}
+function mobCompBand(sk, iso){
+  const cm=mobCompetitors(sk); if(!cm) return null;
+  const vals=[];
+  for(const name in cm){ const p=cm[name][iso]; if(p!=null&&isFinite(p)&&p>0) vals.push(p); }
+  if(!vals.length) return null;
+  vals.sort((a,b)=>a-b);
+  return { min:vals[0], max:vals[vals.length-1], med:vals[Math.floor(vals.length/2)], n:vals.length };
+}
+/* market position for a day — SAME logic as the dashboard Big Picture compset rank:
+   rank = (competitors priced below me) + 1, out of (competitors priced + me). 1 = cheapest. */
+function mobCompRank(sk, iso, myExpedia){
+  if(myExpedia==null||!isFinite(myExpedia)) return null;
+  const cm=mobCompetitors(sk); if(!cm) return null;
+  const prices=[];
+  for(const name in cm){ const v=cm[name][iso]; if(v!=null&&isFinite(v)&&v>0) prices.push(v); }
+  if(!prices.length) return null;
+  const rank = prices.filter(p=>p<myExpedia).length + 1;
+  return { rank, total: prices.length+1 };
+}
 function ymdNumToDate(n){ return new Date(Math.floor(n/10000), Math.floor((n%10000)/100)-1, n%100); }
 function dateToYmdNum(d){ return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate(); }
 function todayYmdNum(){ return dateToYmdNum(new Date()); }
@@ -272,10 +354,20 @@ function mobRenderDays(){
   list.innerHTML=keys.map(yn=>{
     const r=map[yn]; const d=ymdNumToDate(yn); const isT=(yn===today);
     const anyOvr=r.overrideUsedByRT && Object.values(r.overrideUsedByRT).some(v=>v);
+    const iso=ymdNumToISO(yn);
+    const expPrice=mobToExpedia(r.price, MOB.struct);
+    const comp=mobCompsetAvg(MOB.struct, iso);
+    const rk=mobCompRank(MOB.struct, iso, expPrice);
+    const rkHtml=rk?` · <span class="pc-rank">${rk.rank}/${rk.total}</span>`:'';
+    let cmpHtml='';
+    if(comp!=null && expPrice!=null){
+      const diff=expPrice-comp; const cls=diff>0?'delta-up':(diff<0?'delta-down':'delta-flat'); const ar=diff>0?'▲':(diff<0?'▼':'•');
+      cmpHtml=`<div class="pc-comp">compset ${fmtEUR(comp)} <span class="${cls}">${ar} ${(diff>=0?'+':'')}${fmtEUR(diff)}</span>${rkHtml}</div>`;
+    } else { cmpHtml=`<div class="pc-comp pc-comp-na">compset n/d${rkHtml}</div>`; }
     return `<div class="day-card ${isWeekendYmd(yn)?'wknd':''}" data-day="${yn}"><div class="edge"></div>
       ${anyOvr?'<div class="badge-ovr">override</div>':''}
       <div class="date-blk"><div class="dc-dow">${DOW_SHORT[d.getDay()]}${isT?' ·':''}</div><div class="dc-day">${d.getDate()}</div><div class="dc-mo">${MO_SHORT[d.getMonth()]}</div></div>
-      <div class="price-blk"><div class="pc-label">RMES price</div><div class="pc-price">${fmtEUR(r.price)}</div></div>
+      <div class="price-blk"><div class="pc-label">Expedia price</div><div class="pc-price">${expPrice!=null?fmtEUR(expPrice):'—'}</div>${cmpHtml}</div>
       <div class="chev">›</div></div>`;
   }).join('');
   list.querySelectorAll('.day-card').forEach(c=> c.addEventListener('click', ()=> mobOpenDay(+c.dataset.day, map[+c.dataset.day])));
@@ -294,11 +386,32 @@ function mobOpenDay(yn, rmesRow){
   const otbAdr=sellRow?sellRow.curAdr:null;
   const stlyRn=sellRow?sellRow.stlyRn:null, stlyOcc=sellRow?sellRow.stlyOcc:null, stlyAdr=sellRow?sellRow.stlyAdr:null;
   const baseRT=mobBaseRT(MOB.struct);
+  const iso=ymdNumToISO(yn);
+  const expPrice=mobToExpedia(rmesRow?rmesRow.price:null, MOB.struct);
+  const compAvg=mobCompsetAvg(MOB.struct, iso);
+  const band=mobCompBand(MOB.struct, iso);
   let html=`<h2>${DOW_SHORT[d.getDay()]} ${d.getDate()} ${MO_FULL[d.getMonth()]} ${d.getFullYear()}</h2>
     <div class="sh-sub">${escapeHtml(mobLabel(MOB.struct))} · base ${escapeHtml(baseRT||'—')}</div>
-    <div class="sh-hero"><div class="shh-lab">RMES suggested price</div>
-      <div class="shh-price">${fmtEUR(rmesRow?rmesRow.price:NaN)}</div>
-      <div class="shh-src">source: ${escapeHtml(rmesRow&&rmesRow.source?rmesRow.source:'—')}</div></div>`;
+    <div class="sh-hero"><div class="shh-lab">Expedia price</div>
+      <div class="shh-price">${expPrice!=null?fmtEUR(expPrice):'—'}</div>
+      <div class="shh-src">your RMES price ${fmtEUR(rmesRow?rmesRow.price:NaN)} (Beddy) · source: ${escapeHtml(rmesRow&&rmesRow.source?rmesRow.source:'—')}</div></div>`;
+  /* price override — placed high, right after the hero, so it reads as the action before its effects */
+  html+=mobOverrideHTML(yn, rmesRow, baseRT);
+  /* Expedia vs compset block */
+  html+=`<div class="sh-group"><div class="sh-group-t">Expedia · vs compset</div>`;
+  if(compAvg!=null && expPrice!=null){
+    const diff=expPrice-compAvg;
+    html+=mobShRow('Your Expedia price', fmtEUR(expPrice), '');
+    html+=mobShRow('Compset average', fmtEUR(compAvg), mobDeltaAbsEur(expPrice, compAvg));
+    html+=mobShRow('Position', diff>0?'above market':(diff<0?'below market':'at market'), '');
+  } else {
+    html+=mobShRow('Your Expedia price', expPrice!=null?fmtEUR(expPrice):'—', '');
+    html+=`<div class="sh-row"><span class="shr-lab" style="color:var(--muted);font-style:italic">No compset data for this day</span><span class="shr-val">—</span></div>`;
+  }
+  const rkD=mobCompRank(MOB.struct, iso, expPrice);
+  if(rkD){ html+=`<div class="sh-row"><span class="shr-lab">Market position<small>1 = cheapest on Expedia</small></span><span class="shr-val"><span style="color:var(--org-deep);font-weight:700">${rkD.rank}</span> of ${rkD.total}</span></div>`; }
+  if(band){ html+=mobShRow('Competitor range', fmtEUR(band.min)+' – '+fmtEUR(band.max)+' ('+band.n+')', ''); }
+  html+=`</div>`;
   html+=`<div class="sh-group"><div class="sh-group-t">On the books · vs STLY (-364, same weekday)</div>`;
   html+=mobShRow('Occupancy', occ, mobDeltaPct(rmesRow?rmesRow.curOcc:null, stlyOcc, true));
   html+=mobShRow('Room-nights', (otbRn!=null?fmtNum(otbRn):'—')+(cap!=null?' / '+cap:''), mobDeltaAbs(otbRn, stlyRn));
@@ -313,10 +426,101 @@ function mobOpenDay(yn, rmesRow){
     }
     html+=`</div>`;
   }
+  /* price override now lives near the top (right after the hero) */
   html+=`<button class="btn-expand" id="mob-expand"><span class="be-ico">⚡</span> Show Foundation &amp; RMES detail</button><div class="collapse" id="mob-detail"></div>`;
   document.getElementById('sheet-body').innerHTML=html;
   document.getElementById('mob-expand').addEventListener('click', mobToggleDetail);
+  mobBindOverride(yn, baseRT);
   mobOpenSheet();
+}
+/* Build override UI: input + save/reset + revenue simulation (same formula as dashboard RMES modal) */
+function mobOverrideHTML(yn, rmesRow, baseRT){
+  const iso=ymdNumToISO(yn);
+  const suggested = (rmesRow && rmesRow.rmesSuggestedByRT && baseRT!=null && rmesRow.rmesSuggestedByRT[baseRT]!=null)
+    ? rmesRow.rmesSuggestedByRT[baseRT] : (rmesRow?rmesRow.price:null);
+  let curOvr=null;
+  try{ const o=fp_getOverride(MOB.struct, iso, baseRT); if(o&&o.price!=null&&isFinite(o.price)) curOvr=o.price; }catch(e){}
+  const isActive = curOvr!=null;
+  const shownVal = isActive ? curOvr : '';
+  let h=`<div class="ovr-box"><div class="ovr-t">Price override (this day · ${escapeHtml(baseRT||'base')})${isActive?'<span class="ovr-active-badge">active</span>':''}</div>
+    <div class="ovr-row">
+      <span class="ovr-cur">RMES suggests <b>${suggested!=null?fmtEUR(suggested):'—'}</b> (Beddy)</span>
+      <input class="ovr-input" id="ovr-input" type="number" inputmode="decimal" placeholder="${suggested!=null?Math.round(suggested):''}" value="${shownVal}">
+      <button class="ovr-btn" id="ovr-save">Save</button>
+      ${isActive?'<button class="ovr-btn ovr-reset" id="ovr-reset">Reset</button>':''}
+    </div>
+    <div class="ovr-sim" id="ovr-sim"></div></div>`;
+  return h;
+}
+/* revenue simulation block — identical formula to the dashboard modal.
+   Base 'suggested' = the RMES final price (rmesSuggestedByRT = Foundation × multiplier), same as the UI shows. */
+function mobOverrideSim(yn, baseRT, newPriceBeddy){
+  const iso=ymdNumToISO(yn);
+  // suggested = the RMES final suggested price for the base RT (matches what the user sees), from the live map
+  let suggested=null, rnAttese=null;
+  try{
+    const start=MOB.winStart||todayYmdNum();
+    mobInvalidateRmesCache();
+    const map=computeRMESPriceMap(MOB.struct, start, 7);
+    if(map[yn] && map[yn].rmesSuggestedByRT && map[yn].rmesSuggestedByRT[baseRT]!=null) suggested=map[yn].rmesSuggestedByRT[baseRT];
+    else if(map[yn]) suggested=map[yn].price;
+  }catch(e){}
+  try{ const fpR=fp_computePrice(MOB.struct, baseRT, iso); if(fpR&&fpR.detail&&isFinite(fpR.detail.rnAttese)) rnAttese=fpR.detail.rnAttese; }catch(e){}
+  const elasticity = (typeof fp_getElasticity==='function')?fp_getElasticity(MOB.struct):1.0;
+  if(!isFinite(newPriceBeddy)||!isFinite(suggested)||!isFinite(rnAttese)||rnAttese==null){
+    return `<div class="ovr-sim-t">Revenue simulation</div><div style="font-size:11px;color:var(--muted)">Incomplete data for the simulation.</div>`;
+  }
+  const deltaPrice=newPriceBeddy-suggested;
+  if(Math.abs(deltaPrice)<0.5) return `<div class="ovr-sim-t">Revenue simulation (${elasticity.toFixed(1)}:1)</div><div style="font-size:11px;color:var(--muted)">Price equals the RMES suggestion — no estimated impact.</div>`;
+  const deltaPricePct=suggested>0?(deltaPrice/suggested):0;
+  const deltaRnPct=-deltaPricePct*elasticity;
+  const rnNew=rnAttese*(1+deltaRnPct);
+  const revSuggested=suggested*rnAttese;
+  const revNew=newPriceBeddy*rnNew;
+  const deltaRev=revNew-revSuggested;
+  const sgn=n=>(n>=0?'+':'');
+  const revCls=deltaRev>0?'delta-up':(deltaRev<0?'delta-down':'delta-flat');
+  return `<div class="ovr-sim-t">Revenue simulation · elasticity ${elasticity.toFixed(1)}:1</div>
+    <div class="ovr-sim-row"><span class="osr-lab">Δ price vs RMES</span><span class="osr-val ${deltaPrice>0?'delta-up':'delta-down'}">${sgn(deltaPrice)}${fmtEUR(deltaPrice)} (${sgn(deltaPricePct*100)}${(deltaPricePct*100).toFixed(0)}%)</span></div>
+    <div class="ovr-sim-row"><span class="osr-lab">Expected RN at close</span><span class="osr-val">${rnAttese.toFixed(1)} → ${rnNew.toFixed(1)} (${sgn(deltaRnPct*100)}${(deltaRnPct*100).toFixed(0)}%)</span></div>
+    <div class="ovr-sim-row"><span class="osr-lab">Est. revenue this day</span><span class="osr-val">${fmtEUR(revSuggested)} → ${fmtEUR(revNew)}</span></div>
+    <div class="ovr-sim-row" style="border-top:1px solid var(--org-tint2);margin-top:4px;padding-top:8px"><span class="osr-lab" style="font-weight:700">Δ revenue</span><span class="osr-val ${revCls}" style="font-weight:700">${sgn(deltaRev)}${fmtEUR(deltaRev)}</span></div>
+    <div style="font-size:9.5px;color:var(--muted);font-style:italic;margin-top:6px">Same model as the dashboard: if Δprice is −X%, expected RN ≈ +X% × elasticity. An estimate, not a guarantee.</div>`;
+}
+function mobBindOverride(yn, baseRT){
+  const inp=document.getElementById('ovr-input');
+  const sim=document.getElementById('ovr-sim');
+  const save=document.getElementById('ovr-save');
+  const reset=document.getElementById('ovr-reset');
+  if(!inp||!sim) return;
+  const refresh=()=>{ const v=parseFloat(inp.value); sim.innerHTML = isFinite(v)? mobOverrideSim(yn, baseRT, v) : ''; };
+  refresh();
+  inp.addEventListener('input', refresh);
+  if(save) save.addEventListener('click', ()=>{
+    const v=parseFloat(inp.value);
+    try{
+      if(isFinite(v)&&v>0){ fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, v, null); }
+      else { fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, null, null); }
+    }catch(e){ console.error('setOverride',e); }
+    mobInvalidateRmesCache();
+    mobReopenDay(yn);
+    mobRenderAll();
+  });
+  if(reset) reset.addEventListener('click', ()=>{
+    try{ fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, null, null); }catch(e){}
+    mobInvalidateRmesCache();
+    mobReopenDay(yn);
+    mobRenderAll();
+  });
+}
+/* clear the per-render RMES cache so overrides take effect immediately (dashboard does this in renderAll) */
+function mobInvalidateRmesCache(){ try{ if(typeof _RMESMAP_TICK!=='undefined') _RMESMAP_TICK={}; }catch(e){} }
+/* recompute the price map for the current window and re-open the same day */
+function mobReopenDay(yn){
+  const start=MOB.winStart||todayYmdNum();
+  let map; try{ map=computeRMESPriceMap(MOB.struct, start, 7); }catch(e){ console.error(e); return; }
+  const r = map[yn] || (MOB.lastRow);
+  mobOpenDay(yn, r);
 }
 let MOB_DETAIL_OPEN=false;
 function mobToggleDetail(){
@@ -377,6 +581,11 @@ function mobDeltaAbs(cur,prev){
   const dd=cur-prev; const cls=dd>0?'delta-up':(dd<0?'delta-down':'delta-flat'); const arr=dd>0?'▲':(dd<0?'▼':'•');
   return `<span class="cmp-d ${cls}" style="margin-left:8px">${arr} ${fmtDelta(dd)}</span>`;
 }
+function mobDeltaAbsEur(cur,prev){
+  if(cur==null||prev==null||!isFinite(cur)||!isFinite(prev)) return '';
+  const dd=cur-prev; const cls=dd>0?'delta-up':(dd<0?'delta-down':'delta-flat'); const arr=dd>0?'▲':(dd<0?'▼':'•');
+  return `<span class="cmp-d ${cls}" style="margin-left:8px">${arr} ${(dd>=0?'+':'')}${fmtEUR(dd)}</span>`;
+}
 function mobRenderMonth(){
   const list=document.getElementById('month-list');
   let agg,fcst;
@@ -386,37 +595,172 @@ function mobRenderMonth(){
   const now=new Date(); const curMo=now.getMonth()+1, curY=now.getFullYear();
   const fcMonthly=(fcst&&fcst.monthly)?fcst.monthly:{};
   const roomsTot=(CFG.structures[MOB.struct]&&CFG.structures[MOB.struct].roomsTotal)?CFG.structures[MOB.struct].roomsTotal:1;
-  list.innerHTML=agg.monthRows.map(mr=>{
-    const fc=fcMonthly[curY*100+mr.m]||null; const isCur=mr.m===curMo;
-    const occC=isFinite(mr.occC)?mr.occC:null, occP=isFinite(mr.occP)?mr.occP:null, occLY=isFinite(mr.occF)?mr.occF:null;
-    const occFc=(fc&&fc.fcstRn!=null&&fc.days)?(fc.fcstRn/(roomsTot*fc.days)):null;
-    const adrC=isFinite(mr.adrC)?mr.adrC:null, adrP=isFinite(mr.adrP)?mr.adrP:null, adrLY=isFinite(mr.adrF)?mr.adrF:null;
-    const adrFc=(fc&&fc.fcstRn>0)?(fc.fcstRev/fc.fcstRn):null;
-    const revC=isFinite(mr.revC)?mr.revC:null, revP=isFinite(mr.revP)?mr.revP:null, revLY=isFinite(mr.revF)?mr.revF:null;
-    const revFc=(fc&&fc.fcstRev!=null)?fc.fcstRev:null;
-    const occBig=occC!=null?Math.round(occC*100)+'%':'—';
+  const isF = (MOB.monthView==='forecast');
+
+  // per-month metric values for the active view
+  function monthData(mr){
+    const fc=fcMonthly[curY*100+mr.m]||null;
+    if(isF){
+      // Forecast view: KPI = forecast, compare vs Final LY
+      const revC=(fc&&fc.fcstRev!=null)?fc.fcstRev:(isFinite(mr.revC)?mr.revC:null);
+      const adrC=(fc&&fc.fcstRn>0)?(fc.fcstRev/fc.fcstRn):null;
+      const occC=(fc&&fc.occ!=null&&isFinite(fc.occ))?fc.occ:((fc&&fc.fcstRn!=null&&fc.days)?(fc.fcstRn/(roomsTot*fc.days)):null);
+      const revCmp=isFinite(mr.revF)?mr.revF:null;       // Final LY
+      const adrCmp=isFinite(mr.adrF)?mr.adrF:null;
+      const occCmp=isFinite(mr.occF)?mr.occF:null;
+      return {rev:revC,adr:adrC,occ:occC,revCmp,adrCmp,occCmp,cmpLab:'Final LY'};
+    } else {
+      // OTB view: KPI = on-the-books, compare vs STLY
+      return {rev:isFinite(mr.revC)?mr.revC:null, adr:isFinite(mr.adrC)?mr.adrC:null, occ:isFinite(mr.occC)?mr.occC:null,
+        revCmp:isFinite(mr.revP)?mr.revP:null, adrCmp:isFinite(mr.adrP)?mr.adrP:null, occCmp:isFinite(mr.occP)?mr.occP:null, cmpLab:'STLY'};
+    }
+  }
+
+  // toggle header
+  const cmpLabel = isF ? 'Final LY' : 'STLY';
+  let html = `<div class="mv-toggle">
+    <button class="mv-btn ${!isF?'active':''}" data-mv="otb">OTB <span>vs STLY</span></button>
+    <button class="mv-btn ${isF?'active':''}" data-mv="forecast">Forecast <span>vs Final LY</span></button>
+  </div>`;
+
+  // year total card
+  const rows = agg.monthRows;
+  let yRev=0,yRevCmp=0, yRnOtb=0,yRnFc=0, yRnCmp=0, yRoomNights=0;
+  rows.forEach(mr=>{
+    const dd=monthData(mr);
+    if(dd.rev!=null) yRev+=dd.rev;
+    if(dd.revCmp!=null) yRevCmp+=dd.revCmp;
+  });
+  // year ADR/OCC: weight by room-nights where available (approx via revenue/adr); keep simple = average of months present
+  const yearMetricsHtml = mobYearTotals(rows, monthData, isF);
+  html += `<div class="mo-card mo-year"><div class="mo-edge"></div>
+    <div class="mo-head"><div class="mo-name">${curY} <span style="font-size:11px;color:var(--muted);font-weight:600">full year</span></div>
+      <div class="mo-occbig"><div class="ob-lab">${isF?'forecast':'on the books'}</div></div></div>
+    ${yearMetricsHtml}
+    <div class="mo-yearnote">Full-year total mixes closed months and ${isF?'forecast':'on-the-books'} for future months.</div>
+  </div>`;
+
+  // months: current → december by default; past months behind a drill
+  const futureRows = rows.filter(mr=>mr.m>=curMo);
+  const pastRows = rows.filter(mr=>mr.m<curMo);
+  const cardFor = (mr)=>{
+    const dd=monthData(mr); const isCur=mr.m===curMo;
     return `<div class="mo-card ${isCur?'is-cur':''}"><div class="mo-edge"></div>
-      <div class="mo-head"><div class="mo-name">${MO_FULL[mr.m-1]}${isCur?'<span class="now-tag">• now</span>':''}</div>
-        <div class="mo-occbig"><div class="ob-val">${occBig}</div><div class="ob-lab">occupancy</div></div></div>
-      ${mobMetric('Revenue OTB', revC, revP, revLY, revFc, 'eur', true)}
-      ${mobMetric('ADR', adrC, adrP, adrLY, adrFc, 'eur', false)}
-      ${mobMetric('Occupancy', occC, occP, occLY, occFc, 'pct', false)}
+      <div class="mo-head"><div class="mo-name">${MO_FULL[mr.m-1]}${isCur?'<span class="now-tag">• now</span>':''}</div></div>
+      ${mobMetric('Revenue', dd.rev, dd.revCmp, dd.cmpLab, 'eur', true)}
+      ${mobMetric('ADR', dd.adr, dd.adrCmp, dd.cmpLab, 'eur', false)}
+      ${mobMetric('Occupancy', dd.occ, dd.occCmp, dd.cmpLab, 'pct', false)}
     </div>`;
-  }).join('');
+  };
+  html += futureRows.map(cardFor).join('');
+  if(pastRows.length){
+    html += `<button class="mo-drill" id="mo-drill">${MOB.monthPast?'▲ Hide past months':'▼ Show past months ('+pastRows.length+')'}</button>`;
+    if(MOB.monthPast) html += `<div class="mo-past">`+pastRows.map(cardFor).join('')+`</div>`;
+  }
+  list.innerHTML=html;
+  // wire toggle + drill
+  list.querySelectorAll('.mv-btn').forEach(b=> b.addEventListener('click', ()=>{ MOB.monthView=b.dataset.mv; mobRenderMonth(); }));
+  const drill=document.getElementById('mo-drill');
+  if(drill) drill.addEventListener('click', ()=>{ MOB.monthPast=!MOB.monthPast; mobRenderMonth(); });
 }
-function mobMetric(label,cur,stly,ly,fcst,kind,primary){
+/* year totals block: sums for revenue; room-night-weighted OCC; revenue/RN ADR */
+function mobYearTotals(rows, monthData, isF){
+  let rev=0,revCmp=0, hasRev=false, hasRevCmp=false;
+  // For ADR/OCC at year level we approximate with simple presence-weighted means
+  let occAcc=0,occN=0, occCmpAcc=0,occCmpN=0, adrAcc=0,adrN=0, adrCmpAcc=0,adrCmpN=0;
+  rows.forEach(mr=>{ const d=monthData(mr);
+    if(d.rev!=null){rev+=d.rev;hasRev=true;} if(d.revCmp!=null){revCmp+=d.revCmp;hasRevCmp=true;}
+    if(d.occ!=null){occAcc+=d.occ;occN++;} if(d.occCmp!=null){occCmpAcc+=d.occCmp;occCmpN++;}
+    if(d.adr!=null){adrAcc+=d.adr;adrN++;} if(d.adrCmp!=null){adrCmpAcc+=d.adrCmp;adrCmpN++;}
+  });
+  const cmpLab = isF?'Final LY':'STLY';
+  const occ=occN?occAcc/occN:null, occCmp=occCmpN?occCmpAcc/occCmpN:null;
+  const adr=adrN?adrAcc/adrN:null, adrCmp=adrCmpN?adrCmpAcc/adrCmpN:null;
+  return mobMetric('Revenue', hasRev?rev:null, hasRevCmp?revCmp:null, cmpLab, 'eur', true)
+       + mobMetric('ADR (avg)', adr, adrCmp, cmpLab, 'eur', false)
+       + mobMetric('Occupancy (avg)', occ, occCmp, cmpLab, 'pct', false);
+}
+/* one stacked metric: big value + variance vs the comparison underneath */
+function mobMetric(label, cur, cmp, cmpLab, kind, primary){
   const fmtV=(v)=>{ if(v==null||!isFinite(v)) return '—'; return kind==='eur'?fmtEUR(v):(kind==='pct'?Math.round(v*100)+'%':fmtNum(v)); };
-  const cell=(lab,val,delta)=>`<div class="cmp"><div class="cmp-lab">${lab}</div><div class="cmp-val">${fmtV(val)}</div>${delta}</div>`;
-  const dPct=(a,b)=>{ if(a==null||b==null||!isFinite(a)||!isFinite(b)||b===0) return '<div class="cmp-d delta-flat">—</div>';
+  const dPct=(a,b)=>{ if(a==null||b==null||!isFinite(a)||!isFinite(b)||b===0) return '<span class="mm-d delta-flat">—</span>';
     const d=kind==='pct'?(a-b)*100:((a-b)/b*100); const cls=d>0.5?'delta-up':(d<-0.5?'delta-down':'delta-flat'); const ar=d>0.5?'▲':(d<-0.5?'▼':'•');
-    return `<div class="cmp-d ${cls}">${ar}${(d>=0?'+':'')}${Math.round(d)}${kind==='pct'?'pp':'%'}</div>`; };
-  return `<div class="metric ${primary?'primary':'secondary'}"><div class="m-top"><span class="m-lab">${label}</span><span class="m-big">${fmtV(cur)}</span></div>
-    <div class="cmp-row">${cell('STLY',stly,dPct(cur,stly))}${cell('Last Yr',ly,dPct(cur,ly))}${cell('Forecast',fcst,dPct(cur,fcst))}</div></div>`;
+    return `<span class="mm-d ${cls}">${ar}${(d>=0?'+':'')}${Math.round(d)}${kind==='pct'?'pp':'%'}</span>`; };
+  return `<div class="mm ${primary?'primary':''}">
+    <div class="mm-lab">${label}</div>
+    <div class="mm-vals"><span class="mm-big">${fmtV(cur)}</span><span class="mm-cmp">vs ${cmpLab} ${fmtV(cmp)} ${dPct(cur,cmp)}</span></div>
+  </div>`;
+}
+function mobRenderRateShopper(){
+  const wrap=document.getElementById('rate-chart');
+  const legend=document.getElementById('rate-legend');
+  const start=MOB.winStart||todayYmdNum(); const today=todayYmdNum();
+  document.getElementById('rate-label').textContent=(start===today)
+    ? 'Rate Shopper · your Expedia price vs compset · next 7 days'
+    : 'Rate Shopper · 7 days from '+mobFmtDate(start);
+  // build the 7-day series
+  let map; try{ map=computeRMESPriceMap(MOB.struct,start,7); }catch(e){ console.error(e); wrap.innerHTML=mobEmpty('⚠️','Could not compute prices.'); legend.innerHTML=''; return; }
+  const keys=Object.keys(map).map(Number).sort((a,b)=>a-b);
+  const pts=keys.map(yn=>{
+    const iso=ymdNumToISO(yn); const d=ymdNumToDate(yn);
+    return { yn, d, iso,
+      mine: mobToExpedia(map[yn].price, MOB.struct),
+      comp: mobCompsetAvg(MOB.struct, iso),
+      band: mobCompBand(MOB.struct, iso) };
+  });
+  const hasAny = pts.some(p=> p.comp!=null || (p.band&&p.band.n>0));
+  if(!hasAny){ wrap.innerHTML=mobEmpty('📭','No Expedia compset data for '+escapeHtml(mobLabel(MOB.struct))+' in this window.'); legend.innerHTML=''; return; }
+  // y-range from all values present
+  let yMin=Infinity,yMax=-Infinity;
+  for(const p of pts){ for(const v of [p.mine, p.comp, p.band&&p.band.min, p.band&&p.band.max]){ if(v!=null&&isFinite(v)){ if(v<yMin)yMin=v; if(v>yMax)yMax=v; } } }
+  if(!isFinite(yMin)){ wrap.innerHTML=mobEmpty('📭','No data.'); legend.innerHTML=''; return; }
+  const rng=Math.max(1,yMax-yMin); yMin=Math.max(0,yMin-rng*0.12); yMax=yMax+rng*0.12;
+  // SVG geometry (mobile: fits ~360px wide; let it scale)
+  const W=360, H=240, M={l:38,r:12,t:14,b:34};
+  const iw=W-M.l-M.r, ih=H-M.t-M.b;
+  const n=pts.length;
+  const xs=i=> M.l + (n<=1?iw/2:(i/(n-1))*iw);
+  const ys=v=> M.t + ih - ((v-yMin)/(yMax-yMin))*ih;
+  const org='#d2691e'; /* primary orange (matches --org) */
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:'DM Mono',monospace;font-size:9px">`;
+  // y grid + labels
+  for(let t=0;t<=4;t++){ const v=yMin+(yMax-yMin)*t/4; const y=ys(v);
+    svg+=`<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${W-M.r}" y2="${y.toFixed(1)}" stroke="#f0e2d3" stroke-width="1"/>`;
+    svg+=`<text x="${M.l-5}" y="${(y+3).toFixed(1)}" text-anchor="end" fill="#9a8470">${Math.round(v)}</text>`; }
+  // competitor area (min..max) — orange band, same logic as the dashboard pyramid
+  const top=[], bot=[];
+  pts.forEach((p,i)=>{ if(p.band){ top.push([xs(i),ys(p.band.max)]); } });
+  for(let i=pts.length-1;i>=0;i--){ if(pts[i].band){ bot.push([xs(i),ys(pts[i].band.min)]); } }
+  const area=top.concat(bot);
+  if(area.length>2){
+    const path=area.map((pt,i)=>(i===0?'M':'L')+pt[0].toFixed(1)+','+pt[1].toFixed(1)).join(' ')+' Z';
+    svg+=`<path d="${path}" fill="${org}" fill-opacity="0.16" stroke="${org}" stroke-opacity="0.30" stroke-width="1"/>`;
+  }
+  // compset average line (dashed grey)
+  const compSeg=pts.map((p,i)=>p.comp!=null?[xs(i),ys(p.comp)]:null).filter(Boolean);
+  if(compSeg.length>1){ svg+=`<polyline points="${compSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="#9a8470" stroke-width="1.5" stroke-dasharray="4 3"/>`; }
+  pts.forEach((p,i)=>{ if(p.comp!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.comp).toFixed(1)}" r="2.5" fill="#9a8470"/>`; });
+  // my Expedia price line (solid orange, thick)
+  const mineSeg=pts.map((p,i)=>p.mine!=null?[xs(i),ys(p.mine)]:null).filter(Boolean);
+  if(mineSeg.length>1){ svg+=`<polyline points="${mineSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${org}" stroke-width="2.5"/>`; }
+  pts.forEach((p,i)=>{ if(p.mine!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.mine).toFixed(1)}" r="3" fill="${org}" stroke="#fff" stroke-width="1"/>`; });
+  // x labels (day numbers)
+  pts.forEach((p,i)=>{ svg+=`<text x="${xs(i).toFixed(1)}" y="${H-M.b+14}" text-anchor="middle" fill="#9a8470">${DOW_SHORT[p.d.getDay()].slice(0,2)}</text>`;
+    svg+=`<text x="${xs(i).toFixed(1)}" y="${H-M.b+24}" text-anchor="middle" fill="#2a1d12" font-weight="500">${p.d.getDate()}</text>`; });
+  svg+=`</svg>`;
+  wrap.innerHTML=svg;
+  // legend
+  legend.innerHTML=`<div class="rate-legend">
+    <span class="rl-item"><span class="rl-line" style="background:${org}"></span>Your Expedia price</span>
+    <span class="rl-item"><span class="rl-line rl-dash"></span>Compset average</span>
+    <span class="rl-item"><span class="rl-area" style="background:${org}"></span>Competitor range (min–max)</span>
+  </div>
+  <div class="rate-note">Your price comes from the same RMES engine as the dashboard, converted to Expedia space (×${(mobExpDivisor(MOB.struct)).toFixed(3)}). Days without Expedia data are left blank.</div>`;
 }
 function mobOpenSheet(){ document.getElementById('sheet-bg').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
 function mobCloseSheet(){ document.getElementById('sheet-bg').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); MOB_DETAIL_OPEN=false; }
 function mobSetTab(t){ MOB.tab=t; document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t)); document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t)); mobRenderAll(); }
-function mobRenderAll(){ if(MOB.tab==='days'){ mobRenderCalendar(); mobRenderDays(); } else if(MOB.tab==='month'){ mobRenderMonth(); } }
+function mobRenderAll(){ if(MOB.tab==='days'){ mobRenderCalendar(); mobRenderDays(); } else if(MOB.tab==='month'){ mobRenderMonth(); } else if(MOB.tab==='rate'){ mobRenderRateShopper(); } }
 document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cal-prev').addEventListener('click', ()=>{ MOB.winStart=addDaysYmd(MOB.winStart||todayYmdNum(),-7); mobRenderAll(); });
   document.getElementById('cal-next').addEventListener('click', ()=>{ const cap=addDaysYmd(todayYmdNum(),365); const nx=addDaysYmd(MOB.winStart||todayYmdNum(),7); MOB.winStart=(nx>cap)?cap:nx; mobRenderAll(); });
