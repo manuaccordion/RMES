@@ -738,6 +738,25 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 .big-hero-val{font-size:25px;font-weight:800;color:var(--ink);line-height:1;font-family:'DM Mono',monospace}
 .big-hero-sub{font-size:10.5px;color:var(--ink-3);margin-top:5px;font-family:'DM Mono',monospace;font-weight:500}
 .big-chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px 6px;margin-bottom:18px}
+.big-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.big-charts-row{grid-template-columns:1fr}}
+/* Big Picture tree */
+.big-tree{margin-top:4px}
+.big-tree-main{background:linear-gradient(135deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:16px 18px;margin-bottom:6px}
+.big-tree-main-head{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--ink);margin-bottom:10px}
+.big-tree-main-rows{display:flex;flex-direction:column;gap:7px}
+.big-tree-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px}
+.big-tree-row .k{color:var(--ink-2)}
+.big-tree-row .v{font-family:'DM Mono',monospace;font-weight:700;color:var(--ink)}
+.big-tree-branches{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;position:relative;margin-top:14px}
+@media(max-width:780px){.big-tree-branches{grid-template-columns:1fr}}
+.big-tree-branch{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px;position:relative}
+.big-tree-branch::before{content:'';position:absolute;top:-14px;left:50%;width:1px;height:14px;background:var(--line)}
+@media(max-width:780px){.big-tree-branch::before{display:none}}
+.big-tree-branch-head{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);font-weight:700;margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.big-tree-branch-rows{display:flex;flex-direction:column;gap:6px}
+.big-bar-clickable{cursor:pointer}
+.big-bar-selected{outline:2px solid var(--accent);outline-offset:1px}
 .big-chart-title{font-size:12px;font-weight:700;color:var(--ink-2);margin-bottom:6px}
 #big-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 @media(max-width:900px){#big-grid{grid-template-columns:repeat(2,1fr)}}
@@ -1059,17 +1078,20 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div>
         <h2>Big Picture</h2>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <label style="font-size:11px;color:var(--ink-3)">Pickup window</label>
-        <div id="big-window-pills" style="display:flex;gap:6px"></div>
-      </div>
     </div>
     <div id="big-hero" class="big-hero"></div>
-    <div class="big-chart-wrap">
-      <div class="big-chart-title" id="big-chart-title">Pickup — room nights booked per day (last 7 days)</div>
-      <div id="big-chart"></div>
+    <div class="big-charts-row">
+      <div class="big-chart-wrap">
+        <div class="big-chart-title" id="big-chart-title">Pickup — room nights booked per day (last 7 days)</div>
+        <div id="big-chart"></div>
+      </div>
+      <div class="big-chart-wrap">
+        <div class="big-chart-title" id="big-pie-title">Source share — OTA vs direct (year) vs STLY</div>
+        <div id="big-pie"></div>
+      </div>
     </div>
-    <div id="big-grid"></div>
+    <div id="big-tree"></div>
+    <div id="big-grid" style="display:none"></div>
   </section>
   <section class="tab-panel" id="panel-sell">
     <div class="section-head">
@@ -1418,19 +1440,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p>Layout, top to bottom:</p>
         <ul style="margin:6px 0 0 18px;padding:0">
           <li><b>Hero row</b> (4 icon boxes): recent pickup (RN), Revenue 2026 (OTB), OCC 2026, and compset rank over the next 7 days (with All, it's the average of the 4 properties). The first three show a small <b>STLY comparison</b> underneath (same weekday, -364 days) with a green/red arrow; the rank box has no STLY.</li>
-          <li><b>Pickup chart</b>: room nights booked per day over the last 7 days, centred, with today's bar highlighted in the accent colour.</li>
-          <li><b>6 colour-coded cards</b> (3 + 3 grid), each with an icon and clickable, opening the matching tab. All pickup-based cards react to the 1/7 day toggle. When the property selector is on <b>All</b>, every card and every hero box (and the pickup chart) shows a small <b>“by property”</b> badge; clicking it opens a clean colour-coded panel (RMES style) with the per-hotel breakdown of <b>that element's own metric</b> — pickup RN, Revenue 2026, OCC 2026, compset rank/position, forecast revenue, and cancellation RN:
-            <ul style="margin:4px 0 0 18px;padding:0">
-              <li><b>Sell Strategy</b>: the top 3 days by room nights booked in the selected window.</li>
-              <li><b>Overview</b>: the 3 stay-months (with year) that moved the most by recent pickup.</li>
-              <li><b>Forecast</b> (title shows the current month): revenue per day still needed to close it, the average €/day picked up over the last 14 days, and OTB → forecast.</li>
-              <li><b>CXLTrend</b>: top 3 months (current month onwards only, future cancellations) with the most cancellations.</li>
-              <li><b>Rate Shopper</b>: average position among competitors over the next 7 days (e.g. 3rd / 8; with All it's the average of the 4 properties) and average gap vs the compset ("in line" when within ±1%).</li>
-              <li><b>OCC &amp; Pickup</b> (merged): the top 3 room types by room nights in the window (so it doesn't repeat the Sell Strategy) — links to both the OCC by Room Type and Pickup Matrix tabs.</li>
-            </ul>
-          </li>
-        </ul>
-        <p style="margin-top:6px;color:var(--ink-3)">The <b>Pickup window</b> toggle (1 day default · 7 days) drives the hero pickup box, the Sell Strategy / Overview / OCC &amp; Pickup cards. If a card has no data it shows "no movement" instead of being hidden.</p>
+          <li>Then the Big Picture is a focused pickup panel. From the top: the <b>4 hero boxes</b> (last-day pickup, Revenue 2026, OCC 2026, compset rank 7d), each with a small STLY comparison and a <b>by property</b> badge with All.
+            Two side-by-side charts: (1) <b>room nights booked per day</b> over the last 7 days — click any bar to focus that pickup day, or <b>all 7 days</b> to aggregate the week; (2) a <b>Source-share donut</b> by revenue (OTA vs direct), outer ring = current year, inner = STLY, with each source's share and its change vs STLY.
+            Below, a colour-coded <b>tree</b>: the main block lists the <b>top stay dates</b> (check-in dates) booked on the selected pickup day, and three branches break that same pickup down by <b>stay month</b>, <b>room sold</b> and <b>channel sold</b>. The chart is by pickup day; the tree is by stay date — crossing the two shows which stay nights a given booking day filled. Default = latest day. With All, the by-property badges open per-hotel breakdowns. If a card has no data it shows "no movement" instead of being hidden.</p>
       </div>
     </details>
 
@@ -1540,7 +1552,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>STLY</b> (Same-Time-Last-Year) = 2025 snapshot at the same day-of-week a year ago (today −364d). A "like-for-like" comparison.</li>
           <li><b>Final LY</b> = the definitive 2025 close, all 2025 bookings without time filter. Shows how much value was consolidated last year.</li>
         </ul>
-        <p><b>What it contains</b>: monthly pacing (OCC%, RN, ADR, Revenue by month), with columns grouped and visually separated into 5 blocks — <b>2026 OTB</b>, <b>2025 STLY</b>, <b>Final LY</b>, <b>Δ vs STLY</b> and <b>Δ vs Final LY</b> — each with a colour band and a divider border so you can read at a glance which group each column belongs to. Plus monthly revenue and OCC charts, Source and Channel tables filtered by month, booking window (lead-time distribution, rolling 12 closed months).</p>
+        <p><b>What it contains</b>: monthly pacing (OCC%, RN, ADR, Revenue by month), with columns grouped and visually separated into 5 blocks — <b>2026 OTB</b>, <b>2025 STLY</b>, <b>Final LY</b>, <b>Δ vs STLY</b> and <b>Δ vs Final LY</b> — each with a colour band and a divider border so you can read at a glance which group each column belongs to. Plus monthly revenue and OCC charts, Source and Channel tables filtered by month, booking window (lead-time distribution, rolling 12 closed months). <b>Note on Source</b>: when the Provenienza field is empty, the source is inferred from the channel — Booking/Expedia → OTA, Beddy → direct (Sito web) — so OTA vs direct stays correct even on rows without an explicit source.</p>
         <p><b>Quick read</b>: Δ% OTB vs STLY = speed signal (am I selling faster/slower?). Δ% OTB vs Final LY = % of close reached (how much pickup still expected).</p>
       </div>
     </details>
@@ -44252,11 +44264,20 @@ function normRoom(s){
 }
 
 /* -------- PROVENIENZA NORMALIZE -------- */
-function normProv(p){
-  if(!p) return 'Sito web';
-  const t = p.trim();
-  if(t==='Non Specificato' || t==='Non specificato' || t==='') return 'Sito web';
-  return t;
+function normProv(p, canale){
+  const t = (p||'').trim();
+  // Se la Provenienza è valorizzata e sensata, usala.
+  if (t && t!=='Non Specificato' && t!=='Non specificato'){
+    return t;
+  }
+  // Provenienza vuota/non specificata: DEDUCI dal canale.
+  //   Booking/Expedia/altri OTA → "OTA"; Beddy (motore diretto) → "Sito web".
+  const c = (canale||'').trim().toLowerCase();
+  if (c==='booking' || c==='expedia' || c==='airbnb' || c==='vrbo' || c.indexOf('booking')>=0 || c.indexOf('expedia')>=0){
+    return 'OTA';
+  }
+  // Beddy o sconosciuto → diretto
+  return 'Sito web';
 }
 
 /* -------- BUILD BOOKINGS (one row per camera-night-block) --------
@@ -44361,8 +44382,8 @@ function loadData(csvText){
     const numRooms = alloggi.length;
     const revPerRoomNight = (totNet / notti) / numRooms;
 
-    const prov = normProv(r['Provenienza']);
     const canale = (r['Canale']||'—').trim() || '—';
+    const prov = normProv(r['Provenienza'], canale);
     const ref = r['numero di riferimento'] || '';
     const guest = (r['prenotante']||'').trim();
     const tariffa = (r['Piani tariffari']||'').trim();
@@ -59416,6 +59437,7 @@ function renderAll(){
 function setStructure(sel){
   if (CURRENT_STRUCT === sel) return;
   CURRENT_STRUCT = sel;
+  if (typeof BIG_SELECTED_DAY !== 'undefined') BIG_SELECTED_DAY = null;
   document.querySelectorAll('.struct-pill').forEach(p=>{
     p.classList.toggle('active', p.dataset.s===sel);
   });
@@ -59440,6 +59462,40 @@ const BIG_CARD_THEMES = {
 const BIG_HERO_ICONS = ['⚡','💶','📊','🏆'];
 
 function _bigProvLabel(p){ return (p==='Non Specificato' ? 'Sito web' : p); }
+
+let BIG_SELECTED_DAY = null;   // ymd (number) del giorno cliccato nel grafico; null = ultimo giorno
+
+// Aggrega il pickup per UN giorno specifico (bookYmd === dayYmd): mesi/stanze/canali di soggiorno.
+function _bigPickupTreeForDay(sel, dayYmd){
+  // dayYmd può essere un numero (singolo giorno di pickup) o 'all' (ultimi 7 giorni)
+  const ks = new Set(structKeysFor(sel));
+  let lo=dayYmd, hi=dayYmd;
+  if (dayYmd === 'all'){
+    const today = new Date(TODAY); today.setHours(0,0,0,0);
+    lo = +ymd(new Date(today.getTime()-6*864e5)); hi = +ymd(today);
+  }
+  const byMonth={}, byRoom={}, byChannel={}, byStayDay={}; let totRn=0, totRev=0;
+  for (const b of BOOKINGS){
+    if (b.cancelled || !ks.has(b.struct)) continue;
+    if (dayYmd==='all' ? (b.bookYmd<lo || b.bookYmd>hi) : (b.bookYmd!==dayYmd)) continue;
+    const rn=b.notti||0, rev=b.revTotal||0; totRn+=rn; totRev+=rev;
+    const ch=_bigProvLabel(b.prov||b.canale||'?'); byChannel[ch]=(byChannel[ch]||0)+rn;
+    const rm=b.room||'?'; byRoom[rm]=(byRoom[rm]||0)+rn;
+    if (b.dIn){
+      const d=new Date(b.dIn);
+      const ym=`${d.getUTCFullYear()}-${pad2(d.getUTCMonth()+1)}`; byMonth[ym]=(byMonth[ym]||0)+rn;
+      const sd=+ymd(d); byStayDay[sd]=(byStayDay[sd]||0)+rn;
+    }
+  }
+  const top=(obj,fn)=>Object.keys(obj).map(k=>({key:k,label:fn?fn(k):k,rn:obj[k]})).filter(x=>x.rn>0).sort((a,b)=>b.rn-a.rn);
+  return {
+    totRn, totRev,
+    months: top(byMonth,(ym)=>{const p=ym.split('-');const mm=+p[1];return (CFG.monthsITLong?CFG.monthsITLong[mm-1]:ym)+' '+p[0];}),
+    rooms: top(byRoom),
+    channels: top(byChannel),
+    stayDays: top(byStayDay,(sd)=>{const s=String(sd);return `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`;}),
+  };
+}
 
 // Aggregazione pickup sugli ultimi nDays giorni (per booking date), dai BOOKINGS.
 // Ritorna pickup per canale, per stay-month, per room-type, per giorno-di-prenotazione + totali.
@@ -59497,11 +59553,11 @@ function _bigBreakdownData(kind, nDays){
       rows: BIG_STRUCTS.map(s=>{const v=tot[_bigStructKey(s.k)]; return {name:s.name,color:s.color,main:`${v} RN`,pct:v/total*100,barPct:v/total*100};}) };
   }
   if (kind === 'cancel'){
-    const curYmNum = today.getFullYear()*100 + (today.getMonth()+1);
     const tot={}; BIG_STRUCTS.forEach(s=>tot[s.k]=0);
-    BIG_STRUCTS.forEach(s=>{ try{ const C=aggCancellations(s.k); if(C&&C.monthlyArr){ tot[s.k]=C.monthlyArr.filter(r=>+r.ym>=curYmNum).reduce((a,r)=>a+(r.cancelRn||0),0); } }catch(e){} });
+    BIG_STRUCTS.forEach(s=>{ try{ tot[s.k]=_bigCancelByDay(s.k, nDays).totRn; }catch(e){} });
     const total = Object.values(tot).reduce((a,b)=>a+b,0)||1;
-    return { title:'Cancellations by property', sub:`current month onwards · ${total} RN total`,
+    const winLbl = nDays===1?'last day':`last ${nDays} days`;
+    return { title:'Cancellations by property', sub:`${winLbl} · ${total} RN cancelled`,
       rows: BIG_STRUCTS.map(s=>({name:s.name,color:s.color,main:`${tot[s.k]} RN`,pct:tot[s.k]/total*100,barPct:tot[s.k]/total*100})) };
   }
   if (kind === 'forecast'){
@@ -59528,6 +59584,22 @@ function _bigBreakdownData(kind, nDays){
     BIG_STRUCTS.forEach(s=>{ let v=null; try{ const A=aggOTBYearly(s.k); if(A&&A.tot)v=A.tot.occC; }catch(e){} rows.push({name:s.name,color:s.color,v}); });
     return { title:'OCC 2026 by property', sub:'occupancy year-to-date',
       rows: rows.map(r=>({name:r.name,color:r.color,main:r.v!=null?fmtPct(r.v,1):'—',pct:null,barPct:r.v!=null?r.v*100:0})) };
+  }
+  if (kind === 'source'){
+    const rows=[];
+    BIG_STRUCTS.forEach(s=>{
+      let txt='—', barPct=0;
+      try{
+        const A=aggOTBYearly(s.k);
+        if(A&&A.provCur){
+          const arr=Object.keys(A.provCur).map(k=>({name:_bigProvLabel(k),rev:A.provCur[k].rev||0})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
+          const tot=arr.reduce((a,b)=>a+b.rev,0)||1;
+          if(arr.length){ const topS=arr[0]; const pct=topS.rev/tot*100; txt=`${topS.name} ${pct.toFixed(0)}%`; barPct=pct; }
+        }
+      }catch(e){}
+      rows.push({name:s.name,color:s.color,main:txt,pct:null,barPct});
+    });
+    return { title:'Top source by property', sub:'share of revenue · current year', rows };
   }
   return null;
 }
@@ -59652,6 +59724,43 @@ function _bigForecast14d(sel){
   return rev;
 }
 
+function _bigCancelByDay(sel, nDays){
+  // top date in cui sono state FATTE cancellazioni negli ultimi nDays (per cancelYmd)
+  const ks = new Set(structKeysFor(sel));
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const lo=+ymd(new Date(today.getTime()-(nDays-1)*864e5)), hi=+ymd(today);
+  const byDay={}; let totRn=0;
+  for (const b of BOOKINGS){
+    if (!b.cancelled || !b.cancelYmd || !ks.has(b.struct)) continue;
+    if (b.cancelYmd>=lo && b.cancelYmd<=hi){ byDay[b.cancelYmd]=(byDay[b.cancelYmd]||0)+(b.notti||0); totRn+=(b.notti||0); }
+  }
+  const arr = Object.keys(byDay).map(d=>({ymd:+d, rn:byDay[d]})).sort((a,b)=>b.rn-a.rn);
+  return { arr, totRn };
+}
+
+function _bigForecastPickup7Mo(sel){
+  // RN/giorno medie prenotate negli ultimi 7 giorni (booking date) con notti di SOGGIORNO nel mese corrente
+  const ks = new Set(structKeysFor(sel));
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const lo=+ymd(new Date(today.getTime()-6*864e5)), hi=+ymd(today);
+  const moY = today.getFullYear(), moM = today.getMonth();           // mese corrente
+  const moStart = new Date(moY, moM, 1), moEnd = new Date(moY, moM+1, 1);
+  let rn = 0;
+  for (const b of BOOKINGS){
+    if (b.cancelled || !ks.has(b.struct)) continue;
+    if (!(b.bookYmd>=lo && b.bookYmd<=hi)) continue;                  // prenotata negli ultimi 7gg
+    if (!b.dIn || !b.dOut) continue;
+    // conto le notti del soggiorno che cadono nel mese corrente
+    let d = new Date(b.dIn.getFullYear(), b.dIn.getMonth(), b.dIn.getDate());
+    const out = new Date(b.dOut.getFullYear(), b.dOut.getMonth(), b.dOut.getDate());
+    while (d < out){
+      if (d >= moStart && d < moEnd) rn++;
+      d = new Date(d.getTime()+864e5);
+    }
+  }
+  return rn/7;
+}
+
 // riempie sempre a 3 righe: items già {k,v}, manca → "N." / "0"
 function _bigTop3(items, unit){
   const out = [];
@@ -59691,7 +59800,7 @@ function _bigCard(o){
 }
 
 function renderBigPicture(){
-  const host = document.getElementById('big-grid');
+  const host = document.getElementById('big-tree');
   if (!host) return;
   const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'firenze';
   const n = (BIG_PICKUP_DAYS===7) ? 7 : 1;
@@ -59728,88 +59837,74 @@ function renderBigPicture(){
   // ---- GRAFICO (sempre 7 giorni per contesto) ----
   try { _bigRenderChart(sel); } catch(e){ const c=document.getElementById('big-chart'); if(c)c.innerHTML=''; }
 
-  // ---- 6 CASELLE ----
-  const cards = [];
+  // ---- TORTA SHARE OTA/DIRETTO ----
+  try { _bigRenderPie(sel); } catch(e){ const c=document.getElementById('big-pie'); if(c)c.innerHTML=''; }
 
-  // 1. SELL STRATEGY → top 3 GIORNI con più RN (rispetta 1/7)
-  try {
-    const pdays = _bigPickupByDay(sel, n).filter(d=>d.rn>0).sort((a,b)=>b.rn-a.rn).slice(0,3);
-    const lines = _bigTop3(pdays.map((d,i)=>({k:`${i+1}. ${d.label}`, v:`+${d.rn} RN`})), 'RN');
-    cards.push(_bigCard({ title:'Sell Strategy', theme:'sell', big:true, tabs:[{label:'Sell',tab:'sell'}], lines, byProp: isBoth?'pickup':null }));
-  } catch(e){ cards.push(_bigCard({ title:'Sell Strategy', theme:'sell', tabs:[{label:'Sell',tab:'sell'}], empty:true })); }
+  // ---- ALBERO (giorno di PICKUP selezionato → giorni di soggiorno / mese / stanza / canale) ----
+  const allDays = _bigPickupByDay(sel, 7);
+  let selDay = BIG_SELECTED_DAY;
+  const isAll = (selDay === 'all');
+  if (!isAll && (selDay==null || !allDays.some(d=>d.ymdNum===selDay))){
+    selDay = allDays.length ? allDays[allDays.length-1].ymdNum : +ymd(new Date(TODAY));
+  }
+  const tree = _bigPickupTreeForDay(sel, isAll ? 'all' : selDay);
+  const selLbl = isAll ? 'the last 7 days' : (()=>{ const s=String(selDay); return `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`; })();
 
-  // 2. OVERVIEW → 3 mesi con più pickup (rispetta 1/7)
-  try {
-    const top = agg.months.slice(0,3);
-    const lines = _bigTop3(top.map((c,i)=>({k:`${i+1}. ${c.label}`, v:`+${c.rn} RN`})), 'RN');
-    cards.push(_bigCard({ title:'Overview', theme:'otb', big:true, tabs:[{label:'Overview',tab:'otb'}], lines, byProp: isBoth?'pickup':null }));
-  } catch(e){ cards.push(_bigCard({ title:'Overview', theme:'otb', tabs:[{label:'Overview',tab:'otb'}], empty:true })); }
+  // Riga con barra proporzionale colorata
+  const maxRn = (arr)=> Math.max(1, ...(arr||[]).map(x=>x.rn));
+  const barRow = (label, rn, max, color, big)=>{
+    const pct = Math.round(rn/max*100);
+    const fs = big?'13px':'12px';
+    return `<div class="big-tree-row" style="flex-direction:column;align-items:stretch;gap:3px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline">
+        <span class="k" style="font-size:${fs}">${label}</span>
+        <span class="v" style="font-size:${fs};color:${color}">${rn} RN</span>
+      </div>
+      <div style="height:6px;background:var(--surface-2);border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:4px"></div>
+      </div>
+    </div>`;
+  };
 
-  // 3. FORECAST → needed/day + fatto negli ultimi 14gg
-  try {
-    const today = new Date(TODAY);
-    const curKey = `${today.getFullYear()}${pad2(today.getMonth()+1)}`;
-    const F = aggForecast(sel);
-    let done=false;
-    if (F && F.monthly && F.monthly[curKey]){
-      const m = F.monthly[curKey];
-      if (m.otbRev!=null && m.fcstRev!=null){
-        const made14 = _bigForecast14d(sel);
-        const moName = (CFG.monthsITLong?CFG.monthsITLong[today.getMonth()]:'')+' '+today.getFullYear();
-        cards.push(_bigCard({ title:`Forecast — ${moName}`, theme:'fcst', big:true, tabs:[{label:'Forecast',tab:'fcst'}], lines:[
-          {k:'Needed / day', v:(m.eurPerDayToClose!=null && m.eurPerDayToClose>0)?fmtEUR(m.eurPerDayToClose):'✓ reached'},
-          {k:'€/day pickup (14d)', v: fmtEUR(made14/14)},
-          {k:'OTB → Forecast', v: `${fmtEUR(m.otbRev)} → ${fmtEUR(m.fcstRev)}`}
-        ], byProp: isBoth?'forecast':null}));
-        done=true;
-      }
-    }
-    if (!done) cards.push(_bigCard({ title:'Forecast', theme:'fcst', tabs:[{label:'Forecast',tab:'fcst'}], empty:true }));
-  } catch(e){ cards.push(_bigCard({ title:'Forecast', theme:'fcst', tabs:[{label:'Forecast',tab:'fcst'}], empty:true })); }
+  // PRINCIPALE = top 3 giorni di SOGGIORNO prenotati nel giorno di pickup selezionato
+  const stayTop = (tree.stayDays||[]).slice(0,3);
+  const stayMax = maxRn(stayTop);
+  const mainRows = stayTop.length
+    ? stayTop.map((d,i)=>barRow(`${i+1}. ${d.label}`, d.rn, stayMax, 'var(--accent)', true)).join('')
+    : '<div class="big-tree-row"><span class="k">no stays booked that day</span></div>';
 
-  // 4. CXLTREND → solo dal mese in corso in poi, top 3 mesi
-  try {
-    const today = new Date(TODAY);
-    const curYmNum = today.getFullYear()*100 + (today.getMonth()+1);   // YYYYMM
-    const C = aggCancellations(sel);
-    const lines=[];
-    if (C && C.monthlyArr && C.monthlyArr.length){
-      const future = C.monthlyArr.filter(r=> +r.ym >= curYmNum && (r.cancelRn||0)>0);
-      future.sort((a,b)=>(b.cancelRn||0)-(a.cancelRn||0));
-      for (let i=0;i<3;i++){
-        const r = future[i];
-        if (r){ const y=String(r.ym).slice(0,4); const mm=+String(r.ym).slice(4,6); lines.push({k:`${i+1}. ${CFG.monthsITLong?CFG.monthsITLong[mm-1]:mm} ${y}`, v:`${r.cancelRn} RN`}); }
-        else lines.push({k:`${i+1}.`, v:'0 RN'});
-      }
-    }
-    cards.push(lines.length ? _bigCard({ title:'CXLTrend', theme:'cancel', big:true, tabs:[{label:'CXLTrend',tab:'cancel'}], lines, byProp: isBoth?'cancel':null })
-      : _bigCard({ title:'CXLTrend', theme:'cancel', tabs:[{label:'CXLTrend',tab:'cancel'}], empty:true }));
-  } catch(e){ cards.push(_bigCard({ title:'CXLTrend', theme:'cancel', tabs:[{label:'CXLTrend',tab:'cancel'}], empty:true })); }
+  const branchHtml = (arr, color)=>{
+    const top=(arr||[]).slice(0,3); const mx=maxRn(top);
+    return top.length ? top.map((x,i)=>barRow(`${i+1}. ${x.label}`, x.rn, mx, color, false)).join('')
+                      : '<div class="big-tree-row"><span class="k" style="font-size:12px;color:var(--ink-3)">—</span></div>';
+  };
 
-  // 5. RATE SHOPPER → rank + gap (più chiaro)
-  try {
-    const pos = _bigCompsetRank(sel, 7);
-    if (pos && pos.rank){
-      let gapTxt='—';
-      if (pos.gapPct!=null){ const g=pos.gapPct; gapTxt = Math.abs(g)<1 ? 'in line' : `${g>0?'+':''}${g.toFixed(1)}%`; }
-      cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', big:true, tabs:[{label:'Rate Shopper',tab:'rate'}], lines:[
-        {k:'Position (next 7d)', v:`${pos.rank}° / ${pos.total}`},
-        {k:'Avg vs compset', v: gapTxt}
-      ], byProp: isBoth?'rate':null}));
-    } else cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', tabs:[{label:'Rate Shopper',tab:'rate'}], empty:true }));
-  } catch(e){ cards.push(_bigCard({ title:'Rate Shopper', theme:'rate', tabs:[{label:'Rate Shopper',tab:'rate'}], empty:true })); }
+  const byPropBadge = isBoth ? ` <span class="big-byprop" data-bigbreakdown="pickup" style="font-size:9px;font-weight:700;color:#fff;background:var(--accent);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>` : '';
 
-  // 6. OCC & PICKUP → top room type per RN (finestra), non ripete il pickup totale
-  try {
-    const top = agg.rooms.slice(0,3);
-    const lines = _bigTop3(top.map((r,i)=>({k:`${i+1}. ${r.label}`, v:`${r.rn} RN`})), 'RN');
-    cards.push(_bigCard({ title:'OCC & Pickup', theme:'occpk', big:true, tabs:[{label:'OCC',tab:'rt'},{label:'Pickup',tab:'pk'}], lines, byProp: isBoth?'pickup':null }));
-  } catch(e){ cards.push(_bigCard({ title:'OCC & Pickup', theme:'occpk', tabs:[{label:'OCC',tab:'rt'},{label:'Pickup',tab:'pk'}], empty:true })); }
+  const treeHtml = `
+    <div class="big-tree">
+      <div class="big-tree-main">
+        <div class="big-tree-main-head">🏨 Top stay dates booked on <span style="color:var(--accent)">${selLbl}</span> — ${tree.totRn} RN total${(!isAll && BIG_SELECTED_DAY==null)?' <span style="font-weight:400;color:var(--ink-3);font-size:11px">(latest day — click a bar above, or “all 7 days”)</span>':''}${byPropBadge}</div>
+        <div class="big-tree-main-rows">${mainRows}</div>
+      </div>
+      <div class="big-tree-branches">
+        <div class="big-tree-branch" style="border-top:3px solid #3b6b9a">
+          <div class="big-tree-branch-head"><span style="color:#3b6b9a">🗓️</span> Stay month</div>
+          <div class="big-tree-branch-rows">${branchHtml(tree.months,'#3b6b9a')}</div>
+        </div>
+        <div class="big-tree-branch" style="border-top:3px solid #1f8a8a">
+          <div class="big-tree-branch-head"><span style="color:#1f8a8a">🛏️</span> Room sold</div>
+          <div class="big-tree-branch-rows">${branchHtml(tree.rooms,'#1f8a8a')}</div>
+        </div>
+        <div class="big-tree-branch" style="border-top:3px solid #c4823b">
+          <div class="big-tree-branch-head"><span style="color:#c4823b">🔗</span> Channel sold</div>
+          <div class="big-tree-branch-rows">${branchHtml(tree.channels,'#c4823b')}</div>
+        </div>
+      </div>
+    </div>`;
+  const treeEl = document.getElementById('big-tree');
+  if (treeEl) treeEl.innerHTML = treeHtml;
 
-  host.innerHTML = cards.join('');
-  document.querySelectorAll('#panel-big [data-bigtab]').forEach(el=>{
-    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); if (typeof setTab==='function') setTab(el.dataset.bigtab); });
-  });
   document.querySelectorAll('#panel-big [data-bigbreakdown]').forEach(el=>{
     el.addEventListener('click', (ev)=>{ ev.stopPropagation(); _bigShowBreakdown(el.dataset.bigbreakdown, n); });
   });
@@ -59822,9 +59917,10 @@ function _bigRenderChart(sel){
   const titleEl = document.getElementById('big-chart-title');
   if (titleEl){
     const base = 'Pickup — room nights booked per day (last 7 days)';
-    titleEl.innerHTML = (sel==='both')
-      ? `${base} <span class="big-byprop" data-bigbreakdown="pickup7" style="font-size:10px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>`
-      : base;
+    const allActive = (BIG_SELECTED_DAY==='all');
+    const allBtn = `<span data-bigallpick="1" style="font-size:10px;font-weight:700;border-radius:8px;padding:1px 8px;cursor:pointer;margin-left:8px;${allActive?'background:var(--accent);color:#fff':'background:rgba(0,0,0,.05);color:var(--ink-2);border:1px solid var(--line)'}">${allActive?'✓ all 7 days':'all 7 days'}</span>`;
+    const propBadge = (sel==='both') ? ` <span class="big-byprop" data-bigbreakdown="pickup7" style="font-size:10px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>` : '';
+    titleEl.innerHTML = base + allBtn + propBadge;
   }
   const days = _bigPickupByDay(sel, 7);
   const maxRn = Math.max(1, ...days.map(d=>d.rn));
@@ -59833,6 +59929,12 @@ function _bigRenderChart(sel){
   const plotW=W-padL-padR, plotH=H-padTop-padBot;
   const slot=plotW/days.length, bw=Math.min(46, slot*0.6);
   let bars='', grid='';
+  // gradiente definito una volta
+  let defs = `<defs>
+    <linearGradient id="bigBarSel" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d99a4e"/><stop offset="100%" stop-color="#c4823b"/></linearGradient>
+    <linearGradient id="bigBarNorm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#e7d7b8"/><stop offset="100%" stop-color="#c9b89a"/></linearGradient>
+    <linearGradient id="bigBarToday" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#bdd0e3"/><stop offset="100%" stop-color="#a9c0d8"/></linearGradient>
+  </defs>`;
   // griglia orizzontale (3 linee)
   for (let g=0; g<=2; g++){
     const val=Math.round(maxRn*(g/2)); const y=padTop+plotH-(plotH*(g/2));
@@ -59844,22 +59946,79 @@ function _bigRenderChart(sel){
     const x = padL + i*slot + (slot-bw)/2;
     const y = padTop + plotH - h;
     const isToday = i===days.length-1;
-    bars += `<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="3" fill="${isToday?'var(--accent)':'#c9b89a'}"><title>${d.label}: ${d.rn} RN</title></rect>`;
+    const isSel = (BIG_SELECTED_DAY==='all') ? false : ((BIG_SELECTED_DAY!=null) ? (d.ymdNum===BIG_SELECTED_DAY) : isToday);
+    const fill = isSel ? 'url(#bigBarSel)' : (isToday ? 'url(#bigBarToday)' : 'url(#bigBarNorm)');
+    bars += `<rect class="big-bar-clickable${isSel?' big-bar-selected':''}" data-bigday="${d.ymdNum}" x="${x}" y="${y}" width="${bw}" height="${Math.max(h,2)}" rx="3" fill="${fill}" style="cursor:pointer"><title>${d.label}: ${d.rn} RN — click for detail</title></rect>`;
+    // zona di click estesa (anche quando la barra è piccola)
+    bars += `<rect class="big-bar-clickable" data-bigday="${d.ymdNum}" x="${x-slot*0.2}" y="${padTop}" width="${bw+slot*0.4}" height="${plotH}" fill="transparent" style="cursor:pointer"></rect>`;
     if (d.rn>0) bars += `<text x="${x+bw/2}" y="${y-5}" font-size="11" text-anchor="middle" fill="var(--ink-2)" font-weight="600" font-family="'DM Mono',monospace">${d.rn}</text>`;
-    bars += `<text x="${x+bw/2}" y="${H-12}" font-size="10" text-anchor="middle" fill="var(--ink-3)" font-family="'DM Mono',monospace">${d.label}</text>`;
+    bars += `<text x="${x+bw/2}" y="${H-12}" font-size="10" text-anchor="middle" fill="${isSel?'var(--accent)':'var(--ink-3)'}" font-weight="${isSel?'700':'400'}" font-family="'DM Mono',monospace">${d.label}</text>`;
   });
-  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:680px;height:auto;display:block;margin:0 auto">${grid}${bars}</svg>`;
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:680px;height:auto;display:block;margin:0 auto">${defs}${grid}${bars}</svg>`;
+  // click su una barra → seleziona il giorno e ri-renderizza l'albero
+  host.querySelectorAll('[data-bigday]').forEach(r=>{
+    r.addEventListener('click', ()=>{ BIG_SELECTED_DAY = +r.dataset.bigday; renderBigPicture(); });
+  });
+  // pulsante "all 7 days" nel titolo
+  const allBtnEl = document.querySelector('#big-chart-title [data-bigallpick]');
+  if (allBtnEl) allBtnEl.addEventListener('click', (ev)=>{ ev.stopPropagation(); BIG_SELECTED_DAY = (BIG_SELECTED_DAY==='all') ? null : 'all'; renderBigPicture(); });
 }
 
-function _bigRenderWindowPills(){
-  const el = document.getElementById('big-window-pills');
-  if (!el) return;
-  const opts = [{n:1,l:'1 day'},{n:7,l:'7 days'}];
-  el.innerHTML = opts.map(o=>`<button class="bw-mpill" data-bigwin="${o.n}" style="${o.n===BIG_PICKUP_DAYS?'background:var(--accent);color:#fff;border-color:var(--accent)':''}">${o.l}</button>`).join('');
-  el.querySelectorAll('[data-bigwin]').forEach(b=>{
-    b.addEventListener('click', ()=>{ BIG_PICKUP_DAYS = +b.dataset.bigwin; renderBigPicture(); });
-  });
+// Torta share Source (OTA/diretto/ecc.) per REVENUE, anno corrente vs STLY.
+function _bigRenderPie(sel){
+  const host = document.getElementById('big-pie');
+  const titleEl = document.getElementById('big-pie-title');
+  if (!host) return;
+  if (titleEl){
+    const base = 'Source share — by revenue (year) · inner = STLY';
+    titleEl.innerHTML = (sel==='both')
+      ? `${base} <span class="big-byprop" data-bigbreakdown="source" style="font-size:10px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>`
+      : base;
+  }
+  let A=null; try{ A=aggOTBYearly(sel); }catch(e){}
+  if (!A || !A.provCur){ host.innerHTML='<div style="color:var(--ink-3);font-size:12px;padding:20px;text-align:center">No data</div>'; return; }
+  const palette = ['#3b6b9a','#3d7a4b','#c4823b','#8e5fa8','#b0464b','#1f8a8a','#c9a227','#7a7a7a'];
+  const toArr = (obj)=> Object.keys(obj||{}).map(k=>({name:_bigProvLabel(k), rev:(obj[k]&&obj[k].rev)||0})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
+  const cur = toArr(A.provCur), prev = toArr(A.provPrev);
+  // colore coerente per nome (basato sull'ordine del corrente)
+  const colorOf={}; cur.forEach((x,i)=>colorOf[x.name]=palette[i%palette.length]);
+  prev.forEach((x)=>{ if(!colorOf[x.name]) colorOf[x.name]=palette[Object.keys(colorOf).length%palette.length]; });
+  const sum = (a)=>a.reduce((s,x)=>s+x.rev,0)||1;
+  const totCur=sum(cur), totPrev=sum(prev);
+  // donut: anello esterno = corrente, anello interno = STLY
+  const cx=110, cy=110, rOut=95, rOutIn=62, rInOut=55, rInIn=30;
+  function arcs(arr, tot, ri, ro){
+    let ang=-Math.PI/2, out='';
+    arr.forEach(x=>{
+      const frac=x.rev/tot, a2=ang+frac*2*Math.PI;
+      const x1=cx+ro*Math.cos(ang), y1=cy+ro*Math.sin(ang), x2=cx+ro*Math.cos(a2), y2=cy+ro*Math.sin(a2);
+      const x3=cx+ri*Math.cos(a2), y3=cy+ri*Math.sin(a2), x4=cx+ri*Math.cos(ang), y4=cy+ri*Math.sin(ang);
+      const large=frac>0.5?1:0;
+      out+=`<path d="M${x1} ${y1} A${ro} ${ro} 0 ${large} 1 ${x2} ${y2} L${x3} ${y3} A${ri} ${ri} 0 ${large} 0 ${x4} ${y4} Z" fill="${colorOf[x.name]}" stroke="var(--surface)" stroke-width="1.5"><title>${x.name}: ${fmtEUR(x.rev)} (${(frac*100).toFixed(0)}%)</title></path>`;
+      ang=a2;
+    });
+    return out;
+  }
+  const outerArcs = arcs(cur, totCur, rOutIn, rOut);
+  const innerArcs = arcs(prev, totPrev, rInIn, rInOut);
+  // legenda con confronto share cur vs prev
+  const prevShare={}; prev.forEach(x=>prevShare[x.name]=x.rev/totPrev*100);
+  const legend = cur.slice(0,6).map(x=>{
+    const cs=x.rev/totCur*100, ps=prevShare[x.name]; 
+    const delta = (ps!=null) ? (cs-ps) : null;
+    const dTxt = (delta==null)?'':` <span style="color:${delta>=0?'#3d7a4b':'#b0464b'}">${delta>=0?'▲':'▼'}${Math.abs(delta).toFixed(0)}</span>`;
+    return `<div style="display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:3px"><span style="width:10px;height:10px;border-radius:2px;background:${colorOf[x.name]};flex-shrink:0"></span><span style="flex:1;color:var(--ink-2)">${x.name}</span><span style="font-family:'DM Mono',monospace;font-weight:600">${cs.toFixed(0)}%${dTxt}</span></div>`;
+  }).join('');
+  host.innerHTML = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center">
+    <svg viewBox="0 0 220 220" style="width:160px;height:160px;flex-shrink:0">${outerArcs}${innerArcs}
+      <text x="110" y="107" text-anchor="middle" font-size="9" fill="var(--ink-3)">outer: now</text>
+      <text x="110" y="119" text-anchor="middle" font-size="9" fill="var(--ink-3)">inner: STLY</text>
+    </svg>
+    <div style="min-width:150px;flex:1">${legend}</div>
+  </div>`;
 }
+
+function _bigRenderWindowPills(){ /* toggle 1/7 rimosso: default 1 giorno, selezione dal grafico */ }
 
 
 
