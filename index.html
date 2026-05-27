@@ -794,7 +794,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <button class="struct-pill active" data-s="firenze" role="tab"><span class="pdot"></span>Firenze Suite</button>
       <button class="struct-pill" data-s="condotta" role="tab"><span class="pdot"></span>Condotta 16</button>
       <button class="struct-pill" data-s="alfani" role="tab"><span class="pdot"></span>Palazzo Alfani</button>
-      <button class="struct-pill" data-s="davids" role="tab"><span class="pdot"></span>Florence David's</button>
+      <button class="struct-pill" data-s="davids" role="tab"><span class="pdot"></span>Enis Guesthouse</button>
       <button class="struct-pill" data-s="both" role="tab"><span class="pdot"></span>All</button>
     </div>
   </div>
@@ -1352,6 +1352,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body" style="padding:14px 16px">
         <div id="fp-tab-wrap"></div>
          <div id="rmes-lmf-wrap" style="margin-top:14px"></div>
+         <div id="rmes-events-wrap" style="margin-top:14px"></div>
       </div>
     </div>
 <!-- Bottone APPLICA unico (pesi + soglie) sticky in basso -->
@@ -1479,7 +1480,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b style="color:#3b6b9a">Firenze Suite</b> — 8 rooms · Beddy PMS</li>
           <li><b style="color:#3d7a4b">Condotta 16</b> — 7 apartments · Beddy PMS</li>
           <li><b style="color:#8e5fa8">Palazzo Alfani</b> — 9 rooms · Beddy PMS (time-aware inventory from 01/02/2025)</li>
-          <li><b style="color:#c0392b">Florence David's</b> — 3 apartments (Verde/Senape/Blu, baseRT <b>Senape</b>) · <b>Krossbooking</b> PMS. It has no budget from the books: the "budget" is a <b>forecast</b> = same-month LY revenue +8%. <b>"Apartment" sale</b>: on some days the whole unit is sold as a single block (all 3 rooms together) instead of per single room. In those cases the booking occupies Verde + Senape + Blu for those nights (property at 100%) and the revenue is split across the 3 rooms.</li>
+          <li><b style="color:#c0392b">Enis Guesthouse</b> — 3 apartments (Verde/Senape/Blu, baseRT <b>Senape</b>) · <b>Krossbooking</b> PMS. It has no budget from the books: the "budget" is a <b>forecast</b> = same-month LY revenue +8%. <b>"Apartment" sale</b>: on some days the whole unit is sold as a single block (all 3 rooms together) instead of per single room. In those cases the booking occupies Verde + Senape + Blu for those nights (property at 100%) and the revenue is split across the 3 rooms.</li>
         </ul>
 
         <h4 style="margin:18px 0 8px 0;color:#5a3a14">Reading the table (left → right)</h4>
@@ -1502,7 +1503,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li>Firenze Suite → <b>Camera Matrim. Deluxe</b> (4 units of 8)</li>
           <li>Condotta 16 → <b>Bilocale</b> (3 units of 7)</li>
           <li>Palazzo Alfani → <b>Classic</b> (3 units of 9, from 01/02/2025)</li>
-          <li>Florence David's → <b>Senape</b> (1 apartment of 3)</li>
+          <li>Enis Guesthouse → <b>Senape</b> (1 apartment of 3)</li>
         </ul>
         <p>For the baseRT, Foundation uses the full 6 steps. For non-base RTs (Suite, Suite with Terrace, Trilocale, Attico, Superior, Junior Suite, Deluxe), Foundation is NOT recomputed from the 6 steps; the shortcut is used:</p>
         <p style="padding:8px 12px;background:#f8f8f5;border-left:3px solid #3b6b9a;font-family:'DM Mono',monospace;font-size:12px;text-align:center"><b>Foundation_RT = Foundation_baseRT + RT_month_supplement</b></p>
@@ -1706,6 +1707,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <h4 style="margin:18px 0 8px 0;color:#5a3a14">⏱ Last Minute Price Factor</h4>
         <p>A customization that applies a <b>discount or premium %</b> to the final RMES price (after the 5 factors, before the floor) based on two dimensions: the <b>property's occupancy</b> on that specific day and the <b>days remaining to arrival</b>. It's a matrix configurable <b>per property</b> in the RMES tab: rows are occupancy thresholds (≤10% … ≤100%), columns are days-to-arrival bands (0-10, 11-30, 31-60, 61-365). Typical logic: low occupancy + imminent arrival → discount (fill last-minute); high occupancy + distant arrival → premium (raise when there's already demand). Negative values = discount, positive = premium.</p>
+        <h4 style="margin:18px 0 8px 0;color:#5a3a14">✨ Event Factor</h4>
+        <p>A second customization that applies a <b>price multiplier per event name</b> (from −10% to +10%) to the final RMES price on dates that match the event. Configurable in the RMES tab in the "✨ Event Factor" panel: every distinct event found in the loaded events list appears as a row, with the number of days it covers and an editable weight. Positive = premium, negative = discount, zero = no effect (default for all events). Weights are <b>shared across all properties</b> — an event like "Pitti" affects Firenze Suite, Condotta 16 and Palazzo Alfani in the same way, because the demand boost is the same. The multiplier is applied after the Last Minute Price Factor, so the final price = baseRT × factors × (1 + LMF%) × (1 + event%). Saved with the "Apply changes" button.</p>
 
         <h4 style="margin:18px 0 8px 0;color:#5a3a14">The 6 Foundation steps</h4>
         <p>Foundation is the structural price of the day, the source of RMES (no longer the old Beddy→Expedia→Compset→OTB→LY cascade, which is now just a fallback). Computed for the baseRT in 6 steps:</p>

@@ -69,7 +69,7 @@ const CFG = {
                   202703:{rev:46436.76, occ:0.73, adr:228},
                   202704:{rev:60480.00, occ:0.70, adr:320},
                 } },
-    davids:   { key:"Florence David's Apartament", label:"Florence David's", color:'#c0392b',
+    davids:   { key:"Florence David's Apartament", label:"Enis Guesthouse", color:'#c0392b',
                 rooms:{'Verde':1,'Senape':1,'Blu':1},
                 baseRT:'Senape',
                 roomsTotal:3, rnYear:1095,
@@ -310,6 +310,25 @@ function loadData(csvText){
 }
 /* Foundation Pricing: pre-compute al caricamento dati */
 function fp_postLoadHook(){
+  // --- ONE-SHOT MIGRATION to NewRMES system (Base Price + Acceptance) ---
+  // Wipes the previous override-based system on first load, then sets a flag so it never runs again.
+  try {
+    const MIGRATION_FLAG = 'rmes_newrmes_migration_v1';
+    if (!localStorage.getItem(MIGRATION_FLAG)){
+      console.log('[NewRMES] First boot in NewRMES system → wiping legacy overrides…');
+      const keysToWipe = [
+        'rmes_base_rate_overrides_v1',     // legacy day-by-day base rate overrides
+        'rmes_period_overrides_v1',
+        'rmes_period_overrides',
+        'sell_rmes_period_overrides',
+        'rmes_event_overrides'
+      ];
+      for (const k of keysToWipe){ try { localStorage.removeItem(k); } catch(e){} }
+      try { localStorage.setItem(MIGRATION_FLAG, '1'); } catch(e){}
+      console.log('[NewRMES] Migration complete.');
+    }
+  } catch(e){ console.error('[NewRMES] migration failed', e); }
+
   try {
     if (typeof _invalidatePaceAggCache === 'function') _invalidatePaceAggCache();
     if (typeof fp_computeStruct === 'function' && typeof BOOKINGS !== 'undefined' && BOOKINGS.length > 0){
@@ -319,6 +338,10 @@ function fp_postLoadHook(){
       fp_computeStruct(_bootStruct);
       const t1 = performance.now();
       console.log('[Foundation] Done in ' + Math.round(t1-t0) + 'ms');
+      // NewRMES: freeze Base Price for all structures (only new dates not already frozen)
+      if (typeof newrmesBootFreezeAll === 'function') newrmesBootFreezeAll();
+      // NewRMES: take a snapshot of today's RMES deltas if the date has changed (rotates yesterday's column)
+      if (typeof newrmesSnapshotIfNewDay === 'function') newrmesSnapshotIfNewDay();
     }
   } catch(e){
     console.error('[Foundation] pre-compute failed', e);
@@ -3318,6 +3341,32 @@ function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD
 */
 let _RMESMAP_TICK = {};  // cache per-render di computeRMESPriceMap, svuotata a inizio renderAll (zero rischio stantio)
 let _SELL_RENDER_TOKEN = 0;  // token per annullare render Sell Strategy obsoleti (cambio struttura rapido)
+
+/* Event Factor — per-event-name weight in localStorage (-10..+10 %), applied as price multiplier on
+   days where EVENTS[ymd] matches the event name. Returns 1.0 if no event or no weight set. */
+const EVENT_WEIGHTS_KEY = 'rmes_event_weights_v1';
+function _getEventWeights(){
+  try { const raw = localStorage.getItem(EVENT_WEIGHTS_KEY); return raw ? JSON.parse(raw) : {}; }
+  catch(e){ return {}; }
+}
+function _setEventWeights(obj){
+  try { localStorage.setItem(EVENT_WEIGHTS_KEY, JSON.stringify(obj || {})); } catch(e){}
+}
+function _getEventBoost(ymd){
+  if (typeof EVENTS === 'undefined' || !EVENTS[ymd]) return 1.0;
+  const label = EVENTS[ymd]; if (!label) return 1.0;
+  const weights = _getEventWeights();
+  const pct = weights[label]; if (pct == null || !isFinite(+pct)) return 1.0;
+  return 1 + (+pct)/100;
+}
+/* List all distinct event labels that appear in EVENTS, sorted alphabetically */
+function _listEventLabels(){
+  if (typeof EVENTS === 'undefined') return [];
+  const s = new Set();
+  for (const k in EVENTS){ if (EVENTS[k]) s.add(EVENTS[k]); }
+  return Array.from(s).sort((a,b)=>a.localeCompare(b));
+}
+
 function computeRMESPriceMap(sel, startYmd, rangeDays){
   const out = {};
   if (sel === 'both') return out;  // RMES non significativo aggregato
@@ -3731,17 +3780,21 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     const expedia_rt_shown = _cheapestAvailableRT(r);
     const supp_to_subtract = (expedia_rt_shown && _suppData && expedia_rt_shown !== _suppData.baseRT)
       ? _supplementForRT(expedia_rt_shown, r.mo) * 0.5 : 0;
+    // === NewRMES system: base = current reference (accepted | base override | frozen base) ===
     let basePrice = null;
     let baseSource = null;
     let baseSuppApplied = 0;
-    if (typeof rmes_getSourcePrice === 'function'){
-      const sp = rmes_getSourcePrice(sel, r.ymd, null);
-      if (sp.source === 'foundation' && sp.price > 0){
-        basePrice = sp.price;
-        baseSource = 'foundation';
-        baseSuppApplied = 0;
+    if (typeof newrmesGetCurrentReference === 'function'){
+      const ref = newrmesGetCurrentReference(sel, r.ymd);
+      if (ref != null && isFinite(ref) && ref > 0){
+        basePrice = ref;
+        // determine origin label
+        if (typeof newrmesGetAccepted === 'function' && newrmesGetAccepted(sel, r.ymd) != null) baseSource = 'accepted';
+        else if (typeof newrmesGetFrozenBaseOverride === 'function' && newrmesGetFrozenBaseOverride(sel, r.ymd) != null) baseSource = 'base_override';
+        else baseSource = 'frozen_base';
       }
     }
+    // Fallbacks (rare): if no NewRMES data yet for this date (e.g. very far in future), use legacy chain
     if (basePrice == null){
       const beddyReal = (typeof beddyPriceFor === 'function') ? beddyPriceFor(sel, r.ymd) : null;
       if (beddyReal != null){
@@ -3765,10 +3818,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     }
     if (basePrice != null){
       const pricesByRT = {};
-      const rmesSuggestedByRT = {};  // Snapshot del price che RMES avrebbe suggerito (senza override)
+      const rmesSuggestedByRT = {};  // Snapshot del prezzo RMES suggerito (NON il riferimento corrente)
       const overrideUsedByRT = {};   // true se quella RT ha override attivo
+      const rmesDeltaByRT = {};      // delta RMES vs reference, in €
       for (const rt of _rtList){
-        let baseRT = basePrice;  // default per baseRT
+        let baseRT = basePrice;  // default per baseRT (riferimento corrente)
         if (_suppData && rt !== _suppData.baseRT){
           baseRT = basePrice + _supplementForRT(rt, r.mo);
         }
@@ -3780,9 +3834,16 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           const _daysToArr = Math.round((_dt.getTime() - new Date(TODAY).setHours(0,0,0,0)) / 86400000);
           _lmfPct = fp_lmfLookup(sel, r.curOcc, Math.max(0, _daysToArr));
         }
-        const _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100);
+        const _eventBoost = _getEventBoost(r.ymd);
+        let _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100) * _eventBoost;
+        // NewRMES cap ±20% rispetto al riferimento (baseRT) per evitare scossoni forti
+        const _capMin = baseRT * 0.80;
+        const _capMax = baseRT * 1.20;
+        if (_priceAfterFactors < _capMin) _priceAfterFactors = _capMin;
+        if (_priceAfterFactors > _capMax) _priceAfterFactors = _capMax;
         const priceSuggested = Math.max(_priceAfterFactors, _structFloor);
         rmesSuggestedByRT[rt] = priceSuggested;
+        rmesDeltaByRT[rt] = priceSuggested - baseRT;   // delta in € rispetto al riferimento corrente
         const _ymdStr = String(r.ymd);
         const _isoYmd = _ymdStr.substring(0,4) + '-' + _ymdStr.substring(4,6) + '-' + _ymdStr.substring(6,8);
         const ovr = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, _isoYmd, rt) : null;
@@ -3808,6 +3869,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         multsByRT: _mults_byRT,
         pricesByRT,
         rmesSuggestedByRT,
+        rmesDeltaByRT,
         overrideUsedByRT,
         foundationByRT: (function(){
           const out2 = {};
@@ -3840,8 +3902,237 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
 const FP_TARGET_GROWTH_KEY = 'rmes_target_growth_v1';
 const FP_FLOOR_KEY = 'rmes_floor_v1';
 const FP_COMPSET_OFFSETS_KEY = 'rmes_compset_offsets_v1';  // SOLO offset (pesi vengono da rmes_compset_weights_v1 = box ③ esistente)
-const FP_BASE_PRICE_KEY = 'rmes_base_price_v1';  // Base price annuale per struttura (Beddy_eq netto)
-const FP_BASE_RATE_OVERRIDES_KEY = 'rmes_base_rate_overrides_v1';  // Override puntuale base rate giorno per giorno
+const FP_BASE_PRICE_KEY = 'rmes_base_price_v1';  // Base price annuale per struttura (= Anchor Price nel nuovo sistema)
+const FP_BASE_RATE_OVERRIDES_KEY = 'rmes_base_rate_overrides_v1';  // [LEGACY, wiped at migration]
+
+/* ============================================================
+   NEW RMES SYSTEM — Frozen Base Price + Acceptance
+   ============================================================
+   - Frozen Base Price: prezzo per data congelato dopo il primo calcolo (365gg)
+     storage: { struct: { ymd: { price, frozenAt } } }
+   - Frozen Base Override: override manuale del Base (giorno o periodo)
+     storage: { struct: { ymd: price } }   // sovrascrive il calcolato
+   - Acceptance: prezzo RMES accettato per data (diventa il riferimento corrente)
+     storage: { struct: { ymd: price } }
+   - Last suggestion: snapshot del delta RMES suggerito ieri (per la colonna "RMES last update")
+     storage: { struct: { ymd: { delta, date } } }
+*/
+const NEWRMES_FROZEN_BASE_KEY = 'rmes_frozen_base_v1';
+const NEWRMES_FROZEN_BASE_OVR_KEY = 'rmes_frozen_base_override_v1';
+const NEWRMES_ACCEPTED_KEY = 'rmes_accepted_v1';
+const NEWRMES_LAST_SUGGESTION_KEY = 'rmes_last_suggestion_v1';
+const NEWRMES_LAST_SUGGESTION_DATE_KEY = 'rmes_last_suggestion_date_v1';
+
+function _newrmesLoadObj(key){
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : {}; }
+  catch(e){ return {}; }
+}
+function _newrmesSaveObj(key, obj){
+  try { localStorage.setItem(key, JSON.stringify(obj || {})); } catch(e){}
+}
+
+/* === FROZEN BASE PRICE === */
+function newrmesGetFrozenBase(structKey, ymd){
+  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_KEY);
+  return (all[structKey] && all[structKey][ymd] != null) ? all[structKey][ymd].price : null;
+}
+function newrmesSetFrozenBase(structKey, ymd, price){
+  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_KEY);
+  if (!all[structKey]) all[structKey] = {};
+  all[structKey][ymd] = { price: Math.round(price), frozenAt: new Date().toISOString().slice(0,10) };
+  _newrmesSaveObj(NEWRMES_FROZEN_BASE_KEY, all);
+}
+function newrmesGetFrozenBaseOverride(structKey, ymd){
+  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
+  return (all[structKey] && all[structKey][ymd] != null) ? all[structKey][ymd] : null;
+}
+function newrmesSetFrozenBaseOverride(structKey, ymd, price){
+  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
+  if (!all[structKey]) all[structKey] = {};
+  if (price == null) delete all[structKey][ymd];
+  else all[structKey][ymd] = Math.round(price);
+  _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
+}
+function newrmesClearFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo){
+  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
+  if (!all[structKey]) return;
+  for (const k in all[structKey]){ const n = +k; if (n >= ymdFrom && n <= ymdTo) delete all[structKey][k]; }
+  _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
+}
+function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
+  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
+  if (!all[structKey]) all[structKey] = {};
+  // iterate days
+  const dFrom = new Date(Math.floor(ymdFrom/10000), Math.floor((ymdFrom%10000)/100)-1, ymdFrom%100);
+  const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
+  for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
+    const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
+    all[structKey][y] = Math.round(price);
+  }
+  _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
+}
+
+/* Effective Base Price for a date: override if present, otherwise frozen calculated. */
+function newrmesGetEffectiveBase(structKey, ymd){
+  const ovr = newrmesGetFrozenBaseOverride(structKey, ymd);
+  if (ovr != null) return ovr;
+  return newrmesGetFrozenBase(structKey, ymd);
+}
+
+/* === ACCEPTANCE === */
+function newrmesGetAccepted(structKey, ymd){
+  const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
+  return (all[structKey] && all[structKey][ymd] != null) ? all[structKey][ymd] : null;
+}
+function newrmesSetAccepted(structKey, ymd, price){
+  const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
+  if (!all[structKey]) all[structKey] = {};
+  if (price == null) delete all[structKey][ymd];
+  else all[structKey][ymd] = Math.round(price);
+  _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
+}
+function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
+  const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
+  if (!all[structKey]) all[structKey] = {};
+  const dFrom = new Date(Math.floor(ymdFrom/10000), Math.floor((ymdFrom%10000)/100)-1, ymdFrom%100);
+  const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
+  for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
+    const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
+    all[structKey][y] = Math.round(price);
+  }
+  _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
+}
+
+/* Current reference = if accepted exists, use it; otherwise effective base (override or frozen). */
+function newrmesGetCurrentReference(structKey, ymd){
+  const acc = newrmesGetAccepted(structKey, ymd);
+  if (acc != null) return acc;
+  return newrmesGetEffectiveBase(structKey, ymd);
+}
+
+/* === FROZEN BASE PRICE CALCULATION (4 steps) ===
+   Step 1: Historical anchor (ADR LY same-DOW same-month) → uses fp_computeAnchorLY
+   Step 2: Target revenue → applied as a multiplier (anchor × 1 + targetGrowth%)
+   Step 4: Compset market cap → max = compset median pesato (con markup Expedia tolto) + offset
+   Step 5: Floor → hard minimum
+   Anchor Price guard-rail: il risultato non può discostarsi più di ±50% dall'Anchor (annual basePrice)
+*/
+function newrmesCalculateBasePrice(structKey, isoDate){
+  const baseRT = (CFG.structures[structKey] && CFG.structures[structKey].baseRT) || null;
+  if (!baseRT) return null;
+  const anchor = (typeof fp_computeAnchorLY === 'function') ? fp_computeAnchorLY(structKey, baseRT, isoDate) : null;
+  const month = (new Date(isoDate + 'T00:00:00')).getMonth() + 1;
+  const anchorPrice = fp_getBasePrice(structKey);  // l'annual base = Anchor Price del nuovo sistema
+  const floor = fp_getFloor(structKey);
+  // Step 1+2: ADR storico × (1 + targetGrowth%). L'anchor LY è il riferimento principale, ma
+  // se è troppo basso rispetto all'Anchor Price (es. periodo storicamente debole o pochi dati),
+  // diamo un floor minimo del 70% dell'Anchor Price per evitare crolli irrealistici.
+  const targetGrowth = (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(structKey, month) : 5;
+  const adrLY = (anchor && anchor.medianADR > 0) ? anchor.medianADR : 0;
+  const adrLYsafe = Math.max(adrLY, anchorPrice * 0.70);  // floor anchor LY a 70% dell'Anchor Price
+  const adrBaseSource = adrLYsafe > 0 ? adrLYsafe : anchorPrice;
+  let price = adrBaseSource * (1 + targetGrowth/100);
+  // Step 4: Compset cap (la funzione compsetWeightedAvg ritorna { avg, n, ... }, NON un numero)
+  if (typeof compsetWeightedAvg === 'function'){
+    try {
+      const c = compsetWeightedAvg(structKey, isoDate, /*applyOffset=*/true);
+      const cAvg = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : (isFinite(c) ? c : null);
+      if (cAvg != null && cAvg > 0){
+        // Cap: non più del 5% sopra il compset weighted (è già in spazio Beddy_eq dopo l'offset)
+        const cap = cAvg * 1.05;
+        if (price > cap) price = cap;
+      }
+    } catch(e){}
+  }
+  // Anchor Price guard-rail: ±50% dall'annual Anchor Price (limita scossoni)
+  const minAnchor = anchorPrice * 0.5;
+  const maxAnchor = anchorPrice * 1.5;
+  if (price < minAnchor) price = minAnchor;
+  if (price > maxAnchor) price = maxAnchor;
+  // Step 5: Floor (hard minimum)
+  if (price < floor) price = floor;
+  return Math.round(price);
+}
+
+/* Calculate and freeze Base Price for the next 365 days (or up to a horizon).
+   Skips dates already frozen (idempotent for the same date). */
+function newrmesFreezeBasePriceHorizon(structKey, horizonDays){
+  horizonDays = horizonDays || 365;
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const existing = _newrmesLoadObj(NEWRMES_FROZEN_BASE_KEY);
+  if (!existing[structKey]) existing[structKey] = {};
+  let added = 0;
+  for (let off = 0; off < horizonDays; off++){
+    const d = new Date(today.getTime() + off * 86400000);
+    const ymdN = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+    if (existing[structKey][ymdN] != null) continue;  // già congelato, non ricalcolo
+    const iso = d.toISOString().slice(0,10);
+    const price = newrmesCalculateBasePrice(structKey, iso);
+    if (price != null && isFinite(price)){
+      existing[structKey][ymdN] = { price: price, frozenAt: today.toISOString().slice(0,10) };
+      added++;
+    }
+  }
+  _newrmesSaveObj(NEWRMES_FROZEN_BASE_KEY, existing);
+  return added;
+}
+
+/* Boot: freeze Base Price for all 4 structures at first access of NewRMES system.
+   Called once at fp_postLoadHook after migration is done. */
+function newrmesBootFreezeAll(){
+  if (typeof CFG === 'undefined' || !CFG.structures) return;
+  const structs = Object.keys(CFG.structures);
+  let totalAdded = 0;
+  for (const s of structs){
+    try {
+      const n = newrmesFreezeBasePriceHorizon(s, 365);
+      if (n > 0) totalAdded += n;
+      if (n > 0) console.log('[NewRMES] Frozen Base Price for ' + s + ': +' + n + ' days');
+    } catch(e){ console.error('[NewRMES] freeze failed for ' + s, e); }
+  }
+  if (totalAdded > 0) console.log('[NewRMES] Total Base Price days frozen: ' + totalAdded);
+}
+
+/* === RMES LAST SUGGESTION === */
+/* Returns the delta (in €) from yesterday's snapshot for a given struct/ymd. Null if missing. */
+function newrmesGetLastSuggestion(structKey, ymd){
+  const all = _newrmesLoadObj(NEWRMES_LAST_SUGGESTION_KEY);
+  return (all[structKey] && all[structKey][ymd] != null) ? all[structKey][ymd] : null;
+}
+/* Snapshot today's RMES deltas → save as "last suggestion" only if the date has changed since the
+   last snapshot. So when you open the dashboard tomorrow, today's suggestion becomes "yesterday's". */
+function newrmesSnapshotIfNewDay(){
+  try {
+    const todayStr = (new Date(TODAY)).toISOString().slice(0,10);
+    const lastDate = localStorage.getItem(NEWRMES_LAST_SUGGESTION_DATE_KEY);
+    if (lastDate === todayStr) return;  // already snapshotted today
+    // a snapshot is needed: copy CURRENT computed deltas into LAST storage (rotate)
+    // we re-compute RMES for each struct over the next 365 days and save deltas (base RT only)
+    if (typeof CFG === 'undefined' || !CFG.structures) return;
+    if (typeof computeRMESPriceMap !== 'function') return;
+    const newLast = {};
+    const today0 = new Date(TODAY); today0.setHours(0,0,0,0);
+    const startYmd = today0.getFullYear()*10000 + (today0.getMonth()+1)*100 + today0.getDate();
+    for (const sk of Object.keys(CFG.structures)){
+      try {
+        const map = computeRMESPriceMap(sk, startYmd, 365);
+        const baseRT = CFG.structures[sk].baseRT;
+        newLast[sk] = {};
+        for (const ymdK in map){
+          const m = map[ymdK];
+          if (m && m.rmesDeltaByRT && m.rmesDeltaByRT[baseRT] != null){
+            newLast[sk][ymdK] = Math.round(m.rmesDeltaByRT[baseRT]);
+          }
+        }
+      } catch(e){ console.error('[NewRMES] snapshot failed for ' + sk, e); }
+    }
+    _newrmesSaveObj(NEWRMES_LAST_SUGGESTION_KEY, newLast);
+    localStorage.setItem(NEWRMES_LAST_SUGGESTION_DATE_KEY, todayStr);
+    console.log('[NewRMES] Snapshot of yesterday\'s suggestions saved for ' + Object.keys(newLast).length + ' structs');
+  } catch(e){ console.error('[NewRMES] snapshotIfNewDay failed', e); }
+}
+
+
 const FP_OTA_MARKUP_KEY = 'rmes_ota_markup_v1';  // Markup OTA percentuale (default 12)
 const FP_ELASTICITY_KEY = 'rmes_elasticity_v1';  // Price elasticity↔RN (default 1.0 = 1:1)
 const FP_ELASTICITY_DEFAULTS = { firenze: 1.0, condotta: 1.0, alfani: 1.0 };
@@ -5169,7 +5460,7 @@ function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, 
   const dateLbl = dowNames[td.getDay()] + ' ' + td.getDate() + '/' + (td.getMonth()+1) + '/' + td.getFullYear();
   const structLbl = (structKey === 'firenze') ? 'Firenze Suite'
                   : (structKey === 'condotta') ? 'Condotta 16'
-                  : (structKey === 'alfani') ? 'Palazzo Alfani' : (structKey === 'davids') ? "Florence David's" : structKey;
+                  : (structKey === 'alfani') ? 'Palazzo Alfani' : (structKey === 'davids') ? "Enis Guesthouse" : structKey;
   let statusBg, statusBorder, statusLabel, statusIcon, statusCol;
   if (isOverride){
     statusBg = 'rgba(59,107,154,.12)'; statusBorder = '#3b6b9a';
@@ -5296,7 +5587,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   const dateLbl = td.getDate() + '/' + (td.getMonth()+1) + '/' + td.getFullYear();
   const structLbl = (structKey === 'condotta') ? 'Condotta 16'
                   : (structKey === 'alfani')   ? 'Palazzo Alfani'
-                  : (structKey === 'davids') ? "Florence David's"
+                  : (structKey === 'davids') ? "Enis Guesthouse"
                   : 'Firenze Suite';
   const ratio = fp_ratioForStruct(structKey);
   const fmt = function(n){
@@ -5764,7 +6055,7 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   const dateLbl = td.getDate() + '/' + (td.getMonth()+1) + '/' + td.getFullYear();
   const structLbl = (structKey === 'condotta') ? 'Condotta 16'
                   : (structKey === 'alfani')   ? 'Palazzo Alfani'
-                  : (structKey === 'davids') ? "Florence David's"
+                  : (structKey === 'davids') ? "Enis Guesthouse"
                   : 'Firenze Suite';
   const fmt = function(n){ if (n == null || !isFinite(n)) return '—'; return '€' + (Math.round(n * 100) / 100).toFixed(0); };
   const fmt2 = function(n){ if (n == null || !isFinite(n)) return '—'; return (Math.round(n * 100) / 100).toFixed(2); };
@@ -5908,7 +6199,7 @@ function fp_renderFoundationConfigBox(structKey){
   if (!wrap) return;
   const structLbl = (structKey === 'condotta') ? 'Condotta 16'
                   : (structKey === 'alfani')   ? 'Palazzo Alfani'
-                  : (structKey === 'davids') ? "Florence David's"
+                  : (structKey === 'davids') ? "Enis Guesthouse"
                   : 'Firenze Suite';
   let h = '';
   h += '<div class="panel" style="margin-bottom:16px">';
@@ -5918,9 +6209,9 @@ function fp_renderFoundationConfigBox(structKey){
   h += '</div>';
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓑ Base, Floor, OTA markup, Elasticity <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub"><b>Base price</b>: the annual "fair" price (net Beddy_eq), used as anchor in far mode (&gt;180d) and as "Base lift" in full mode. Default Firenze 220 / Condotta 280 / Alfani 270. <b>Floor</b>: the absolute minimum below which Foundation never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. <b>Price elasticity</b>: the estimate used in override simulations (RMES modal). E.g. 1.0 = if I lower the price -10%, I sell +10% RN. Default 1.0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
+  h += '<div class="panel-sub"><b>Anchor Price</b>: the annual "fair" price (net Beddy_eq), used as a guard-rail in the Base Price calculation (the final Base never drifts more than ±50% from this Anchor). Default Firenze 220 / Condotta 280 / Alfani 270 / David\'s 145. <b>Floor</b>: the absolute minimum below which the Base Price never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. <b>Price elasticity</b>: the estimate used in override simulations (RMES modal). E.g. 1.0 = if I lower the price -10%, I sell +10% RN. Default 1.0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">';
-  h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#7a4f1c">Base price</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
+  h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#7a4f1c">Anchor Price</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)"><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="10" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#3a6b6b">Markup Expedia/altri</b>: <input type="number" id="fp-mk-expedia" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #3a6b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef6f6"> %</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Booking.com markup for channel history"><b style="color:#1e4a6b">Markup Booking</b>: <input type="number" id="fp-mk-booking" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #1e4a6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef4fa"> %</label>';
@@ -6649,10 +6940,12 @@ function renderSellStrategy(sel){
     + '<th colspan="4" class="sell-grp sell-grp-pickup">Pickup ' + A.pickupDaysAgo + 'd</th>'
     + '<th colspan="3" class="sell-grp sell-grp-stly">STLY (-364)</th>'
     + '<th colspan="4" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="RMES delta suggested YESTERDAY (€ vs the reference price at the time). Use it to spot how the suggestion is evolving day by day.">RMES last update<br><span class="sell-th-sub">delta yesterday</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES delta suggested TODAY. Shown as &quot;price (±delta)&quot;: the price is the suggested new value (current reference + delta), the delta is the change in €. Cap ±20% from current reference. Click ✓ to accept (becomes the new current reference for that date).">RMES today<br><span class="sell-th-sub">price (Δ €) · ✓ accept</span></th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
-    + (showExp ? '<th colspan="3" class="sell-grp sell-grp-expedia">Expedia Market</th>' : '')
-    + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Foundation Pricing: structural price of the day (RMES source). Click the cell for the calculation detail. Other RTs show a derived value (Foundation baseRT + monthly supplement), read-only.">Foundation</th>'
-    + '<th colspan="' + _rmesGroupCols + '" class="sell-grp sell-grp-rmes" title="RMES v5 system: Foundation (source) × composite multiplier from 5 factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)), all at property levela.">RMES <span class="sell-th-sub">suggested · M[MLOS] · click for Foundation detail</span></th>'
+    + (showExp ? '<th colspan="3" class="sell-grp sell-grp-expedia">Rate Shopper</th>' : '')
+    + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price (frozen, per stay-date): the structural price that anchors the RMES suggestion. Click the cell for the calculation detail. Other RTs show baseRT + monthly supplement.">Base Price</th>'
+    + '<th colspan="' + _rmesGroupCols + '" class="sell-grp sell-grp-rmes" title="RMES v5 system: current reference (accepted | base override | frozen base) × composite multiplier from 5 factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)) × LMF × Event Factor, capped at ±20% from the reference.">RMES <span class="sell-th-sub">suggested · M[MLOS] · click for Base Price detail</span></th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
     + '<th class="sell-grp-otb-sub" title="OTB to date · RN sold">RN</th>'
@@ -6670,9 +6963,9 @@ function renderSellStrategy(sel){
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net ΔRN STLY">ΔRN</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of new STLY bookings">ADR</th>'
     + (showExp
-       ? '<th class="sell-grp-expedia-sub" title="My Expedia price">Mine</th>'
-         + '<th class="sell-grp-expedia-sub" title="Expedia compset average">Compset</th>'
-         + '<th class="sell-grp-expedia-sub" style="background:rgba(210,105,30,.10);border-left:2px solid rgba(210,105,30,.35)" title="RMES price converted to Expedia space, with market position vs compset (1 = cheapest)">RMES&rarr;Exp</th>'
+       ? '<th class="sell-grp-expedia-sub" style="background:rgba(210,105,30,.10);border-left:2px solid rgba(210,105,30,.35)" title="Mine with RMES applied: (current reference + RMES today delta) converted to Expedia space, with the market position vs compset (1 = cheapest)">Mine w/RMES</th>'
+         + '<th class="sell-grp-expedia-sub" title="My current Expedia price, with the market position vs compset (1 = cheapest)">Mine</th>'
+         + '<th class="sell-grp-expedia-sub" title="Expedia compset weighted average (with offset)">Compset</th>'
        : '')
     + (function(){
         const baseRT = _suppData ? _suppData.baseRT : null;
@@ -6764,8 +7057,8 @@ function renderSellStrategy(sel){
             myTooltip += ` · YoY ${(exp.searchYoY>=0?'+':'')}${(exp.searchYoY*100).toFixed(0)}%`;
           }
         }
-        // RMES price converted to Expedia space + market position vs compset
-        let rmesExpCell;
+        // RMES today price (in Expedia space): (current reference + delta RMES today) × divisor
+        let mineWithRmesCell;
         {
           const rmesBeddy = (_rmesMapForAlignment && _rmesMapForAlignment[r.ymd] && isFinite(_rmesMapForAlignment[r.ymd].price)) ? _rmesMapForAlignment[r.ymd].price : null;
           const divisor = (typeof fp_expToBeddyDivisor === 'function') ? fp_expToBeddyDivisor(sel) : 1.053;
@@ -6775,21 +7068,33 @@ function renderSellStrategy(sel){
             let posTxt = '', posCls = '';
             const rk = _sellCompRank(sel, r.ymd.toString().slice(0,4)+'-'+r.ymd.toString().slice(4,6)+'-'+r.ymd.toString().slice(6,8), rmesExp);
             if (rk){ posTxt = rk.rank + '/' + rk.total; }
-            // colour vs compset average: green if my RMES-Expedia is below compset (more competitive)
             if (cAvg != null && isFinite(cAvg)){
               const d = rmesExp - cAvg;
               posCls = (Math.abs(d) < 0.5) ? '' : (d < 0 ? 'cell-pos' : 'cell-neg');
             }
-            const rmesExpTip = 'RMES price in Expedia space (RMES Beddy \u00d7 ' + divisor.toFixed(3) + ')' + (rk ? ' \u00b7 position ' + posTxt + ' (1 = cheapest)' : '');
-            rmesExpCell = '<td class="cell-mono ' + posCls + '" style="background:rgba(210,105,30,.08);border-left:2px solid rgba(210,105,30,.35)" title="' + rmesExpTip + '">' + rmesExpTxt + (posTxt ? '<br><span style="font-size:9px;font-weight:400">' + posTxt + '</span>' : '') + '</td>';
+            const tip = 'Mine if I applied RMES today (current reference + RMES delta), in Expedia space' + (rk ? ' · position ' + posTxt + ' (1 = cheapest)' : '');
+            mineWithRmesCell = '<td class="cell-mono ' + posCls + '" style="background:rgba(210,105,30,.08);border-left:2px solid rgba(210,105,30,.35)" title="' + tip + '">' + rmesExpTxt + (posTxt ? '<br><span style="font-size:9px;font-weight:400">' + posTxt + '</span>' : '') + '</td>';
           } else {
-            rmesExpCell = '<td class="cell-mono cell-flat" style="background:rgba(210,105,30,.08);border-left:2px solid rgba(210,105,30,.35);text-align:center">\u2014</td>';
+            mineWithRmesCell = '<td class="cell-mono cell-flat" style="background:rgba(210,105,30,.08);border-left:2px solid rgba(210,105,30,.35);text-align:center">\u2014</td>';
           }
         }
-        expCells =
-          `<td class="cell-mono sell-block-expedia" style="background:rgba(58,107,107,.04)" title="${myTooltip}">${myTxt}</td>` +
-          `<td class="cell-mono ${diffCls}" style="background:rgba(58,107,107,.04)" title="${avgTooltip}">${avgTxt}${avgBadge}<br><span style="font-size:9px;font-weight:400">${diffTxt}</span></td>` +
-          rmesExpCell;
+        // Mine current with compset rank
+        let myCellWithRank;
+        {
+          if (myP != null){
+            let posTxtMine = '', posClsMine = diffCls;
+            const rkMine = _sellCompRank(sel, r.ymd.toString().slice(0,4)+'-'+r.ymd.toString().slice(4,6)+'-'+r.ymd.toString().slice(6,8), myP);
+            if (rkMine){ posTxtMine = rkMine.rank + '/' + rkMine.total; }
+            const tipMineFull = myTooltip + (rkMine ? ' · position ' + posTxtMine + ' (1 = cheapest)' : '');
+            myCellWithRank = `<td class="cell-mono sell-block-expedia ${posClsMine}" style="background:rgba(58,107,107,.04)" title="${tipMineFull}">${myTxt}${posTxtMine ? '<br><span style="font-size:9px;font-weight:400">'+posTxtMine+'</span>' : ''}</td>`;
+          } else {
+            myCellWithRank = `<td class="cell-mono sell-block-expedia" style="background:rgba(58,107,107,.04)" title="${myTooltip}">${myTxt}</td>`;
+          }
+        }
+        // Compset cell (unchanged)
+        const compsetCell = `<td class="cell-mono ${diffCls}" style="background:rgba(58,107,107,.04)" title="${avgTooltip}">${avgTxt}${avgBadge}<br><span style="font-size:9px;font-weight:400">${diffTxt}</span></td>`;
+        // New order: Mine w/RMES → Mine → Compset
+        expCells = mineWithRmesCell + myCellWithRank + compsetCell;
       } else {
         expCells = `<td class="cell-mono cell-flat sell-block-expedia" colspan="3" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
       }
@@ -7311,6 +7616,35 @@ function renderSellStrategy(sel){
       <td class="cell-mono ${pkStlyCancelCount>0?'cell-neg':'cell-flat'}" style="background:rgba(138,138,138,.04);text-align:right">${pkStlyCancelCell}</td>
       <td class="cell-mono ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</td>
       <td class="cell-mono ${pkStlyNewCount>0?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
+      <!-- RMES last update (delta yesterday) -->
+      ${(function(){
+        const ly = (typeof newrmesGetLastSuggestion === 'function') ? newrmesGetLastSuggestion(sel, r.ymd) : null;
+        if (ly == null) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
+        const cls = (ly > 0) ? 'cell-pos' : (ly < 0 ? 'cell-neg' : 'cell-flat');
+        const sign = ly > 0 ? '+' : '';
+        return `<td class="cell-mono ${cls}" style="background:rgba(195,131,59,.03)" title="RMES delta suggested yesterday">${sign}${ly}</td>`;
+      })()}
+      <!-- RMES today (price + delta + ✓ accept button) -->
+      ${(function(){
+        const mapEntry = (_rmesMapForAlignment && _rmesMapForAlignment[r.ymd]) ? _rmesMapForAlignment[r.ymd] : null;
+        const baseRTKey = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
+        if (!mapEntry || !baseRTKey || !mapEntry.rmesDeltaByRT){
+          return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.05);text-align:center">—</td>';
+        }
+        const delta = mapEntry.rmesDeltaByRT[baseRTKey];
+        const sugg = mapEntry.rmesSuggestedByRT[baseRTKey];
+        if (delta == null || !isFinite(delta) || sugg == null || !isFinite(sugg)){
+          return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.05);text-align:center">—</td>';
+        }
+        const cls = (delta > 0.5) ? 'cell-pos' : (delta < -0.5 ? 'cell-neg' : 'cell-flat');
+        const sign = delta > 0 ? '+' : '';
+        const acc = (typeof newrmesGetAccepted === 'function') ? newrmesGetAccepted(sel, r.ymd) : null;
+        const accBadge = (acc != null) ? '<span style="font-size:9px;color:#3d7a4b;font-weight:700;display:block">✓ accepted</span>' : '';
+        const acceptBtn = (Math.abs(delta) >= 0.5)
+          ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" title="Accept this RMES suggestion as the new current reference for ${r.ymd}" style="margin-top:2px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700">✓</button>`
+          : '';
+        return `<td class="cell-mono ${cls}" style="background:rgba(195,131,59,.05)" title="RMES today: ${Math.round(sugg)} € · delta ${sign}${Math.round(delta)} € vs current reference">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">(${sign}${Math.round(delta)})</span> ${acceptBtn}${accBadge}</td>`;
+      })()}
       ${beddyCell}
       ${expCells}
       <!-- Foundation: cella con stato + bottoni inline (solo per baseRT) -->
@@ -7393,7 +7727,7 @@ function renderSellStrategy(sel){
     let totDelta = 0, nValid = 0, nVintoOvr = 0, nVintoRMES = 0;
     for (const sk of structKeysCheck){
       const o = all[sk]; if (!o) continue;
-      const structName = (sk === 'condotta') ? 'Condotta 16' : (sk === 'alfani') ? 'Palazzo Alfani' : (sk === 'davids') ? "Florence David's" : 'Firenze Suite';
+      const structName = (sk === 'condotta') ? 'Condotta 16' : (sk === 'alfani') ? 'Palazzo Alfani' : (sk === 'davids') ? "Enis Guesthouse" : 'Firenze Suite';
       for (const dateISO in o){
         if (dateISO >= todayYmd) continue;
         for (const rtN in o[dateISO]){
@@ -7981,7 +8315,7 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
     })() : '—';
     const tip = `${d.label}\n─────────────────\nPickup OTB:  ${d.curRn} RN · ${fmtEUR(d.curRev)}\n  top day: ${curPeakStr}\nPickup STLY: ${d.styRn} RN · ${fmtEUR(d.styRev)}\n  top day: ${styPeakOrigStr}\nΔ RN:        ${deltaSign}${d.deltaRn}\nΔ Revenue:   ${d.deltaRev >= 0 ? '+' : ''}${fmtEUR(d.deltaRev)}${(function(){
       if (!d.curByStruct && !d.styByStruct) return '';
-      const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Florence David's" };
+      const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
       let s = '\n─────────────────\nBreakdown by property:';
       for (const sk of ['firenze','condotta','alfani','davids']){
         const cs = (d.curByStruct && d.curByStruct[sk]) || {rn:0,rev:0};
@@ -8002,7 +8336,7 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
     const structLbl = (sel === 'both') ? 'All properties (aggregato)'
                     : (sel === 'firenze') ? 'Firenze Suite'
                     : (sel === 'condotta') ? 'Condotta 16'
-                    : (sel === 'alfani') ? 'Palazzo Alfani' : (sel === 'davids') ? "Florence David's" : sel;
+                    : (sel === 'alfani') ? 'Palazzo Alfani' : (sel === 'davids') ? "Enis Guesthouse" : sel;
     legendEl.innerHTML = `
       <span style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink);margin-right:8px">${structLbl}</span>
       <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:14px;height:12px;background:${barColorCur};border-radius:2px"></span>Pickup OTB · RN</span>
@@ -10743,7 +11077,7 @@ function renderRateShopper(){
     { key: 'alfani',   label: 'Palazzo Alfani',  compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_alfani)  || null, color: '#8e5fa8' },
     { key: 'condotta', label: 'Condotta 16',     compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors)         || null, color: '#3d7a4b' },
     { key: 'firenze',  label: 'Firenze Suite',   compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_firenze) || null, color: '#3b6b9a' },
-    { key: 'davids',   label: "Florence David's", compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_davids) || null, color: '#c0392b' },
+    { key: 'davids',   label: "Enis Guesthouse", compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_davids) || null, color: '#c0392b' },
   ];
   const pillsEl = document.getElementById('rate-struct-pills');
   if (pillsEl){
@@ -10752,7 +11086,7 @@ function renderRateShopper(){
       { v: 'alfani',   label: 'Palazzo Alfani',   color: '#8e5fa8' },
       { v: 'condotta', label: 'Condotta 16',      color: '#3d7a4b' },
       { v: 'firenze',  label: 'Firenze Suite',    color: '#3b6b9a' },
-      { v: 'davids',   label: "Florence David's", color: '#c0392b' },
+      { v: 'davids',   label: "Enis Guesthouse", color: '#c0392b' },
     ];
     pillsEl.innerHTML = opts.map(o => {
       const on = (RATE_STRUCT_FILTER === o.v);
@@ -10805,7 +11139,7 @@ function renderRateShopper(){
                   : (sd.key === 'firenze')  ? (EXPEDIA_DATA && EXPEDIA_DATA.firenze)
                   : (sd.key === 'davids')   ? (EXPEDIA_DATA && EXPEDIA_DATA.davids)
                   : null;
-      const myLabels = { firenze:'Firenze Suite', condotta:'Condotta 16 Apartments', alfani:'Palazzo Alfani al David', davids:"Florence David's" };
+      const myLabels = { firenze:'Firenze Suite', condotta:'Condotta 16 Apartments', alfani:'Palazzo Alfani al David', davids:"Enis Guesthouse" };
       html += `<div style="overflow-x:auto;max-height:60vh;overflow-y:auto"><table class="data" style="font-size:11px;white-space:nowrap">
         <thead>
           <tr>
@@ -10909,7 +11243,7 @@ function renderRMESConfigTab(){
       { v: 'firenze',  label: 'Firenze Suite',   color: '#3b6b9a' },
       { v: 'condotta', label: 'Condotta 16',     color: '#3d7a4b' },
       { v: 'alfani',   label: 'Palazzo Alfani',  color: '#8e5fa8' },
-      { v: 'davids',   label: "Florence David's", color: '#c0392b' },
+      { v: 'davids',   label: "Enis Guesthouse", color: '#c0392b' },
     ];
     pillsEl.innerHTML = opts.map(o => {
       const on = (sel === o.v);
@@ -10929,10 +11263,10 @@ function renderRMESConfigTab(){
   }
   const chipEl = document.getElementById('rmes-struct-chip');
   if (chipEl){
-    const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Florence David's" };
+    const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
     chipEl.textContent = labels[sel] || sel;
   }
-  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Florence David's" };
+  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
   const sublabel = `property: ${labels[sel]}`;
   ['rmes-tab-w-sub','rmes-tab-th-sub'].forEach(id => {
     const el = document.getElementById(id);
@@ -10941,6 +11275,7 @@ function renderRMESConfigTab(){
   _renderRmesWeightsBox(sel);
   _renderRmesThresholdsBox(sel);
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
+  if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
   _rmesTabClearDirty();
   const applyAllBtn = document.getElementById('rmes-tab-apply-all');
@@ -10948,7 +11283,7 @@ function renderRMESConfigTab(){
     applyAllBtn._wired = true;
     applyAllBtn.onclick = () => {
       if (applyAllBtn.disabled) return;
-      const structLbl = (RMES_TAB_STRUCT === 'condotta') ? 'Condotta 16' : (RMES_TAB_STRUCT === 'firenze') ? 'Firenze Suite' : (RMES_TAB_STRUCT === 'davids') ? "Florence David's" : 'Palazzo Alfani';
+      const structLbl = (RMES_TAB_STRUCT === 'condotta') ? 'Condotta 16' : (RMES_TAB_STRUCT === 'firenze') ? 'Firenze Suite' : (RMES_TAB_STRUCT === 'davids') ? "Enis Guesthouse" : 'Palazzo Alfani';
       const ok = _rmesTabApplyAll();
       if (ok){
         const orig = applyAllBtn.textContent;
@@ -11023,7 +11358,7 @@ function _rmesTabMarkDirty(){
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
-    btn.textContent = '⚠ Apply changes (' + (RMES_TAB_STRUCT === 'condotta' ? 'Condotta 16' : RMES_TAB_STRUCT === 'firenze' ? 'Firenze Suite' : RMES_TAB_STRUCT === 'davids' ? "Florence David's" : 'Palazzo Alfani') + ')';
+    btn.textContent = '⚠ Apply changes (' + (RMES_TAB_STRUCT === 'condotta' ? 'Condotta 16' : RMES_TAB_STRUCT === 'firenze' ? 'Firenze Suite' : RMES_TAB_STRUCT === 'davids' ? "Enis Guesthouse" : 'Palazzo Alfani') + ')';
   }
 }
 function _rmesTabClearDirty(){
@@ -11033,7 +11368,7 @@ function _rmesTabClearDirty(){
     btn.disabled = true;
     btn.style.opacity = '0.55';
     btn.style.cursor = 'not-allowed';
-    btn.textContent = 'Apply changes (' + (RMES_TAB_STRUCT === 'condotta' ? 'Condotta 16' : RMES_TAB_STRUCT === 'firenze' ? 'Firenze Suite' : RMES_TAB_STRUCT === 'davids' ? "Florence David's" : 'Palazzo Alfani') + ')';
+    btn.textContent = 'Apply changes (' + (RMES_TAB_STRUCT === 'condotta' ? 'Condotta 16' : RMES_TAB_STRUCT === 'firenze' ? 'Firenze Suite' : RMES_TAB_STRUCT === 'davids' ? "Enis Guesthouse" : 'Palazzo Alfani') + ')';
   }
 }
 function _wcard(f, W){
@@ -11132,6 +11467,19 @@ function _rmesTabApplyAll(){
     });
     fp_setLmfMatrix(sel, mtx);
   }
+  const evInputs = document.querySelectorAll('.rmes-evw-input');
+  if (evInputs.length){
+    const w = {};
+    evInputs.forEach(inp => {
+      const lbl = inp.dataset.evw;
+      let v = parseFloat(inp.value);
+      if (!isFinite(v)) v = 0;
+      if (v < -10) v = -10;
+      if (v > 10) v = 10;
+      if (lbl && v !== 0) w[lbl] = v;  // store only non-zero weights to keep storage clean
+    });
+    _setEventWeights(w);
+  }
   if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
   _rmesTabClearDirty();
   return true;
@@ -11175,6 +11523,57 @@ function _renderRmesLmfBox(sel){
   if (rb) rb.addEventListener('click', () => {
     try { const raw = localStorage.getItem(FP_LMF_KEY); const obj = raw?JSON.parse(raw):{}; delete obj[sel]; localStorage.setItem(FP_LMF_KEY, JSON.stringify(obj)); } catch(e){}
     _renderRmesLmfBox(sel);
+    if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
+  });
+}
+function _renderRmesEventsBox(){
+  const wrap = document.getElementById('rmes-events-wrap');
+  if (!wrap) return;
+  const labels = _listEventLabels();
+  const weights = _getEventWeights();
+  if (!labels.length){
+    wrap.innerHTML = '<div style="padding:14px;border:1px solid var(--line);border-radius:8px;color:var(--ink-3);font-size:12px">No events loaded. EVENTS_CSV missing or empty in data.js.</div>';
+    return;
+  }
+  // build a row per event label, with a number input -10..+10
+  const rows = labels.map(lbl => {
+    const w = (weights[lbl] != null && isFinite(+weights[lbl])) ? +weights[lbl] : 0;
+    const safeLbl = (typeof escapeHtml === 'function') ? escapeHtml(lbl) : lbl.replace(/[<>&"]/g, '');
+    // count days affected
+    let cnt = 0;
+    if (typeof EVENTS !== 'undefined'){ for (const k in EVENTS){ if (EVENTS[k] === lbl) cnt++; } }
+    return '<tr>' +
+      '<td style="padding:6px 10px;font-size:12px;color:var(--ink-1);font-weight:600">' + safeLbl + '</td>' +
+      '<td style="padding:6px 10px;font-size:11px;color:var(--ink-3);text-align:right;font-family:\'DM Mono\',monospace">' + cnt + ' day' + (cnt===1?'':'s') + '</td>' +
+      '<td style="padding:3px 8px;text-align:center">' +
+        '<input type="number" min="-10" max="10" step="1" value="' + w + '" data-evw="' + safeLbl + '" class="rmes-evw-input" style="width:60px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px"> %' +
+      '</td></tr>';
+  }).join('');
+  wrap.innerHTML =
+    '<div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">' +
+      '<div style="padding:10px 14px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--line)">' +
+        '<div style="font-size:13px;font-weight:700;color:var(--ink-1)">\u2728 Event Factor</div>' +
+        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Price multiplier per event name (\u221210%% to +10%%). Applied as a final multiplier to the RMES price on dates that match the event. Positive = premium, negative = discount, zero = no effect. Weights are shared across all properties.</div>' +
+      '</div>' +
+      '<div style="overflow-x:auto;max-height:340px;overflow-y:auto;padding:8px 10px">' +
+        '<table style="border-collapse:collapse;width:100%"><thead><tr>' +
+          '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:left;border-bottom:1px solid var(--line)">Event</th>' +
+          '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:right;border-bottom:1px solid var(--line)">Days</th>' +
+          '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:center;border-bottom:1px solid var(--line)">Weight</th>' +
+        '</tr></thead><tbody>' + rows + '</tbody></table>' +
+      '</div>' +
+      '<div style="padding:8px 14px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center">' +
+        '<button id="rmes-evw-reset" style="font-size:11px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-2);cursor:pointer">\u21ba Reset all to 0</button>' +
+        '<span style="font-size:11px;color:var(--ink-3)">Changes are saved with the \u201cApply changes\u201d button at the bottom of the tab.</span>' +
+      '</div>' +
+    '</div>';
+  wrap.querySelectorAll('.rmes-evw-input').forEach(inp => {
+    inp.addEventListener('input', () => { if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty(); });
+  });
+  const rb = document.getElementById('rmes-evw-reset');
+  if (rb) rb.addEventListener('click', () => {
+    _setEventWeights({});
+    _renderRmesEventsBox();
     if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
   });
 }
@@ -11316,7 +11715,7 @@ const NOTES_STRUCT_LABELS = {
   firenze: 'Firenze Suite',
   condotta: 'Condotta 16',
   alfani: 'Palazzo Alfani',
-  davids: "Florence David's",
+  davids: "Enis Guesthouse",
   both: 'All properties',
 };
 /* Format timestamp italiano */
@@ -12882,7 +13281,7 @@ const BIG_STRUCTS = [
   {k:'firenze',  name:'Firenze Suite',    color:'#3b6b9a'},
   {k:'condotta', name:'Condotta 16',      color:'#3d7a4b'},
   {k:'alfani',   name:'Palazzo Alfani',   color:'#8e5fa8'},
-  {k:'davids',   name:"Florence David's", color:'#c0392b'}
+  {k:'davids',   name:"Enis Guesthouse", color:'#c0392b'}
 ];
 function _bigStructKey(slug){ return CFG.structures[slug] ? CFG.structures[slug].key : slug; }
 function _bigBreakdownData(kind, nDays, forceWindow){
@@ -13276,17 +13675,71 @@ function _bigRenderPie(sel){
   if (titleEl){
     const base = 'Source share — by revenue (year) · inner = STLY';
     titleEl.innerHTML = (sel==='both')
-      ? `${base} <span class="big-byprop" data-bigbreakdown="source" style="font-size:10px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>`
+      ? `${base} · <span style="font-size:10px;font-weight:700;color:var(--ink-3);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;margin-left:6px">per property</span>`
       : base;
   }
-  let A=null; try{ A=aggOTBYearly(sel); }catch(e){}
-  if (!A || !A.provCur){ host.innerHTML='<div style="color:var(--ink-3);font-size:12px;padding:20px;text-align:center">No data</div>'; return; }
   const palette = ['#3b6b9a','#3d7a4b','#c4823b','#8e5fa8','#b0464b','#1f8a8a','#c9a227','#7a7a7a'];
   const toArr = (obj)=> Object.keys(obj||{}).map(k=>({name:_bigProvLabel(k), rev:(obj[k]&&obj[k].rev)||0})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
+  const sum = (a)=>a.reduce((s,x)=>s+x.rev,0)||1;
+
+  // helper: build one donut (outer = current year, inner = STLY) with its legend
+  function buildOneDonut(structKey, structLabel, structColor){
+    let A=null; try{ A=aggOTBYearly(structKey); }catch(e){}
+    if (!A || !A.provCur) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div>No data</div>`;
+    const cur = toArr(A.provCur), prev = toArr(A.provPrev);
+    if (!cur.length) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div>No data</div>`;
+    const colorOf={}; cur.forEach((x,i)=>colorOf[x.name]=palette[i%palette.length]);
+    prev.forEach((x)=>{ if(!colorOf[x.name]) colorOf[x.name]=palette[Object.keys(colorOf).length%palette.length]; });
+    const totCur=sum(cur), totPrev=sum(prev);
+    const cx=80, cy=80, rOut=68, rOutIn=44, rInOut=38, rInIn=20;
+    function arcs(arr, tot, ri, ro){
+      let ang=-Math.PI/2, out='';
+      arr.forEach(x=>{
+        const frac=x.rev/tot, a2=ang+frac*2*Math.PI;
+        const x1=cx+ro*Math.cos(ang), y1=cy+ro*Math.sin(ang), x2=cx+ro*Math.cos(a2), y2=cy+ro*Math.sin(a2);
+        const x3=cx+ri*Math.cos(a2), y3=cy+ri*Math.sin(a2), x4=cx+ri*Math.cos(ang), y4=cy+ri*Math.sin(ang);
+        const large=frac>0.5?1:0;
+        out+=`<path d="M${x1} ${y1} A${ro} ${ro} 0 ${large} 1 ${x2} ${y2} L${x3} ${y3} A${ri} ${ri} 0 ${large} 0 ${x4} ${y4} Z" fill="${colorOf[x.name]}" stroke="var(--surface)" stroke-width="1.5"><title>${x.name}: ${fmtEUR(x.rev)} (${(frac*100).toFixed(0)}%)</title></path>`;
+        ang=a2;
+      });
+      return out;
+    }
+    const outerArcs = arcs(cur, totCur, rOutIn, rOut);
+    const innerArcs = (prev.length ? arcs(prev, totPrev, rInIn, rInOut) : '');
+    const prevShare={}; prev.forEach(x=>prevShare[x.name]=x.rev/totPrev*100);
+    const legend = cur.slice(0,5).map(x=>{
+      const cs=x.rev/totCur*100, ps=prevShare[x.name];
+      const delta = (ps!=null) ? (cs-ps) : null;
+      const dTxt = (delta==null)?'':` <span style="color:${delta>=0?'#3d7a4b':'#b0464b'}">${delta>=0?'▲':'▼'}${Math.abs(delta).toFixed(0)}</span>`;
+      return `<div style="display:flex;align-items:center;gap:5px;font-size:10px;margin-bottom:2px"><span style="width:8px;height:8px;border-radius:2px;background:${colorOf[x.name]};flex-shrink:0"></span><span style="flex:1;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${x.name}</span><span style="font-family:'DM Mono',monospace;font-weight:600">${cs.toFixed(0)}%${dTxt}</span></div>`;
+    }).join('');
+    return `<div style="text-align:center">
+      <div style="font-weight:700;font-size:12px;color:${structColor};margin-bottom:4px">${structLabel}</div>
+      <svg viewBox="0 0 160 160" style="width:130px;height:130px;display:block;margin:0 auto">${outerArcs}${innerArcs}</svg>
+      <div style="min-width:140px;margin-top:6px;text-align:left">${legend}</div>
+    </div>`;
+  }
+
+  if (sel === 'both'){
+    // 4 mini-donuts, one per property
+    const structs = [
+      {k:'firenze',  label:'Firenze Suite',  color:'#3b6b9a'},
+      {k:'condotta', label:'Condotta 16',    color:'#3d7a4b'},
+      {k:'alfani',   label:'Palazzo Alfani', color:'#8e5fa8'},
+      {k:'davids',   label:'Enis Guesthouse',color:'#c0392b'}
+    ];
+    const cards = structs.map(s => buildOneDonut(s.k, s.label, s.color)).join('');
+    host.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;padding:6px 4px">${cards}</div>
+      <div style="text-align:center;font-size:10px;color:var(--ink-3);margin-top:6px">outer = current year · inner = STLY</div>`;
+    return;
+  }
+
+  // single-property view: full-size donut + legend (unchanged)
+  let A=null; try{ A=aggOTBYearly(sel); }catch(e){}
+  if (!A || !A.provCur){ host.innerHTML='<div style="color:var(--ink-3);font-size:12px;padding:20px;text-align:center">No data</div>'; return; }
   const cur = toArr(A.provCur), prev = toArr(A.provPrev);
   const colorOf={}; cur.forEach((x,i)=>colorOf[x.name]=palette[i%palette.length]);
   prev.forEach((x)=>{ if(!colorOf[x.name]) colorOf[x.name]=palette[Object.keys(colorOf).length%palette.length]; });
-  const sum = (a)=>a.reduce((s,x)=>s+x.rev,0)||1;
   const totCur=sum(cur), totPrev=sum(prev);
   const cx=110, cy=110, rOut=95, rOutIn=62, rInOut=55, rInIn=30;
   function arcs(arr, tot, ri, ro){
