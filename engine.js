@@ -9869,9 +9869,9 @@ function aggForecast(structKey){
       };
     }
   }
-  const pickupCutoffYmd = ymd(addDays(today0, -14));    // ultimi 14d cur
+  const pickupCutoffYmd = ymd(addDays(today0, -7));     // last 7 days (cur) — 1-week window
   const stlyPickupEndYmd = ymd(addDays(today0, -364));
-  const stlyPickupStartYmd = ymd(addDays(today0, -378));
+  const stlyPickupStartYmd = ymd(addDays(today0, -371)); // STLY: 7-day window ending at today−364
   function ymdNum(y, m, d){ return y*10000 + m*100 + d; }
   const EAST_APR26_START = ymdNum(2026, 4, 1);
   const EAST_APR26_END   = ymdNum(2026, 4, 5);
@@ -10179,9 +10179,22 @@ function aggForecast(structKey){
     const monthEndDate = startOfDay(new Date(m.y, m.mo - 1, lastDayOfMonth));
     const daysToMonthEnd = Math.max(0, Math.round((monthEndDate - today0) / 86400000) + 1);
     m.daysRemaining = daysToMonthEnd;
-    m.eurPerDayToClose = daysToMonthEnd > 0 ? m.diffOtbFct / daysToMonthEnd : 0;
-    m.eurPerDayPickup7 = m.pickupCurRev / 14;
-    m.eurPerDayPickupStly7 = m.pickupStlyRev / 14;
+    // --- TIME-AWARE daily pickup target (replaces the flat gap/days) ---------------------------
+    // The residual revenue still to book (diffOtbFct) does NOT come in evenly across the remaining
+    // booking days. Early in the period MANY stay-dates are still open, so a lot can be picked up per
+    // day; near month-end only a few dates remain, so little can be picked up per day. We distribute
+    // the residual over the remaining booking days t = 1..D with DECREASING weights w_t = (D - t + 1):
+    // today's weight = D (all dates open), tomorrow D-1, …, last day = 1. Sum of weights = D(D+1)/2.
+    // TODAY's expected daily pickup = diffOtbFct * w_today / sumWeights = diffOtbFct * D / [D(D+1)/2]
+    //                               = diffOtbFct * 2 / (D + 1).
+    // → high with lead time, low close to the date. Weighting ≈ residual RN still sellable per date.
+    const D = daysToMonthEnd;
+    const dailyTargetToday = D > 0 ? (m.diffOtbFct * 2 / (D + 1)) : 0; // weighted DAILY target for TODAY
+    m.eurPerDayToClose = dailyTargetToday;             // kept name for back-compat
+    m.eurPerWeekToClose = dailyTargetToday * 7;        // weekly equivalent, to compare with 7d pickup
+    // 1-week pickup windows (was 14 days → now 7, as requested)
+    m.eurPerDayPickup7 = m.pickupCurRev / 7;
+    m.eurPerDayPickupStly7 = m.pickupStlyRev / 7;
     m.achievement = m.fcstRev > 0 ? m.otbRev / m.fcstRev : 0;
     if (monthState === 'CURRENT' || monthState === 'FUTURE'){
       if (typeof fp_maybeAutoSaveSnapshot === 'function'){
@@ -10297,9 +10310,9 @@ function renderForecast(sel){
         <th title="Δ% live vs initial snapshot (positive = doing better than forecast at the start of the month)">Δ% vs snap</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th title="YTD+Forecast Revenue − OTB Revenue">Diff € (Fct−OTB)</th>
-        <th title="Fct−OTB difference divided by cumulative days from today to month-end (e.g. for June = remaining days of May + all of June)">€/day to close</th>
-        <th title="Revenue acquired in the last 14 days / 14. Green if ≥ €/day needed to close (on track), red if below.">€/day pickup 14d</th>
-        <th title="STLY revenue acquired in the STLY 14d (-364d) / 14">€/day pickup STLY 14d</th>
+        <th title="Time-aware daily pickup target for TODAY: the residual revenue to book, weighted by how much volume is still sellable (more stay-dates open early in the month, fewer near the end). Decreases as the month-end approaches. Compare it with what you are actually picking up now.">€/day to close</th>
+        <th title="Revenue acquired in the last 7 days / 7. Green if ≥ the (time-aware) €/day target (on track), red if below.">€/day pickup 7d</th>
+        <th title="STLY revenue acquired in the STLY 7-day window (−364d) / 7">€/day pickup STLY 7d</th>
         <th title="OTB / (YTD+Forecast) Revenue">% Achievement</th>
       </tr>
     </thead>`;
@@ -10312,7 +10325,7 @@ function renderForecast(sel){
       pkCmpCls = m.eurPerDayPickup7 >= m.eurPerDayToClose ? 'cell-pos' : 'cell-neg';
     }
     const pkCmpTip = (m.daysRemaining > 0 && m.diffOtbFct > 0)
-      ? `Pickup 14d cur (${fmtEUR(m.eurPerDayPickup7)}/g) vs €/d to close (${fmtEUR(m.eurPerDayToClose)}/g) → ${m.eurPerDayPickup7 >= m.eurPerDayToClose ? 'IN LINEA ✓' : 'SOTTO PASSO ✗'}`
+      ? `Pickup 7d cur (${fmtEUR(m.eurPerDayPickup7)}/g) vs target time-aware (${fmtEUR(m.eurPerDayToClose)}/g) → ${m.eurPerDayPickup7 >= m.eurPerDayToClose ? 'IN LINEA ✓' : 'SOTTO PASSO ✗'}`
       : 'No gap to close';
     const otbAdrM = m.otbRn>0 ? m.otbRev/m.otbRn : 0;
     const isEasterAdj = A.easterCorrectionApplied && m.y === 2027 && (m.mo === 3 || m.mo === 4);
@@ -10368,7 +10381,7 @@ function renderForecast(sel){
                 <td class="cell-mono ${revCls}" style="background:rgba(60,124,90,.04)" title="${revTip}"><b>${budRev > 0 ? fmtEUR(budRev) : '—'}</b></td>`;
       })()}
       <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.diffOtbFct)}</b></td>
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="${m.daysRemaining} cumulative days (from today to end of ${monthsITLong[m.mo-1]} ${m.y})">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
+      <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="Time-aware daily target for TODAY (D=${m.daysRemaining} days left). The residual revenue is spread over the remaining days with decreasing weights (today = highest, because more stay-dates are still open; lowest near month-end). Higher with lead time, lower close to the date. Compare with the 7-day pickup on the right.">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
       <td class="cell-mono ${pkCmpCls}" style="background:rgba(195,131,59,.04);cursor:help" title="${pkCmpTip}">${fmtEUR(m.eurPerDayPickup7)}</td>
       <td class="cell-mono cell-flat" style="background:rgba(195,131,59,.04)">${fmtEUR(m.eurPerDayPickupStly7)}</td>
       <td class="cell-mono ${achCls}" style="background:rgba(195,131,59,.04)"><b>${fmtPct(m.achievement,0)}</b></td>
