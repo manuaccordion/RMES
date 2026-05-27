@@ -9859,6 +9859,8 @@ function aggForecast(structKey){
       pickupCurRev: 0, pickupCurRn: 0,
       pickupStlyRev: 0, pickupStlyRn: 0,
       byRt: {},
+      lyByDate: {},     // ymd of stay-date (this year, mapped from LY) → LY nights count → used to spread monthly fcstRn over dates
+      otbByDate: {},    // ymd of stay-date → OTB nights already on the books for that date
     };
     for (const rt of rtList){
       monthly[ymKey].byRt[rt] = {
@@ -9897,6 +9899,10 @@ function aggForecast(structKey){
           monthly[fcstYmKey].finalLyRev += b.revPerNight;
           monthly[fcstYmKey].byRt[b.room].finalLyRn += 1;
           monthly[fcstYmKey].byRt[b.room].finalLyRev += b.revPerNight;
+          // map LY 2025 stay-night to matching date in fcst year 2026 (+364 days)
+          const fcstStayDate = addDays(cur, 364);
+          const fcstStayYmd = ymd(fcstStayDate);
+          monthly[fcstYmKey].lyByDate[fcstStayYmd] = (monthly[fcstYmKey].lyByDate[fcstStayYmd] || 0) + 1;
         }
         if (dymd >= APR25_FILL_START && dymd <= APR25_FILL_END){
           const fillTarget = monthly[202704];
@@ -9921,6 +9927,11 @@ function aggForecast(structKey){
           monthly[fcstYmKey].finalLyRev += b.revPerNight;
           monthly[fcstYmKey].byRt[b.room].finalLyRn += 1;
           monthly[fcstYmKey].byRt[b.room].finalLyRev += b.revPerNight;
+          // map this LY stay-night to the matching date in the forecast year (today−364 shift)
+          // and accumulate "LY nights per fcst stay-date" → used to spread monthly fcstRn over dates
+          const fcstStayDate = addDays(cur, 364);
+          const fcstStayYmd = ymd(fcstStayDate);
+          monthly[fcstYmKey].lyByDate[fcstStayYmd] = (monthly[fcstYmKey].lyByDate[fcstStayYmd] || 0) + 1;
         }
       }
       if (monthly[ymKey] && monthly[ymKey].byRt[b.room]){
@@ -9928,6 +9939,9 @@ function aggForecast(structKey){
         monthly[ymKey].otbRev += b.revPerNight;
         monthly[ymKey].byRt[b.room].otbRn += 1;
         monthly[ymKey].byRt[b.room].otbRev += b.revPerNight;
+        // OTB nights per stay-date inside the month (used to know "what's already on the books per date")
+        const stayYmd = ymd(cur);
+        monthly[ymKey].otbByDate[stayYmd] = (monthly[ymKey].otbByDate[stayYmd] || 0) + 1;
         if (cur < today0){
           monthly[ymKey].actualPastRn += 1;
           monthly[ymKey].actualPastRev += b.revPerNight;
@@ -10179,19 +10193,85 @@ function aggForecast(structKey){
     const monthEndDate = startOfDay(new Date(m.y, m.mo - 1, lastDayOfMonth));
     const daysToMonthEnd = Math.max(0, Math.round((monthEndDate - today0) / 86400000) + 1);
     m.daysRemaining = daysToMonthEnd;
-    // --- TIME-AWARE daily pickup target (replaces the flat gap/days) ---------------------------
-    // The residual revenue still to book (diffOtbFct) does NOT come in evenly across the remaining
-    // booking days. Early in the period MANY stay-dates are still open, so a lot can be picked up per
-    // day; near month-end only a few dates remain, so little can be picked up per day. We distribute
-    // the residual over the remaining booking days t = 1..D with DECREASING weights w_t = (D - t + 1):
-    // today's weight = D (all dates open), tomorrow D-1, …, last day = 1. Sum of weights = D(D+1)/2.
-    // TODAY's expected daily pickup = diffOtbFct * w_today / sumWeights = diffOtbFct * D / [D(D+1)/2]
-    //                               = diffOtbFct * 2 / (D + 1).
-    // → high with lead time, low close to the date. Weighting ≈ residual RN still sellable per date.
-    const D = daysToMonthEnd;
-    const dailyTargetToday = D > 0 ? (m.diffOtbFct * 2 / (D + 1)) : 0; // weighted DAILY target for TODAY
-    m.eurPerDayToClose = dailyTargetToday;             // kept name for back-compat
-    m.eurPerWeekToClose = dailyTargetToday * 7;        // weekly equivalent, to compare with 7d pickup
+    // --- EXACT time-aware pickup target (uses RN expected per stay-date, spread via STLY pattern) ---
+    // Idea: residual RN per stay-date = fcstRn_month spread on dates with the STLY pattern (LY nights
+    // per date), MINUS OTB already on the books for that date. On each future booking-day t (from
+    // today to month-end), the sellable volume is the sum of residual RN on stay-dates d ≥ t. So:
+    //   • today (t=0) → sum over the WHOLE month
+    //   • day 29 (t close to end) → only the last few dates
+    // Target of TODAY = residualRevenue * volumeToday / sum(volume over all future booking days).
+    // If the LY pattern is missing (LY data thin), we fall back to the linear weights model.
+    let targetTodayRev = 0;
+    let exactComputed = false;
+    if (daysToMonthEnd > 0 && m.diffOtbFct > 0 && m.fcstRn > m.otbRn){
+      const lyByDate = m.lyByDate || {};
+      const otbByDate = m.otbByDate || {};
+      // 1) total LY weight across the WHOLE month (the denominator for normalising the spread)
+      let totalLyWeight = 0;
+      const monthYmdList = [];
+      for (let dd = 1; dd <= m.days; dd++){
+        const ymdD = m.y * 10000 + m.mo * 100 + dd;
+        monthYmdList.push(ymdD);
+        totalLyWeight += (lyByDate[ymdD] || 0);
+      }
+      if (totalLyWeight > 0){
+        // 2) residual RN per stay-date = (fcstRn_month × lyByDate[d]/totalLy) − OTB[d], floored at 0
+        const residualByDate = {};
+        let totalResidualRn = 0;
+        for (const ymdD of monthYmdList){
+          const expectedRnOnDate = m.fcstRn * ((lyByDate[ymdD] || 0) / totalLyWeight);
+          const otbOnDate = otbByDate[ymdD] || 0;
+          const res = Math.max(0, expectedRnOnDate - otbOnDate);
+          residualByDate[ymdD] = res;
+          totalResidualRn += res;
+        }
+        if (totalResidualRn > 0){
+          // 3) for each FUTURE booking day t (from today to month-end), compute sellable volume = sum
+          //    of residualByDate[d] for d ≥ t. Today's volume = full sum; near month-end → tiny.
+          const todayYmdNum = ymd(today0);
+          let cumulativeVolumeAcrossBookingDays = 0;
+          let volumeOnTodaysBookingDay = 0;
+          for (let dd = 1; dd <= m.days; dd++){
+            const bookingDayYmd = m.y * 10000 + m.mo * 100 + dd;
+            // skip past booking days (we measure from TODAY onward)
+            if (bookingDayYmd < todayYmdNum) continue;
+            // sellable on this booking day: residual on stay-dates with stayDate ≥ bookingDay
+            let vol = 0;
+            for (let ee = dd; ee <= m.days; ee++){
+              const stayYmd = m.y * 10000 + m.mo * 100 + ee;
+              vol += (residualByDate[stayYmd] || 0);
+            }
+            cumulativeVolumeAcrossBookingDays += vol;
+            if (bookingDayYmd === todayYmdNum) volumeOnTodaysBookingDay = vol;
+          }
+          // If today is BEFORE this month (we're looking at a future month), the whole month is open:
+          // every future booking day from today through month-end has full sum of residual on day 1,
+          // decreasing on later days. We handle this by using the first day's volume as "today's".
+          if (volumeOnTodaysBookingDay === 0){
+            // today is before month start → today sees all residual RN as sellable
+            volumeOnTodaysBookingDay = totalResidualRn;
+            // add booking-days from today to month-start, each with full month volume
+            const monthStart = startOfDay(new Date(m.y, m.mo - 1, 1));
+            const daysToMonthStart = Math.max(0, Math.round((monthStart - today0) / 86400000));
+            cumulativeVolumeAcrossBookingDays += totalResidualRn * daysToMonthStart;
+          }
+          if (cumulativeVolumeAcrossBookingDays > 0){
+            const todaysShare = volumeOnTodaysBookingDay / cumulativeVolumeAcrossBookingDays;
+            targetTodayRev = m.diffOtbFct * todaysShare;
+            exactComputed = true;
+          }
+        }
+      }
+    }
+    if (!exactComputed){
+      // FALLBACK: linear-weights model (decreasing weights over days). Used when LY pattern is thin
+      // or when the gap is zero. Target_today = diffOtbFct × 2 / (D + 1).
+      const D = daysToMonthEnd;
+      targetTodayRev = D > 0 ? (m.diffOtbFct * 2 / (D + 1)) : 0;
+    }
+    m.eurPerDayToClose = targetTodayRev;       // kept name for back-compat (it's the target for TODAY)
+    m.eurPerWeekToClose = targetTodayRev * 7;  // weekly equivalent (for comparison with 7d pickup)
+    m.targetExactMode = exactComputed;          // for the tooltip
     // 1-week pickup windows (was 14 days → now 7, as requested)
     m.eurPerDayPickup7 = m.pickupCurRev / 7;
     m.eurPerDayPickupStly7 = m.pickupStlyRev / 7;
@@ -10310,7 +10390,7 @@ function renderForecast(sel){
         <th title="Δ% live vs initial snapshot (positive = doing better than forecast at the start of the month)">Δ% vs snap</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th title="YTD+Forecast Revenue − OTB Revenue">Diff € (Fct−OTB)</th>
-        <th title="Time-aware daily pickup target for TODAY: the residual revenue to book, weighted by how much volume is still sellable (more stay-dates open early in the month, fewer near the end). Decreases as the month-end approaches. Compare it with what you are actually picking up now.">€/day to close</th>
+        <th title="Exact time-aware daily pickup target for TODAY. Uses RN expected per stay-date (monthly fcstRn spread with the STLY pattern, minus OTB). Today's target = residual revenue × today's sellable volume / total volume across all future booking-days. Higher with lead time, lower near month-end. Fallback to linear-weights formula if LY data is thin.">€/day to close</th>
         <th title="Revenue acquired in the last 7 days / 7. Green if ≥ the (time-aware) €/day target (on track), red if below.">€/day pickup 7d</th>
         <th title="STLY revenue acquired in the STLY 7-day window (−364d) / 7">€/day pickup STLY 7d</th>
         <th title="OTB / (YTD+Forecast) Revenue">% Achievement</th>
@@ -10381,7 +10461,7 @@ function renderForecast(sel){
                 <td class="cell-mono ${revCls}" style="background:rgba(60,124,90,.04)" title="${revTip}"><b>${budRev > 0 ? fmtEUR(budRev) : '—'}</b></td>`;
       })()}
       <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.diffOtbFct)}</b></td>
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="Time-aware daily target for TODAY (D=${m.daysRemaining} days left). The residual revenue is spread over the remaining days with decreasing weights (today = highest, because more stay-dates are still open; lowest near month-end). Higher with lead time, lower close to the date. Compare with the 7-day pickup on the right.">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
+      <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="${m.targetExactMode ? 'EXACT time-aware target for TODAY: residual RN per stay-date (fcstRn spread via the STLY pattern, minus OTB), summed from each future booking-day to month-end. Today gets the full month volume; near month-end only a few dates remain. D=' + m.daysRemaining + ' days left.' : 'Linear-weights fallback (no LY pattern available). Daily target = (Fct−OTB) × 2/(D+1), D=' + m.daysRemaining + '.'}">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
       <td class="cell-mono ${pkCmpCls}" style="background:rgba(195,131,59,.04);cursor:help" title="${pkCmpTip}">${fmtEUR(m.eurPerDayPickup7)}</td>
       <td class="cell-mono cell-flat" style="background:rgba(195,131,59,.04)">${fmtEUR(m.eurPerDayPickupStly7)}</td>
       <td class="cell-mono ${achCls}" style="background:rgba(195,131,59,.04)"><b>${fmtPct(m.achievement,0)}</b></td>
