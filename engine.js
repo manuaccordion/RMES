@@ -1780,7 +1780,7 @@ function renderPickup(sel){
   */
   const PK_PALETTE = ['#8b6f47','#3b6b6b','#a89274','#5a8c69','#7a5a8c','#c08838','#3b5a78','#b1432f'];
   function selectedWeeksLabel(){
-    if (PK_WEEKS_SEL.length === 4) return 'All le 4 settimane';
+    if (PK_WEEKS_SEL.length === 4) return 'All 4 weeks';
     return 'Solo W' + PK_WEEKS_SEL.map(i=>i+1).join(' + W');
   }
   function buildBarChart(axis, dataC, dataP, containerId, axisLabel, labelFn, sortMode){
@@ -1811,7 +1811,7 @@ function renderPickup(sel){
       items.sort((a,b) => (b.rnCur - a.rnCur) || (b.rnSty - a.rnSty));
     }
     if (!items.length){
-      el.innerHTML = '<div class="panel-sub" style="padding:20px 0;text-align:center">No pickup in these wettimane</div>';
+      el.innerHTML = '<div class="panel-sub" style="padding:20px 0;text-align:center">No pickup in these weeks</div>';
       return;
     }
     const byRn = items.slice().sort((a,b) => b.rnCur - a.rnCur);
@@ -1824,7 +1824,7 @@ function renderPickup(sel){
     const numW = 24;    // % per i numeri a dx
     const barW = 100 - labelW - numW;
     let html = `<div style="font-family:'DM Mono',monospace;font-size:11px">`;
-    const sortLabel = sortMode === 'chrono' ? 'Chronological order' : 'Ordinato per RN 2026 ↓';
+    const sortLabel = sortMode === 'chrono' ? 'Chronological order' : 'Sorted by RN 2026 ↓';
     const filterInfo = `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0 10px;font-size:10px;color:var(--ink-3)">
       <span>Filter: <b style="color:var(--ink-2)">${selectedWeeksLabel()}</b></span>
       <span>${sortLabel}</span>
@@ -1907,7 +1907,7 @@ function openPickupDrill(dim, key, weekIdx, mode, A){
     if (weekIdx===-1){ // grand total
       for (const k of axis) for (const c of dataset[k]) rows.push(...c.rows);
       label = 'Totale ' + dimLabel;
-      weekLabel = `4 settimane (${fmtDateIT(weeks[0].start)} → ${fmtDateIT(weeks[3].end)})`;
+      weekLabel = `4 weeks (${fmtDateIT(weeks[0].start)} → ${fmtDateIT(weeks[3].end)})`;
     } else {
       for (const k of axis) rows.push(...dataset[k][weekIdx].rows);
       label = 'Totale ' + dimLabel;
@@ -1917,7 +1917,7 @@ function openPickupDrill(dim, key, weekIdx, mode, A){
     if (weekIdx===-1){
       for (const c of dataset[key]) rows.push(...c.rows);
       label = keyLabel(key);
-      weekLabel = `4 settimane (${fmtDateIT(weeks[0].start)} → ${fmtDateIT(weeks[3].end)})`;
+      weekLabel = `4 weeks (${fmtDateIT(weeks[0].start)} → ${fmtDateIT(weeks[3].end)})`;
     } else {
       rows = dataset[key][weekIdx].rows;
       label = keyLabel(key);
@@ -2715,6 +2715,27 @@ function expDemandLevel(search){
   if (search >= s.p25) return {level:'mid',       label:'·  Medium',   color:'#888'};
   return {level:'low', label:'↓ Low', color:'#3b6b6b'};
 }
+/* Background tint for a Sell Strategy row, based on the Expedia search pressure for that day.
+   Uses a percentile-rank scale against the global search distribution for high contrast.
+   Curve emphasised on the upper half (more visible differences for days that matter, peak season). */
+function _searchPressureBg(search){
+  if (search == null || !isFinite(search)) return '';
+  const s = expSearchStats();
+  if (!s || !s.p90 || !s.p25) return '';
+  let t;
+  if (search <= s.min) t = 0;
+  else if (search <= s.p25) t = 0.05 * (search - s.min) / (s.p25 - s.min || 1);     // 0..0.05 (low: barely visible)
+  else if (search <= s.p50) t = 0.05 + 0.15 * (search - s.p25) / (s.p50 - s.p25 || 1); // 0.05..0.20
+  else if (search <= s.p75) t = 0.20 + 0.25 * (search - s.p50) / (s.p75 - s.p50 || 1); // 0.20..0.45
+  else if (search <= s.p90) t = 0.45 + 0.30 * (search - s.p75) / (s.p90 - s.p75 || 1); // 0.45..0.75
+  else if (search <= s.max) t = 0.75 + 0.25 * (search - s.p90) / (s.max - s.p90 || 1); // 0.75..1.00
+  else t = 1.0;
+  if (t < 0) t = 0;
+  if (t > 1) t = 1;
+  // Alpha from 0 (faint) to 0.55 (vivid orange). Visible contrast across the full range.
+  const alpha = t * 0.55;
+  return 'background:rgba(196,130,59,' + alpha.toFixed(2) + ')';
+}
 function expCheckBrake(proposedPrice, compsetAvg){
   if (!proposedPrice || !compsetAvg || compsetAvg <= 0) return null;
   const ratio = proposedPrice / compsetAvg;
@@ -3487,9 +3508,9 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const fbDev = (_paceMult != null && isFinite(_paceMult)) ? Math.abs(_paceMult - 1) : 0;
       if (fbDev > 0.15){
         return verbose ? {
-          mult: 1, naReason: 'monthly pace unavailable for property or properties-aggregate; extreme annual fallbackmo (' + ((_paceMult-1)*100).toFixed(0) + '%): factor neutralized',
+          mult: 1, naReason: 'monthly pace unavailable for property or properties-aggregate; extreme annual fallback (' + ((_paceMult-1)*100).toFixed(0) + '%): factor neutralized',
           state: 'neutralizzato_no_dati', rawMult: 1,
-          source: 'pace 4w month-specific unavailable for the property or the properties-aggregate · property annual fallback would be ' + (_paceMult>1?'+':'') + ((_paceMult-1)*100).toFixed(0) + '% (estremo): factor neutralized and weight redistributed to the others'
+          source: 'pace 4w month-specific unavailable for this property or the others · property annual fallback would be ' + (_paceMult>1?'+':'') + ((_paceMult-1)*100).toFixed(0) + '% (extreme): factor neutralized and weight redistributed to the others'
         } : 1;
       }
       return verbose ? {
@@ -3844,16 +3865,10 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         const priceSuggested = Math.max(_priceAfterFactors, _structFloor);
         rmesSuggestedByRT[rt] = priceSuggested;
         rmesDeltaByRT[rt] = priceSuggested - baseRT;   // delta in € rispetto al riferimento corrente
-        const _ymdStr = String(r.ymd);
-        const _isoYmd = _ymdStr.substring(0,4) + '-' + _ymdStr.substring(4,6) + '-' + _ymdStr.substring(6,8);
-        const ovr = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, _isoYmd, rt) : null;
-        if (ovr && ovr.price != null && isFinite(ovr.price) && ovr.price > 0){
-          pricesByRT[rt] = ovr.price;
-          overrideUsedByRT[rt] = true;
-        } else {
-          pricesByRT[rt] = priceSuggested;
-          overrideUsedByRT[rt] = false;
-        }
+        // NewRMES: il prezzo "in tabella" è il suggerimento RMES; l'eventuale "accettato" è già dentro
+        // baseRT (via newrmesGetCurrentReference). Niente override legacy.
+        pricesByRT[rt] = priceSuggested;
+        overrideUsedByRT[rt] = false;
       }
       const baseRT = _suppData ? _suppData.baseRT : _rtList[0];
       const mainPrice = pricesByRT[baseRT] != null ? pricesByRT[baseRT] : Math.max(basePrice * multFinale, _structFloor);
@@ -4571,8 +4586,8 @@ function fp_setFoundationState(structKey, dateISO, rt, status, value, calculated
     delete all[structKey][dateISO][rt];
     if (Object.keys(all[structKey][dateISO]).length === 0) delete all[structKey][dateISO];
   } else {
-    if (status !== 'accepted' && status !== 'override') throw new Error('Status non valido: ' + status);
-    if (value == null || !isFinite(value)) throw new Error('Value non valido');
+    if (status !== 'accepted' && status !== 'override') throw new Error('Invalid status: ' + status);
+    if (value == null || !isFinite(value)) throw new Error('Invalid value');
     all[structKey][dateISO][rt] = {
       status: status,
       value: +value,
@@ -4892,7 +4907,7 @@ function fp_ymdNumToDate(n){
   const d = n%100;
   return new Date(y, m-1, d);
 }
-/* Sorgente RMES nuovo sistema: Foundation price of the day for the property's baseRTa.
+/* Sorgente RMES nuovo sistema: Base Price of the day for the property's baseRTa.
    Ritorna { price, source } con source = 'foundation' | 'fallback_<cascata>'.
    Usato dal calcolo RMES come price iniziale da aggiustare con i 5 fattori. */
 function rmes_getSourcePrice(structKey, ymdNum, fallbackPrice){
@@ -5475,7 +5490,7 @@ function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, 
   popup.onclick = (e) => { if (e.target === popup) popup.remove(); };
   let h = '<div style="background:#fff;border-radius:8px;max-width:480px;width:100%;font-size:13px;line-height:1.5;color:#222;box-shadow:0 8px 32px rgba(0,0,0,.3);overflow:hidden">';
   h += '<div style="padding:14px 18px;background:#f8f8f5;border-bottom:1px solid #e8e6df;display:flex;justify-content:space-between;align-items:flex-start">';
-  h += '<div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;font-weight:700">Foundation</div>';
+  h += '<div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#888;font-weight:700">Base Price</div>';
   h += '<div style="font-size:15px;font-weight:700;margin-top:2px">' + escapeHtml(structLbl) + ' · ' + escapeHtml(rt) + '</div>';
   h += '<div style="font-size:12px;color:#666;margin-top:2px;font-family:\'DM Mono\',monospace">' + dateLbl + '</div></div>';
   h += '<button onclick="document.getElementById(\'fp-approval-popup\').remove()" style="background:none;border:none;font-size:24px;color:#888;cursor:pointer;padding:0 4px;line-height:1">×</button>';
@@ -5484,7 +5499,7 @@ function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, 
   h += '<div style="background:' + statusBg + ';border:1px solid ' + statusBorder + ';border-radius:6px;padding:12px 14px;margin-bottom:14px">';
   h += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:' + statusCol + ';font-weight:700;margin-bottom:6px">' + statusIcon + ' ' + statusLabel + '</div>';
   h += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:14px">';
-  h += '<div><div style="font-size:11px;color:#888">Effective Foundation (used by factors)</div>';
+  h += '<div><div style="font-size:11px;color:#888">Effective reference (used by factors)</div>';
   h += '<div style="font-size:26px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + statusCol + '">' + (effective != null ? '€' + effective.toFixed(0) : '—') + '</div></div>';
   if (status !== 'proposed' && fpCalcNow != null && state){
     const driftAbs = fpCalcNow - state.value;
@@ -5513,12 +5528,12 @@ function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, 
   h += '</button></div>';
   if (status !== 'proposed'){
     h += '<button id="fp-popup-reset" style="padding:8px 14px;border:1px solid #999;background:#fff;color:#666;border-radius:5px;font-family:\'DM Sans\',sans-serif;font-size:12px;cursor:pointer;text-align:left">';
-    h += '↺ Back to "proposed" (Foundation recomputed at each data update)';
+    h += '↺ Reset Base Price override (back to frozen value)';
     h += '</button>';
   }
   h += '</div>';  // chiudo lista azioni
   h += '<div style="margin-top:14px;padding-top:12px;border-top:1px solid #e8e6df;text-align:center">';
-  h += '<button id="fp-popup-detail" style="background:none;border:none;color:#7a4f1c;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;font-family:\'DM Sans\',sans-serif">📖 See Foundation calculation detail (6 steps)</button>';
+  h += '<button id="fp-popup-detail" style="background:none;border:none;color:#7a4f1c;font-size:12px;font-weight:600;cursor:pointer;text-decoration:underline;font-family:\'DM Sans\',sans-serif">📖 See Base Price calculation detail</button>';
   h += '</div>';
   h += '</div>';  // chiudo body
   h += '</div>';  // chiudo box
@@ -5548,7 +5563,7 @@ function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, 
   const btnReset = document.getElementById('fp-popup-reset');
   if (btnReset){
     btnReset.onclick = () => {
-      if (!confirm('Tornare a "proposed"? Foundation verrà ricalcolato dinamicamente.')) return;
+      if (!confirm("Reset Base Price override? It will revert to the frozen value.")) return;
       if (typeof fp_resetFoundationState === 'function'){
         fp_resetFoundationState(structKey, dateISO, rt);
         _refresh();
@@ -5571,7 +5586,7 @@ function fp_showDetailModal(structKey, rt, dateISO){
   if (!r){
     const c = fp_computePrice(structKey, rt, dateISO);
     if (!c){
-      alert('Impossibile calcolare Foundation per ' + structKey + ' / ' + rt + ' / ' + dateISO);
+      alert('Cannot compute Base Price for ' + structKey + ' / ' + rt + ' / ' + dateISO);
       return;
     }
     return fp_showDetailModalFromResult(c, structKey, rt, dateISO);
@@ -5613,6 +5628,10 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   h += '<button onclick="document.getElementById(\'fp-detail-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
   h += '</div>';
   h += '<div style="padding:18px 22px">';
+  // Disclaimer onesto: la sezione 5 fattori funziona col nuovo sistema, ma il "Base Price detail"
+  // mostrato qui sotto è ancora basato sul vecchio calcolo Foundation a 6 step (non sul Frozen Base).
+  // Il prezzo finale RMES che vedi in tabella è invece corretto (calcolato sul Frozen Base).
+  h += '<div style="padding:8px 12px;background:#f4f4f0;border-left:3px solid #888;border-radius:3px;margin-bottom:12px;font-size:11px;color:#555;line-height:1.45"><b>Note.</b> The 5 RMES factors section is correct and reflects what RMES is currently doing. The Base Price section below shows the legacy 6-step calculation (kept for reference) — the actual frozen Base Price used by RMES is the value shown in the "Base Price" column of the Sell Strategy table, not necessarily the one reconstructed here.</div>';
   if (d.longHorizon){
     h += '<div style="padding:10px 14px;background:#fff8e8;border:1px solid #f0d090;border-radius:5px;margin-bottom:14px;font-size:12px;color:#7a5a14"><b>⚠ Distant horizon</b> (' + d.daysToArrival + ' days from today). Simplified mode: <b>max(Base, LY median) × target growth</b>. No pace/curve/market cap.</div>';
     if (d.anchorOrBase != null){
@@ -5664,16 +5683,16 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const fpLabelCol = hasFoundationOverride ? '#1e4a6b' : '#7a4f1c';
       const fpPriceCol = hasFoundationOverride ? '#1e4a6b' : '#5a3a14';
       const fpIcon = hasFoundationOverride ? '🖋' : '⚡';
-      const fpLabel = hasFoundationOverride ? 'Foundation (override manuale)' : 'Foundation (source, computed)';
+      const fpLabel = hasFoundationOverride ? 'Base Price (manual override)' : 'Base Price (computed)';
       const fpSub = hasFoundationOverride
-        ? 'Foundation override active · source price set manually · the 5 factors apply on top'
+        ? 'Base Price override active · source price set manually · the 5 factors apply on top'
         : 'Structural starting price · click "Show 6-step calculation" for the build-up';
       rmesSection += '<div style="padding:14px 16px;background:'+fpBg+';border:1px solid '+fpBorder+';border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
       rmesSection += '<div>';
       rmesSection += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:'+fpLabelCol+';font-weight:700;margin-bottom:2px">'+fpIcon+' '+fpLabel+'</div>';
       rmesSection += '<div style="font-size:10.5px;color:#888">'+fpSub+'</div>';
       if (hasFoundationOverride){
-        rmesSection += '<div style="font-size:10.5px;color:#888;margin-top:2px">Computed Foundation would be: <span style="font-family:\'DM Mono\',monospace;text-decoration:line-through">'+fmt(fpPriceSourceCalc)+'</span></div>';
+        rmesSection += '<div style="font-size:10.5px;color:#888;margin-top:2px">Computed Base Price would be: <span style="font-family:\'DM Mono\',monospace;text-decoration:line-through">'+fmt(fpPriceSourceCalc)+'</span></div>';
       }
       rmesSection += '</div>';
       rmesSection += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">';
@@ -5714,7 +5733,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
             if (dbg.priceCase === 'recover_below_LY')
               h += 'CASE 1 — ADR below LY → recovery, raise</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">Dev = −(ratio−1) = '+_fpct(-adrDev,1)+'</div>';
             else if (dbg.priceCase === 'all_good')
-              h += 'CASE 2 — ADR ≥ LY and OCC ≥ LY → neutral</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">All flat, keep Foundation. Dev = 0%</div>';
+              h += 'CASE 2 — ADR ≥ LY and OCC ≥ LY → neutral</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">All flat, keep current reference. Dev = 0%</div>';
             else if (dbg.priceCase === 'brake_softened'){
               const tg = (dbg.targetGrowthMo || 0) / 100;
               const eff = adrDev - tg;
@@ -5765,7 +5784,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         return h;
       }
       rmesSection += '<div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">RMES factors (property level)</div>';
-      var _notaRTLbl = _isBaseRT ? (rt + ' è la baseRT') : ('per ' + rt + ' = Foundation_baseRT + supplemento mensile');
+      var _notaRTLbl = _isBaseRT ? (rt + ' is the baseRT') : ('for ' + rt + ' = Base_baseRT + monthly supplement');
       rmesSection += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:14px 0 8px">Market Factors</div>';
       rmesSection += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">';
       rmesSection += '<thead style="background:#f8f8f5"><tr>';
@@ -5885,10 +5904,10 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const deltaSugg = rmesSuggested - fpPriceSource;
       rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:'+(hasOverride?'#f5f5f5':'#1e6b4a')+';border-radius:6px;color:'+(hasOverride?'#666':'#fff')+';margin-bottom:10px">';
       rmesSection += '<div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.85">💡 RMES would suggest</div>';
-      rmesSection += '<div style="font-size:10.5px;opacity:.7;margin-top:2px">Foundation '+fmt(fpPriceSource)+' × '+mults.multFinale.toFixed(3)+'</div></div>';
+      rmesSection += '<div style="font-size:10.5px;opacity:.7;margin-top:2px">Reference '+fmt(fpPriceSource)+' × multiplier '+mults.multFinale.toFixed(3)+'</div></div>';
       rmesSection += '<div style="text-align:right"><div style="font-size:'+(hasOverride?'18px':'24px')+';font-weight:700;font-family:\'DM Mono\',monospace">'+fmt(rmesSuggested)+'</div>';
       if (Math.abs(deltaSugg) >= 0.5){
-        rmesSection += '<div style="font-size:11px;opacity:.85;font-family:\'DM Mono\',monospace">Δ Foundation: '+(deltaSugg>0?'+':'')+fmt(deltaSugg)+'</div>';
+        rmesSection += '<div style="font-size:11px;opacity:.85;font-family:\'DM Mono\',monospace">Δ vs reference: '+(deltaSugg>0?'+':'')+fmt(deltaSugg)+'</div>';
       }
       rmesSection += '</div></div>';
       const elasticity = (typeof fp_getElasticity === 'function') ? fp_getElasticity(d.structKey) : 1.0;
@@ -5898,7 +5917,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '<div id="fp-final-box" style="padding:14px 16px;background:#fff;border:2px solid '+finalBoxColor+';border-radius:8px;margin-bottom:14px">';
       rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px">';
       rmesSection += '<div>';
-      rmesSection += '<div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:'+finalBoxColor+';font-weight:700">💰 Final price pubblicato</div>';
+      rmesSection += '<div style="font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:'+finalBoxColor+';font-weight:700">💰 RMES suggested price</div>';
       rmesSection += '<div style="font-size:10.5px;color:#888;margin-top:2px">'+(hasOverride?'🖋 Manual override active':'= suggested price (no override)')+'</div>';
       rmesSection += '</div>';
       rmesSection += '<div style="display:flex;gap:6px;align-items:center">';
@@ -5998,7 +6017,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       if (box){
         const fb = (azione === 'rimosso')
           ? '✓ Override removed — the day reverts to the RMES suggested price (€' + (isFinite(suggested) ? suggested.toFixed(0) : '—') + ').'
-          : '✓ Override saved — published price €' + val.toFixed(0) + ' (RMES suggeriva €' + (isFinite(suggested) ? suggested.toFixed(0) : '—') + '). Visible in the table with a 🖋 badge and in RMES tab → Ⓓ Audit.';
+          : '✓ Override saved — published price €' + val.toFixed(0) + ' (RMES was suggesting €' + (isFinite(suggested) ? suggested.toFixed(0) : '—') + '). Visible in the table with a 🖋 badge.';
         let fbEl = document.getElementById('fp-final-feedback');
         if (!fbEl){
           fbEl = document.createElement('div');
@@ -6044,7 +6063,7 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   let r = (typeof fp_getPrice === 'function') ? fp_getPrice(structKey, rt, dateISO) : null;
   if (!r){
     const c = (typeof fp_computePrice === 'function') ? fp_computePrice(structKey, rt, dateISO) : null;
-    if (!c){ alert('Impossibile calcolare Foundation per ' + structKey + ' / ' + rt + ' / ' + dateISO); return; }
+    if (!c){ alert('Cannot compute Base Price for ' + structKey + ' / ' + rt + ' / ' + dateISO); return; }
     r = c;
   }
   const d = r.detail;
@@ -6068,7 +6087,7 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   h += '<div class="fp-modal" style="background:#fff;border-radius:8px;max-width:720px;width:100%;font-family:\'DM Sans\',sans-serif;font-size:13px;line-height:1.5;color:#222;box-shadow:0 8px 32px rgba(0,0,0,.3)">';
   h += '<div style="padding:16px 22px;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(180deg,#fef8ed,#fff)">';
   h += '<div>';
-  h += '<div style="font-size:12px;color:#7a4f1c;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px">⚡ Foundation Pricing · calculation detail (6 steps)</div>';
+  h += '<div style="font-size:12px;color:#7a4f1c;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px">⚡ Base Price · calculation detail</div>';
   h += '<div style="font-size:16px;font-weight:700">' + dateLbl + ' (' + dowLbl + ') · ' + rt + ' · ' + structLbl + '</div>';
   h += '</div>';
   h += '<button onclick="document.getElementById(\'fp-fnd-only-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
@@ -6082,15 +6101,15 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
     const _suppVal = (typeof _globalSupplementForRT === 'function') ? _globalSupplementForRT(structKey, rt, _mo) : 0;
     const _fpRT = (_baseEff != null) ? (_baseEff + _suppVal) : d.priceFinal;
     h += '<div style="padding:14px 16px;background:#fef8ed;border:2px solid #c4823b;border-radius:6px;margin-bottom:18px">';
-    h += '<div style="font-size:11px;font-weight:700;color:#7a4f1c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Foundation derivato</div>';
-    h += '<p style="margin:0 0 10px 0;font-size:12.5px;color:var(--ink-2);line-height:1.55">' + rt + ' è una <b>RT non-base</b>. Foundation is not recomputed from the 6 steps for this RT; it inherits from the baseRT (<b>' + baseRT_struct + '</b>) via a historical monthly supplement:</p>';
+    h += '<div style="font-size:11px;font-weight:700;color:#7a4f1c;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Base Price derived</div>';
+    h += '<p style="margin:0 0 10px 0;font-size:12.5px;color:var(--ink-2);line-height:1.55">' + rt + ' è una <b>RT non-base</b>. The Base Price is not recomputed for this RT; it inherits from the baseRT (<b>' + baseRT_struct + '</b>) via a historical monthly supplement:</p>';
     h += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
-    h += '<tr><td style="padding:5px 8px;color:#666">Foundation effective <b>' + baseRT_struct + '</b> (baseRT)</td><td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(_baseEff) + '</td></tr>';
+    h += '<tr><td style="padding:5px 8px;color:#666">Base Price effective <b>' + baseRT_struct + '</b> (baseRT)</td><td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">' + fmt(_baseEff) + '</td></tr>';
     h += '<tr><td style="padding:5px 8px;color:#666">+ Supplement <b>' + rt + '</b> month ' + monthNames[_mo-1] + ' (historical)</td><td style="padding:5px 8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:600">+' + fmt(_suppVal) + '</td></tr>';
-    h += '<tr style="border-top:2px solid #c4823b"><td style="padding:8px;color:#5a3a14;font-weight:700">= Foundation ' + rt + '</td><td style="padding:8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700;color:#5a3a14;font-size:16px">' + fmt(_fpRT) + '</td></tr>';
+    h += '<tr style="border-top:2px solid #c4823b"><td style="padding:8px;color:#5a3a14;font-weight:700">= Base Price ' + rt + '</td><td style="padding:8px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700;color:#5a3a14;font-size:16px">' + fmt(_fpRT) + '</td></tr>';
     h += '</table>';
-    h += '<p style="margin:10px 0 0 0;font-size:11px;color:#888;font-style:italic">To change Foundation for this day, act on the ' + baseRT_struct + ' row in the table (this is the baseRT, the other RTs follow automatically). Supplement table: RMES tab → Ⓔ.</p>';
-    h += '<p style="margin:10px 0 0 0;font-size:11.5px;color:var(--ink-2)">📌 The 6-step detail below refers to <b>' + baseRT_struct + '</b> (the baseRT). The 6 steps are not computed for ' + rt + ' directly.</p>';
+    h += '<p style="margin:10px 0 0 0;font-size:11px;color:#888;font-style:italic">To change the Base Price for this day, act on the ' + baseRT_struct + ' row in the table (this is the baseRT, the other RTs follow automatically). Supplement table: RMES tab → Ⓔ.</p>';
+    h += '<p style="margin:10px 0 0 0;font-size:11.5px;color:var(--ink-2)">📌 The detail below refers to <b>' + baseRT_struct + '</b> (the baseRT). The calculation is not run for ' + rt + ' directly — it inherits via the monthly supplement.</p>';
     h += '</div>';
     const r_base = (typeof fp_getPrice === 'function') ? fp_getPrice(structKey, baseRT_struct, dateISO) : null;
     if (r_base) {
@@ -6183,11 +6202,11 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   h += '</table></div>';
   h += '<div style="margin-top:18px;padding:14px 16px;background:linear-gradient(180deg,#fef8ed,#fdf0d8);border:2px solid #c4823b;border-radius:6px">';
   h += '<div style="display:flex;justify-content:space-between;align-items:center">';
-  h += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7a4f1c">Foundation price ' + (isBaseRT ? rt : baseRT_struct + ' (baseRT)') + '</div>';
+  h += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7a4f1c">Base Price ' + (isBaseRT ? rt : baseRT_struct + ' (baseRT)') + '</div>';
   h += '<div style="font-size:22px;font-weight:700;font-family:\'DM Mono\',monospace;color:#5a3a14">' + fmt(dd.priceFinal) + '</div>';
   h += '</div></div>';
   h += '<div style="margin-top:14px;padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#666;line-height:1.4">';
-  h += '<b>Note</b>: this is the <b>Foundation price</b>, i.e. the structural price of the day. To see how Foundation is adjusted by the 5 RMES factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)) to produce the final RMES price, click the <b>RMES</b> cell on the right in the table.';
+  h += '<b>Note</b>: this is the <b>Base Price</b>, the structural price of the day. To see how the Base Price is adjusted by the 5 RMES factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)) to produce the RMES suggested price, click the <b>RMES</b> cell on the right in the table.';
   h += '</div>';
   h += '</div>';  // /body
   h += '</div></div>';  // /modal /bg
@@ -6218,15 +6237,16 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Airbnb/VRBO markup for channel history"><b style="color:#a83b6b">Markup Airbnb/VRBO</b>: <input type="number" id="fp-mk-airbnb" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #a83b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#faeef4"> %</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Price elasticity: if the price changes by X%, expected RN change in the opposite direction by X% × elasticity. Default 1.0 (ratio 1:1). E.g.: 0.5 = low elasticity, 1.5 = high elasticity."><b style="color:#a83b3b">Price elasticity</b>: <input type="number" id="fp-elasticity-input" min="0" max="3" step="0.1" style="width:60px;padding:6px 8px;border:1px solid #a83b3b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fdeef0"> :1</label>';
   h += '<button id="fp-elasticity-estimate" type="button" style="font-size:11px;padding:6px 10px;border:1px solid #a83b3b;border-radius:4px;background:#fff;color:#a83b3b;cursor:pointer;font-family:\'DM Sans\',sans-serif" title="Estimate elasticity from the last 24 months of history">📊 Estimate from data</button>';
-  h += '<span style="font-size:11px;color:var(--ink-3);font-style:italic">Press "Recompute Foundation" below to apply</span>';
+  h += '<span style="font-size:11px;color:var(--ink-3);font-style:italic">Press "Recompute Base Price" below to apply</span>';
   h += '</div></div>';
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓒ Compset competitor weights and offsets <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub"><b>Weight</b> (0-100%, default 100): how much a competitor counts in the compset average. Used both by the <b>D · Online Pricing RMES factor</b> and by the <b>Foundation market cap</b>. Weight = 0 excludes the competitor. <b>Offset €</b> (default 0, Foundation only): e.g. -10 = "I want to stay €10 below this competitor". Foundation market reference = Σ(weight × (compset_price_Beddy_eq + offset)) / Σ(weight). Foundation cap band: [×0.80, ×1.20] normally, but [×0.80, ×0.90] within 60 days before check-in (more conservative in the short term).</div></div>';
+  h += '<div class="panel-sub"><b>Weight</b> (0-100%, default 100): how much a competitor counts in the compset average. Used both by the <b>D · Online Pricing RMES factor</b> and by the <b>Base Price compset cap</b>. Weight = 0 excludes the competitor. <b>Offset €</b> (default 0): e.g. -10 = "I want to stay €10 below this competitor". Compset weighted reference = Σ(weight × (compset_price_Beddy_eq + offset)) / Σ(weight). Used to cap the Base Price at the compset median + 5%.</div></div>';
   h += '<button id="fp-reset-pesi-100" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:\'DM Sans\',sans-serif;align-self:flex-start">reset weights to 100%</button>';
   h += '</div>';
   h += '<div class="panel-body" style="padding:8px 16px"><table id="fp-comp-table" style="width:100%;border-collapse:collapse;font-size:12px"><thead style="background:#f8f8f5"><tr><th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2)">Competitor</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:110px">Weight (0-100%)</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:120px">Offset €</th></tr></thead><tbody></tbody></table></div></div>';
-  h += '<div class="panel" style="margin-bottom:16px">';
+  // Override audit panel: hidden in NewRMES (replaced by ✓ accept / 🖋 override per day or period; legacy comparison no longer meaningful)
+  h += '<div class="panel" style="margin-bottom:16px;display:none">';
   h += '<div class="panel-head"><div><h3>Ⓓ Override audit (post-close) <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
   h += '<div class="panel-sub">For each <b>closed</b> day with active override, comparison override vs RMES price it would have suggested at save time (snapshot). Shows: override price, RMES snapshot price, actual RN sold (Beddy), effective revenue (= Beddy_eq revenue collected), hypothetical revenue if you had followed RMES (= RMES_price × same RN sold). Δ Revenue shows who would have done better. <b>Limitation</b>: it assumes the SAME RN would have been sold at the RMES price. Necessary approximation — the true counterfactual pickup is impossible to measure. It serves as a historical signal: if RMES "vince" sistematicamente su override negative ones, you were too aggressive in discounting; if it "wins" on positive overrides, you were raising too much.</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px">';
@@ -6234,13 +6254,13 @@ function fp_renderFoundationConfigBox(structKey){
   h += '</div></div>';
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓔ RT supplements by month <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub">Foundation is computed <b>only for the baseRT</b> (' + structLbl + ' → <b id="fp-supp-baseRT">—</b>). Other RTs inherit it via a monthly supplement: <code>Foundation_RT = Foundation_baseRT + RT_month_supplement</code>. The supplements are <b>derived from history</b> (average RT ADR minus baseRT ADR, split by high/low season, rounded to the nearest multiple of 5), and identical for all days of the same month. <b>Example</b>: if Suite con Terrazza has a May supplement of €70, and Foundation Camera Matrim. Deluxe for that day is €318, then Foundation Suite con Terrazza = €318 + €70 = €388. The same RMES multiplier (×0.767 for the property) applies on top: final price Suite con Terrazza = €388 × 0.767 = €297. Information panel (read-only).</div></div></div>';
+  h += '<div class="panel-sub">The Base Price is computed <b>only for the baseRT</b> (' + structLbl + ' → <b id="fp-supp-baseRT">—</b>). Other RTs inherit it via a monthly supplement: <code>Base_RT = Base_baseRT + RT_month_supplement</code>. The supplements are <b>derived from history</b> (average RT ADR minus baseRT ADR, split by high/low season, rounded to the nearest multiple of 5), and identical for all days of the same month. <b>Example</b>: if Suite con Terrazza has a May supplement of €70, and the Base Price for Camera Matrim. Deluxe that day is €318, so the Base Price for Suite con Terrazza = €318 + €70 = €388. The same RMES multiplier (×0.767 for the property) applies on top: final price Suite con Terrazza = €388 × 0.767 = €297. Information panel (read-only).</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px">';
   h += '<div id="fp-supp-table-wrap" style="font-size:12px;overflow-x:auto"></div>';
   h += '</div></div>';
   h += '<div style="display:flex;gap:10px;justify-content:flex-end;padding:14px 0;border-top:1px solid var(--line);margin-top:18px">';
-  h += '<button id="fp-reset-defaults" style="font-size:12px;padding:8px 16px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);cursor:pointer">↺ Reset Foundation defaults</button>';
-  h += '<button id="fp-recompute" style="font-size:13px;padding:8px 22px;border:1px solid #c4823b;border-radius:5px;background:#c4823b;color:#fff;cursor:pointer;font-weight:700">↻ Recompute Foundation Pricing</button>';
+  h += '<button id="fp-reset-defaults" style="font-size:12px;padding:8px 16px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);cursor:pointer">↺ Reset Base Price defaults</button>';
+  h += '<button id="fp-recompute" style="font-size:13px;padding:8px 22px;border:1px solid #c4823b;border-radius:5px;background:#c4823b;color:#fff;cursor:pointer;font-weight:700">↻ Recompute Base Price</button>';
   h += '</div>';
   wrap.innerHTML = h;
   const tgGrid = document.getElementById('fp-tg-grid');
@@ -6339,7 +6359,7 @@ function fp_renderFoundationConfigBox(structKey){
     if (futureOverrides.length > 0){
       h += '<div style="margin-bottom:18px">';
       h += '<div style="font-size:12px;font-weight:700;color:#1e4a6b;margin-bottom:8px">🖋 Active overrides on future days (' + futureOverrides.length + ')</div>';
-      h += '<div style="font-size:11px;color:#888;margin-bottom:8px;font-style:italic">Final RMES price overrides not yet closed (dayno ≥ oggi). Non c\'è ancora confronto revenue. Per rimuovere un override: clicca la cella RMES del giorno nella Sell Strategy → ✕ Reset nella modale.</div>';
+      h += '<div style="font-size:11px;color:#888;margin-bottom:8px;font-style:italic">Active overrides not yet closed (day ≥ today). No revenue comparison yet. To remove an override use the ↺ button in the Base Price cell or the "Reset period" button.</div>';
       h += '<table style="width:100%;border-collapse:collapse;font-size:11px"><thead style="background:#eef4fb"><tr>';
       h += '<th style="padding:6px 8px;text-align:left;color:#1e4a6b;font-weight:600">Date</th>';
       h += '<th style="padding:6px 8px;text-align:left;color:#1e4a6b;font-weight:600">RT</th>';
@@ -6371,7 +6391,7 @@ function fp_renderFoundationConfigBox(structKey){
       h += '</div>';
     }
     if (auditRows.length === 0 && futureOverrides.length === 0){
-      list.innerHTML = '<div style="padding:10px 12px;background:#f8f8f5;border-radius:4px;color:#888;font-style:italic">No active override. When you set an override on the final RMES price (clicking an RMES cell in the Sell Strategy), it will appear here: first in the "future" section, then in the audit once the day is closed.</div>';
+      list.innerHTML = '<div style="padding:10px 12px;background:#f8f8f5;border-radius:4px;color:#888;font-style:italic">No active override. When you accept an RMES suggestion or override a Base Price (clicking ✓ or 🖋 in the Sell Strategy), it will appear here: first in the "future" section, then in the audit once the day is closed.</div>';
       return;
     }
     if (auditRows.length === 0){
@@ -6388,12 +6408,12 @@ function fp_renderFoundationConfigBox(structKey){
         else if (r.deltaRev < -0.5) nVintoRMES++;
       }
     }
-    h += '<div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;padding-top:8px;border-top:1px solid var(--line)">📊 Audit override su days chiusi (passati)</div>';
+    h += '<div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;padding-top:8px;border-top:1px solid var(--line)">📊 Audit overrides on closed days (historic)</div>';
     if (nValid > 0){
       const sign = totDelta >= 0 ? '+' : '';
       const col = totDelta > 0 ? '#1e6b4a' : (totDelta < 0 ? '#a83b3b' : '#666');
       h += '<div style="padding:10px 14px;background:#f8f8f5;border-radius:5px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;font-size:12px">';
-      h += '<div><b>'+auditRows.length+' override su days chiusi</b> · '+nVintoOverride+' a favore override · '+nVintoRMES+' a favore RMES · '+(nValid - nVintoOverride - nVintoRMES)+' pareggi</div>';
+      h += '<div><b>'+auditRows.length+' overrides on closed days</b> · '+nVintoOverride+' in favour of override · '+nVintoRMES+' in favour of RMES · '+(nValid - nVintoOverride - nVintoRMES)+' ties</div>';
       h += '<div>Total Δ Revenue (override vs RMES): <b style="font-family:\'DM Mono\',monospace;color:'+col+'">'+sign+'€'+totDelta.toFixed(2)+'</b></div>';
       h += '</div>';
     }
@@ -6434,7 +6454,7 @@ function fp_renderFoundationConfigBox(structKey){
       h += '</tr>';
     }
     h += '</tbody></table>';
-    h += '<div style="margin-top:8px;font-size:10px;color:#999;font-style:italic">Nota: il revenue ipotetico assume che con il price RMES si sarebbero vendute le stesse RN. Approssimazione: non considera che un price diverso avrebbe potuto cambiare il pickup.</div>';
+    h += '<div style="margin-top:8px;font-size:10px;color:#999;font-style:italic">Note: hypothetical revenue assumes the same RN would have been sold at the RMES price. Approximation: it does not account for the possibility that a different price would have changed pickup.</div>';
     list.innerHTML = h;
   }
   _renderAuditList();
@@ -6513,7 +6533,7 @@ function fp_renderFoundationConfigBox(structKey){
   const btnResetPesi = document.getElementById('fp-reset-pesi-100');
   if (btnResetPesi){
     btnResetPesi.onclick = function(){
-      if (!confirm('Reset all competitor weights of ' + structLbl + ' to 100%? It affects both the D · Online Pricing RMES factor and the Foundation market cap.')) return;
+      if (!confirm('Reset all competitor weights of ' + structLbl + ' to 100%? It affects both the D · Online Pricing RMES factor and the Base Price compset cap.')) return;
       const compNames = fp_getCompetitorsForStruct(structKey);
       for (const cn of compNames){
         if (typeof setWeight === 'function') setWeight(structKey, cn, 1.0);
@@ -6532,31 +6552,31 @@ function fp_renderFoundationConfigBox(structKey){
           btnEstE.disabled = false;
           btnEstE.textContent = '📊 Estimate from data';
           if (!result){
-            alert('Dati insufficienti per stimare l\'elasticità (servono almeno 20 osservazioni e 30 days chiusi negli ultimi 24 mesi).');
+            alert('Not enough data to estimate elasticity (at least 20 observations and 30 closed days in the last 24 months needed).');
             return;
           }
           const msg = 'ELASTICITY ESTIMATE — ' + structLbl + '\n'
                     + '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'
-                    + 'Metodo: ' + (result.method || 'standard') + '\n'
-                    + '(confronto pickup in finestre temporali specifiche prima del check-in,\n'
-                    + ' non ADR finale del giorno chiuso)\n\n'
-                    + 'Stima (clampata 0-3): ' + result.estimate.toFixed(2) + ' :1\n'
+                    + 'Method: ' + (result.method || 'standard') + '\n'
+                    + '(comparison of pickup in specific time windows before check-in,\n'
+                    + ' not the closed-day final ADR)\n\n'
+                    + 'Estimate (clamped 0-3): ' + result.estimate.toFixed(2) + ' :1\n'
                     + 'Raw median: ' + result.median.toFixed(2) + '\n'
-                    + 'Range P25-P75: [' + result.p25.toFixed(2) + ', ' + result.p75.toFixed(2) + ']\n\n'
-                    + 'Basato su:\n'
-                    + '  • ' + result.nObservations + ' osservazioni valide (su ' + (result.nObservationsTotal||0) + ' totali)\n'
-                    + '  • ' + result.nGroups + ' gruppi (mese × DOW × finestra pickup)\n\n'
-                    + 'Filtri applicati:\n'
-                    + '  • ' + (result.nFilteredOccPre||0) + ' osservazioni scartate (OCC pre-finestra ≥80%)\n'
-                    + '  • ' + (result.nFilteredSmallAdr||0) + ' osservazioni scartate (Δ%ADR <5%)\n'
-                    + '  • ' + (result.nFilteredOutlier||0) + ' outlier scartati (elasticità fuori [-3, +5])\n\n'
-                    + 'INTERPRETAZIONE:\n'
+                    + 'P25-P75 range: [' + result.p25.toFixed(2) + ', ' + result.p75.toFixed(2) + ']\n\n'
+                    + 'Based on:\n'
+                    + '  • ' + result.nObservations + ' valid observations (out of ' + (result.nObservationsTotal||0) + ' total)\n'
+                    + '  • ' + result.nGroups + ' groups (month × DOW × pickup window)\n\n'
+                    + 'Filters applied:\n'
+                    + '  • ' + (result.nFilteredOccPre||0) + ' observations discarded (pre-window OCC ≥80%)\n'
+                    + '  • ' + (result.nFilteredSmallAdr||0) + ' observations discarded (Δ%ADR <5%)\n'
+                    + '  • ' + (result.nFilteredOutlier||0) + ' outliers discarded (elasticity outside [-3, +5])\n\n'
+                    + 'INTERPRETATION:\n'
                     + '  • value near 0: the price was already dynamically adjusted to demand → masked signal\n'
                     + '  • value 0.5-1: inelastic market (demand barely responds to price)\n'
                     + '  • value 1-2: elastic market (typical urban hospitality)\n'
                     + '  • value >2: highly elastic (leisure market, weekenders)\n\n'
-                    + 'Applicare la stima all\'input?\n'
-                    + '(Valore proposto: ' + result.estimate.toFixed(1) + ')';
+                    + 'Apply estimate to the input?\n'
+                    + '(Proposed value: ' + result.estimate.toFixed(1) + ')';
           if (confirm(msg)){
             const inp = document.getElementById('fp-elasticity-input');
             if (inp) inp.value = result.estimate.toFixed(1);
@@ -6611,7 +6631,7 @@ function fp_renderFoundationConfigBox(structKey){
       });
       btn.textContent = '✓ Ricalcolato (' + Object.keys(FOUNDATION_PRICES.firenze || {}).length + ' days × strutture)';
       setTimeout(function(){
-        btn.textContent = '↻ Ricalcola Foundation Pricing';
+        btn.textContent = '↻ Ricalcola Base Price';
         btn.disabled = false;
       }, 2500);
       if (typeof CURRENT_STRUCT !== 'undefined' && typeof renderSellStrategy === 'function'){
@@ -6648,12 +6668,12 @@ function renderSellStrategy(sel){
       ? ['firenze','condotta','alfani','davids'].every(function(k){ return fp_isStructComputed(k); })
       : fp_isStructComputed(sel);
     if (_isComp){
-      _cfBtn.textContent = '✓ Foundation ready';
+      _cfBtn.textContent = '✓ Base Price ready';
       _cfBtn.style.background = 'transparent';
       _cfBtn.style.color = 'var(--ink-3)';
       _cfBtn.style.borderColor = 'var(--line)';
     } else {
-      _cfBtn.textContent = '⚡ Compute Foundation';
+      _cfBtn.textContent = '⚡ Compute Base Price';
       _cfBtn.style.background = 'var(--accent)';
       _cfBtn.style.color = '#fff';
       _cfBtn.style.borderColor = 'var(--accent)';
@@ -6711,7 +6731,7 @@ function renderSellStrategy(sel){
   }
   const availEl = document.getElementById('sell-rmes-availability');
   if (availEl){
-    availEl.textContent = '· source: Foundation (historical cascade fallback)';
+    availEl.textContent = '· source: Base Price (frozen)';
     availEl.style.color = 'var(--ink-3)';
   }
   const A = aggSellStrategy(sel, SELL_START_YMD, SELL_RANGE_DAYS, SELL_PICKUP_DAYS);
@@ -6940,12 +6960,11 @@ function renderSellStrategy(sel){
     + '<th colspan="4" class="sell-grp sell-grp-pickup">Pickup ' + A.pickupDaysAgo + 'd</th>'
     + '<th colspan="3" class="sell-grp sell-grp-stly">STLY (-364)</th>'
     + '<th colspan="4" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="RMES delta suggested YESTERDAY (€ vs the reference price at the time). Use it to spot how the suggestion is evolving day by day.">RMES last update<br><span class="sell-th-sub">delta yesterday</span></th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES delta suggested TODAY. Shown as &quot;price (±delta)&quot;: the price is the suggested new value (current reference + delta), the delta is the change in €. Cap ±20% from current reference. Click ✓ to accept (becomes the new current reference for that date).">RMES today<br><span class="sell-th-sub">price (Δ €) · ✓ accept</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="RMES suggestion from YESTERDAY — final Beddy price + variation vs the reference at the time. Click to see the calculation detail. Use it to spot how the suggestion is evolving day by day.">RMES last update<br><span class="sell-th-sub">price · variation</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES suggestion TODAY — final Beddy price + variation vs current reference. Capped ±20% from current reference. Click to see the calculation detail. The ✓ button accepts the suggestion as the new current reference.">RMES today<br><span class="sell-th-sub">price · variation · ✓ accept</span></th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + (showExp ? '<th colspan="3" class="sell-grp sell-grp-expedia">Rate Shopper</th>' : '')
-    + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price (frozen, per stay-date): the structural price that anchors the RMES suggestion. Click the cell for the calculation detail. Other RTs show baseRT + monthly supplement.">Base Price</th>'
-    + '<th colspan="' + _rmesGroupCols + '" class="sell-grp sell-grp-rmes" title="RMES v5 system: current reference (accepted | base override | frozen base) × composite multiplier from 5 factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)) × LMF × Event Factor, capped at ±20% from the reference.">RMES <span class="sell-th-sub">suggested · M[MLOS] · click for Base Price detail</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price (frozen, per stay-date): the structural price that anchors the RMES suggestion. Click 🖋 to override · ↺ to reset. Other RTs show baseRT + monthly supplement.">Base Price</th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
     + '<th class="sell-grp-otb-sub" title="OTB to date · RN sold">RN</th>'
@@ -6967,24 +6986,6 @@ function renderSellStrategy(sel){
          + '<th class="sell-grp-expedia-sub" title="My current Expedia price, with the market position vs compset (1 = cheapest)">Mine</th>'
          + '<th class="sell-grp-expedia-sub" title="Expedia compset weighted average (with offset)">Compset</th>'
        : '')
-    + (function(){
-        const baseRT = _suppData ? _suppData.baseRT : null;
-        const shownRT = _rtFilter || baseRT;
-        const shownLbl = shownRT || 'BaseRT';
-        const tipRMES = _rtFilter
-          ? `RMES price for ${shownLbl} (filtered RT) with MLOS inside the cell.\nSOURCE: Foundation Pricing of the day (always).\nFormula: Foundation × (1 + Σ weights × deviations of the 5 factors, capped ±cap).\nAll 5 factors are at property level.`
-          : `RMES price for the baseRT (${shownLbl}) with MLOS inside the cell (M1 or M2).\nSOURCE: daily Foundation Pricing (always).\nFormula: Foundation × (1 + Σ weights × deviations of the 5 factors, capped ±cap).\nThe old Beddy→Expedia→Compset→OTB→LY cascade is ONLY a fallback if Foundation is unavailable.`;
-        return `<th class="sell-grp-rmes-sub" title="${escapeHtml(tipRMES)}">${escapeHtml(shownLbl)}</th>`;
-    })()
-    + ((_rtFilter || !_showAllRT) ? '' : (function(){
-        let h = '';
-        for (const rt of _nonBaseRTs){
-          const c = _RT_COLORS[rt] || '#888';
-          const tip = `RMES price for ${rt} with MLOS inside the cell.\n\nFormula: (Base price ${_suppData.baseRT} + monthly historical supplement) × RT-specific multiplier.\n\nA · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia) = all at property level. RT differences come only from Foundation (historical supplements).`;
-          h += `<th class="sell-grp-rmes-sub" style="color:${c}" title="${escapeHtml(tip)}">${escapeHtml(rt)}</th>`;
-        }
-        return h;
-    })())
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;
   if (typeof computeRMESPriceMap === 'function' && sel !== 'both'){
@@ -7441,88 +7442,66 @@ function renderSellStrategy(sel){
       const fpRT = _rtFilter || baseRT_fp;
       const fpDateISO = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
       const isBaseRT = (fpRT === baseRT_fp);
-      const fpR = (typeof fp_getPrice === 'function') ? fp_getPrice(sel, fpRT, fpDateISO) : null;
-      const fpCalcVal = fpR ? fpR.price : null;
-      const fpState = (isBaseRT && typeof fp_getFoundationState === 'function')
-        ? fp_getFoundationState(sel, fpDateISO, baseRT_fp) : null;
-      const fpStatus = fpState ? fpState.status : 'proposed';
+      // === NewRMES: la cella "Base Price" mostra il Frozen Base Price (con eventuale override) ===
+      const fpRTAttr = escapeHtml(fpRT);
+      const ymdNumLocal = r.ymd;
+      let nrmFrozen = null, nrmOverride = null, nrmEffective = null;
+      if (typeof newrmesGetFrozenBase === 'function'){
+        nrmFrozen = newrmesGetFrozenBase(sel, ymdNumLocal);
+        nrmOverride = (typeof newrmesGetFrozenBaseOverride === 'function') ? newrmesGetFrozenBaseOverride(sel, ymdNumLocal) : null;
+        nrmEffective = (nrmOverride != null) ? nrmOverride : nrmFrozen;
+      }
       let fpEffective = null;
       if (isBaseRT){
-        fpEffective = fpState ? fpState.value : fpCalcVal;
-      } else {
-        const baseState = (typeof fp_getFoundationState === 'function')
-          ? fp_getFoundationState(sel, fpDateISO, baseRT_fp) : null;
-        const baseR = (typeof fp_getPrice === 'function') ? fp_getPrice(sel, baseRT_fp, fpDateISO) : null;
-        const baseEff = baseState ? baseState.value : (baseR ? baseR.price : null);
-        if (baseEff != null){
-          const supp = (typeof _supplementForRT === 'function') ? _supplementForRT(fpRT, r.mo) : 0;
-          fpEffective = baseEff + supp;
-        }
+        fpEffective = nrmEffective;
+      } else if (nrmEffective != null){
+        const supp = (typeof _supplementForRT === 'function') ? _supplementForRT(fpRT, r.mo) : 0;
+        fpEffective = nrmEffective + supp;
       }
-      let driftBadge = '';
-      if (isBaseRT && fpStatus === 'accepted' && fpCalcVal != null && fpState.value > 0){
-        const driftPct = (fpCalcVal - fpState.value) / fpState.value;
-        if (Math.abs(driftPct) >= 0.03){
-          const sign = driftPct >= 0 ? '+' : '';
-          driftBadge = ` <sup style="color:#c4823b;font-size:9px;font-weight:700" title="Foundation computed today would be €${fpCalcVal.toFixed(0)} (${sign}${(driftPct*100).toFixed(1)}% vs accepted). Considera di ri-accettare.">⚠</sup>`;
-        }
-      }
+      const fpStatus = (nrmOverride != null) ? 'override' : 'frozen';
       if (fpEffective == null){
         cellFoundation = `<td class="cell-mono sell-block-fp" style="background:rgba(195,131,59,.04);text-align:center;color:var(--ink-3);font-style:italic">—</td>`;
       } else {
         _fpPriceVal = fpEffective;
-        const fpDetail = fpR ? fpR.detail : null;
-        const isLong = fpDetail && fpDetail.longHorizon;
         const fpPriceTxt = isFinite(fpEffective) ? fmtEUR(fpEffective) : '—';
-        const fpRTAttr = escapeHtml(fpRT);
         if (!isBaseRT){
-          const baseState = (typeof fp_getFoundationState === 'function')
-            ? fp_getFoundationState(sel, fpDateISO, baseRT_fp) : null;
-          const baseStatus = baseState ? baseState.status : 'proposed';
+          // RT non-base: derivato (sola visualizzazione)
           let cellBg, cellBorder, textStyle, derivedTipPrefix;
-          if (baseStatus === 'override'){
+          if (nrmOverride != null){
             cellBg = 'rgba(59,107,154,.06)'; cellBorder = 'rgba(59,107,154,.3)';
             textStyle = 'color:#1e4a6b;font-weight:600';
-            derivedTipPrefix = `Foundation DERIVATO da ${baseRT_fp} (override)`;
-          } else if (baseStatus === 'accepted'){
-            cellBg = 'rgba(60,124,90,.06)'; cellBorder = 'rgba(60,124,90,.3)';
-            textStyle = 'color:#1e6b4a;font-weight:600';
-            derivedTipPrefix = `Foundation DERIVATO da ${baseRT_fp} (accepted)`;
+            derivedTipPrefix = `Base Price DERIVED from ${baseRT_fp} (manual override)`;
           } else {
             cellBg = 'rgba(195,131,59,.05)'; cellBorder = 'rgba(195,131,59,.25)';
-            textStyle = isLong ? 'color:#aaa;font-style:italic' : 'color:#7a4f1c;font-weight:600';
-            derivedTipPrefix = `Foundation DERIVATO da ${baseRT_fp} (proposed)`;
+            textStyle = 'color:#7a4f1c;font-weight:600';
+            derivedTipPrefix = `Base Price DERIVED from ${baseRT_fp} (frozen)`;
           }
           const supp = (typeof _supplementForRT === 'function') ? _supplementForRT(fpRT, r.mo) : 0;
           const derivedTip = derivedTipPrefix + `\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\n` +
-            `= Foundation ${baseRT_fp} + supplement ${fpRT} month ${r.mo}\n` +
+            `= Base ${baseRT_fp} + supplement ${fpRT} month ${r.mo}\n` +
             `= €${(fpEffective - supp).toFixed(0)} + €${supp.toFixed(0)} = €${fpEffective.toFixed(0)}\n\n` +
-            `Approval applies ONLY to the baseRT (${baseRT_fp}). To change this price, go to the baseRT row.`;
+            `Overrides apply ONLY to the baseRT (${baseRT_fp}). To change this price, go to the baseRT row.`;
           cellFoundation = `<td class="cell-mono sell-block-fp" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(derivedTip)}"><b style="${textStyle}">↳ ${fpPriceTxt}</b></td>`;
         } else {
+          // baseRT: cella con stile diverso a seconda dello stato + bottoni inline override/reset
           let cellBg, cellBorder, textStyle, statusIcon, fpTipPrefix;
           if (fpStatus === 'override'){
             cellBg = 'rgba(59,107,154,.14)'; cellBorder = 'rgba(59,107,154,.6)';
             textStyle = 'color:#1e4a6b;font-weight:700'; statusIcon = '🖋 ';
-            fpTipPrefix = `Foundation OVERRIDE (manual)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nManual value entered: €${fpEffective.toFixed(0)}\nSystem-computed Foundation would be: ${fpCalcVal != null ? '€'+fpCalcVal.toFixed(0) : '—'}\n\nThe 5 RMES factors apply on top of this price.\nThe other RTs (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) inherit this value + monthly supplement.`;
-          } else if (fpStatus === 'accepted'){
-            cellBg = 'rgba(60,124,90,.12)'; cellBorder = 'rgba(60,124,90,.6)';
-            textStyle = 'color:#1e6b4a;font-weight:700'; statusIcon = '✓ ';
-            fpTipPrefix = `Foundation ACCEPTED\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nValue frozen at accept time: €${fpEffective.toFixed(0)}\nFoundation computed today would be: ${fpCalcVal != null ? '€'+fpCalcVal.toFixed(0) : '—'}\n\nThe 5 RMES factors apply on top of this price.\nThe other RTs (Suite, Trilocale, Attico, Superior, Deluxe, Junior Suite) inherit this value + monthly supplement.`;
+            fpTipPrefix = `Base Price OVERRIDE (manual)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nManual value: €${fpEffective.toFixed(0)}\nOriginal frozen value: ${nrmFrozen != null ? '€'+nrmFrozen.toFixed(0) : '—'}\n\nRMES will suggest deltas vs this new Base.\nOther RTs inherit this value + monthly supplement.`;
           } else {
             cellBg = 'rgba(195,131,59,.10)'; cellBorder = 'rgba(195,131,59,.4)';
-            textStyle = isLong ? 'color:#999;font-style:italic;font-weight:500' : 'color:#5a3a14;font-weight:700';
-            statusIcon = '⚡ ';
-            fpTipPrefix = `Foundation PROPOSED (computed, not yet accepted)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nValue computed by the system: €${fpEffective.toFixed(0)}\nNot yet confirmed — it will be recomputed on every data refresh.\n\nThe 5 RMES factors apply on top of this price.`;
+            textStyle = 'color:#5a3a14;font-weight:700';
+            statusIcon = '🔒 ';
+            fpTipPrefix = `Base Price FROZEN\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nFrozen value: €${fpEffective.toFixed(0)}\n\nComputed once with: historical anchor (LY median ADR) × target growth, capped at compset median +5%, bounded ±50% from Anchor Price, ≥ floor.\n\nRMES suggests daily deltas (±20%) on top of this Base.\nOther RTs inherit Base + monthly supplement.`;
           }
-          const fpTip = fpTipPrefix + `\n\nClick the price for the 6-step detail.`;
-          const btnAccept = '';
-          const btnOvr = `<button class="fp-inline-btn fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" data-calc="${fpCalcVal != null ? fpCalcVal.toFixed(2) : ''}" title="Manual override" style="border:1px solid #3b6b9a;background:#fff;color:#3b6b9a;border-radius:3px;padding:0 4px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5">🖋</button>`;
+          const fpTip = fpTipPrefix + `\n\nClick 🖋 to override · ↺ to reset.`;
+          const btnOvr = `<button class="fp-inline-btn fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Manual override" style="border:1px solid #3b6b9a;background:#fff;color:#3b6b9a;border-radius:3px;padding:0 4px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5">🖋</button>`;
           const btnReset = (fpStatus === 'override')
-            ? `<button class="fp-inline-btn fp-inline-reset" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Remove override (revert to computed)" style="border:1px solid #999;background:#fff;color:#666;border-radius:3px;padding:0 4px;font-size:10px;cursor:pointer;line-height:1.5">↺</button>`
+            ? `<button class="fp-inline-btn fp-inline-reset" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Remove override (revert to frozen)" style="border:1px solid #999;background:#fff;color:#666;border-radius:3px;padding:0 4px;font-size:10px;cursor:pointer;line-height:1.5">↺</button>`
             : '';
-          const inlineBtns = `<span style="display:inline-flex;gap:2px;margin-left:6px;vertical-align:middle">${btnAccept}${btnOvr}${btnReset}</span>`;
-          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-calc="${fpCalcVal != null ? fpCalcVal.toFixed(2) : ''}" data-fp-status="${fpStatus}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><span class="fp-price-click" style="cursor:pointer"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b>${driftBadge}</span>${inlineBtns}</td>`;
+          const inlineBtns = `<span style="display:inline-flex;gap:2px;margin-left:6px;vertical-align:middle">${btnOvr}${btnReset}</span>`;
+          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${fpStatus}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b>${inlineBtns}</td>`;
         }
       }
     }
@@ -7594,7 +7573,26 @@ function renderSellStrategy(sel){
       }
       return cells;
     })();
-    html += `<tr>
+    // Background della riga basato sulla pressione di ricerca Expedia (più ricerche = arancione più forte)
+    let _rowBgStyle = '';
+    try {
+      const _expRow = (typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
+      const _searchCur = (_expRow && _expRow.searchCurrent != null && isFinite(_expRow.searchCurrent)) ? _expRow.searchCurrent : null;
+      if (_searchCur != null && typeof _searchPressureBg === 'function'){
+        _rowBgStyle = _searchPressureBg(_searchCur);
+      }
+    } catch(e){}
+    const _trStyle = _rowBgStyle ? ` style="${_rowBgStyle}"` : '';
+    const _searchTipVal = (function(){
+      try {
+        const _expRow = (typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
+        const sc = (_expRow && _expRow.searchCurrent != null) ? Math.round(_expRow.searchCurrent) : null;
+        if (sc == null) return '';
+        const lvl = expDemandLevel(sc);
+        return ` title="Expedia search pressure for this day: ${sc.toLocaleString('en-GB')} searches · ${lvl ? lvl.label : ''}"`;
+      } catch(e){ return ''; }
+    })();
+    html += `<tr${_trStyle}${_searchTipVal}>
       <td class="cell-mono">${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
       <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
       <td${dateStyle}>${dowIT[r.dow]}</td>
@@ -7616,15 +7614,26 @@ function renderSellStrategy(sel){
       <td class="cell-mono ${pkStlyCancelCount>0?'cell-neg':'cell-flat'}" style="background:rgba(138,138,138,.04);text-align:right">${pkStlyCancelCell}</td>
       <td class="cell-mono ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</td>
       <td class="cell-mono ${pkStlyNewCount>0?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
-      <!-- RMES last update (delta yesterday) -->
+      <!-- RMES last update (yesterday's suggested price + variation, clickable for detail) -->
       ${(function(){
         const ly = (typeof newrmesGetLastSuggestion === 'function') ? newrmesGetLastSuggestion(sel, r.ymd) : null;
-        if (ly == null) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
-        const cls = (ly > 0) ? 'cell-pos' : (ly < 0 ? 'cell-neg' : 'cell-flat');
-        const sign = ly > 0 ? '+' : '';
-        return `<td class="cell-mono ${cls}" style="background:rgba(195,131,59,.03)" title="RMES delta suggested yesterday">${sign}${ly}</td>`;
+        const baseRTKey = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
+        if (ly == null || baseRTKey == null) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
+        // ly è il delta in € salvato ieri. Il prezzo "di ieri" = ref di ieri + delta. Ma il ref di ieri
+        // non è facilmente recuperabile post-snapshot (potrebbe essere cambiato). Approssimazione utile:
+        // mostro come "prezzo finale Beddy" = riferimento corrente + delta_ieri (assumendo che il
+        // riferimento non sia cambiato), e la variazione = delta_ieri vs riferimento corrente.
+        const refNow = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, r.ymd) : null;
+        if (refNow == null) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
+        const priceYesterday = Math.round(refNow + ly);
+        const variation = ly;
+        const variationPct = (refNow > 0) ? (variation / refNow * 100) : 0;
+        const cls = (variation > 0.5) ? 'cell-pos' : (variation < -0.5 ? 'cell-neg' : 'cell-flat');
+        const sign = variation > 0 ? '+' : '';
+        const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.03);cursor:pointer" title="RMES suggestion from yesterday\nFinal Beddy price: €${priceYesterday}\nVariation: ${sign}€${Math.round(variation)} (${sign}${variationPct.toFixed(1)}%) vs current reference\n\nClick to see the full calculation detail.">${priceYesterday}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(variation)} · ${sign}${variationPct.toFixed(1)}%</span></td>`;
       })()}
-      <!-- RMES today (price + delta + ✓ accept button) -->
+      <!-- RMES today (today's suggested price + variation + ✓ accept, clickable for detail) -->
       ${(function(){
         const mapEntry = (_rmesMapForAlignment && _rmesMapForAlignment[r.ymd]) ? _rmesMapForAlignment[r.ymd] : null;
         const baseRTKey = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
@@ -7636,21 +7645,22 @@ function renderSellStrategy(sel){
         if (delta == null || !isFinite(delta) || sugg == null || !isFinite(sugg)){
           return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.05);text-align:center">—</td>';
         }
+        const ref = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, r.ymd) : null;
+        const variationPct = (ref != null && ref > 0) ? (delta / ref * 100) : 0;
         const cls = (delta > 0.5) ? 'cell-pos' : (delta < -0.5 ? 'cell-neg' : 'cell-flat');
         const sign = delta > 0 ? '+' : '';
         const acc = (typeof newrmesGetAccepted === 'function') ? newrmesGetAccepted(sel, r.ymd) : null;
         const accBadge = (acc != null) ? '<span style="font-size:9px;color:#3d7a4b;font-weight:700;display:block">✓ accepted</span>' : '';
         const acceptBtn = (Math.abs(delta) >= 0.5)
-          ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" title="Accept this RMES suggestion as the new current reference for ${r.ymd}" style="margin-top:2px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700">✓</button>`
+          ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" title="Accept this RMES suggestion as the new current reference for ${r.ymd}" style="margin-top:2px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block">✓</button>`
           : '';
-        return `<td class="cell-mono ${cls}" style="background:rgba(195,131,59,.05)" title="RMES today: ${Math.round(sugg)} € · delta ${sign}${Math.round(delta)} € vs current reference">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">(${sign}${Math.round(delta)})</span> ${acceptBtn}${accBadge}</td>`;
+        const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer" title="RMES suggestion today\nFinal Beddy price: €${Math.round(sugg)}\nVariation: ${sign}€${Math.round(delta)} (${sign}${variationPct.toFixed(1)}%) vs current reference (€${ref!=null?Math.round(ref):'—'})\n\nClick to see the full calculation detail. The ✓ button accepts the suggestion.">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)} · ${sign}${variationPct.toFixed(1)}%</span> ${acceptBtn}${accBadge}</td>`;
       })()}
       ${beddyCell}
       ${expCells}
-      <!-- Foundation: cella con stato + bottoni inline (solo per baseRT) -->
+      <!-- Base Price cell (with override 🖋 / reset ↺ buttons) -->
       ${cellFoundation}
-      <!-- RMES: BaseRT (con M dentro) + ogni RT non-base. Click apre modale 5 fattori -->
-      ${rmesRtCells}
     </tr>`;
   }
   const totDRev = T.pkRev;
@@ -7696,22 +7706,14 @@ function renderSellStrategy(sel){
     <td class="cell-mono ${totPkStlyCancel>0?'cell-neg':'cell-flat'}" style="background:rgba(138,138,138,.04);text-align:right">${totPkStlyCancel>0?'-'+totPkStlyCancel:'0'}</td>
     <td class="cell-mono ${T.pkRnStly>=0?'cell-pos':'cell-neg'}" style="background:rgba(138,138,138,.04)">${T.pkRnStly>=0?'+':''}${T.pkRnStly}</td>
     <td class="cell-mono ${isFinite(totPkStlyAdr)?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${isFinite(totPkStlyAdr)?fmtEUR(totPkStlyAdr):'—'}</td>
-    ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>' : ''}
-    ${showExp ? '<td class="cell-flat" colspan="2" style="background:rgba(58,107,107,.04);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>' : ''}
-    <!-- Foundation -->
-    <td class="cell-flat" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>
-    <!-- RMES: BaseRT/RTFilter + altre RT (solo se non filtrato + Tutti RT ON) -->
-    <td class="cell-flat" style="background:rgba(195,131,59,.10);text-align:center;color:var(--ink-3);font-size:10px">— per data —</td>
-    ${((_rtFilter || !_showAllRT) ? '' : (function(){
-        if (!_suppData || !_suppData.baseRT) return '';
-        let cells = '';
-        for (const rt of _rtList){
-          if (rt === _suppData.baseRT) continue;
-          const c = _RT_COLORS[rt] || '#888';
-          cells += `<td class="cell-flat sell-block-rt" style="background:${c}08;text-align:center;color:var(--ink-3);font-size:10px">—</td>`;
-        }
-        return cells;
-    })())}
+    <!-- RMES last update -->
+    <td class="cell-flat" style="background:rgba(195,131,59,.03);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
+    <!-- RMES today -->
+    <td class="cell-flat" style="background:rgba(195,131,59,.05);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
+    ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
+    ${showExp ? '<td class="cell-flat" colspan="3" style="background:rgba(58,107,107,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
+    <!-- Base Price -->
+    <td class="cell-flat" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
   html += '</tbody></table>';
   document.getElementById('sell-table-wrap').innerHTML = html;
@@ -7719,6 +7721,9 @@ function renderSellStrategy(sel){
   (function _renderAuditBanner(){
     const banner = document.getElementById('sell-audit-banner');
     if (!banner) return;
+    // NewRMES: il banner audit del sistema legacy non è più rilevante. Tenuto nascosto.
+    banner.style.display = 'none';
+    return;
     if (typeof fp_getOverrides !== 'function'){ banner.style.display = 'none'; return; }
     const all = fp_getOverrides();
     const today = new Date(TODAY); today.setHours(0,0,0,0);
@@ -7781,6 +7786,34 @@ function renderSellStrategy(sel){
       openSellPickupDrill(idx, kind);
     });
   });
+  // NewRMES: listener bottoni ✓ accept (data-rmes-accept = ymd numerico)
+  document.getElementById('sell-table-wrap').querySelectorAll('.rmes-accept-btn').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const ymdN = +btn.dataset.rmesAccept;
+      if (!ymdN || !isFinite(ymdN)) return;
+      // recupera il prezzo suggerito RMES today dalla mappa
+      const sk = CURRENT_STRUCT;
+      if (!sk || sk === 'both') { alert('Select a property first.'); return; }
+      const baseRTKey = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
+      if (!baseRTKey) return;
+      let rmesMap = null;
+      try { rmesMap = computeRMESPriceMap(sk, SELL_START_YMD, SELL_RANGE_DAYS); } catch(e){}
+      const mapEntry = rmesMap && rmesMap[ymdN];
+      if (!mapEntry || !mapEntry.rmesSuggestedByRT || mapEntry.rmesSuggestedByRT[baseRTKey] == null){
+        alert('No RMES suggestion for this date.');
+        return;
+      }
+      const newPrice = Math.round(mapEntry.rmesSuggestedByRT[baseRTKey]);
+      const curRef = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sk, ymdN) : null;
+      const ymdStr = String(ymdN);
+      const dateLbl = ymdStr.slice(6,8) + '/' + ymdStr.slice(4,6) + '/' + ymdStr.slice(0,4);
+      if (!confirm('Accept RMES suggestion?\n\nDate: ' + dateLbl + '\nCurrent reference: ' + (curRef!=null?curRef+' €':'—') + '\nNew accepted price: ' + newPrice + ' €\n\nFrom now on RMES will start from this price for this date.')) return;
+      newrmesSetAccepted(sk, ymdN, newPrice);
+      // re-render Sell Strategy (così la cella si aggiorna)
+      if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
+    });
+  });
   const _refreshSellAfterFp = () => {
     if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined'){
       try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
@@ -7791,17 +7824,21 @@ function renderSellStrategy(sel){
       ev.stopPropagation();
       const iso = btn.getAttribute('data-iso');
       const rt = btn.getAttribute('data-rt');
-      const calc = parseFloat(btn.getAttribute('data-calc'));
       if (!iso || !rt) return;
-      const cur = (typeof fp_getFoundationState === 'function') ? fp_getFoundationState(sel, iso, rt) : null;
-      const defVal = (cur && cur.value) ? cur.value : (isFinite(calc) ? calc : null);
+      // NewRMES: l'override del Base Price funziona per la base RT (singolo numero per data)
+      const ymdN = +(iso.replaceAll('-',''));
+      const sk = sel;
+      const curBase = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sk, ymdN) : null;
+      const frozenOnly = (typeof newrmesGetFrozenBase === 'function') ? newrmesGetFrozenBase(sk, ymdN) : null;
       const dateLbl = iso.split('-').reverse().join('/');
-      const v = prompt('Override Foundation per ' + dateLbl + '\n' + rt + '\n\nValore in Beddy_eq (€):', defVal != null ? Math.round(defVal) : '');
+      const v = prompt('Override Base Price for ' + dateLbl + '\nProperty: ' + sk + '\n\nCurrent Base Price: ' + (curBase!=null?curBase+' €':'—') + (frozenOnly!=null?'\nFrozen (computed): '+frozenOnly+' €':'') + '\n\nEnter the new Base Price (€):', curBase != null ? Math.round(curBase) : (frozenOnly != null ? Math.round(frozenOnly) : ''));
       if (v == null) return;
       const num = parseFloat(v);
-      if (!isFinite(num) || num <= 0){ alert('Valore non valido'); return; }
-      if (typeof fp_overrideFoundation === 'function'){
-        fp_overrideFoundation(sel, iso, rt, num, isFinite(calc) ? calc : null);
+      if (!isFinite(num) || num <= 0){ alert('Invalid value'); return; }
+      if (typeof newrmesSetFrozenBaseOverride === 'function'){
+        newrmesSetFrozenBaseOverride(sk, ymdN, num);
+        // se accettato per quel giorno, anche l'accettato non ha più senso → lo cancello
+        if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sk, ymdN, null);
         _refreshSellAfterFp();
       }
     });
@@ -7812,28 +7849,18 @@ function renderSellStrategy(sel){
       const iso = btn.getAttribute('data-iso');
       const rt = btn.getAttribute('data-rt');
       if (!iso || !rt) return;
+      const ymdN = +(iso.replaceAll('-',''));
+      const sk = sel;
       const dateLbl = iso.split('-').reverse().join('/');
-      if (!confirm('Reset Foundation a "proposed" per ' + dateLbl + '?\n' + rt)) return;
-      if (typeof fp_resetFoundationState === 'function'){
-        fp_resetFoundationState(sel, iso, rt);
+      if (!confirm('Reset Base Price override for ' + dateLbl + '?\nProperty: ' + sk + '\n\nThe Base Price will revert to the originally frozen value.')) return;
+      if (typeof newrmesSetFrozenBaseOverride === 'function'){
+        newrmesSetFrozenBaseOverride(sk, ymdN, null);
         _refreshSellAfterFp();
       }
     });
   });
-  document.getElementById('sell-table-wrap').querySelectorAll('td.sell-block-fp[data-fp-struct] .fp-price-click').forEach(el => {
-    el.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      const td = el.closest('td.sell-block-fp');
-      if (!td) return;
-      const struct = td.dataset.fpStruct;
-      const rt = td.dataset.fpRt;
-      const dateISO = td.dataset.fpDate;
-      const fpCalc = td.dataset.fpCalc ? parseFloat(td.dataset.fpCalc) : null;
-      if (struct && rt && dateISO && typeof fp_showFoundationApprovalPopup === 'function'){
-        fp_showFoundationApprovalPopup(struct, rt, dateISO, fpCalc, td);
-      }
-    });
-  });
+  // NewRMES: il vecchio popup Foundation (fp-price-click) è stato sostituito dai bottoni inline
+  // 🖋/↺ nella cella Base Price + il pannello "Override by period". Niente listener qui.
   document.getElementById('sell-table-wrap').querySelectorAll('td[data-rmes-struct]').forEach(el=>{
     el.addEventListener('click', (ev)=>{
       ev.stopPropagation();
@@ -7869,8 +7896,8 @@ function renderSellStrategy(sel){
       const fromV = fromInp.value, toV = toInp.value;
       if (!fromV || !toV){ setMsg('Select start and end date.', true); return null; }
       const d0 = new Date(fromV + 'T00:00:00'), d1 = new Date(toV + 'T00:00:00');
-      if (isNaN(d0.getTime()) || isNaN(d1.getTime())){ setMsg('Date non valide.', true); return null; }
-      if (d1 < d0){ setMsg('La data fine è precedente alla data inizio.', true); return null; }
+      if (isNaN(d0.getTime()) || isNaN(d1.getTime())){ setMsg('Invalid dates.', true); return null; }
+      if (d1 < d0){ setMsg('End date is before start date.', true); return null; }
       const days = [];
       for (let d = new Date(d0); d <= d1; d.setDate(d.getDate()+1)){
         const iso = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
@@ -7892,9 +7919,14 @@ function renderSellStrategy(sel){
         const price = priceInp ? parseFloat(priceInp.value) : NaN;
         const r = _fpPeriodDays(); if (!r) return;
         if (!isFinite(price) || price <= 0){ r.setMsg('Enter a valid price (>0).', true); return; }
-        if (!confirm('Override FOUNDATION of €' + price.toFixed(0) + ' on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?\n\nThe 5 RMES factors will react on top of this value. The other RTs inherit base + supplement.')) return;
-        for (const d of r.days){ fp_overrideFoundation(sel, d.iso, baseRT, price, d.calc); }
-        r.setMsg('✓ Foundation €' + price.toFixed(0) + ' applicato a ' + r.days.length + ' days.');
+        if (!confirm('Override BASE PRICE of €' + price.toFixed(0) + ' on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?\n\nRMES will keep suggesting deltas vs this new Base. Other RTs inherit base + supplement.')) return;
+        for (const d of r.days){
+          const ymdN = +(d.iso.replaceAll('-',''));
+          if (typeof newrmesSetFrozenBaseOverride === 'function') newrmesSetFrozenBaseOverride(sel, ymdN, price);
+          // un override del Base annulla l'accettazione precedente
+          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, null);
+        }
+        r.setMsg('✓ Base Price €' + price.toFixed(0) + ' applied to ' + r.days.length + ' days.');
         _refreshSell();
       };
     }
@@ -7905,9 +7937,12 @@ function renderSellStrategy(sel){
         const price = priceInp ? parseFloat(priceInp.value) : NaN;
         const r = _fpPeriodDays(); if (!r) return;
         if (!isFinite(price) || price <= 0){ r.setMsg('Enter a valid price (>0).', true); return; }
-        if (!confirm('FINAL PRICE override of €' + price.toFixed(0) + ' su ' + r.days.length + ' days (baseRT: ' + baseRT + ')?\n\nRMES verrà ignorato per quei days (price pubblicato forzato). Le altre RT ereditano finale + supplemento.')) return;
-        for (const d of r.days){ fp_setOverride(sel, d.iso, baseRT, price, (d.calc != null ? { foundationCalc: d.calc } : null)); }
-        r.setMsg('✓ Final price €' + price.toFixed(0) + ' applicato a ' + r.days.length + ' days.');
+        if (!confirm('ACCEPT RMES of €' + price.toFixed(0) + ' on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?\n\nThis becomes the current reference for those dates. Tomorrow\'s RMES will start from this price.')) return;
+        for (const d of r.days){
+          const ymdN = +(d.iso.replaceAll('-',''));
+          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, price);
+        }
+        r.setMsg('✓ Accepted €' + price.toFixed(0) + ' on ' + r.days.length + ' days.');
         _refreshSell();
       };
     }
@@ -7915,12 +7950,13 @@ function renderSellStrategy(sel){
     if (btnPeriodReset){
       btnPeriodReset.onclick = function(){
         const r = _fpPeriodDays(); if (!r) return;
-        if (!confirm('Reset override (Foundation + final price) on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?')) return;
+        if (!confirm('Reset Base Price override AND Accepted price on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?')) return;
         for (const d of r.days){
-          if (typeof fp_resetFoundationState === 'function') fp_resetFoundationState(sel, d.iso, baseRT);
-          if (typeof fp_setOverride === 'function') fp_setOverride(sel, d.iso, baseRT, null);
+          const ymdN = +(d.iso.replaceAll('-',''));
+          if (typeof newrmesSetFrozenBaseOverride === 'function') newrmesSetFrozenBaseOverride(sel, ymdN, null);
+          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, null);
         }
-        r.setMsg('↺ Reset eseguito su ' + r.days.length + ' days.');
+        r.setMsg('↺ Reset on ' + r.days.length + ' days.');
         _refreshSell();
       };
     }
@@ -8684,7 +8720,7 @@ function renderPiramide(){
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#3d7a4b"></span>Condotta 16 (price Expedia)</span>
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#8e5fa8"></span>Palazzo Alfani (price Expedia)</span>
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#3b6b9a"></span>Firenze Suite (price Expedia)</span>
-    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:12px;background:rgba(245,158,90,.30);border:1px solid rgba(195,100,30,.40)"></span>Fascia compset (min-max competitor)</span>
+    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:12px;background:rgba(245,158,90,.30);border:1px solid rgba(195,100,30,.40)"></span>Compset range (min-max competitor)</span>
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:rgba(195,100,30,.45);border-top:1px dashed rgba(195,100,30,.7)"></span>Compset median</span>
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:9px;height:9px;background:rgba(168,59,59,.7)"></span>Search intensity (dark = peak)</span>
   `;
@@ -9663,7 +9699,7 @@ function renderPricingBoth(){
     <div class="kpi" style="border-left-color:#5a8c69">
       <div class="kpi-label">ADR already sold</div>
       <div class="kpi-val">${totOtbRn>0?fmtEUR(otbAdrAvg):'—'}</div>
-      <div class="kpi-sub mono">${Math.round(totOtbRn).toLocaleString('en-GB')} RN venduti</div>
+      <div class="kpi-sub mono">${Math.round(totOtbRn).toLocaleString('en-GB')} RN sold</div>
     </div>
   `;
   const dowIT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -10701,7 +10737,7 @@ function renderForecast(sel){
     <div class="kpi" style="border-left:3px solid #6b5b3f">
       <div class="kpi-label">OTB already acquired</div>
       <div class="kpi-value">${fmtEUR(totOtbRev)}</div>
-      <div class="kpi-sub mono">${totOtbRn} RN · ${totFcstRev>0?fmtPct(totOtbRev/totFcstRev,0):'—'} del forecast</div>
+      <div class="kpi-sub mono">${totOtbRn} RN · ${totFcstRev>0?fmtPct(totOtbRev/totFcstRev,0):'—'} of forecast</div>
     </div>
   `;
   document.getElementById('fcst-kpis').innerHTML = kpis;
@@ -11504,7 +11540,7 @@ function _renderRmesLmfBox(sel){
     '<div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">' +
       '<div style="padding:10px 14px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--line)">' +
         '<div style="font-size:13px;font-weight:700;color:var(--ink-1)">\u23f1 Last Minute Price Factor</div>' +
-        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Discount/premium % based on the property occupancy that day (rows) and days to arrival (columns). Applied to the final RMES price. Negative values = discount, positive = premium.</div>' +
+        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Discount/premium % based on the property occupancy that day (rows) and days to arrival (columns). Applied to the RMES suggested price (multiplier after the 5 factors). Negative values = discount, positive = premium.</div>' +
       '</div>' +
       '<div style="overflow-x:auto;padding:8px 10px">' +
         '<table style="border-collapse:collapse;margin:0 auto"><thead><tr>' +
@@ -12016,7 +12052,7 @@ function renderCancellations(sel){
     </div>
     <div class="kpi" style="border-left-color:#3b6b6b">
       <div class="kpi-label">Average lead time</div>
-      <div class="kpi-val">${A.leadAvg.toFixed(0)} <span style="font-size:14px;font-weight:400">gg</span></div>
+      <div class="kpi-val">${A.leadAvg.toFixed(0)} <span style="font-size:14px;font-weight:400">d</span></div>
       <div class="kpi-sub mono">between booking and cancellation</div>
     </div>
     <div class="kpi" style="border-left-color:#8a6c45">
@@ -12080,7 +12116,7 @@ function renderCancellations(sel){
       <td class="cell-mono">${m.cancelN}</td>
       <td class="cell-mono cell-flat">${m.cancelRn}</td>
       <td class="cell-mono">${fmtEUR(m.lostRev)}</td>
-      <td class="cell-mono cell-flat">${m.leadAvg.toFixed(0)} gg</td>
+      <td class="cell-mono cell-flat">${m.leadAvg.toFixed(0)} d</td>
     </tr>`;
   }
   if (!months.length) mHtml += `<tr><td colspan="5" style="text-align:center;color:var(--ink-3);padding:30px">No cancellations in the last 12 months</td></tr>`;
@@ -12089,7 +12125,7 @@ function renderCancellations(sel){
     <td class="cell-mono">${A.totCancelN}</td>
     <td class="cell-mono">${A.totCancelRn}</td>
     <td class="cell-mono">${fmtEUR(A.totLostRev)}</td>
-    <td class="cell-mono">${A.leadAvg.toFixed(0)} gg</td>
+    <td class="cell-mono">${A.leadAvg.toFixed(0)} d</td>
   </tr></tbody>`;
   document.getElementById('cancel-monthly').innerHTML = mHtml;
   let cHtml = '<thead><tr><th>Channel</th><th class="num">Total bookings</th><th class="num">Cancelled</th><th class="num">Cancellation rate</th><th class="num">RN lost</th><th class="num">Revenue lost</th></tr></thead><tbody>';
@@ -13673,20 +13709,20 @@ function _bigRenderPie(sel){
   const titleEl = document.getElementById('big-pie-title');
   if (!host) return;
   if (titleEl){
-    const base = 'Source share — by revenue (year) · inner = STLY';
+    const base = 'Channel share — by revenue (year) · inner = STLY';
     titleEl.innerHTML = (sel==='both')
       ? `${base} · <span style="font-size:10px;font-weight:700;color:var(--ink-3);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;margin-left:6px">per property</span>`
       : base;
   }
   const palette = ['#3b6b9a','#3d7a4b','#c4823b','#8e5fa8','#b0464b','#1f8a8a','#c9a227','#7a7a7a'];
-  const toArr = (obj)=> Object.keys(obj||{}).map(k=>({name:_bigProvLabel(k), rev:(obj[k]&&obj[k].rev)||0})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
+  const toArr = (obj)=> Object.keys(obj||{}).map(k=>({name:(k && k.trim()) ? k : "Direct", rev:(obj[k]&&obj[k].rev)||0})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
   const sum = (a)=>a.reduce((s,x)=>s+x.rev,0)||1;
 
   // helper: build one donut (outer = current year, inner = STLY) with its legend
   function buildOneDonut(structKey, structLabel, structColor){
     let A=null; try{ A=aggOTBYearly(structKey); }catch(e){}
-    if (!A || !A.provCur) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div>No data</div>`;
-    const cur = toArr(A.provCur), prev = toArr(A.provPrev);
+    if (!A || !A.canCur) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div>No data</div>`;
+    const cur = toArr(A.canCur), prev = toArr(A.canPrev);
     if (!cur.length) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div>No data</div>`;
     const colorOf={}; cur.forEach((x,i)=>colorOf[x.name]=palette[i%palette.length]);
     prev.forEach((x)=>{ if(!colorOf[x.name]) colorOf[x.name]=palette[Object.keys(colorOf).length%palette.length]; });
@@ -13736,8 +13772,8 @@ function _bigRenderPie(sel){
 
   // single-property view: full-size donut + legend (unchanged)
   let A=null; try{ A=aggOTBYearly(sel); }catch(e){}
-  if (!A || !A.provCur){ host.innerHTML='<div style="color:var(--ink-3);font-size:12px;padding:20px;text-align:center">No data</div>'; return; }
-  const cur = toArr(A.provCur), prev = toArr(A.provPrev);
+  if (!A || !A.canCur){ host.innerHTML='<div style="color:var(--ink-3);font-size:12px;padding:20px;text-align:center">No data</div>'; return; }
+  const cur = toArr(A.canCur), prev = toArr(A.canPrev);
   const colorOf={}; cur.forEach((x,i)=>colorOf[x.name]=palette[i%palette.length]);
   prev.forEach((x)=>{ if(!colorOf[x.name]) colorOf[x.name]=palette[Object.keys(colorOf).length%palette.length]; });
   const totCur=sum(cur), totPrev=sum(prev);

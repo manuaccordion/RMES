@@ -301,7 +301,7 @@ main{flex:1;padding:8px 16px 24px}
 <script src="engine.js"></script>
 <script>
 /* RMES MOBILE APP v2 — reuses engine.js (same RMES logic as the dashboard).
-   Orange theme everywhere; day drill-in with a 2nd inner click → Foundation 6 steps
+   Orange theme everywhere; day drill-in with a 2nd inner click → Base Price + 5 RMES factors
    + 5 RMES factors; room categories ordered by price; monthly overview with OTB big
    + STLY / LY / Forecast small for Revenue, ADR and Occupancy. */
 const MOB = { struct:'firenze', winStart:null, tab:'days', lastDay:null, lastRow:null, monthView:'otb', monthPast:false };
@@ -568,7 +568,7 @@ function mobOpenDay(yn, rmesRow){
     html+=`</div>`;
   }
   /* price override now lives near the top (right after the hero) */
-  html+=`<button class="btn-expand" id="mob-expand"><span class="be-ico">⚡</span> Show Foundation &amp; RMES detail</button><div class="collapse" id="mob-detail"></div>`;
+  html+=`<button class="btn-expand" id="mob-expand"><span class="be-ico">⚡</span> Show Base Price &amp; RMES detail</button><div class="collapse" id="mob-detail"></div>`;
   document.getElementById('sheet-body').innerHTML=html;
   document.getElementById('mob-expand').addEventListener('click', mobToggleDetail);
   mobBindOverride(yn, baseRT);
@@ -669,10 +669,10 @@ function mobToggleDetail(){
   MOB_DETAIL_OPEN=!MOB_DETAIL_OPEN;
   if(MOB_DETAIL_OPEN){
     box.innerHTML=mobBuildDetailHTML(MOB.lastDay, MOB.lastRow); box.classList.add('open');
-    btn.innerHTML='<span class="be-ico">▲</span> Hide Foundation &amp; RMES detail';
+    btn.innerHTML='<span class="be-ico">▲</span> Hide Base Price &amp; RMES detail';
     setTimeout(()=>{ try{ box.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){} },120);
   } else {
-    box.classList.remove('open'); btn.innerHTML='<span class="be-ico">⚡</span> Show Foundation &amp; RMES detail';
+    box.classList.remove('open'); btn.innerHTML='<span class="be-ico">⚡</span> Show Base Price &amp; RMES detail';
   }
 }
 function mobBuildDetailHTML(yn, rmesRow){
@@ -680,7 +680,7 @@ function mobBuildDetailHTML(yn, rmesRow){
   let html='';
   let fpR=null; try{ fpR=fp_computePrice(MOB.struct, baseRT, iso); }catch(e){ console.error('fp_computePrice',e); }
   const det=fpR?fpR.detail:null;
-  html+=`<div class="sh-group"><div class="sh-group-t">Foundation · how the opening price is built</div>`;
+  html+=`<div class="sh-group"><div class="sh-group-t">Base Price · how the opening price is built</div>`;
   if(det){
     const steps=[];
     if(det.anchor && det.anchor.medianADR!=null) steps.push(['①','Historical anchor','Median LY ADR, same weekday &amp; month'+(det.anchor.nObs!=null?' ('+det.anchor.nObs+' obs)':''), fmtAdr(det.anchor.medianADR)]);
@@ -691,12 +691,12 @@ function mobBuildDetailHTML(yn, rmesRow){
     else steps.push(['④','Market cap (compset)','No compset price — cap skipped', det.pGrezzo!=null?fmtAdr(det.pGrezzo):'—']);
     steps.push(['⑤','Floor','Hard minimum price', det.floor!=null?fmtAdr(det.floor):'—']);
     const fpFinal=(fpR&&isFinite(fpR.price))?fpR.price:(det.priceFinal!=null?det.priceFinal:null);
-    steps.push(['⑥','Foundation price','Opening price before the 5 factors', fpFinal!=null?fmtEUR(fpFinal):'—']);
+    steps.push(['⑥','Base Price','Opening price (current reference, before the 5 factors)', fpFinal!=null?fmtEUR(fpFinal):'—']);
     for(const s of steps) html+=`<div class="fp-step"><div class="fps-n">${s[0]}</div><div class="fps-body"><div class="fps-lab">${s[1]}</div><div class="fps-desc">${s[2]}</div></div><div class="fps-val">${s[3]}</div></div>`;
-  } else { html+=`<div class="fp-step"><div class="fps-body"><div class="fps-desc">Foundation detail not available for this day.</div></div></div>`; }
+  } else { html+=`<div class="fp-step"><div class="fps-body"><div class="fps-desc">Base Price detail not available for this day.</div></div></div>`; }
   html+=`</div>`;
   const mults=(rmesRow&&rmesRow.multsByRT&&baseRT!=null&&rmesRow.multsByRT[baseRT])?rmesRow.multsByRT[baseRT]:(rmesRow&&rmesRow.multsByRT?Object.values(rmesRow.multsByRT)[0]:null);
-  html+=`<div class="sh-group"><div class="sh-group-t">RMES factors · applied over Foundation</div>`;
+  html+=`<div class="sh-group"><div class="sh-group-t">RMES factors · applied over the Base Price</div>`;
   if(mults){
     const na=mults._naReasons||{};
     for(const f of MOB_FACTORS){
@@ -707,7 +707,7 @@ function mobBuildDetailHTML(yn, rmesRow){
     if(mults.multFinale!=null) html+=`<div class="fac-final"><span class="ff-lab">Combined multiplier (capped)</span><span class="ff-val">×${Math.round(mults.multFinale*1000)/1000}</span></div>`;
   } else { html+=`<div class="fac"><div class="fac-body"><div class="fac-desc">Factor detail not available.</div></div></div>`; }
   html+=`</div>`;
-  html+=`<div class="fac-final" style="margin-top:14px;background:linear-gradient(135deg,var(--org),var(--org-deep))"><span class="ff-lab" style="color:#fff">Final RMES price</span><span class="ff-val" style="color:#fff">${fmtEUR(rmesRow?rmesRow.price:NaN)}</span></div>`;
+  html+=`<div class="fac-final" style="margin-top:14px;background:linear-gradient(135deg,var(--org),var(--org-deep))"><span class="ff-lab" style="color:#fff">Suggested price</span><span class="ff-val" style="color:#fff">${fmtEUR(rmesRow?rmesRow.price:NaN)}</span></div>`;
   return html;
 }
 function mobShRow(lab,val,sub){ return `<div class="sh-row"><span class="shr-lab">${escapeHtml(lab)}</span><span class="shr-val">${val}${sub||''}</span></div>`; }
