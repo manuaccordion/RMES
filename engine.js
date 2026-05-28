@@ -8640,7 +8640,9 @@ function renderSellStrategy(sel){
         } else if (accepted != null){
           const dt = (meta && meta.ts) ? new Date(meta.ts) : null;
           const dtTxt = dt ? `${pad2(dt.getDate())}/${pad2(dt.getMonth()+1)}/${dt.getFullYear()} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}` : 'unknown date';
-          tip = `Active price: €${Math.round(activePrice)}\nSource: accepted RMES suggestion\nLast updated: ${dtTxt}`;
+          tip = `Active price: €${Math.round(activePrice)}\nSource: accepted RMES suggestion ✓\nLast updated: ${dtTxt}`;
+          icon = '✓';
+          txtColor = 'color:#2c5c3c;font-weight:700';
         } else {
           tip = `Active price: €${Math.round(activePrice)}\nSource: Base Price (accepted by default — RMES never explicitly accepted for this day)`;
         }
