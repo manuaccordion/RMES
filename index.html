@@ -803,15 +803,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   <nav class="nav" role="tablist">
     <button class="tab active" data-tab="big"><span class="num">★</span>Big Picture</button>
     <button class="tab" data-tab="sell"><span class="num">1</span>Sell Strategy</button>
-    <button class="tab" data-tab="otb"><span class="num">2</span>Overview</button>
-    <button class="tab" data-tab="fcst"><span class="num">3</span>Forecast</button>
+    <button class="tab" data-tab="otb" style="display:none"><span class="num">2</span>Overview (legacy)</button>
+    <button class="tab" data-tab="fcst"><span class="num">2</span>Overview</button>
     <button class="tab" data-tab="hist" style="display:none"><span class="num">5</span>Historical Data</button>
-    <button class="tab" data-tab="pk"><span class="num">4</span>Pickup Matrix</button>
-    <button class="tab" data-tab="cancel"><span class="num">5</span>CXLTrend</button>
-    <button class="tab" data-tab="rt"><span class="num">6</span>OCC by Room Type</button>
-    <button class="tab" data-tab="rate"><span class="num">7</span>Rate Shopper</button>
+    <button class="tab" data-tab="pk"><span class="num">3</span>Pickup Matrix</button>
+    <button class="tab" data-tab="cancel"><span class="num">4</span>CXLTrend</button>
+    <button class="tab" data-tab="rt"><span class="num">5</span>OCC by Room Type</button>
+    <button class="tab" data-tab="rate"><span class="num">6</span>Rate Shopper</button>
     
-    <button class="tab" data-tab="pri"><span class="num">9</span>RMES</button>
+    <button class="tab" data-tab="pri"><span class="num">7</span>RMES</button>
     <button class="tab" data-tab="instr"><span class="num">📖</span>Playbook</button>
   </nav>
 </header>
@@ -857,37 +857,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- Month filter: aggiorna SOLO the Source/Channel tables below (i grafici sopra restano annuali) -->
-    <div class="panel" style="background:rgba(195,131,59,.04);border:1px solid rgba(195,131,59,.22);margin-top:14px">
-      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 18px">
-        <span class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Month filter</span>
-        <div id="otb-month-pills" style="display:flex;gap:4px;flex-wrap:wrap"></div>
-        <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-style:italic" id="otb-month-active">Source and Channel tables: full year</span>
-      </div>
-    </div>
-
-    <div class="chart-grid">
-      <div class="panel" style="margin:0">
-        <div class="panel-head"><h3>Source</h3><div class="panel-sub mono" id="otb-prov-sub"></div></div>
-        <div class="panel-body flush"><div class="table-wrap"><table class="data" id="otb-prov-table"></table></div></div>
-      </div>
-      <div class="panel" style="margin:0">
-        <div class="panel-head"><h3>Channel</h3><div class="panel-sub mono" id="otb-can-sub"></div></div>
-        <div class="panel-body flush"><div class="table-wrap"><table class="data" id="otb-can-table"></table></div></div>
-      </div>
-    </div>
-
-    <!-- Booking window chart (rolling 12 closed months) -->
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h3>Booking window</h3>
-          <div class="panel-sub" id="otb-bw-sub">Booking mix and average ADR by lead-time window (days between booking and check-in). Rolling 12 closed months.</div>
-        </div>
-        <div id="otb-bw-mfilter" class="bw-mfilter"></div>
-      </div>
-      <div class="panel-body" id="otb-bw-chart"></div>
-    </div>
   </section>
 
   <!-- ============ SECTION 2: ROOM TYPE ============ -->
@@ -998,7 +967,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   <section class="tab-panel" id="panel-fcst">
     <div class="section-head">
       <div>
-        <h2>Forecast <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">May 2026 → April 2027</span></h2>
+        <h2>Overview <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">May 2026 → April 2027</span></h2>
         
       </div>
     </div>
@@ -1039,6 +1008,38 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div class="chart-sub">Expected occupancy curve</div>
         <div id="fcst-chart-occ"></div>
       </div>
+    </div>
+
+    <!-- Month filter: Source/Channel tables (year/month) -->
+    <div class="panel" style="background:rgba(195,131,59,.04);border:1px solid rgba(195,131,59,.22);margin-top:14px">
+      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 18px">
+        <span class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Month filter</span>
+        <div id="otb-month-pills" style="display:flex;gap:4px;flex-wrap:wrap"></div>
+        <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-style:italic" id="otb-month-active">Source and Channel tables: full year</span>
+      </div>
+    </div>
+
+    <div class="chart-grid">
+      <div class="panel" style="margin:0">
+        <div class="panel-head"><h3>Source</h3><div class="panel-sub mono" id="otb-prov-sub"></div></div>
+        <div class="panel-body flush"><div class="table-wrap"><table class="data" id="otb-prov-table"></table></div></div>
+      </div>
+      <div class="panel" style="margin:0">
+        <div class="panel-head"><h3>Channel</h3><div class="panel-sub mono" id="otb-can-sub"></div></div>
+        <div class="panel-body flush"><div class="table-wrap"><table class="data" id="otb-can-table"></table></div></div>
+      </div>
+    </div>
+
+    <!-- Booking window chart (rolling 12 closed months) -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Booking window</h3>
+          <div class="panel-sub" id="otb-bw-sub">Booking mix and average ADR by lead-time window (days between booking and check-in). Rolling 12 closed months.</div>
+        </div>
+        <div id="otb-bw-mfilter" class="bw-mfilter"></div>
+      </div>
+      <div class="panel-body" id="otb-bw-chart"></div>
     </div>
   </section>
 
@@ -1341,6 +1342,19 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
 
     
+    <!-- Box 3: EVENT FACTOR -->
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-head">
+        <div>
+          <h3>③ Event Factor</h3>
+          <div class="panel-sub">Per-event price multiplier (−10% to +10%). Applied as a final multiplier to the RMES price on dates that match the event name. Positive = premium, negative = discount, zero = no effect. Weights are <b>shared across all properties</b> (event impact is the same everywhere).</div>
+        </div>
+      </div>
+      <div class="panel-body" style="padding:14px 16px">
+        <div id="rmes-events-wrap"></div>
+      </div>
+    </div>
+
     <!-- ============ FOUNDATION PRICING CONFIG (shadow) ============ -->
     <div class="panel" style="margin-bottom:16px;background:rgba(195,131,59,.04);border-color:rgba(195,131,59,.30)">
       <div class="panel-head" style="border-bottom:1px solid rgba(195,131,59,.25)">
@@ -1352,7 +1366,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body" style="padding:14px 16px">
         <div id="fp-tab-wrap"></div>
          <div id="rmes-lmf-wrap" style="margin-top:14px"></div>
-         <div id="rmes-events-wrap" style="margin-top:14px"></div>
       </div>
     </div>
 <!-- Bottone APPLICA unico (pesi + soglie) sticky in basso -->
@@ -1406,380 +1419,201 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
   </section>
 
-  <!-- ============ SECTION 11: ISTRUZIONI ============ -->
+  <!-- ============ SECTION 11: PLAYBOOK ============ -->
   <section class="tab-panel" id="panel-instr">
     <div class="section-head">
       <div>
         <h2>📖 Playbook</h2>
-        <div class="lede">Complete guide to all dashboard tabs. Open each section to read the detail. <b>Tip</b>: start from the Sell Strategy (the main one) and the RMES box to understand the pricing system.</div>
+        <div class="lede">Quick guide to every tab as it exists today. Start from <b>Sell Strategy</b> for the day-to-day work and from <b>RMES</b> to tune the pricing engine.</div>
       </div>
     </div>
 
-    <!-- Indice ancore -->
+    <!-- Quick index -->
     <div class="panel" style="background:#fafaf8;border:1px solid var(--line);margin-bottom:18px">
       <div class="panel-body" style="padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
         <span style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Quick index</span>
         <a href="#instr-big"    style="font-size:12px;color:#8e5fa8;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">★ Big Picture</a>
-        <a href="#instr-arch"   style="font-size:12px;color:#2f5538;font-weight:600;text-decoration:none;padding:4px 10px;background:#f5f9f6;border:1px solid #4a7c59;border-radius:4px">🧱 Architecture</a>
         <a href="#instr-sell"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">① Sell Strategy</a>
-        <a href="#instr-cancel" style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">② CXLTrend</a>
-        <a href="#instr-otb"    style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">③ Overview</a>
-        <a href="#instr-fcst"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">④ Forecast</a>
-        <a href="#instr-pk"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑤ Pickup Matrix</a>
-        <a href="#instr-rt"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑥ OCC per RT</a>
-        <a href="#instr-rate"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑦ Rate Shopper</a>
-        
-        <a href="#instr-rmes"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑨ RMES (config)</a>
-        <a href="#instr-glossario" style="font-size:12px;color:#7a4f1c;font-weight:600;text-decoration:none;padding:4px 10px;background:#fef8ed;border:1px solid #c4823b;border-radius:4px">📚 Glossary</a>
+        <a href="#instr-otb"    style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">② Overview</a>
+        <a href="#instr-pk"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">③ Pickup Matrix</a>
+        <a href="#instr-cancel" style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">④ CXLTrend</a>
+        <a href="#instr-rt"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑤ OCC by Room Type</a>
+        <a href="#instr-rate"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑥ Rate Shopper</a>
+        <a href="#instr-rmes"   style="font-size:12px;color:#7a4f1c;font-weight:600;text-decoration:none;padding:4px 10px;background:#fef8ed;border:1px solid #c4823b;border-radius:4px">⑦ RMES (config)</a>
+        <a href="#instr-glossario" style="font-size:12px;color:#5a3a14;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">📚 Glossary</a>
       </div>
     </div>
 
-    <!-- ============ 🧱 ARCHITECTURE & MOBILE APP ============ -->
-    <details id="instr-arch" class="panel" style="margin-bottom:14px;border-left:3px solid #4a7c59">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#2f5538;background:#f5f9f6">🧱 Architecture &amp; mobile app — how the files fit together</summary>
-      <div style="padding:14px 18px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p>This dashboard is no longer a single standalone file. It is split into <b>three files that live in the same folder</b> and load together:</p>
-        <ul style="margin:6px 0 0 18px;padding:0">
-          <li><b>data.js</b> — the data only (bookings CSV + Expedia rate-shopper data). This is the <b>only file that changes when new bookings arrive</b>; it is regenerated on each data update.</li>
-          <li><b>engine.js</b> — the whole RMES engine: config, data loading, the Base Price freezing, the 5 factors, weighted C·Pace, the acceptance and override system, and every calculation and rendering function. This changes <b>only when the pricing logic or the dashboard structure changes</b>.</li>
-          <li><b>index.html</b> — this page: markup, styles and the boot script. It pulls in <code>data.js</code> then <code>engine.js</code> before running.</li>
-        </ul>
-        <p style="margin-top:10px">A second page, <b>app.html</b>, is a phone-first companion that loads the <b>same data.js and the same engine.js</b>. Because the mobile app reuses the exact same engine, the RMES price it shows for a day is always identical to the dashboard's — they cannot drift apart. The mobile app is styled with an <b>orange theme throughout</b> (the same orange for every property, rather than the per-property colours). It has two tabs:</p>
-        <ul style="margin:6px 0 0 18px;padding:0">
-          <li><b>Daily Price</b> — for each of the next 7 days the card leads with the two prices side by side, <b>Mine | Comp</b> (your Expedia price vs compset average, coloured arrow between them: green = you are lower / more competitive). Under each price sit two small coloured deltas vs STLY: under <b>Mine</b> → <b>OCC Δ</b> (occupancy points) and <b>p/u 7d</b> (last-7-days pickup); under <b>Comp</b> → <b>ADR Δ</b> (booked ADR difference in €, green = higher this year) and <b>€ rank</b> (price position, 1 = cheapest). Weekend nights (Fri/Sat) are marked by the weekday colour, not a background tint. Calendar on top to jump up to 365 days ahead. Tapping a day opens a sheet with: the Expedia price (and your Beddy RMES price), an <b>Expedia vs compset</b> block (your price, compset average, position, market position N of M, competitor range), on-the-books vs STLY, and the <b>room categories ordered by price</b> (lowest first, base room ★). It also has a <b>price override</b> for that day's base room (pencil icon ✏️ on each card, or inside the drill-in). The price is entered in Beddy space and stored in localStorage per-device. The override immediately updates the Expedia price, the market position and the Rate Shopper pyramid, and shows a <b>revenue simulation</b> using the exact same model as the dashboard (ΔRN% = −Δprice% × elasticity, default 1.0). A second tap ("⚡ Show Base Price &amp; RMES detail") expands the full breakdown: the <b>Base Price calculation</b> and the <b>5 RMES factors</b> with each multiplier and the combined capped multiplier.</li>
-          <li><b>Monthly</b> — a toggle at the top switches the whole view between <b>OTB</b> (on-the-books, compared vs <b>STLY</b>) and <b>Forecast</b> (projected close, compared vs <b>Final LY</b>); OTB is the default. A year-total card on top sums the year in the active view (a mix of closed months and OTB/forecast for future months, noted on the card). Then one card per month, default current month → December, with the three KPIs <b>Revenue, ADR, Occupancy</b> stacked, each showing the value and its variance vs the comparison. Past months are hidden behind a "Show past months" drill. The current month is highlighted, and each month card is <b>tinted</b> by revenue vs the comparison (light green = above, white = equal, light red = below) for an at-a-glance read.</li>
-          <li><b>Rate Shopper</b> — a pyramid chart for the 7 visible days: your Expedia price (solid orange line), the compset average (dashed grey) and the <b>competitor range</b> as an orange min–max band, exactly like the dashboard Rate Shopper pyramid. Days without Expedia data are left blank.</li>
-        </ul>
-        <p style="margin-top:8px">It covers the four single properties; an aggregate "All" view is intentionally not offered because an aggregated RMES price is not meaningful.</p>
-        <p style="margin-top:10px;padding:10px 14px;background:#f5f9f6;border-left:3px solid #4a7c59"><b>When updating data</b>: only <code>data.js</code> is rewritten, and a single publish updates both the dashboard and the mobile app. <b>When changing logic</b>: <code>engine.js</code> is rewritten and both pages pick it up automatically. The header line shows the live booking count so a successful data load is visible at a glance.</p>
-      </div>
-    </details>
-
-    <!-- ============ ★ BIG PICTURE ============ -->
+    <!-- ★ BIG PICTURE -->
     <details id="instr-big" open class="panel" style="margin-bottom:14px;border-left:3px solid #8e5fa8">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a3a7a;background:#faf7fc">★ Big Picture — the snapshot of what is happening now</summary>
-      <div style="padding:14px 18px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p>The landing tab: a visual snapshot of what is happening before diving into the detailed tabs. It follows the property selector at the top (single property or All) and the <b>Pickup window</b> toggle (1 day default · 7 days) controls the recency window used by the pickup-based cards.</p>
-        <p>Layout, top to bottom:</p>
-        <ul style="margin:6px 0 0 18px;padding:0">
-          <li><b>Hero row</b> (4 icon boxes): recent pickup (RN), Revenue 2026 (OTB), OCC 2026, and compset rank over the next 7 days (with All, it's the average of the 4 properties). The first three show a small <b>STLY comparison</b> underneath (same weekday, -364 days) with a green/red arrow; the rank box has no STLY.</li>
-          <li>Then the Big Picture is a focused pickup panel. From the top: the <b>4 hero boxes</b> (last-day pickup, Revenue 2026, OCC 2026, compset rank 7d), each with a small STLY comparison and a <b>by property</b> badge with All.
-            Two side-by-side charts: (1) <b>room nights booked per day</b> over the last 7 days — click any bar to focus that pickup day, or <b>all 7 days</b> to aggregate the week; (2) a <b>Channel-share donut</b> by revenue (Booking, Expedia, Direct, Airbnb, etc.), outer ring = current year, inner = STLY, with each channel's share and its change vs STLY.
-            Below, a colour-coded <b>tree</b>: the main block lists the <b>top stay dates</b> (check-in dates) booked on the selected pickup day, and three branches break that same pickup down by <b>stay month</b>, <b>room sold</b> and <b>channel sold</b>. The chart is by pickup day; the tree is by stay date — crossing the two shows which stay nights a given booking day filled. Default = latest day. With All, the by-property badges open per-hotel breakdowns. If a card has no data it shows "no movement" instead of being hidden.</p>
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14"><span style="color:#8e5fa8">★</span> Big Picture — daily landing</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p>Today's snapshot, with a chart of the last/next days and the totals for each of the 4 properties.</p>
+        <ul style="margin:6px 0 6px 18px">
+          <li><b>Day chart</b>: bars = RN per day. Click a bar to drill into that day.</li>
+          <li><b>Property tiles</b>: revenue OTB, OCC, ADR. When <i>All</i> is selected, you see 4 tiles side by side.</li>
+          <li><b>Channel share donut</b>: outer ring = current year, inner ring = STLY. In <i>All</i> mode, 4 mini-donuts (one per property). If a property has no bookings in the dataset, the donut shows <i>No data</i>.</li>
+        </ul>
       </div>
     </details>
 
-    <!-- ============ ① SELL STRATEGY ============ -->
+    <!-- ① SELL STRATEGY -->
     <details id="instr-sell" open class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a3a14;background:#fef8ed;list-style:none;outline:none">① Sell Strategy <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">the daily table with prices, suggestions and acceptance</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p><b>What this tab does, in one sentence.</b> For every future date, it shows you (a) what you sold so far, (b) what you sold a year ago at the same stage, (c) the "fixed" price you decided to load on Beddy (called <b>Base Price</b>), (d) today's suggestion from the system (called <b>RMES</b>), and (e) a comparison with Expedia and your competitors. You decide, every day, whether to keep the Base Price or apply the suggestion.</p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">The three layers of the price (the most important concept)</h4>
-        <p>The price you load on Beddy doesn't come out of thin air. It is built in three layers, one on top of the other. Read this section once and the rest of the dashboard will make sense.</p>
-        <ol style="margin:0 0 10px 18px;padding:0">
-          <li style="margin-bottom:8px"><b>Anchor Price</b> — a single annual number per property. It's the "fair price" of the property as a whole, an anchor that says "for this property, prices should stay around here". Defaults: Firenze Suite €220, Condotta 16 €280, Palazzo Alfani €270, Enis Guesthouse €145. You change it in the <b>RMES tab → Ⓑ Anchor Price</b>. It does not appear in this Sell Strategy table directly, but it shapes the Base Price below.</li>
-          <li style="margin-bottom:8px"><b>Base Price</b> — a price per date (one for each of the next 365 days), computed once and frozen. This is what you load on Beddy as your "list price" for that day. The system computes it automatically the first time you open the dashboard, using historical data and the compset, bounded ±50% from the Anchor Price.<br>You see it in the column <b>Base Price</b> (towards the right of the table). The icon <b>🔒</b> means "frozen, computed by the system". If you change it manually, the icon becomes <b>🖋</b>.</li>
-          <li style="margin-bottom:8px"><b>RMES suggestion</b> — every day, the system looks at occupancy, pace, competitor prices, search demand and any active events, and tells you: "today I would set the price at €258 instead of €240 (variation +€18, +7.5%)". This is shown in the <b>RMES today</b> column as <b>final price · variation</b>: the top line is the Beddy price the system suggests, the bottom line is the variation in € and % vs the current reference. <b>This suggestion is NOT applied automatically</b>: it stays a suggestion until you click ✓ to accept it, or you go to Beddy and load the new price manually.</li>
-        </ol>
-        <p style="padding:10px 14px;background:#fef8ed;border-left:3px solid #c4823b"><b>Concrete example.</b> Today is 27 May. For 15 August your <b>Base Price</b> is €240 (frozen). The system sees that you're selling more than last year and competitors are charging more, so today's <b>RMES suggestion</b> is "240 (+18)" = "I'd push you to €258 today". You decide:<br>· If you trust it, click ✓ → the new reference for 15 August becomes €258, and tomorrow RMES will compute from €258.<br>· If you don't, do nothing → the reference stays €240, and tomorrow RMES might suggest "+20" or "+15" depending on how the market moves.<br>· If you think the system is wrong (e.g. you know there's a fair coming), click 🖋 in the Base Price cell and overwrite it manually.</p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">The columns, left to right</h4>
-        <p>The table is wide but every column answers a precise question. Here's what each one tells you.</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Date · Event · DoW</b> — calendar date, the event (if any) on that day, and day of the week.</li>
-          <li><b>OTB to date</b> (3 sub-columns: RN, OCC, ADR) — your bookings right now for that future date. RN = room-nights sold, OCC = occupancy %, ADR = average price already taken. <i>Example: "5 · 63% · €260" means you have already sold 5 nights at €260 average, filling 63% of the inventory.</i></li>
-          <li><b>Pickup 1d</b> (4 sub-columns: New, Cancel., ΔRN, ADR) — what changed in the last 24 hours. New bookings, cancellations, net delta and at what price. Click the New or Cancel. number to see the detail (which bookings).</li>
-          <li><b>STLY (-364)</b> — what you had a year ago at the same stage of the booking window. Useful to know if you're ahead or behind last year for the same date.</li>
-          <li><b>Pickup STLY 1d</b> — same as Pickup 1d but a year ago. Useful to compare booking velocity (am I picking up at the same speed as last year?).</li>
-          <li><b>RMES last update</b> — yesterday's suggestion. Shown as <b>final price · variation</b>: top line = the Beddy price the system would have suggested yesterday, bottom line = variation in € and % vs the current reference. If yesterday it was suggesting "+5%" and today "+8%", the market is heating up. If yesterday "+10%" and today "+3%", demand is cooling. Click the cell to open the calculation detail (5 factors + Base Price). <i>Empty on the very first day you open the dashboard (no history yet) — populates from day 2.</i></li>
-          <li><b>RMES today</b> — today's suggestion. Same format: <b>final price · variation</b>. Top line = the Beddy price the system suggests today, bottom line = variation in € and % vs current reference. Green = system suggests raising. Red = suggests lowering. Black = stay flat. If the variation is meaningful (|Δ| ≥ €0.5) a small green ✓ button appears next to the value: click it to accept this price as the new current reference for that date. Click anywhere else in the cell to open the calculation detail (5 factors + Base Price).</li>
-          <li><b>Beddy</b> — the actual price currently loaded on the Beddy PMS for that day (if available). Useful to spot mismatches: e.g. if Beddy shows €200 and your Base Price is €240, someone has manually loaded a lower price.</li>
-          <li><b>Rate Shopper</b> (3 sub-columns):<br>· <b>Mine w/RMES</b> — what your Expedia price would be if you applied today's RMES suggestion. Includes your position in the compset (e.g. 1/6 = cheapest among the 5 competitors + you).<br>· <b>Mine</b> — what your Expedia price is right now, with the same position.<br>· <b>Compset</b> — the weighted average price of your competitors that day (with the offset configured in the Rate Shopper tab). Green/red shows how your price relates: green = competitive, red = expensive.</li>
-          <li><b>Base Price</b> — the frozen Base Price. Click 🖋 to override manually. If you have overridden, click ↺ to revert to the frozen value.</li>
-          <li><b>RMES</b> (last column on the right) — the same RMES suggested price, but per room category (baseRT and the other RTs). Useful to see all categories at once. Clicking opens a window with the breakdown of how the suggestion was built (the 5 factors).</li>
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">① Sell Strategy — the main daily tab</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p>One row per stay-date, looking forward. Where you decide the price to load on Beddy.</p>
+        <p><b>Columns, left to right</b>:</p>
+        <ul style="margin:6px 0 6px 18px">
+          <li><b>Date · Event · DoW</b> — the stay-date, the event name (if any), and the day of the week. Event names come from <code>EVENTS_CSV</code> in data.js.</li>
+          <li><b>OTB to date</b> — RN booked, OCC, ADR for that night.</li>
+          <li><b>Pickup 1d</b> — net pickup in the last 24h: New, Cancelled, ΔRN, ADR.</li>
+          <li><b>STLY (−364d)</b> — what we had at the same point of the cycle last year (same day of the week).</li>
+          <li><b>Pickup STLY 1d</b> — pickup last year on the same booking-day (today−364).</li>
+          <li><b>RMES last update</b> — yesterday's RMES price (Beddy €). Shows the final price and Δ€ vs that day's reference. <b>Click</b> to open the full calculation detail.</li>
+          <li><b>RMES today</b> — today's RMES suggestion. Same format (price + Δ€). The <b>✓</b> button accepts the suggestion as the new current reference. <b>Click anywhere else</b> in the cell to open the detail. The full % variation is in the tooltip.</li>
+          <li><b>Beddy</b> — the price currently loaded in the PMS (read-only), if available.</li>
+          <li><b>Rate Shopper</b> — Mine w/RMES · Mine · Compset, all in Expedia space, with the market rank (1 = cheapest).</li>
+          <li><b>Base Price</b> — the structural frozen Base Price for that stay-date. Use <b>🖋</b> to override a single day, <b>↺</b> to reset.</li>
         </ul>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">How to use the ✓ accept button</h4>
-        <p>The ✓ button appears in the RMES today cell only when the suggested delta is at least €0.5 (no point accepting "zero changes"). When you click it:</p>
-        <ol style="margin:0 0 8px 18px;padding:0">
-          <li>A confirmation dialog shows you the current reference price and the new price.</li>
-          <li>If you confirm, the suggested price becomes the new <b>current reference</b> for that specific date.</li>
-          <li>You should now go to Beddy and load this new price manually. The dashboard does not push prices to Beddy automatically.</li>
-          <li>From tomorrow on, RMES will compute new suggestions starting from this accepted price (not from the original Base Price).</li>
-        </ol>
-        <p><i>Example: Base Price for 15 Aug = €240. Today RMES suggests "258 (+18)". You click ✓. The new reference for 15 Aug becomes €258. Tomorrow you open the dashboard and RMES says "263 (+5)": the +5 is calculated against €258, not against €240.</i></p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">How to override the Base Price (single day)</h4>
-        <p>Sometimes the system's Base Price is wrong for reasons it can't know (a one-off event, a renovation, a private booking, market knowledge you have and the data doesn't). To fix it:</p>
-        <ol style="margin:0 0 8px 18px;padding:0">
-          <li>In the Base Price column, click the small 🖋 icon next to the price.</li>
-          <li>A prompt asks for a new value. Enter the amount in € (e.g. 280) and confirm.</li>
-          <li>The cell now shows your manual value with a 🖋 icon and a blue background.</li>
-          <li>RMES will keep suggesting deltas from this new Base Price.</li>
-          <li>If you change your mind, click ↺ next to the price to revert to the originally frozen value.</li>
-        </ol>
-        <p><i>Important: overriding the Base Price for a date also cancels any previous "acceptance" for that same date — because by overriding the base, you're declaring a new starting point.</i></p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">How to override for a period (multiple days)</h4>
-        <p>When you want to change the price for a range of dates (a long weekend, a trade fair, the whole month of August), don't click day by day. Use the <b>"Override by period"</b> bar above the table:</p>
-        <ol style="margin:0 0 8px 18px;padding:0">
-          <li>Enter <b>From</b> and <b>To</b> dates.</li>
-          <li>Enter the price you want to apply (e.g. 320).</li>
-          <li>Choose one of the two purple buttons:<br>· <b>🖋 Base Price</b> → sets the Base Price to that value for every day in the range. RMES will keep suggesting deltas on top.<br>· <b>✓ Accept RMES</b> → accepts that price as the current reference for every day in the range (as if you clicked ✓ on each day). Tomorrow's RMES will compute from this price.</li>
-          <li>Confirm in the dialog.</li>
-          <li>To undo a period override, set the same From/To and click <b>↺ Reset period</b>: it cancels both Base overrides and accepted prices in the range, restoring the original frozen Base.</li>
-        </ol>
-        <p><i>Example: you know there's a big trade fair from 10 to 14 September. You'd set From = 10/09, To = 14/09, price = 380, click 🖋 Base Price, confirm. From now on those 5 days have Base Price €380, and RMES still suggests small daily adjustments on top.</i></p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">Row colour — the Expedia search pressure</h4>
-        <p>Every row in the table has an <b>orange tint of variable intensity</b>: it reflects how many people are searching that date on Expedia right now (the demand "pressure" for that day). Faint orange = quiet day, very few searches. Vivid orange = the date is in high demand, lots of users are looking at it. Hovering the date column shows the number of searches and the demand level.</p>
-        <p>The intensity uses the percentile of the search value within the global distribution of the property: a day above the 90th percentile gets a vivid orange, a day below the 25th percentile is almost transparent. This is a <b>quick visual signal</b>: if a row is dark orange and you have low occupancy on it, you\'re probably leaving money on the table; if it\'s vivid AND you\'re already raising, the system is doing the right thing.</p>
-        <p><i>Example: a Saturday in June with concerts in Florence will likely come out with a vivid orange row. A Tuesday in mid-November in low season will be almost white. Just glancing at the table you can see where attention is needed.</i></p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">Tips and traps</h4>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>The dashboard does not push prices to Beddy.</b> Accept/override here is just a record of <i>your</i> decision. You still need to go to Beddy and load the price manually.</li>
-          <li><b>Acceptance applies only to the base room type.</b> The other categories (e.g. Suite, Bilocale Trilocale, etc.) automatically inherit the new base + a fixed monthly supplement. You don't need to accept them one by one.</li>
-          <li><b>The first day, "RMES last update" is empty.</b> It's normal: the column shows yesterday's suggestion, and there was no yesterday yet. From day 2 it fills up.</li>
-          <li><b>Filter by room type</b> (pills above the table) lets you focus on a single RT. The header shows which one is active.</li>
-          <li><b>The Beddy column is grey if there's no Beddy price loaded yet</b> for that date — typically dates very far in the future.</li>
-          <li><b>If you change the Anchor Price</b> (RMES tab → Ⓑ), the existing 365-day Base Prices DO NOT recalculate. The new Anchor will only matter when the system extends the horizon (e.g. when 366 days become 365, a new day enters the window).</li>
-        </ul>
-
-        <p style="margin:14px 0 0 0;padding:10px 14px;background:#fef8ed;border-left:3px solid #c4823b"><b>The morning routine.</b> Open Sell Strategy, scroll the next 14 days. For each day with a green or red RMES today cell that you trust, click ✓. For each day where you know something the system doesn't (event, special situation), click 🖋 and override the Base Price. Then go to Beddy and update the prices that changed. Done.</p>
+        <p><b>Row background</b>: the tint is the Expedia search pressure for that day (light orange = low demand, more saturated = high demand). Numbers stay readable at every level.</p>
+        <p><b>Override by period</b>: panel above the table — set <i>From / To</i>, then <i>🖋 Base Price</i> to override a Base for a whole range, or <i>✓ Accept RMES</i> to accept RMES for a whole range. <i>↺ Reset period</i> wipes overrides on the range.</p>
       </div>
     </details>
 
-
-    <!-- ============ ② CANCELLAZIONI ============ -->
-    <details id="instr-cancel" class="panel" style="margin-bottom:14px;border-left:3px solid #a83b3b">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a1a1a;background:#fbf6f6;list-style:none;outline:none">② CXLTrend <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">rate, reasons and economic impact</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p><b>What it's for</b>: understand how many bookings get cancelled, by whom (channel/source), when (lead time) and what the revenue impact is.</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Cancellation rate</b> = cancelled / (confirmed + cancelled). Compared with the equivalent LY period.</li>
-          <li><b>Cancellation lead time</b>: days between cancellation and check-in. High lead time = early cancellation, low = last-minute (more harmful, less time to re-sell).</li>
-          <li><b>Top cancelled channels/sources</b>: who cancels the most. Booking.com is usually structurally more cancelled than Direct.</li>
-          <li><b>Lost revenue</b>: sum of the Total (net of city tax) of the bookings cancelled in the period.</li>
-        </ul>
-        <p><b>Practical use</b>: if you see an abnormal spike of cancellations in a specific period, investigate (issue with a channel? cancelled event? overly permissive policy?).</p>
-      </div>
-    </details>
-
-    <!-- ============ ③ OVERVIEW ============ -->
+    <!-- ② OVERVIEW -->
     <details id="instr-otb" class="panel" style="margin-bottom:14px;border-left:3px solid #4a7c59">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#1e4a2e;background:#f5faf6;list-style:none;outline:none">③ Overview <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">full year 2026 vs STLY 2025 and Final LY</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p><b>What it's for</b>: a bird's-eye view of the whole year. It answers "how am I doing overall vs last year?".</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>OTB</b> (On The Books) = bookings confirmed to date for the 2026 period.</li>
-          <li><b>STLY</b> (Same-Time-Last-Year) = 2025 snapshot at the same day-of-week a year ago (today −364d). A "like-for-like" comparison.</li>
-          <li><b>Final LY</b> = the definitive 2025 close, all 2025 bookings without time filter. Shows how much value was consolidated last year.</li>
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">② Overview — month-by-month, including forecast</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p>One row per month, looking forward 12 months. Contains the forecast and the historical breakdown by Source and Channel.</p>
+        <p><b>Top KPIs</b>: YTD + Forecast Revenue, Final LY 2025 reference, Δ vs Final LY, OTB already acquired.</p>
+        <p><b>Monthly KPI table</b> (left to right):</p>
+        <ul style="margin:6px 0 6px 18px">
+          <li><b>Current OTB</b> — OCC / ADR / Revenue already on the books.</li>
+          <li><b>STLY (−364d)</b> — what was on the books exactly 364 days ago for the same stay-month. Used to read the pace.</li>
+          <li><b>Final LY 2025</b> — actual close last year (reference for the forecast).</li>
+          <li><b>YTD + Forecast (live)</b> — past months = actuals; current month = actuals up to yesterday + forecast for the rest; future months = forecast.</li>
+          <li><b>Month-1st snapshot</b> — forecast frozen on day 1 of the month and the live Δ% vs it (how well the early forecast tracked).</li>
+          <li><b>Budget</b> — budget OCC / ADR / Revenue from the budget files.</li>
+          <li><b>KPIs for achievement</b> — Diff (Fct−OTB), €/day to close (time-aware), €/day pickup 7d (cur vs STLY), % Achievement.</li>
         </ul>
-        <p><b>What it contains</b>: monthly pacing (OCC%, RN, ADR, Revenue by month), with columns grouped and visually separated into 5 blocks — <b>2026 OTB</b>, <b>2025 STLY</b>, <b>Final LY</b>, <b>Δ vs STLY</b> and <b>Δ vs Final LY</b> — each with a colour band and a divider border so you can read at a glance which group each column belongs to. Plus monthly revenue and OCC charts, Source and Channel tables filtered by month, booking window (lead-time distribution, rolling 12 closed months). <b>Note on Source</b>: when the Provenienza field is empty, the source is inferred from the channel — Booking/Expedia → OTA, Beddy → direct (Sito web) — so OTA vs direct stays correct even on rows without an explicit source.</p>
-        <p><b>Quick read</b>: Δ% OTB vs STLY = speed signal (am I selling faster/slower?). Δ% OTB vs Final LY = % of close reached (how much pickup still expected).</p>
+        <p><b>Source / Channel</b> tables below: filter with the month pills above them — yearly view by default. Source = booking provenance (where the guest came from); Channel = direct booking channel (Booking, Beddy, Expedia, …).</p>
+        <p><b>Booking window</b> chart at the bottom: rolling 12 closed months, mix of bookings and average ADR by lead-time window.</p>
       </div>
     </details>
 
-    <!-- ============ ④ FORECAST ============ -->
-    <details id="instr-fcst" class="panel" style="margin-bottom:14px;border-left:3px solid #6b4f8e">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#3a2a5a;background:#f8f5fb;list-style:none;outline:none">④ Forecast <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">closing projection for future months</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p><b>What it's for</b>: estimate where each future month will close (RN, ADR, Revenue, OCC%), so you know in advance which months are on track and which aren't.</p>
-        <p><b>Calculation logic</b>:</p>
-        <ol style="margin:0 0 8px 18px;padding:0">
-          <li><b>OTB to date</b> for the month (RN already confirmed × average ADR).</li>
-          <li><b>Expected remaining pickup</b>: how much pickup is expected from now to month-end, based on the historical pattern for the same period last year. "Share by month" calculation = which fraction of the final total had been collected at -X days from the month.</li>
-          <li><b>RMES factor</b>: the remaining pickup is not sold at historical ADR; it is sold at the average price RMES is suggesting for those days (weighted by remaining inventory: sold-out days don't count).</li>
-          <li><b>Forecast = OTB + (expected_pickup × weighted_avg_RMES_ADR)</b>.</li>
-        </ol>
-        <p><b>Things to know</b>:</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li>The "share by month" is recomputed on the LY data of the individual month (not just global): if August historically collects 90% of the total already at -30d, the share is 0.90 for August, not the 0.50 annual average.</li>
-          <li>The expected-pickup ADR uses the <b>month's average RMES price</b>, weighted by remaining inventory for each day (sold-out days → weight 0).</li>
-          <li>Projected closing range + OTB/STLY bars by stay month.</li>
-        </ul>
-        <h4 style="margin:18px 0 8px 0;color:#3a2a5a">€/day to close — exact time-aware pickup target</h4>
-        <p>The <b>€/day to close</b> column tells you how much revenue you should be picking up <b>today</b> to stay on track for the month — and it is <b>time-aware</b>: it changes day by day based on how many room-nights are still left to sell on the dates ahead.</p>
-        <p><b>Why a flat number is wrong.</b> The old version did (Forecast − OTB) ÷ remaining days — a simple average. But pickup never arrives evenly: early in the month many stay-dates are still open and lots of bookings can come in; near month-end only a couple of dates remain, so very few bookings can. A flat target made you look behind early and ahead late.</p>
-        <p><b>How it works now — exact, per stay-date.</b> Three steps:</p>
-        <ol style="margin:0 0 8px 18px;padding:0">
-          <li><b>RN expected per stay-date</b>: the month's total forecast RN (<i>fcstRn</i>) is distributed over the calendar dates using the <b>STLY pattern</b> — same-DOW reference last year. A weekend that historically sold 8 RN weighs more than a Tuesday that sold 3. From each date we subtract the OTB already on the books for that date, leaving the <b>residual RN to sell on that date</b>.</li>
-          <li><b>Sellable volume per booking-day</b>: for each future day on which you can take bookings (from today to month-end), the volume you can still pick up is the <b>sum of residual RN on stay-dates from that day onward</b>. Today (the whole month is open) → full sum. Day 29 → only stay-dates 29 and 30. The volume decreases naturally.</li>
-          <li><b>Today's share</b>: <b>today's target = (Forecast − OTB) × today's volume ÷ sum of volumes across all future booking-days</b>. So today you "claim" your fair share of the residual revenue, based on how much you can actually sell now vs the rest of the month.</li>
-        </ol>
-        <p><b>How to read it.</b> Compare <b>€/day to close</b> with <b>€/day pickup 7d</b> (your actual pickup over the last 7 days — same window for STLY). If your 7-day pickup ≥ the target → on track (green); below → behind pace (red). Because both the target and the comparison are now genuinely apples-to-apples, the indicator is a real "pace check".</p>
-        <p><b>Fallback.</b> If LY data for a month is too thin to spread RN over dates (e.g. very recent activity), the system falls back to a simpler linear-weights model: today's target = (Forecast − OTB) × 2 ÷ (D + 1), with D = days left. Less precise, but still time-aware. The tooltip on each cell tells you which model is in use.</p>
-        <h4 style="margin:18px 0 8px 0;color:#3a2a5a">1st-of-month snapshot (Δ% vs snap)</h4>
-        <p>On the 1st day of each month the system <b>freezes</b> that month's forecast (initial snapshot). From then on the snapshot no longer changes. The <b>Δ% vs snap</b> column compares the snapshot with how the month is actually going:</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Current month and past months</b>: snapshot vs <b>realized OTB</b> (for the current month it's the OTB accumulating day by day; for closed months it's the actual close). It measures how well the initial forecast matches reality.</li>
-          <li><b>Still-future months</b>: with no significant OTB yet, the comparison is against the live forecast (stays ≈0% until you recompute).</li>
-        </ul>
-        <p>Example: the forecast saved on 1/5 for May says €65,860. During May you compare this number with the incoming OTB; at the end of May (when it becomes a past month) you see snapshot vs actual close. On 1/6 June is frozen, and so on. Positive Δ% = you're closing better than forecast at the start of the month.</p>
-      </div>
-    </details>
-
-    <!-- ============ ⑤ PICKUP MATRIX ============ -->
+    <!-- ③ PICKUP MATRIX -->
     <details id="instr-pk" class="panel" style="margin-bottom:14px;border-left:3px solid #3b6b9a">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#1e4a6b;background:#f5f8fb;list-style:none;outline:none">⑤ Pickup Matrix <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">stay-month × booking-window matrix</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p><b>What it's for</b>: visualize in a grid how many RN were sold (or cancelled) for each combination of stay month × booking window. It answers "how many bookings did I take in the last 7 days for August?".</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Rows</b>: booking windows (last 7d, last 14d, etc.) or by specific day.</li>
-          <li><b>Columns</b>: stay months (Jan-Dec).</li>
-          <li><b>Cells</b>: net ΔRN (new - cancelled), average ADR of the new ones.</li>
-        </ul>
-        <p><b>Practical use</b>: trend spotting. If you see a month column all green (steady positive pickup) you know that month is doing well. A row all red = a week of abnormal cancellations.</p>
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">③ Pickup Matrix — booking-date vs stay-date</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p>Heatmap to read how booking-date and stay-date are connected. Rows = booking month, columns = stay month. Each cell = RN booked in that month for stays in that other month.</p>
+        <p>Useful to see lead time at a glance and spot which months are "booking" right now for which future months.</p>
       </div>
     </details>
 
-    <!-- ============ ⑥ RATE SHOPPER ============ -->
-    <details id="instr-rate" class="panel" style="margin-bottom:14px;border-left:3px solid #c47d3b">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#7a4f1c;background:#fef8ed;list-style:none;outline:none">⑥ Rate Shopper <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">my price vs competitors on Expedia</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p><b>What it's for</b>: see, for every future day, my Expedia price vs the competitors', and understand where I'm positioned (above/below the average).</p>
-        <p><b>Things to know</b>:</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Mine</b>: the first row is MY Expedia listing. Conversion to Beddy_eq: <code>gross_price / (1 + Expedia_markup/100) / 0.90</code>. The markup is not a fixed %: it's configurable per channel in tab RMES → Ⓑ (one markup per channel: Expedia/other, Booking, Airbnb/VRBO). If the baseRT is sold out, the supplement of the available higher room type is subtracted. The /0.90 removes the non-refundable discount.</li>
-          <li><b>Compset weights</b>: each competitor has a 0-100% weight configurable in tab RMES → Ⓒ. Weight 100% counts fully, weight 0% excludes from the calculation. The weight is used both by the D · Online Pricing RMES factor and by the Base Price compset cap (max +5% above weighted compset).</li>
-          <li><b>Offset €</b>: a fixed delta applied to each competitor before averaging. E.g. -10 = "I want to stay €10 below this competitor" → the system treats their price as 10€ lower in the weighted average. Compset weighted reference = Σ(weight × (compset_Beddy_eq + offset)) / Σ(weight).</li>
-        </ul>
-        <p><b>Reading</b>: each cell shows that day's competitor price (Beddy_eq). Gradient colouring: lighter = cheaper, darker = pricier. Immediate comparison with my row at the top.</p>
+    <!-- ④ CXLTREND -->
+    <details id="instr-cancel" class="panel" style="margin-bottom:14px;border-left:3px solid #a83b3b">
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">④ CXLTrend — cancellations</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p>Cancellation rate and lost revenue trend. Lets you spot anomalous channels or pricing plans (e.g. a non-refundable price plan with abnormal cancellations).</p>
       </div>
     </details>
 
-    <!-- ============ ⑦ OCC PER ROOM TYPE ============ -->
+    <!-- ⑤ OCC BY ROOM TYPE -->
     <details id="instr-rt" class="panel" style="margin-bottom:14px;border-left:3px solid #3a6b6b">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#1e3a3a;background:#f5f9f9;list-style:none;outline:none">⑦ OCC by Room Type <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">OCC and ADR performance by room type</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
-        <p><b>What it's for</b>: see whether a specific RT is underperforming vs LY, independently of the property total.</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Solid line</b> = 2026 OTB.</li>
-          <li><b>Dashed line</b> = 2025 STLY (equivalent day-of-week).</li>
-          <li>Table with OCC%, RN, ADR for each RT × month.</li>
-        </ul>
-        <p><b>Practical use</b>: if you see Suites with Terrace have OCC below LY but Deluxe are on par, you have a pricing/sales-mix signal to investigate (maybe the Suite price is too high relative to the Deluxe, or there's a saturation of small rooms).</p>
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">⑤ OCC by Room Type</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p>OCC broken down by Room Type. Used to spot RTs that book early vs late and the actual price/RT mix.</p>
       </div>
     </details>
 
-    <!-- ============ ⑧ AIRBNB ============ -->
-    
+    <!-- ⑥ RATE SHOPPER -->
+    <details id="instr-rate" class="panel" style="margin-bottom:14px;border-left:3px solid #c47d3b">
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">⑥ Rate Shopper — competitor prices</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p>Daily prices from the Expedia compset for each property. Set the weight of each competitor (0% = excluded from the average, 100% = full weight) and an offset in € (e.g. <i>−10</i> = "I want to stay €10 below this competitor"). The weighted average feeds the <b>D · Online Pricing</b> RMES factor and the <b>compset cap</b> on the Base Price.</p>
+      </div>
+    </details>
 
-    <!-- ============ ⑨ RMES (CONFIG) ============ -->
-    <details id="instr-rmes" class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#5a3a14;background:#fef8ed;list-style:none;outline:none">⑨ RMES — Revenue Manu&amp;Enis System <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">configuration of the pricing engine</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+    <!-- ⑦ RMES -->
+    <details id="instr-rmes" open class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">⑦ RMES — pricing engine configuration</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p>The page where you tune the pricing engine. Switch property at the top: <b>weights, cap, Base Price parameters and LMF are independent per property</b>; event weights are shared across properties.</p>
 
-        <p><b>What this tab does, in one sentence.</b> The RMES tab is where you configure HOW the system thinks about prices. You don't look at prices here (those are in Sell Strategy) — here you set the dials. You change something here when you want to change how reactive RMES is, when you want to tune the impact of events, when you want to set the OTA markup, the floor price, the elasticity. Most of the time you don't touch this tab. You set it once and leave it.</p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">Property selector</h4>
-        <p>At the top, four pills (Firenze Suite, Condotta 16, Palazzo Alfani, Enis Guesthouse). Most settings on this tab are <b>per property</b>: when you select one, the panels below show that property's configuration. Switching the pill switches the configuration shown. The "Apply changes" button at the bottom of the tab saves the changes for the currently selected property.</p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">Ⓐ Factor weights</h4>
-        <p>RMES looks at 5 things to decide whether to suggest "raise" or "lower" a price. These are the <b>5 factors</b>:</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>A · Demand (Occupancy)</b> — are you selling more or less than last year at the same stage? If you're ahead, suggest raise.</li>
-          <li><b>B · Demand (Price)</b> — at what price are you currently picking up bookings vs last year? If today's pickup ADR is higher, the market is paying more.</li>
-          <li><b>C · Pace Trend</b> — booking velocity in the last 4 weeks vs the same 4 weeks a year ago (weighted: most recent week counts more).</li>
-          <li><b>D · Online Pricing (compset)</b> — where do my competitors stand vs me? If they're higher, I can raise too. This factor is "inverted": competitors more expensive → my factor is positive.</li>
-          <li><b>E · Demand (Expedia search)</b> — number of searches on Expedia for that property right now, vs the previous period. More searches = more demand.</li>
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">Block ① — Weights of the 5 RMES factors</h4>
+        <p>How much each of the 5 factors contributes to the daily adjustment. Default: 20% × 5 = 100%.</p>
+        <ul style="margin:6px 0 6px 18px;font-size:13px">
+          <li><b>A · OCC pace</b> — current OCC / STLY OCC</li>
+          <li><b>B · ADR pace</b> — current ADR / STLY ADR</li>
+          <li><b>C · vs Compset</b> — my Expedia price vs compset average</li>
+          <li><b>D · Online Pricing</b> — pace of compset price moves</li>
+          <li><b>E · AirDNA</b> — market signal from AirDNA</li>
         </ul>
-        <p>Each factor has a <b>weight</b> (0-100%, in steps of 5). The weights add up to 100% (the system normalises them if they don't). A weight of 0% disables the factor for that property. <i>Example: if you set "C · Pace Trend" to 0%, RMES will not look at booking velocity for that property at all.</i></p>
+        <p>Internal cap on each factor: ±50%. The sum of weights is normalized automatically.</p>
 
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">Ⓑ Anchor Price, Floor, OTA markup, Elasticity</h4>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Anchor Price</b> — the "fair price" anchor for the property (a single annual number). Default: Firenze 220, Condotta 280, Alfani 270, Enis Guesthouse 145. The Base Price computed by the system for each date is bounded ±50% from this Anchor. Use it when you want to recenter the system: raising the Anchor pushes the future Base Prices upward (only for new dates that enter the horizon, NOT for the 365 days already frozen).</li>
-          <li><b>Floor</b> — absolute minimum price. The Base Price never drops below this. Default €100 for all properties (€150 for Firenze). Use it as a safety net: even in the worst scenario, the price won't go lower than this.</li>
-          <li><b>OTA markup (per channel)</b> — three editable rates for how much OTAs add on top of your "net" Beddy price: Expedia/other 17%, Booking 13%, Airbnb/VRBO 10%. Used to convert OTA gross revenue back to net (Beddy_eq) in the historical calculation, and to compute the Expedia-side prices in the Rate Shopper column. Editable here.</li>
-          <li><b>Price elasticity</b> — how much sales change when the price changes. Default 1.0 = "if I lower the price 10%, I sell 10% more nights". Used in the override simulation popup. The "📊 Estimate from data" button computes an estimate from your last 24 months of history, grouped by month × day of the week.</li>
-        </ul>
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">Block ② — RMES total cap</h4>
+        <p>Final guard-rail: the RMES suggested price always stays within <code>±cap%</code> of the current reference. Default = 30% (suggestion: leave it at 20-30%, anything more risks sharp swings).</p>
 
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">Ⓒ Compset weights and offset</h4>
-        <p>Your competitors are not all equally relevant. Some are more similar to you, some less. In this panel you set:</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li>A <b>weight 0-100%</b> for each competitor (how much it counts in the weighted average).</li>
-          <li>An <b>offset</b> in € (positive or negative): a fixed delta that the system applies to the compset average before comparing it to your price. <i>Example: if your hotel is one star higher than the average competitor, you might set an offset of +€10 to compensate the inherent quality gap.</i></li>
-        </ul>
-        <p>The result is the "Compset" column in the Rate Shopper view (Sell Strategy + Rate Shopper tab). It's the price benchmark against which your own price is compared.</p>
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">Block ③ — ✨ Event Factor</h4>
+        <p>For each event (loaded from <code>EVENTS_CSV</code>) you set a weight from <b>−10% to +10%</b>. On days that match the event, the RMES price is multiplied by <code>(1 + event%)</code>. Positive = premium, negative = discount, zero = no effect.</p>
+        <p>Weights are <b>shared across all 4 properties</b>: an event like "Pitti" has the same weight everywhere.</p>
+        <p><i>If the box shows "No events loaded": <code>EVENTS_CSV</code> is missing or empty in data.js. Regenerate data.js via Claude Code.</i></p>
 
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">⏱ Last Minute Price Factor (LMF)</h4>
-        <p>A matrix that adds a last-minute discount or premium based on two dimensions: how full the property is on that day, and how many days are left to the arrival.</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li><b>Rows</b>: occupancy bands of that day (≤10%, ≤30%, ≤50%, ≤70%, ≤90%, ≤100%).</li>
-          <li><b>Columns</b>: days remaining to arrival (0-10, 11-30, 31-60, 61-365).</li>
-          <li><b>Each cell</b>: a percentage. Negative = discount. Positive = premium. Zero = no effect.</li>
-        </ul>
-        <p>The typical logic: <i>low occupancy + arrival close = discount (fill last-minute). High occupancy + arrival far = premium (charge more when there's already demand). High occupancy + arrival close = high premium (the rooms are selling, push the price). Low occupancy + arrival far = leave at zero (no urgency).</i></p>
-        <p>The LMF is applied as a multiplier to the RMES suggested price: <code style="background:#fef8ed;padding:1px 4px">RMES price × (1 + LMF%)</code>. Per property. <b>Reset default</b> sets all cells to zero for the current property.</p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">✨ Event Factor</h4>
-        <p>A list of all the events found in the events file (Capodanno, Pitti, Calcio Storico, etc.). For each event you can set a <b>weight from −10% to +10%</b>: positive = on those days RMES raises the price, negative = lowers it.</p>
-        <ul style="margin:0 0 8px 18px;padding:0">
-          <li>The weights are <b>shared across all properties</b>: an event like "Pitti" affects Firenze Suite, Condotta 16 and Palazzo Alfani in the same way, because the demand boost is the same in the city.</li>
-          <li>Default for all events: zero (no effect).</li>
-          <li>Reset all to 0 with the button at the bottom of the panel.</li>
-        </ul>
-        <p>The event factor is applied as a multiplier on top of the LMF: <code style="background:#fef8ed;padding:1px 4px">RMES price × (1 + LMF%) × (1 + event%)</code>. <i>Example: for an event like "Pitti" with weight +5%, on those days the RMES suggested price comes out 5% higher than it would otherwise.</i></p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">Apply changes</h4>
-        <p>At the bottom of the tab there's a button "Apply changes". <b>Changes don't take effect until you click it.</b> While you're editing values the button highlights to remind you that there are unsaved changes. After clicking, all panels are saved at once for the currently selected property, the dashboard re-renders, and the new prices appear in the Sell Strategy table.</p>
-
-        <h4 style="margin:20px 0 8px 0;color:#5a3a14">How RMES turns these dials into a price</h4>
-        <p>To make the whole picture concrete, here is the chain in plain words:</p>
-        <ol style="margin:0 0 8px 18px;padding:0">
-          <li>The system takes the <b>current reference</b> for that date (an accepted price if you accepted, otherwise the Base Price).</li>
-          <li>It looks at the <b>5 factors</b>, weights them as you configured (Ⓐ), and produces a multiplier (e.g. "× 1.07" = +7%).</li>
-          <li>It applies the <b>LMF</b> multiplier based on occupancy and days-to-arrival.</li>
-          <li>It applies the <b>Event Factor</b> multiplier if there's an event on that date.</li>
-          <li>It checks the <b>±20% cap</b> from the current reference: if the result is more than +20% or less than -20%, it clips it.</li>
-          <li>It checks the <b>Floor</b>: if the result is below the floor, it raises it.</li>
-          <li>The final number is "RMES today" in the Sell Strategy table.</li>
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">⚡ Base Price block</h4>
+        <p>The <b>Base Price</b> is the source the RMES suggestion sits on top of. Computed once per stay-date with 4 steps:</p>
+        <ol style="margin:6px 0 6px 18px">
+          <li>historical anchor = median LY ADR × (1 + target growth%)</li>
+          <li>capped at compset median + 5%</li>
+          <li>bounded ±50% from Anchor Price (annual)</li>
+          <li>floor: never below the property floor</li>
         </ol>
+        <p>Configurable in this block: <b>Ⓑ Anchor Price</b> (annual, single number per property), <b>target growth %</b> per month, <b>floor</b>, <b>OTA markup</b> (Expedia / Booking / Airbnb), <b>LMF matrix</b> (Last-Minute Factor: extra adjustment at DoW × pickup-window).</p>
+        <p>Change the Anchor Price → it does <b>not</b> recompute Base Prices already frozen. Use <i>Override by period</i> in Sell Strategy to rewrite them.</p>
 
-        <p style="margin:14px 0 0 0;padding:10px 14px;background:#fef8ed;border-left:3px solid #c4823b"><b>In practice.</b> You touch the RMES tab once at the start, to set Anchor, Floor, OTA markup, factor weights and event weights. Then you check Sell Strategy every day and decide what to accept. You come back to this tab only when you want to retune (e.g. you realise the system reacts too much to compset and you want to lower the weight of factor D, or you want to set an event weight for a new festival).</p>
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">Ⓒ Compset competitor weights / offsets</h4>
+        <p>Same control as Rate Shopper but in the RMES tab too. Affects factor <b>D</b> and the Base Price compset cap.</p>
+
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">"Apply changes" button</h4>
+        <p>Changes to weights / cap / Base Price / event weights are saved <b>only when you click "Apply changes"</b> at the bottom of the tab. Switch property to edit the others (each property is independent for everything except event weights).</p>
       </div>
     </details>
 
-
-    <!-- ============ GLOSSARIO ============ -->
+    <!-- 📚 GLOSSARY -->
     <details id="instr-glossario" class="panel" style="margin-bottom:14px;border-left:3px solid #888">
-      <summary style="cursor:pointer;padding:14px 18px;font-size:15px;font-weight:700;color:#444;background:#f8f8f5;list-style:none;outline:none">📚 Glossary <span style="font-size:11px;font-weight:400;color:#888;margin-left:8px">terms and acronyms</span></summary>
-      <div style="padding:16px 22px;font-size:13px;line-height:1.6;color:var(--ink-2)">
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">📚 Glossary</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55;font-size:13px">
         <dl style="margin:0">
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">ADR</dt>
-          <dd style="margin:2px 0 8px 18px">Average Daily Rate = Revenue / RN. Average price per room sold.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Beddy_eq</dt>
-          <dd style="margin:2px 0 8px 18px">Beddy-equivalent rate = price net of the OTA markup. Used for like-for-like comparisons. Expedia → Beddy_eq conversion: <code>Expedia_gross / (1 + markup) / 0.90</code>. The markup is not fixed: it is the configurable "Expedia/other" markup in Ⓑ (default 17%); the /0.90 removes the non-refundable discount. If the baseRT is sold out that day, the supplement of the first available higher room is also subtracted (the Expedia price seen is not for the base type).</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">baseRT</dt>
-          <dd style="margin:2px 0 8px 18px">The main Room Type of a property (the one with the most units, the most historical data): Firenze → Camera Matrim. Deluxe, Condotta → Bilocale, Alfani → Classic. It is the only RT for which the Base Price is computed; the others inherit via the monthly supplement.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Compset</dt>
-          <dd style="margin:2px 0 8px 18px">Competitive set = the group of direct competitors on Expedia. Weighted average: <code>Σ(weight × (compset_Beddy_eq + offset)) / Σ(weight)</code>. Weights and offsets configurable in Ⓒ.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Final LY (Last Year)</dt>
-          <dd style="margin:2px 0 8px 18px">The definitive 2025 close = all 2025 bookings without time filter. Shows how much value was consolidated last year.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Base Price</dt>
-          <dd style="margin:2px 0 8px 18px">The structural price of the day (the source of RMES). Computed once and frozen per stay-date for the baseRT, with Anchor → target growth → compset cap → floor. Non-base RTs inherit via base + monthly supplement. States: 🔒 frozen (default) or 🖋 manual override.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">MLOS</dt>
-          <dd style="margin:2px 0 8px 18px">Minimum Length Of Stay = the "sell only stays of at least N nights" restriction. Suggested by RMES as M1, M2, etc. inside the price cell.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">OTB</dt>
-          <dd style="margin:2px 0 8px 18px">On The Books = bookings confirmed to date for a future period.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Pace</dt>
-          <dd style="margin:2px 0 8px 18px">Pickup speed = how many bookings are coming in over a period. Pace cur vs STLY indicates whether you're selling faster or slower than last year.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Pickup</dt>
-          <dd style="margin:2px 0 8px 18px">New bookings acquired over a period (e.g. last 7 days). Net = new - cancelled.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Revenue</dt>
-          <dd style="margin:2px 0 8px 18px">Always <b>net of city tax</b>. Stay-night allocation: rev/night = Total / num_nights.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RMES</dt>
-          <dd style="margin:2px 0 8px 18px">Revenue Manu&amp;Enis System. The automatic pricing system of this dashboard.</dd>
+          <dd style="margin:2px 0 8px 18px">On The Books — bookings already confirmed for a stay-date.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RN</dt>
-          <dd style="margin:2px 0 8px 18px">Room Nights = rooms × nights. E.g. 2 rooms for 3 nights = 6 RN.</dd>
+          <dd style="margin:2px 0 8px 18px">Room Nights = rooms × nights. E.g. 2 rooms × 3 nights = 6 RN.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">OCC</dt>
+          <dd style="margin:2px 0 8px 18px">Occupancy = RN sold / (rooms × days available).</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">ADR</dt>
+          <dd style="margin:2px 0 8px 18px">Average Daily Rate = revenue / RN sold (net of city tax).</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">STLY</dt>
-          <dd style="margin:2px 0 8px 18px">Same-Time-Last-Year = last year's snapshot at the same point in the cycle. Day-of-week comparison (today - 364d), not by date. E.g. if today is Friday 20/05/2026, STLY is Friday 21/05/2025.</dd>
+          <dd style="margin:2px 0 8px 18px">Same Time Last Year = last year's snapshot at the same point of the cycle. Day-of-week-aligned (today − 364 days = same day of week). Used to compare pace.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Final LY</dt>
+          <dd style="margin:2px 0 8px 18px">The full close of last year. Different from STLY: Final LY is "what last year ended up as", STLY is "what was already on the books at this point last year".</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Base Price</dt>
+          <dd style="margin:2px 0 8px 18px">Structural price per stay-date, frozen, computed once. Source of the RMES suggestion.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Anchor Price</dt>
+          <dd style="margin:2px 0 8px 18px">Single annual reference number per property. The Base Price stays within ±50% of it.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RMES delta</dt>
+          <dd style="margin:2px 0 8px 18px">Today's adjustment on top of the current reference, computed from the 5 factors + LMF + Event Factor. Capped at ±20% of the reference.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">baseRT</dt>
+          <dd style="margin:2px 0 8px 18px">The reference Room Type for each property (Camera Matrimoniale Deluxe for Firenze, Bilocale for Condotta, Classic for Alfani, Senape for Davids). Base Price is computed at the baseRT, other RTs inherit Base + monthly supplement.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RT supplement</dt>
-          <dd style="margin:2px 0 8px 18px">Historical ADR difference between an RT and the baseRT, split by high/low season, rounded to the nearest multiple of 5. E.g. Suite with Terrace Firenze May = +€70 (high), +€50 (low). Full table in tab RMES → Ⓔ.</dd>
+          <dd style="margin:2px 0 8px 18px">Historical ADR difference between an RT and the baseRT, split by high / low season. E.g. Suite with Terrace Firenze May = +€70 (high), +€50 (low).</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">LMF</dt>
+          <dd style="margin:2px 0 8px 18px">Last-Minute Factor — adjustment matrix DoW × pickup-window, applied as multiplier to the RMES price.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Channel vs Source</dt>
+          <dd style="margin:2px 0 8px 18px"><b>Channel</b> = direct booking channel (Booking, Beddy, Expedia, …). <b>Source</b> = where the guest came from (country, OTA, direct, …).</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">OTA markup</dt>
+          <dd style="margin:2px 0 8px 18px">The mark-up the OTA adds to the loaded price: Expedia 17%, Booking 13%, Airbnb/VRBO 10%. Used to compare across channels in Beddy space.</dd>
         </dl>
-      </div></details>
+      </div>
+    </details>
 
   </section>
 

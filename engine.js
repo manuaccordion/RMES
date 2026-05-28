@@ -2732,8 +2732,8 @@ function _searchPressureBg(search){
   else t = 1.0;
   if (t < 0) t = 0;
   if (t > 1) t = 1;
-  // Alpha from 0 (faint) to 0.55 (vivid orange). Visible contrast across the full range.
-  const alpha = t * 0.55;
+  // Alpha from 0 (faint) to 0.28 (light orange). Lighter than before so numbers stay readable.
+  const alpha = t * 0.28;
   return 'background:rgba(196,130,59,' + alpha.toFixed(2) + ')';
 }
 function expCheckBrake(proposedPrice, compsetAvg){
@@ -6960,8 +6960,8 @@ function renderSellStrategy(sel){
     + '<th colspan="4" class="sell-grp sell-grp-pickup">Pickup ' + A.pickupDaysAgo + 'd</th>'
     + '<th colspan="3" class="sell-grp sell-grp-stly">STLY (-364)</th>'
     + '<th colspan="4" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="RMES suggestion from YESTERDAY — final Beddy price + variation vs the reference at the time. Click to see the calculation detail. Use it to spot how the suggestion is evolving day by day.">RMES last update<br><span class="sell-th-sub">price · variation</span></th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES suggestion TODAY — final Beddy price + variation vs current reference. Capped ±20% from current reference. Click to see the calculation detail. The ✓ button accepts the suggestion as the new current reference.">RMES today<br><span class="sell-th-sub">price · variation · ✓ accept</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="RMES suggestion from YESTERDAY — final Beddy price + Δ€ vs the reference at the time. Click to see the calculation detail. Use it to spot how the suggestion is evolving day by day.">RMES last update<br><span class="sell-th-sub">price · Δ€</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES suggestion TODAY — final Beddy price + Δ€ vs current reference. Capped ±20% from current reference. Click to see the calculation detail. The ✓ button accepts the suggestion as the new current reference.">RMES today<br><span class="sell-th-sub">price · Δ€ · ✓ accept</span></th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + (showExp ? '<th colspan="3" class="sell-grp sell-grp-expedia">Rate Shopper</th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price (frozen, per stay-date): the structural price that anchors the RMES suggestion. Click 🖋 to override · ↺ to reset. Other RTs show baseRT + monthly supplement.">Base Price</th>'
@@ -7631,7 +7631,7 @@ function renderSellStrategy(sel){
         const cls = (variation > 0.5) ? 'cell-pos' : (variation < -0.5 ? 'cell-neg' : 'cell-flat');
         const sign = variation > 0 ? '+' : '';
         const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.03);cursor:pointer" title="RMES suggestion from yesterday\nFinal Beddy price: €${priceYesterday}\nVariation: ${sign}€${Math.round(variation)} (${sign}${variationPct.toFixed(1)}%) vs current reference\n\nClick to see the full calculation detail.">${priceYesterday}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(variation)} · ${sign}${variationPct.toFixed(1)}%</span></td>`;
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.03);cursor:pointer" title="RMES suggestion from yesterday\nFinal Beddy price: €${priceYesterday}\nVariation: ${sign}€${Math.round(variation)} (${sign}${variationPct.toFixed(1)}%) vs current reference\n\nClick to see the full calculation detail.">${priceYesterday}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(variation)}</span></td>`;
       })()}
       <!-- RMES today (today's suggested price + variation + ✓ accept, clickable for detail) -->
       ${(function(){
@@ -7655,7 +7655,7 @@ function renderSellStrategy(sel){
           ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" title="Accept this RMES suggestion as the new current reference for ${r.ymd}" style="margin-top:2px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block">✓</button>`
           : '';
         const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer" title="RMES suggestion today\nFinal Beddy price: €${Math.round(sugg)}\nVariation: ${sign}€${Math.round(delta)} (${sign}${variationPct.toFixed(1)}%) vs current reference (€${ref!=null?Math.round(ref):'—'})\n\nClick to see the full calculation detail. The ✓ button accepts the suggestion.">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)} · ${sign}${variationPct.toFixed(1)}%</span> ${acceptBtn}${accBadge}</td>`;
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer" title="RMES suggestion today\nFinal Beddy price: €${Math.round(sugg)}\nVariation: ${sign}€${Math.round(delta)} (${sign}${variationPct.toFixed(1)}%) vs current reference (€${ref!=null?Math.round(ref):'—'})\n\nClick to see the full calculation detail. The ✓ button accepts the suggestion.">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)}</span> ${acceptBtn}${accBadge}</td>`;
       })()}
       ${beddyCell}
       ${expCells}
@@ -10226,6 +10226,7 @@ function aggForecast(structKey){
       otbRn: 0, otbRev: 0,
       actualPastRn: 0, actualPastRev: 0,
       finalLyRn: 0, finalLyRev: 0,
+      stlyRn: 0, stlyRev: 0,                  // STLY: booking pace at -364d (only bookings acquired by today-364)
       pickupCurRev: 0, pickupCurRn: 0,
       pickupStlyRev: 0, pickupStlyRn: 0,
       byRt: {},
@@ -10273,6 +10274,11 @@ function aggForecast(structKey){
           const fcstStayDate = addDays(cur, 364);
           const fcstStayYmd = ymd(fcstStayDate);
           monthly[fcstYmKey].lyByDate[fcstStayYmd] = (monthly[fcstYmKey].lyByDate[fcstStayYmd] || 0) + 1;
+          // STLY: count this LY night only if the booking was acquired by today-364
+          if (b.bookYmd <= STLY_YMD){
+            monthly[fcstYmKey].stlyRn += 1;
+            monthly[fcstYmKey].stlyRev += b.revPerNight;
+          }
         }
         if (dymd >= APR25_FILL_START && dymd <= APR25_FILL_END){
           const fillTarget = monthly[202704];
@@ -10302,6 +10308,11 @@ function aggForecast(structKey){
           const fcstStayDate = addDays(cur, 364);
           const fcstStayYmd = ymd(fcstStayDate);
           monthly[fcstYmKey].lyByDate[fcstStayYmd] = (monthly[fcstYmKey].lyByDate[fcstStayYmd] || 0) + 1;
+          // STLY: count this LY night only if the booking was acquired by today-364
+          if (b.bookYmd <= STLY_YMD){
+            monthly[fcstYmKey].stlyRn += 1;
+            monthly[fcstYmKey].stlyRev += b.revPerNight;
+          }
         }
       }
       if (monthly[ymKey] && monthly[ymKey].byRt[b.room]){
@@ -10702,6 +10713,7 @@ function renderForecast(sel){
     return true;  // mag-dic 2026 sempre visibili
   }
   let totFcstRn=0, totFcstRev=0, totFLRn=0, totFLRev=0, totOtbRn=0, totOtbRev=0, totDays=0;
+  let totStlyRn=0, totStlyRev=0;
   const ymOrderAll = Object.keys(M).map(x=>+x).sort((a,b)=>a-b);
   const ymOrder = ymOrderAll.filter(isVisibleMonth);
   for (const ym of ymOrder){
@@ -10709,6 +10721,7 @@ function renderForecast(sel){
     totFcstRn += m.fcstRn; totFcstRev += m.fcstRev;
     totFLRn += m.finalLyRn; totFLRev += m.finalLyRev;
     totOtbRn += m.otbRn; totOtbRev += m.otbRev;
+    totStlyRn += (m.stlyRn || 0); totStlyRev += (m.stlyRev || 0);
     totDays += m.days;
   }
   const totCap = A.totRooms * totDays;
@@ -10746,6 +10759,7 @@ function renderForecast(sel){
       <tr>
         <th rowspan="2" style="text-align:left">Month</th>
         <th colspan="3" class="g-26" style="text-align:center">Current OTB</th>
+        <th colspan="3" class="g-25" style="background:rgba(142,95,168,.05);text-align:center" title="Same Time Last Year — what was already on the books exactly 364 days ago for this stay month (only bookings acquired by today−364).">STLY (−364d)</th>
         <th colspan="3" class="g-25" style="background:rgba(142,95,168,.10);text-align:center">Final LY 2025</th>
         <th colspan="3" class="g-26" style="background:rgba(195,131,59,.10);text-align:center" title="Past months: actuals. Current month: actuals up to yesterday + forecast from today to month-end. Future months: forecast.">YTD + Forecast (live)</th>
         <th colspan="2" class="g-26" style="background:rgba(59,107,154,.08);text-align:center" title="Forecast saved (frozen) on the 1st day of the month. The Δ% compares the initial snapshot with the actual OTB: for past months = actual close, for the current month = OTB accumulating. Measures how well the initial forecast matches the actual close. Only for months still futuri il confronto è col forecast live.">Month-1st snapshot</th>
@@ -10754,6 +10768,7 @@ function renderForecast(sel){
       </tr>
       <tr>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
+        <th style="background:rgba(142,95,168,.03)">OCC%</th><th style="background:rgba(142,95,168,.03)">ADR</th><th style="background:rgba(142,95,168,.03)">Revenue</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th title="Revenue forecast saved on the 1st of the month">Rev snap</th>
@@ -10787,6 +10802,15 @@ function renderForecast(sel){
       <td class="cell-mono cell-flat" title="${m.otbRn} RN of ${A.totRooms*m.days} available">${fmtPct(m.otbOcc,1)}</td>
       <td class="cell-mono cell-flat">${m.otbRn>0 ? fmtEUR(otbAdrM) : '—'}</td>
       <td class="cell-mono cell-flat">${fmtEUR(m.otbRev)}</td>
+      ${(() => {
+        const stlyCap = A.totRooms * m.days;
+        const stlyOcc = stlyCap > 0 ? (m.stlyRn || 0) / stlyCap : 0;
+        const stlyAdr = (m.stlyRn || 0) > 0 ? (m.stlyRev / m.stlyRn) : 0;
+        return `
+          <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)" title="STLY OCC: ${m.stlyRn||0} RN of ${stlyCap} available">${fmtPct(stlyOcc,1)}</td>
+          <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)">${m.stlyRn>0 ? fmtEUR(stlyAdr) : '—'}</td>
+          <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)">${fmtEUR(m.stlyRev || 0)}</td>`;
+      })()}
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtPct(m.finalLyOcc,1)}</td>
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(m.finalLyAdr)}</td>
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)"><b>${fmtEUR(m.finalLyRev)}</b></td>
@@ -10886,6 +10910,14 @@ function renderForecast(sel){
     <td class="cell-mono cell-flat" title="${totOtbRn} RN of ${totCap} available">${fmtPct(totOtbOcc,1)}</td>
     <td class="cell-mono cell-flat">${totOtbRn>0 ? fmtEUR(totOtbAdr) : '—'}</td>
     <td class="cell-mono cell-flat">${fmtEUR(totOtbRev)}</td>
+    ${(() => {
+      const stlyOccT = totCap > 0 ? totStlyRn / totCap : 0;
+      const stlyAdrT = totStlyRn > 0 ? totStlyRev / totStlyRn : 0;
+      return `
+        <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)">${fmtPct(stlyOccT,1)}</td>
+        <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)">${totStlyRn>0 ? fmtEUR(stlyAdrT) : '—'}</td>
+        <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)"><b>${fmtEUR(totStlyRev)}</b></td>`;
+    })()}
     <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtPct(flOcc,1)}</td>
     <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(flAdr)}</td>
     <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)"><b>${fmtEUR(totFLRev)}</b></td>
@@ -13721,9 +13753,9 @@ function _bigRenderPie(sel){
   // helper: build one donut (outer = current year, inner = STLY) with its legend
   function buildOneDonut(structKey, structLabel, structColor){
     let A=null; try{ A=aggOTBYearly(structKey); }catch(e){}
-    if (!A || !A.canCur) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div>No data</div>`;
+    if (!A || !A.canCur) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div><div style="margin-top:6px;font-style:italic">No bookings in dataset<br>for this property</div></div>`;
     const cur = toArr(A.canCur), prev = toArr(A.canPrev);
-    if (!cur.length) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div>No data</div>`;
+    if (!cur.length) return `<div style="text-align:center;color:var(--ink-3);font-size:11px;padding:10px"><div style="font-weight:700;color:${structColor};margin-bottom:4px">${structLabel}</div><div style="margin-top:6px;font-style:italic">No bookings in dataset<br>for this property</div></div>`;
     const colorOf={}; cur.forEach((x,i)=>colorOf[x.name]=palette[i%palette.length]);
     prev.forEach((x)=>{ if(!colorOf[x.name]) colorOf[x.name]=palette[Object.keys(colorOf).length%palette.length]; });
     const totCur=sum(cur), totPrev=sum(prev);
@@ -13772,7 +13804,7 @@ function _bigRenderPie(sel){
 
   // single-property view: full-size donut + legend (unchanged)
   let A=null; try{ A=aggOTBYearly(sel); }catch(e){}
-  if (!A || !A.canCur){ host.innerHTML='<div style="color:var(--ink-3);font-size:12px;padding:20px;text-align:center">No data</div>'; return; }
+  if (!A || !A.canCur){ host.innerHTML='<div style="color:var(--ink-3);font-size:12px;padding:20px;text-align:center;font-style:italic">No bookings in dataset for this property</div>'; return; }
   const cur = toArr(A.canCur), prev = toArr(A.canPrev);
   const colorOf={}; cur.forEach((x,i)=>colorOf[x.name]=palette[i%palette.length]);
   prev.forEach((x)=>{ if(!colorOf[x.name]) colorOf[x.name]=palette[Object.keys(colorOf).length%palette.length]; });
