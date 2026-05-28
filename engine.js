@@ -181,23 +181,28 @@ function normRoom(s){
 }
 /* -------- PROVENIENZA NORMALIZE -------- */
 function normCanale(raw){
-  // Normalize messy channel names coming from the property channel manager (especially Alfani)
-  // so STLY vs current-year comparisons can match. Examples:
+  // Normalize messy channel names coming from the property channel managers
+  // (Beddy for Firenze/Condotta/Alfani, Krossbooking for Davids) so STLY vs
+  // current-year comparisons can match. Examples:
   //   BOOKINGXML, MOBILESITE → Booking
-  //   EXPEDIA, Expedia Affilia → Expedia
-  //   CTRIPV4 → Ctrip
+  //   EXPEDIA, Expedia Affilia, Orbitz, Hotels.com → Expedia
+  //   FrontOffice, Krossbooking, Booking Engine → Direct
   // Anything not matched is left as-is (capitalized).
   const t = (raw||'').trim();
   if (!t || t === '—') return '—';
   const u = t.toUpperCase();
-  // Booking family
-  if (u === 'BOOKING' || u === 'BOOKINGXML' || u === 'MOBILESITE' || u === 'BOOKING ENGINE' || u === 'BOOKING.COM') return 'Booking';
-  // Expedia family
-  if (u === 'EXPEDIA' || u === 'EXPEDIA AFFILIA' || u === 'HOTELS.COM') return 'Expedia';
+  // Booking family (Booking.com OTA — NOT to be confused with PMS "Booking Engine")
+  if (u === 'BOOKING' || u === 'BOOKINGXML' || u === 'MOBILESITE' || u === 'BOOKING.COM') return 'Booking';
+  // Expedia family (includes brands owned by Expedia Group: Hotels.com, Orbitz, Travelocity, ...)
+  if (u === 'EXPEDIA' || u === 'EXPEDIA AFFILIA' || u === 'HOTELS.COM' || u === 'ORBITZ' || u === 'TRAVELOCITY') return 'Expedia';
   // Ctrip family
   if (u === 'CTRIP' || u === 'CTRIPV4' || u === 'TRIP.COM') return 'Ctrip';
-  // Direct / property
-  if (u === 'BEDDY' || u === 'DIRETTO' || u === 'DIRECT' || u === 'PRENMAN' || u === 'FRONTOFFICE') return 'Beddy';
+  // DIRECT = booking acquired through the property PMS directly (no OTA fees).
+  // Both Beddy (Firenze/Condotta/Alfani PMS) and Krossbooking (Davids PMS) live here,
+  // plus PrenMan/FrontOffice/Booking Engine/website/walk-in — all "no OTA" cases.
+  if (u === 'BEDDY' || u === 'DIRETTO' || u === 'DIRECT' || u === 'PRENMAN' || u === 'FRONTOFFICE'
+   || u === 'KROSSBOOKING' || u === 'BOOKING ENGINE' || u === 'SITO WEB' || u === 'WEBSITE'
+   || u === 'WALK-IN' || u === 'WALK IN' || u === 'WALKIN') return 'Direct';
   if (u === 'SIMPLEBOOKING') return 'SimpleBooking';
   if (u === 'AIRBNB') return 'Airbnb';
   if (u === 'VRBO') return 'VRBO';
@@ -306,7 +311,7 @@ function loadData(csvText){
     const hasNonRimb = tariffaLower.includes('non rimborsabile');
     const hasFlex = tariffaLower.includes('flessibile') || tariffaLower.includes('standard rate');
     const isNonRefundable = hasNonRimb && !hasFlex;
-    const isDirect = (canale === 'Beddy' || canale === 'Diretto' || canale === '—' || canale === '');
+    const isDirect = (canale === 'Direct' || canale === 'Beddy' || canale === 'Diretto' || canale === '—' || canale === '');
     const _struct2Key = (struct === 'Firenze Suite') ? 'firenze'
                       : (struct === 'Condotta 16') ? 'condotta'
                       : (struct === 'Palazzo Alfani') ? 'alfani'
