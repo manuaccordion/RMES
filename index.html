@@ -812,6 +812,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="rate"><span class="num">6</span>Rate Shopper</button>
     
     <button class="tab" data-tab="pri"><span class="num">7</span>RMES</button>
+    <button class="tab" data-tab="baseprice"><span class="num">8</span>Base Price</button>
     <button class="tab" data-tab="instr"><span class="num">📖</span>Playbook</button>
   </nav>
 </header>
@@ -1401,6 +1402,32 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
   </section>
 
+  <!-- ============ SECTION 10b: BASE PRICE BREAKDOWN ============ -->
+  <section class="tab-panel" id="panel-baseprice">
+    <div class="section-head">
+      <div><h2>Base Price breakdown</h2></div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
+        <div>
+          <label class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px">Property</label>
+          <div id="bp-struct-pills" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <div>
+          <label class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px">From</label>
+          <input type="date" id="bp-date-from" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:13px">
+        </div>
+        <div>
+          <label class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px">To</label>
+          <input type="date" id="bp-date-to" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:13px">
+        </div>
+        <button id="bp-apply" style="font-family:'DM Mono',monospace;font-size:13px;padding:7px 16px;border:1px solid var(--accent);border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700">Apply</button>
+        <button id="bp-export" style="font-family:'DM Mono',monospace;font-size:13px;padding:7px 16px;border:1px solid var(--accent);border-radius:6px;background:transparent;color:var(--accent);cursor:pointer;font-weight:700;margin-left:auto">⬇ Export CSV</button>
+      </div>
+      <div id="bp-table-wrap" style="overflow-x:auto"></div>
+    </div>
+  </section>
+
   <!-- ============ SECTION 11: PLAYBOOK ============ -->
   <section class="tab-panel" id="panel-instr">
     <div class="section-head">
@@ -1512,7 +1539,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <details id="instr-rate" class="panel" style="margin-bottom:14px;border-left:3px solid #c47d3b">
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">⑥ Rate Shopper — competitor prices</summary>
       <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
-        <p>Daily prices from the Expedia compset for each property. Set the weight of each competitor (0% = excluded from the average, 100% = full weight) and an offset in € (e.g. <i>−10</i> = "I want to stay €10 below this competitor"). The weighted average feeds the <b>D · Online Pricing</b> RMES factor and the <b>compset cap</b> on the Base Price.</p>
+        <p>Daily prices from the Expedia compset for each property. For each competitor set a <b>weight</b> (0% = excluded from the average, 100% = full weight) and an <b>offset</b> in € (e.g. <i>−10</i> = "I want to stay €10 below this competitor"). These produce two different numbers used in two different places:</p>
+        <p>• <b>Expedia Goal Value</b> = weighted compset price <b>WITH</b> the per-competitor offsets — your desired online positioning. It is used <b>only</b> as the <b>maximum cap</b> on the Base Price (the Base Price can never exceed it; the minimum stays the Floor Rate).</p>
+        <p>• <b>Weighted Expedia Compset</b> = weighted compset price <b>WITHOUT</b> offsets (weights only) — a neutral "where am I vs the market" reference. It is used by the RMES factors (<b>D · Online Pricing</b> and <b>E · Demand Expedia</b>), where offsets must not interfere.</p>
         <p style="margin-top:10px;padding:8px 12px;background:#fafaf8;border-left:3px solid #888;font-size:12px"><b>Sanity filter</b>: any Expedia value below 10 € is treated as missing (it's the minimum-stay number leaked into the price column, not a real rate). Floor across the 4 properties is ≥ 100 €.</p>
       </div>
     </details>
@@ -1543,21 +1572,34 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p><i>If the box shows "No events loaded": <code>EVENTS_CSV</code> is missing or empty in data.js. Regenerate data.js via Claude Code.</i></p>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">⚡ Base Price block</h4>
-        <p>The <b>Base Price</b> is the source the RMES suggestion sits on top of. Computed once per stay-date with 4 steps:</p>
+        <p>The <b>Base Price</b> is the structural starting price the RMES suggestion sits on top of. It is computed once per stay-date and then frozen. Five steps, left to right:</p>
         <ol style="margin:6px 0 6px 18px">
-          <li>historical anchor = median LY ADR × (1 + target growth%)</li>
-          <li>capped at compset median + 5%</li>
-          <li>bounded ±50% from Anchor Price (annual)</li>
-          <li>floor: never below the property floor</li>
+          <li><b>Historical anchor (LY median ADR)</b> — for the target date the system takes every day with the <b>same day-of-week and the same month</b> across the last two years (2024 + 2025), collects the ADR actually earned on the base room type on those days, and takes the <b>median</b> (robust to one-off outliers). If fewer than 3 observations exist, it widens to the <b>whole month</b>. So "LY ADR" is not a single day last year — it is the typical earned ADR for that weekday-and-month pattern.</li>
+          <li><b>× target growth</b> — anchor multiplied by (1 + the month's target growth %).</li>
+          <li><b>Expedia Goal Value cap</b> — the result is capped at the <b>Goal Value</b> (weighted compset price WITH per-competitor offsets = your desired online positioning). The Base Price can <b>never exceed</b> the Goal Value.</li>
+          <li><b>Anchor guard-rail</b> — bounded within ±50% of the annual Anchor Price, to avoid wild swings.</li>
+          <li><b>Floor</b> — never below the property Floor Rate (the hard minimum).</li>
         </ol>
+        <p>A protection also lifts the anchor to at least 70% of the Anchor Price when history is too thin, so the Base Price never collapses.</p>
         <p>Configurable in this block: <b>Ⓑ Anchor Price</b> (annual, single number per property), <b>target growth %</b> per month, <b>floor</b>, <b>OTA markup</b> (Expedia / Booking / Airbnb), <b>LMF matrix</b> (Last-Minute Factor: extra adjustment at DoW × pickup-window).</p>
         <p>Change the Anchor Price → it does <b>not</b> recompute Base Prices already frozen. Use <i>Override by period</i> in Sell Strategy to rewrite them.</p>
+        <p>You can inspect the full step-by-step build-up for every day and property in the dedicated <b>Base Price</b> tab, and export it to CSV.</p>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Ⓒ Compset competitor weights / offsets</h4>
-        <p>Same control as Rate Shopper but in the RMES tab too. Affects factor <b>D</b> and the Base Price compset cap.</p>
+        <p>Same compset weights/offsets control as in Rate Shopper, available in the RMES tab too. The weights feed factor <b>D · Online Pricing</b> (via the offset-free <b>Weighted Expedia Compset</b>); the weights + offsets define the <b>Expedia Goal Value</b> that caps the Base Price.</p>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">"Apply changes" button</h4>
         <p>Changes to weights / cap / Base Price / event weights are saved <b>only when you click "Apply changes"</b> at the bottom of the tab. Switch property to edit the others (each property is independent for everything except event weights).</p>
+      </div>
+    </details>
+
+    <!-- BASE PRICE TAB -->
+    <details class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">8 · Base Price</summary>
+      <div style="padding:0 18px 16px">
+        <p>A transparent, day-by-day view of how each Base Price is built — the same five steps described in the RMES → Base Price block, shown left to right as columns so you can audit any date.</p>
+        <p>Pick a <b>property</b> (or <i>All</i> for the four together) and a <b>date range</b> (same logic as Sell Strategy), then <b>Apply</b>. Columns: LY median ADR · observations (<b>*</b> = widened to whole month) · ADR used (⬆70% = lifted to the Anchor Price protection) · × growth · after growth · Goal Value cap (✓cap = it limited the price) · Anchor ±50% guard-rail · Floor (✓ = floor applied) · final Base Price.</p>
+        <p><b>⬇ Export CSV</b> downloads the whole table (every column, every day) for Excel.</p>
       </div>
     </details>
 

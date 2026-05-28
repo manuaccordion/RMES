@@ -3749,11 +3749,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
       _D_myBeddy = exp2.myPriceExpedia / fp_expToBeddyDivisor(sel);
       if (typeof compsetWeightedAvg === 'function'){
-        const w = compsetWeightedAvg(sel, isoK, /*applyOffset=*/true);
+        const w = compsetWeightedAvg(sel, isoK, /*applyOffset=*/false);
         if (w && w.avg != null && w.avg > 0){
           _D_compsetBeddy = w.avg;
           _C_compAvg = _D_compsetBeddy;  // alias per _debug
-          _C_compSource = 'weighted + offset';
+          _C_compSource = 'weighted, no offset';
         }
       }
       if (_D_compsetBeddy == null && exp2.compsetAvg != null && exp2.compsetAvg > 0){
@@ -4097,11 +4097,13 @@ function newrmesGetCurrentReference(structKey, ymd){
 }
 
 /* === FROZEN BASE PRICE CALCULATION (4 steps) ===
-   Step 1: Historical anchor (ADR LY same-DOW same-month) → uses fp_computeAnchorLY
-   Step 2: Target revenue → applied as a multiplier (anchor × 1 + targetGrowth%)
-   Step 4: Compset market cap → max = compset median pesato (con markup Expedia tolto) + offset
-   Step 5: Floor → hard minimum
-   Anchor Price guard-rail: il risultato non può discostarsi più di ±50% dall'Anchor (annual basePrice)
+   Step 1: Historical anchor = median LY ADR (same day-of-week + same month, years 2024-2025;
+           falls back to whole-month median if fewer than 3 observations). Robust to outliers.
+   Step 2: Target revenue growth → anchor × (1 + targetGrowth% for that month)
+   Step 3: Expedia Goal Value cap → price capped at the weighted compset price (WITH per-competitor
+           offsets), i.e. the desired online positioning. Base Price can never exceed it.
+   Step 4: Anchor Price guard-rail → result bounded within ±50% of the annual Anchor Price
+   Step 5: Floor → hard minimum (never below the property Floor Rate)
 */
 function newrmesCalculateBasePrice(structKey, isoDate){
   const baseRT = (CFG.structures[structKey] && CFG.structures[structKey].baseRT) || null;
@@ -4118,15 +4120,15 @@ function newrmesCalculateBasePrice(structKey, isoDate){
   const adrLYsafe = Math.max(adrLY, anchorPrice * 0.70);  // floor anchor LY a 70% dell'Anchor Price
   const adrBaseSource = adrLYsafe > 0 ? adrLYsafe : anchorPrice;
   let price = adrBaseSource * (1 + targetGrowth/100);
-  // Step 4: Compset cap (la funzione compsetWeightedAvg ritorna { avg, n, ... }, NON un numero)
+  // Step 4: Expedia Goal Value cap (posizionamento-obiettivo online, CON pesi % e offset).
+  // Il Base Price non può MAI superare il Goal Value (cap massimo esatto, niente +5%).
+  // Il minimo resta il Floor Rate (step 5).
   if (typeof compsetWeightedAvg === 'function'){
     try {
       const c = compsetWeightedAvg(structKey, isoDate, /*applyOffset=*/true);
-      const cAvg = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : (isFinite(c) ? c : null);
-      if (cAvg != null && cAvg > 0){
-        // Cap: non più del 5% sopra il compset weighted (è già in spazio Beddy_eq dopo l'offset)
-        const cap = cAvg * 1.05;
-        if (price > cap) price = cap;
+      const goalValue = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : (isFinite(c) ? c : null);
+      if (goalValue != null && goalValue > 0){
+        if (price > goalValue) price = goalValue;  // cap esatto al Goal Value
       }
     } catch(e){}
   }
@@ -4140,8 +4142,215 @@ function newrmesCalculateBasePrice(structKey, isoDate){
   return Math.round(price);
 }
 
-/* Calculate and freeze Base Price for the next 365 days (or up to a horizon).
-   Skips dates already frozen (idempotent for the same date). */
+/* Verbose version of newrmesCalculateBasePrice: returns all intermediate steps
+   for the Base Price breakdown tab. Same math as newrmesCalculateBasePrice. */
+function newrmesCalculateBasePriceVerbose(structKey, isoDate){
+  const baseRT = (CFG.structures[structKey] && CFG.structures[structKey].baseRT) || null;
+  if (!baseRT) return null;
+  const anchor = (typeof fp_computeAnchorLY === 'function') ? fp_computeAnchorLY(structKey, baseRT, isoDate) : null;
+  const month = (new Date(isoDate + 'T00:00:00')).getMonth() + 1;
+  const anchorPrice = fp_getBasePrice(structKey);
+  const floor = fp_getFloor(structKey);
+  const targetGrowth = (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(structKey, month) : 5;
+  const adrLY = (anchor && anchor.medianADR > 0) ? anchor.medianADR : 0;
+  const adrLYsafe = Math.max(adrLY, anchorPrice * 0.70);
+  const adrBaseSource = adrLYsafe > 0 ? adrLYsafe : anchorPrice;
+  const afterGrowth = adrBaseSource * (1 + targetGrowth/100);
+  let price = afterGrowth;
+  // Goal Value cap
+  let goalValue = null;
+  if (typeof compsetWeightedAvg === 'function'){
+    try {
+      const c = compsetWeightedAvg(structKey, isoDate, /*applyOffset=*/true);
+      goalValue = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : null;
+    } catch(e){}
+  }
+  let cappedByGoal = false;
+  if (goalValue != null && goalValue > 0 && price > goalValue){ price = goalValue; cappedByGoal = true; }
+  // Anchor guard-rail
+  const minAnchor = anchorPrice * 0.5;
+  const maxAnchor = anchorPrice * 1.5;
+  let guardRail = null;
+  if (price < minAnchor){ price = minAnchor; guardRail = 'min'; }
+  else if (price > maxAnchor){ price = maxAnchor; guardRail = 'max'; }
+  // Floor
+  let flooredBy = false;
+  if (price < floor){ price = floor; flooredBy = true; }
+  return {
+    isoDate,
+    lyMedianADR: adrLY > 0 ? Math.round(adrLY) : null,
+    lyObs: anchor ? anchor.nObs : 0,
+    lyFallback: anchor ? anchor.fallbackUsed : 'none',
+    adrUsed: Math.round(adrBaseSource),
+    adrFlooredTo70: (adrLY > 0 && adrLYsafe > adrLY),
+    targetGrowth,
+    afterGrowth: Math.round(afterGrowth),
+    goalValue: goalValue != null ? Math.round(goalValue) : null,
+    cappedByGoal,
+    anchorPrice,
+    guardRail,
+    floor,
+    flooredBy,
+    finalBase: Math.round(price)
+  };
+}
+
+const BP_BREAKDOWN_STATE = { struct: 'all', from: null, to: null };
+
+function renderBasePriceBreakdown(){
+  const wrap = document.getElementById('bp-table-wrap');
+  if (!wrap) return;
+  // Pills struttura
+  const pillsEl = document.getElementById('bp-struct-pills');
+  const structOpts = [
+    { v:'all', label:'All', color:'#6b5b3f' },
+    { v:'firenze', label:'Firenze Suite', color:'#3b6b9a' },
+    { v:'condotta', label:'Condotta 16', color:'#3d7a4b' },
+    { v:'alfani', label:'Palazzo Alfani', color:'#8e5fa8' },
+    { v:'davids', label:'Enis Guesthouse', color:'#c0392b' },
+  ];
+  if (pillsEl && !pillsEl.dataset.wired){
+    pillsEl.dataset.wired = '1';
+    pillsEl.addEventListener('click', function(e){
+      const b = e.target.closest('button[data-bpfilter]');
+      if (!b) return;
+      BP_BREAKDOWN_STATE.struct = b.dataset.bpfilter;
+      renderBasePriceBreakdown();
+    });
+  }
+  if (pillsEl){
+    pillsEl.innerHTML = structOpts.map(o => {
+      const on = (BP_BREAKDOWN_STATE.struct === o.v);
+      return `<button class="rt-pill ${on?'':'off'}" data-bpfilter="${o.v}" style="${on?'border-color:'+o.color+';color:'+o.color+';font-weight:600':''}">${o.label}</button>`;
+    }).join('');
+  }
+  // Date defaults: oggi → +120 giorni
+  const fromInp = document.getElementById('bp-date-from');
+  const toInp = document.getElementById('bp-date-to');
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  if (fromInp && !fromInp.value){
+    fromInp.value = today.toISOString().slice(0,10);
+  }
+  if (toInp && !toInp.value){
+    const t2 = new Date(today.getTime() + 120*86400000);
+    toInp.value = t2.toISOString().slice(0,10);
+  }
+  // wire apply/export una volta
+  const applyBtn = document.getElementById('bp-apply');
+  if (applyBtn && !applyBtn.dataset.wired){
+    applyBtn.dataset.wired = '1';
+    applyBtn.addEventListener('click', () => renderBasePriceBreakdown());
+  }
+  const exportBtn = document.getElementById('bp-export');
+  if (exportBtn && !exportBtn.dataset.wired){
+    exportBtn.dataset.wired = '1';
+    exportBtn.addEventListener('click', () => _bpExportCSV());
+  }
+  const fromISO = fromInp ? fromInp.value : today.toISOString().slice(0,10);
+  const toISO = toInp ? toInp.value : new Date(today.getTime()+120*86400000).toISOString().slice(0,10);
+  const dFrom = new Date(fromISO + 'T00:00:00');
+  const dTo = new Date(toISO + 'T00:00:00');
+  if (isNaN(dFrom.getTime()) || isNaN(dTo.getTime()) || dTo < dFrom){
+    wrap.innerHTML = '<div style="padding:20px;color:#a83b3b">Invalid date range.</div>';
+    return;
+  }
+  const structsToShow = (BP_BREAKDOWN_STATE.struct === 'all')
+    ? ['firenze','condotta','alfani','davids']
+    : [BP_BREAKDOWN_STATE.struct];
+  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
+
+  const rows = [];
+  for (const sk of structsToShow){
+    for (let d = new Date(dFrom); d <= dTo; d.setDate(d.getDate()+1)){
+      const iso = d.toISOString().slice(0,10);
+      const v = newrmesCalculateBasePriceVerbose(sk, iso);
+      if (!v) continue;
+      rows.push({ struct: sk, structLabel: structLabels[sk], ...v });
+    }
+  }
+  _BP_LAST_ROWS = rows;
+
+  // Costruisco tabella
+  let h = '<table class="data-table" style="width:100%;font-size:12px;border-collapse:collapse">';
+  h += '<thead><tr style="background:#f7f6f3;text-align:right">';
+  const cols = ['Property','Date','DoW','LY median ADR','obs','ADR used','× growth','= after growth','Goal Value (cap)','Anchor ±50%','Floor','→ Base Price'];
+  h += cols.map((c,i)=>`<th style="padding:7px 9px;border-bottom:2px solid #e5e2db;${i<2?'text-align:left':'text-align:right'};white-space:nowrap">${c}</th>`).join('');
+  h += '</tr></thead><tbody>';
+  const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  for (const r of rows){
+    const dt = new Date(r.isoDate + 'T00:00:00');
+    const dow = dowNames[dt.getDay()];
+    const dmy = pad2(dt.getDate())+'/'+pad2(dt.getMonth()+1)+'/'+dt.getFullYear();
+    const goalTxt = r.goalValue != null ? ('€'+r.goalValue + (r.cappedByGoal?' ✓cap':'')) : '—';
+    const grTxt = r.guardRail ? (r.guardRail==='min'?'↑ min':'↓ max') : '–';
+    const floorTxt = r.flooredBy ? ('€'+r.floor+' ✓') : ('€'+r.floor);
+    const lyTxt = r.lyMedianADR != null ? ('€'+r.lyMedianADR) : '—';
+    const adrUsedTxt = '€'+r.adrUsed + (r.adrFlooredTo70?' ⬆70%':'');
+    h += '<tr style="border-bottom:1px solid #f0eee9">';
+    h += `<td style="padding:6px 9px;text-align:left;white-space:nowrap;color:#666">${r.structLabel}</td>`;
+    h += `<td style="padding:6px 9px;text-align:left;white-space:nowrap;font-family:'DM Mono',monospace">${dmy}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;color:#999">${dow}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace">${lyTxt}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;color:#999">${r.lyObs}${r.lyFallback==='monthWide'?'*':''}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:#888">${adrUsedTxt}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;color:#888">+${r.targetGrowth}%</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:#888">€${r.afterGrowth}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${r.cappedByGoal?'#a83b3b':'#888'}">${goalTxt}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;color:#999">${grTxt}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:#999">${floorTxt}</td>`;
+    h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#2c5c3c">€${r.finalBase}</td>`;
+    h += '</tr>';
+  }
+  h += '</tbody></table>';
+  h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
+  h += 'Columns left→right show how the Base Price is built each day: <b>LY median ADR</b> (median of the actually-earned ADR on the same day-of-week & month across 2024-2025; <b>obs</b> = number of historical observations, <b>*</b> = widened to whole month for lack of data) → <b>ADR used</b> (⬆70% = lifted to 70% of the annual Anchor Price when history was too low) → <b>× growth</b> (monthly target growth) → <b>Goal Value cap</b> (weighted compset price WITH offsets = desired online positioning; ✓cap = it capped the price) → <b>Anchor ±50%</b> guard-rail → <b>Floor</b> (✓ = floor applied) → <b>Base Price</b>.';
+  h += '</div>';
+  wrap.innerHTML = h;
+}
+
+let _BP_LAST_ROWS = [];
+function _bpExportCSV(){
+  if (!_BP_LAST_ROWS || !_BP_LAST_ROWS.length){ alert('Nothing to export — apply a range first.'); return; }
+  const header = ['Property','Date','DoW','LY_median_ADR','observations','fallback_monthWide','ADR_used','ADR_lifted_to_70pct','target_growth_pct','after_growth','goal_value_cap','capped_by_goal','anchor_price','guard_rail','floor','floored','base_price'];
+  const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const lines = [header.join(',')];
+  for (const r of _BP_LAST_ROWS){
+    const dt = new Date(r.isoDate + 'T00:00:00');
+    const row = [
+      '"'+r.structLabel+'"',
+      r.isoDate,
+      dowNames[dt.getDay()],
+      r.lyMedianADR != null ? r.lyMedianADR : '',
+      r.lyObs,
+      r.lyFallback==='monthWide' ? 'yes' : 'no',
+      r.adrUsed,
+      r.adrFlooredTo70 ? 'yes':'no',
+      r.targetGrowth,
+      r.afterGrowth,
+      r.goalValue != null ? r.goalValue : '',
+      r.cappedByGoal ? 'yes':'no',
+      r.anchorPrice,
+      r.guardRail || '',
+      r.floor,
+      r.flooredBy ? 'yes':'no',
+      r.finalBase
+    ];
+    lines.push(row.join(','));
+  }
+  const csv = lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.href = url;
+  a.download = 'base_price_breakdown_' + stamp + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+
 function newrmesFreezeBasePriceHorizon(structKey, horizonDays){
   horizonDays = horizonDays || 365;
   const today = new Date(TODAY); today.setHours(0,0,0,0);
@@ -5761,15 +5970,29 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const rmesSuggested = priceRmesFinal;  // would suggest == suggested price == cella tabella
       const overrideObj = (typeof fp_getOverride === 'function') ? fp_getOverride(d.structKey, d.targetDateISO, d.rt) : null;
       const hasOverride = !!(overrideObj && overrideObj.price != null);
-      const fpBg = hasFoundationOverride ? '#eef4fb' : '#fef8ed';
-      const fpBorder = hasFoundationOverride ? '#3b6b9a' : '#c4823b';
-      const fpLabelCol = hasFoundationOverride ? '#1e4a6b' : '#7a4f1c';
-      const fpPriceCol = hasFoundationOverride ? '#1e4a6b' : '#5a3a14';
-      const fpIcon = hasFoundationOverride ? '🖋' : '⚡';
-      const fpLabel = hasFoundationOverride ? 'Base Price (manual override)' : 'Base Price (computed)';
+      // Box dinamico in alto: se per questo giorno è stato accettato un RMES, mostriamo il
+      // "Last update" (prezzo accettato = da cui parte il nuovo suggerimento). Altrimenti il Base Price.
+      const _acceptedMeta = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(d.structKey, _tgtYmdN) : null;
+      const _hasAccepted = (_acceptedMeta && _acceptedMeta.price != null);
+      const fpBg = hasFoundationOverride ? '#eef4fb' : (_hasAccepted ? '#eef5f0' : '#fef8ed');
+      const fpBorder = hasFoundationOverride ? '#3b6b9a' : (_hasAccepted ? '#3d7a4b' : '#c4823b');
+      const fpLabelCol = hasFoundationOverride ? '#1e4a6b' : (_hasAccepted ? '#2c5c3c' : '#7a4f1c');
+      const fpPriceCol = hasFoundationOverride ? '#1e4a6b' : (_hasAccepted ? '#2c5c3c' : '#5a3a14');
+      const fpIcon = hasFoundationOverride ? '🖋' : (_hasAccepted ? '✓' : '⚡');
+      const fpLabel = hasFoundationOverride ? 'Base Price (manual override)'
+                    : (_hasAccepted ? 'Last update (accepted RMES)' : 'Base Price (computed)');
+      let _fpSubAccepted = '';
+      if (_hasAccepted && _acceptedMeta.ts){
+        const _dt = new Date(_acceptedMeta.ts);
+        if (!isNaN(_dt.getTime())){
+          _fpSubAccepted = 'Accepted on ' + pad2(_dt.getDate())+'/'+pad2(_dt.getMonth()+1)+'/'+_dt.getFullYear();
+        }
+      }
       const fpSub = hasFoundationOverride
         ? 'Manual override active · the 5 factors apply on top of this price'
-        : 'Structural starting price · LY anchor × growth → compset cap → Anchor guard-rail → floor';
+        : (_hasAccepted
+            ? (_fpSubAccepted + ' · the new RMES suggestion starts from this price')
+            : 'Structural starting price · LY median ADR × growth → Goal Value cap → Anchor guard-rail → floor');
       rmesSection += '<div style="padding:14px 16px;background:'+fpBg+';border:1px solid '+fpBorder+';border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
       rmesSection += '<div>';
       rmesSection += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:'+fpLabelCol+';font-weight:700;margin-bottom:2px">'+fpIcon+' '+fpLabel+'</div>';
@@ -5845,7 +6068,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           }
           h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-clamp): '+_fpct((mults.pace_mult-1),1)+'</div>';
         } else if (code === 'D'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>−(mio_BeddyEq / avg_compset_BeddyEq − 1)</code> · both in Beddy_eq, per-competitor offset applied</div>';
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>−(my_BeddyEq / weighted_compset_BeddyEq − 1)</code> · both in Beddy_eq · uses the <b>Weighted Expedia Compset</b> (weights only, <b>no</b> offset)</div>';
           h += '<div>My Expedia price (gross): <b>'+_fmt2(dbg.myExpedia)+'</b> → Beddy_eq: <b>'+_fmt2(dbg.myBeddy)+'</b></div>';
           h += '<div>Compset average (Beddy_eq + offset): <b>'+_fmt2(dbg.compsetBeddy)+'</b> &nbsp;<span style="color:#888">('+(dbg.compsetSource||'—')+')</span></div>';
           if (dbg.myBeddy != null && dbg.compsetBeddy != null && dbg.compsetBeddy > 0){
@@ -6325,7 +6548,7 @@ function fp_renderFoundationConfigBox(structKey){
   h += '</div></div>';
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓒ Compset competitor weights and offsets <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub"><b>Weight</b> (0-100%, default 100): how much a competitor counts in the compset average. Used both by the <b>D · Online Pricing RMES factor</b> and by the <b>Base Price compset cap</b>. Weight = 0 excludes the competitor. <b>Offset €</b> (default 0): e.g. -10 = "I want to stay €10 below this competitor". Compset weighted reference = Σ(weight × (compset_price_Beddy_eq + offset)) / Σ(weight). Used to cap the Base Price at the compset median + 5%.</div></div>';
+  h += '<div class="panel-sub"><b>Weight</b> (0-100%, default 100): how much a competitor counts. Weight = 0 excludes it. <b>Offset €</b> (default 0): e.g. -10 = "I want to stay €10 below this competitor". Two numbers come out of this: the <b>Weighted Expedia Compset</b> (weights only, no offset) feeds the <b>D · Online Pricing</b> RMES factor; the <b>Expedia Goal Value</b> (weights + offsets, Σ(weight × (price_Beddy_eq + offset)) / Σ(weight)) is the desired positioning and caps the Base Price (max — never above it).</div></div>';
   h += '<button id="fp-reset-pesi-100" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:\'DM Sans\',sans-serif;align-self:flex-start">reset weights to 100%</button>';
   h += '</div>';
   h += '<div class="panel-body" style="padding:8px 16px"><table id="fp-comp-table" style="width:100%;border-collapse:collapse;font-size:12px"><thead style="background:#f8f8f5"><tr><th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2)">Competitor</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:110px">Weight (0-100%)</th><th style="padding:6px 10px;text-align:right;border-bottom:1px solid var(--line);font-size:11px;color:var(--ink-2);width:120px">Offset €</th></tr></thead><tbody></tbody></table></div></div>';
@@ -7068,7 +7291,7 @@ function renderSellStrategy(sel){
     + (showExp
        ? '<th class="sell-grp-expedia-sub" style="background:rgba(210,105,30,.10);border-left:2px solid rgba(210,105,30,.35)" title="Mine with RMES applied: (current reference + RMES today delta) converted to Expedia space, with the market position vs compset (1 = cheapest)">Mine w/RMES</th>'
          + '<th class="sell-grp-expedia-sub" title="My current Expedia price, with the market position vs compset (1 = cheapest)">Mine</th>'
-         + '<th class="sell-grp-expedia-sub" title="Expedia compset weighted average (with offset)">Compset</th>'
+         + '<th class="sell-grp-expedia-sub" title="Weighted Expedia compset average (weights only, no offset) — in Expedia space, to compare with my Expedia price">Compset</th>'
        : '')
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;
@@ -7112,7 +7335,7 @@ function renderSellStrategy(sel){
         let avgIsWeighted = false;
         const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
         if (typeof compsetWeightedAvg === 'function'){
-          const w = compsetWeightedAvg(sel, isoK);
+          const w = compsetWeightedAvg(sel, isoK, false, {rawExpedia:true});
           if (w && w.avg != null && w.avg > 0){
             cAvg = w.avg;
             avgIsWeighted = true;
@@ -7220,7 +7443,7 @@ function renderSellStrategy(sel){
       if (exp2 && exp2.myPriceExpedia != null){
         const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
         if (typeof compsetWeightedAvg === 'function'){
-          const w = compsetWeightedAvg(sel, isoK);
+          const w = compsetWeightedAvg(sel, isoK, false, {rawExpedia:true});
           if (w && w.avg != null && w.avg > 0) _C2_compAvg = w.avg;
         }
         if (_C2_compAvg == null && exp2.compsetAvg != null && exp2.compsetAvg > 0){
@@ -7578,7 +7801,7 @@ function renderSellStrategy(sel){
             cellBg = 'rgba(74,124,89,.10)'; cellBorder = 'rgba(74,124,89,.45)';
             textStyle = 'color:#2f5538;font-weight:700';
             statusIcon = '✓ ';
-            fpTipPrefix = `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nThis is the structural Base Price for the day, frozen at first calc. It is treated as ALREADY ACCEPTED — no action needed unless you want to override it.\n\nComputed once with: historical anchor (LY median ADR) × target growth, capped at compset median +5%, bounded ±50% from Anchor Price, ≥ floor.\n\nRMES suggests daily deltas (±20%) on top of this Base.\nOther RTs inherit Base + monthly supplement.`;
+            fpTipPrefix = `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nThis is the structural Base Price for the day, frozen at first calc. It is treated as ALREADY ACCEPTED — no action needed unless you want to override it.\n\nComputed once with: LY median ADR (same DoW & month) × target growth, capped at the Expedia Goal Value (weighted compset + offsets), bounded ±50% from Anchor Price, ≥ floor.\n\nRMES suggests daily deltas (±20%) on top of this Base.\nOther RTs inherit Base + monthly supplement.`;
           }
           const fpTip = fpTipPrefix + `\n\nClick 🖋 to override · ↺ to reset.`;
           const btnOvr = `<button class="fp-inline-btn fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Manual override" style="border:1px solid #3b6b9a;background:#fff;color:#3b6b9a;border-radius:3px;padding:0 4px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5">🖋</button>`;
@@ -11201,7 +11424,14 @@ function setWeight(struct, compName, value){
   w[struct][compName] = value;
   saveRateWeights(w);
 }
-function compsetWeightedAvg(struct, isoKey, applyOffset){
+function compsetWeightedAvg(struct, isoKey, applyOffset, opts){
+  // applyOffset=true  → Expedia GOAL VALUE: prezzo in spazio Beddy-eq + offset per competitor.
+  //                     Usato SOLO nel Base Price come cap massimo (posizionamento-obiettivo).
+  // applyOffset=false → WEIGHTED EXPEDIA COMPSET: prezzo in spazio Beddy-eq SENZA offset.
+  //                     Usato nei fattori RMES (D·Online Pricing, E·Demand Expedia) per il
+  //                     confronto "io vs mercato" — gli offset NON devono entrare qui.
+  // opts.rawExpedia=true → prezzo Expedia lordo, senza divisor né offset (uso interno/debug).
+  opts = opts || {};
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return {avg: null, n: 0};
   let compMap = null;
   if (struct === 'condotta') compMap = EXPEDIA_DATA.competitors;
@@ -11213,7 +11443,10 @@ function compsetWeightedAvg(struct, isoKey, applyOffset){
     'Condotta 16 Apartments',     // = Condotta nei compset Alfani e Firenze
     'Palazzo Alfani al David',    // = Alfani nei compset Condotta e Firenze
   ]);
-  const divisor = applyOffset && typeof fp_expToBeddyDivisor === 'function' ? fp_expToBeddyDivisor(struct) : null;
+  // Il divisor (Expedia→Beddy) si applica sia per il Goal Value sia per il Weighted Compset RMES,
+  // perché in entrambi i casi vogliamo confrontare in spazio Beddy. Solo rawExpedia lo salta.
+  const wantDivisor = !opts.rawExpedia;
+  const divisor = (wantDivisor && typeof fp_expToBeddyDivisor === 'function') ? fp_expToBeddyDivisor(struct) : null;
   let total = 0, n = 0;
   const names = [];
   for (const name in compMap){
@@ -11223,21 +11456,25 @@ function compsetWeightedAvg(struct, isoKey, applyOffset){
     const w = getWeight(struct, name);
     if (w <= 0) continue;  // peso 0 = competitor escluso, non conta nemmeno nel divisore
     let priceToUse = p;
-    if (applyOffset && divisor){
-      const beddyEq = p / divisor;
-      let offset = 0;
-      try {
-        const cfg = (typeof fp_getCompsetConfig === 'function') ? fp_getCompsetConfig(struct, name) : null;
-        if (cfg && typeof cfg.offset === 'number') offset = cfg.offset;
-      } catch(e){}
-      priceToUse = beddyEq + offset;
+    if (divisor){
+      priceToUse = p / divisor;  // porto in spazio Beddy-eq
+      if (applyOffset){
+        // Goal Value: aggiungo l'offset di posizionamento del competitor
+        let offset = 0;
+        try {
+          const cfg = (typeof fp_getCompsetConfig === 'function') ? fp_getCompsetConfig(struct, name) : null;
+          if (cfg && typeof cfg.offset === 'number') offset = cfg.offset;
+        } catch(e){}
+        priceToUse = priceToUse + offset;
+      }
     }
     total += priceToUse * w;
     n += 1;
     names.push(name);
   }
   if (n === 0) return {avg: null, n: 0};
-  return {avg: total / n, n, contributingNames: names, unit: applyOffset ? 'beddy_eq' : 'expedia_lordo'};
+  const unit = opts.rawExpedia ? 'expedia_lordo' : 'beddy_eq';
+  return {avg: total / n, n, contributingNames: names, unit, withOffset: !!applyOffset};
 }
 function renderRateShopper(){
   const wrap = document.getElementById('rate-tables-wrap');
@@ -13950,6 +14187,9 @@ function setTab(name){
   }
   if (name === 'fcst' && _FCST_DIRTY && typeof renderForecast === 'function'){
     try { renderForecast(CURRENT_STRUCT); _FCST_DIRTY = false; } catch(e){ console.error('renderForecast', e); }
+  }
+  if (name === 'baseprice' && typeof renderBasePriceBreakdown === 'function'){
+    try { renderBasePriceBreakdown(); } catch(e){ console.error('renderBasePriceBreakdown', e); }
   }
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
