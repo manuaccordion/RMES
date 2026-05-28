@@ -4345,6 +4345,26 @@ function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
 
 /* Current reference = if accepted exists, use it; otherwise effective base (override or frozen). */
 function newrmesGetCurrentReference(structKey, ymd){
+  // Priorità: 1) manual final-price override 🖋 (set via the RMES modal),
+  //            2) accepted RMES ✓,
+  //            3) effective Base Price (frozen + foundation override).
+  // The manual override wins because once the user has explicitly forced a price for that
+  // day, that IS the active reference (and the next RMES delta is computed against it).
+  if (typeof fp_getOverride === 'function'){
+    try {
+      const baseRT = (CFG.structures[structKey] && CFG.structures[structKey].baseRT) || null;
+      if (baseRT){
+        const d = fp_ymdNumToDate(ymd);
+        if (d){
+          const iso = fp_isoDate(d);
+          const ovr = fp_getOverride(structKey, iso, baseRT);
+          if (ovr && ovr.price != null && isFinite(ovr.price) && ovr.price > 0){
+            return +ovr.price;
+          }
+        }
+      }
+    } catch(e){}
+  }
   const acc = newrmesGetAccepted(structKey, ymd);
   if (acc != null) return acc;
   return newrmesGetEffectiveBase(structKey, ymd);
@@ -8580,24 +8600,36 @@ function renderSellStrategy(sel){
       ${(function(){
         const baseRTKey = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
         if (!baseRTKey) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
+        // Check manual override 🖋 first (highest priority)
+        const _isoOvr = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+        const ovr = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, _isoOvr, baseRTKey) : null;
+        const hasManualOvr = !!(ovr && ovr.price != null && isFinite(ovr.price) && ovr.price > 0);
         const meta = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(sel, r.ymd) : null;
         const accepted = meta ? meta.price : null;
-        const activePrice = (accepted != null)
-          ? accepted
-          : ((typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : null);
+        const activePrice = hasManualOvr
+          ? +ovr.price
+          : ((accepted != null)
+              ? accepted
+              : ((typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : null));
         if (activePrice == null || !isFinite(activePrice)){
           return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
         }
-        // Tooltip: spiega da cosa viene il prezzo attivo
-        let tip;
-        if (accepted != null){
+        // Tooltip and icon dynamic by source
+        let tip; let icon = ''; let txtColor = '';
+        if (hasManualOvr){
+          const ts = ovr.savedAt ? new Date(ovr.savedAt) : null;
+          const dtTxt = (ts && !isNaN(ts.getTime())) ? `${pad2(ts.getDate())}/${pad2(ts.getMonth()+1)}/${ts.getFullYear()} ${pad2(ts.getHours())}:${pad2(ts.getMinutes())}` : 'unknown date';
+          tip = `Active price: €${Math.round(activePrice)}\nSource: manual override 🖋\nSaved: ${dtTxt}`;
+          icon = '🖋';
+          txtColor = 'color:#1e4a6b;font-weight:700';
+        } else if (accepted != null){
           const dt = (meta && meta.ts) ? new Date(meta.ts) : null;
           const dtTxt = dt ? `${pad2(dt.getDate())}/${pad2(dt.getMonth()+1)}/${dt.getFullYear()} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}` : 'unknown date';
           tip = `Active price: €${Math.round(activePrice)}\nSource: accepted RMES suggestion\nLast updated: ${dtTxt}`;
         } else {
           tip = `Active price: €${Math.round(activePrice)}\nSource: Base Price (accepted by default — RMES never explicitly accepted for this day)`;
         }
-        return `<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center" title="${escapeHtml(tip)}">${Math.round(activePrice)}</td>`;
+        return `<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center;${txtColor}" title="${escapeHtml(tip)}">${icon ? icon+' ' : ''}${Math.round(activePrice)}</td>`;
       })()}
       <!-- RMES today (today's suggested price + variation + ✓ accept, clickable for detail) -->
       ${(function(){
