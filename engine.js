@@ -8961,15 +8961,35 @@ function renderSellStrategy(sel){
         _refreshSell();
       };
     }
+    const btnPeriodOverride = document.getElementById('fp-period-override');
+    if (btnPeriodOverride){
+      btnPeriodOverride.onclick = function(){
+        const priceInp = document.getElementById('fp-period-price');
+        const price = priceInp ? parseFloat(priceInp.value) : NaN;
+        const r = _fpPeriodDays(); if (!r) return;
+        if (!isFinite(price) || price <= 0){ r.setMsg('Enter a valid price (>0).', true); return; }
+        if (!confirm('OVERRIDE RMES with €' + price.toFixed(0) + ' on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?\n\nEvery day in the range will show this exact price as the active Last update (🖋). Previous accepts on these days will be cleared.')) return;
+        for (const d of r.days){
+          const snapshot = { rmesSuggested: d.calc, source: 'period' };
+          if (typeof fp_setOverride === 'function') fp_setOverride(sel, d.iso, baseRT, price, snapshot);
+          // Un override finale annulla anche l'accept (sono mutualmente esclusivi)
+          const ymdN = +(d.iso.replaceAll('-',''));
+          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, null);
+        }
+        r.setMsg('🖋 Override €' + price.toFixed(0) + ' applied to ' + r.days.length + ' days.');
+        _refreshSell();
+      };
+    }
     const btnPeriodReset = document.getElementById('fp-period-reset');
     if (btnPeriodReset){
       btnPeriodReset.onclick = function(){
         const r = _fpPeriodDays(); if (!r) return;
-        if (!confirm('Reset Base Price override AND Accepted price on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?')) return;
+        if (!confirm('Reset Base Price override, Manual override 🖋 AND Accepted price on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?')) return;
         for (const d of r.days){
           const ymdN = +(d.iso.replaceAll('-',''));
           if (typeof newrmesSetFrozenBaseOverride === 'function') newrmesSetFrozenBaseOverride(sel, ymdN, null);
           if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, null);
+          if (typeof fp_setOverride === 'function') fp_setOverride(sel, d.iso, baseRT, null);
         }
         r.setMsg('↺ Reset on ' + r.days.length + ' days.');
         _refreshSell();
