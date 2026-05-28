@@ -4297,18 +4297,25 @@ function newrmesGetFrozenBaseOverride(structKey, ymd){
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
   return (all[structKey] && all[structKey][ymd] != null) ? all[structKey][ymd] : null;
 }
+function _invalidateRmesMapCache(){
+  // Svuota la cache _RMESMAP_TICK quando dati cambiano (override, accept, foundation override).
+  // Senza questo, il forecast e altre viste useranno mappe stantie con prezzi vecchi.
+  if (typeof _RMESMAP_TICK !== 'undefined') _RMESMAP_TICK = {};
+}
 function newrmesSetFrozenBaseOverride(structKey, ymd, price){
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
   if (!all[structKey]) all[structKey] = {};
   if (price == null) delete all[structKey][ymd];
   else all[structKey][ymd] = Math.round(price);
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
+  _invalidateRmesMapCache();
 }
 function newrmesClearFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo){
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
   if (!all[structKey]) return;
   for (const k in all[structKey]){ const n = +k; if (n >= ymdFrom && n <= ymdTo) delete all[structKey][k]; }
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
+  _invalidateRmesMapCache();
 }
 function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
@@ -4321,6 +4328,7 @@ function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
     all[structKey][y] = Math.round(price);
   }
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
+  _invalidateRmesMapCache();
 }
 
 /* Effective Base Price for a date: override if present, otherwise frozen calculated. */
@@ -4354,6 +4362,7 @@ function newrmesSetAccepted(structKey, ymd, price){
   if (price == null) delete all[structKey][ymd];
   else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString() };
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
+  _invalidateRmesMapCache();
 }
 function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
@@ -4366,6 +4375,7 @@ function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
     all[structKey][y] = { price: Math.round(price), ts };
   }
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
+  _invalidateRmesMapCache();
 }
 
 /* Current reference = if accepted exists, use it; otherwise effective base (override or frozen). */
@@ -5462,6 +5472,7 @@ function fp_setOverride(structKey, dateISO, rt, price, snapshot){
     };
   }
   localStorage.setItem(FP_BASE_RATE_OVERRIDES_KEY, JSON.stringify(all));
+  if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
 }
 function fp_getOverride(structKey, dateISO, rt){
   try {
@@ -11566,16 +11577,34 @@ function aggForecast(structKey){
     let weightedSum = 0, totWeight = 0;
     let fallbackSum = 0, fallbackCount = 0;  // backup non-pesato (se totWeight=0)
     const daysInMo = new Date(y, mo, 0).getDate();
+    const _baseRTfc = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
+    const _isBaseRT_fc = (rt === _baseRTfc);
     for (let d = 1; d <= daysInMo; d++){
       const dDate = new Date(y, mo-1, d);
       if (dDate < today0) continue;
       const ymdN = y*10000 + mo*100 + d;
       const dd = _rmesMapForFcst[ymdN];
       if (!dd) continue;
+      // PRIORITÀ: usa il "Last update" reale (= current reference per il baseRT, override/accept/Base)
+      // più il supplemento mensile per le RT non-base. Questo è il prezzo che STAI EFFETTIVAMENTE
+      // CARICANDO sul motore di prenotazione, quindi la stima più corretta per il revenue futuro.
       let priceForRt = null;
-      if (dd.pricesByRT && dd.pricesByRT[rt] != null && isFinite(dd.pricesByRT[rt])){
+      if (typeof newrmesGetCurrentReference === 'function' && _baseRTfc){
+        const ref = newrmesGetCurrentReference(sel, ymdN);
+        if (ref != null && isFinite(ref) && ref > 0){
+          if (_isBaseRT_fc){
+            priceForRt = ref;
+          } else {
+            // RT non-base: ref del baseRT + supplemento mensile della RT
+            const suppV = (typeof _globalSupplementForRT === 'function') ? _globalSupplementForRT(sel, rt, mo) : 0;
+            priceForRt = ref + (isFinite(suppV) ? suppV : 0);
+          }
+        }
+      }
+      // Fallback ai vecchi campi se la current reference non fosse disponibile
+      if (priceForRt == null && dd.pricesByRT && dd.pricesByRT[rt] != null && isFinite(dd.pricesByRT[rt])){
         priceForRt = dd.pricesByRT[rt];
-      } else if (dd.rmesSuggestedByRT && dd.rmesSuggestedByRT[rt] != null && isFinite(dd.rmesSuggestedByRT[rt])){
+      } else if (priceForRt == null && dd.rmesSuggestedByRT && dd.rmesSuggestedByRT[rt] != null && isFinite(dd.rmesSuggestedByRT[rt])){
         priceForRt = dd.rmesSuggestedByRT[rt];
       }
       if (priceForRt == null) continue;
