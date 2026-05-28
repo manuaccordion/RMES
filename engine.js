@@ -6632,29 +6632,44 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const rmesSuggested = priceRmesFinal;  // would suggest == suggested price == cella tabella
       const overrideObj = (typeof fp_getOverride === 'function') ? fp_getOverride(d.structKey, d.targetDateISO, d.rt) : null;
       const hasOverride = !!(overrideObj && overrideObj.price != null);
-      // Box dinamico in alto: se per questo giorno è stato accettato un RMES, mostriamo il
-      // "Last update" (prezzo accettato = da cui parte il nuovo suggerimento). Altrimenti il Base Price.
+      // Box dinamico in alto. Priorità sorgenti: 1) manual final-price override 🖋,
+      // 2) Foundation override (manuale del Base), 3) accepted RMES, 4) Base Price (default).
       const _acceptedMeta = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(d.structKey, _tgtYmdN) : null;
       const _hasAccepted = (_acceptedMeta && _acceptedMeta.price != null);
-      const fpBg = hasFoundationOverride ? '#eef4fb' : (_hasAccepted ? '#eef5f0' : '#fef8ed');
-      const fpBorder = hasFoundationOverride ? '#3b6b9a' : (_hasAccepted ? '#3d7a4b' : '#c4823b');
-      const fpLabelCol = hasFoundationOverride ? '#1e4a6b' : (_hasAccepted ? '#2c5c3c' : '#7a4f1c');
-      const fpPriceCol = hasFoundationOverride ? '#1e4a6b' : (_hasAccepted ? '#2c5c3c' : '#5a3a14');
-      const fpIcon = hasFoundationOverride ? '🖋' : (_hasAccepted ? '✓' : '⚡');
-      const fpLabel = hasFoundationOverride ? 'Last update (manual Base override)'
-                    : (_hasAccepted ? 'Last update (accepted RMES)' : 'Last update (= Base Price, never accepted)');
-      let _fpSubAccepted = '';
-      if (_hasAccepted && _acceptedMeta.ts){
-        const _dt = new Date(_acceptedMeta.ts);
-        if (!isNaN(_dt.getTime())){
-          _fpSubAccepted = 'Accepted on ' + pad2(_dt.getDate())+'/'+pad2(_dt.getMonth()+1)+'/'+_dt.getFullYear();
-        }
+      // Helper: formatta DD/MM/YYYY HH:MM da un timestamp
+      const _fmtDateTime = function(ts){
+        if (!ts) return '';
+        const _dt = new Date(ts);
+        if (isNaN(_dt.getTime())) return '';
+        return pad2(_dt.getDate())+'/'+pad2(_dt.getMonth()+1)+'/'+_dt.getFullYear()+' '+pad2(_dt.getHours())+':'+pad2(_dt.getMinutes());
+      };
+      // Determino la sorgente vincente (ordine di priorità)
+      let _src;  // 'override' | 'foundation' | 'accepted' | 'base'
+      if (hasOverride) _src = 'override';
+      else if (hasFoundationOverride) _src = 'foundation';
+      else if (_hasAccepted) _src = 'accepted';
+      else _src = 'base';
+      const fpBg = (_src === 'override' || _src === 'foundation') ? '#eef4fb' : (_src === 'accepted' ? '#eef5f0' : '#fef8ed');
+      const fpBorder = (_src === 'override' || _src === 'foundation') ? '#3b6b9a' : (_src === 'accepted' ? '#3d7a4b' : '#c4823b');
+      const fpLabelCol = (_src === 'override' || _src === 'foundation') ? '#1e4a6b' : (_src === 'accepted' ? '#2c5c3c' : '#7a4f1c');
+      const fpPriceCol = (_src === 'override' || _src === 'foundation') ? '#1e4a6b' : (_src === 'accepted' ? '#2c5c3c' : '#5a3a14');
+      const fpIcon = (_src === 'override' || _src === 'foundation') ? '🖋' : (_src === 'accepted' ? '✓' : '⚡');
+      let fpLabel, fpSub;
+      if (_src === 'override'){
+        const dtTxt = _fmtDateTime(overrideObj.savedAt);
+        fpLabel = 'Last update (manual override 🖋)';
+        fpSub = dtTxt ? ('Saved on '+dtTxt+' · the new RMES suggestion starts from this price') : 'Manual override active · the new RMES suggestion starts from this price';
+      } else if (_src === 'foundation'){
+        fpLabel = 'Last update (manual Base override)';
+        fpSub = 'Manual Base override · the 5 factors apply on top of this price';
+      } else if (_src === 'accepted'){
+        const dtTxt = _fmtDateTime(_acceptedMeta.ts);
+        fpLabel = 'Last update (accepted RMES)';
+        fpSub = dtTxt ? ('Accepted on '+dtTxt+' · the new RMES suggestion starts from this price') : 'Accepted RMES · the new RMES suggestion starts from this price';
+      } else {
+        fpLabel = 'Last update (= Base Price, never accepted)';
+        fpSub = 'Currently equal to the Base Price (RMES has never been accepted for this date)';
       }
-      const fpSub = hasFoundationOverride
-        ? 'Manual override · the 5 factors apply on top of this price'
-        : (_hasAccepted
-            ? (_fpSubAccepted + ' · the new RMES suggestion starts from this price')
-            : 'Currently equal to the Base Price (RMES has never been accepted for this date)');
       rmesSection += '<div style="padding:14px 16px;background:'+fpBg+';border:1px solid '+fpBorder+';border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
       rmesSection += '<div>';
       rmesSection += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:'+fpLabelCol+';font-weight:700;margin-bottom:2px">'+fpIcon+' '+fpLabel+'</div>';
