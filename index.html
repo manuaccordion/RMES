@@ -813,7 +813,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="rate"><span class="num">6</span>Rate Shopper</button>
     
     <button class="tab" data-tab="pri"><span class="num">7</span>RMES</button>
-    <button class="tab" data-tab="baseprice"><span class="num">8</span>Base Price</button>
+    <button class="tab" data-tab="baseprice"><span class="num">8</span>Export Pricing</button>
     <button class="tab" data-tab="instr"><span class="num">📖</span>Playbook</button>
   </nav>
 </header>
@@ -1406,7 +1406,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   <!-- ============ SECTION 10b: BASE PRICE BREAKDOWN ============ -->
   <section class="tab-panel" id="panel-baseprice">
     <div class="section-head">
-      <div><h2>Base Price breakdown</h2></div>
+      <div><h2>Export Pricing</h2></div>
     </div>
     <div class="panel">
       <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
@@ -1423,9 +1423,21 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <input type="date" id="bp-date-to" style="padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:13px">
         </div>
         <button id="bp-apply" style="font-family:'DM Mono',monospace;font-size:13px;padding:7px 16px;border:1px solid var(--accent);border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700">Apply</button>
-        <button id="bp-export" style="font-family:'DM Mono',monospace;font-size:13px;padding:7px 16px;border:1px solid var(--accent);border-radius:6px;background:transparent;color:var(--accent);cursor:pointer;font-weight:700;margin-left:auto">⬇ Export CSV</button>
+      </div>
+
+      <!-- SECTION 1: Base Price breakdown -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:18px 0 8px 0">
+        <h3 style="margin:0;font-size:15px;color:#5a3a14">⚡ Base Price breakdown</h3>
+        <button id="bp-export" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid var(--accent);border-radius:6px;background:transparent;color:var(--accent);cursor:pointer;font-weight:700">⬇ Export Base Price CSV</button>
       </div>
       <div id="bp-table-wrap" style="overflow-x:auto"></div>
+
+      <!-- SECTION 2: RMES breakdown -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:32px 0 8px 0">
+        <h3 style="margin:0;font-size:15px;color:#2c5c3c">💡 RMES breakdown</h3>
+        <button id="rmes-export" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid #2c5c3c;border-radius:6px;background:transparent;color:#2c5c3c;cursor:pointer;font-weight:700">⬇ Export RMES CSV</button>
+      </div>
+      <div id="rmes-table-wrap" style="overflow-x:auto"></div>
     </div>
   </section>
 
