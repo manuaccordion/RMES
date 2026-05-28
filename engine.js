@@ -4151,8 +4151,13 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     if (basePrice != null){
       const pricesByRT = {};
       const rmesSuggestedByRT = {};  // Snapshot del prezzo RMES suggerito (NON il riferimento corrente)
+      const rmesTargetOnBaseByRT = {}; // Target RMES calcolato SEMPRE sul Base Price strutturale (ignora override/accept)
       const overrideUsedByRT = {};   // true se quella RT ha override attivo
       const rmesDeltaByRT = {};      // delta RMES vs reference, in €
+      // "Base strutturale" = il Base congelato + foundation override, MA NON l'override modale finale (fp_getOverride).
+      // Su questo si calcola il target RMES "vero" che resta indipendente dalle decisioni dell'utente.
+      const _basePure = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : basePrice;
+      const _basePureValid = (_basePure != null && isFinite(_basePure) && _basePure > 0);
       for (const rt of _rtList){
         let baseRT = basePrice;  // default per baseRT (riferimento corrente)
         if (_suppData && rt !== _suppData.baseRT){
@@ -4176,6 +4181,25 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         const priceSuggested = Math.max(_priceAfterFactors, _structFloor);
         rmesSuggestedByRT[rt] = priceSuggested;
         rmesDeltaByRT[rt] = priceSuggested - baseRT;   // delta in € rispetto al riferimento corrente
+        // ---- TARGET RMES su Base Price strutturale (per la regola "in line" con override) ----
+        // Stessa formula ma partendo dal Base puro (ignorando l'override modale finale).
+        // Output: {price, atCap} dove atCap = 'min' | 'max' | 'floor' | null
+        if (_basePureValid){
+          let baseRT_pure = _basePure;
+          if (_suppData && rt !== _suppData.baseRT){
+            baseRT_pure = _basePure + _supplementForRT(rt, r.mo);
+          }
+          let _priceOnBase = baseRT_pure * multRT * (1 + _lmfPct/100) * _eventBoost;
+          const _capMinB = baseRT_pure * 0.80;
+          const _capMaxB = baseRT_pure * 1.20;
+          let _atCapB = null;
+          if (_priceOnBase < _capMinB){ _priceOnBase = _capMinB; _atCapB = 'min'; }
+          else if (_priceOnBase > _capMaxB){ _priceOnBase = _capMaxB; _atCapB = 'max'; }
+          if (_priceOnBase < _structFloor){ _priceOnBase = _structFloor; _atCapB = 'floor'; }
+          rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB };
+        } else {
+          rmesTargetOnBaseByRT[rt] = { price: priceSuggested, atCap: null };
+        }
         // NewRMES: il prezzo "in tabella" è il suggerimento RMES; l'eventuale "accettato" è già dentro
         // baseRT (via newrmesGetCurrentReference). Niente override legacy.
         pricesByRT[rt] = priceSuggested;
@@ -4195,6 +4219,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         multsByRT: _mults_byRT,
         pricesByRT,
         rmesSuggestedByRT,
+        rmesTargetOnBaseByRT,
         rmesDeltaByRT,
         overrideUsedByRT,
         foundationByRT: (function(){
@@ -4735,7 +4760,12 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         ? newrmesGetAcceptedMeta(sk, ymdN) : null;
       const hasAccepted = !!(meta && meta.price != null);
       // RMES suggested per la baseRT
-      const rmesSugg = (dd.pricesByRT && dd.pricesByRT[baseRT] != null) ? dd.pricesByRT[baseRT] : null;
+      // RMES suggested = TARGET su Base Price strutturale (coerente con cella e modal)
+      const _tObj = (dd.rmesTargetOnBaseByRT && dd.rmesTargetOnBaseByRT[baseRT]) ? dd.rmesTargetOnBaseByRT[baseRT] : null;
+      const rmesSugg = (_tObj && isFinite(_tObj.price))
+        ? _tObj.price
+        : ((dd.pricesByRT && dd.pricesByRT[baseRT] != null) ? dd.pricesByRT[baseRT] : null);
+      const rmesSuggAtCap = _tObj ? _tObj.atCap : null;  // 'min' | 'max' | 'floor' | null
       // Dev% per fattore: mult − 1 (in %)
       const devA = (m.occ_mult != null && isFinite(m.occ_mult)) ? (m.occ_mult - 1) * 100 : null;
       const devB = (m.price_mult != null && isFinite(m.price_mult)) ? (m.price_mult - 1) * 100 : null;
@@ -4806,6 +4836,7 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         eventBoost,
         eventName,
         rmesSugg: rmesSugg != null ? Math.round(rmesSugg) : null,
+        rmesSuggAtCap,
         rmesApplied: rmesApplied != null ? Math.round(rmesApplied) : null,
         appliedSource,
         appliedTs,
@@ -4919,7 +4950,19 @@ function renderRmesBreakdown(){
     h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${r.lmfPct>0.5?'#2c5c3c':(r.lmfPct<-0.5?'#a83b3b':'#888')};border-bottom:1px solid #f0eee9">${fmtPct(r.lmfPct)}</td>`;
     const eventTxt = (r.eventBoost && Math.abs(r.eventBoost-1) > 0.001) ? ('×'+r.eventBoost.toFixed(3)) : '–';
     h += `<td title="${escapeHtml(eventTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${r.eventName?'#5a3a14':'#bbb'};cursor:help;border-bottom:1px solid #f0eee9">${eventTxt}</td>`;
-    h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#2c5c3c;border-bottom:1px solid #f0eee9">${fmtEur(r.rmesSugg)}</td>`;
+    // RMES suggested: target su Base, con icona ⚠ se al cap (-20%/+20%/floor)
+    let suggIcon = '', suggTip = 'RMES target price = Base Price × Composite multiplier × (1+LMF%) × Event Factor, capped at ±20% from Base and floor.';
+    if (r.rmesSuggAtCap === 'min'){
+      suggIcon = '⚠';
+      suggTip = 'RMES target at MAX -20% deviation from Base Price. Cannot go lower — the cap is active.';
+    } else if (r.rmesSuggAtCap === 'max'){
+      suggIcon = '⚠';
+      suggTip = 'RMES target at MAX +20% deviation from Base Price. Cannot go higher — the cap is active.';
+    } else if (r.rmesSuggAtCap === 'floor'){
+      suggIcon = '⚠';
+      suggTip = 'RMES target clamped to Floor Rate. Would be lower otherwise.';
+    }
+    h += `<td title="${escapeHtml(suggTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#2c5c3c;cursor:help;border-bottom:1px solid #f0eee9">${suggIcon ? suggIcon+' ' : ''}${fmtEur(r.rmesSugg)}</td>`;
     // RMES applied: tooltip dinamico per sorgente
     let appliedTip; let appliedColor = '#5a3a14'; let appliedIcon = '';
     if (r.appliedSource === 'accepted'){
@@ -4943,7 +4986,7 @@ function renderRmesBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·OCC</b> · <b>B·ADR</b> · <b>C·Pace</b> · <b>D·Online</b> · <b>E·Search</b> · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> · <b>Event</b> · <b>RMES suggested</b> (final price after Composite, LMF, Event, ±20% cap and floor) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·OCC</b> · <b>B·ADR</b> · <b>C·Pace</b> · <b>D·Online</b> · <b>E·Search</b> · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = at the ±20% cap or floor) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -4951,7 +4994,7 @@ function renderRmesBreakdown(){
 function _rmesExportCSV(){
   if (!_RMES_LAST_ROWS || !_RMES_LAST_ROWS.length){ alert('Nothing to export — apply a range first.'); return; }
   const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const header = ['Property','Date','DoW','LastUpdate','accepted_on','weight_A','dev_A_pct','weight_B','dev_B_pct','weight_C','dev_C_pct','weight_D','dev_D_pct','weight_E','dev_E_pct','composite_multiplier','composite_dev_pct','hit_total_cap','LMF_pct','event_name','event_factor','RMES_suggested','RMES_applied','applied_source','applied_on'];
+  const header = ['Property','Date','DoW','LastUpdate','accepted_on','weight_A','dev_A_pct','weight_B','dev_B_pct','weight_C','dev_C_pct','weight_D','dev_D_pct','weight_E','dev_E_pct','composite_multiplier','composite_dev_pct','hit_total_cap','LMF_pct','event_name','event_factor','RMES_suggested','RMES_suggested_at_cap','RMES_applied','applied_source','applied_on'];
   const lines = [header.join(',')];
   for (const r of _RMES_LAST_ROWS){
     const dt = new Date(r.iso + 'T00:00:00');
@@ -4982,6 +5025,7 @@ function _rmesExportCSV(){
       '"'+(r.eventName || '')+'"',
       r.eventBoost.toFixed(3),
       r.rmesSugg != null ? r.rmesSugg : '',
+      r.rmesSuggAtCap || '',
       r.rmesApplied != null ? r.rmesApplied : '',
       r.appliedSource || '',
       appliedOn
@@ -6629,7 +6673,15 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const priceRmesFinal = (dayData.pricesByRT && dayData.pricesByRT[d.rt] != null && isFinite(dayData.pricesByRT[d.rt]))
         ? dayData.pricesByRT[d.rt]
         : (fpPriceSource * mults.multFinale);
-      const rmesSuggested = priceRmesFinal;  // would suggest == suggested price == cella tabella
+      // rmesSuggested = TARGET RMES su Base Price strutturale (ignora override modale).
+      // Questo è il "vero" suggerimento da mostrare nel modal, coerente con la cella Sell Strategy.
+      // Se non disponibile (data molto futura senza pre-calcolo), fallback a priceRmesFinal.
+      const _targetObjM = (dayData.rmesTargetOnBaseByRT && dayData.rmesTargetOnBaseByRT[d.rt]) ? dayData.rmesTargetOnBaseByRT[d.rt] : null;
+      const _targetOnBase = (_targetObjM && isFinite(_targetObjM.price)) ? _targetObjM.price : priceRmesFinal;
+      const _targetAtCap = _targetObjM ? _targetObjM.atCap : null;  // 'min' | 'max' | 'floor' | null
+      const rmesSuggested = _targetOnBase;
+      // "Base puro" = newrmesGetEffectiveBase (senza override modale), per la regola di direzione.
+      const _basePureModal = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(d.structKey, _tgtYmdN) : null;
       const overrideObj = (typeof fp_getOverride === 'function') ? fp_getOverride(d.structKey, d.targetDateISO, d.rt) : null;
       const hasOverride = !!(overrideObj && overrideObj.price != null);
       // Box dinamico in alto. Priorità sorgenti: 1) manual final-price override 🖋,
@@ -6886,14 +6938,55 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const deltaSugg = rmesSuggested - fpPriceSource;
       const _rawSugg = fpPriceSource * mults.multFinale;
       const _capped = Math.abs(_rawSugg - rmesSuggested) >= 1;  // cap ±20% o floor ha agito
-      rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:'+(hasOverride?'#f5f5f5':'#1e6b4a')+';border-radius:6px;color:'+(hasOverride?'#666':'#fff')+';margin-bottom:10px">';
-      rmesSection += '<div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.85">💡 RMES would suggest</div>';
-      rmesSection += '<div style="font-size:10.5px;opacity:.7;margin-top:2px">Base '+fmt(fpPriceSource)+' × multiplier '+mults.multFinale.toFixed(3)+(_capped?' · capped ±20%/floor':'')+'</div></div>';
-      rmesSection += '<div style="text-align:right"><div style="font-size:'+(hasOverride?'18px':'24px')+';font-weight:700;font-family:\'DM Mono\',monospace">'+fmt(rmesSuggested)+'</div>';
-      if (Math.abs(deltaSugg) >= 0.5){
-        rmesSection += '<div style="font-size:11px;opacity:.85;font-family:\'DM Mono\',monospace">Δ vs reference: '+(deltaSugg>0?'+':'')+fmt(deltaSugg)+'</div>';
+      // Logica "in line": stessa della cella RMES (tolerance ±2% o azione utente oltre il target nella stessa direzione)
+      let _modalInLine = false;
+      let _modalReason = '';
+      if ((hasOverride || _hasAccepted) && _basePureModal != null && rmesSuggested > 0){
+        const _diffPct = (fpPriceSource - rmesSuggested) / rmesSuggested;
+        if (Math.abs(_diffPct) <= 0.02){
+          _modalInLine = true; _modalReason = 'tolerance';
+        } else {
+          const _dir = (rmesSuggested < _basePureModal) ? 'down' : (rmesSuggested > _basePureModal ? 'up' : 'flat');
+          if (_dir === 'down' && fpPriceSource <= rmesSuggested){ _modalInLine = true; _modalReason = 'past_down'; }
+          else if (_dir === 'up' && fpPriceSource >= rmesSuggested){ _modalInLine = true; _modalReason = 'past_up'; }
+          // Caso flat (target = Base): NON in-line automaticamente (deve passare per tolerance ±2%).
+        }
       }
-      rmesSection += '</div></div>';
+      if (_modalInLine){
+        // Box verde "in line"
+        let _inLineMsg;
+        if (_modalReason === 'tolerance'){
+          _inLineMsg = 'RMES target €'+fmt(rmesSuggested)+' is within ±2% of your active price €'+fmt(fpPriceSource)+'.';
+        } else if (_modalReason === 'past_down'){
+          _inLineMsg = 'RMES would lower to €'+fmt(rmesSuggested)+', but you have already lowered to €'+fmt(fpPriceSource)+' (≤ target).';
+        } else if (_modalReason === 'past_up'){
+          _inLineMsg = 'RMES would raise to €'+fmt(rmesSuggested)+', but you have already raised to €'+fmt(fpPriceSource)+' (≥ target).';
+        } else {
+          _inLineMsg = 'RMES target €'+fmt(rmesSuggested)+' matches your active price €'+fmt(fpPriceSource)+'.';
+        }
+        rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:#1e6b4a;border-radius:6px;color:#fff;margin-bottom:10px">';
+        rmesSection += '<div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.85">✓ RMES is in line with your decision</div>';
+        rmesSection += '<div style="font-size:10.5px;opacity:.85;margin-top:2px">'+_inLineMsg+'</div></div>';
+        rmesSection += '<div style="text-align:right"><div style="font-size:18px;font-weight:700;font-family:\'DM Mono\',monospace">✓</div></div>';
+        rmesSection += '</div>';
+      } else {
+        // Box giallo "RMES would suggest" (mostra il target su Base, con eventuale spiegazione "RMES insiste")
+        let _suggSubtitle = 'Base €'+fmt(_basePureModal!=null?_basePureModal:fpPriceSource)+' × multiplier '+mults.multFinale.toFixed(3)+(_capped?' · capped ±20%/floor':'');
+        if (hasOverride){
+          const _dir = (_basePureModal != null && rmesSuggested < _basePureModal) ? 'lower' : (_basePureModal != null && rmesSuggested > _basePureModal ? 'raise' : null);
+          if (_dir){
+            _suggSubtitle = 'Market signals to '+_dir+' the price. Your override €'+fmt(fpPriceSource)+' is outside this target.';
+          }
+        }
+        rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:'+(hasOverride?'#f5f5f5':'#1e6b4a')+';border-radius:6px;color:'+(hasOverride?'#666':'#fff')+';margin-bottom:10px">';
+        rmesSection += '<div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.85">💡 RMES would suggest</div>';
+        rmesSection += '<div style="font-size:10.5px;opacity:.7;margin-top:2px">'+_suggSubtitle+'</div></div>';
+        rmesSection += '<div style="text-align:right"><div style="font-size:'+(hasOverride?'18px':'24px')+';font-weight:700;font-family:\'DM Mono\',monospace">'+fmt(rmesSuggested)+'</div>';
+        if (Math.abs(deltaSugg) >= 0.5){
+          rmesSection += '<div style="font-size:11px;opacity:.85;font-family:\'DM Mono\',monospace">Δ vs reference: '+(deltaSugg>0?'+':'')+fmt(deltaSugg)+'</div>';
+        }
+        rmesSection += '</div></div>';
+      }
       const elasticity = (typeof fp_getElasticity === 'function') ? fp_getElasticity(d.structKey) : 1.0;
       const rnAtt = (d.rnAttese != null && isFinite(d.rnAttese)) ? d.rnAttese : (d.inv || 4);
       const finalDataAttr = 'data-struct="'+d.structKey+'" data-rt="'+escapeHtml(d.rt)+'" data-date="'+d.targetDateISO+'" data-rmes-suggested="'+rmesSuggested.toFixed(4)+'" data-rn-attese="'+rnAtt+'" data-elasticity="'+elasticity+'" data-foundation="'+fpPriceSource.toFixed(4)+'" data-mult-finale="'+mults.multFinale.toFixed(6)+'"';
@@ -8467,26 +8560,16 @@ function renderSellStrategy(sel){
             `Overrides apply ONLY to the baseRT (${baseRT_fp}). To change this price, go to the baseRT row.`;
           cellFoundation = `<td class="cell-mono sell-block-fp" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(derivedTip)}"><b style="${textStyle}">↳ ${fpPriceTxt}</b></td>`;
         } else {
-          // baseRT: cella con stile diverso a seconda dello stato + bottoni inline override/reset
-          let cellBg, cellBorder, textStyle, statusIcon, fpTipPrefix;
-          if (fpStatus === 'override'){
-            cellBg = 'rgba(59,107,154,.14)'; cellBorder = 'rgba(59,107,154,.6)';
-            textStyle = 'color:#1e4a6b;font-weight:700'; statusIcon = '🖋 ';
-            fpTipPrefix = `Base Price OVERRIDE (manual)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nManual value: €${fpEffective.toFixed(0)}\nOriginal frozen value: ${nrmFrozen != null ? '€'+nrmFrozen.toFixed(0) : '—'}\n\nRMES will suggest deltas vs this new Base.\nOther RTs inherit this value + monthly supplement.`;
-          } else {
-            // FROZEN = "accepted by default": the structural Base Price is what we use unless we explicitly override it.
-            cellBg = 'rgba(74,124,89,.10)'; cellBorder = 'rgba(74,124,89,.45)';
-            textStyle = 'color:#2f5538;font-weight:700';
-            statusIcon = '✓ ';
-            fpTipPrefix = `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nThis is the structural Base Price for the day, frozen at first calc. It is treated as ALREADY ACCEPTED — no action needed unless you want to override it.\n\nComputed once with: LY median ADR (same DoW & month) × target growth, capped at the Expedia Goal Value (weighted compset + offsets), bounded ±50% from Anchor Price, ≥ floor.\n\nRMES suggests daily deltas (±20%) on top of this Base.\nOther RTs inherit Base + monthly supplement.`;
-          }
-          const fpTip = fpTipPrefix + `\n\nClick 🖋 to override · ↺ to reset.`;
-          const btnOvr = `<button class="fp-inline-btn fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Manual override" style="border:1px solid #3b6b9a;background:#fff;color:#3b6b9a;border-radius:3px;padding:0 4px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5">🖋</button>`;
-          const btnReset = (fpStatus === 'override')
-            ? `<button class="fp-inline-btn fp-inline-reset" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Remove override (revert to frozen)" style="border:1px solid #999;background:#fff;color:#666;border-radius:3px;padding:0 4px;font-size:10px;cursor:pointer;line-height:1.5">↺</button>`
-            : '';
-          const inlineBtns = `<span style="display:inline-flex;gap:2px;margin-left:6px;vertical-align:middle">${btnOvr}${btnReset}</span>`;
-          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${fpStatus}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b>${inlineBtns}</td>`;
+          // baseRT: cella READ-ONLY. Il Base Price strutturale è "accettato per default" e
+          // non si tocca: per agire sul prezzo del giorno usa la cella RMES (✓ accept) o
+          // l'override modale / pulsante "🖋 Override RMES" del pannello periodo.
+          let cellBg = 'rgba(74,124,89,.10)';
+          let cellBorder = 'rgba(74,124,89,.45)';
+          let textStyle = 'color:#2f5538;font-weight:700';
+          let statusIcon = '✓ ';
+          let fpTipPrefix = `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nThis is the structural Base Price for the day, frozen at first calc. Read-only.\n\nComputed once with: LY median ADR (same DoW & month) × target growth, capped at the Expedia Goal Value (weighted compset + offsets), bounded ±50% from Anchor Price, ≥ floor.\n\nTo change the active price for the day, use the RMES cell (✓ to accept the RMES suggestion) or 🖋 Override RMES from the modal / period panel.\nOther RTs inherit Base + monthly supplement.`;
+          const fpTip = fpTipPrefix;
+          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="frozen-readonly" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b></td>`;
         }
       }
     }
@@ -8655,22 +8738,85 @@ function renderSellStrategy(sel){
         if (!mapEntry || !baseRTKey || !mapEntry.rmesDeltaByRT){
           return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.05);text-align:center">—</td>';
         }
-        const delta = mapEntry.rmesDeltaByRT[baseRTKey];
-        const sugg = mapEntry.rmesSuggestedByRT[baseRTKey];
-        if (delta == null || !isFinite(delta) || sugg == null || !isFinite(sugg)){
+        // Riferimento corrente (Last update): considera override 🖋 + accept ✓ + Base
+        const ref = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, r.ymd) : null;
+        // "Base puro" strutturale (senza override modale finale) — serve per capire la direzione vera di RMES
+        const basePure = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : null;
+        // Target RMES calcolato sul Base puro (= cosa suggerirebbe ignorando il tuo override modale)
+        const _targetObj = (mapEntry.rmesTargetOnBaseByRT && mapEntry.rmesTargetOnBaseByRT[baseRTKey])
+          ? mapEntry.rmesTargetOnBaseByRT[baseRTKey]
+          : null;
+        const targetOnBase = (_targetObj && isFinite(_targetObj.price)) ? _targetObj.price : (mapEntry.rmesSuggestedByRT[baseRTKey]);
+        const _atCap = _targetObj ? _targetObj.atCap : null;  // 'min' | 'max' | 'floor' | null
+        if (targetOnBase == null || !isFinite(targetOnBase)){
           return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.05);text-align:center">—</td>';
         }
-        const ref = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, r.ymd) : null;
-        const variationPct = (ref != null && ref > 0) ? (delta / ref * 100) : 0;
+        // Frase "at cap" per i tooltip
+        let _capNote = '';
+        if (_atCap === 'min') _capNote = '\n⚠ RMES is at the MAX -20% deviation from Base — it cannot suggest lower than this.';
+        else if (_atCap === 'max') _capNote = '\n⚠ RMES is at the MAX +20% deviation from Base — it cannot suggest higher than this.';
+        else if (_atCap === 'floor') _capNote = '\n⚠ RMES suggestion is clamped to the Floor Rate — it would be lower otherwise.';
+        // Capisco se c'è un override modale (priorità massima nel ref)
+        const _isoOvrK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+        const _ovrK = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, _isoOvrK, baseRTKey) : null;
+        const hasManualOvr = !!(_ovrK && _ovrK.price != null && isFinite(_ovrK.price) && _ovrK.price > 0);
+        const acc = (typeof newrmesGetAccepted === 'function') ? newrmesGetAccepted(sel, r.ymd) : null;
+        const hasAcc = (acc != null && isFinite(acc));
+        // Regola "in line" (con tolleranza ±2%) — applicata SE c'è override o accept
+        let inLine = false;
+        let reasonInLine = '';
+        if ((hasManualOvr || hasAcc) && ref != null && targetOnBase > 0 && basePure != null && basePure > 0){
+          const tolerance = 0.02;  // ±2%
+          const diffPct = (ref - targetOnBase) / targetOnBase;
+          if (Math.abs(diffPct) <= tolerance){
+            inLine = true;
+            reasonInLine = 'tolerance';
+          } else {
+            // Direzione del segnale RMES vs Base puro
+            const rmesDirection = (targetOnBase < basePure) ? 'down' : (targetOnBase > basePure ? 'up' : 'flat');
+            if (rmesDirection === 'down' && ref <= targetOnBase){
+              inLine = true;
+              reasonInLine = 'past_down';   // utente ha già abbassato oltre il target
+            } else if (rmesDirection === 'up' && ref >= targetOnBase){
+              inLine = true;
+              reasonInLine = 'past_up';
+            }
+            // Caso flat (target = Base): NON in-line automaticamente. Se diff > tolerance, RMES insiste.
+          }
+        }
+        const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
+        // ----- CASO 1: in-line → mostra ✓ in line -----
+        if (inLine){
+          let tipInLine;
+          if (reasonInLine === 'tolerance'){
+            tipInLine = `RMES target: €${Math.round(targetOnBase)} · Your active price: €${Math.round(ref)}\nDifference within ±2% tolerance → RMES is "in line" with your decision.${_capNote}\n\nClick to see calculation detail.`;
+          } else if (reasonInLine === 'past_down'){
+            tipInLine = `RMES target: €${Math.round(targetOnBase)} (suggesting to LOWER from Base €${Math.round(basePure)})\nYour active price: €${Math.round(ref)} (already at or below the target)\n→ RMES is "in line": you have already lowered enough.${_capNote}\n\nClick to see calculation detail.`;
+          } else if (reasonInLine === 'past_up'){
+            tipInLine = `RMES target: €${Math.round(targetOnBase)} (suggesting to RAISE from Base €${Math.round(basePure)})\nYour active price: €${Math.round(ref)} (already at or above the target)\n→ RMES is "in line": you have already raised enough.${_capNote}\n\nClick to see calculation detail.`;
+          } else {
+            tipInLine = `RMES target: €${Math.round(targetOnBase)} · Your active price: €${Math.round(ref)}\nRMES is "in line" with your decision.\n\nClick to see calculation detail.`;
+          }
+          return `<td class="cell-mono cell-flat" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(74,124,89,.10);cursor:pointer;text-align:center;color:#2c5c3c;font-weight:700" title="${escapeHtml(tipInLine)}">✓ in line</td>`;
+        }
+        // ----- CASO 2: RMES insiste con un target diverso -----
+        // Mostro il target su Base puro (= numero "stabile" che ha senso per la regola).
+        const delta = targetOnBase - (ref != null ? ref : 0);
+        const arrow = (targetOnBase > (ref || 0)) ? '↑' : '↓';
         const cls = (delta > 0.5) ? 'cell-pos' : (delta < -0.5 ? 'cell-neg' : 'cell-flat');
         const sign = delta > 0 ? '+' : '';
-        const acc = (typeof newrmesGetAccepted === 'function') ? newrmesGetAccepted(sel, r.ymd) : null;
-        const accBadge = (acc != null) ? '<span style="font-size:9px;color:#3d7a4b;font-weight:700;display:block">✓ already active</span>' : '';
-        const acceptBtn = (Math.abs(delta) >= 0.5)
+        const accBadge = hasAcc ? '<span style="font-size:9px;color:#3d7a4b;font-weight:700;display:block">✓ already active</span>' : '';
+        const acceptBtn = (Math.abs(delta) >= 0.5 && !hasManualOvr)
           ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" title="Accept this RMES suggestion as the new current reference for ${r.ymd}" style="margin-top:2px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block">✓</button>`
           : '';
-        const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer;text-align:center" title="RMES suggestion\nSuggested price: €${Math.round(sugg)}\nLast update (active price): €${ref!=null?Math.round(ref):'—'}\nΔ vs Last update: ${sign}€${Math.round(delta)} (${sign}${variationPct.toFixed(1)}%)\n\nClick anywhere on the cell to see the full calculation detail (5 factors + LMF + Event Factor).\nThe ✓ button accepts this price as the new Last update.">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)}</span> ${acceptBtn}${accBadge}</td>`;
+        const rmesDir = (basePure != null && targetOnBase < basePure) ? 'down' : (basePure != null && targetOnBase > basePure ? 'up' : 'flat');
+        let cellTip;
+        if (hasManualOvr){
+          cellTip = `RMES still suggests €${Math.round(targetOnBase)} (target on Base €${basePure!=null?Math.round(basePure):'—'}, direction: ${rmesDir==='down'?'lower the price':rmesDir==='up'?'raise the price':'no change'}).\nYour override is €${Math.round(ref)} — outside the target.${_capNote}\n\nClick to see calculation detail.`;
+        } else {
+          cellTip = `RMES suggests €${Math.round(targetOnBase)}\nCurrent active price (Last update): €${ref!=null?Math.round(ref):'—'}\nΔ vs Last update: ${sign}€${Math.round(delta)}${_capNote}\n\nClick to see calculation detail. The ✓ button accepts this price as the new Last update.`;
+        }
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer;text-align:center" title="${escapeHtml(cellTip)}">${arrow} ${Math.round(targetOnBase)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)}</span> ${acceptBtn}${accBadge}</td>`;
       })()}
       ${beddyCell}
       ${expCells}
@@ -8926,24 +9072,6 @@ function renderSellStrategy(sel){
         days.push({ iso, calc });
       }
       return { days, setMsg };
-    }
-    const btnPeriodFp = document.getElementById('fp-period-foundation');
-    if (btnPeriodFp){
-      btnPeriodFp.onclick = function(){
-        const priceInp = document.getElementById('fp-period-price');
-        const price = priceInp ? parseFloat(priceInp.value) : NaN;
-        const r = _fpPeriodDays(); if (!r) return;
-        if (!isFinite(price) || price <= 0){ r.setMsg('Enter a valid price (>0).', true); return; }
-        if (!confirm('Override BASE PRICE of €' + price.toFixed(0) + ' on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?\n\nRMES will keep suggesting deltas vs this new Base. Other RTs inherit base + supplement.')) return;
-        for (const d of r.days){
-          const ymdN = +(d.iso.replaceAll('-',''));
-          if (typeof newrmesSetFrozenBaseOverride === 'function') newrmesSetFrozenBaseOverride(sel, ymdN, price);
-          // un override del Base annulla l'accettazione precedente
-          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, null);
-        }
-        r.setMsg('✓ Base Price €' + price.toFixed(0) + ' applied to ' + r.days.length + ' days.');
-        _refreshSell();
-      };
     }
     const btnPeriodFinal = document.getElementById('fp-period-final');
     if (btnPeriodFinal){
