@@ -1,6 +1,237 @@
 /* ============================================================
    REVENUE INTELLIGENCE DASHBOARD - JS
    ============================================================ */
+
+/* ============================================================
+   rmesCloud — shared state via Firebase Firestore
+   ------------------------------------------------------------
+   Sincronizza accept RMES + override Base + tutta la config tra
+   tutti i browser (Manu + colleghe). localStorage resta la fonte
+   LOCALE; Firestore ne è lo specchio condiviso.
+   - All'avvio: scarica lo stato dal cloud e lo scrive in localStorage
+     PRIMA che la dashboard legga (se il cloud è vuoto, fa l'upload
+     dello stato locale = prima migrazione).
+   - Ad ogni scrittura su una chiave RMES: la spinge sul cloud (debounced).
+   - Listener realtime: se un'altra persona salva, aggiorna localStorage
+     e ridisegna.
+   - Fallback totale su localStorage se Firebase non è disponibile:
+     la dashboard funziona comunque, esattamente come prima.
+   Documento unico condiviso: collection "rmes_shared", doc "state".
+   ============================================================ */
+const RMES_CLOUD = (function(){
+  // Chiavi localStorage da sincronizzare (decisioni + config).
+  const SYNC_KEYS = [
+    // --- decisioni operative ---
+    'rmes_frozen_base_v1',
+    'rmes_frozen_base_override_v1',
+    'rmes_accepted_v1',
+    'rmes_last_suggestion_v1',
+    'rmes_last_suggestion_date_v1',
+    // --- configurazione ---
+    'rmes_weights_per_struct_v4',
+    'rmes_thresholds_per_struct_v3',
+    'rmes_total_cap_v1',
+    'rmes_event_weights_v1',
+    'rmes_target_growth_v1',
+    'rmes_floor_v1',
+    'rmes_compset_offsets_v1',
+    'rmes_compset_weights_v1',
+    'rmes_base_price_v1',
+    'rmes_ota_markup_v1',
+    'rmes_channel_markup_v1',
+    'rmes_elasticity_v1',
+    'rmes_lastminute_factor_v1',
+    'rmes_foundation_overrides_v1'
+  ];
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyAJuFzabHO3O3XVM3DfeWNThB9Wy0jMkHA",
+    authDomain: "rmes-manu-enis.firebaseapp.com",
+    projectId: "rmes-manu-enis",
+    storageBucket: "rmes-manu-enis.firebasestorage.app",
+    messagingSenderId: "523450627678",
+    appId: "1:523450627678:web:bd4465f1ba26ea96c7e6cf"
+  };
+  let db = null;
+  let ready = false;
+  let available = false;
+  let pushTimer = null;
+  let applyingRemote = false;   // true mentre applichiamo dati dal cloud (per non ri-pushare)
+  let lastRemoteJSON = null;    // ultimo stato remoto applicato (per dedup)
+  const statusListeners = [];
+
+  function _setStatus(s){
+    try { statusListeners.forEach(fn => fn(s)); } catch(e){}
+    try {
+      const el = document.getElementById('rmes-cloud-status');
+      if (el){
+        const map = {
+          syncing: { t:'☁ syncing…', c:'#8a6d3b' },
+          synced:  { t:'☁ synced',  c:'#3d7a4b' },
+          offline: { t:'⚠ local only', c:'#a83b3b' }
+        };
+        const m = map[s] || map.offline;
+        el.textContent = m.t;
+        el.style.color = m.c;
+      }
+    } catch(e){}
+  }
+
+  // Raccoglie lo stato locale (solo le chiavi da sincronizzare presenti)
+  function _collectLocal(){
+    const obj = {};
+    for (const k of SYNC_KEYS){
+      try {
+        const raw = localStorage.getItem(k);
+        if (raw != null) obj[k] = raw;   // salvo la stringa grezza (già JSON)
+      } catch(e){}
+    }
+    return obj;
+  }
+
+  // Applica uno stato remoto in localStorage; ritorna true se qualcosa è cambiato
+  function _applyToLocal(remote){
+    if (!remote || typeof remote !== 'object') return false;
+    let changed = false;
+    applyingRemote = true;
+    try {
+      for (const k of SYNC_KEYS){
+        const incoming = (remote[k] != null) ? remote[k] : null;
+        let current = null;
+        try { current = localStorage.getItem(k); } catch(e){}
+        if (incoming != null && incoming !== current){
+          try { localStorage.setItem(k, incoming); changed = true; } catch(e){}
+        }
+      }
+    } finally {
+      applyingRemote = false;
+    }
+    return changed;
+  }
+
+  // Push debounced dello stato locale sul cloud
+  function _schedulePush(){
+    if (!available || !db || applyingRemote) return;
+    _setStatus('syncing');
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(function(){
+      pushTimer = null;
+      const payload = _collectLocal();
+      payload._updatedAt = Date.now();
+      payload._updatedBy = (function(){
+        try { let id = localStorage.getItem('rmes_client_id');
+          if (!id){ id = 'c'+Math.random().toString(36).slice(2,8); localStorage.setItem('rmes_client_id', id); }
+          return id; } catch(e){ return 'unknown'; }
+      })();
+      db.collection('rmes_shared').doc('state').set(payload)
+        .then(function(){ lastRemoteJSON = JSON.stringify(payload); _setStatus('synced'); })
+        .catch(function(e){ console.warn('[rmesCloud] push failed', e); _setStatus('offline'); });
+    }, 800);  // accorpa scritture ravvicinate
+  }
+
+  // Hook pubblico: chiamato dopo ogni scrittura su una chiave RMES
+  function notifyLocalChange(key){
+    if (!available) return;
+    if (applyingRemote) return;
+    if (SYNC_KEYS.indexOf(key) === -1) return;
+    _schedulePush();
+  }
+
+  // Inizializzazione: carica Firebase, scarica lo stato, attiva il listener realtime.
+  // Ritorna una Promise che si risolve quando lo stato iniziale è pronto in localStorage.
+  function init(){
+    return new Promise(function(resolve){
+      let settled = false;
+      const finish = function(){ if (!settled){ settled = true; resolve(); } };
+      // Timeout di sicurezza: se Firebase non risponde entro 6s, si va in locale.
+      const safety = setTimeout(function(){
+        if (!ready){ console.warn('[rmesCloud] init timeout → local only'); _setStatus('offline'); finish(); }
+      }, 6000);
+
+      try {
+        if (typeof firebase === 'undefined' || !firebase.initializeApp){
+          console.warn('[rmesCloud] Firebase SDK not present → local only');
+          _setStatus('offline'); clearTimeout(safety); return finish();
+        }
+        if (!firebase.apps || !firebase.apps.length){ firebase.initializeApp(FIREBASE_CONFIG); }
+        db = firebase.firestore();
+        available = true;
+        const ref = db.collection('rmes_shared').doc('state');
+        ref.get().then(function(snap){
+          if (snap.exists){
+            const remote = snap.data();
+            _applyToLocal(remote);
+            lastRemoteJSON = JSON.stringify(remote);
+            console.log('[rmesCloud] initial state loaded from cloud');
+          } else {
+            // cloud vuoto → prima migrazione: carico lo stato locale attuale
+            const payload = _collectLocal(); payload._updatedAt = Date.now();
+            ref.set(payload).then(function(){ console.log('[rmesCloud] migrated local state to cloud'); }).catch(function(){});
+          }
+          ready = true; _setStatus('synced'); clearTimeout(safety); finish();
+          // listener realtime per aggiornamenti altrui
+          ref.onSnapshot(function(s){
+            if (!s.exists) return;
+            const remote = s.data();
+            const j = JSON.stringify(remote);
+            if (j === lastRemoteJSON) return;   // è il nostro stesso push
+            const changed = _applyToLocal(remote);
+            lastRemoteJSON = j;
+            if (changed){
+              console.log('[rmesCloud] remote update applied → refreshing');
+              _setStatus('synced');
+              try { if (typeof rmesCloudOnRemoteUpdate === 'function') rmesCloudOnRemoteUpdate(); } catch(e){}
+            }
+          }, function(err){ console.warn('[rmesCloud] snapshot error', err); _setStatus('offline'); });
+        }).catch(function(e){
+          console.warn('[rmesCloud] initial get failed → local only', e);
+          available = false; _setStatus('offline'); clearTimeout(safety); finish();
+        });
+      } catch(e){
+        console.warn('[rmesCloud] init exception → local only', e);
+        available = false; _setStatus('offline'); clearTimeout(safety); finish();
+      }
+    });
+  }
+
+  return {
+    init: init,
+    notifyLocalChange: notifyLocalChange,
+    isAvailable: function(){ return available; },
+    onStatus: function(fn){ statusListeners.push(fn); },
+    _collectLocal: _collectLocal   // per debug
+  };
+})();
+
+/* Hook chiamato dal listener realtime quando arriva un aggiornamento da un altro browser.
+   Ridisegna le viste correnti senza ricaricare la pagina. */
+function rmesCloudOnRemoteUpdate(){
+  try {
+    if (typeof CURRENT_TAB !== 'undefined'){
+      if (CURRENT_TAB === 'sell' && typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+      else if (CURRENT_TAB === 'baseprice' && typeof renderBasePriceBreakdown === 'function') renderBasePriceBreakdown();
+      else if (CURRENT_TAB === 'pri' && typeof renderRMESTab === 'function') renderRMESTab();
+    }
+  } catch(e){ console.warn('rmesCloudOnRemoteUpdate failed', e); }
+}
+
+/* Intercetta TUTTE le scritture su localStorage una volta sola: se la chiave è una
+   chiave RMES sincronizzata, notifica rmesCloud (che fa il push debounced sul cloud).
+   Non cambia il comportamento di localStorage: scrive sempre in locale come prima. */
+(function _wrapLocalStorageSetItem(){
+  try {
+    if (typeof localStorage === 'undefined' || !localStorage.setItem) return;
+    if (localStorage.__rmesWrapped) return;
+    const _origSet = localStorage.setItem.bind(localStorage);
+    localStorage.setItem = function(key, value){
+      _origSet(key, value);
+      try { if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.notifyLocalChange) RMES_CLOUD.notifyLocalChange(key); } catch(e){}
+    };
+    try { Object.defineProperty(localStorage, '__rmesWrapped', { value:true, enumerable:false }); }
+    catch(e){ /* alcuni browser non permettono defineProperty su localStorage: ignora */ }
+  } catch(e){ console.warn('[rmesCloud] could not wrap setItem', e); }
+})();
+
+
 /* -------- CONFIG -------- */
 /* Budget fiscal year: May 2026 → April 2027 (12 months). Le chiavi budgetByMonth
    sono YYYYMM (es. 202605, 202606, ..., 202704). Ogni mese ha Revenue, OCC%, ADR target.

@@ -298,6 +298,8 @@ main{flex:1;padding:8px 16px 24px}
 <div class="sheet" id="sheet"><div class="sheet-grip"></div><div id="sheet-body"></div></div>
 
 <script src="data.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="engine.js"></script>
 <script>
 /* RMES MOBILE APP v2 — reuses engine.js (same RMES logic as the dashboard).
@@ -919,14 +921,21 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cal-today').addEventListener('click', ()=>{ MOB.winStart=null; mobRenderAll(); });
   document.querySelectorAll('.tabbtn').forEach(b=> b.addEventListener('click', ()=> mobSetTab(b.dataset.tab)));
   document.getElementById('sheet-bg').addEventListener('click', mobCloseSheet);
-  try {
-    loadData(EMBEDDED_CSV);
-    if (typeof AIRDNA_CSV !== 'undefined') loadAirdna(AIRDNA_CSV);
-    if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
-    if (typeof fp_ensureStruct === 'function') fp_ensureStruct(MOB.struct);
-    document.getElementById('head-sub').textContent = 'Revenue Intelligence';
-    mobRenderStructPills(); mobRenderAll();
-  } catch(e){ console.error(e); document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }
+  const _mobBoot = function(){
+    try {
+      loadData(EMBEDDED_CSV);
+      if (typeof AIRDNA_CSV !== 'undefined') loadAirdna(AIRDNA_CSV);
+      if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
+      if (typeof fp_ensureStruct === 'function') fp_ensureStruct(MOB.struct);
+      document.getElementById('head-sub').textContent = 'Revenue Intelligence';
+      mobRenderStructPills(); mobRenderAll();
+    } catch(e){ console.error(e); document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }
+  };
+  if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.init){
+    RMES_CLOUD.init().then(_mobBoot).catch(_mobBoot);
+  } else {
+    _mobBoot();
+  }
 });
 </script>
 </body>
