@@ -361,6 +361,26 @@ function fp_postLoadHook(){
     }
   } catch(e){ console.error('[NewRMES] migration failed', e); }
 
+  // --- ONE-SHOT WIPE v2: clear ALL RMES accept/override (Manu, 27/05/2026) ---
+  // Reason: stale accept entries causing "RMES price ≠ Base Price" on first day, then drifting.
+  // After this wipe, every day starts fresh: reference = Base Price, RMES suggests delta from there.
+  try {
+    const WIPE2_FLAG = 'rmes_clear_overrides_v2_2026_05_27';
+    if (!localStorage.getItem(WIPE2_FLAG)){
+      console.log('[NewRMES] Wipe v2: clearing all RMES accept/override entries…');
+      const keysToWipe = [
+        'rmes_accepted_v1',                 // RMES suggestions accepted as new current reference
+        'rmes_last_suggestion_v1',          // yesterday's snapshot
+        'rmes_last_suggestion_date_v1',
+        'rmes_frozen_base_override_v1'      // manual Base Price overrides
+      ];
+      for (const k of keysToWipe){ try { localStorage.removeItem(k); } catch(e){} }
+      try { localStorage.setItem(WIPE2_FLAG, '1'); } catch(e){}
+      console.log('[NewRMES] Wipe v2 complete. All days reset to Base Price as the active reference.');
+    }
+  } catch(e){ console.error('[NewRMES] wipe v2 failed', e); }
+
+
   try {
     if (typeof _invalidatePaceAggCache === 'function') _invalidatePaceAggCache();
     if (typeof fp_computeStruct === 'function' && typeof BOOKINGS !== 'undefined' && BOOKINGS.length > 0){
@@ -4034,13 +4054,26 @@ function newrmesGetEffectiveBase(structKey, ymd){
 /* === ACCEPTANCE === */
 function newrmesGetAccepted(structKey, ymd){
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
-  return (all[structKey] && all[structKey][ymd] != null) ? all[structKey][ymd] : null;
+  const v = all[structKey] && all[structKey][ymd];
+  if (v == null) return null;
+  if (typeof v === 'number') return v;            // legacy: numero secco
+  if (typeof v === 'object' && v.price != null) return v.price;  // nuovo: {price, ts}
+  return null;
+}
+function newrmesGetAcceptedMeta(structKey, ymd){
+  // Returns {price, ts} or null. ts is the ISO date of when the accept was made.
+  const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
+  const v = all[structKey] && all[structKey][ymd];
+  if (v == null) return null;
+  if (typeof v === 'number') return { price: v, ts: null };
+  if (typeof v === 'object' && v.price != null) return { price: v.price, ts: v.ts || null };
+  return null;
 }
 function newrmesSetAccepted(structKey, ymd, price){
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
   if (!all[structKey]) all[structKey] = {};
   if (price == null) delete all[structKey][ymd];
-  else all[structKey][ymd] = Math.round(price);
+  else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString() };
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
 }
 function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
@@ -4048,9 +4081,10 @@ function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
   if (!all[structKey]) all[structKey] = {};
   const dFrom = new Date(Math.floor(ymdFrom/10000), Math.floor((ymdFrom%10000)/100)-1, ymdFrom%100);
   const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
+  const ts = new Date().toISOString();
   for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
     const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
-    all[structKey][y] = Math.round(price);
+    all[structKey][y] = { price: Math.round(price), ts };
   }
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
 }
@@ -5665,10 +5699,6 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   h += '<button onclick="document.getElementById(\'fp-detail-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
   h += '</div>';
   h += '<div style="padding:18px 22px">';
-  // Disclaimer onesto: la sezione 5 fattori funziona col nuovo sistema, ma il "Base Price detail"
-  // mostrato qui sotto è ancora basato sul vecchio calcolo Foundation a 6 step (non sul Frozen Base).
-  // Il prezzo finale RMES che vedi in tabella è invece corretto (calcolato sul Frozen Base).
-  h += '<div style="padding:8px 12px;background:#f4f4f0;border-left:3px solid #888;border-radius:3px;margin-bottom:12px;font-size:11px;color:#555;line-height:1.45"><b>Note.</b> The 5 RMES factors section is correct and reflects what RMES is currently doing. The Base Price section below shows the legacy 6-step calculation (kept for reference) — the actual frozen Base Price used by RMES is the value shown in the "Base Price" column of the Sell Strategy table, not necessarily the one reconstructed here.</div>';
   if (d.longHorizon){
     h += '<div style="padding:10px 14px;background:#fff8e8;border:1px solid #f0d090;border-radius:5px;margin-bottom:14px;font-size:12px;color:#7a5a14"><b>⚠ Distant horizon</b> (' + d.daysToArrival + ' days from today). Simplified mode: <b>max(Base, LY median) × target growth</b>. No pace/curve/market cap.</div>';
     if (d.anchorOrBase != null){
@@ -5722,8 +5752,8 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const fpIcon = hasFoundationOverride ? '🖋' : '⚡';
       const fpLabel = hasFoundationOverride ? 'Base Price (manual override)' : 'Base Price (computed)';
       const fpSub = hasFoundationOverride
-        ? 'Base Price override active · source price set manually · the 5 factors apply on top'
-        : 'Structural starting price · click "Show 6-step calculation" for the build-up';
+        ? 'Manual override active · the 5 factors apply on top of this price'
+        : 'Structural starting price · LY anchor × growth → compset cap → Anchor guard-rail → floor';
       rmesSection += '<div style="padding:14px 16px;background:'+fpBg+';border:1px solid '+fpBorder+';border-radius:6px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">';
       rmesSection += '<div>';
       rmesSection += '<div style="font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:'+fpLabelCol+';font-weight:700;margin-bottom:2px">'+fpIcon+' '+fpLabel+'</div>';
@@ -5734,7 +5764,6 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       rmesSection += '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">';
       rmesSection += '<div style="font-size:20px;font-weight:700;color:'+fpPriceCol+';font-family:\'DM Mono\',monospace">' + fmt(fpPriceSource) + '</div>';
-      rmesSection += '<button id="fp-show-6step" style="font-family:\'DM Mono\',monospace;font-size:11px;padding:5px 12px;border:1px solid '+fpBorder+';border-radius:5px;background:transparent;color:'+fpLabelCol+';cursor:pointer;font-weight:700">⚡ Show 6-step calculation</button>';
       rmesSection += '</div>';
       rmesSection += '</div>';
       const factors = [
@@ -6997,8 +7026,8 @@ function renderSellStrategy(sel){
     + '<th colspan="4" class="sell-grp sell-grp-pickup">Pickup ' + A.pickupDaysAgo + 'd</th>'
     + '<th colspan="3" class="sell-grp sell-grp-stly">STLY (-364)</th>'
     + '<th colspan="4" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="RMES suggestion from YESTERDAY — final Beddy price + Δ€ vs the reference at the time. Click to see the calculation detail. Use it to spot how the suggestion is evolving day by day.">RMES last update<br><span class="sell-th-sub">price · Δ€</span></th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES suggestion TODAY — final Beddy price + Δ€ vs current reference. Capped ±20% from current reference. Click to see the calculation detail. The ✓ button accepts the suggestion as the new current reference.">RMES today<br><span class="sell-th-sub">price · Δ€ · ✓ accept</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="Last update — the price currently active for this stay-date. Equals Base Price if RMES has never been accepted, or the most recent RMES suggestion accepted with ✓. This is the reference the next RMES suggestion will be compared against.">Last update<br><span class="sell-th-sub">active price</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES — today\'s pricing engine suggestion. Click anywhere on the cell to see the calculation detail (5 factors + LMF + Event Factor). The ✓ button accepts this price as the new Last update for that date. Capped ±20% vs Last update.">RMES<br><span class="sell-th-sub">price · Δ€ · ✓ accept</span></th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + (showExp ? '<th colspan="3" class="sell-grp sell-grp-expedia">Rate Shopper</th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). You only need to touch it occasionally if something looks off: click 🖋 to override a single day, or use Override by period for a range; ↺ to reset. Other RTs show baseRT + monthly supplement (read-only).">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
@@ -7664,24 +7693,28 @@ function renderSellStrategy(sel){
       <td class="cell-mono ${pkStlyCancelCount>0?'cell-neg':'cell-flat'}" style="background:rgba(138,138,138,.04);text-align:right">${pkStlyCancelCell}</td>
       <td class="cell-mono ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</td>
       <td class="cell-mono ${pkStlyNewCount>0?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
-      <!-- RMES last update (yesterday's suggested price + variation, clickable for detail) -->
+      <!-- Last update: price currently active for this date (Base Price OR last accepted RMES) -->
       ${(function(){
-        const ly = (typeof newrmesGetLastSuggestion === 'function') ? newrmesGetLastSuggestion(sel, r.ymd) : null;
         const baseRTKey = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
-        if (ly == null || baseRTKey == null) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
-        // ly è il delta in € salvato ieri. Il prezzo "di ieri" = ref di ieri + delta. Ma il ref di ieri
-        // non è facilmente recuperabile post-snapshot (potrebbe essere cambiato). Approssimazione utile:
-        // mostro come "prezzo finale Beddy" = riferimento corrente + delta_ieri (assumendo che il
-        // riferimento non sia cambiato), e la variazione = delta_ieri vs riferimento corrente.
-        const refNow = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, r.ymd) : null;
-        if (refNow == null) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
-        const priceYesterday = Math.round(refNow + ly);
-        const variation = ly;
-        const variationPct = (refNow > 0) ? (variation / refNow * 100) : 0;
-        const cls = (variation > 0.5) ? 'cell-pos' : (variation < -0.5 ? 'cell-neg' : 'cell-flat');
-        const sign = variation > 0 ? '+' : '';
-        const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.03);cursor:pointer;text-align:center" title="RMES suggestion from yesterday\nFinal Beddy price: €${priceYesterday}\nVariation: ${sign}€${Math.round(variation)} (${sign}${variationPct.toFixed(1)}%) vs current reference\n\nClick to see the full calculation detail.">${priceYesterday}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(variation)}</span></td>`;
+        if (!baseRTKey) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
+        const meta = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(sel, r.ymd) : null;
+        const accepted = meta ? meta.price : null;
+        const activePrice = (accepted != null)
+          ? accepted
+          : ((typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : null);
+        if (activePrice == null || !isFinite(activePrice)){
+          return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
+        }
+        // Tooltip: spiega da cosa viene il prezzo attivo
+        let tip;
+        if (accepted != null){
+          const dt = (meta && meta.ts) ? new Date(meta.ts) : null;
+          const dtTxt = dt ? `${pad2(dt.getDate())}/${pad2(dt.getMonth()+1)}/${dt.getFullYear()} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}` : 'unknown date';
+          tip = `Active price: €${Math.round(activePrice)}\nSource: accepted RMES suggestion\nLast updated: ${dtTxt}`;
+        } else {
+          tip = `Active price: €${Math.round(activePrice)}\nSource: Base Price (accepted by default — RMES never explicitly accepted for this day)`;
+        }
+        return `<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center" title="${escapeHtml(tip)}">${Math.round(activePrice)}</td>`;
       })()}
       <!-- RMES today (today's suggested price + variation + ✓ accept, clickable for detail) -->
       ${(function(){
@@ -7700,12 +7733,12 @@ function renderSellStrategy(sel){
         const cls = (delta > 0.5) ? 'cell-pos' : (delta < -0.5 ? 'cell-neg' : 'cell-flat');
         const sign = delta > 0 ? '+' : '';
         const acc = (typeof newrmesGetAccepted === 'function') ? newrmesGetAccepted(sel, r.ymd) : null;
-        const accBadge = (acc != null) ? '<span style="font-size:9px;color:#3d7a4b;font-weight:700;display:block">✓ accepted</span>' : '';
+        const accBadge = (acc != null) ? '<span style="font-size:9px;color:#3d7a4b;font-weight:700;display:block">✓ already active</span>' : '';
         const acceptBtn = (Math.abs(delta) >= 0.5)
           ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" title="Accept this RMES suggestion as the new current reference for ${r.ymd}" style="margin-top:2px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block">✓</button>`
           : '';
         const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer;text-align:center" title="RMES suggestion today\nFinal Beddy price: €${Math.round(sugg)}\nVariation: ${sign}€${Math.round(delta)} (${sign}${variationPct.toFixed(1)}%) vs current reference (€${ref!=null?Math.round(ref):'—'})\n\nClick to see the full calculation detail. The ✓ button accepts the suggestion.">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)}</span> ${acceptBtn}${accBadge}</td>`;
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer;text-align:center" title="RMES suggestion\nSuggested price: €${Math.round(sugg)}\nLast update (active price): €${ref!=null?Math.round(ref):'—'}\nΔ vs Last update: ${sign}€${Math.round(delta)} (${sign}${variationPct.toFixed(1)}%)\n\nClick anywhere on the cell to see the full calculation detail (5 factors + LMF + Event Factor).\nThe ✓ button accepts this price as the new Last update.">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)}</span> ${acceptBtn}${accBadge}</td>`;
       })()}
       ${beddyCell}
       ${expCells}

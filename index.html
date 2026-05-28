@@ -832,7 +832,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Monthly pacing</h3>
-          <div class="panel-sub">2026 OTB · 2025 STLY · Final LY · Changes</div>
         </div>
       </div>
       <div class="panel-body flush">
@@ -889,7 +888,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Monthly table by Room Type</h3>
-          <div class="panel-sub">OCC%/ADR · 2026 vs 2025 STLY</div>
         </div>
         <div class="head-actions">
           <span class="struct-label">Filter room type</span>
@@ -930,7 +928,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Monthly detail</h3>
-          <div class="panel-sub">Cancellations by month · room-bookings count, RN lost, revenue lost, average lead time (days between booking and cancellation)</div>
         </div>
       </div>
       <div class="panel-body flush">
@@ -942,7 +939,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Cancellation rate by channel</h3>
-          <div class="panel-sub">% of cancelled bookings over total (Confirmed + Cancelled) by channel, last 12 months</div>
         </div>
       </div>
       <div class="panel-body flush">
@@ -955,7 +951,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Cancellation booking window</h3>
-          <div class="panel-sub" id="cancel-bw-sub">Cancellation mix and average ADR by lead-time window (days between the booking date and the originally requested check-in). Rolling 12 closed months.</div>
+          <div class="panel-sub" id="cancel-bw-sub"></div>
         </div>
         <div id="cancel-bw-mfilter" class="bw-mfilter"></div>
       </div>
@@ -980,7 +976,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Monthly KPI & Forecast</h3>
-          <div class="panel-sub" id="fcst-monthly-sub">12 months · OCC · ADR · Revenue forecast · comparison vs Final LY</div>
+          <div class="panel-sub" id="fcst-monthly-sub"></div>
         </div>
         <div style="display:flex;align-items:center;gap:14px;font-size:11px;color:var(--ink-2);user-select:none">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer" title="Show Jan-Apr 2026 (already past)">
@@ -1035,7 +1031,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Booking window</h3>
-          <div class="panel-sub" id="otb-bw-sub">Booking mix and average ADR by lead-time window (days between booking and check-in). Rolling 12 closed months.</div>
+          <div class="panel-sub" id="otb-bw-sub"></div>
         </div>
         <div id="otb-bw-mfilter" class="bw-mfilter"></div>
       </div>
@@ -1066,9 +1062,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
 
     <div class="panel">
-      <div class="panel-head"><div><h3>Stay Month × Week</h3><div class="panel-sub">RN pickup grouped by check-in month: tells you <b>for which month</b> you are receiving bookings · <b>click a cell</b> to drill down (room type + channel + booking list)</div></div></div>
+      <div class="panel-head"><div><h3>Stay Month × Week</h3></div></div>
       <div class="panel-body flush"><div class="pickup-grid"><table class="pickup" id="pk-sm-table"></table></div></div>
-      <div class="panel-body" style="border-top:1px solid var(--line)"><div class="panel-sub" style="margin-bottom:8px">RN volumes by Stay Month · bars 2026 (filled) over STLY (dashed) · sorted by RN ↓ filtered by the weeks above</div><div id="pk-sm-chart"></div></div>
+      <div class="panel-body" style="border-top:1px solid var(--line)"><div id="pk-sm-chart"></div></div>
     </div>
   </section>
 
@@ -1110,7 +1106,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Controls</h3>
-          <div class="panel-sub">Where to start, how many days to show, pickup snapshot</div>
         </div>
       </div>
       <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:18px;align-items:end">
@@ -1126,10 +1121,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <label class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px">Pickup days ago</label>
           <input type="number" id="sell-pickup-days" min="1" max="365" value="1" style="width:70px;font-family:'DM Mono',monospace;font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);text-align:center">
         </div>
-        <div style="margin-left:auto">
-          <label class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px">Base Price</label>
-          <button id="sell-compute-foundation" style="font-family:'DM Mono',monospace;font-size:13px;padding:6px 14px;border:1px solid var(--accent);border-radius:6px;background:var(--accent);color:#fff;cursor:pointer;font-weight:700">⚡ Compute Base Price</button>
-        </div>
       </div>
     </div>
 
@@ -1139,17 +1130,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head" style="flex-wrap:wrap;gap:12px">
         <div>
           <h3>Daily table</h3>
-          <div class="panel-sub" id="sell-table-sub">Today's OTB · Pickup last N days · STLY (-364)</div>
+          <div class="panel-sub" id="sell-table-sub"></div>
         </div>
-        <div style="font-size:11px;color:var(--ink-3);font-style:italic;text-align:right;padding:4px 8px">
-          <span class="mono">⚙ weights · thresholds · compset weights</span> → configure in tab <a href="#" onclick="document.querySelector('.tab[data-tab=pri]').click();return false" style="color:#7a4f1c;font-weight:600;text-decoration:underline">RMES</a>
-        </div>
+        
       </div>
       <!-- Selettore Room Type globale: filtra tutti i dati per RT specifica -->
       <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:10px 16px;border-top:1px solid var(--line);background:rgba(195,131,59,.06)">
         <span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-right:4px">Filter Room Type:</span>
         <div id="sell-rt-filter-pills" style="display:flex;flex-wrap:wrap;gap:4px"></div>
-        <span style="font-size:10px;color:var(--ink-3);margin-left:8px;font-style:italic">active selection: all data (OTB, Pickup, STLY, RMES) is filtered for this RT</span>
+        
       </div>
       <!-- Pannello Foundation approval: documentazione + bottoni batch + summary
            NB: visibile SOLO quando filtro RT è non-impostato (= "All") oppure è la baseRT della struttura.
@@ -1158,7 +1147,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px">
           <span class="mono" style="font-size:10px;color:#3b6b9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Base Price approval</span>
           <span id="sell-fp-baseRT-label" style="font-size:11px;color:#666;font-style:italic"></span>
-          <span style="font-size:10.5px;color:#999;font-style:italic">Single-day override: click the 🖋 button in a Base Price cell. For multiple days use "Override by period" below.</span>
+          
         </div>
         <!-- Override per PERIODO (date dal/al) — baseRT, price fisso -->
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;margin-top:9px;padding-top:9px;border-top:1px dashed #c8d8e8">
@@ -1184,13 +1173,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Pickup by Stay Month <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="pkmonth-window-label">—</span></h3>
-          <div class="panel-sub">For which month we are receiving bookings in the selected pickup window. Direct comparison: <b style="color:#3b6b6b">Pickup OTB</b> (last N days cur) vs <b style="color:#8e7a5e">Pickup STLY</b> (same N days a year ago). RN on one axis, Revenue on the other.</div>
         </div>
       </div>
       <div class="panel-body" id="pkmonth-filter-wrap" style="display:none;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--line);background:rgba(195,131,59,.04);flex-wrap:wrap">
         <span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Filter property:</span>
         <div id="pkmonth-filter-pills" style="display:flex;flex-wrap:wrap;gap:4px"></div>
-        <span style="font-size:10px;color:var(--ink-3);margin-left:4px;font-style:italic">in "All (aggregate)" the tooltip shows the per-property breakdown</span>
+        
       </div>
       <div class="panel-body" style="padding:8px 4px 16px">
         <div id="pkmonth-chart-wrap"></div>
@@ -1224,7 +1212,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head" style="flex-wrap:wrap;gap:12px">
         <div>
           <h3>Price Pyramid <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="piramide-range-label">90 days</span></h3>
-          <div class="panel-sub">Comparison of prices <b>visible on Expedia</b> for my properties vs the compset range. All values are in gross Expedia space (= what the market sees). Below: YoY change in search volume to cross-reference price ↔ demand.</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
           <div style="display:flex;align-items:center;gap:8px">
@@ -1260,7 +1247,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="kpi-grid" id="hist-kpis"></div>
 
     <div class="panel">
-      <div class="panel-head"><div><h3>Annual summary</h3><div class="panel-sub">Revenue · OCC% · ADR · RN by year and property</div></div></div>
+      <div class="panel-head"><div><h3>Annual summary</h3></div></div>
       <div class="panel-body flush"><div class="table-wrap"><table class="data" id="hist-summary-table"></table></div></div>
     </div>
 
@@ -1276,7 +1263,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
 
     <div class="panel">
-      <div class="panel-head"><div><h3>Andamento Mensile Revenue</h3><div class="panel-sub">2024 (dashed) vs 2025 (solid)</div></div></div>
+      <div class="panel-head"><div><h3>Andamento Mensile Revenue</h3></div></div>
       <div class="panel-body"><div id="hist-month-chart"></div></div>
     </div>
   </section>
@@ -1299,7 +1286,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px 18px">
         <span class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Property configuration</span>
         <div id="rmes-tab-struct-pills" style="display:flex;gap:6px"></div>
-        <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-style:italic">Synced with the global property selector above. Weights/thresholds/compset are independent per property.</span>
+        
       </div>
     </div>
 
@@ -1311,7 +1298,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>① Weights of the 5 RMES factors <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-w-sub">property: —</span></h3>
-          <div class="panel-sub">How much each factor contributes to the final multiplier. All 5 factors are computed <b>at property level</b> (Room Type differences come entirely from the Base Price, via monthly historical supplements). Default: 20% × 5 factors = 100%. Sum normalized automatically.</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
           <button id="rmes-tab-w-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" title="Reset current property weights to 20% × 5 factors">↺ Reset 20%×5 (current property)</button>
@@ -1328,7 +1314,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>② RMES total cap <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-th-sub">property: —</span></h3>
-          <div class="panel-sub"><b>Linear system</b>: the RMES suggested price = current reference × (1 + Σ weight × deviation) × (1 + LMF%) × (1 + event%). Each individual deviation is clamped to ±50%. The final suggested price is then capped at <b>±20% from the current reference</b> (a hard guard-rail to avoid sharp swings), and at the structural floor on the bottom.</div>
         </div>
         <div style="display:flex;gap:8px">
           <button id="rmes-tab-th-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset to 30%</button>
@@ -1336,7 +1321,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
       <div class="panel-body" style="padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
         <label style="font-size:13px;color:var(--ink-2)"><b>Max cap (±%)</b>: <input type="number" id="rmes-tab-cap-input" min="0" max="100" step="1" style="width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;text-align:right;font-size:13px"> %</label>
-        <span style="font-size:11px;color:var(--ink-3);font-style:italic">Example: 25% means the final price will always stay within [source × 0.75, source × 1.25]. Press "Apply changes" below to save.</span>
+        
         <div id="rmes-tab-th-cards" style="display:none"></div>
       </div>
     </div>
@@ -1347,7 +1332,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>③ Event Factor</h3>
-          <div class="panel-sub">Per-event price multiplier (−10% to +10%). Applied as a final multiplier to the RMES price on dates that match the event name. Positive = premium, negative = discount, zero = no effect. Weights are <b>shared across all properties</b> (event impact is the same everywhere).</div>
         </div>
       </div>
       <div class="panel-body" style="padding:14px 16px">
@@ -1360,7 +1344,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head" style="border-bottom:1px solid rgba(195,131,59,.25)">
         <div>
           <h3 style="color:#7a4f1c">⚡ Base Price <span style="font-size:10px;font-weight:600;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:3px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">active</span></h3>
-          <div class="panel-sub" style="margin-top:6px"><b>The Base Price is the source of the RMES suggestion.</b> The Base Price is computed once per stay-date from: historical anchor (LY median ADR) × target growth, capped at compset median + 5%, bounded ±50% from the Anchor Price, ≥ floor. The RMES suggestion adjusts the current reference (accepted price or Base Price) by up to ±20%, applying the 5 factors + LMF + Event Factor.</div>
         </div>
       </div>
       <div class="panel-body" style="padding:14px 16px">
@@ -1394,7 +1377,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Listing summary</h3>
-          <div class="panel-sub">Annual performance of each apartment — 2026 OTB comparison vs 2025 STLY. Le righe non selezionate appaiono in grigio chiaro.</div>
         </div>
       </div>
       <div class="panel-body flush">
@@ -1406,7 +1388,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Performance mensile</h3>
-          <div class="panel-sub" id="abnb-monthly-sub">All 5 listings combined — capacity = days in month × N selected units</div>
+          <div class="panel-sub" id="abnb-monthly-sub"></div>
         </div>
         <div class="head-actions">
           <span class="struct-label">Filter listing</span>
