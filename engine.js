@@ -180,6 +180,32 @@ function normRoom(s){
   return s.trim().replace(/\b\w/g, c=>c.toUpperCase());
 }
 /* -------- PROVENIENZA NORMALIZE -------- */
+function normCanale(raw){
+  // Normalize messy channel names coming from the property channel manager (especially Alfani)
+  // so STLY vs current-year comparisons can match. Examples:
+  //   BOOKINGXML, MOBILESITE → Booking
+  //   EXPEDIA, Expedia Affilia → Expedia
+  //   CTRIPV4 → Ctrip
+  // Anything not matched is left as-is (capitalized).
+  const t = (raw||'').trim();
+  if (!t || t === '—') return '—';
+  const u = t.toUpperCase();
+  // Booking family
+  if (u === 'BOOKING' || u === 'BOOKINGXML' || u === 'MOBILESITE' || u === 'BOOKING ENGINE' || u === 'BOOKING.COM') return 'Booking';
+  // Expedia family
+  if (u === 'EXPEDIA' || u === 'EXPEDIA AFFILIA' || u === 'HOTELS.COM') return 'Expedia';
+  // Ctrip family
+  if (u === 'CTRIP' || u === 'CTRIPV4' || u === 'TRIP.COM') return 'Ctrip';
+  // Direct / property
+  if (u === 'BEDDY' || u === 'DIRETTO' || u === 'DIRECT' || u === 'PRENMAN' || u === 'FRONTOFFICE') return 'Beddy';
+  if (u === 'SIMPLEBOOKING') return 'SimpleBooking';
+  if (u === 'AIRBNB') return 'Airbnb';
+  if (u === 'VRBO') return 'VRBO';
+  if (u === 'ITALCAMEL') return 'Italcamel';
+  if (u === 'GOOGLEHPA-ORGANIC' || u === 'GOOGLE') return 'Google';
+  // Fallback: title-case
+  return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
+}
 function normProv(p, canale){
   const t = (p||'').trim();
   if (t && t!=='Non Specificato' && t!=='Non specificato'){
@@ -270,7 +296,8 @@ function loadData(csvText){
     if (!alloggi.length) continue;
     const numRooms = alloggi.length;
     const revPerRoomNight = (totNet / notti) / numRooms;
-    const canale = (r['Canale']||'—').trim() || '—';
+    const canaleRaw = (r['Canale']||'—').trim() || '—';
+    const canale = normCanale(canaleRaw);
     const prov = normProv(r['Provenienza'], canale);
     const ref = r['numero di riferimento'] || '';
     const guest = (r['prenotante']||'').trim();
@@ -2629,6 +2656,9 @@ function expContext(ymdNum, structSel){
   if (structSel !== 'condotta' && structSel !== 'alfani' && structSel !== 'firenze' && structSel !== 'davids') return null;
   const k = expYmdKey(ymdNum);
   if (!k) return null;
+  // Sanitizer: any Expedia value < 10 € is treated as missing (it's a minimum-stay number
+  // leaked into the price column, not a real rate). Floor across all properties is ≥ 100 €.
+  const _sanePrice = (v) => (v != null && isFinite(v) && v >= 10) ? v : null;
   let myPrice, compAvg, searchCur, searchPrev;
   if (structSel === 'condotta'){
     myPrice = EXPEDIA_DATA.condotta[k];
@@ -2651,6 +2681,8 @@ function expContext(ymdNum, structSel){
     searchCur = EXPEDIA_DATA.search_current[k];
     searchPrev = EXPEDIA_DATA.search_previous[k];
   }
+  myPrice = _sanePrice(myPrice);
+  compAvg = _sanePrice(compAvg);
   return {
     ymd: k,
     myPriceExpedia: myPrice,
@@ -2732,8 +2764,8 @@ function _searchPressureBg(search){
   else t = 1.0;
   if (t < 0) t = 0;
   if (t > 1) t = 1;
-  // Alpha from 0 (faint) to 0.28 (light orange). Lighter than before so numbers stay readable.
-  const alpha = t * 0.28;
+  // Alpha 0 to 0.42 — applied only on Date/Event/DoW cells now, so a bit more visible is OK.
+  const alpha = t * 0.42;
   return 'background:rgba(196,130,59,' + alpha.toFixed(2) + ')';
 }
 function expCheckBrake(proposedPrice, compsetAvg){
@@ -6654,7 +6686,7 @@ function _sellCompRank(structKey, iso, myExpedia){
                 : EXPEDIA_DATA.competitors;
   if (!compMap) return null;
   const prices = [];
-  for (const cn in compMap){ const v = compMap[cn] ? compMap[cn][iso] : null; if (v != null && isFinite(v) && v > 0) prices.push(v); }
+  for (const cn in compMap){ const v = compMap[cn] ? compMap[cn][iso] : null; if (v != null && isFinite(v) && v >= 10) prices.push(v); }
   if (!prices.length) return null;
   const rank = prices.filter(p => p < myExpedia).length + 1;
   return { rank, total: prices.length + 1 };
@@ -6964,7 +6996,7 @@ function renderSellStrategy(sel){
     + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES suggestion TODAY — final Beddy price + Δ€ vs current reference. Capped ±20% from current reference. Click to see the calculation detail. The ✓ button accepts the suggestion as the new current reference.">RMES today<br><span class="sell-th-sub">price · Δ€ · ✓ accept</span></th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + (showExp ? '<th colspan="3" class="sell-grp sell-grp-expedia">Rate Shopper</th>' : '')
-    + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price (frozen, per stay-date): the structural price that anchors the RMES suggestion. Click 🖋 to override · ↺ to reset. Other RTs show baseRT + monthly supplement.">Base Price</th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). You only need to touch it occasionally if something looks off: click 🖋 to override a single day, or use Override by period for a range; ↺ to reset. Other RTs show baseRT + monthly supplement (read-only).">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
     + '<th class="sell-grp-otb-sub" title="OTB to date · RN sold">RN</th>'
@@ -7490,10 +7522,11 @@ function renderSellStrategy(sel){
             textStyle = 'color:#1e4a6b;font-weight:700'; statusIcon = '🖋 ';
             fpTipPrefix = `Base Price OVERRIDE (manual)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nManual value: €${fpEffective.toFixed(0)}\nOriginal frozen value: ${nrmFrozen != null ? '€'+nrmFrozen.toFixed(0) : '—'}\n\nRMES will suggest deltas vs this new Base.\nOther RTs inherit this value + monthly supplement.`;
           } else {
-            cellBg = 'rgba(195,131,59,.10)'; cellBorder = 'rgba(195,131,59,.4)';
-            textStyle = 'color:#5a3a14;font-weight:700';
-            statusIcon = '🔒 ';
-            fpTipPrefix = `Base Price FROZEN\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nFrozen value: €${fpEffective.toFixed(0)}\n\nComputed once with: historical anchor (LY median ADR) × target growth, capped at compset median +5%, bounded ±50% from Anchor Price, ≥ floor.\n\nRMES suggests daily deltas (±20%) on top of this Base.\nOther RTs inherit Base + monthly supplement.`;
+            // FROZEN = "accepted by default": the structural Base Price is what we use unless we explicitly override it.
+            cellBg = 'rgba(74,124,89,.10)'; cellBorder = 'rgba(74,124,89,.45)';
+            textStyle = 'color:#2f5538;font-weight:700';
+            statusIcon = '✓ ';
+            fpTipPrefix = `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nThis is the structural Base Price for the day, frozen at first calc. It is treated as ALREADY ACCEPTED — no action needed unless you want to override it.\n\nComputed once with: historical anchor (LY median ADR) × target growth, capped at compset median +5%, bounded ±50% from Anchor Price, ≥ floor.\n\nRMES suggests daily deltas (±20%) on top of this Base.\nOther RTs inherit Base + monthly supplement.`;
           }
           const fpTip = fpTipPrefix + `\n\nClick 🖋 to override · ↺ to reset.`;
           const btnOvr = `<button class="fp-inline-btn fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Manual override" style="border:1px solid #3b6b9a;background:#fff;color:#3b6b9a;border-radius:3px;padding:0 4px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.5">🖋</button>`;
@@ -7592,10 +7625,22 @@ function renderSellStrategy(sel){
         return ` title="Expedia search pressure for this day: ${sc.toLocaleString('en-GB')} searches · ${lvl ? lvl.label : ''}"`;
       } catch(e){ return ''; }
     })();
-    html += `<tr${_trStyle}${_searchTipVal}>
-      <td class="cell-mono">${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
-      <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
-      <td${dateStyle}>${dowIT[r.dow]}</td>
+    // Build dateBg style: combine _rowBgStyle (search pressure) with weekend dateStyle for the DoW cell
+    const _bgInline = _rowBgStyle ? ' style="' + _rowBgStyle + '"' : '';
+    let _dowInline;
+    if (_rowBgStyle && dateStyle){
+      // both present: merge — _rowBgStyle is "background:..", dateStyle is ' style="color:..;font-weight:.."'
+      const dsInner = dateStyle.replace(/^\s*style="/, '').replace(/"\s*$/, '');
+      _dowInline = ' style="' + _rowBgStyle + ';' + dsInner + '"';
+    } else if (_rowBgStyle){
+      _dowInline = ' style="' + _rowBgStyle + '"';
+    } else {
+      _dowInline = dateStyle;  // ' style="..."' or ''
+    }
+    html += `<tr${_searchTipVal}>
+      <td class="cell-mono"${_bgInline}>${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
+      <td class="sell-ev-col"${_bgInline}>${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
+      <td${_dowInline}>${dowIT[r.dow]}</td>
       <!-- OTB -->
       <td class="cell-mono ${rnCmpCls} sell-grp-otb-cell">${r.curRn>0?`<span class="sell-pickup-link" data-row="${i}" data-kind="otb" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">${r.curRn}</span>`:r.curRn}</td>
       <td class="cell-mono">${fmtPct(r.curOcc,0)}</td>
@@ -7631,7 +7676,7 @@ function renderSellStrategy(sel){
         const cls = (variation > 0.5) ? 'cell-pos' : (variation < -0.5 ? 'cell-neg' : 'cell-flat');
         const sign = variation > 0 ? '+' : '';
         const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.03);cursor:pointer" title="RMES suggestion from yesterday\nFinal Beddy price: €${priceYesterday}\nVariation: ${sign}€${Math.round(variation)} (${sign}${variationPct.toFixed(1)}%) vs current reference\n\nClick to see the full calculation detail.">${priceYesterday}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(variation)}</span></td>`;
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.03);cursor:pointer;text-align:center" title="RMES suggestion from yesterday\nFinal Beddy price: €${priceYesterday}\nVariation: ${sign}€${Math.round(variation)} (${sign}${variationPct.toFixed(1)}%) vs current reference\n\nClick to see the full calculation detail.">${priceYesterday}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(variation)}</span></td>`;
       })()}
       <!-- RMES today (today's suggested price + variation + ✓ accept, clickable for detail) -->
       ${(function(){
@@ -7655,7 +7700,7 @@ function renderSellStrategy(sel){
           ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" title="Accept this RMES suggestion as the new current reference for ${r.ymd}" style="margin-top:2px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block">✓</button>`
           : '';
         const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer" title="RMES suggestion today\nFinal Beddy price: €${Math.round(sugg)}\nVariation: ${sign}€${Math.round(delta)} (${sign}${variationPct.toFixed(1)}%) vs current reference (€${ref!=null?Math.round(ref):'—'})\n\nClick to see the full calculation detail. The ✓ button accepts the suggestion.">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)}</span> ${acceptBtn}${accBadge}</td>`;
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer;text-align:center" title="RMES suggestion today\nFinal Beddy price: €${Math.round(sugg)}\nVariation: ${sign}€${Math.round(delta)} (${sign}${variationPct.toFixed(1)}%) vs current reference (€${ref!=null?Math.round(ref):'—'})\n\nClick to see the full calculation detail. The ✓ button accepts the suggestion.">${Math.round(sugg)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)}</span> ${acceptBtn}${accBadge}</td>`;
       })()}
       ${beddyCell}
       ${expCells}
@@ -8445,15 +8490,15 @@ function renderPiramide(){
     if (typeof EXPEDIA_DATA !== 'undefined' && EXPEDIA_DATA){
       if (EXPEDIA_DATA.firenze){
         const p = EXPEDIA_DATA.firenze[isoKey];
-        if (p != null && isFinite(p) && p > 0) priceFirenze = p;
+        if (p != null && isFinite(p) && p >= 10) priceFirenze = p;
       }
       if (EXPEDIA_DATA.condotta){
         const p = EXPEDIA_DATA.condotta[isoKey];
-        if (p != null && isFinite(p) && p > 0) priceCondotta = p;
+        if (p != null && isFinite(p) && p >= 10) priceCondotta = p;
       }
       if (EXPEDIA_DATA.alfani){
         const p = EXPEDIA_DATA.alfani[isoKey];
-        if (p != null && isFinite(p) && p > 0) priceAlfani = p;
+        if (p != null && isFinite(p) && p >= 10) priceAlfani = p;
       }
     }
     const compEntries = [];  // { name, price }
@@ -8464,7 +8509,7 @@ function renderPiramide(){
           if (myStructKeys.has(name)) continue;
           if (seenNames.has(name)) continue;
           const p = EXPEDIA_DATA.competitors[name][isoKey];
-          if (p != null && isFinite(p) && p > 0){
+          if (p != null && isFinite(p) && p >= 10){
             compEntries.push({ name, price: p });
             seenNames.add(name);
           }
@@ -8475,7 +8520,7 @@ function renderPiramide(){
           if (myStructKeys.has(name)) continue;
           if (seenNames.has(name)) continue;
           const p = EXPEDIA_DATA.competitors_alfani[name][isoKey];
-          if (p != null && isFinite(p) && p > 0){
+          if (p != null && isFinite(p) && p >= 10){
             compEntries.push({ name, price: p });
             seenNames.add(name);
           }
@@ -8486,7 +8531,7 @@ function renderPiramide(){
           if (myStructKeys.has(name)) continue;
           if (seenNames.has(name)) continue;
           const p = EXPEDIA_DATA.competitors_firenze[name][isoKey];
-          if (p != null && isFinite(p) && p > 0){
+          if (p != null && isFinite(p) && p >= 10){
             compEntries.push({ name, price: p });
             seenNames.add(name);
           }
@@ -8497,7 +8542,7 @@ function renderPiramide(){
           if (myStructKeys.has(name)) continue;
           if (seenNames.has(name)) continue;
           const p = EXPEDIA_DATA.competitors_davids[name][isoKey];
-          if (p != null && isFinite(p) && p > 0){
+          if (p != null && isFinite(p) && p >= 10){
             compEntries.push({ name, price: p });
             seenNames.add(name);
           }
@@ -11118,7 +11163,7 @@ function compsetWeightedAvg(struct, isoKey, applyOffset){
   for (const name in compMap){
     if (myStructKeys.has(name)) continue;  // escludo mie strutture mutuali
     const p = compMap[name][isoKey];
-    if (p == null || !isFinite(p) || p <= 0) continue;
+    if (p == null || !isFinite(p) || p < 10) continue;  // < 10€ = MLOS leaked, not a price
     const w = getWeight(struct, name);
     if (w <= 0) continue;  // peso 0 = competitor escluso, non conta nemmeno nel divisore
     let priceToUse = p;
@@ -11222,7 +11267,7 @@ function renderRateShopper(){
           <td style="position:sticky;left:0;background:${sd.color}15;z-index:2;font-weight:700;color:${sd.color}">▸ ${escapeHtml(myLabels[sd.key])} <span style="font-weight:400;font-size:10px;color:var(--ink-3);font-style:italic">(my price)</span></td>`;
         for (const d of displayDates){
           const p = myMap[d];
-          if (p != null && isFinite(p) && p > 0){
+          if (p != null && isFinite(p) && p >= 10){
             html += `<td class="cell-mono" style="text-align:center;background:${sd.color}10;font-weight:700;color:${sd.color}">€${Math.round(p)}</td>`;
           } else {
             html += `<td class="cell-mono cell-flat" style="text-align:center;background:${sd.color}10;color:var(--ink-3)">—</td>`;
@@ -11242,7 +11287,7 @@ function renderRateShopper(){
           <td style="position:sticky;left:0;background:var(--bg);z-index:2;font-weight:500;${labelStyle}">${escapeHtml(name)}${wBadge}</td>`;
         for (const d of displayDates){
           const p = sd.compMap[name][d];
-          if (p != null && isFinite(p) && p > 0){
+          if (p != null && isFinite(p) && p >= 10){
             const opacity = isExcluded ? 0.3 : (0.4 + 0.6 * w);
             html += `<td class="cell-mono" style="text-align:center;opacity:${opacity}">€${Math.round(p)}</td>`;
           } else {
