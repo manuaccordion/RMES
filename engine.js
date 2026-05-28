@@ -5720,29 +5720,45 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const mults = dayData.multsByRT[d.rt];
       const foundationOvr = (typeof fp_getFoundationOverridePrice === 'function')
         ? fp_getFoundationOverridePrice(d.structKey, d.targetDateISO, d.rt) : null;
-      let fpPriceSourceCalc;
+      // === FIX allineamento totale: la base mostrata nel modal DEVE essere identica a quella
+      // usata dalla cella della tabella Sell Strategy. La tabella calcola:
+      //   priceFinal = clamp(base × multFinale × LMF × event, ±20%, floor)
+      // dove "base" = current reference (Frozen Base / accepted / override) OPPURE un fallback
+      // (beddy/mine/compset) quando il Frozen Base non è ancora stato calcolato per quella data.
+      // Per essere SEMPRE coerenti, ricaviamo la base effettiva direttamente da dayData. ===
       const _baseRTFp = (typeof CFG !== 'undefined' && CFG.structures && CFG.structures[d.structKey])
         ? CFG.structures[d.structKey].baseRT : null;
       const _isBaseRT = (_baseRTFp != null && d.rt === _baseRTFp);
-      if (_isBaseRT || !_baseRTFp){
-        const _stB = (typeof fp_getFoundationState === 'function')
-          ? fp_getFoundationState(d.structKey, d.targetDateISO, d.rt) : null;
-        fpPriceSourceCalc = (_stB && _stB.status !== 'proposed') ? _stB.value : d.priceFinal;
-      } else {
-        const _stB = (typeof fp_getFoundationState === 'function')
-          ? fp_getFoundationState(d.structKey, d.targetDateISO, _baseRTFp) : null;
-        const _baseR = (typeof fp_getPrice === 'function') ? fp_getPrice(d.structKey, _baseRTFp, d.targetDateISO) : null;
-        const _baseEff = (_stB && _stB.status !== 'proposed') ? _stB.value : (_baseR ? _baseR.price : null);
+      const _tgtYmdN = parseInt(d.targetDateISO.replace(/-/g,''));
+      // 1) prova la current reference (la "verità" del sistema NewRMES)
+      let _effBase = (typeof newrmesGetCurrentReference === 'function')
+        ? newrmesGetCurrentReference(d.structKey, _tgtYmdN) : null;
+      // 2) se non c'è (Frozen Base non ancora calcolato), ricostruisci la base che la TABELLA ha usato:
+      //    base = priceFinal / multFinale (le altre componenti LMF/event sono già dentro multFinale? no:
+      //    multFinale è solo i 5 fattori; ma per coerenza visiva usiamo la stessa pricesByRT come fonte)
+      if (_effBase == null || !isFinite(_effBase) || _effBase <= 0){
+        const _pf = (dayData.pricesByRT && dayData.pricesByRT[d.rt] != null) ? dayData.pricesByRT[d.rt] : null;
+        const _mf = (mults && mults.multFinale) ? mults.multFinale : 1;
+        if (_pf != null && _mf > 0){
+          _effBase = _pf / _mf;   // base implicita usata dalla tabella
+        } else {
+          _effBase = d.priceFinal;
+        }
+      }
+      // per RT diverse dal baseRT, aggiungi il supplemento mensile
+      let fpPriceSourceCalc = _effBase;
+      if (!_isBaseRT && _baseRTFp){
         const _mo = (new Date(d.targetDateISO + 'T00:00:00')).getMonth() + 1;
         const _suppVal = (typeof _globalSupplementForRT === 'function') ? _globalSupplementForRT(d.structKey, d.rt, _mo) : 0;
-        fpPriceSourceCalc = (_baseEff != null) ? (_baseEff + _suppVal) : d.priceFinal;
+        fpPriceSourceCalc = _effBase + _suppVal;
       }
       const fpPriceSource = (foundationOvr != null) ? foundationOvr : fpPriceSourceCalc;
       const hasFoundationOverride = (foundationOvr != null);
-      const rmesSuggested = fpPriceSource * mults.multFinale;
+      // Il prezzo finale "ufficiale" = quello della tabella (pricesByRT), così modal e tabella COINCIDONO.
       const priceRmesFinal = (dayData.pricesByRT && dayData.pricesByRT[d.rt] != null && isFinite(dayData.pricesByRT[d.rt]))
         ? dayData.pricesByRT[d.rt]
-        : rmesSuggested;
+        : (fpPriceSource * mults.multFinale);
+      const rmesSuggested = priceRmesFinal;  // would suggest == suggested price == cella tabella
       const overrideObj = (typeof fp_getOverride === 'function') ? fp_getOverride(d.structKey, d.targetDateISO, d.rt) : null;
       const hasOverride = !!(overrideObj && overrideObj.price != null);
       const fpBg = hasFoundationOverride ? '#eef4fb' : '#fef8ed';
@@ -5968,9 +5984,11 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '</div>';
       }
       const deltaSugg = rmesSuggested - fpPriceSource;
+      const _rawSugg = fpPriceSource * mults.multFinale;
+      const _capped = Math.abs(_rawSugg - rmesSuggested) >= 1;  // cap ±20% o floor ha agito
       rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:'+(hasOverride?'#f5f5f5':'#1e6b4a')+';border-radius:6px;color:'+(hasOverride?'#666':'#fff')+';margin-bottom:10px">';
       rmesSection += '<div><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.85">💡 RMES would suggest</div>';
-      rmesSection += '<div style="font-size:10.5px;opacity:.7;margin-top:2px">Reference '+fmt(fpPriceSource)+' × multiplier '+mults.multFinale.toFixed(3)+'</div></div>';
+      rmesSection += '<div style="font-size:10.5px;opacity:.7;margin-top:2px">Base '+fmt(fpPriceSource)+' × multiplier '+mults.multFinale.toFixed(3)+(_capped?' · capped ±20%/floor':'')+'</div></div>';
       rmesSection += '<div style="text-align:right"><div style="font-size:'+(hasOverride?'18px':'24px')+';font-weight:700;font-family:\'DM Mono\',monospace">'+fmt(rmesSuggested)+'</div>';
       if (Math.abs(deltaSugg) >= 0.5){
         rmesSection += '<div style="font-size:11px;opacity:.85;font-family:\'DM Mono\',monospace">Δ vs reference: '+(deltaSugg>0?'+':'')+fmt(deltaSugg)+'</div>';
