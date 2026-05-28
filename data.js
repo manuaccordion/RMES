@@ -32686,6 +32686,149 @@ const EXPEDIA_DATA = {
   }
 }
 ;
+const EVENTS_CSV = `Date,Event
+2025-01-01,Capodanno
+2025-01-06,Epifania
+2025-01-14,Pitti
+2025-01-15,Pitti
+2025-01-16,Pitti
+2025-01-17,Pitti
+2025-02-08,Taste
+2025-02-09,Taste
+2025-02-10,Taste
+2025-02-21,Danzainfiera
+2025-02-22,Danzainfiera
+2025-02-23,Danzainfiera
+2025-03-25,Capodanno Fiorentino
+2025-04-06,Mezza Maratona Firenze
+2025-04-20,Pasqua
+2025-04-21,Pasquetta
+2025-04-25,Liberazione
+2025-05-01,Festa dei Lavoratori
+2025-06-02,Festa della Repubblica
+2025-06-05,Concerto Vasco Rossi
+2025-06-12,Firenze Rock Guns N'Roses
+2025-06-13,Firenze Rock Korn
+2025-06-14,Firenze Rock Green Day
+2025-06-15,Firenze Rocks
+2025-06-17,Pitti
+2025-06-18,Pitti
+2025-06-19,Pitti
+2025-06-20,Pitti
+2025-06-24,Calcio Storico San Giovanni
+2025-08-15,Ferragosto
+2025-11-01,OgniSanti
+2025-11-30,Florence Marathon
+2025-12-05,Pre Immacolata
+2025-12-06,Pre Immacolata
+2025-12-07,Pre Immacolata
+2025-12-08,Immacolata
+2025-12-11,UEFA Conference League - League Stage - Dynamo Kyiv vs Fiorentina
+2025-12-14,Serie A - Hellas Verona vs Fiorentina
+2025-12-21,Serie A - Udinese vs Fiorentina
+2025-12-24,Pre Natale
+2025-12-25,Natale
+2025-12-26,Santo Stefano
+2025-12-27,Post Santo Stefano
+2025-12-28,Holiday Season
+2025-12-29,Holiday Season
+2025-12-30,Holiday Season
+2025-12-31,Holiday Season
+2026-01-01,Capodanno
+2026-01-02,Post New Year
+2026-01-03,Post New Year
+2026-01-04,Post New Year
+2026-01-05,Post New Year
+2026-01-06,Epifania
+2026-01-13,Pitti
+2026-01-14,Pitti
+2026-01-15,Pitti
+2026-01-16,Pitti
+2026-01-21,Pitti Filati
+2026-01-22,Pitti Filati
+2026-01-23,Pitti Filati
+2026-02-03,Terra Italia
+2026-02-04,Terra Italia
+2026-02-07,Taste
+2026-02-08,Taste
+2026-02-09,Taste
+2026-02-20,Danzainfiera
+2026-02-21,Danzainfiera
+2026-02-22,Danzainfiera
+2026-03-28,Firenze Half Marathon
+2026-03-29,Firenze Half Marathon
+2026-04-02,vacanze di Pasqua
+2026-04-03,vacanze di Pasqua
+2026-04-04,vacanze di Pasqua
+2026-04-05,Pasqua
+2026-04-06,Pasquetta
+2026-04-07,vacanze di Pasqua
+2026-04-25,Liberazione
+2026-04-25,International Handicraft Exhibition
+2026-04-26,International Handicraft Exhibition
+2026-04-27,International Handicraft Exhibition
+2026-04-28,International Handicraft Exhibition
+2026-04-29,International Handicraft Exhibition
+2026-04-30,Pre Primo Maggio
+2026-04-30,International Handicraft Exhibition
+2026-05-01,Primo Maggio
+2026-05-01,International Handicraft Exhibition
+2026-05-02,Post Primo Maggio
+2026-05-02,International Handicraft Exhibition
+2026-05-03,International Handicraft Exhibition
+2026-05-14,"Imaging Update in Florence, Italy"
+2026-05-15,"Imaging Update in Florence, Italy"
+2026-05-16,"Imaging Update in Florence, Italy"
+2026-05-29,Pre Festa della Repubblica
+2026-05-30,Pre Festa della Repubblica
+2026-05-31,Pre Festa della Repubblica
+2026-06-01,Pre Festa della Repubblica
+2026-06-02,Festa della Repubblica
+2026-06-12,Firenze Rocks Lenny Kravitz
+2026-06-13,Firenze Rocks Robbie Williams
+2026-06-14,Firenze Rocks The Cure
+2026-06-16,Pitti Immagine Uomo
+2026-06-17,Pitti Immagine Uomo
+2026-06-18,Pitti Immagine Uomo
+2026-06-19,Pitti Immagine Uomo
+2026-06-24,Calcio Storico San Giovanni a Santa Croce
+2026-06-24,Pitti Immagine Filati/Bimbo
+2026-06-25,Pitti Immagine Filati/Bimbo
+2026-06-26,Pitti Immagine Filati/Bimbo
+2026-07-15,My Chemical Romance - The Black Parade 2026
+2026-09-26,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-09-27,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-09-28,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-09-29,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-09-30,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-10-01,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-10-02,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-10-03,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-10-04,Biennale Internazionale Dell Antiquariato Di Firenze
+2026-10-30,Pre OgniSanti
+2026-10-31,Pre OgniSanti
+2026-11-01,OgniSanti
+2026-11-29,Florence Marathon
+2026-12-04,Pre Immacolata
+2026-12-05,Pre Immacolata
+2026-12-06,Pre Immacolata
+2026-12-07,Pre Immacolata
+2026-12-08,Immacolata
+2026-12-24,Pre Natale
+2026-12-25,Natale
+2026-12-26,Santo Stefano
+2026-12-27,Holiday Season
+2026-12-28,Holiday Season
+2026-12-29,Holiday Season
+2026-12-30,Holiday Season
+2026-12-31,Holiday Season
+2027-01-01,Capodanno
+2027-01-02,Post Capodanno
+2027-01-03,Post Capodanno
+2027-01-04,Holiday Season
+2027-01-05,Holiday Season
+2027-01-06,Epifania
+`;
 const BEDDY_DATA = {
  "asOf": "2026-05-12",
  "rangeStart": "2026-05-12",
