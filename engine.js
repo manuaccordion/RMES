@@ -4316,8 +4316,8 @@ function renderBasePriceBreakdown(){
     { t:'Property', al:'left',  tip:'Property' },
     { t:'Date',     al:'left',  tip:'Stay date' },
     { t:'DoW',      al:'right', tip:'Day of week' },
-    { t:'LY median ADR', al:'right', tip:'Step 1 — historical anchor: median of the ADR actually earned on the base room type in past years (same weekday & month)' },
-    { t:'obs',      al:'right', tip:'How many historical bookings fed the median' },
+    { t:'LY median ADR', al:'right', tip:'Step 1 — historical anchor: median of the ADR actually earned on the BASE room type only, in past years (same weekday & month). Each booking is net of OTA markup (Booking/Expedia/Airbnb prices are divided by their markup so everything is in Beddy-equivalent; direct/Beddy/Krossbooking bookings are used as-is).' },
+    { t:'obs',      al:'right', tip:'Total number of bookings (room-stays) that fed the median — NOT the number of days. One day can contribute several bookings (one per occupied room).' },
     { t:'ADR used', al:'right', tip:'The anchor actually used (may be lifted by the 70% protection)' },
     { t:'× growth', al:'right', tip:'Step 2 — monthly target growth applied to the anchor' },
     { t:'= after growth', al:'right', tip:'Anchor × (1 + growth%)' },
@@ -4337,17 +4337,18 @@ function renderBasePriceBreakdown(){
     let lyTip;
     if (r.lyMedianADR != null){
       lyTip = 'Median earned ADR = €'+r.lyMedianADR
+        + '\nBase room type only · net of OTA markup (Beddy-equivalent)'
         + '\nSet: ' + (r.lySetDesc || 'same weekday & month, 2024-2025')
-        + '\nObservations: ' + r.lyObs
+        + '\nObservations: ' + r.lyObs + ' bookings (room-stays, not days)'
         + (r.lyAdrMin!=null ? ('\nRange of earned ADR: €'+r.lyAdrMin+' – €'+r.lyAdrMax) : '')
-        + '\n\nThe median (middle value) is used so a single odd day cannot skew the anchor.';
+        + '\n\nThe median (middle value) is used so a single odd booking cannot skew the anchor.';
     } else {
       lyTip = 'No historical bookings found for this weekday & month. The anchor falls back to the 70% protection (70% of the annual Anchor Price).';
     }
     // --- Tooltip obs ---
     const obsTip = (r.lyFallback === 'monthWide')
-      ? ('Fewer than 3 bookings on the exact weekday → widened to ALL days of the month. Considered: ' + (r.lySetDesc||'whole month') + '. Observations: ' + r.lyObs)
-      : ('Considered: ' + (r.lySetDesc||'same weekday & month') + '. Observations: ' + r.lyObs);
+      ? ('Total bookings (room-stays), NOT days. Fewer than 3 on the exact weekday → widened to ALL days of the month. Considered: ' + (r.lySetDesc||'whole month') + '. Bookings: ' + r.lyObs)
+      : ('Total bookings (room-stays), NOT days — one day can hold several bookings (one per occupied room). Considered: ' + (r.lySetDesc||'same weekday & month') + '. Bookings: ' + r.lyObs);
     // --- Tooltip ADR used ---
     const adrUsedTip = r.adrFlooredTo70
       ? ('History was too low (or missing), so the anchor was lifted up to 70% of the annual Anchor Price (€'+r.anchorPrice+' × 70% = €'+r.anchor70+'). This prevents an unrealistically low Base Price.')
@@ -4398,7 +4399,7 @@ function renderBasePriceBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>LY median ADR</b> (median earned ADR, same weekday & month, 2024-2025) · <b>obs</b> (how many bookings; <b>*</b> = widened to whole month) · <b>ADR used</b> (⬆70% = lifted to the 70%-of-Anchor-Price protection) · <b>× growth</b> · <b>after growth</b> · <b>Goal Value cap</b> (red ✓cap = it capped the price down) · <b>Anchor ±50%</b> (↓max / ↑min = guard-rail acted) · <b>Floor</b> (✓ = floor applied) · <b>Base Price</b>.';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>LY median ADR</b> (median earned ADR on the base room type only, net of OTA markup, same weekday & month, 2024-2025) · <b>obs</b> (number of bookings/room-stays, not days; <b>*</b> = widened to whole month) · <b>ADR used</b> (⬆70% = lifted to the 70%-of-Anchor-Price protection) · <b>× growth</b> · <b>after growth</b> · <b>Goal Value cap</b> (red ✓cap = it capped the price down) · <b>Anchor ±50%</b> (↓max / ↑min = guard-rail acted) · <b>Floor</b> (✓ = floor applied) · <b>Base Price</b>.';
   h += '</div>';
   wrap.innerHTML = h;
 }
