@@ -4742,6 +4742,28 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         if (typeof _getEventBoost === 'function') eventBoost = _getEventBoost(ymdN);
       } catch(e){}
       const eventName = (typeof getEventForYmd === 'function') ? (getEventForYmd(ymdN) || null) : null;
+      // RMES applied = prezzo effettivamente attivo per quel giorno, con sorgente.
+      // Priorità: 1) override manuale Base 🖋, 2) RMES accepted, 3) Base Price (no action).
+      // Le prime due hanno un timestamp (savedAt / accepted ts), la terza no.
+      let rmesApplied = null;
+      let appliedSource = 'base';   // 'base' | 'accepted' | 'override'
+      let appliedTs = null;
+      try {
+        const _isoForOvr = d.toISOString().slice(0,10);
+        const ovr = (typeof fp_getOverride === 'function') ? fp_getOverride(sk, _isoForOvr, baseRT) : null;
+        if (ovr && ovr.price != null && isFinite(ovr.price)){
+          rmesApplied = +ovr.price;
+          appliedSource = 'override';
+          appliedTs = ovr.savedAt || null;
+        } else if (hasAccepted){
+          rmesApplied = meta.price;
+          appliedSource = 'accepted';
+          appliedTs = meta.ts || null;
+        } else if (lastUpdate != null){
+          rmesApplied = lastUpdate;  // = Base Price (current reference, no action taken)
+          appliedSource = 'base';
+        }
+      } catch(e){}
       // Weights effective (already normalized)
       out.push({
         struct: sk,
@@ -4764,7 +4786,9 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         eventBoost,
         eventName,
         rmesSugg: rmesSugg != null ? Math.round(rmesSugg) : null,
-        deltaVsLast: (rmesSugg != null && lastUpdate != null) ? Math.round(rmesSugg - lastUpdate) : null,
+        rmesApplied: rmesApplied != null ? Math.round(rmesApplied) : null,
+        appliedSource,
+        appliedTs,
       });
     }
   }
@@ -4824,7 +4848,7 @@ function renderRmesBreakdown(){
     { t:'LMF',              al:'right', tip:'Last-Minute Factor — extra ± % from the LMF matrix (OCC × days to arrival). Applied AFTER the composite.' },
     { t:'Event',            al:'right', tip:'Event Factor — additional multiplier when a calendar event is configured with a non-zero weight for that date. Applied AFTER LMF.' },
     { t:'RMES suggested',   al:'right', tip:'Final suggested price = Last update × Composite × (1+LMF%) × Event, bounded ±20% vs Last update and ≥ floor.' },
-    { t:'Δ€ vs Last update', al:'right', tip:'RMES suggested − Last update. If = 0, RMES suggests no change today.' },
+    { t:'RMES applied',     al:'right', tip:'Price actually loaded for this date. Source can be: the Base Price if no action was taken (= same as Last update), the accepted RMES if you accepted a suggestion, or a manual override 🖋 if you forced a specific price. Hover the cell to see which one.' },
   ];
   h += cols.map(c => `<th title="${escapeHtml(c.tip||'')}" style="position:sticky;top:0;z-index:2;background:#eaf0eb;padding:8px 9px;border-bottom:2px solid #c5d4c5;text-align:${c.al};white-space:nowrap;cursor:help">${c.t}</th>`).join('');
   h += '</tr></thead><tbody>';
@@ -4876,14 +4900,30 @@ function renderRmesBreakdown(){
     const eventTxt = (r.eventBoost && Math.abs(r.eventBoost-1) > 0.001) ? ('×'+r.eventBoost.toFixed(3)) : '–';
     h += `<td title="${escapeHtml(eventTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${r.eventName?'#5a3a14':'#bbb'};cursor:help;border-bottom:1px solid #f0eee9">${eventTxt}</td>`;
     h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#2c5c3c;border-bottom:1px solid #f0eee9">${fmtEur(r.rmesSugg)}</td>`;
-    const dCol = (r.deltaVsLast == null) ? '#bbb' : (r.deltaVsLast > 0 ? '#2c5c3c' : (r.deltaVsLast < 0 ? '#a83b3b' : '#888'));
-    const dTxt = (r.deltaVsLast == null) ? '—' : ((r.deltaVsLast>=0?'+':'')+'€'+r.deltaVsLast);
-    h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${dCol};font-weight:600;border-bottom:1px solid #f0eee9">${dTxt}</td>`;
+    // RMES applied: tooltip dinamico per sorgente
+    let appliedTip; let appliedColor = '#5a3a14'; let appliedIcon = '';
+    if (r.appliedSource === 'accepted'){
+      const ts = r.appliedTs ? new Date(r.appliedTs) : null;
+      const dtTxt = (ts && !isNaN(ts.getTime())) ? (pad2(ts.getDate())+'/'+pad2(ts.getMonth()+1)+'/'+ts.getFullYear()) : 'unknown date';
+      appliedTip = 'Accepted RMES on '+dtTxt;
+      appliedColor = '#2c5c3c';
+      appliedIcon = '✓';
+    } else if (r.appliedSource === 'override'){
+      const ts = r.appliedTs ? new Date(r.appliedTs) : null;
+      const dtTxt = (ts && !isNaN(ts.getTime())) ? (pad2(ts.getDate())+'/'+pad2(ts.getMonth()+1)+'/'+ts.getFullYear()) : 'unknown date';
+      appliedTip = 'Manual override applied on '+dtTxt;
+      appliedColor = '#3b6b9a';
+      appliedIcon = '🖋';
+    } else {
+      appliedTip = 'Base Price (accepted by default — no action taken)';
+      appliedColor = '#888';
+    }
+    h += `<td title="${escapeHtml(appliedTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:${appliedColor};cursor:help;border-bottom:1px solid #f0eee9">${appliedIcon ? appliedIcon+' ' : ''}${fmtEur(r.rmesApplied)}</td>`;
     h += '</tr>';
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·OCC</b> · <b>B·ADR</b> · <b>C·Pace</b> · <b>D·Online</b> · <b>E·Search</b> · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor) · <b>Event</b> · <b>RMES suggested</b> (final price after Composite, LMF, Event, ±20% cap and floor) · <b>Δ€ vs Last update</b>.';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·OCC</b> · <b>B·ADR</b> · <b>C·Pace</b> · <b>D·Online</b> · <b>E·Search</b> · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> · <b>Event</b> · <b>RMES suggested</b> (final price after Composite, LMF, Event, ±20% cap and floor) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -4891,12 +4931,14 @@ function renderRmesBreakdown(){
 function _rmesExportCSV(){
   if (!_RMES_LAST_ROWS || !_RMES_LAST_ROWS.length){ alert('Nothing to export — apply a range first.'); return; }
   const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const header = ['Property','Date','DoW','LastUpdate','accepted_on','weight_A','dev_A_pct','weight_B','dev_B_pct','weight_C','dev_C_pct','weight_D','dev_D_pct','weight_E','dev_E_pct','composite_multiplier','composite_dev_pct','hit_total_cap','LMF_pct','event_name','event_factor','RMES_suggested','delta_vs_last_update'];
+  const header = ['Property','Date','DoW','LastUpdate','accepted_on','weight_A','dev_A_pct','weight_B','dev_B_pct','weight_C','dev_C_pct','weight_D','dev_D_pct','weight_E','dev_E_pct','composite_multiplier','composite_dev_pct','hit_total_cap','LMF_pct','event_name','event_factor','RMES_suggested','RMES_applied','applied_source','applied_on'];
   const lines = [header.join(',')];
   for (const r of _RMES_LAST_ROWS){
     const dt = new Date(r.iso + 'T00:00:00');
     const ts = r.acceptedTs ? new Date(r.acceptedTs) : null;
     const acceptedOn = (ts && !isNaN(ts.getTime())) ? ts.toISOString().slice(0,10) : '';
+    const appTs = r.appliedTs ? new Date(r.appliedTs) : null;
+    const appliedOn = (appTs && !isNaN(appTs.getTime())) ? appTs.toISOString().slice(0,10) : '';
     const row = [
       '"'+r.structLabel+'"',
       r.iso,
@@ -4920,7 +4962,9 @@ function _rmesExportCSV(){
       '"'+(r.eventName || '')+'"',
       r.eventBoost.toFixed(3),
       r.rmesSugg != null ? r.rmesSugg : '',
-      r.deltaVsLast != null ? r.deltaVsLast : ''
+      r.rmesApplied != null ? r.rmesApplied : '',
+      r.appliedSource || '',
+      appliedOn
     ];
     lines.push(row.join(','));
   }
