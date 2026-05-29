@@ -15958,7 +15958,7 @@ function _bigRenderBookingCurve(sel){
       ${hoverDotOtb}
       ${hoverRect}
     </svg>
-    <div id="bc-tooltip" style="position:absolute;display:none;background:rgba(255,255,255,.98);border:1px solid #d4c8b0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 12px;font-size:12px;font-family:'DM Sans',sans-serif;pointer-events:none;z-index:10;min-width:200px;line-height:1.5"></div>
+    <div id="bc-tooltip" style="position:absolute;display:none;background:#fff;border:1.5px solid #b59e7d;border-radius:8px;box-shadow:0 6px 20px rgba(90,58,20,.22);padding:10px 14px;font-size:12px;font-family:'DM Sans',sans-serif;pointer-events:none;z-index:10;min-width:260px;line-height:1.5"></div>
   </div>${legend}`;
   // Wire hover
   const svg = host.querySelector('#bc-svg');
@@ -15992,29 +15992,32 @@ function _bigRenderBookingCurve(sel){
       if (lyV != null){ dotL.setAttribute('cx',x); dotL.setAttribute('cy', yAt(lyV)); dotL.setAttribute('opacity','0.85'); } else { dotL.setAttribute('opacity','0'); }
       const dateLbl = dateLabel(doyToDate(doy));
       // === Tooltip semplificato: SOLO 2 percentuali achievement ===
-      // - Riga 1: OTB% (passato) o Forecast% (futuro) del totale forecast annuale
-      // - Riga 2: STLY% del totale LY final (=  a che punto eravamo l'anno scorso al medesimo doy)
-      let html = '<div style="font-weight:700;color:#5a3a14;font-size:12px;margin-bottom:8px;border-bottom:1px solid #ece9e2;padding-bottom:4px">'+dateLbl+'</div>';
+      let html = '<div style="font-weight:700;color:#5a3a14;font-size:12.5px;margin-bottom:8px;border-bottom:1px solid #ece9e2;padding-bottom:5px">'+dateLbl+'</div>';
       // CUR (OTB se passato, Forecast se futuro)
       const curV = (doy <= todayDoy) ? otbV : fcstV;
-      const curLbl = (doy <= todayDoy) ? 'OTB' : 'Forecast';
+      const curLbl = (doy <= todayDoy) ? 'OTB 2026' : 'Forecast 2026';
       const curColor = (doy <= todayDoy) ? '#b86b1f' : '#d99a4e';
-      const curIcon = (doy <= todayDoy) ? '●' : '\u2934';
+      const curBg = (doy <= todayDoy) ? '#fff8ed' : '#fdf3e7';
+      const curIcon = (doy <= todayDoy) ? '\u25CF' : '\u2934';
       if (curV != null && forecastTotal > 0){
         const pct = curV / forecastTotal * 100;
-        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:4px 0;align-items:baseline"><span style="color:'+curColor+';font-weight:600">'+curIcon+' '+curLbl+' 2026</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:13px">'+Math.round(pct)+'%<span style="font-size:10px;color:#888;font-weight:400"> of forecast</span></b></div>';
+        html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 9px;background:'+curBg+';border-radius:5px;margin-bottom:5px"><span style="color:'+curColor+';font-weight:600;white-space:nowrap">'+curIcon+' '+curLbl+'</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:14px;white-space:nowrap">'+Math.round(pct)+'%<span style="font-size:10px;color:#888;font-weight:400;margin-left:4px">of forecast</span></b></div>';
       }
-      // LY (STLY = LY value al medesimo doy)
+      // STLY = LY value al medesimo doy
       if (lyV != null && lyTotal > 0){
         const pctLY = lyV / lyTotal * 100;
-        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:4px 0;align-items:baseline"><span style="color:#7a4d96">● STLY (LY at same day)</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:13px">'+Math.round(pctLY)+'%<span style="font-size:10px;color:#888;font-weight:400"> of LY final</span></b></div>';
+        html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 9px;background:#f7f1fa;border-radius:5px"><span style="color:#7a4d96;font-weight:600;white-space:nowrap">\u25CF STLY</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:14px;white-space:nowrap">'+Math.round(pctLY)+'%<span style="font-size:10px;color:#888;font-weight:400;margin-left:4px">of LY final</span></b></div>';
       }
       tip.innerHTML = html;
       tip.style.display = 'block';
       const hostRect = host.getBoundingClientRect();
-      const tipW = 230, tipH = tip.offsetHeight || 120;
-      let tipX = mx + 14;
-      if (tipX + tipW > hostRect.width) tipX = mx - tipW - 14;
+      const tipW = tip.offsetWidth || 280, tipH = tip.offsetHeight || 110;
+      // Posizionamento: tooltip ALWAYS offset di 18px dalla linea hover verticale.
+      // Se a destra non c'è spazio (overflow viewport), va a sinistra.
+      let tipX = mx + 18;
+      if (tipX + tipW > hostRect.width - 4) tipX = mx - tipW - 18;
+      if (tipX < 4) tipX = 4;
+      // Vertical: centrato sul mouse, ma stretto entro i bordi
       let tipY = (ev.clientY - hostRect.top) - tipH/2;
       if (tipY < 4) tipY = 4;
       if (tipY + tipH > hostRect.height) tipY = hostRect.height - tipH - 4;
