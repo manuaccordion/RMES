@@ -3590,14 +3590,42 @@ function applyThresholds(idx, factorKey){
 function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
   const keys = new Set(structKeysFor(sel));
   const startDate = ymdToDate(startYmdNum);
-  const snapDate = new Date(TODAY); snapDate.setHours(0,0,0,0);
-  snapDate.setDate(snapDate.getDate() - pickupDaysAgo);
-  const snapYmd = ymd(snapDate);
+  // === NUOVA REGOLA PICKUP (allineata con gli altri RMS commerciali) ===
+  // pickup N (N >= 1): include gli N giorni PRIMA di oggi → da today-N a today-1 INCLUSI
+  //   esempio: oggi = 29/5; pickup 1 = 28/5 solo; pickup 2 = 27/5+28/5; pickup 7 = 22/5..28/5
+  // pickup 0: SOLO oggi (29/5)
+  // Quindi pickupLoYmd e pickupHiYmd identificano la finestra inclusiva [lo, hi].
+  const _todayD = new Date(TODAY); _todayD.setHours(0,0,0,0);
+  let pickupLoYmd, pickupHiYmd;
+  if (pickupDaysAgo === 0){
+    pickupLoYmd = TODAY_YMD;
+    pickupHiYmd = TODAY_YMD;
+  } else {
+    const _loD = new Date(_todayD); _loD.setDate(_loD.getDate() - pickupDaysAgo);
+    const _hiD = new Date(_todayD); _hiD.setDate(_hiD.getDate() - 1);
+    pickupLoYmd = ymd(_loD);
+    pickupHiYmd = ymd(_hiD);
+  }
+  // snapDate / snapYmd = data che DELIMITA la fine dell'OTB pre-pickup.
+  // Tutti i bookings con bookYmd < snapYmd sono "snapshot" (OTB prima del pickup).
+  const snapYmd = pickupLoYmd;  // primo giorno della finestra pickup
+  const snapDate = ymdToDate(snapYmd);
+  // STLY: stesse regole con shift -364
   const stlyToday = new Date(TODAY); stlyToday.setHours(0,0,0,0);
   stlyToday.setDate(stlyToday.getDate() - 364);
   const stlyTodayYmd = ymd(stlyToday);
-  const snapStly = new Date(stlyToday); snapStly.setDate(snapStly.getDate() - pickupDaysAgo);
-  const snapStlyYmd = ymd(snapStly);
+  let pickupStlyLoYmd, pickupStlyHiYmd;
+  if (pickupDaysAgo === 0){
+    pickupStlyLoYmd = stlyTodayYmd;
+    pickupStlyHiYmd = stlyTodayYmd;
+  } else {
+    const _loS = new Date(stlyToday); _loS.setDate(_loS.getDate() - pickupDaysAgo);
+    const _hiS = new Date(stlyToday); _hiS.setDate(_hiS.getDate() - 1);
+    pickupStlyLoYmd = ymd(_loS);
+    pickupStlyHiYmd = ymd(_hiS);
+  }
+  const snapStlyYmd = pickupStlyLoYmd;
+  const snapStly = ymdToDate(snapStlyYmd);
   const bucketsCur  = {}; // confermate, OTB attuale
   const bucketsCurByRT = {}; // {ymd: {rt: rn_venduti}} — per disponibilità per RT
   const bucketsCurByRTRev = {}; // {ymd: {rt: rev_venduto}} — per ADR per RT
@@ -3623,7 +3651,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     if (!keys.has(b.struct)) continue;
     if (b.bookYmd > TODAY_YMD) continue;
     if (_rtFilter && b.room !== _rtFilter) continue;
-    const isPickup = (b.bookYmd >= snapYmd && b.bookYmd <= TODAY_YMD);
+    const isPickup = (b.bookYmd >= pickupLoYmd && b.bookYmd <= pickupHiYmd);
     let cur = startOfDay(b.dIn);
     const end = startOfDay(b.dOut);
     while (cur < end){
@@ -3652,7 +3680,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     if (b.bookYmd <= stlyTodayYmd){
       const dInS  = addDays(b.dIn,  364);
       const dOutS = addDays(b.dOut, 364);
-      const isPickupStly = (b.bookYmd >= snapStlyYmd && b.bookYmd <= stlyTodayYmd);
+      const isPickupStly = (b.bookYmd >= pickupStlyLoYmd && b.bookYmd <= pickupStlyHiYmd);
       let cs = startOfDay(dInS);
       const ce = startOfDay(dOutS);
       while (cs < ce){
@@ -3711,8 +3739,8 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     if (!b.cancelYmd) continue;
     if (b.bookYmd > TODAY_YMD) continue;
     if (_rtFilter && b.room !== _rtFilter) continue;
-    const wasInSnap = (b.bookYmd < snapYmd && b.cancelYmd >= snapYmd);
-    const cancelledInPickup = (b.cancelYmd >= snapYmd && b.cancelYmd <= TODAY_YMD && b.bookYmd < snapYmd);
+    const wasInSnap = (b.bookYmd < pickupLoYmd && b.cancelYmd >= pickupLoYmd);
+    const cancelledInPickup = (b.cancelYmd >= pickupLoYmd && b.cancelYmd <= pickupHiYmd && b.bookYmd < pickupLoYmd);
     if (!wasInSnap && !cancelledInPickup) continue;
     let cur = startOfDay(b.dIn);
     const end = startOfDay(b.dOut);
@@ -3732,7 +3760,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
       }
       cur = addDays(cur, 1);
     }
-    const cancelledInPickupStly = (b.cancelYmd >= snapStlyYmd && b.cancelYmd <= stlyTodayYmd && b.bookYmd < snapStlyYmd);
+    const cancelledInPickupStly = (b.cancelYmd >= pickupStlyLoYmd && b.cancelYmd <= pickupStlyHiYmd && b.bookYmd < pickupStlyLoYmd);
     if (cancelledInPickupStly){
       const dInS  = addDays(b.dIn,  364);
       const dOutS = addDays(b.dOut, 364);
@@ -3818,7 +3846,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     stlyOcc: totCap>0 ? cum.stly.rn/totCap : 0,
     stlyAdr: cum.stly.rn>0 ? cum.stly.rev/cum.stly.rn : NaN,
   };
-  return { rows, totals, snapYmd, snapStlyYmd, stlyTodayYmd, startYmd: startYmdNum, rangeDays, pickupDaysAgo, structSel: sel };
+  return { rows, totals, snapYmd, snapStlyYmd, stlyTodayYmd, pickupLoYmd, pickupHiYmd, pickupStlyLoYmd, pickupStlyHiYmd, startYmd: startYmdNum, rangeDays, pickupDaysAgo, structSel: sel };
 }
 /* helper to build a YYYY-MM-DD string from YMD num */
 function ymdNumToIso(n){
@@ -3994,9 +4022,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     o.stlyOcc = o.capSum > 0 ? o.stlyRn / o.capSum : 0;
   }
   // ===== A · Daily Pickup index =====
-  // Per ogni stay-date futura calcolo quanti booking confermati sono entrati negli ultimi 1g/7g.
-  // Finestra: prima [today-1, today] (= ieri + oggi). Se 0, allargo a [today-7, today].
-  // Se ancora 0 → niente segnale (fattore 0%) — il fattore si attiva solo con pickup recente.
+  // ⚠️ ECCEZIONE alla regola pickup unificata: il fattore RMES Daily Pickup include
+  // ANCHE i bookings entrati OGGI (perché serve a vedere "movimento in tempo reale"
+  // per questa stay-date, e oggi è il giorno più informativo).
+  // Finestra primaria "1d" = [today-1, today] (= ieri + oggi). Se 0 booking, allargo
+  // a "7d" = [today-7, today] (oggi compreso, 8 giorni). Se ancora 0 → segnale 0%.
   const _pickupByStayDate = {};  // ymd → { recent1g, recent7g }
   {
     const _structKeys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
@@ -4270,7 +4300,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       // Nessuna prenotazione entrata negli ultimi 7 giorni per questa stay-date → fattore neutro
       occ_mult = 1;
       A_idx = (r.cap > 0) ? (r.curRn / r.cap) : null;
-      _A_naReason = 'no recent pickup (last 7d) for this stay-date';
+      _A_naReason = 'no recent pickup (last 8 calendar days) for this stay-date';
     } else {
       occ_mult = 1 + _pickupSignal.dev;
       A_idx = _pickupSignal.fillRate;  // fill rate strutturale (info di contesto)
@@ -5339,7 +5369,7 @@ function renderRmesBreakdown(){
     { t:'Date',             al:'left',  tip:'Stay date', sticky:true },
     { t:'DoW',              al:'right', tip:'Day of week' },
     { t:'Last update',      al:'right', tip:'Price currently active for this stay-date (= the reference the new RMES suggestion is built on). Equals the Base Price if RMES has never been accepted, or the most recent accepted RMES otherwise.' },
-    { t:'A·Pickup',         al:'right', tip:'A · Daily Pickup — single-factor deviation %, weighted. Activates only if new bookings came in for this stay-date in the last 1 day (yesterday+today, fallback 7d). When activated, the % depends on the fill rate (≤20% → 0%, 21–50% → +5%, 51–70% → +10%, 71–90% → +15%, >90% → +20%). Never negative.' },
+    { t:'A·Pickup',         al:'right', tip:'A · Daily Pickup — single-factor deviation %, weighted. Activates only if new bookings came in for this stay-date in the window "yesterday + today" (2 calendar days). If 0 bookings → expands to "today and the 7 previous days" (8 calendar days). NOTE: this is the only place in the dashboard where today is included in pickup — the Sell Strategy "Pickup Nd" column and the Big Picture pickup chart instead use the standard rule (today excluded). When activated, the % depends on the fill rate (≤20% → 0%, 21–50% → +5%, 51–70% → +10%, 71–90% → +15%, >90% → +20%). Never negative.' },
     { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %, weighted. Compares the booking pace of the last 4 weeks vs the same 4 weeks last year (weeks weighted 10/20/30/40, most recent counts more).' },
     { t:'C·Online',         al:'right', tip:'C · Online Pricing — my Beddy-eq vs Weighted Expedia Compset (no offsets), single-factor dev %, weighted.' },
     { t:'D·Demand',         al:'right', tip:'D · Demand (Expedia) — Expedia search volume vs the month median, single-factor dev %, weighted.' },
@@ -7309,7 +7339,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       rmesSection += '</div>';
       const factors = [
-        {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'recent bookings (last 1d, fallback 7d) for this stay-date × fill rate scale. Never negative.'},
+        {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'recent bookings (window "1d" = yesterday + today, fallback "7d" = today and 7 previous days) for this stay-date × fill rate scale. Never negative.'},
         {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'4-week booking pace vs same 4 weeks last year (weeks weighted 10/20/30/40, most recent counts more)'},
         {key:'comp_mult',  naKey:'comp',  code:'C', name:'Online Pricing',   color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)'},
         {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'}
@@ -7323,7 +7353,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         let h = '<div style="padding:8px 14px 10px 14px;background:#fbfaf7;border-left:3px solid #d4cdb8;font-family:\'DM Mono\',monospace;font-size:11px;line-height:1.7;color:#333">';
         if (code === 'A'){
           // A · Daily Pickup — pickup recente (ieri+oggi, fallback 7g) + scala fill rate
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Activated only when new bookings come in for this stay-date. Window: yesterday + today; if none, expand to last 7 days. If no recent pickup → 0% (no signal). When activated, the % depends on the fill rate.</div>';
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Activated only when new bookings come in for this stay-date. <b>Primary window</b>: yesterday + today (2 calendar days = "1d"). If zero, <b>fallback window</b>: today and the 7 previous days (8 calendar days = "7d"). If still zero → 0% (no signal). When activated, the % depends on the fill rate.</div>';
           const pkDbg = dbg.pickupDbg || {};
           const rnCur = pkDbg.curRn || dbg.rnCur || 0;
           const capCur = pkDbg.cap || dbg.capCur || 0;
@@ -7331,9 +7361,9 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           const pkCount = pkDbg.pickupCount || 0;
           const pkSource = pkDbg.source || 'no_recent_pickup';
           h += '<div>Recent pickup: <b>';
-          if (pkSource === 'recent_1g') h += pkCount + ' booking(s) in the last 1 day (yesterday + today)';
-          else if (pkSource === 'recent_7g') h += pkCount + ' booking(s) in the last 7 days <span style="color:#999">(none in last 1 day, fallback window)</span>';
-          else if (pkSource === 'no_recent_pickup') h += '0 bookings in the last 7 days → factor stays at 0%';
+          if (pkSource === 'recent_1g') h += pkCount + ' booking(s) in the primary window (yesterday + today = 2 calendar days)';
+          else if (pkSource === 'recent_7g') h += pkCount + ' booking(s) in the fallback window (8 calendar days) <span style="color:#999">(none in the primary yesterday+today window)</span>';
+          else if (pkSource === 'no_recent_pickup') h += '0 bookings in the fallback window (8 calendar days) → factor stays at 0%';
           else if (pkSource === 'no_capacity') h += '— (no capacity data)';
           h += '</b></div>';
           h += '<div>Bookings on books (OTB): <b>'+rnCur+' RN</b> on <b>'+capCur+' rooms</b> · Fill rate: <b>'+(fillRate*100).toFixed(1)+'%</b></div>';
@@ -8405,7 +8435,7 @@ function renderSellStrategy(sel){
   if (pkInp){
     pkInp.onchange = () => {
       const v = parseInt(pkInp.value,10);
-      if (v>=1 && v<=365){ SELL_PICKUP_DAYS = v; renderSellStrategy(CURRENT_STRUCT); }
+      if (isFinite(v) && v>=0 && v<=365){ SELL_PICKUP_DAYS = v; renderSellStrategy(CURRENT_STRUCT); }
     };
   }
   const availEl = document.getElementById('sell-rmes-availability');
@@ -8504,9 +8534,18 @@ function renderSellStrategy(sel){
   `;
   const subEl = document.getElementById('sell-table-sub');
   if (subEl){
-    const snapDateD = ymdToDate(A.snapYmd);
-    const stlyDateD = ymdToDate(A.stlyTodayYmd);
-    subEl.innerHTML = `OTB to date vs Pickup last ${A.pickupDaysAgo}d (from ${pad2(snapDateD.getDate())}/${pad2(snapDateD.getMonth()+1)} to today, included) · STLY (from ${pad2(stlyDateD.getDate())}/${pad2(stlyDateD.getMonth()+1)})`;
+    const loD = ymdToDate(A.pickupLoYmd);
+    const hiD = ymdToDate(A.pickupHiYmd);
+    const stlyLoD = ymdToDate(A.pickupStlyLoYmd);
+    const stlyHiD = ymdToDate(A.pickupStlyHiYmd);
+    const _fmt = (d) => pad2(d.getDate())+'/'+pad2(d.getMonth()+1);
+    const winLbl = (A.pickupDaysAgo === 0)
+      ? `today (${_fmt(loD)})`
+      : (A.pickupLoYmd === A.pickupHiYmd ? _fmt(loD) : `${_fmt(loD)}\u2013${_fmt(hiD)}`);
+    const stlyWinLbl = (A.pickupDaysAgo === 0)
+      ? `STLY today (${_fmt(stlyLoD)})`
+      : (A.pickupStlyLoYmd === A.pickupStlyHiYmd ? _fmt(stlyLoD) : `${_fmt(stlyLoD)}\u2013${_fmt(stlyHiD)}`);
+    subEl.innerHTML = `OTB to date vs Pickup ${A.pickupDaysAgo}d (booked ${winLbl}) \u00b7 STLY pickup (${stlyWinLbl})`;
   }
   SELL_LAST_AGG = A;
   const dowIT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -13193,7 +13232,7 @@ function _renderRmesWeightsBox(sel){
   if (!wrap) return;
   const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
   const factors = [
-    { key:'occ',    letter:'A', label:'Daily Pickup',    color:'#3b6b9a', desc:'recent pickup × fill rate (last 1d, fallback 7d)' },
+    { key:'occ',    letter:'A', label:'Daily Pickup',    color:'#3b6b9a', desc:'recent pickup × fill rate (window "1d" = yesterday + today, fallback "7d")' },
     { key:'pace',   letter:'B', label:'Pace Trend',      color:'#8e5fa8', desc:'pickup 4w month vs STLY (recent week weighted)' },
     { key:'comp',   letter:'C', label:'Online Pricing',  color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)' },
     { key:'airdna', letter:'D', label:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median' },
@@ -13311,7 +13350,7 @@ function _renderRmesPickupThresholdsBox(sel){
   let h = '';
   h += '<div style="font-size:11.5px;color:var(--ink-2);margin-bottom:10px;line-height:1.45">';
   h += 'Edit the dev % that the Daily Pickup factor applies for each fill rate bucket. ';
-  h += 'The factor activates only when at least 1 new booking came in for this stay-date in the last 1 day (yesterday + today, fallback last 7 days). ';
+  h += 'The factor activates only when at least 1 new booking came in for this stay-date in the primary window (yesterday + today = 2 calendar days). If zero, falls back to the wider window (today and the 7 previous days = 8 calendar days). ';
   h += 'When activated, the dev % is picked from this table according to the current fill rate of the day. ';
   h += '<b>Never negative</b>: only the LMF can lower the price close-in.';
   h += '</div>';
@@ -15286,15 +15325,13 @@ function _bigPickupTreeForDay(sel, dayYmd){
   const ks = new Set(structKeysFor(sel));
   let lo=dayYmd, hi=dayYmd;
   if (dayYmd === 'all'){
+    // "all 7 days" = ultimi 7 giorni di pickup (today-7 .. today-1), oggi escluso
     const today = new Date(TODAY); today.setHours(0,0,0,0);
-    lo = +ymd(new Date(today.getTime()-6*864e5)); hi = +ymd(today);
-  } else {
-    // Cliccando un giorno X: mostra bookings entrati il giorno PRECEDENTE (X-1) + X
-    // (es. cliccando 29/05 → vedi quelli entrati il 28/05 + il 29/05).
-    const _dHi = new Date(Math.floor(dayYmd/10000), Math.floor((dayYmd%10000)/100)-1, dayYmd%100);
-    const _dLo = new Date(_dHi); _dLo.setDate(_dLo.getDate()-1);
-    lo = +ymd(_dLo); hi = +ymd(_dHi);
+    lo = +ymd(new Date(today.getTime()-7*864e5));
+    hi = +ymd(new Date(today.getTime()-1*864e5));
   }
+  // Cliccando un singolo giorno X: mostra SOLO bookings entrati il giorno X.
+  // (lo = hi = dayYmd, già impostato sopra). Allineato con la regola "pickup N = ieri-N a ieri" degli altri RMS.
   const byMonth={}, byRoom={}, byChannel={}, byStayDay={}; let totRn=0, totRev=0;
   for (const b of BOOKINGS){
     if (b.cancelled || !ks.has(b.struct)) continue;
@@ -15320,8 +15357,10 @@ function _bigPickupTreeForDay(sel, dayYmd){
 function _bigPickupAgg(sel, nDays){
   const ks = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
-  const hiYmd = +ymd(today);
-  const loDate = new Date(today); loDate.setDate(loDate.getDate()-(nDays-1));
+  // Nuova regola: pickup N = ultimi N giorni PRIMA di oggi (today-N ... today-1), oggi escluso.
+  const hiDate = new Date(today); hiDate.setDate(hiDate.getDate()-1);
+  const hiYmd = +ymd(hiDate);
+  const loDate = new Date(today); loDate.setDate(loDate.getDate()-nDays);
   const loYmd = +ymd(loDate);
   const byChannel={}, byMonth={}, byRoom={}, byStayDay={};
   let totRn=0, totRev=0;
@@ -15357,15 +15396,15 @@ function _bigBreakdownData(kind, nDays, forceWindow){
   if (kind === 'pickup'){
     let lo, hi, lbl;
     if (!forceWindow && typeof BIG_SELECTED_DAY === 'number'){
-      // Cliccando un giorno X: finestra = [X-1, X] (giorno precedente + cliccato)
-      const _dHi = new Date(Math.floor(BIG_SELECTED_DAY/10000), Math.floor((BIG_SELECTED_DAY%10000)/100)-1, BIG_SELECTED_DAY%100);
-      const _dLo = new Date(_dHi); _dLo.setDate(_dLo.getDate()-1);
-      lo = +ymd(_dLo); hi = +ymd(_dHi);
-      const sHi = String(BIG_SELECTED_DAY);
-      const sLo = String(lo);
-      lbl = `${sLo.slice(6,8)}/${sLo.slice(4,6)} \u2013 ${sHi.slice(6,8)}/${sHi.slice(4,6)}/${sHi.slice(0,4)}`;
+      // Cliccando un giorno X: finestra = solo X (allineata con nuova regola pickup N)
+      lo = hi = BIG_SELECTED_DAY;
+      const s = String(BIG_SELECTED_DAY);
+      lbl = `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`;
     } else {
-      hi=+ymd(today); lo=+ymd(new Date(today.getTime()-6*864e5)); lbl = 'last 7 days';
+      // "last 7 days" = today-7 .. today-1 (esclude oggi)
+      hi=+ymd(new Date(today.getTime()-1*864e5));
+      lo=+ymd(new Date(today.getTime()-7*864e5));
+      lbl = 'last 7 days (excl. today)';
     }
     const tot={}; BIG_STRUCTS.forEach(s=>tot[_bigStructKey(s.k)]=0);
     for (const b of BOOKINGS){ if(b.cancelled)continue; const key=b.struct; if(tot[key]===undefined)continue; if(b.bookYmd>=lo&&b.bookYmd<=hi) tot[key]+=b.notti||0; }
@@ -15460,7 +15499,9 @@ function _bigPickupByDay(sel, nDays){
   const ks = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const days = [];
-  for (let i=nDays-1; i>=0; i--){
+  // Nuova regola: il chart mostra gli N giorni PRIMA di oggi (today-N ... today-1), oggi escluso.
+  // Pickup 0 = oggi (visualizzato solo nel breakdown panel sotto, non come barra del chart).
+  for (let i=nDays; i>=1; i--){
     const d = new Date(today); d.setDate(d.getDate()-i);
     days.push({ ymdNum:+ymd(d), rn:0, rev:0, label:`${pad2(d.getDate())}/${pad2(d.getMonth()+1)}` });
   }
@@ -15476,8 +15517,11 @@ function _bigPickupByDay(sel, nDays){
 function _bigPickupVsLY(sel, nDays){
   const ks = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
-  const hi=+ymd(today), lo=+ymd(new Date(today.getTime()-(nDays-1)*864e5));
-  const hiLY=+ymd(new Date(today.getTime()-364*864e5)), loLY=+ymd(new Date(today.getTime()-(364+nDays-1)*864e5));
+  // Pickup window: today-nDays ... today-1 (esclude oggi)
+  const hi=+ymd(new Date(today.getTime()-1*864e5));
+  const lo=+ymd(new Date(today.getTime()-nDays*864e5));
+  const hiLY=+ymd(new Date(today.getTime()-(364+1)*864e5));
+  const loLY=+ymd(new Date(today.getTime()-(364+nDays)*864e5));
   let cur=0, ly=0;
   for (const b of BOOKINGS){
     if (b.cancelled || !ks.has(b.struct)) continue;
@@ -15639,16 +15683,13 @@ function renderBigPicture(){
   let selDay = BIG_SELECTED_DAY;
   const isAll = (selDay === 'all');
   if (!isAll && (selDay==null || !allDays.some(d=>d.ymdNum===selDay))){
-    selDay = allDays.length ? allDays[allDays.length-1].ymdNum : +ymd(new Date(TODAY));
+    // Default: ultimo giorno della finestra (= ieri = pickup 1) per allinearsi alla nuova regola.
+    selDay = allDays.length ? allDays[allDays.length-1].ymdNum : +ymd(new Date(TODAY.getTime()-1*864e5));
   }
   const tree = _bigPickupTreeForDay(sel, isAll ? 'all' : selDay);
-  const selLbl = isAll ? 'the last 7 days' : (()=>{
-    // Label = "DD/MM \u2013 DD/MM/YYYY" (giorno precedente \u2013 selezionato)
+  const selLbl = isAll ? 'the last 7 days (excl. today)' : (()=>{
     const s = String(selDay);
-    const _dHi = new Date(+s.slice(0,4), +s.slice(4,6)-1, +s.slice(6,8));
-    const _dLo = new Date(_dHi); _dLo.setDate(_dLo.getDate()-1);
-    const sLo = String(_dLo.getFullYear()*10000 + (_dLo.getMonth()+1)*100 + _dLo.getDate());
-    return `${sLo.slice(6,8)}/${sLo.slice(4,6)} \u2013 ${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`;
+    return `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`;
   })();
   const maxRn = (arr)=> Math.max(1, ...(arr||[]).map(x=>x.rn));
   const barRow = (label, rn, max, color, big)=>{
