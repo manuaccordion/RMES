@@ -3623,7 +3623,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     if (!keys.has(b.struct)) continue;
     if (b.bookYmd > TODAY_YMD) continue;
     if (_rtFilter && b.room !== _rtFilter) continue;
-    const isPickup = (b.bookYmd > snapYmd && b.bookYmd <= TODAY_YMD);
+    const isPickup = (b.bookYmd >= snapYmd && b.bookYmd <= TODAY_YMD);
     let cur = startOfDay(b.dIn);
     const end = startOfDay(b.dOut);
     while (cur < end){
@@ -3638,7 +3638,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
         if (!bucketsCurByRTRev[k]) bucketsCurByRTRev[k] = {};
         bucketsCurByRTRev[k][b.room] = (bucketsCurByRTRev[k][b.room] || 0) + b.revPerNight;
       }
-      if (b.bookYmd <= snapYmd){
+      if (b.bookYmd < snapYmd){
         if (!bucketsSnap[k]) bucketsSnap[k] = {rev:0, rn:0};
         bucketsSnap[k].rev += b.revPerNight;
         bucketsSnap[k].rn  += 1;
@@ -3652,7 +3652,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     if (b.bookYmd <= stlyTodayYmd){
       const dInS  = addDays(b.dIn,  364);
       const dOutS = addDays(b.dOut, 364);
-      const isPickupStly = (b.bookYmd > snapStlyYmd && b.bookYmd <= stlyTodayYmd);
+      const isPickupStly = (b.bookYmd >= snapStlyYmd && b.bookYmd <= stlyTodayYmd);
       let cs = startOfDay(dInS);
       const ce = startOfDay(dOutS);
       while (cs < ce){
@@ -3673,7 +3673,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
         cs = addDays(cs, 1);
       }
     }
-    if (b.bookYmd <= snapStlyYmd){
+    if (b.bookYmd < snapStlyYmd){
       const dInS  = addDays(b.dIn,  364);
       const dOutS = addDays(b.dOut, 364);
       let cs = startOfDay(dInS);
@@ -3711,8 +3711,8 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
     if (!b.cancelYmd) continue;
     if (b.bookYmd > TODAY_YMD) continue;
     if (_rtFilter && b.room !== _rtFilter) continue;
-    const wasInSnap = (b.bookYmd <= snapYmd && b.cancelYmd > snapYmd);
-    const cancelledInPickup = (b.cancelYmd > snapYmd && b.cancelYmd <= TODAY_YMD && b.bookYmd <= snapYmd);
+    const wasInSnap = (b.bookYmd < snapYmd && b.cancelYmd >= snapYmd);
+    const cancelledInPickup = (b.cancelYmd >= snapYmd && b.cancelYmd <= TODAY_YMD && b.bookYmd < snapYmd);
     if (!wasInSnap && !cancelledInPickup) continue;
     let cur = startOfDay(b.dIn);
     const end = startOfDay(b.dOut);
@@ -3732,7 +3732,7 @@ function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
       }
       cur = addDays(cur, 1);
     }
-    const cancelledInPickupStly = (b.cancelYmd > snapStlyYmd && b.cancelYmd <= stlyTodayYmd && b.bookYmd <= snapStlyYmd);
+    const cancelledInPickupStly = (b.cancelYmd >= snapStlyYmd && b.cancelYmd <= stlyTodayYmd && b.bookYmd < snapStlyYmd);
     if (cancelledInPickupStly){
       const dInS  = addDays(b.dIn,  364);
       const dOutS = addDays(b.dOut, 364);
@@ -8506,7 +8506,7 @@ function renderSellStrategy(sel){
   if (subEl){
     const snapDateD = ymdToDate(A.snapYmd);
     const stlyDateD = ymdToDate(A.stlyTodayYmd);
-    subEl.innerHTML = `OTB to date vs Pickup last ${A.pickupDaysAgo}d (snapshot ${pad2(snapDateD.getDate())}/${pad2(snapDateD.getMonth()+1)}) · STLY (snapshot ${pad2(stlyDateD.getDate())}/${pad2(stlyDateD.getMonth()+1)})`;
+    subEl.innerHTML = `OTB to date vs Pickup last ${A.pickupDaysAgo}d (from ${pad2(snapDateD.getDate())}/${pad2(snapDateD.getMonth()+1)} to today, included) · STLY (from ${pad2(stlyDateD.getDate())}/${pad2(stlyDateD.getMonth()+1)})`;
   }
   SELL_LAST_AGG = A;
   const dowIT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -15288,11 +15288,17 @@ function _bigPickupTreeForDay(sel, dayYmd){
   if (dayYmd === 'all'){
     const today = new Date(TODAY); today.setHours(0,0,0,0);
     lo = +ymd(new Date(today.getTime()-6*864e5)); hi = +ymd(today);
+  } else {
+    // Cliccando un giorno X: mostra bookings entrati il giorno PRECEDENTE (X-1) + X
+    // (es. cliccando 29/05 → vedi quelli entrati il 28/05 + il 29/05).
+    const _dHi = new Date(Math.floor(dayYmd/10000), Math.floor((dayYmd%10000)/100)-1, dayYmd%100);
+    const _dLo = new Date(_dHi); _dLo.setDate(_dLo.getDate()-1);
+    lo = +ymd(_dLo); hi = +ymd(_dHi);
   }
   const byMonth={}, byRoom={}, byChannel={}, byStayDay={}; let totRn=0, totRev=0;
   for (const b of BOOKINGS){
     if (b.cancelled || !ks.has(b.struct)) continue;
-    if (dayYmd==='all' ? (b.bookYmd<lo || b.bookYmd>hi) : (b.bookYmd!==dayYmd)) continue;
+    if (b.bookYmd < lo || b.bookYmd > hi) continue;
     const rn=b.notti||0, rev=b.revTotal||0; totRn+=rn; totRev+=rev;
     const ch=(b.canale||'?'); byChannel[ch]=(byChannel[ch]||0)+rn;
     const rm=b.room||'?'; byRoom[rm]=(byRoom[rm]||0)+rn;
@@ -15351,8 +15357,13 @@ function _bigBreakdownData(kind, nDays, forceWindow){
   if (kind === 'pickup'){
     let lo, hi, lbl;
     if (!forceWindow && typeof BIG_SELECTED_DAY === 'number'){
-      lo = hi = BIG_SELECTED_DAY;
-      const s=String(BIG_SELECTED_DAY); lbl = `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`;
+      // Cliccando un giorno X: finestra = [X-1, X] (giorno precedente + cliccato)
+      const _dHi = new Date(Math.floor(BIG_SELECTED_DAY/10000), Math.floor((BIG_SELECTED_DAY%10000)/100)-1, BIG_SELECTED_DAY%100);
+      const _dLo = new Date(_dHi); _dLo.setDate(_dLo.getDate()-1);
+      lo = +ymd(_dLo); hi = +ymd(_dHi);
+      const sHi = String(BIG_SELECTED_DAY);
+      const sLo = String(lo);
+      lbl = `${sLo.slice(6,8)}/${sLo.slice(4,6)} \u2013 ${sHi.slice(6,8)}/${sHi.slice(4,6)}/${sHi.slice(0,4)}`;
     } else {
       hi=+ymd(today); lo=+ymd(new Date(today.getTime()-6*864e5)); lbl = 'last 7 days';
     }
@@ -15631,7 +15642,14 @@ function renderBigPicture(){
     selDay = allDays.length ? allDays[allDays.length-1].ymdNum : +ymd(new Date(TODAY));
   }
   const tree = _bigPickupTreeForDay(sel, isAll ? 'all' : selDay);
-  const selLbl = isAll ? 'the last 7 days' : (()=>{ const s=String(selDay); return `${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`; })();
+  const selLbl = isAll ? 'the last 7 days' : (()=>{
+    // Label = "DD/MM \u2013 DD/MM/YYYY" (giorno precedente \u2013 selezionato)
+    const s = String(selDay);
+    const _dHi = new Date(+s.slice(0,4), +s.slice(4,6)-1, +s.slice(6,8));
+    const _dLo = new Date(_dHi); _dLo.setDate(_dLo.getDate()-1);
+    const sLo = String(_dLo.getFullYear()*10000 + (_dLo.getMonth()+1)*100 + _dLo.getDate());
+    return `${sLo.slice(6,8)}/${sLo.slice(4,6)} \u2013 ${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`;
+  })();
   const maxRn = (arr)=> Math.max(1, ...(arr||[]).map(x=>x.rn));
   const barRow = (label, rn, max, color, big)=>{
     const pct = Math.round(rn/max*100);
