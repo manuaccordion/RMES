@@ -32,6 +32,7 @@ const RMES_CLOUD = (function(){
     'rmes_thresholds_per_struct_v3',
     'rmes_total_cap_v1',
     'rmes_event_weights_v1',
+    'rmes_pickup_thresholds_v1',
     'rmes_target_growth_v1',
     'rmes_floor_v1',
     'rmes_compset_offsets_v1',
@@ -3751,6 +3752,68 @@ function _getEventWeights(){
 function _setEventWeights(obj){
   try { localStorage.setItem(EVENT_WEIGHTS_KEY, JSON.stringify(obj || {})); } catch(e){}
 }
+
+/* ===========================================================================
+   Daily Pickup Thresholds — scala fill-rate per struttura (Fase 2)
+   Storage: rmes_pickup_thresholds_v1 (sincronizzato Firebase).
+   Struttura: { struct: [ { upTo: 0.20, dev: 0.00 }, ... 5 soglie ] }
+   - Soglie ORDINATE per upTo crescente, l'ultima ha upTo = 1.00 (qualsiasi cosa fino al 100%).
+   - Si applica la PRIMA soglia con fillRate <= upTo.
+   - dev è in frazione (0.05 = +5%).
+   Default uguale per tutte le 4 strutture.
+   =========================================================================== */
+const RMES_PICKUP_THR_KEY = 'rmes_pickup_thresholds_v1';
+const RMES_PICKUP_THR_DEFAULT = [
+  { upTo: 0.20, dev: 0.00 },  // fill ≤ 20% → +0%
+  { upTo: 0.50, dev: 0.05 },  // fill 21-50% → +5%
+  { upTo: 0.70, dev: 0.10 },  // fill 51-70% → +10%
+  { upTo: 0.90, dev: 0.15 },  // fill 71-90% → +15%
+  { upTo: 1.00, dev: 0.20 },  // fill > 90% → +20%
+];
+function _rmesPickupGetAll(){
+  try {
+    const raw = localStorage.getItem(RMES_PICKUP_THR_KEY);
+    if (raw){
+      const parsed = JSON.parse(raw);
+      const out = {};
+      for (const s of ['firenze','condotta','alfani','davids']){
+        const arr = parsed[s];
+        if (Array.isArray(arr) && arr.length === 5) out[s] = arr.map(t => ({ upTo:+t.upTo, dev:+t.dev }));
+        else out[s] = RMES_PICKUP_THR_DEFAULT.map(t => ({...t}));
+      }
+      return out;
+    }
+  } catch(e){}
+  // Default per tutte le 4 strutture
+  return {
+    firenze:  RMES_PICKUP_THR_DEFAULT.map(t => ({...t})),
+    condotta: RMES_PICKUP_THR_DEFAULT.map(t => ({...t})),
+    alfani:   RMES_PICKUP_THR_DEFAULT.map(t => ({...t})),
+    davids:   RMES_PICKUP_THR_DEFAULT.map(t => ({...t})),
+  };
+}
+function _rmesPickupGet(structKey){
+  const all = _rmesPickupGetAll();
+  return all[structKey] || RMES_PICKUP_THR_DEFAULT.map(t => ({...t}));
+}
+function _rmesPickupSet(structKey, thresholds){
+  if (!Array.isArray(thresholds) || thresholds.length !== 5) return false;
+  const all = _rmesPickupGetAll();
+  all[structKey] = thresholds.map(t => ({ upTo:+t.upTo, dev:+t.dev }));
+  try { localStorage.setItem(RMES_PICKUP_THR_KEY, JSON.stringify(all)); return true; }
+  catch(e){ return false; }
+}
+function _rmesPickupReset(structKey){
+  return _rmesPickupSet(structKey, RMES_PICKUP_THR_DEFAULT.map(t => ({...t})));
+}
+function _pickupDevFromFillCfg(structKey, fillRate){
+  const thr = _rmesPickupGet(structKey);
+  for (const t of thr){
+    if (fillRate <= t.upTo + 0.0001) return t.dev || 0;
+  }
+  // Fallback: ultima riga
+  return thr[thr.length-1].dev || 0;
+}
 function _getEventBoost(ymd){
   if (typeof EVENTS === 'undefined' || !EVENTS[ymd]) return 1.0;
   const label = EVENTS[ymd]; if (!label) return 1.0;
@@ -3815,14 +3878,9 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       }
     }
   }
-  // Scala fill rate per Daily Pickup (in Fase 2 sarà configurabile per struttura via UI)
-  // Scala definitiva: >90% +20%, 71-90% +15%, 51-70% +10%, 21-50% +5%, ≤20% +0%
+  // Scala fill rate per Daily Pickup — soglie configurabili per struttura (storage rmes_pickup_thresholds_v1)
   function _pickupDevFromFill(fillRate){
-    if (fillRate > 0.90) return 0.20;
-    if (fillRate >= 0.71) return 0.15;
-    if (fillRate >= 0.51) return 0.10;
-    if (fillRate >= 0.21) return 0.05;
-    return 0;
+    return _pickupDevFromFillCfg(sel, fillRate);
   }
   function _dailyPickupSignal(r){
     const pk = _pickupByStayDate[r.ymd];
@@ -6881,11 +6939,23 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           } else if (pkSource === 'no_capacity'){
             h += '— (no capacity)';
           } else {
-            if (fillRate > 0.90) h += 'Fill > 90% → +20%';
-            else if (fillRate >= 0.71) h += 'Fill 71–90% → +15%';
-            else if (fillRate >= 0.51) h += 'Fill 51–70% → +10%';
-            else if (fillRate >= 0.21) h += 'Fill 21–50% → +5%';
-            else h += 'Fill ≤ 20% → +0%';
+            // Soglie configurate per struttura
+            const _thr = (typeof _rmesPickupGet === 'function') ? _rmesPickupGet(d.structKey) : [
+              {upTo:0.20,dev:0},{upTo:0.50,dev:0.05},{upTo:0.70,dev:0.10},{upTo:0.90,dev:0.15},{upTo:1.00,dev:0.20}
+            ];
+            for (let i = 0; i < _thr.length; i++){
+              const t = _thr[i];
+              const prevUpTo = (i === 0) ? 0 : _thr[i-1].upTo;
+              if (fillRate <= t.upTo + 0.0001){
+                let rangeLabel;
+                if (i === 0) rangeLabel = 'Fill ≤ ' + Math.round(t.upTo * 100) + '%';
+                else if (i === _thr.length - 1) rangeLabel = 'Fill > ' + Math.round(prevUpTo * 100) + '%';
+                else rangeLabel = 'Fill ' + (Math.round(prevUpTo * 100) + 1) + '–' + Math.round(t.upTo * 100) + '%';
+                const sign = (t.dev || 0) >= 0 ? '+' : '';
+                h += rangeLabel + ' → ' + sign + Math.round((t.dev || 0) * 100) + '%';
+                break;
+              }
+            }
           }
           h += '</b></div>';
           h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Applied dev: '+_fpct((mults.occ_mult-1),1)+'</div>';
@@ -12660,6 +12730,7 @@ function renderRMESConfigTab(){
   });
   _renderRmesWeightsBox(sel);
   _renderRmesThresholdsBox(sel);
+  if (typeof _renderRmesPickupThresholdsBox === 'function') _renderRmesPickupThresholdsBox(sel);
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
@@ -12792,6 +12863,91 @@ function _rmesTabApplyWeights(sel){
   saveRmesWeights();
   if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === sel || CURRENT_STRUCT === 'both')){
     renderSellStrategy(CURRENT_STRUCT);
+  }
+}
+/* === ②b Daily Pickup thresholds — Fase 2 === */
+function _renderRmesPickupThresholdsBox(sel){
+  const wrap = document.getElementById('rmes-tab-pkthr-bar');
+  if (!wrap) return;
+  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
+  const subEl = document.getElementById('rmes-tab-pkthr-sub');
+  if (subEl) subEl.textContent = 'property: ' + (labels[sel] || sel);
+  const thr = _rmesPickupGet(sel);
+  // Costruisco una tabella con 5 righe: ogni riga ha "fill rate range" e "dev %".
+  // L'upTo della riga i è il limite sup del range. Il lowerBound è upTo della riga precedente (+0.01).
+  let h = '';
+  h += '<div style="font-size:11.5px;color:var(--ink-2);margin-bottom:10px;line-height:1.45">';
+  h += 'Edit the dev % that the Daily Pickup factor applies for each fill rate bucket. ';
+  h += 'The factor activates only when at least 1 new booking came in for this stay-date in the last 1 day (yesterday + today, fallback last 7 days). ';
+  h += 'When activated, the dev % is picked from this table according to the current fill rate of the day. ';
+  h += '<b>Never negative</b>: only the LMF can lower the price close-in.';
+  h += '</div>';
+  h += '<table style="width:100%;max-width:520px;border-collapse:collapse;font-size:13px">';
+  h += '<thead><tr style="background:#f5f4f0;border-bottom:1px solid var(--line)">';
+  h += '<th style="padding:7px 10px;text-align:left;font-weight:600;color:var(--ink-2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Fill rate (OTB / cap)</th>';
+  h += '<th style="padding:7px 10px;text-align:right;font-weight:600;color:var(--ink-2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Dev %</th>';
+  h += '</tr></thead><tbody>';
+  for (let i = 0; i < thr.length; i++){
+    const t = thr[i];
+    const prevUpTo = (i === 0) ? 0 : thr[i-1].upTo;
+    let rangeLabel;
+    if (i === 0) rangeLabel = '≤ ' + Math.round(t.upTo * 100) + '%';
+    else if (i === thr.length - 1) rangeLabel = '> ' + Math.round(prevUpTo * 100) + '%';
+    else rangeLabel = (Math.round(prevUpTo * 100) + 1) + '% – ' + Math.round(t.upTo * 100) + '%';
+    h += '<tr style="border-bottom:1px solid #eee">';
+    h += '<td style="padding:8px 10px;font-family:\'DM Mono\',monospace;color:var(--ink)">'+rangeLabel+'</td>';
+    h += '<td style="padding:8px 10px;text-align:right">';
+    h += '<input type="number" class="pkthr-dev-input" data-idx="'+i+'" min="0" max="100" step="1" value="'+Math.round((t.dev||0)*100)+'" style="width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> <span style="color:var(--ink-3);font-size:11px">%</span>';
+    h += '</td></tr>';
+  }
+  h += '</tbody></table>';
+  h += '<div style="margin-top:10px;display:flex;align-items:center;gap:10px">';
+  h += '<button id="rmes-tab-pkthr-save" style="padding:7px 14px;border:1px solid #4a7c59;background:#4a7c59;color:#fff;border-radius:4px;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:600;cursor:pointer">💾 Save thresholds</button>';
+  h += '<span id="rmes-tab-pkthr-status" style="font-size:11.5px;color:var(--ink-3)"></span>';
+  h += '</div>';
+  wrap.innerHTML = h;
+
+  const saveBtn = document.getElementById('rmes-tab-pkthr-save');
+  const statusEl = document.getElementById('rmes-tab-pkthr-status');
+  if (saveBtn){
+    saveBtn.onclick = () => {
+      const inputs = wrap.querySelectorAll('.pkthr-dev-input');
+      const newThr = [];
+      for (let i = 0; i < inputs.length; i++){
+        const pct = parseFloat(inputs[i].value);
+        if (!isFinite(pct) || pct < 0){
+          if (statusEl){ statusEl.textContent = '⚠ Invalid value at row ' + (i+1); statusEl.style.color = '#a83b3b'; }
+          return;
+        }
+        newThr.push({ upTo: thr[i].upTo, dev: pct / 100 });
+      }
+      const ok = _rmesPickupSet(sel, newThr);
+      if (ok){
+        if (statusEl){ statusEl.textContent = '✓ Saved for ' + (labels[sel] || sel); statusEl.style.color = '#2c5c3c'; }
+        // Invalida cache RMES per ricalcolo
+        if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+        // Notifica Firebase
+        if (typeof rmesCloud !== 'undefined' && rmesCloud.notifyLocalChange) rmesCloud.notifyLocalChange();
+        // Ridisegna Sell Strategy se attiva
+        if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined') renderSellStrategy(CURRENT_STRUCT);
+        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2500);
+      } else {
+        if (statusEl){ statusEl.textContent = '✗ Save failed'; statusEl.style.color = '#a83b3b'; }
+      }
+    };
+  }
+  const resetBtn = document.getElementById('rmes-tab-pkthr-reset');
+  if (resetBtn && !resetBtn._wired){
+    resetBtn._wired = true;
+    resetBtn.onclick = () => {
+      const lbl = labels[RMES_TAB_STRUCT] || RMES_TAB_STRUCT;
+      if (!confirm('Reset Daily Pickup thresholds for '+lbl+' to default scale (0/5/10/15/20%)?')) return;
+      _rmesPickupReset(RMES_TAB_STRUCT);
+      if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+      if (typeof rmesCloud !== 'undefined' && rmesCloud.notifyLocalChange) rmesCloud.notifyLocalChange();
+      _renderRmesPickupThresholdsBox(RMES_TAB_STRUCT);
+      if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined') renderSellStrategy(CURRENT_STRUCT);
+    };
   }
 }
 /* === ② SOGLIE INDICI === */

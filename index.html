@@ -1299,11 +1299,11 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="panel" style="margin-bottom:16px">
       <div class="panel-head">
         <div>
-          <h3>① Weights of the 5 RMES factors <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-w-sub">property: —</span></h3>
+          <h3>① Weights of the 4 RMES factors <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-w-sub">property: —</span></h3>
         </div>
         <div style="display:flex;gap:6px;align-items:center">
-          <button id="rmes-tab-w-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" title="Reset current property weights to 20% × 5 factors">↺ Reset 20%×5 (current property)</button>
-          <button id="rmes-tab-w-reset-all" style="font-size:10px;padding:5px 10px;border:1px solid #c4823b;border-radius:4px;background:#c4823b;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600" title="Reset weights to 20% × 5 factors for ALL properties">↺ Reset 20%×5 (all properties)</button>
+          <button id="rmes-tab-w-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" title="Reset current property weights to 25% × 4 factors">↺ Reset 25%×4 (current property)</button>
+          <button id="rmes-tab-w-reset-all" style="font-size:10px;padding:5px 10px;border:1px solid #c4823b;border-radius:4px;background:#c4823b;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600" title="Reset weights to 25% × 4 factors for ALL properties">↺ Reset 25%×4 (all properties)</button>
         </div>
       </div>
       <div class="panel-body" style="padding:14px 16px">
@@ -1325,6 +1325,21 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <label style="font-size:13px;color:var(--ink-2)"><b>Max cap (±%)</b>: <input type="number" id="rmes-tab-cap-input" min="0" max="100" step="1" style="width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;text-align:right;font-size:13px"> %</label>
         
         <div id="rmes-tab-th-cards" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- Box 2bis: Daily Pickup thresholds (Fase 2) -->
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-head">
+        <div>
+          <h3>②b Daily Pickup thresholds <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-pkthr-sub">property: —</span></h3>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button id="rmes-tab-pkthr-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" title="Reset thresholds to default scale for the current property">↺ Reset to default</button>
+        </div>
+      </div>
+      <div class="panel-body" style="padding:14px 16px">
+        <div id="rmes-tab-pkthr-bar"></div>
       </div>
     </div>
 
