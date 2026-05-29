@@ -15318,7 +15318,7 @@ const BIG_CARD_THEMES = {
   rate:   {accent:'#8e5fa8', bg:'linear-gradient(135deg,#f6f0fa,#e9dcf2)', ink:'#5a3a7a', icon:'🏷️'},
   occpk:  {accent:'#1f8a8a', bg:'linear-gradient(135deg,#ebf7f7,#d4eded)', ink:'#155e5e', icon:'🛏️'}
 };
-const BIG_HERO_ICONS = ['⚡','💶','📊','🏆'];
+const BIG_HERO_ICONS = ['⚡','💶','📊','🏷️','🏆'];
 function _bigProvLabel(p){ return (p==='Non Specificato' ? 'Sito web' : p); }
 let BIG_SELECTED_DAY = null;   // ymd (number) del giorno cliccato nel grafico; null = ultimo giorno
 function _bigPickupTreeForDay(sel, dayYmd){
@@ -15357,11 +15357,17 @@ function _bigPickupTreeForDay(sel, dayYmd){
 function _bigPickupAgg(sel, nDays){
   const ks = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
-  // Nuova regola: pickup N = ultimi N giorni PRIMA di oggi (today-N ... today-1), oggi escluso.
-  const hiDate = new Date(today); hiDate.setDate(hiDate.getDate()-1);
-  const hiYmd = +ymd(hiDate);
-  const loDate = new Date(today); loDate.setDate(loDate.getDate()-nDays);
-  const loYmd = +ymd(loDate);
+  // N >= 1: pickup = ultimi N giorni PRIMA di oggi (today-N ... today-1), oggi escluso.
+  // N == 0: pickup = solo oggi.
+  let hiYmd, loYmd;
+  if (nDays === 0){
+    hiYmd = loYmd = +ymd(today);
+  } else {
+    const hiDate = new Date(today); hiDate.setDate(hiDate.getDate()-1);
+    hiYmd = +ymd(hiDate);
+    const loDate = new Date(today); loDate.setDate(loDate.getDate()-nDays);
+    loYmd = +ymd(loDate);
+  }
   const byChannel={}, byMonth={}, byRoom={}, byStayDay={};
   let totRn=0, totRev=0;
   for (const b of BOOKINGS){
@@ -15445,6 +15451,12 @@ function _bigBreakdownData(kind, nDays, forceWindow){
     return { title:'OCC 2026 by property', sub:'occupancy year-to-date',
       rows: rows.map(r=>({name:r.name,color:r.color,main:r.v!=null?fmtPct(r.v,1):'—',pct:null,barPct:r.v!=null?r.v*100:0})) };
   }
+  if (kind === 'adr'){
+    const rows=[]; let maxV=1;
+    BIG_STRUCTS.forEach(s=>{ let v=null; try{ const A=aggOTBYearly(s.k); if(A&&A.tot&&isFinite(A.tot.adrC))v=A.tot.adrC; }catch(e){} if(v!=null) maxV=Math.max(maxV,v); rows.push({name:s.name,color:s.color,v}); });
+    return { title:'ADR 2026 by property', sub:'average daily rate year-to-date',
+      rows: rows.map(r=>({name:r.name,color:r.color,main:r.v!=null?fmtEUR(r.v):'\u2014',pct:null,barPct:r.v!=null?r.v/maxV*100:0})) };
+  }
   if (kind === 'source'){
     const rows=[];
     BIG_STRUCTS.forEach(s=>{
@@ -15517,11 +15529,19 @@ function _bigPickupByDay(sel, nDays){
 function _bigPickupVsLY(sel, nDays){
   const ks = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
-  // Pickup window: today-nDays ... today-1 (esclude oggi)
-  const hi=+ymd(new Date(today.getTime()-1*864e5));
-  const lo=+ymd(new Date(today.getTime()-nDays*864e5));
-  const hiLY=+ymd(new Date(today.getTime()-(364+1)*864e5));
-  const loLY=+ymd(new Date(today.getTime()-(364+nDays)*864e5));
+  // Pickup window CUR vs STLY (DOW-aligned, -364d), oggi escluso:
+  // N >= 1 → CUR = [today-N, today-1]   ·  STLY = [today-(N+364), today-(1+364)]
+  // N == 0 → CUR = [today, today]       ·  STLY = [today-364, today-364]
+  let hi, lo, hiLY, loLY;
+  if (nDays === 0){
+    hi = lo = +ymd(today);
+    hiLY = loLY = +ymd(new Date(today.getTime()-364*864e5));
+  } else {
+    hi = +ymd(new Date(today.getTime()-1*864e5));
+    lo = +ymd(new Date(today.getTime()-nDays*864e5));
+    hiLY = +ymd(new Date(today.getTime()-(364+1)*864e5));
+    loLY = +ymd(new Date(today.getTime()-(364+nDays)*864e5));
+  }
   let cur=0, ly=0;
   for (const b of BOOKINGS){
     if (b.cancelled || !ks.has(b.struct)) continue;
@@ -15652,10 +15672,19 @@ function renderBigPicture(){
   const winLbl = (n===7?'7d':'1d');
   const agg = _bigPickupAgg(sel, n);
   const isBoth = (sel === 'both');
-  let revOtb=null, occYear=null, revP=null, occP=null;
-  try { const A = aggOTBYearly(sel); if (A && A.tot){ revOtb=A.tot.revC; occYear=A.tot.occC; revP=A.tot.revP; occP=A.tot.occP; } } catch(e){}
+  let revOtb=null, occYear=null, adrYear=null, revP=null, occP=null, adrP=null;
+  try { const A = aggOTBYearly(sel); if (A && A.tot){ revOtb=A.tot.revC; occYear=A.tot.occC; adrYear=A.tot.adrC; revP=A.tot.revP; occP=A.tot.occP; adrP=A.tot.adrP; } } catch(e){}
   const rank = _bigCompsetRank(sel, 7);
   const pkVs = _bigPickupVsLY(sel, n);
+  // Window dates for tooltip (helpful when CUR=0 vs STLY non-zero)
+  const _today0 = new Date(TODAY); _today0.setHours(0,0,0,0);
+  const _fmtD = (offset) => {
+    const d = new Date(_today0.getTime() + offset*864e5);
+    return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear();
+  };
+  const _pkCurWin = (n===0) ? _fmtD(0) : (n===1 ? _fmtD(-1) : (_fmtD(-n)+' \u2013 '+_fmtD(-1)));
+  const _pkStlyWin = (n===0) ? _fmtD(-364) : (n===1 ? _fmtD(-365) : (_fmtD(-364-n)+' \u2013 '+_fmtD(-365)));
+  const _pkTip = `CUR pickup window (${winLbl}): ${_pkCurWin}\nSTLY pickup window (-364d, same DOW): ${_pkStlyWin}\nIndustry-standard rule: pickup ${n}d = ${n===0 ? 'today only' : n+' days BEFORE today (today excluded)'}.`;
   const _stly = (cur, prev, fmt)=>{
     if (prev==null || !isFinite(prev)) return '';
     const pct = (prev!==0) ? (cur-prev)/prev*100 : null;
@@ -15665,13 +15694,14 @@ function renderBigPicture(){
     return `STLY ${fmt(prev)}<span style="color:${col}">${pctTxt}</span>`;
   };
   const heroItems = [
-    {label:`Pickup (${winLbl})`, val:`+${agg.totRn} RN`, sub: _stly(pkVs.cur, pkVs.ly, (x)=>`${x} RN`), byProp: isBoth?'pickup':null},
+    {label:`Pickup (${winLbl})`, val:`+${agg.totRn} RN`, sub: _stly(pkVs.cur, pkVs.ly, (x)=>`${x} RN`), byProp: isBoth?'pickup':null, tip: _pkTip},
     revOtb!=null ? {label:'Revenue 2026 (OTB)', val: fmtEUR(revOtb), sub:_stly(revOtb, revP, fmtEUR), byProp: isBoth?'revenue':null} : null,
     occYear!=null ? {label:'OCC 2026', val: fmtPct(occYear,1), sub:_stly(occYear, occP, (x)=>fmtPct(x,1)), byProp: isBoth?'occ':null} : null,
-    rank ? {label:'Compset rank (7d)', val:`${rank.rank}° / ${rank.total}`, byProp: isBoth?'rate':null} : null
+    (adrYear!=null && isFinite(adrYear)) ? {label:'ADR 2026', val: fmtEUR(adrYear), sub:_stly(adrYear, (isFinite(adrP)?adrP:null), fmtEUR), byProp: isBoth?'adr':null} : null,
+    rank ? {label:'Compset rank (7d)', val:`${rank.rank}\u00b0 / ${rank.total}`, byProp: isBoth?'rate':null} : null
   ].filter(Boolean);
   const heroEl = document.getElementById('big-hero');
-  if (heroEl) heroEl.innerHTML = heroItems.map((h,i)=>`<div class="big-hero-item">
+  if (heroEl) heroEl.innerHTML = heroItems.map((h,i)=>`<div class="big-hero-item"${h.tip?` title="${escapeHtml(h.tip)}" style="cursor:help"`:''}>
       <div class="big-hero-icon">${BIG_HERO_ICONS[i]||''}</div>
       <div class="big-hero-txt" style="flex:1"><div class="big-hero-label">${h.label}${h.byProp?` <span class="big-byprop" data-bigbreakdown="${h.byProp}" style="font-size:9px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 6px;cursor:pointer;margin-left:4px;text-transform:none;letter-spacing:0">by property</span>`:''}</div>
       <div class="big-hero-val">${h.val}</div>${h.sub?`<div class="big-hero-sub">${h.sub}</div>`:''}</div>
