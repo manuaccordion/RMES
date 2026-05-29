@@ -13493,7 +13493,12 @@ function _renderRmesEventsBox(){
     wrap.innerHTML = '<div style="padding:14px;border:1px solid var(--line);border-radius:8px;color:var(--ink-3);font-size:12px">No events loaded. EVENTS_CSV missing or empty in data.js.</div>';
     return;
   }
-  // Helper: ymdNum -> DD/MM/YYYY and DD/MM
+  // Today as ymdNum
+  const _today = new Date(TODAY); _today.setHours(0,0,0,0);
+  const _todayYmd = _today.getFullYear()*10000 + (_today.getMonth()+1)*100 + _today.getDate();
+  // Italian month names + day of week
+  const _MONTHS_IT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // Helpers
   function _ymdShort(ymdN){
     const m = Math.floor((ymdN%10000)/100), d = ymdN%100;
     return String(d).padStart(2,'0')+'/'+String(m).padStart(2,'0');
@@ -13502,16 +13507,26 @@ function _renderRmesEventsBox(){
     const y = Math.floor(ymdN/10000), m = Math.floor((ymdN%10000)/100), d = ymdN%100;
     return String(d).padStart(2,'0')+'/'+String(m).padStart(2,'0')+'/'+y;
   }
-  // Pre-aggregate event dates (sorted ascending)
+  // Pre-aggregate event dates, keeping only FUTURE (>= today)
   const datesByLabel = {};
   if (typeof EVENTS !== 'undefined'){
     for (const k in EVENTS){
       const lbl = EVENTS[k];
       if (!lbl) continue;
+      const ymdN = parseInt(k,10);
+      if (ymdN < _todayYmd) continue;  // skip past dates
       if (!datesByLabel[lbl]) datesByLabel[lbl] = [];
-      datesByLabel[lbl].push(parseInt(k,10));
+      datesByLabel[lbl].push(ymdN);
     }
     for (const lbl in datesByLabel) datesByLabel[lbl].sort((a,b)=>a-b);
+  }
+  // Filter labels: only events with at least one future date
+  const futureLabels = labels.filter(lbl => datesByLabel[lbl] && datesByLabel[lbl].length > 0);
+  // Sort labels by FIRST future date (chronological)
+  futureLabels.sort((a,b) => datesByLabel[a][0] - datesByLabel[b][0]);
+  if (!futureLabels.length){
+    wrap.innerHTML = '<div style="padding:14px;border:1px solid var(--line);border-radius:8px;color:var(--ink-3);font-size:12px">No upcoming events from today onward. All events in EVENTS_CSV are in the past.</div>';
+    return;
   }
   // Compact date grouping: consecutive days collapsed into a range
   function _formatDateGroups(arr){
@@ -13535,32 +13550,60 @@ function _renderRmesEventsBox(){
       return _ymdShort(g[0]) + '\u2013' + _ymdLong(g[g.length-1]);
     }).join(' \u00b7 ');
   }
-  const rows = labels.map(lbl => {
+  // Render: group rows by MONTH header (so the user sees month/day at a glance)
+  let lastMonthKey = null;
+  const rowsArr = [];
+  for (const lbl of futureLabels){
     const wRaw = (weights[lbl] != null && isFinite(+weights[lbl])) ? +weights[lbl] : 0;
-    const w = Math.max(0, Math.min(20, wRaw));  // clamp 0..20
+    const w = Math.max(0, Math.min(20, wRaw));
     const safeLbl = (typeof escapeHtml === 'function') ? escapeHtml(lbl) : lbl.replace(/[<>&"]/g, '');
     const dates = datesByLabel[lbl] || [];
+    const firstD = dates[0];
     const cnt = dates.length;
     const datesTxt = _formatDateGroups(dates);
     const safeDates = (typeof escapeHtml === 'function') ? escapeHtml(datesTxt) : datesTxt;
-    return '<tr>' +
-      '<td style="padding:8px 10px;font-size:12px;color:var(--ink-1);font-weight:600;vertical-align:top">' + safeLbl +
-        '<div style="font-size:10.5px;color:var(--ink-3);font-weight:400;font-family:\'DM Mono\',monospace;margin-top:3px;line-height:1.4">' + safeDates + '</div>' +
-      '</td>' +
-      '<td style="padding:8px 10px;font-size:11px;color:var(--ink-3);text-align:right;font-family:\'DM Mono\',monospace;vertical-align:top">' + cnt + ' day' + (cnt===1?'':'s') + '</td>' +
-      '<td style="padding:6px 8px;text-align:center;vertical-align:top">' +
-        '<input type="number" min="0" max="20" step="1" value="' + w + '" data-evw="' + safeLbl + '" class="rmes-evw-input" style="width:60px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px"> %' +
-      '</td></tr>';
-  }).join('');
+    // Month header (year + month of FIRST future occurrence)
+    const fy = Math.floor(firstD/10000);
+    const fm = Math.floor((firstD%10000)/100);
+    const monthKey = fy*100 + fm;
+    if (monthKey !== lastMonthKey){
+      lastMonthKey = monthKey;
+      // Highlight current month (today's month)
+      const isCurrentMonth = (fy === _today.getFullYear() && fm === (_today.getMonth()+1));
+      const headBg = isCurrentMonth ? 'linear-gradient(90deg,#fdf3e7,#fffaf0)' : '#f7f5ef';
+      const headCol = isCurrentMonth ? '#b86b1f' : '#5a5a5a';
+      const headBorder = isCurrentMonth ? '2px solid #d99a4e' : '1px solid #d8d4c8';
+      rowsArr.push(
+        '<tr><td colspan="3" style="padding:9px 12px;background:'+headBg+';border-top:'+headBorder+';border-bottom:1px solid '+(isCurrentMonth?'#e5c699':'#e8e4d8')+';font-size:11.5px;font-weight:700;color:'+headCol+';letter-spacing:.06em;text-transform:uppercase;font-family:\'DM Mono\',monospace">' +
+          _MONTHS_IT[fm-1] + ' ' + fy + (isCurrentMonth ? '  \u00b7  current month' : '') +
+        '</td></tr>'
+      );
+    }
+    // Display: bold DAY/MONTH at start of the label
+    const dayMonthBadge = '<span style="display:inline-block;background:#fff;color:#5a3a14;border:1.5px solid #d4c8b0;border-radius:6px;padding:2px 8px;font-family:\'DM Mono\',monospace;font-weight:700;font-size:11px;margin-right:8px;min-width:54px;text-align:center">' + _ymdShort(firstD) + '</span>';
+    rowsArr.push(
+      '<tr>' +
+        '<td style="padding:8px 10px;font-size:12px;color:var(--ink-1);font-weight:600;vertical-align:top">' +
+          '<div style="display:flex;align-items:center;gap:0">' + dayMonthBadge + '<span>' + safeLbl + '</span></div>' +
+          '<div style="font-size:10.5px;color:var(--ink-3);font-weight:400;font-family:\'DM Mono\',monospace;margin-top:4px;margin-left:62px;line-height:1.4">' + safeDates + '</div>' +
+        '</td>' +
+        '<td style="padding:8px 10px;font-size:11px;color:var(--ink-3);text-align:right;font-family:\'DM Mono\',monospace;vertical-align:top">' + cnt + ' day' + (cnt===1?'':'s') + '</td>' +
+        '<td style="padding:6px 8px;text-align:center;vertical-align:top">' +
+          '<input type="number" min="0" max="20" step="1" value="' + w + '" data-evw="' + safeLbl + '" class="rmes-evw-input" style="width:60px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px"> %' +
+        '</td>' +
+      '</tr>'
+    );
+  }
+  const rows = rowsArr.join('');
   wrap.innerHTML =
     '<div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">' +
       '<div style="padding:10px 14px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--line)">' +
         '<div style="font-size:13px;font-weight:700;color:var(--ink-1)">\u2728 Event Factor</div>' +
-        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Premium % per event (0%% to +20%%). Applied as a final multiplier to the RMES price on dates that match the event. Higher = premium, 0 = no effect. Weights are shared across all properties.</div>' +
+        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Premium % per event (0%% to +20%%). Applied as a final multiplier to the RMES price on dates that match the event. Sorted chronologically from today (' + _ymdLong(_todayYmd) + ') onward; past events are hidden. Weights are shared across all properties.</div>' +
       '</div>' +
-      '<div style="overflow-x:auto;max-height:420px;overflow-y:auto;padding:8px 10px">' +
-        '<table style="border-collapse:collapse;width:100%"><thead><tr style="position:sticky;top:0;background:#fff;z-index:2">' +
-          '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:left;border-bottom:1px solid var(--line)">Event \u00b7 Dates</th>' +
+      '<div style="overflow-x:auto;max-height:480px;overflow-y:auto;padding:0">' +
+        '<table style="border-collapse:collapse;width:100%"><thead><tr style="position:sticky;top:0;background:#fff;z-index:3">' +
+          '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:left;border-bottom:1px solid var(--line)">Event</th>' +
           '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:right;border-bottom:1px solid var(--line)">Days</th>' +
           '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:center;border-bottom:1px solid var(--line)">Weight</th>' +
         '</tr></thead><tbody>' + rows + '</tbody></table>' +
