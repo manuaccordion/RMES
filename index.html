@@ -738,6 +738,94 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 .big-hero-val{font-size:25px;font-weight:800;color:var(--ink);line-height:1;font-family:'DM Mono',monospace}
 .big-hero-sub{font-size:10.5px;color:var(--ink-3);margin-top:5px;font-family:'DM Mono',monospace;font-weight:500}
 .big-chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px 6px;margin-bottom:18px}
+
+/* ============================================================
+   RMES TAB — colorful redesign
+   ============================================================ */
+.rmes-prop-bar{
+  background:linear-gradient(135deg,#fdf6ec 0%,#fef9f0 100%);
+  border:1.5px solid rgba(195,131,59,.30);
+  border-radius:14px;
+  margin-bottom:20px;
+  box-shadow:0 2px 8px rgba(195,131,59,.08);
+}
+.rmes-prop-bar-inner{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+  padding:16px 20px;
+}
+.rmes-prop-bar-label{
+  font-size:13px;color:#7a4f1c;font-weight:700;letter-spacing:.02em;
+}
+.rmes-box{
+  border-radius:14px;
+  margin-bottom:18px;
+  overflow:hidden;
+  border:1.5px solid transparent;
+  background:#fff;
+  box-shadow:0 2px 12px rgba(0,0,0,.04);
+  transition:box-shadow .2s ease,transform .12s ease;
+}
+.rmes-box:hover{box-shadow:0 4px 18px rgba(0,0,0,.07);}
+.rmes-box-head{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 18px;
+  border-bottom:1.5px solid;
+}
+.rmes-box-icon{
+  font-size:28px;line-height:1;flex-shrink:0;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.10));
+}
+.rmes-box-titles{flex:1;min-width:0}
+.rmes-box-titles h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.rmes-box-sub{font-size:11px;color:var(--ink-3);margin-top:2px;font-family:'DM Mono',monospace;font-weight:500}
+.rmes-box-actions{display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.rmes-box-body{padding:16px 18px}
+
+/* Colorful box variants */
+.rmes-box-blue{background:linear-gradient(180deg,#eef4fb 0%,#fff 80px);border-color:#bdd0e3}
+.rmes-box-blue .rmes-box-head{background:linear-gradient(135deg,#3b6b9a 0%,#4a7faf 100%);color:#fff;border-bottom-color:#2a5378}
+.rmes-box-blue .rmes-box-head h3{color:#fff}
+.rmes-box-blue .rmes-box-sub{color:rgba(255,255,255,.85)}
+
+.rmes-box-green{background:linear-gradient(180deg,#eff5f0 0%,#fff 80px);border-color:#b8d4be}
+.rmes-box-green .rmes-box-head{background:linear-gradient(135deg,#3d7a4b 0%,#4a8c59 100%);color:#fff;border-bottom-color:#2c5c3c}
+.rmes-box-green .rmes-box-head h3{color:#fff}
+.rmes-box-green .rmes-box-sub{color:rgba(255,255,255,.85)}
+
+.rmes-box-orange{background:linear-gradient(180deg,#fdf3e7 0%,#fff 80px);border-color:#e5c699}
+.rmes-box-orange .rmes-box-head{background:linear-gradient(135deg,#c4823b 0%,#d49654 100%);color:#fff;border-bottom-color:#9c6225}
+.rmes-box-orange .rmes-box-head h3{color:#fff}
+.rmes-box-orange .rmes-box-sub{color:rgba(255,255,255,.85)}
+
+.rmes-box-purple{background:linear-gradient(180deg,#f3edf7 0%,#fff 80px);border-color:#c9b3d6}
+.rmes-box-purple .rmes-box-head{background:linear-gradient(135deg,#8e5fa8 0%,#a075b8 100%);color:#fff;border-bottom-color:#6f4485}
+.rmes-box-purple .rmes-box-head h3{color:#fff}
+.rmes-box-purple .rmes-box-sub{color:rgba(255,255,255,.85)}
+
+.rmes-box-gold{background:linear-gradient(180deg,#fdf8e7 0%,#fff 100px);border-color:#d4c069}
+.rmes-box-gold .rmes-box-head{background:linear-gradient(135deg,#b8941f 0%,#cdab35 100%);color:#fff;border-bottom-color:#8e7019}
+.rmes-box-gold .rmes-box-head h3{color:#fff}
+.rmes-box-gold .rmes-box-sub{color:rgba(255,255,255,.85)}
+
+/* Buttons inside RMES boxes */
+.rmes-btn-ghost{
+  font-size:11px;padding:6px 12px;
+  border:1.5px solid rgba(255,255,255,.5);
+  border-radius:6px;
+  background:rgba(255,255,255,.15);
+  color:#fff;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-weight:600;
+  transition:all .15s ease;
+}
+.rmes-btn-ghost:hover{background:rgba(255,255,255,.30);border-color:rgba(255,255,255,.8)}
+.rmes-btn-solid{
+  font-size:11px;padding:6px 12px;border-radius:6px;border:none;
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:700;color:#fff;
+  transition:all .15s ease;box-shadow:0 2px 6px rgba(0,0,0,.18);
+}
+.rmes-btn-solid:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(0,0,0,.22)}
+.rmes-btn-blue{background:linear-gradient(135deg,#2a5378,#3b6b9a)}
+.rmes-prop-pill:hover{transform:translateY(-2px);box-shadow:0 5px 14px rgba(0,0,0,.12)}
 .big-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:860px){.big-charts-row{grid-template-columns:1fr}}
 /* Big Picture tree */
@@ -1079,6 +1167,10 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
     <div id="big-hero" class="big-hero"></div>
+    <div class="big-chart-wrap" style="margin-bottom:14px">
+      <div class="big-chart-title" id="big-bcurve-title">Booking Curve — cumulative revenue by booking date</div>
+      <div id="big-bcurve"></div>
+    </div>
     <div class="big-charts-row">
       <div class="big-chart-wrap">
         <div class="big-chart-title" id="big-chart-title">Pickup — room nights booked per day (last 7 days)</div>
@@ -1170,23 +1262,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body flush" id="sell-table-wrap" style="overflow-x:auto;max-height:75vh;overflow-y:auto"></div>
     </div>
 
-    <!-- ============ PICKUP OTB vs PICKUP STLY per mese di soggiorno ============ -->
-    <div class="panel" id="panel-pkmonth">
-      <div class="panel-head">
-        <div>
-          <h3>Pickup by Stay Month <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="pkmonth-window-label">—</span></h3>
-        </div>
-      </div>
-      <div class="panel-body" id="pkmonth-filter-wrap" style="display:none;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--line);background:rgba(195,131,59,.04);flex-wrap:wrap">
-        <span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Filter property:</span>
-        <div id="pkmonth-filter-pills" style="display:flex;flex-wrap:wrap;gap:4px"></div>
-        
-      </div>
-      <div class="panel-body" style="padding:8px 4px 16px">
-        <div id="pkmonth-chart-wrap"></div>
-        <div id="pkmonth-legend" style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);padding:12px 16px 0;font-family:'DM Mono',monospace"></div>
-      </div>
-    </div>
   </section>
 
   <!-- ============ SECTION RATE SHOPPER ============ -->
@@ -1283,96 +1358,101 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- Property filter -->
-    <div class="panel" style="background:rgba(195,131,59,.04);border-color:rgba(195,131,59,.25);margin-bottom:16px">
-      <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:14px 18px">
-        <span class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Property configuration</span>
-        <div id="rmes-tab-struct-pills" style="display:flex;gap:6px"></div>
-        
+    <!-- Property filter (colorful pills) -->
+    <div class="rmes-prop-bar">
+      <div class="rmes-prop-bar-inner">
+        <span class="rmes-prop-bar-label">🏠 Choose property to configure</span>
+        <div id="rmes-tab-struct-pills" style="display:flex;gap:8px;flex-wrap:wrap"></div>
       </div>
     </div>
 
-    <!-- Documentazione collassabile -->
-    
-
-    <!-- Box 1: PESI -->
-    <div class="panel" style="margin-bottom:16px">
-      <div class="panel-head">
-        <div>
-          <h3>① Weights of the 4 RMES factors <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-w-sub">property: —</span></h3>
+    <!-- Box 1: WEIGHTS — blu -->
+    <div class="rmes-box rmes-box-blue">
+      <div class="rmes-box-head">
+        <div class="rmes-box-icon">⚖️</div>
+        <div class="rmes-box-titles">
+          <h3>① Weights of the 4 RMES factors</h3>
+          <div class="rmes-box-sub" id="rmes-tab-w-sub">property: —</div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <button id="rmes-tab-w-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" title="Reset current property weights to 25% × 4 factors">↺ Reset 25%×4 (current property)</button>
-          <button id="rmes-tab-w-reset-all" style="font-size:10px;padding:5px 10px;border:1px solid #c4823b;border-radius:4px;background:#c4823b;color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600" title="Reset weights to 25% × 4 factors for ALL properties">↺ Reset 25%×4 (all properties)</button>
+        <div class="rmes-box-actions">
+          <button id="rmes-tab-w-reset" class="rmes-btn-ghost" title="Reset current property weights to 25% × 4 factors">↺ Reset 25%×4 (current)</button>
+          <button id="rmes-tab-w-reset-all" class="rmes-btn-solid rmes-btn-blue" title="Reset weights to 25% × 4 factors for ALL properties">↺ Reset 25%×4 (all)</button>
         </div>
       </div>
-      <div class="panel-body" style="padding:14px 16px">
+      <div class="rmes-box-body">
         <div id="rmes-tab-w-bar" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px"></div>
       </div>
     </div>
 
-    <!-- Box 2: CAP TOTALE (sostituisce le soglie discrete) -->
-    <div class="panel" style="margin-bottom:16px">
-      <div class="panel-head">
-        <div>
-          <h3>② RMES total cap <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-th-sub">property: —</span></h3>
+    <!-- Box 2: CAP TOTALE — verde -->
+    <div class="rmes-box rmes-box-green">
+      <div class="rmes-box-head">
+        <div class="rmes-box-icon">🛡️</div>
+        <div class="rmes-box-titles">
+          <h3>② RMES total cap</h3>
+          <div class="rmes-box-sub" id="rmes-tab-th-sub">property: —</div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button id="rmes-tab-th-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif">reset to 30%</button>
+        <div class="rmes-box-actions">
+          <button id="rmes-tab-th-reset" class="rmes-btn-ghost">↺ reset to 30%</button>
         </div>
       </div>
-      <div class="panel-body" style="padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <label style="font-size:13px;color:var(--ink-2)"><b>Max cap (±%)</b>: <input type="number" id="rmes-tab-cap-input" min="0" max="100" step="1" style="width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;text-align:right;font-size:13px"> %</label>
-        
+      <div class="rmes-box-body" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <label style="font-size:13px;color:var(--ink-2);font-weight:600">Max cap (±%): <input type="number" id="rmes-tab-cap-input" min="0" max="100" step="1" style="width:78px;padding:8px 10px;border:2px solid #4a7c59;border-radius:6px;font-family:'DM Mono',monospace;text-align:right;font-size:14px;font-weight:700;color:#2c5c3c;background:#f4f9f5"> %</label>
         <div id="rmes-tab-th-cards" style="display:none"></div>
       </div>
     </div>
 
-    <!-- Box 3: Daily Pickup thresholds (Fase 2) -->
-    <div class="panel" style="margin-bottom:16px">
-      <div class="panel-head">
-        <div>
-          <h3>③ Daily Pickup thresholds <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px" id="rmes-tab-pkthr-sub">property: —</span></h3>
+    <!-- Box 3: Daily Pickup thresholds — arancione -->
+    <div class="rmes-box rmes-box-orange">
+      <div class="rmes-box-head">
+        <div class="rmes-box-icon">📈</div>
+        <div class="rmes-box-titles">
+          <h3>③ Daily Pickup thresholds</h3>
+          <div class="rmes-box-sub" id="rmes-tab-pkthr-sub">property: —</div>
         </div>
-        <div style="display:flex;gap:6px">
-          <button id="rmes-tab-pkthr-reset" style="font-size:10px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--ink);cursor:pointer;font-family:'DM Sans',sans-serif" title="Reset thresholds to default scale for the current property">↺ Reset to default</button>
+        <div class="rmes-box-actions">
+          <button id="rmes-tab-pkthr-reset" class="rmes-btn-ghost" title="Reset thresholds to default scale for the current property">↺ Reset to default</button>
         </div>
       </div>
-      <div class="panel-body" style="padding:14px 16px">
+      <div class="rmes-box-body">
         <div id="rmes-tab-pkthr-bar"></div>
       </div>
     </div>
 
-    
-    <!-- Box 4: EVENT FACTOR -->
-    <div class="panel" style="margin-bottom:16px">
-      <div class="panel-head">
-        <div>
+    <!-- Box 4: EVENT FACTOR — viola -->
+    <div class="rmes-box rmes-box-purple">
+      <div class="rmes-box-head">
+        <div class="rmes-box-icon">✨</div>
+        <div class="rmes-box-titles">
           <h3>④ Event Factor</h3>
+          <div class="rmes-box-sub">shared across all properties</div>
         </div>
       </div>
-      <div class="panel-body" style="padding:14px 16px">
+      <div class="rmes-box-body">
         <div id="rmes-events-wrap"></div>
       </div>
     </div>
 
-    <!-- ============ FOUNDATION PRICING CONFIG (shadow) ============ -->
-    <div class="panel" style="margin-bottom:16px;background:rgba(195,131,59,.04);border-color:rgba(195,131,59,.30)">
-      <div class="panel-head" style="border-bottom:1px solid rgba(195,131,59,.25)">
-        <div>
-          <h3 style="color:#7a4f1c">⚡ Base Price <span style="font-size:10px;font-weight:600;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:3px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">active</span></h3>
+    <!-- ============ FOUNDATION PRICING CONFIG — oro ============ -->
+    <div class="rmes-box rmes-box-gold">
+      <div class="rmes-box-head">
+        <div class="rmes-box-icon">⚡</div>
+        <div class="rmes-box-titles">
+          <h3>Ⓑ Base Price <span style="font-size:10px;font-weight:700;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">active</span></h3>
+          <div class="rmes-box-sub">anchor, growth, floor, OTA markup, compset positioning · LMF matrix</div>
         </div>
       </div>
-      <div class="panel-body" style="padding:14px 16px">
+      <div class="rmes-box-body">
         <div id="fp-tab-wrap"></div>
-         <div id="rmes-lmf-wrap" style="margin-top:14px"></div>
+        <div id="rmes-lmf-wrap" style="margin-top:14px"></div>
       </div>
     </div>
+
 <!-- Bottone APPLICA unico (pesi + soglie) sticky in basso -->
     <div style="position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg) 0%,var(--bg) 70%,transparent 100%);padding:16px 0 12px 0;margin-top:18px;z-index:10;border-top:1px solid var(--line)">
       <div style="display:flex;align-items:center;gap:14px;justify-content:flex-end;padding:0 4px;flex-wrap:wrap">
         <div style="font-size:11px;color:var(--ink-3);font-style:italic;line-height:1.4">Changes to weights and thresholds are <b>local</b>: they are saved and applied to the current property <b>only</b> when you click the button on the right. Switch property above to edit the others.</div>
-        <button id="rmes-tab-apply-all" disabled style="font-size:13px;padding:10px 22px;border:1px solid #4a7c59;border-radius:6px;background:#4a7c59;color:#fff;cursor:not-allowed;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.02em;opacity:0.55;box-shadow:0 2px 6px rgba(74,124,89,.20)">Apply changes</button>
+        <button id="rmes-tab-apply-all" disabled style="font-size:14px;padding:11px 26px;border:none;border-radius:8px;background:linear-gradient(135deg,#4a7c59,#3d7a4b);color:#fff;cursor:not-allowed;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.03em;opacity:0.55;box-shadow:0 3px 10px rgba(74,124,89,.30)">✓ Apply changes</button>
       </div>
     </div>
   </section>
@@ -1488,7 +1568,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
         <p>Today's snapshot, with a chart of the last/next days and the totals for each of the 4 properties.</p>
         <ul style="margin:6px 0 6px 18px">
-          <li><b>Day chart</b>: bars = RN per day. Click a bar to drill into that day.</li>
+          <li><b>Booking Curve</b> (top, full-width) — cumulative revenue by booking date for the whole year. 4 curves on the same chart, showing where you are in the year vs the past and where you're going:
+            <ul style="margin:4px 0 4px 18px;font-size:12.5px">
+              <li><b>OTB 2026</b> — orange solid, thickest. Cumulative revenue for 2026 stays, by booking date. Stops at <i>today</i> (vertical dashed line).</li>
+              <li><b>STLY</b> — gray solid. Cumulative revenue for 2025 stays, same booking-pace point as today (booking date ≤ today−364). Lets you compare "where I was on this same day last year".</li>
+              <li><b>LY final</b> — purple solid, semi-transparent. Cumulative revenue for 2025 stays, all bookings (year closed). Where you ended last year.</li>
+              <li><b>Forecast</b> — orange dashed, from today to 31/12. Projects OTB forward using the same booking-window shape that LY had between today−364 and end-of-2025. Lands at the total Forecast Revenue 2026 (same number you see in the Overview tab).</li>
+            </ul>
+            Read it like Duetto's "Total Year Pace": the gap between OTB and STLY shows whether you're booking faster or slower than last year; the gap between Forecast and LY final shows the expected growth. Hover the chart for monthly tick references on the X axis.</li>
+          <li><b>Pickup chart</b>: bars = RN per day (last 7 days). Click a bar to drill into that day's bookings.</li>
           <li><b>Property tiles</b>: revenue OTB, OCC, ADR. When <i>All</i> is selected, you see 4 tiles side by side.</li>
           <li><b>Channel share donut</b>: outer ring = current year, inner ring = STLY. In <i>All</i> mode, 4 mini-donuts (one per property). The delta arrows (▲/▼) compare current share vs STLY share. <b>Channel name normalization</b>: raw channel manager labels are folded into canonical buckets so the YoY comparison actually matches. <code>BOOKINGXML</code>, <code>MOBILESITE</code> → <i>Booking</i>; <code>EXPEDIA</code>, <code>Hotels.com</code>, <code>Orbitz</code>, <code>Expedia Affilia</code> → <i>Expedia</i>; <code>CTRIPV4</code> → <i>Ctrip</i>; <code>Beddy</code>, <code>Krossbooking</code>, <code>FrontOffice</code>, <code>PrenMan</code>, <code>Booking Engine</code>, <code>walk-in</code> → <i>Direct</i> (one label for "no-OTA, booked through the property PMS"). If a property has no bookings in the dataset, the donut shows "No bookings in dataset for this property".</li>
         </ul>

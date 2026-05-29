@@ -922,8 +922,138 @@ function monthAllocate(dIn, dOut, revPerNight){
   return out;
 }
 /* ============================================================
-   AGGREGATORS
+   BOOKING CURVE (Big Picture) — 4 cumulative pace curves by booking date
+   X: day-of-year (1..365)
+   Y: cumulative revenue
+   - OTB:   2026 bookings, cumulative by bookYmd, only revenue allocated to stay in 2026
+   - STLY:  2025 bookings, cumulative by bookYmd shifted -364d, only revenue for 2025 stays
+   - LY:    same as STLY but final (all 2025 bookings, not capped by today-364)
+   - Forecast: OTB extended from today to 31/12/2026, following LY booking-window shape
    ============================================================ */
+function bookingCurveData(sel){
+  const keys = new Set(structKeysFor(sel));
+  const Y_CUR = CUR_YEAR;          // 2026
+  const Y_PREV = PREV_YEAR;        // 2025
+  // Day-of-year for a Date (1..365/366)
+  function doy(d){
+    const start = new Date(d.getFullYear(), 0, 0);
+    const diff = (d - start) + ((start.getTimezoneOffset() - d.getTimezoneOffset()) * 60000);
+    return Math.floor(diff / 86400000);
+  }
+  // For each booking we need: bookDate, stay-year, revenue allocated to that stay-year
+  function allocRevByYear(b){
+    const out = { [Y_CUR]: 0, [Y_PREV]: 0 };
+    let cur = startOfDay(b.dIn);
+    const end = startOfDay(b.dOut);
+    while (cur < end){
+      const yy = cur.getFullYear();
+      if (yy in out) out[yy] += b.revPerNight;
+      cur = addDays(cur, 1);
+    }
+    return out;
+  }
+  // bookYmd → date helper
+  function ymdToDate(yn){
+    const y = Math.floor(yn/10000), m = Math.floor((yn%10000)/100)-1, d = yn%100;
+    return new Date(y, m, d);
+  }
+  // Daily-bucketed revenue: bookDoY (1..365) -> revenue
+  const otbDaily = new Array(366).fill(0);    // 2026 bookings → 2026 stays
+  const stlyDaily = new Array(366).fill(0);   // 2025 bookings → 2025 stays, capped to bookYmd<=STLY_YMD
+  const lyDaily = new Array(366).fill(0);     // 2025 bookings → 2025 stays, final
+  for (const b of BOOKINGS){
+    if (b.cancelled) continue;
+    if (!keys.has(b.struct)) continue;
+    const alloc = allocRevByYear(b);
+    const bDate = ymdToDate(b.bookYmd);
+    const bYear = bDate.getFullYear();
+    const bDoy = doy(bDate);
+    if (bDoy < 1 || bDoy > 365) continue;
+    // OTB: bookings made in 2026 (or earlier) for stays in 2026, capped at TODAY
+    if (b.bookYmd <= TODAY_YMD && alloc[Y_CUR] > 0){
+      // For pre-2026 bookings, charge to doy 1 (already booked when year started)
+      const targetDoy = (bYear < Y_CUR) ? 1 : Math.min(365, bDoy);
+      otbDaily[targetDoy] += alloc[Y_CUR];
+    }
+    // STLY: bookings made by STLY_YMD for stays in 2025
+    if (b.bookYmd <= STLY_YMD && alloc[Y_PREV] > 0){
+      const targetDoy = (bYear < Y_PREV) ? 1 : Math.min(365, bDoy);
+      stlyDaily[targetDoy] += alloc[Y_PREV];
+    }
+    // LY (final): all 2025 stays, all bookings
+    if (alloc[Y_PREV] > 0){
+      const targetDoy = (bYear < Y_PREV) ? 1 : Math.min(365, bDoy);
+      lyDaily[targetDoy] += alloc[Y_PREV];
+    }
+  }
+  // Cumulative arrays
+  const otb = new Array(366).fill(0);
+  const stly = new Array(366).fill(0);
+  const ly = new Array(366).fill(0);
+  let oC=0, sC=0, lC=0;
+  for (let i=1; i<=365; i++){
+    oC += otbDaily[i]; otb[i] = oC;
+    sC += stlyDaily[i]; stly[i] = sC;
+    lC += lyDaily[i]; ly[i] = lC;
+  }
+  const todayDoy = doy(TODAY);
+  // OTB ends at todayDoy. STLY ends at the doy of STLY (which is also ~todayDoy because same day-of-year, 364d shift = 1 less DoW)
+  const stlyTodayDoy = doy(STLY);
+  // === FORECAST ===
+  // Strategy: take 2026 OTB as-is up to todayDoy. From todayDoy+1 to 365, project using the LY shape.
+  // Goal: at doy 365, total OTB should equal the Forecast Revenue 2026 from aggForecast.
+  // aggForecast stores the final forecast revenue per RT in monthly[ymKey].byRt[rt].forecastRev
+  // (m.forecastRev at month level is not populated in current implementation).
+  function _structForecastTotal(sk){
+    let tot = 0;
+    try {
+      const F = aggForecast(sk);
+      for (const ymKey in F.monthly){
+        const m = F.monthly[ymKey];
+        if (m.y !== Y_CUR) continue;
+        let monthFcst = 0;
+        for (const rt in (m.byRt || {})){
+          monthFcst += (m.byRt[rt].forecastRev || 0);
+        }
+        tot += Math.max(monthFcst, m.otbRev || 0);
+      }
+    } catch(e){}
+    return tot;
+  }
+  let forecastTotal = 0;
+  if (sel === 'both'){
+    for (const sk of ['firenze','condotta','alfani','davids']){
+      forecastTotal += _structForecastTotal(sk);
+    }
+  } else {
+    forecastTotal = _structForecastTotal(sel);
+  }
+  // If forecast < otb today, no projection (already exceeded)
+  if (!isFinite(forecastTotal) || forecastTotal <= 0) forecastTotal = otb[todayDoy];
+  const forecast = new Array(366).fill(null);
+  for (let i=1; i<=todayDoy; i++) forecast[i] = otb[i];
+  // Project: from todayDoy+1 to 365, follow LY booking-window shape
+  // LY value at corresponding doy: ly[i] (cumulative)
+  // We compute the remaining gain in LY from stlyTodayDoy to 365, and distribute proportionally
+  const lyTotal = ly[365];
+  const lyAtStlyToday = ly[stlyTodayDoy] || 0;
+  const lyRemaining = lyTotal - lyAtStlyToday;  // how much pace was booked in LY from "today-LY" to end of year
+  const otbToday = otb[todayDoy];
+  const fcstRemainingNeeded = forecastTotal - otbToday;
+  if (lyRemaining > 0 && fcstRemainingNeeded > 0){
+    for (let i=todayDoy+1; i<=365; i++){
+      const lyAtI = ly[i] || 0;
+      const lyGainedFromToday = Math.max(0, lyAtI - lyAtStlyToday);
+      const proportion = lyGainedFromToday / lyRemaining;
+      forecast[i] = otbToday + proportion * fcstRemainingNeeded;
+    }
+  } else {
+    // Flat line if no LY shape
+    const slope = fcstRemainingNeeded > 0 ? fcstRemainingNeeded / (365 - todayDoy) : 0;
+    for (let i=todayDoy+1; i<=365; i++) forecast[i] = otbToday + slope * (i - todayDoy);
+  }
+  return { otb, stly, ly, forecast, todayDoy, stlyTodayDoy, forecastTotal, lyTotal };
+}
 /* OTB anno intero
    Per il confronto:
    - 2026 OTB:  prenotazioni con bookYmd <= TODAY  e  dIn nell'anno CUR
@@ -1592,9 +1722,9 @@ function _renderOTBDetailsByMonth(A){
   document.getElementById('otb-chart-occ-title').textContent = 'Monthly occupancy';
   if (m == null){
     document.getElementById('otb-prov-table').innerHTML = compareTable(A.provCur, A.provPrev, A.provFly, 'Source');
-    document.getElementById('otb-prov-sub').textContent = `Top sources · 2026 OTB vs STLY vs Final LY · full year`;
+    document.getElementById('otb-prov-sub').textContent = `Top sources · 2026 OTB vs STLY · full year · with share % of total`;
     document.getElementById('otb-can-table').innerHTML  = compareTable(A.canCur,  A.canPrev,  A.canFly,  'Channel');
-    document.getElementById('otb-can-sub').textContent  = `Channel distribution · 2026 OTB vs STLY vs Final LY · full year`;
+    document.getElementById('otb-can-sub').textContent  = `Channel distribution · 2026 OTB vs STLY · full year · with share % of total`;
   } else {
     const pc = (A.provCurM && A.provCurM[m]) || {};
     const pp = (A.provPrevM && A.provPrevM[m]) || {};
@@ -1603,62 +1733,58 @@ function _renderOTBDetailsByMonth(A){
     const cp = (A.canPrevM && A.canPrevM[m]) || {};
     const cf = (A.canFlyM && A.canFlyM[m]) || {};
     document.getElementById('otb-prov-table').innerHTML = compareTable(pc, pp, pf, 'Source');
-    document.getElementById('otb-prov-sub').textContent = `Top sources · ${CFG.monthsITLong[m-1]} 2026 OTB vs STLY vs Final LY`;
+    document.getElementById('otb-prov-sub').textContent = `Top sources · ${CFG.monthsITLong[m-1]} 2026 OTB vs STLY · with share % of total`;
     document.getElementById('otb-can-table').innerHTML  = compareTable(cc, cp, cf, 'Channel');
-    document.getElementById('otb-can-sub').textContent  = `Channel distribution · ${CFG.monthsITLong[m-1]} 2026 OTB vs STLY vs Final LY`;
+    document.getElementById('otb-can-sub').textContent  = `Channel distribution · ${CFG.monthsITLong[m-1]} 2026 OTB vs STLY · with share % of total`;
   }
 }
 function compareTable(cur, prev, fly, labelCol){
   fly = fly || {};
-  const keys = new Set([...Object.keys(cur), ...Object.keys(prev), ...Object.keys(fly)]);
+  const keys = new Set([...Object.keys(cur), ...Object.keys(prev)]);  // ignoro fly
   const rows = [];
-  let totC={rn:0,rev:0,bk:0}, totP={rn:0,rev:0,bk:0}, totF={rn:0,rev:0,bk:0};
+  let totC={rn:0,rev:0,bk:0}, totP={rn:0,rev:0,bk:0};
   for (const k of keys){
     const c = cur[k] || {rn:0,rev:0,bk:0};
     const p = prev[k] || {rn:0,rev:0,bk:0};
-    const f = fly[k] || {rn:0,rev:0,bk:0};
     totC.rn+=c.rn; totC.rev+=c.rev; totC.bk+=c.bk;
     totP.rn+=p.rn; totP.rev+=p.rev; totP.bk+=p.bk;
-    totF.rn+=f.rn; totF.rev+=f.rev; totF.bk+=f.bk;
-    rows.push({k,c,p,f});
+    rows.push({k,c,p});
   }
   rows.sort((a,b)=> b.c.rev - a.c.rev);
   const head = `<thead><tr>
     <th>${labelCol}</th>
-    <th class="g-26">RN '26</th><th class="g-26">Rev '26</th>
-    <th class="g-25">RN STLY</th><th class="g-25">Rev STLY</th>
-    <th class="g-25" style="background:rgba(142,95,168,.08)">RN Final LY</th><th class="g-25" style="background:rgba(142,95,168,.08)">Rev Final LY</th>
-    <th class="g-var">Δ vs STLY</th><th class="g-var">Δ vs Final LY</th>
+    <th class="g-26">RN '26</th><th class="g-26">ADR '26</th><th class="g-26">Rev '26</th><th class="g-26">% '26</th>
+    <th class="g-25">RN STLY</th><th class="g-25">ADR STLY</th><th class="g-25">Rev STLY</th><th class="g-25">% STLY</th>
   </tr></thead>`;
   const body = rows.map(r=>{
-    const dRev = r.c.rev - r.p.rev;
-    const dPct = r.p.rev>0 ? dRev/r.p.rev : (r.c.rev>0?Infinity:NaN);
-    const dRevF = r.c.rev - r.f.rev;
-    const dPctF = r.f.rev>0 ? dRevF/r.f.rev : (r.c.rev>0?Infinity:NaN);
+    const adrC = r.c.rn > 0 ? r.c.rev / r.c.rn : 0;
+    const adrP = r.p.rn > 0 ? r.p.rev / r.p.rn : 0;
+    const pctC = totC.rev > 0 ? (r.c.rev/totC.rev*100) : 0;
+    const pctP = totP.rev > 0 ? (r.p.rev/totP.rev*100) : 0;
     return `<tr>
       <td>${escapeHtml(r.k)}</td>
       <td class="cell-mono">${fmtNum(r.c.rn)}</td>
+      <td class="cell-mono">${adrC>0?fmtEUR(adrC):'—'}</td>
       <td class="cell-mono">${fmtEUR(r.c.rev)}</td>
+      <td class="cell-mono" style="color:#8e5fa8;font-weight:600">${pctC>0?pctC.toFixed(1)+'%':'—'}</td>
       <td class="cell-mono cell-flat">${fmtNum(r.p.rn)}</td>
+      <td class="cell-mono cell-flat">${adrP>0?fmtEUR(adrP):'—'}</td>
       <td class="cell-mono cell-flat">${fmtEUR(r.p.rev)}</td>
-      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtNum(r.f.rn)}</td>
-      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(r.f.rev)}</td>
-      ${(!isFinite(dPct)) ? '<td class="cell-flat">—</td>' : (dPct===Infinity ? '<td class="cell-pos cell-mono">new</td>' : deltaCell(dPct,'pct'))}
-      ${(!isFinite(dPctF)) ? '<td class="cell-flat">—</td>' : (dPctF===Infinity ? '<td class="cell-pos cell-mono">new</td>' : deltaCell(dPctF,'pct'))}
+      <td class="cell-mono cell-flat" style="color:#8e5fa8;font-weight:600">${pctP>0?pctP.toFixed(1)+'%':'—'}</td>
     </tr>`;
   }).join('');
-  const dPctTot = totP.rev>0 ? (totC.rev-totP.rev)/totP.rev : NaN;
-  const dPctTotF = totF.rev>0 ? (totC.rev-totF.rev)/totF.rev : NaN;
+  const adrTotC = totC.rn > 0 ? totC.rev / totC.rn : 0;
+  const adrTotP = totP.rn > 0 ? totP.rev / totP.rn : 0;
   const totRow = `<tr class="total">
     <td>Total</td>
     <td class="cell-mono">${fmtNum(totC.rn)}</td>
+    <td class="cell-mono">${adrTotC>0?fmtEUR(adrTotC):'—'}</td>
     <td class="cell-mono">${fmtEUR(totC.rev)}</td>
+    <td class="cell-mono" style="color:#8e5fa8;font-weight:700">100.0%</td>
     <td class="cell-mono cell-flat">${fmtNum(totP.rn)}</td>
+    <td class="cell-mono cell-flat">${adrTotP>0?fmtEUR(adrTotP):'—'}</td>
     <td class="cell-mono cell-flat">${fmtEUR(totP.rev)}</td>
-    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtNum(totF.rn)}</td>
-    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(totF.rev)}</td>
-    ${deltaCell(dPctTot,'pct')}
-    ${deltaCell(dPctTotF,'pct')}
+    <td class="cell-mono cell-flat" style="color:#8e5fa8;font-weight:700">100.0%</td>
   </tr>`;
   return head + '<tbody>' + body + totRow + '</tbody>';
 }
@@ -12961,7 +13087,10 @@ function renderRMESConfigTab(){
     ];
     pillsEl.innerHTML = opts.map(o => {
       const on = (sel === o.v);
-      return `<button class="rt-pill ${on?'':'off'}" data-rmesst="${o.v}" style="${on?'border-color:'+o.color+';color:'+o.color+';font-weight:600':''}">${o.label}</button>`;
+      const style = on
+        ? `background:linear-gradient(135deg,${o.color},${o.color}dd);color:#fff;border-color:${o.color};font-weight:700;box-shadow:0 3px 10px ${o.color}55;transform:translateY(-1px)`
+        : `background:#fff;color:${o.color};border-color:${o.color};font-weight:600`;
+      return `<button class="rmes-prop-pill" data-rmesst="${o.v}" style="${style};padding:8px 16px;border-radius:24px;border-width:2px;border-style:solid;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all .15s ease">${on?'✓ ':''}${o.label}</button>`;
     }).join('');
     pillsEl.querySelectorAll('button[data-rmesst]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -15358,6 +15487,7 @@ function renderBigPicture(){
       <div class="big-hero-txt" style="flex:1"><div class="big-hero-label">${h.label}${h.byProp?` <span class="big-byprop" data-bigbreakdown="${h.byProp}" style="font-size:9px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 6px;cursor:pointer;margin-left:4px;text-transform:none;letter-spacing:0">by property</span>`:''}</div>
       <div class="big-hero-val">${h.val}</div>${h.sub?`<div class="big-hero-sub">${h.sub}</div>`:''}</div>
     </div>`).join('');
+  try { _bigRenderBookingCurve(sel); } catch(e){ const c=document.getElementById('big-bcurve'); if(c)c.innerHTML=''; }
   try { _bigRenderChart(sel); } catch(e){ const c=document.getElementById('big-chart'); if(c)c.innerHTML=''; }
   try { _bigRenderPie(sel); } catch(e){ const c=document.getElementById('big-pie'); if(c)c.innerHTML=''; }
   const allDays = _bigPickupByDay(sel, 7);
@@ -15421,6 +15551,104 @@ function renderBigPicture(){
   });
   _bigRenderWindowPills();
 }
+function _bigRenderBookingCurve(sel){
+  const host = document.getElementById('big-bcurve');
+  if (!host) return;
+  let data; try { data = bookingCurveData(sel); } catch(e){ host.innerHTML=''; return; }
+  const { otb, stly, ly, forecast, todayDoy, stlyTodayDoy, forecastTotal, lyTotal } = data;
+  // Compute max for y-axis (across all 4 curves, ignoring nulls)
+  let yMax = 0;
+  for (let i=1; i<=365; i++){
+    if (otb[i] > yMax) yMax = otb[i];
+    if (stly[i] > yMax) yMax = stly[i];
+    if (ly[i] > yMax) yMax = ly[i];
+    if (forecast[i] != null && forecast[i] > yMax) yMax = forecast[i];
+  }
+  if (yMax <= 0){ host.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:30px">No data</div>'; return; }
+  yMax = yMax * 1.05; // 5% headroom
+  const W = 720, H = 280;
+  const padL = 60, padR = 14, padTop = 12, padBot = 36;
+  const plotW = W - padL - padR, plotH = H - padTop - padBot;
+  const xAt = (doy)=> padL + (doy/365) * plotW;
+  const yAt = (v)=> padTop + plotH - (v/yMax)*plotH;
+  // Month tick lines on day-of-year (1st of each month)
+  const monthStarts = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]; // 2026 non-leap
+  const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let grid = '';
+  for (let i=0; i<12; i++){
+    const x = xAt(monthStarts[i]);
+    grid += `<line x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop+plotH}" stroke="#e8e6e0" stroke-width="1"/>`;
+    grid += `<text x="${x}" y="${H-14}" font-size="10" text-anchor="start" fill="#8a8a8a" font-family="'DM Mono',monospace">${monthLabels[i]}</text>`;
+  }
+  // Y-axis ticks (4 levels)
+  function fmtK(v){
+    if (v >= 1000000) return '€'+(v/1000000).toFixed(2)+'M';
+    if (v >= 1000) return '€'+Math.round(v/1000)+'k';
+    return '€'+Math.round(v);
+  }
+  for (let i=0; i<=4; i++){
+    const val = yMax * i / 4;
+    const y = yAt(val);
+    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#f0eee9" stroke-width="1"/>`;
+    grid += `<text x="${padL-8}" y="${y+3}" font-size="10" text-anchor="end" fill="#8a8a8a" font-family="'DM Mono',monospace">${fmtK(val)}</text>`;
+  }
+  // Today vertical line
+  const todayX = xAt(todayDoy);
+  grid += `<line x1="${todayX}" y1="${padTop}" x2="${todayX}" y2="${padTop+plotH}" stroke="#c4823b" stroke-width="1" stroke-dasharray="3,3"/>`;
+  grid += `<text x="${todayX+4}" y="${padTop+11}" font-size="10" fill="#c4823b" font-weight="700" font-family="'DM Mono',monospace">today</text>`;
+  // Path builder
+  function pathFrom(arr, startDoy, endDoy){
+    let d = '';
+    let first = true;
+    for (let i=startDoy; i<=endDoy; i++){
+      const v = arr[i];
+      if (v == null) continue;
+      const x = xAt(i), y = yAt(v);
+      d += (first ? `M${x.toFixed(1)},${y.toFixed(1)}` : `L${x.toFixed(1)},${y.toFixed(1)}`);
+      first = false;
+    }
+    return d;
+  }
+  // Final LY (whole year) — thinnest, purple
+  const lyPath = pathFrom(ly, 1, 365);
+  // STLY (up to stlyTodayDoy) — thin, gray
+  const stlyPath = pathFrom(stly, 1, stlyTodayDoy);
+  // OTB (up to todayDoy) — THICKEST, orange
+  const otbPath = pathFrom(otb, 1, todayDoy);
+  // Forecast (from todayDoy to 365) — dashed, orange-ish
+  const fcstPath = pathFrom(forecast, todayDoy, 365);
+  // SVG paths in order: ly (background), stly, forecast (dashed), otb (foreground)
+  const paths = `
+    <path d="${lyPath}" fill="none" stroke="#8e5fa8" stroke-width="1.6" opacity="0.55"/>
+    <path d="${stlyPath}" fill="none" stroke="#7a7a7a" stroke-width="1.8" opacity="0.75"/>
+    <path d="${fcstPath}" fill="none" stroke="#c4823b" stroke-width="2" stroke-dasharray="6,4" opacity="0.85"/>
+    <path d="${otbPath}" fill="none" stroke="#c4823b" stroke-width="3.2"/>
+  `;
+  // Dot at today on OTB
+  const todayY = yAt(otb[todayDoy]);
+  const todayDot = `<circle cx="${todayX}" cy="${todayY}" r="4" fill="#c4823b" stroke="#fff" stroke-width="1.5"/>`;
+  // Endpoint dot on forecast
+  const fcstEndY = yAt(forecast[365]);
+  const fcstEndDot = `<circle cx="${xAt(365)}" cy="${fcstEndY}" r="3" fill="#c4823b" opacity="0.7"/>`;
+  // Endpoint dot on LY
+  const lyEndY = yAt(ly[365]);
+  const lyEndDot = `<circle cx="${xAt(365)}" cy="${lyEndY}" r="3" fill="#8e5fa8" opacity="0.5"/>`;
+  // Legend
+  const legend = `<div style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:11px;color:#5a5a5a;padding:10px 14px 4px;font-family:'DM Mono',monospace">
+    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:3px;background:#c4823b"></span><b>OTB 2026</b> · ${fmtK(otb[todayDoy])}</span>
+    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2.5px;background:#c4823b;background-image:repeating-linear-gradient(to right,#c4823b 0,#c4823b 4px,transparent 4px,transparent 8px)"></span>Forecast · ${fmtK(forecastTotal)}</span>
+    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#7a7a7a"></span>STLY · ${fmtK(stly[stlyTodayDoy])}</span>
+    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#8e5fa8;opacity:.55"></span>LY final · ${fmtK(lyTotal)}</span>
+  </div>`;
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:920px;height:auto;display:block;margin:0 auto">
+    ${grid}
+    ${paths}
+    ${lyEndDot}
+    ${fcstEndDot}
+    ${todayDot}
+  </svg>${legend}`;
+}
+
 function _bigRenderChart(sel){
   const host = document.getElementById('big-chart');
   if (!host) return;
