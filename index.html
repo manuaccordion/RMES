@@ -189,6 +189,7 @@ table.data.sticky-head thead tr:nth-child(2) th{ top:34px; z-index:3; box-shadow
 table.data thead th.group{border-bottom:2px solid var(--line-2);background:var(--surface);font-size:10.5px;letter-spacing:.1em}
 table.data thead th.g-26{color:var(--accent);background:rgba(107,91,63,.05)}
 table.data thead th.g-25{color:var(--ink-3);background:rgba(138,138,138,.05)}
+table.data thead th.g-kpi{color:#3d6b54;background:rgba(91,138,118,.10);font-weight:700}
 table.data thead th.g-var{color:var(--blue);background:rgba(59,90,120,.05)}
 /* Overview: bande di gruppo colonne + separatore verticale netto sulla 1ª colonna di ogni gruppo */
 table.data .ovg-otb{background:rgba(195,131,59,.05)}
@@ -198,6 +199,43 @@ table.data .ovg-d1{background:rgba(59,90,120,.05)}
 table.data .ovg-d2{background:rgba(59,90,120,.08)}
 table.data .ovg-start{border-left:2px solid var(--line-2)}
 table.data thead th.ovg-start{border-left:2px solid var(--line-2)}
+/* === Monthly KPI table: sticky first column + 2-row sticky header === */
+.mkpi-sticky-wrap{
+  border:1px solid var(--line);
+  border-radius:6px;
+  background:var(--surface);
+}
+table.mkpi-sticky-table{
+  /* keep border-collapse for sticky to render correctly */
+}
+table.mkpi-sticky-table thead th{
+  position:sticky;
+  background:var(--surface-2);
+  z-index:5;
+}
+table.mkpi-sticky-table thead tr:first-child th{ top:0; z-index:6; }
+table.mkpi-sticky-table thead tr:nth-child(2) th{ top:34px; z-index:6; }
+/* First column sticky (month names). Opaque background to cover scrolling cells. */
+table.mkpi-sticky-table tbody td:first-child{
+  position:sticky;
+  left:0;
+  background:#fff;
+  z-index:3;
+  box-shadow:2px 0 6px -3px rgba(0,0,0,.18);
+  border-right:1.5px solid var(--line-2);
+}
+table.mkpi-sticky-table tbody tr.mkpi-total td:first-child{
+  background:#f7f5ef;
+}
+/* First cell of EACH header row: sticky on both axes (top + left) with higher z-index */
+table.mkpi-sticky-table thead tr th:first-child{
+  position:sticky;
+  left:0;
+  z-index:8;
+  background:var(--surface-2);
+  box-shadow:2px 0 6px -3px rgba(0,0,0,.18), 0 1px 0 var(--line-2);
+  border-right:1.5px solid var(--line-2);
+}
 table.data tbody tr:hover{background:var(--surface-2)}
 table.data tbody tr.total{font-weight:700;background:var(--surface-2);border-top:2px solid var(--line-2)}
 table.data tbody tr.hist-parent:hover{background:var(--surface-2)}

@@ -12600,7 +12600,7 @@ function renderForecast(sel){
         <th colspan="3" class="g-26" style="background:rgba(195,131,59,.10);text-align:center" title="Past months: actuals. Current month: actuals up to yesterday + forecast from today to month-end. Future months: forecast.">YTD + Forecast (live)</th>
         <th colspan="2" class="g-26" style="background:rgba(59,107,154,.08);text-align:center" title="Forecast saved (frozen) on the 1st day of the month. The Δ% compares the initial snapshot with the actual OTB: for past months = actual close, for the current month = OTB accumulating. Measures how well the initial forecast matches the actual close. Only for months still futuri il confronto è col forecast live.">Month-1st snapshot</th>
         <th colspan="3" class="g-25" style="background:rgba(60,124,90,.08);text-align:center">Budget</th>
-        <th colspan="5" class="g-26" style="background:rgba(195,131,59,.04);text-align:center">KPIs for Forecast achievement</th>
+        <th colspan="5" class="g-kpi" style="background:rgba(91,138,118,.10);text-align:center;border-left:2.5px solid #5b8a76">KPIs for Forecast achievement</th>
       </tr>
       <tr>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
@@ -12690,11 +12690,11 @@ function renderForecast(sel){
                 <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${budAdr > 0 ? fmtEUR(budAdr) : '—'}</td>
                 <td class="cell-mono ${revCls}" style="background:rgba(60,124,90,.04)" title="${revTip}"><b>${budRev > 0 ? fmtEUR(budRev) : '—'}</b></td>`;
       })()}
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.diffOtbFct)}</b></td>
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="${m.targetExactMode ? 'EXACT time-aware target for TODAY: residual RN per stay-date (fcstRn spread via the STLY pattern, minus OTB), summed from each future booking-day to month-end. Today gets the full month volume; near month-end only a few dates remain. D=' + m.daysRemaining + ' days left.' : 'Linear-weights fallback (no LY pattern available). Daily target = (Fct−OTB) × 2/(D+1), D=' + m.daysRemaining + '.'}">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
-      <td class="cell-mono ${pkCmpCls}" style="background:rgba(195,131,59,.04);cursor:help" title="${pkCmpTip}">${fmtEUR(m.eurPerDayPickup7)}</td>
-      <td class="cell-mono cell-flat" style="background:rgba(195,131,59,.04)">${fmtEUR(m.eurPerDayPickupStly7)}</td>
-      <td class="cell-mono ${achCls}" style="background:rgba(195,131,59,.04)"><b>${fmtPct(m.achievement,0)}</b></td>
+      <td class="cell-mono" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76"><b>${fmtEUR(m.diffOtbFct)}</b></td>
+      <td class="cell-mono" style="background:rgba(91,138,118,.06)" title="${m.targetExactMode ? 'EXACT time-aware target for TODAY: residual RN per stay-date (fcstRn spread via the STLY pattern, minus OTB), summed from each future booking-day to month-end. Today gets the full month volume; near month-end only a few dates remain. D=' + m.daysRemaining + ' days left.' : 'Linear-weights fallback (no LY pattern available). Daily target = (Fct−OTB) × 2/(D+1), D=' + m.daysRemaining + '.'}">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
+      <td class="cell-mono ${pkCmpCls}" style="background:rgba(91,138,118,.06);cursor:help" title="${pkCmpTip}">${fmtEUR(m.eurPerDayPickup7)}</td>
+      <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(m.eurPerDayPickupStly7)}</td>
+      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06)"><b>${fmtPct(m.achievement,0)}</b></td>
     </tr>`;
   }
   const totDiff = totFcstRev - totOtbRev;
@@ -12741,7 +12741,7 @@ function renderForecast(sel){
   const totSnapDelta = totSnapRev > 0 ? (totSnapLiveRev - totSnapRev) / totSnapRev : null;
   const totSnapCls = (totSnapDelta != null && totSnapDelta >= 0.02) ? 'cell-pos'
                    : (totSnapDelta != null && totSnapDelta <= -0.02) ? 'cell-neg' : 'cell-flat';
-  body += `<tr class="total">
+  body += `<tr class="total mkpi-total">
     <td>Total ${ymOrder.length} months</td>
     <td class="cell-mono cell-flat" title="${totOtbRn} RN of ${totCap} available">${fmtPct(totOtbOcc,1)}</td>
     <td class="cell-mono cell-flat">${totOtbRn>0 ? fmtEUR(totOtbAdr) : '—'}</td>
@@ -12765,13 +12765,13 @@ function renderForecast(sel){
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetOcc > 0 ? fmtPct(totBudgetOcc,1) : '—'}</td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetAdr > 0 ? fmtEUR(totBudgetAdr) : '—'}</td>
     <td class="cell-mono ${totBudgetRevCls}" style="background:rgba(60,124,90,.04)" title="${totBudgetRevTip}"><b>${totBudgetRev > 0 ? fmtEUR(totBudgetRev) : '—'}</b></td>
-    <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(totDiff)}</b></td>
-    <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="${totDaysToEnd} days from today to end of forecast">${totDaysToEnd > 0 ? fmtEUR(totDiff/totDaysToEnd) : '—'}</td>
-    <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(totPickup7/14)}</td>
-    <td class="cell-mono cell-flat" style="background:rgba(195,131,59,.04)">${fmtEUR(totPickup7Stly/14)}</td>
-    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(195,131,59,.04)"><b>${fmtPct(totAch,0)}</b></td>
+    <td class="cell-mono" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76"><b>${fmtEUR(totDiff)}</b></td>
+    <td class="cell-mono" style="background:rgba(91,138,118,.06)" title="${totDaysToEnd} days from today to end of forecast">${totDaysToEnd > 0 ? fmtEUR(totDiff/totDaysToEnd) : '—'}</td>
+    <td class="cell-mono" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7/14)}</td>
+    <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7Stly/14)}</td>
+    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06)"><b>${fmtPct(totAch,0)}</b></td>
   </tr>`;
-  document.getElementById('fcst-monthly-table').innerHTML = '<table class="data">' + head + '<tbody>' + body + '</tbody></table>';
+  document.getElementById('fcst-monthly-table').innerHTML = '<div class="mkpi-sticky-wrap" style="max-height:600px;overflow:auto;position:relative"><table class="data mkpi-sticky-table">' + head + '<tbody>' + body + '</tbody></table></div>';
   let rtHead = '<thead><tr><th rowspan="2" style="text-align:left">Room Type</th>';
   for (const ym of ymOrder){
     const m = M[ym];
