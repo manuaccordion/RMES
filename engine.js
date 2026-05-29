@@ -15938,9 +15938,10 @@ function _bigRenderBookingCurve(sel){
     const baseY = yAt(0);
     return pts + `L${lastX.toFixed(1)},${baseY.toFixed(1)}L${firstX.toFixed(1)},${baseY.toFixed(1)}Z`;
   }
-  // Paths (4 linee: LY full year, STLY curva fino a stlyTodayDoy, OTB fino a today, Forecast da today a 31/12)
-  const lyPath   = pathLine(ly, 1, 365);
-  const stlyPath = pathLine(stly, 1, stlyTodayDoy);
+  // Paths (3 linee: STLY = LY pace su tutto l'anno, OTB fino a today, Forecast da today a 31/12)
+  // STLY coincide con LY come definizione (bookings 2025 by booking-date). Mostrarla su tutto
+  // l'anno permette di vedere "dove era LY allo stesso doy" anche per giorni futuri 2026.
+  const stlyPath = pathLine(ly, 1, 365);
   const otbPath  = pathLine(otb, 1, todayDoy);
   const fcstPath = pathLine(forecast, todayDoy, 365);
   const otbArea  = pathArea(otb, 1, todayDoy);
@@ -15948,18 +15949,18 @@ function _bigRenderBookingCurve(sel){
   const paths = `
     <path d="${otbArea}" fill="url(#bcOtbArea)"/>
     <path d="${fcstArea}" fill="url(#bcFcstArea)"/>
-    <path d="${lyPath}" fill="none" stroke="url(#bcLyLine)" stroke-width="2.2" opacity="0.75" stroke-linecap="round"/>
-    <path d="${stlyPath}" fill="none" stroke="#6a6a6a" stroke-width="2" stroke-dasharray="3,4" opacity="0.85" stroke-linecap="round"/>
+    <path d="${stlyPath}" fill="none" stroke="#7a4d96" stroke-width="2.4" stroke-dasharray="6,5" opacity="0.9" stroke-linecap="round"/>
     <path d="${fcstPath}" fill="none" stroke="#d99a4e" stroke-width="2.2" stroke-dasharray="7,5" stroke-linecap="round" opacity="0.85"/>
     <path d="${otbPath}" fill="none" stroke="url(#bcOtbLine)" stroke-width="3.2" stroke-linecap="round" filter="url(#bcShadow)"/>
   `;
   // STLY marker: ONE point on the LY curve at stlyTodayDoy → shows "where we were last year at this point of the cycle"
+  // STLY marker: pin sul punto today-364 → "where we were last year at this booking-pace point"
   const stlyMarkerX = xAt(stlyTodayDoy);
   const stlyMarkerY = yAt(ly[stlyTodayDoy] || 0);
   const stlyMarker = `<g>
-    <circle cx="${stlyMarkerX}" cy="${stlyMarkerY}" r="6" fill="#fff" stroke="#6a6a6a" stroke-width="2.5"/>
-    <circle cx="${stlyMarkerX}" cy="${stlyMarkerY}" r="2.5" fill="#6a6a6a"/>
-    <text x="${stlyMarkerX-7}" y="${stlyMarkerY-9}" font-size="9.5" text-anchor="end" fill="#6a6a6a" font-weight="700" font-family="'DM Mono',monospace">STLY</text>
+    <circle cx="${stlyMarkerX}" cy="${stlyMarkerY}" r="6" fill="#fff" stroke="#7a4d96" stroke-width="2.5"/>
+    <circle cx="${stlyMarkerX}" cy="${stlyMarkerY}" r="2.5" fill="#7a4d96"/>
+    <text x="${stlyMarkerX-7}" y="${stlyMarkerY-9}" font-size="9.5" text-anchor="end" fill="#7a4d96" font-weight="700" font-family="'DM Mono',monospace">STLY today</text>
   </g>`;
   // Endpoint dots
   const todayY = yAt(otb[todayDoy]);
@@ -15974,12 +15975,11 @@ function _bigRenderBookingCurve(sel){
   const hoverDotOtb  = `<circle id="bc-hover-dot-otb"  cx="0" cy="0" r="5" fill="#b86b1f" stroke="#fff" stroke-width="2" opacity="0" style="pointer-events:none"/>`;
   const hoverDotLy   = `<circle id="bc-hover-dot-ly"   cx="0" cy="0" r="4" fill="#7a4d96" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
   const hoverDotFcst = `<circle id="bc-hover-dot-fcst" cx="0" cy="0" r="4" fill="#d99a4e" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
-  // Legend (4 curve + STLY marker)
-  const legend = `<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;font-size:11.5px;color:#5a5a5a;padding:12px 14px 4px;font-family:'DM Mono',monospace">
+  // Legend (3 curve: OTB, Forecast, STLY full year)
+  const legend = `<div style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:11.5px;color:#5a5a5a;padding:12px 14px 4px;font-family:'DM Mono',monospace">
     <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:3px;background:linear-gradient(to right,#b86b1f,#d99a4e);border-radius:2px"></span><b style="color:#5a3a14">OTB 2026</b> · ${fmtK(otb[todayDoy])}</span>
     <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:repeating-linear-gradient(to right,#d99a4e 0,#d99a4e 5px,transparent 5px,transparent 10px);border-radius:2px"></span><b style="color:#b86b1f">Forecast</b> · ${fmtK(forecastTotal)}</span>
-    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:repeating-linear-gradient(to right,#6a6a6a 0,#6a6a6a 3px,transparent 3px,transparent 7px);border-radius:2px"></span><b style="color:#5a5a5a">STLY</b> · ${fmtK(stly[stlyTodayDoy] || 0)}</span>
-    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:linear-gradient(to right,#7a4d96,#a075b8);opacity:.75;border-radius:2px"></span><b style="color:#7a4d96">LY 2025 (full year)</b> · ${fmtK(lyTotal)}</span>
+    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:3px;background:repeating-linear-gradient(to right,#7a4d96 0,#7a4d96 6px,transparent 6px,transparent 11px);border-radius:2px"></span><b style="color:#7a4d96">STLY</b> · ${fmtK(lyTotal)}</span>
   </div>`;
   host.innerHTML = `<div style="position:relative">
     <svg id="bc-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;max-width:960px;height:auto;display:block;margin:0 auto">
