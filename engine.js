@@ -3724,7 +3724,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -4571,31 +4571,33 @@ function newrmesCalculateBasePrice(structKey, isoDate){
   if (!baseRT) return null;
   const anchor = (typeof fp_computeAnchorLY === 'function') ? fp_computeAnchorLY(structKey, baseRT, isoDate) : null;
   const month = (new Date(isoDate + 'T00:00:00')).getMonth() + 1;
-  const anchorPrice = fp_getBasePrice(structKey);  // l'annual base = Anchor Price del nuovo sistema
+  // Anchor Mensile = ADR vero LY (baseRT, BeddyEq) del mese di soggiorno, ultimi 2 anni.
+  // Fallback: Anchor Price annuale dalla tab RMES se nessun dato LY nel mese.
+  const monthlyAnchorInfo = (typeof fp_computeMonthlyAnchor === 'function') ? fp_computeMonthlyAnchor(structKey, month) : null;
+  const monthlyAnchor = (monthlyAnchorInfo && monthlyAnchorInfo.anchor > 0) ? monthlyAnchorInfo.anchor : fp_getBasePrice(structKey);
   const floor = fp_getFloor(structKey);
-  // Step 1+2: ADR storico × (1 + targetGrowth%). L'anchor LY è il riferimento principale, ma
-  // se è troppo basso rispetto all'Anchor Price (es. periodo storicamente debole o pochi dati),
-  // diamo un floor minimo del 70% dell'Anchor Price per evitare crolli irrealistici.
+  // Step 1+2: ADR storico × (1 + targetGrowth%). 70% protection RIMOSSA — il Floor Rate (Step 5)
+  // è già il minimo assoluto, niente protezione intermedia.
   const targetGrowth = (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(structKey, month) : 5;
   const adrLY = (anchor && anchor.medianADR > 0) ? anchor.medianADR : 0;
-  const adrLYsafe = Math.max(adrLY, anchorPrice * 0.70);  // floor anchor LY a 70% dell'Anchor Price
-  const adrBaseSource = adrLYsafe > 0 ? adrLYsafe : anchorPrice;
+  // Se non c'è ADR LY → uso direttamente l'Anchor Mensile come base
+  const adrBaseSource = adrLY > 0 ? adrLY : monthlyAnchor;
   let price = adrBaseSource * (1 + targetGrowth/100);
-  // Step 4: Expedia Goal Value cap (posizionamento-obiettivo online, CON pesi % e offset).
-  // Il Base Price non può MAI superare il Goal Value (cap massimo esatto, niente +5%).
-  // Il minimo resta il Floor Rate (step 5).
+  // Step 4: Expedia Goal Value cap — solo se affidabile.
+  // Sanity check: cap applicato SOLO se almeno 2 competitor visibili AND Goal Value ≥ Floor.
+  // Sotto soglia il Goal Value è rumore (1 solo competitor o leak < floor) e non va usato come cap.
   if (typeof compsetWeightedAvg === 'function'){
     try {
       const c = compsetWeightedAvg(structKey, isoDate, /*applyOffset=*/true);
       const goalValue = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : (isFinite(c) ? c : null);
-      if (goalValue != null && goalValue > 0){
-        if (price > goalValue) price = goalValue;  // cap esatto al Goal Value
-      }
+      const nComp = (c && typeof c === 'object' && isFinite(c.n)) ? c.n : 0;
+      const reliable = (goalValue != null && goalValue > 0 && nComp >= 2 && goalValue >= floor);
+      if (reliable && price > goalValue) price = goalValue;
     } catch(e){}
   }
-  // Anchor Price guard-rail: ±50% dall'annual Anchor Price (limita scossoni)
-  const minAnchor = anchorPrice * 0.5;
-  const maxAnchor = anchorPrice * 1.5;
+  // Anchor Mensile guard-rail: ±50% dall'Anchor Mensile (non più annuale)
+  const minAnchor = monthlyAnchor * 0.5;
+  const maxAnchor = monthlyAnchor * 1.5;
   if (price < minAnchor) price = minAnchor;
   if (price > maxAnchor) price = maxAnchor;
   // Step 5: Floor (hard minimum)
@@ -4610,34 +4612,41 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
   if (!baseRT) return null;
   const anchor = (typeof fp_computeAnchorLY === 'function') ? fp_computeAnchorLY(structKey, baseRT, isoDate) : null;
   const month = (new Date(isoDate + 'T00:00:00')).getMonth() + 1;
-  const anchorPrice = fp_getBasePrice(structKey);
+  // Anchor Mensile (ADR vero LY 2 anni, baseRT in BeddyEq) — sostituisce l'Anchor annuale come guard-rail
+  const monthlyAnchorInfo = (typeof fp_computeMonthlyAnchor === 'function') ? fp_computeMonthlyAnchor(structKey, month) : null;
+  const monthlyAnchor = (monthlyAnchorInfo && monthlyAnchorInfo.anchor > 0) ? monthlyAnchorInfo.anchor : fp_getBasePrice(structKey);
+  const anchorSource = monthlyAnchorInfo ? monthlyAnchorInfo.source : 'annual_fallback';
+  const anchorMonthlyRn = monthlyAnchorInfo ? monthlyAnchorInfo.nRn : 0;
+  const annualAnchor = fp_getBasePrice(structKey);
   const floor = fp_getFloor(structKey);
   const targetGrowth = (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(structKey, month) : 5;
   const adrLY = (anchor && anchor.medianADR > 0) ? anchor.medianADR : 0;
-  const adrLYsafe = Math.max(adrLY, anchorPrice * 0.70);
-  const adrBaseSource = adrLYsafe > 0 ? adrLYsafe : anchorPrice;
+  // 70% protection rimossa: se non c'è ADR LY, uso direttamente l'Anchor Mensile come base
+  const adrBaseSource = adrLY > 0 ? adrLY : monthlyAnchor;
   const afterGrowth = adrBaseSource * (1 + targetGrowth/100);
   let price = afterGrowth;
-  // Goal Value cap
+  // Goal Value cap (with sanity check)
   let goalValue = null;
-  if (typeof compsetWeightedAvg === 'function'){
-    try {
-      const c = compsetWeightedAvg(structKey, isoDate, /*applyOffset=*/true);
-      goalValue = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : null;
-    } catch(e){}
-  }
-  let cappedByGoal = false;
   let goalN = 0, goalNames = null;
   if (typeof compsetWeightedAvg === 'function'){
     try {
       const c = compsetWeightedAvg(structKey, isoDate, /*applyOffset=*/true);
+      goalValue = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : null;
       if (c && typeof c === 'object'){ goalN = c.n || 0; goalNames = c.contributingNames || null; }
     } catch(e){}
   }
-  if (goalValue != null && goalValue > 0 && price > goalValue){ price = goalValue; cappedByGoal = true; }
-  // Anchor guard-rail
-  const minAnchor = anchorPrice * 0.5;
-  const maxAnchor = anchorPrice * 1.5;
+  let cappedByGoal = false;
+  // Cap affidabile? n≥2 competitor visibili AND Goal Value ≥ Floor
+  const goalReliable = (goalValue != null && goalValue > 0 && goalN >= 2 && goalValue >= floor);
+  let goalUnreliableReason = null;
+  if (goalValue != null && goalValue > 0 && !goalReliable){
+    if (goalN < 2) goalUnreliableReason = 'only ' + goalN + ' competitor(s) visible (need ≥2)';
+    else if (goalValue < floor) goalUnreliableReason = 'Goal Value (€'+Math.round(goalValue)+') below Floor Rate (€'+floor+')';
+  }
+  if (goalReliable && price > goalValue){ price = goalValue; cappedByGoal = true; }
+  // Anchor Mensile guard-rail ±50%
+  const minAnchor = monthlyAnchor * 0.5;
+  const maxAnchor = monthlyAnchor * 1.5;
   let guardRail = null;
   if (price < minAnchor){ price = minAnchor; guardRail = 'min'; }
   else if (price > maxAnchor){ price = maxAnchor; guardRail = 'max'; }
@@ -4652,22 +4661,128 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
     lyAdrMin: anchor ? anchor.adrMin : null,
     lyAdrMax: anchor ? anchor.adrMax : null,
     lySetDesc: anchor ? anchor.setDesc : null,
+    // Diagnostica Best-of-Two LY methods:
+    lyMedianSameDay: (anchor && anchor._medianSameDay != null) ? anchor._medianSameDay : null,
+    lyObsSameDay: (anchor && anchor._nObsSameDay != null) ? anchor._nObsSameDay : 0,
+    lyMedianDow: (anchor && anchor._medianDow != null) ? anchor._medianDow : null,
+    lyObsDow: (anchor && anchor._nObsDow != null) ? anchor._nObsDow : 0,
+    lyDowFallback: (anchor && anchor._dowFallback) ? anchor._dowFallback : 'none',
     adrUsed: Math.round(adrBaseSource),
-    adrFlooredTo70: (adrLY > 0 && adrLYsafe > adrLY) || (adrLY === 0),
-    anchor70: Math.round(anchorPrice * 0.70),
+    adrUsedFromAnchor: (adrLY <= 0),  // true se ADR LY mancante → uso direttamente Anchor Mensile
     targetGrowth,
     afterGrowth: Math.round(afterGrowth),
     goalValue: goalValue != null ? Math.round(goalValue) : null,
     goalN, goalNames,
+    goalReliable,
+    goalUnreliableReason,
     cappedByGoal,
-    anchorPrice,
+    monthlyAnchor: Math.round(monthlyAnchor),
+    monthlyAnchorSource: anchorSource,  // 'ly_history' | 'annual_fallback'
+    monthlyAnchorRn: anchorMonthlyRn,
+    annualAnchor,  // Anchor Price annuale dalla tab RMES (per riferimento)
     minAnchor: Math.round(minAnchor),
     maxAnchor: Math.round(maxAnchor),
     guardRail,
     floor,
     flooredBy,
-    finalBase: Math.round(price)
+    finalBase: Math.round(price),
+    flags: _bpComputeFlags({
+      lyMedianADR: adrLY,
+      lyObsSameDay: (anchor && anchor._nObsSameDay != null) ? anchor._nObsSameDay : 0,
+      lyObsDow: (anchor && anchor._nObsDow != null) ? anchor._nObsDow : 0,
+      lyFallback: anchor ? anchor.fallbackUsed : 'none',
+      lyMedianSameDay: (anchor && anchor._medianSameDay != null) ? anchor._medianSameDay : null,
+      lyMedianDow: (anchor && anchor._medianDow != null) ? anchor._medianDow : null,
+      monthlyAnchor: monthlyAnchor,
+      afterGrowth: afterGrowth,
+      maxAnchor: maxAnchor,
+      guardRail: guardRail,
+      floor: floor,
+      flooredBy: flooredBy,
+      goalReliable: goalReliable,
+      goalUnreliableReason: goalUnreliableReason,
+      goalN: goalN,
+      adrUsedFromAnchor: (adrLY <= 0),
+      monthlyAnchorSource: anchorSource
+    })
   };
+}
+
+/**
+ * _bpComputeFlags — produce un array di flag {code, severity, message} per il giorno.
+ * severity: 'info' (azzurro), 'warn' (giallo), 'alert' (rosso).
+ * Used dal modal RMES e dalla colonna Flags in Export Pricing.
+ */
+function _bpComputeFlags(c){
+  const flags = [];
+  // F1 — Same-day-LY vince con campione molto piccolo contro DOW grande
+  if (c.lyFallback === 'dayMatch' && c.lyObsSameDay <= 3 && c.lyObsDow >= 15){
+    flags.push({
+      code: 'small_sample_dayMatch',
+      severity: 'warn',
+      message: 'The winning ADR (€'+Math.round(c.lyMedianSameDay)+') comes from only '+c.lyObsSameDay+' same-day-LY bookings while the weekday-and-month method had '+c.lyObsDow+' bookings (€'+Math.round(c.lyMedianDow)+'). The small same-day sample may be noisier; review by hand on special-day candidates (NYE, Ferragosto, holidays).'
+    });
+  }
+  // F2 — LY ADR molto sopra il Monthly Anchor (>2x): segnale anomalo (giorno premium dentro mese debole)
+  if (c.lyMedianADR > 0 && c.monthlyAnchor > 0){
+    const ratio = c.lyMedianADR / c.monthlyAnchor;
+    if (ratio >= 2.0){
+      flags.push({
+        code: 'lyADR_far_above_monthlyAnchor',
+        severity: 'info',
+        message: 'LY ADR (€'+Math.round(c.lyMedianADR)+') is '+ratio.toFixed(1)+'x the Monthly Anchor (€'+c.monthlyAnchor+'). Premium-day signal inside a low-season month: the Monthly Anchor band may strangle the price (see Anchor max guard-rail below).'
+      });
+    }
+    // F3 — LY ADR molto sotto il Monthly Anchor (<0.4x): probabili dati sporchi
+    if (ratio < 0.4 && c.lyMedianADR > 0){
+      flags.push({
+        code: 'lyADR_far_below_monthlyAnchor',
+        severity: 'warn',
+        message: 'LY ADR (€'+Math.round(c.lyMedianADR)+') is well below the Monthly Anchor (€'+c.monthlyAnchor+'), only '+(ratio*100).toFixed(0)+'% of it. Possible data quality issue on this weekday — check the LY bookings for outliers.'
+      });
+    }
+  }
+  // F4 — Monthly Anchor MAX strozza forte (>€30 cut)
+  if (c.guardRail === 'max' && c.afterGrowth - c.maxAnchor > 30){
+    flags.push({
+      code: 'anchor_max_strangle',
+      severity: 'warn',
+      message: 'The Monthly Anchor MAX guard-rail cut the price by €'+Math.round(c.afterGrowth - c.maxAnchor)+' (from €'+Math.round(c.afterGrowth)+' to €'+c.maxAnchor+'). The ADR for this day is much higher than the average for the month — typical for special days (NYE, holidays) inside a low-season month. The Monthly Anchor band represents the seasonal average and limits how far above it the Base Price can go.'
+    });
+  }
+  // F5 — LY ADR molto sotto Floor (<60% del floor): suggerisce dati ridondanti
+  if (c.lyMedianADR > 0 && c.lyMedianADR < c.floor * 0.6){
+    flags.push({
+      code: 'lyADR_far_below_floor',
+      severity: 'info',
+      message: 'LY ADR (€'+Math.round(c.lyMedianADR)+') is only '+((c.lyMedianADR/c.floor)*100).toFixed(0)+'% of the Floor Rate (€'+c.floor+'). The Floor protects: final Base = Floor.'
+    });
+  }
+  // F6 — ADR LY missing (uses Monthly Anchor as starting ADR)
+  if (c.adrUsedFromAnchor){
+    flags.push({
+      code: 'adr_from_anchor',
+      severity: 'info',
+      message: 'No LY bookings found for this date on the base RT. The Monthly Anchor (€'+c.monthlyAnchor+') is used directly as the starting ADR. Very rare situation: typically for brand-new properties or closed months.'
+    });
+  }
+  // F7 — Annual Anchor fallback used (no LY data per the month)
+  if (c.monthlyAnchorSource === 'annual_fallback'){
+    flags.push({
+      code: 'annual_anchor_fallback',
+      severity: 'info',
+      message: 'No LY bookings for this month at all — the Monthly Anchor falls back to the Annual Anchor Price (€'+c.monthlyAnchor+') configured in the RMES tab. Verify the Annual Anchor is set to a sensible value for this property.'
+    });
+  }
+  // F8 — Goal Value disabled (unreliable)
+  if (!c.goalReliable && c.goalUnreliableReason){
+    flags.push({
+      code: 'goal_disabled',
+      severity: 'info',
+      message: 'Goal Value cap DISABLED for this date — '+c.goalUnreliableReason+'. The Base Price flows directly to the Monthly Anchor guard-rail.'
+    });
+  }
+  return flags;
 }
 
 const BP_BREAKDOWN_STATE = { struct: 'all', from: null, to: null };
@@ -4755,15 +4870,16 @@ function renderBasePriceBreakdown(){
     { t:'Property', al:'left',  tip:'Property' },
     { t:'Date',     al:'left',  tip:'Stay date' },
     { t:'DoW',      al:'right', tip:'Day of week' },
-    { t:'LY median ADR', al:'right', tip:'Step 1 — historical anchor: median of the ADR actually earned on the BASE room type only, in past years (same weekday & month). Each booking is net of OTA markup (Booking/Expedia/Airbnb prices are divided by their markup so everything is in Beddy-equivalent; direct/Beddy/Krossbooking bookings are used as-is).' },
-    { t:'obs',      al:'right', tip:'Total number of bookings (room-stays) that fed the median — NOT the number of days. One day can contribute several bookings (one per occupied room).' },
-    { t:'ADR used', al:'right', tip:'The anchor actually used (may be lifted by the 70% protection)' },
-    { t:'× growth', al:'right', tip:'Step 2 — monthly target growth applied to the anchor' },
-    { t:'= after growth', al:'right', tip:'Anchor × (1 + growth%)' },
-    { t:'Goal Value (cap)', al:'right', tip:'Step 3 — Expedia Goal Value: weighted compset WITH offsets. Maximum cap on the Base Price' },
-    { t:'Anchor ±50%', al:'right', tip:'Step 4 — guard-rail: result bounded within ±50% of the annual Anchor Price' },
+    { t:'LY median ADR', al:'right', tip:'Step 1 — Best-of-Two: maximum between same-day-LY median and weekday-and-month-LY median (last 2 years, base RT only, net of OTA markup). Hover the cell to see both methods and which one won.' },
+    { t:'obs',      al:'right', tip:'Number of bookings (room-stays, not days) of the winning method.' },
+    { t:'ADR used', al:'right', tip:'The ADR actually used as starting point. (anchor) tag = no LY history available, Monthly Anchor used instead.' },
+    { t:'× growth', al:'right', tip:'Step 2 — monthly target growth % applied to the ADR' },
+    { t:'= after growth', al:'right', tip:'ADR × (1 + growth%)' },
+    { t:'Goal Value (cap)', al:'right', tip:'Step 3 — Expedia Goal Value: weighted compset WITH offsets. Maximum cap on the Base Price. ⚠ = cap disabled for sanity (fewer than 2 competitors visible, or Goal < Floor).' },
+    { t:'Anchor ±50%', al:'right', tip:'Step 4 — guard-rail: result bounded within ±50% of the Monthly Anchor (true ADR LY of the base RT for that month).' },
     { t:'Floor', al:'right', tip:'Step 5 — Floor Rate: the absolute minimum' },
     { t:'→ Base Price', al:'right', tip:'Final frozen Base Price for the day' },
+    { t:'⚑', al:'center', tip:'Flags — special situations worth noting. Hover the icon to see all flags for the day. No flag = clean run, the number is fully reliable.' },
   ];
   h += colDefs.map((c,i)=>`<th title="${escapeHtml(c.tip)}" style="position:sticky;top:0;z-index:2;background:#efe9df;padding:8px 9px;border-bottom:2px solid #d8cfbf;text-align:${c.al};white-space:nowrap;cursor:help">${c.t}</th>`).join('');
   h += '</tr></thead><tbody>';
@@ -4772,55 +4888,81 @@ function renderBasePriceBreakdown(){
     const dt = new Date(r.isoDate + 'T00:00:00');
     const dow = dowNames[dt.getDay()];
     const dmy = pad2(dt.getDate())+'/'+pad2(dt.getMonth()+1)+'/'+dt.getFullYear();
-    // --- Tooltip LY median ADR ---
+    // --- Tooltip LY median ADR (Best-of-Two) ---
     let lyTip;
     if (r.lyMedianADR != null){
-      lyTip = 'Median earned ADR = €'+r.lyMedianADR
+      const dayMatchPart = r.lyMedianSameDay != null
+        ? ('• Same-day-LY: €'+r.lyMedianSameDay+' ('+r.lyObsSameDay+' obs)')
+        : ('• Same-day-LY: not enough data ('+r.lyObsSameDay+' obs, need ≥3)');
+      const dowPart = r.lyMedianDow != null
+        ? ('• ' + (r.lyDowFallback === 'monthWide' ? 'Whole-month-LY' : 'Weekday-and-month-LY') + ': €'+r.lyMedianDow+' ('+r.lyObsDow+' obs)')
+        : '• Weekday/month: no data';
+      const winLbl = r.lyFallback === 'dayMatch'
+        ? 'Same-day-LY won (special-day premium)'
+        : (r.lyFallback === 'monthWide' ? 'Whole-month-LY used (no weekday data)' : 'Weekday-and-month-LY won');
+      lyTip = 'Best-of-Two median earned ADR = €'+r.lyMedianADR
         + '\nBase room type only · net of OTA markup (Beddy-equivalent)'
-        + '\nSet: ' + (r.lySetDesc || 'same weekday & month, 2024-2025')
-        + '\nObservations: ' + r.lyObs + ' bookings (room-stays, not days)'
-        + (r.lyAdrMin!=null ? ('\nRange of earned ADR: €'+r.lyAdrMin+' – €'+r.lyAdrMax) : '')
-        + '\n\nThe median (middle value) is used so a single odd booking cannot skew the anchor.';
+        + '\n\n' + dayMatchPart
+        + '\n' + dowPart
+        + '\n→ ' + winLbl
+        + (r.lyAdrMin != null ? ('\n\nWinning method range: €'+r.lyAdrMin+' – €'+r.lyAdrMax) : '')
+        + '\n\nThe median (middle value) is used so a single odd booking cannot skew the result.';
     } else {
-      lyTip = 'No historical bookings found for this weekday & month. The anchor falls back to the 70% protection (70% of the annual Anchor Price).';
+      lyTip = 'No historical LY bookings on the base room type for either same-day or weekday/month. The system falls back to the Monthly Anchor as starting ADR.';
     }
     // --- Tooltip obs ---
-    const obsTip = (r.lyFallback === 'monthWide')
-      ? ('Total bookings (room-stays), NOT days. Fewer than 3 on the exact weekday → widened to ALL days of the month. Considered: ' + (r.lySetDesc||'whole month') + '. Bookings: ' + r.lyObs)
-      : ('Total bookings (room-stays), NOT days — one day can hold several bookings (one per occupied room). Considered: ' + (r.lySetDesc||'same weekday & month') + '. Bookings: ' + r.lyObs);
+    let obsTip;
+    if (r.lyFallback === 'dayMatch'){
+      obsTip = 'Same-day-LY method won. Considered: ' + (r.lySetDesc||'same day & month, 2024+2025') + '. Bookings (room-stays, not days): ' + r.lyObs + '.';
+    } else if (r.lyFallback === 'monthWide'){
+      obsTip = 'Weekday/month method won, but widened to ALL days of the month (fewer than 3 bookings on the exact weekday). Considered: ' + (r.lySetDesc||'whole month') + '. Bookings: ' + r.lyObs + '.';
+    } else {
+      obsTip = 'Weekday-and-month method won. Considered: ' + (r.lySetDesc||'same weekday & month, 2024+2025') + '. Bookings (room-stays, not days): ' + r.lyObs + '. One day can hold several bookings (one per occupied room).';
+    }
     // --- Tooltip ADR used ---
-    const adrUsedTip = r.adrFlooredTo70
-      ? ('History was too low (or missing), so the anchor was lifted up to 70% of the annual Anchor Price (€'+r.anchorPrice+' × 70% = €'+r.anchor70+'). This prevents an unrealistically low Base Price.')
-      : ('Anchor used as-is: €'+r.adrUsed+' (above the 70% protection of €'+r.anchor70+').');
-    // --- Tooltip Goal Value ---
+    const adrUsedTip = r.adrUsedFromAnchor
+      ? ('No LY history available, so the Monthly Anchor (€'+r.monthlyAnchor+') is used as the starting ADR.')
+      : ('ADR used as-is: €'+r.adrUsed+' (LY median ADR from history).');
+    // --- Tooltip Goal Value (con sanity check) ---
     let goalTip;
     if (r.goalValue != null){
-      goalTip = 'Expedia Goal Value = €'+r.goalValue+' (weighted compset WITH offsets, '+r.goalN+' competitors).'
-        + (r.cappedByGoal
-            ? '\n\n✓cap (red): the price after growth (€'+r.afterGrowth+') was ABOVE the Goal Value, so it was capped DOWN to €'+r.goalValue+'.'
-            : '\n\nNot capping here: the price after growth (€'+r.afterGrowth+') is already at or below the Goal Value, so it passes through unchanged.');
+      if (r.goalReliable){
+        goalTip = 'Expedia Goal Value = €'+r.goalValue+' (weighted compset WITH offsets, '+r.goalN+' competitors).'
+          + (r.cappedByGoal
+              ? '\n\n✓cap (red): the price after growth (€'+r.afterGrowth+') was ABOVE the Goal Value, so it was capped DOWN to €'+r.goalValue+'.'
+              : '\n\nNot capping here: the price after growth (€'+r.afterGrowth+') is already at or below the Goal Value, so it passes through unchanged.');
+      } else {
+        goalTip = 'Goal Value = €'+r.goalValue+' (weighted compset WITH offsets, '+r.goalN+' competitor'+(r.goalN===1?'':'s')+').'
+          + '\n\n⚠ Cap DISABLED for this date — not reliable: ' + (r.goalUnreliableReason || 'unknown reason')
+          + '\n\nWhen too few competitors are visible (or the result is below the Floor Rate), the Goal Value is statistical noise rather than a real online-positioning signal. The cap is skipped and the Base Price keeps flowing through to the Monthly Anchor guard-rail.';
+      }
     } else {
-      goalTip = 'No valid compset for this date (no competitor prices, or only your own properties). No cap applied.';
+      goalTip = 'No valid compset for this date (no competitor prices visible, or only your own properties). No Goal Value cap applied.';
     }
-    // --- Tooltip guard-rail ---
+    // --- Tooltip guard-rail (Monthly Anchor based) ---
+    const _anchorSrcLbl = (r.monthlyAnchorSource === 'ly_history')
+      ? 'Monthly Anchor €'+r.monthlyAnchor+' (true ADR LY 2 yrs, baseRT, '+r.monthlyAnchorRn+' RN)'
+      : 'Monthly Anchor €'+r.monthlyAnchor+' (annual fallback: no LY data for this month)';
     let grTip;
     if (r.guardRail === 'max'){
-      grTip = '↓ max: the price exceeded the upper guard-rail (Anchor Price +50% = €'+r.maxAnchor+'), so it was pulled DOWN to €'+r.maxAnchor+'.';
+      grTip = '↓ max: the price exceeded the upper guard-rail (' + _anchorSrcLbl + ' +50% = €'+r.maxAnchor+'), so it was pulled DOWN to €'+r.maxAnchor+'.';
     } else if (r.guardRail === 'min'){
-      grTip = '↑ min: the price was below the lower guard-rail (Anchor Price −50% = €'+r.minAnchor+'), so it was pushed UP to €'+r.minAnchor+'.';
+      grTip = '↑ min: the price was below the lower guard-rail (' + _anchorSrcLbl + ' −50% = €'+r.minAnchor+'), so it was pushed UP to €'+r.minAnchor+'.';
     } else {
-      grTip = 'Within the ±50% band (€'+r.minAnchor+' – €'+r.maxAnchor+' around the annual Anchor Price). No adjustment.';
+      grTip = 'Within the ±50% band (€'+r.minAnchor+' – €'+r.maxAnchor+' around the Monthly Anchor €'+r.monthlyAnchor+'). No adjustment.\\n\\nSource: ' + _anchorSrcLbl;
     }
     // --- Tooltip floor ---
     const floorTip = r.flooredBy
       ? ('Floor applied: the price was below the Floor Rate (€'+r.floor+'), so it was raised to the floor.')
       : ('Above the Floor Rate (€'+r.floor+'). No adjustment.');
 
-    const goalTxt = r.goalValue != null ? ('€'+r.goalValue + (r.cappedByGoal?' ✓cap':'')) : '—';
+    const goalTxt = r.goalValue != null
+      ? ('€'+r.goalValue + (r.cappedByGoal ? ' ✓cap' : (r.goalReliable ? '' : ' ⚠')))
+      : '—';
     const grTxt = r.guardRail ? (r.guardRail==='min'?'↑ min':'↓ max') : '–';
     const floorTxt = r.flooredBy ? ('€'+r.floor+' ✓') : ('€'+r.floor);
     const lyTxt = r.lyMedianADR != null ? ('€'+r.lyMedianADR) : '—';
-    const adrUsedTxt = '€'+r.adrUsed + (r.adrFlooredTo70?' ⬆70%':'');
+    const adrUsedTxt = '€'+r.adrUsed + (r.adrUsedFromAnchor ? ' (anchor)' : '');
     h += '<tr style="border-bottom:1px solid #f0eee9">';
     h += `<td style="padding:6px 9px;text-align:left;white-space:nowrap;color:#666;border-bottom:1px solid #f0eee9">${r.structLabel}</td>`;
     h += `<td style="padding:6px 9px;text-align:left;white-space:nowrap;font-family:'DM Mono',monospace;border-bottom:1px solid #f0eee9">${dmy}</td>`;
@@ -4834,11 +4976,23 @@ function renderBasePriceBreakdown(){
     h += `<td title="${escapeHtml(grTip)}" style="padding:6px 9px;text-align:right;color:${r.guardRail?'#a83b3b':'#999'};cursor:help;border-bottom:1px solid #f0eee9">${grTxt}</td>`;
     h += `<td title="${escapeHtml(floorTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${r.flooredBy?'#a83b3b':'#999'};cursor:help;border-bottom:1px solid #f0eee9">${floorTxt}</td>`;
     h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#2c5c3c;border-bottom:1px solid #f0eee9">€${r.finalBase}</td>`;
+    // Flags column
+    const flgs = r.flags || [];
+    if (flgs.length === 0){
+      h += '<td style="padding:6px 9px;text-align:center;color:#ccc;border-bottom:1px solid #f0eee9">·</td>';
+    } else {
+      const hi = flgs.find(f => f.severity === 'alert');
+      const md = flgs.find(f => f.severity === 'warn');
+      const icon = hi ? '🔴' : (md ? '🟡' : '🔵');
+      const color = hi ? '#a83b3b' : (md ? '#c4823b' : '#3b6b9a');
+      const fTip = flgs.map(f => '• ' + f.message).join('\n\n');
+      h += `<td title="${escapeHtml(fTip)}" style="padding:6px 9px;text-align:center;cursor:help;border-bottom:1px solid #f0eee9;color:${color};font-weight:700">${icon} ${flgs.length}</td>`;
+    }
     h += '</tr>';
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>LY median ADR</b> (median earned ADR on the base room type only, net of OTA markup, same weekday & month, 2024-2025) · <b>obs</b> (number of bookings/room-stays, not days; <b>*</b> = widened to whole month) · <b>ADR used</b> (⬆70% = lifted to the 70%-of-Anchor-Price protection) · <b>× growth</b> · <b>after growth</b> · <b>Goal Value cap</b> (red ✓cap = it capped the price down) · <b>Anchor ±50%</b> (↓max / ↑min = guard-rail acted) · <b>Floor</b> (✓ = floor applied) · <b>Base Price</b>.';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>LY median ADR</b> (Best-of-Two: max between same-day-LY and weekday-and-month-LY medians, 2024+2025, base room type, net of OTA markup) · <b>obs</b> (number of bookings/room-stays of the winning method) · <b>ADR used</b> (<b>(anchor)</b> tag = no LY history, Monthly Anchor used instead) · <b>× growth</b> · <b>after growth</b> · <b>Goal Value cap</b> (red ✓cap = capped down; ⚠ = cap disabled for sanity, fewer than 2 competitors visible or Goal &lt; Floor) · <b>Anchor ±50%</b> (↓max / ↑min = guard-rail acted, based on the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month) · <b>Floor</b> (✓ = floor applied) · <b>Base Price</b> · <b>⚑ Flags</b> (🔴 alert / 🟡 warn / 🔵 info — hover for details, · means no flag).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -4846,7 +5000,7 @@ function renderBasePriceBreakdown(){
 let _BP_LAST_ROWS = [];
 function _bpExportCSV(){
   if (!_BP_LAST_ROWS || !_BP_LAST_ROWS.length){ alert('Nothing to export — apply a range first.'); return; }
-  const header = ['Property','Date','DoW','LY_median_ADR','observations','fallback_monthWide','ADR_used','ADR_lifted_to_70pct','target_growth_pct','after_growth','goal_value_cap','capped_by_goal','anchor_price','guard_rail','floor','floored','base_price'];
+  const header = ['Property','Date','DoW','LY_median_ADR','LY_winning_method','LY_obs','LY_sameDay_median','LY_sameDay_obs','LY_dow_median','LY_dow_obs','ADR_used','ADR_from_anchor','target_growth_pct','after_growth','goal_value','goal_n_competitors','goal_reliable','capped_by_goal','monthly_anchor','monthly_anchor_source','monthly_anchor_rn','annual_anchor','guard_rail','floor','floored','base_price','flags'];
   const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const lines = [header.join(',')];
   for (const r of _BP_LAST_ROWS){
@@ -4856,19 +5010,29 @@ function _bpExportCSV(){
       r.isoDate,
       dowNames[dt.getDay()],
       r.lyMedianADR != null ? r.lyMedianADR : '',
+      r.lyFallback,
       r.lyObs,
-      r.lyFallback==='monthWide' ? 'yes' : 'no',
+      r.lyMedianSameDay != null ? r.lyMedianSameDay : '',
+      r.lyObsSameDay || 0,
+      r.lyMedianDow != null ? r.lyMedianDow : '',
+      r.lyObsDow || 0,
       r.adrUsed,
-      r.adrFlooredTo70 ? 'yes':'no',
+      r.adrUsedFromAnchor ? 'yes':'no',
       r.targetGrowth,
       r.afterGrowth,
       r.goalValue != null ? r.goalValue : '',
+      r.goalN || 0,
+      r.goalReliable ? 'yes' : 'no',
       r.cappedByGoal ? 'yes':'no',
-      r.anchorPrice,
+      r.monthlyAnchor,
+      r.monthlyAnchorSource,
+      r.monthlyAnchorRn,
+      r.annualAnchor,
       r.guardRail || '',
       r.floor,
       r.flooredBy ? 'yes':'no',
-      r.finalBase
+      r.finalBase,
+      '"' + ((r.flags||[]).map(f=>f.code).join(';') || '') + '"'
     ];
     lines.push(row.join(','));
   }
@@ -6091,7 +6255,9 @@ function fp_computeAnchorLY(structKey, rt, targetDateISO){
   if (!targetDateISO) return null;
   const _td = new Date(targetDateISO + 'T00:00:00');
   if (isNaN(_td.getTime())) return _fp_computeAnchorLY_impl(structKey, rt, targetDateISO);
-  const _ak = structKey + '|' + rt + '|' + (_td.getMonth()+1) + '|' + _td.getDay();
+  // Cache key: struct|rt|mese|giorno|dow. Il giorno-del-mese è necessario perché
+  // ora il calcolo considera anche le osservazioni same-day-LY (stesso giorno+mese).
+  const _ak = structKey + '|' + rt + '|' + (_td.getMonth()+1) + '|' + _td.getDate() + '|' + _td.getDay();
   if (_ANCHOR_LY_CACHE[_ak] !== undefined) return _ANCHOR_LY_CACHE[_ak];
   const _r = _fp_computeAnchorLY_impl(structKey, rt, targetDateISO);
   _ANCHOR_LY_CACHE[_ak] = _r;
@@ -6102,19 +6268,12 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   const td = new Date(targetDateISO + 'T00:00:00');
   if (isNaN(td.getTime())) return null;
   const targetMonth = td.getMonth() + 1;
+  const targetDay = td.getDate();
   const targetDow = td.getDay();
   const structName = fp_structName(structKey);
   const yearsToCheck = [2024, 2025];
-  const targetDays = new Set();
-  for (const y of yearsToCheck){
-    const monthEnd = new Date(y, targetMonth, 0);
-    for (let d = new Date(y, targetMonth-1, 1); d <= monthEnd; d.setDate(d.getDate()+1)){
-      if (d.getDay() === targetDow) targetDays.add(ymd(d));
-    }
-  }
-  if (targetDays.size === 0){
-    return { medianADR: null, medianRN: null, nObs: 0, fallbackUsed: 'none' };
-  }
+
+  // Helper: raccoglie ADR osservati su un set di giorni permessi
   function _gather(allowedDays){
     const adrObs = [];
     const rnByDay = {};
@@ -6145,9 +6304,35 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
     }
     return { adrObs: adrObs, rnByDay: rnByDay };
   }
-  let result = _gather(targetDays);
+
+  // === Method 1: Same-day-LY (stesso giorno+mese, anni LY) ===
+  // Es. 31/12/2026 → guarda 31/12/2024 + 31/12/2025.
+  // Cattura il premium dei giorni fissi speciali (NYE, Ferragosto, festività).
+  const sameDayDays = new Set();
+  for (const y of yearsToCheck){
+    sameDayDays.add(ymd(new Date(y, targetMonth-1, targetDay)));
+  }
+  const sameDayRes = _gather(sameDayDays);
+  let medianSameDay = null;
+  if (sameDayRes.adrObs.length >= 3){
+    const arr = sameDayRes.adrObs.slice().sort(function(a,b){return a-b;});
+    medianSameDay = arr[Math.floor(arr.length/2)];
+  }
+
+  // === Method 2: Weekday+Month (logica originale) ===
+  const targetDays = new Set();
+  for (const y of yearsToCheck){
+    const monthEnd = new Date(y, targetMonth, 0);
+    for (let d = new Date(y, targetMonth-1, 1); d <= monthEnd; d.setDate(d.getDate()+1)){
+      if (d.getDay() === targetDow) targetDays.add(ymd(d));
+    }
+  }
+  if (targetDays.size === 0){
+    return { medianADR: medianSameDay, medianRN: null, nObs: medianSameDay != null ? sameDayRes.adrObs.length : 0, fallbackUsed: medianSameDay != null ? 'dayMatch' : 'none' };
+  }
+  let dowRes = _gather(targetDays);
   let fallbackUsed = 'none';
-  if (result.adrObs.length < 3){
+  if (dowRes.adrObs.length < 3){
     const wideDays = new Set();
     for (const y of yearsToCheck){
       const me = new Date(y, targetMonth, 0);
@@ -6155,30 +6340,130 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
         wideDays.add(ymd(d));
       }
     }
-    result = _gather(wideDays);
+    dowRes = _gather(wideDays);
     fallbackUsed = 'monthWide';
   }
-  if (result.adrObs.length === 0){
+  let medianDow = null;
+  if (dowRes.adrObs.length > 0){
+    const arr = dowRes.adrObs.slice().sort(function(a,b){return a-b;});
+    medianDow = arr[Math.floor(arr.length/2)];
+  }
+
+  // === MAX between same-day and weekday+month ===
+  // Catturo il segnale più alto: o il giorno è speciale (NYE/festa) o il weekday+mese è alto.
+  // Se manca una delle due, uso l'altra. Se mancano entrambe, null.
+  let finalMedian = null, methodUsed = 'none';
+  if (medianSameDay != null && medianDow != null){
+    if (medianSameDay >= medianDow){ finalMedian = medianSameDay; methodUsed = 'dayMatch'; }
+    else { finalMedian = medianDow; methodUsed = fallbackUsed === 'monthWide' ? 'monthWide' : 'weekday'; }
+  } else if (medianSameDay != null){
+    finalMedian = medianSameDay; methodUsed = 'dayMatch';
+  } else if (medianDow != null){
+    finalMedian = medianDow; methodUsed = fallbackUsed === 'monthWide' ? 'monthWide' : 'weekday';
+  }
+
+  if (finalMedian == null){
     return { medianADR: null, medianRN: null, nObs: 0, fallbackUsed: fallbackUsed };
   }
-  const adrs = result.adrObs.slice().sort(function(a,b){return a-b;});
-  const medianADR = adrs[Math.floor(adrs.length/2)];
-  const rnVals = Object.values(result.rnByDay).sort(function(a,b){return a-b;});
+
+  // Stat finali: uso il dataset del metodo vincente
+  const winningObs = (methodUsed === 'dayMatch') ? sameDayRes.adrObs : dowRes.adrObs;
+  const winningRnByDay = (methodUsed === 'dayMatch') ? sameDayRes.rnByDay : dowRes.rnByDay;
+  const adrs = winningObs.slice().sort(function(a,b){return a-b;});
+  const rnVals = Object.values(winningRnByDay).sort(function(a,b){return a-b;});
   const medianRN = rnVals.length > 0 ? rnVals[Math.floor(rnVals.length/2)] : 0;
   const _dowNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const _monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
-  const setDesc = (fallbackUsed === 'monthWide')
-    ? ('all days of ' + _monthNames[targetMonth] + ' 2024+2025')
-    : ('every ' + _dowNames[targetDow] + ' of ' + _monthNames[targetMonth] + ' 2024+2025');
+  let setDesc;
+  if (methodUsed === 'dayMatch') setDesc = (targetDay + ' ' + _monthNames[targetMonth] + ' 2024+2025 (same-day match)');
+  else if (methodUsed === 'monthWide') setDesc = ('all days of ' + _monthNames[targetMonth] + ' 2024+2025');
+  else setDesc = ('every ' + _dowNames[targetDow] + ' of ' + _monthNames[targetMonth] + ' 2024+2025');
+
   return {
-    medianADR: medianADR, medianRN: medianRN, nObs: result.adrObs.length, fallbackUsed: fallbackUsed,
+    medianADR: finalMedian, medianRN: medianRN, nObs: winningObs.length, fallbackUsed: methodUsed,
     adrMin: adrs.length ? Math.round(adrs[0]) : null,
     adrMax: adrs.length ? Math.round(adrs[adrs.length-1]) : null,
     setDesc: setDesc,
     dowName: _dowNames[targetDow],
-    monthName: _monthNames[targetMonth]
+    monthName: _monthNames[targetMonth],
+    // Diagnostica per il modal/tooltip
+    _medianSameDay: medianSameDay != null ? Math.round(medianSameDay) : null,
+    _nObsSameDay: sameDayRes.adrObs.length,
+    _medianDow: medianDow != null ? Math.round(medianDow) : null,
+    _nObsDow: dowRes.adrObs.length,
+    _dowFallback: fallbackUsed
   };
 }
+
+/* ===========================================================================
+   Anchor Mensile — calcola l'ADR vero (totRev_BeddyEq / totRN) del baseRT
+   per il mese di soggiorno, sui dati degli ultimi 2 anni LY.
+   Sostituisce l'Anchor Price annuale (fp_getBasePrice) come guard-rail ±50%
+   del Base Price. Se non ci sono booking validi nel mese LY → fallback all'Anchor
+   Price annuale dalla tab RMES.
+   Cache: chiave structKey|month (invalidata a ogni loadData via _MONTHLY_ANCHOR_CACHE = {}).
+   =========================================================================== */
+let _MONTHLY_ANCHOR_CACHE = {};
+function fp_computeMonthlyAnchor(structKey, month){
+  if (!month || month < 1 || month > 12) return null;
+  const baseRT = (CFG.structures[structKey] && CFG.structures[structKey].baseRT) || null;
+  if (!baseRT) return null;
+  const key = structKey + '|' + month;
+  if (_MONTHLY_ANCHOR_CACHE[key] !== undefined) return _MONTHLY_ANCHOR_CACHE[key];
+  // Ultimi 2 anni LY relativi all'anno corrente del sistema
+  const todayY = (typeof TODAY !== 'undefined' ? TODAY : new Date()).getFullYear();
+  const yearsLY = [todayY - 1, todayY - 2];  // es. nel 2026 → [2025, 2024]
+  const structName = (typeof fp_structName === 'function') ? fp_structName(structKey) : structKey;
+  const channelMk = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups() : { expedia: 17, booking: 13, airbnb: 10 };
+  let totRevBeddyEq = 0, totRn = 0, nBookings = 0;
+  for (const b of BOOKINGS){
+    if (b.cancelled) continue;
+    if (b.struct !== structName) continue;
+    if (b.room !== baseRT) continue;
+    if (!b.dIn || !b.dOut) continue;
+    // Allocate by stay-month: la quota di RN che cadono nel mese-anno target
+    for (let dt = new Date(b.dIn); dt < b.dOut; dt.setDate(dt.getDate()+1)){
+      const yy = dt.getFullYear(), mm = dt.getMonth()+1;
+      if (mm !== month) continue;
+      if (!yearsLY.includes(yy)) continue;
+      // Scorporo OTA markup (canale normalizzato)
+      const canale = (typeof normCanale === 'function') ? normCanale(b.canale) : (b.canale || '');
+      let markup = 0;
+      const cLow = (canale || '').toLowerCase();
+      if (cLow.indexOf('expedia') >= 0) markup = channelMk.expedia;
+      else if (cLow.indexOf('booking') >= 0) markup = channelMk.booking;
+      else if (cLow.indexOf('airbnb') >= 0 || cLow.indexOf('vrbo') >= 0) markup = channelMk.airbnb;
+      const revPerNightBeddy = (b.revPerNight || 0) / (1 + markup/100);
+      totRevBeddyEq += revPerNightBeddy;
+      totRn += 1;
+    }
+    if (b.struct === structName && b.room === baseRT) nBookings++;
+  }
+  let result;
+  if (totRn > 0){
+    const adrTrue = totRevBeddyEq / totRn;
+    result = {
+      anchor: Math.round(adrTrue),
+      source: 'ly_history',
+      nRn: totRn,
+      totRevBeddyEq: Math.round(totRevBeddyEq),
+      yearsUsed: yearsLY.slice()
+    };
+  } else {
+    // Fallback: Anchor annuale dalla tab RMES
+    const annualAnchor = (typeof fp_getBasePrice === 'function') ? fp_getBasePrice(structKey) : 0;
+    result = {
+      anchor: annualAnchor,
+      source: 'annual_fallback',
+      nRn: 0,
+      totRevBeddyEq: 0,
+      yearsUsed: yearsLY.slice()
+    };
+  }
+  _MONTHLY_ANCHOR_CACHE[key] = result;
+  return result;
+}
+
 /* 3.5: Curva booking window per struttura */
 let _FP_BOOKING_CURVE_CACHE = {};
 function fp_computeBookingCurve(structKey){
@@ -7492,9 +7777,9 @@ function fp_renderFoundationConfigBox(structKey){
   h += '</div>';
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓑ Base, Floor, OTA markup, Elasticity <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub"><b>Anchor Price</b>: the annual "fair" price (net Beddy_eq), used as a guard-rail in the Base Price calculation (the final Base never drifts more than ±50% from this Anchor). Default Firenze 220 / Condotta 280 / Alfani 270 / David\'s 145. <b>Floor</b>: the absolute minimum below which the Base Price never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. <b>Price elasticity</b>: the estimate used in override simulations (RMES modal). E.g. 1.0 = if I lower the price -10%, I sell +10% RN. Default 1.0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
+  h += '<div class="panel-sub"><b>Annual Anchor Price</b>: a fallback value (net Beddy_eq) used as guard-rail of the Base Price <b>only when LY data for the target month is missing</b>. In normal conditions the guard-rail uses the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month, computed dynamically from the last 2 years. Default Firenze 220 / Condotta 280 / Alfani 270 / David\'s 145. <b>Floor</b>: the absolute minimum below which the Base Price never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. <b>Price elasticity</b>: the estimate used in override simulations (RMES modal). E.g. 1.0 = if I lower the price -10%, I sell +10% RN. Default 1.0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">';
-  h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#7a4f1c">Anchor Price</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
+  h += '<label style="font-size:12px;color:var(--ink-2)" title="Used as guard-rail only when LY data for the target month is missing. Normally the Monthly Anchor (computed from last 2 years data) is used instead."><b style="color:#7a4f1c">Annual Anchor (fallback)</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)"><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="10" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#3a6b6b">Markup Expedia/altri</b>: <input type="number" id="fp-mk-expedia" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #3a6b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef6f6"> %</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Booking.com markup for channel history"><b style="color:#1e4a6b">Markup Booking</b>: <input type="number" id="fp-mk-booking" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #1e4a6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef4fa"> %</label>';

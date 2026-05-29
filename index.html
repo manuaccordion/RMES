@@ -804,7 +804,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   <nav class="nav" role="tablist">
     <button class="tab active" data-tab="big"><span class="num">★</span>Big Picture</button>
     <button class="tab" data-tab="sell"><span class="num">1</span>Sell Strategy</button>
-    <button class="tab" data-tab="otb" style="display:none"><span class="num">2</span>Overview (legacy)</button>
+    <button class="tab" data-tab="otb" style="display:none"><span class="num">2</span>Overview (alt)</button>
     <button class="tab" data-tab="fcst"><span class="num">2</span>Overview</button>
     <button class="tab" data-tab="hist" style="display:none"><span class="num">5</span>Historical Data</button>
     <button class="tab" data-tab="pk"><span class="num">3</span>Pickup Matrix</button>
@@ -1540,7 +1540,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <div style="margin-top:14px;padding:12px 14px;background:#fafaf8;border-left:3px solid #c4823b;font-size:13px;line-height:1.6">
           <p style="margin:0 0 8px 0"><b>How RMES decides what to suggest (the "in line" rule)</b></p>
-          <p style="margin:0 0 8px 0">RMES <b>always</b> computes the target price on the <b>structural Base Price</b>, never on your override or your last accept. This way the engine has a stable reference and cannot drift down (or up) in a loop just because you set a low (or high) price manually. Two guard-rails are always active: the Base Price stays within <b>±50% of the Anchor Price</b>, and nothing can ever drop below the <b>Floor Rate</b>.</p>
+          <p style="margin:0 0 8px 0">RMES <b>always</b> computes the target price on the <b>structural Base Price</b>, never on your override or your last accept. This way the engine has a stable reference and cannot drift down (or up) in a loop just because you set a low (or high) price manually. Two guard-rails are always active: the Base Price stays within <b>±50% of the Monthly Anchor</b> (= true ADR LY of the base RT for that month), and nothing can ever drop below the <b>Floor Rate</b>.</p>
           <p style="margin:0 0 8px 0">After computing the target, RMES compares it with the price you currently have loaded (the <b>Last update</b>) and decides whether to <b>insist</b> or <b>stay silent</b>:</p>
           <ul style="margin:6px 0 8px 18px">
             <li><b>Insists</b> (shows ↓ €target or ↑ €target with a ✓ button) — your active price is on the "wrong side" of the target. The market signal is still calling for the move.</li>
@@ -1559,7 +1559,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li>You override 🖋 with €230 → Last update becomes <b>🖋 €230</b> in blue. The RMES target stays €260 (computed on Base €283, not on your override). Since you have already lowered past the target (230 ≤ 260) and the engine wanted to go down, the cell shows <b>✓ in line</b>. RMES will not insist to lower further — your decision is downstream of its suggestion.</li>
             <li>You override 🖋 with €300 → Last update becomes <b>🖋 €300</b> in blue. The target is still €260 (direction: down). Your override €300 is above the target, so RMES still wants you to lower. The cell shows <b>↓ €260</b> with a tooltip explaining "your override is above the target". You decide whether to follow or to keep your €300.</li>
           </ol>
-          <p style="margin:0"><b>Why this design</b>: the target depends only on the market and the structural Base Price — never on your past decisions. This avoids the "loop" risk (if RMES suggested based on your last override, after a few iterations it could drift very far). The Anchor ±50% cap and the Floor Rate make sure the target stays in a sane range whatever the market does.</p>
+          <p style="margin:0"><b>Why this design</b>: the target depends only on the market and the structural Base Price — never on your past decisions. This avoids the "loop" risk (if RMES suggested based on your last override, after a few iterations it could drift very far). The Monthly Anchor ±50% band and the Floor Rate make sure the target stays in a sane range whatever the market does.</p>
         </div>
 
         <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12px"><b>How to read a row at a glance.</b> Look first at the <b>Last update</b> column to know the price active right now (Base Price by default, accepted ✓, or override 🖋). Then look at the <b>RMES</b> column for the engine's verdict: either a target to consider (↓/↑) or "✓ in line" if your decision is already in tune.</p>
@@ -1678,7 +1678,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li><b>Base Price</b> — the structural fair price for that day (built once from history + market + the property anchor). It is the default active price unless you act.</li>
             <li><b>RMES suggestion</b> — the daily target, computed as <code>Base Price × Composite × (1 + LMF%) × Event Factor</code>, where <b>Composite</b> is the weighted average of the 4 RMES factors. RMES <b>compares</b> the target to the price you currently have loaded and either insists (↓/↑) or shows ✓ in line.</li>
           </ol>
-          <p style="margin:0;font-size:13px;color:#666">The final price is always bounded by the <b>Floor Rate</b> (hard minimum) and the Base Price is bounded by ±50% of the <b>Anchor Price</b> (sanity rail). There is <b>no ±20% cap</b> anymore — the only lower brake is the Floor.</p>
+          <p style="margin:0;font-size:13px;color:#666">The final price is always bounded by the <b>Floor Rate</b> (hard minimum) and the Base Price stays within <b>±50% of the Monthly Anchor</b> (sanity rail = true ADR LY of the base RT for that month). The only mechanism that can lower the price close-in is the LMF.</p>
         </div>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">Block ① — Weights of the 4 RMES factors</h4>
@@ -1754,7 +1754,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <div style="margin:14px 0;padding:12px 14px;background:#fff5f5;border-left:3px solid #a83b3b;font-size:13px;line-height:1.65">
           <p style="margin:0 0 6px 0;font-weight:700;color:#a83b3b">🚨 If you see "⚠ Floor" often on the RMES suggestion</p>
-          <p style="margin:0 0 6px 0">The ⚠ icon means the suggested price hit the <b>Floor Rate</b> and was clamped to it. Without the old ±20% cap, the composite can pull the price very low when many factors push down at once (e.g. Pace −22% + Online −50% + Demand −10% = composite ×0.79; on a €200 Base this gives €158, possibly below the €150 floor for some properties).</p>
+          <p style="margin:0 0 6px 0">The ⚠ icon means the suggested price hit the <b>Floor Rate</b> and was clamped to it. The composite can pull the price low when many factors push down at once (e.g. Pace −22% + Online −50% + Demand −10% = composite ×0.79; on a €200 Base this gives €158, possibly below the €150 floor for some properties), and the Floor catches it.</p>
           <p style="margin:0 0 6px 0">If you see ⚠ Floor on many days for a property, the typical fixes are:</p>
           <ul style="margin:0 0 0 18px;font-size:12.5px">
             <li><b>Raise the Floor Rate</b> if you don't actually want to sell that low. The Floor is the hard minimum you accept for that property.</li>
@@ -1779,37 +1779,62 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">⚡ Base Price block — the structural fair price for the day</h4>
         <p>The <b>Base Price</b> is the structural starting price the RMES suggestion sits on top of. It is computed <b>once</b> per stay-date and then <b>frozen</b> (read-only). RMES never recomputes it — it can only suggest a target above or below.</p>
-        <p>The Base Price is computed in <b>5 steps</b>, in this order:</p>
+        <p>The Base Price is computed in <b>4 steps</b>, in this order:</p>
         <ol style="margin:6px 0 8px 18px">
-          <li><b>Historical anchor (LY median ADR)</b> — for the target date the system takes every day with the <b>same day-of-week and the same month</b> across the last two years (2024 + 2025), collects the ADR actually earned <b>on the base room type only</b> on those days, and takes the <b>median</b> (robust to one-off outliers). Two things to know: (a) every booking is counted <b>net of OTA markup</b> — Booking/Expedia/Airbnb prices are divided by their markup so all channels are compared in Beddy-equivalent, while direct/Beddy/Krossbooking bookings are used as-is; (b) <b>"obs" counts bookings (room-stays), not days</b> — a single day can hold several bookings (one per occupied room), so the number is normally higher than the number of matching days. If fewer than 3 bookings exist, it widens to the <b>whole month</b>. So "LY ADR" is not a single day last year — it is the typical earned ADR for that weekday-and-month pattern, on the base room type, in Beddy space.</li>
-          <li><b>× target growth</b> — anchor multiplied by (1 + the month's target growth %). Default +5% across all months.</li>
-          <li><b>Expedia Goal Value cap</b> — the result is capped at the <b>Goal Value</b> (weighted compset price WITH per-competitor offsets = your desired online positioning). The Base Price can <b>never exceed</b> the Goal Value.</li>
-          <li><b>Anchor guard-rail</b> — bounded within <b>±50% of the annual Anchor Price</b>, to avoid wild swings whatever the history says.</li>
+          <li><b>Historical ADR (LY median, base room type)</b> — for the target date the system computes <b>two medians</b> and takes the <b>higher of the two</b>:
+            <ul style="margin:4px 0 4px 18px;font-size:12.5px">
+              <li><b>Method 1 — Same-day-LY</b>: same day-and-month across the last two years (e.g. for 31/12/2026 → look at 31/12/2024 + 31/12/2025). Requires ≥3 bookings to be considered. Catches the premium of fixed special days (NYE, 15/8, holidays) that don't show up well in a weekday average.</li>
+              <li><b>Method 2 — Weekday-and-month</b>: same day-of-week and same month, last two years (e.g. for a Thursday in May → all Thursdays of May 2024+2025). Wider sample, smooths short-term noise. If fewer than 3 bookings on the exact weekday → widens to <b>all days of the month</b>.</li>
+            </ul>
+            The system then uses <b>max(Method 1, Method 2)</b>. If only one is available, it uses that one. The result is the median of the winning method, taking the median of the bookings (not days) in that subset — robust to one-off outliers. Every booking is counted <b>net of OTA markup</b> (Booking/Expedia/Airbnb divided by their markup, Direct/Beddy as-is) so all channels are compared in Beddy-equivalent. The Export Pricing tab shows both medians and which one won.
+          </li>
+          <li><b>× target growth</b> — anchor multiplied by (1 + the month's target growth %). Default +5% across all months, configurable in the RMES tab.</li>
+          <li><b>Expedia Goal Value cap (with sanity check)</b> — the result is capped at the <b>Goal Value</b> (weighted compset price WITH per-competitor offsets = your desired online positioning). The Base Price can <b>never exceed</b> the Goal Value <i>when the Goal Value is reliable</i>. Reliability has 2 requirements:
+            <ul style="margin:4px 0 4px 18px;font-size:12.5px">
+              <li><b>At least 2 competitors visible</b> on Expedia for that day. With only 1 competitor the Goal Value is statistical noise (could be a leak, an outlier, or a single offer at an unusual price), not a real online-positioning signal.</li>
+              <li><b>Goal Value ≥ Floor Rate</b> of the property. A Goal below the property's hard minimum cannot be a sensible target — it almost always means the visible competitor prices are anomalously low (e.g. minimum-stay leaks).</li>
+            </ul>
+            <p style="margin:4px 0">When either check fails, the <b>cap is skipped for that day</b> and the Base Price flows through to the Monthly Anchor guard-rail. In the Export Pricing breakdown the Goal Value cell shows ⚠ next to the price; the tooltip explains the reason ("only 1 competitor visible" or "Goal Value below Floor Rate").</p>
+          </li>
+          <li><b>Monthly Anchor guard-rail (±50%)</b> — bounded within ±50% of the <b>Monthly Anchor</b>, to avoid wild swings whatever the history says. <i>See next section for how the Monthly Anchor is built.</i></li>
           <li><b>Floor</b> — never below the property <b>Floor Rate</b> (the hard minimum).</li>
         </ol>
-        <p><b>70% Anchor protection.</b> Even when history is widened to the whole month, the median ADR might still be very low or null (e.g. a property that opened recently, or a weekday with few past observations). In that case the system uses <b>70% of the Anchor Price</b> as the minimum starting ADR — for Firenze that's 0.70 × 220 = <b>€154</b>; for Condotta 0.70 × 280 = €196; for Alfani 0.70 × 270 = €189; for Enis 0.70 × 145 = €101. Look for the <b>⬆70%</b> tag in the ADR used column in the Export Pricing → Base Price breakdown to see which days were lifted this way.</p>
+
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">📊 Monthly Anchor — the new dynamic guard-rail</h4>
+        <p>The <b>Monthly Anchor</b> is the dynamic guard-rail of the Base Price. It is recomputed <b>per property × per month</b>:</p>
+        <ol style="margin:6px 0 8px 18px;font-size:13px">
+          <li>Take every booking confirmed in the <b>last 2 years</b> (e.g. for 2026 → use 2024 + 2025).</li>
+          <li>Keep only stay-dates that fall in the <b>target month</b> (e.g. July).</li>
+          <li>Keep only bookings on the <b>base room type</b> (Firenze: Camera Matrimoniale Deluxe · Condotta: Bilocale · Alfani: Classic · Enis: Senape).</li>
+          <li>Convert every booking revenue <b>net of OTA markup</b> (÷1.17 Expedia, ÷1.13 Booking, ÷1.10 Airbnb; Direct/Beddy as-is) — same conversion used elsewhere.</li>
+          <li>Monthly Anchor = <b>total Beddy-eq revenue / total room-nights</b>. This is the <b>true ADR</b> earned on that base RT in that month over the last 2 years.</li>
+        </ol>
+        <p>The Base Price ±50% guard-rail then uses this Monthly Anchor as center: for example if Firenze's Monthly Anchor in July is €280, the Base Price for any July day stays within <b>€140 – €420</b>.</p>
+        <p><b>Why this design</b>: the band of the Base Price tracks the actual seasonality of the property. <b>High-season months get more head-room</b> to push up, <b>low-season months get a tighter ceiling</b> — the Base Price becomes naturally <b>seasonal</b>.</p>
+        <p><b>Fallback if no LY data for the month</b>: if zero bookings on the base RT existed in the target month across both LY years (e.g. a brand-new property, or a closed month), the system falls back to the <b>annual Anchor Price</b> configured in the RMES tab. The Export Pricing → Base Price breakdown will show the source explicitly: "Monthly Anchor (LY history, N RN)" or "Monthly Anchor (annual fallback)".</p>
 
         <div style="margin:10px 0;padding:12px 14px;background:#fafaf8;border-left:3px solid #c4823b;font-size:12.5px;line-height:1.65">
           <p style="margin:0 0 6px 0"><b>Example — Firenze Suite, 28/05/2026 (Thursday, May).</b></p>
+          <p style="margin:0 0 6px 0"><b>First, the Monthly Anchor for May:</b> total Beddy-eq revenue of Camera Matrimoniale Deluxe bookings in May 2024 + May 2025, divided by total RN. Suppose result = <b>€255</b> (= the ADR Firenze actually earned in May on that RT, last 2 years, net of OTA fees).</p>
           <ol style="margin:0 0 0 18px">
-            <li>Look at all Thursdays in May 2024 + May 2025 → collect ADR on "Camera Matrimoniale Deluxe" only → take the median across all room-stays (net of OTA markup). Suppose result = <b>€269</b>.</li>
-            <li>Target growth for May = +5% → 269 × 1.05 = <b>€282.45</b>.</li>
-            <li>Expedia Goal Value for that date = <b>€310</b> (weighted compset with offsets, positioning goal). 282.45 &lt; 310 → cap not triggered. Stays €282.45.</li>
-            <li>Anchor Price for Firenze = €220. ±50% range = [110, 330]. 282.45 is inside → guard-rail not triggered.</li>
-            <li>Floor Rate for Firenze = €150. 282.45 &gt; 150 → floor not triggered.</li>
+            <li><b>LY median ADR Thursdays May</b> across May 2024 + May 2025, base RT only, net of OTA → median = <b>€269</b>.</li>
+            <li><b>Target growth May = +5%</b> → 269 × 1.05 = <b>€282.45</b>.</li>
+            <li><b>Expedia Goal Value</b> for that date = €310 (weighted compset with offsets). 282.45 &lt; 310 → cap not triggered. Stays €282.45.</li>
+            <li><b>Monthly Anchor guard-rail</b>: Anchor May = €255 → ±50% range = [127.50, 382.50]. 282.45 is inside → guard-rail not triggered.</li>
+            <li><b>Floor Rate</b> = €150. 282.45 &gt; 150 → floor not triggered.</li>
           </ol>
-          <p style="margin:6px 0 0 0">Final Base Price = <b>€283</b> (rounded). This number is now frozen for 28/05/2026 and used as the reference for every RMES calculation that day, until you manually clear the freeze.</p>
+          <p style="margin:6px 0 0 0">Final Base Price = <b>€282</b> (rounded). This number is now frozen for 28/05/2026 and used as the reference for every RMES calculation that day, until you manually clear the freeze.</p>
         </div>
 
         <p>Configurable in the ⚡ Base Price block of the RMES tab:</p>
         <ul style="margin:6px 0 6px 18px;font-size:13px">
-          <li><b>Ⓑ Anchor Price</b> — annual single number per property (Firenze 220 · Condotta 280 · Alfani 270 · Enis 145). This is the "fair year" price, used only as a guard-rail. Changing it does <b>not</b> recompute already-frozen Base Prices.</li>
-          <li><b>Target growth %</b> per month — applied at step 2. Default +5% all months.</li>
+          <li><b>Ⓑ Annual Anchor Price (fallback)</b> — annual single number per property (Firenze 220 · Condotta 280 · Alfani 270 · Enis 145). Used as guard-rail <b>only when LY data for the target month is missing</b>. In normal conditions the Monthly Anchor (computed from data) is used instead.</li>
+          <li><b>Target growth %</b> per month — applied at Step 2. Default +5% all months.</li>
           <li><b>Floor Rate</b> — absolute minimum. Default Firenze 150 · Condotta 200 · Alfani 200 · Enis 100.</li>
-          <li><b>OTA markup</b> — % OTAs add to the net Beddy-equivalent price. Used in 3 places: (1) converting OTA booking revenue back to Beddy_eq in step 1; (2) converting My Expedia → Beddy_eq for factor C · Online Pricing; (3) computing the compset references.</li>
+          <li><b>OTA markup</b> — % OTAs add to the net Beddy-equivalent price. Used in 3 places: (1) converting OTA booking revenue back to Beddy_eq in Step 1 AND in the Monthly Anchor calculation; (2) converting My Expedia → Beddy_eq for factor C · Online Pricing; (3) computing the compset references.</li>
           <li><b>LMF matrix</b> — Last-Minute Factor (see next section).</li>
         </ul>
-        <p>You can inspect the full step-by-step build-up for every day and property in the <b>Export Pricing</b> tab → ⚡ Base Price breakdown section, and download it to CSV.</p>
+        <p>You can inspect the full step-by-step build-up for every day and property — including the Monthly Anchor used and its source (LY data or annual fallback) — in the <b>Export Pricing</b> tab → ⚡ Base Price breakdown section, and download it to CSV.</p>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">⏰ LMF — Last-Minute Factor</h4>
         <p>An additional <b>± %</b> applied <b>after</b> the Composite, depending on (a) the current property OCC of the day and (b) the days remaining to arrival. It is the <b>only mechanism that can lower the price close-in</b> — Daily Pickup never goes negative, so a still-empty day at −3 days from arrival only reacts thanks to LMF.</p>
@@ -1885,17 +1910,39 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p><b>Columns</b>:</p>
         <ul style="margin:6px 0 6px 18px;font-size:13px">
           <li><b>Property · Date · DoW</b> — identifier.</li>
-          <li><b>LY median ADR</b> — median ADR earned (net of OTA markup) on the base room type, same weekday-and-month last year (2024 + 2025).</li>
+          <li><b>LY median ADR</b> — winning median between two methods (same-day-LY and weekday-and-month, last 2 years). The system uses the higher of the two. Hover the cell to see both medians and which one won.</li>
           <li><b>obs</b> — count of bookings (room-stays, not days) used. <b>*</b> after the number = window widened to the whole month because fewer than 3 bookings matched the exact weekday.</li>
-          <li><b>ADR used</b> — the value plugged into Step 1. <b>⬆70%</b> = the anchor was lifted up to 70% of that property's Anchor Price because LY history was too thin (e.g. Firenze Anchor €220 → floor of €154).</li>
+          <li><b>ADR used</b> — the value plugged into Step 1. <b>(anchor)</b> tag = no LY history available for this weekday/month, so the Monthly Anchor is used as starting ADR.</li>
           <li><b>× growth</b> — monthly target growth % applied at Step 2.</li>
           <li><b>after growth</b> — ADR used × (1 + growth%).</li>
-          <li><b>Goal Value cap</b> — the weighted compset price with offsets (your desired online positioning). <b>red ✓cap</b> = "after growth" was above your Goal Value, so it was capped down to the Goal Value.</li>
-          <li><b>Anchor ±50%</b> — ±50% range around the annual Anchor Price. <b>↓max</b> = capped at +50%; <b>↑min</b> = lifted to −50%. This guard-rail rarely triggers but protects against extreme history.</li>
+          <li><b>Goal Value cap</b> — weighted compset price with offsets (your desired online positioning). <b>red ✓cap</b> = "after growth" was above Goal Value, capped down. <b>⚠</b> = cap disabled for sanity (fewer than 2 competitors visible, or Goal &lt; Floor); the Base Price flows through to the next step. Hover the cell for the exact reason.</li>
+          <li><b>Anchor ±50%</b> — ±50% range around the <b>Monthly Anchor</b> (= true ADR LY of the base RT for that month, 2 years aggregated; fallback to annual Anchor Price if no data). <b>↓max</b> = capped at +50%; <b>↑min</b> = lifted to −50%. Hover the cell to see the Monthly Anchor used and its source (LY data with N RN, or annual fallback).</li>
           <li><b>Floor</b> — the property Floor Rate (hard minimum). <b>✓</b> = the Floor lifted the price (final &lt; Floor before clamping).</li>
           <li><b>→ Base Price</b> — the final number, frozen and stored.</li>
+          <li><b>⚑ Flags</b> — special situations worth noting (🔴 alert / 🟡 warn / 🔵 info). · (centered) = no flag, clean run. Hover the icon to read all flags for the day with the explanation. See dedicated section below.</li>
         </ul>
-        <p style="font-size:12.5px"><b>⬇ Export Base Price CSV</b> downloads every column for every day in the selected range.</p>
+        <p style="font-size:12.5px"><b>⬇ Export Base Price CSV</b> downloads every column for every day in the selected range, including the flag codes.</p>
+
+        <h4 style="margin:18px 0 6px 0;color:#5a3a14">⚑ Flag system — special-situation tags</h4>
+        <p>Some days produce a Base Price that is mathematically correct but rests on data worth a second look. The flag system tags these days so you can spot them at a glance and decide whether to act (manually override) or trust the engine. <b>Flags don't change the calculation</b> — they are informational only.</p>
+        <p>Three severity levels:</p>
+        <ul style="margin:6px 0 6px 18px;font-size:13px">
+          <li>🔴 <b>alert</b> — something is off and the number may need manual review.</li>
+          <li>🟡 <b>warn</b> — situation worth noting, the number is still usable.</li>
+          <li>🔵 <b>info</b> — normal but uncommon situation, here for transparency.</li>
+        </ul>
+        <p style="margin-top:8px"><b>List of flag types currently produced</b>:</p>
+        <ul style="margin:6px 0 6px 18px;font-size:12.5px;line-height:1.65">
+          <li><b>small_sample_dayMatch</b> 🟡 — same-day-LY won with only 2-3 bookings while the weekday-and-month method had ≥15 bookings. The small sample may be noisier — typical on special-day candidates (NYE, Ferragosto, holidays). Worth reviewing by hand to confirm the premium is real.</li>
+          <li><b>lyADR_far_above_monthlyAnchor</b> 🔵 — LY ADR is ≥ 2× the Monthly Anchor. Typical of a single high-ADR weekday in an otherwise low-season month. The Monthly Anchor band (±50% of the seasonal average) may strangle the price.</li>
+          <li><b>lyADR_far_below_monthlyAnchor</b> 🟡 — LY ADR is &lt; 40% of the Monthly Anchor. Possible data quality issue: check the LY bookings for outliers on this weekday.</li>
+          <li><b>anchor_max_strangle</b> 🟡 — the Monthly Anchor MAX guard-rail cut the price by more than €30. Typical for special days (NYE, holidays) inside a low-season month: the high-ADR signal exists but the seasonal band limits how far above the seasonal average the Base Price can go. If you want to break free for that specific day, use a manual Base Price override.</li>
+          <li><b>lyADR_far_below_floor</b> 🔵 — LY ADR is &lt; 60% of the Floor Rate. The Floor protects: final Base = Floor. May indicate dirty historical data; usually fine.</li>
+          <li><b>adr_from_anchor</b> 🔵 — no LY bookings found for this date on the base RT. The Monthly Anchor is used directly as starting ADR. Very rare: typically for brand-new properties or closed months.</li>
+          <li><b>annual_anchor_fallback</b> 🔵 — no LY bookings for the month at all. Monthly Anchor falls back to the Annual Anchor Price configured in the RMES tab. Make sure that value is sensible.</li>
+          <li><b>goal_disabled</b> 🔵 — Goal Value cap disabled because the compset is unreliable (fewer than 2 competitors visible, or Goal &lt; Floor). The Base Price flows through to the Monthly Anchor guard-rail. Normal for low-coverage days; the cap will resume the next day a competitor comes back.</li>
+        </ul>
+        <p style="font-size:12.5px;color:#666"><b>Practical use</b>: at the start of a week, scroll the breakdown filtering for days with flags. Address the 🔴 alerts first, glance at the 🟡 warns, ignore the 🔵 info unless you want full transparency. The CSV export includes the <code>flags</code> column with the codes (semicolon-separated) for sorting/filtering in Excel.</p>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">💡 Section 2 — RMES breakdown</h4>
         <p>How each day's RMES suggestion is built, from the current reference (Last update) through the 4 factors, LMF, Event, to the final price. Only future dates (from today) — RMES doesn't make sense in the past. Header sticky, tooltips on every number.</p>
@@ -1954,8 +2001,10 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <dd style="margin:2px 0 8px 18px">The full close of last year. Different from STLY: Final LY is "what last year ended up as", STLY is "what was already on the books at this point last year".</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Base Price</dt>
           <dd style="margin:2px 0 8px 18px">Structural price per stay-date, frozen, computed once. Source of the RMES suggestion.</dd>
-          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Anchor Price</dt>
-          <dd style="margin:2px 0 8px 18px">Single annual reference number per property. The Base Price stays within ±50% of it.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Monthly Anchor</dt>
+          <dd style="margin:2px 0 8px 18px">True ADR earned on the base RT in a given month, computed from the last 2 years of bookings (net of OTA markup). Used as guard-rail: the Base Price stays within ±50% of the Monthly Anchor. One value per property × per month.</dd>
+          <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Annual Anchor Price (fallback)</dt>
+          <dd style="margin:2px 0 8px 18px">Single annual reference number per property (Firenze 220 · Condotta 280 · Alfani 270 · Enis 145). Used as guard-rail only when no LY booking data exists for the target month. Configurable in the RMES tab.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RMES delta</dt>
           <dd style="margin:2px 0 8px 18px">Today's adjustment on top of the Base Price, computed from the 4 factors (Daily Pickup, Pace Trend, Online Pricing, Demand Expedia) + LMF + Event Factor. The 4-factor composite is capped at ±total cap (default 30%); the final price is clamped to the Floor Rate.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">baseRT</dt>
