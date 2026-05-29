@@ -227,8 +227,9 @@ table.mkpi-sticky-table tbody td:first-child{
 table.mkpi-sticky-table tbody tr.mkpi-total td:first-child{
   background:#f7f5ef;
 }
-/* First cell of EACH header row: sticky on both axes (top + left) with higher z-index */
-table.mkpi-sticky-table thead tr th:first-child{
+/* First cell of FIRST header row (Month, rowspan=2): sticky on both axes (top + left) with higher z-index.
+   The second header row does NOT need a left-sticky cell because Month's rowspan covers it. */
+table.mkpi-sticky-table thead tr:first-child th:first-child{
   position:sticky;
   left:0;
   z-index:8;
