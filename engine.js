@@ -7478,6 +7478,22 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '<div style="font-size:10px;color:#aaa;margin-top:2px">OCC '+(_occCur*100).toFixed(0)+'% · '+_daysToArr+' days to arrival</div></div>';
         rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_lmfCol+'">'+(_lmfPct>=0?'+':'')+_lmfPct.toFixed(0)+'%</span>';
         rmesSection += '</div>';
+        // === Event Factor row ===
+        const _ymdNumEvent = td.getFullYear()*10000 + (td.getMonth()+1)*100 + td.getDate();
+        const _eventName = (typeof EVENTS !== 'undefined' && EVENTS[_ymdNumEvent]) ? EVENTS[_ymdNumEvent] : null;
+        const _eventBoostModal = (typeof _getEventBoost === 'function') ? _getEventBoost(_ymdNumEvent) : 1;
+        const _eventPct = (_eventBoostModal - 1) * 100;
+        const _eventCol = _eventPct > 0 ? '#1e6b4a' : (_eventPct < 0 ? '#a83b3b' : '#aaa');
+        const _eventLeftSub = _eventName
+          ? ('Event: <b style="color:#5a3a14">' + (typeof escapeHtml === 'function' ? escapeHtml(_eventName) : _eventName) + '</b>')
+          : 'No event configured for this date';
+        const _eventBg = _eventPct > 0 ? '#fff8eb' : '#fafafa';
+        const _eventBorder = _eventPct > 0 ? '1px solid #e5c699' : '1px solid #eee';
+        rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:'+_eventBg+';border:'+_eventBorder+';border-radius:4px;margin-bottom:10px;font-size:12px">';
+        rmesSection += '<div><span style="font-weight:600;color:#555">\u2728 Event Factor</span>';
+        rmesSection += '<div style="font-size:10px;color:#aaa;margin-top:2px">'+_eventLeftSub+'</div></div>';
+        rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_eventCol+'">'+(_eventPct>=0?'+':'')+_eventPct.toFixed(0)+'% (\u00d7'+_eventBoostModal.toFixed(3)+')</span>';
+        rmesSection += '</div>';
       }
       {
         const _floor = (typeof fp_getFloor === 'function') ? fp_getFloor(structKey) : null;
