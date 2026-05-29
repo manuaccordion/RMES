@@ -1706,15 +1706,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <p style="margin:0 0 6px 0">Formula: <code>weighted_pace_ratio = (10% × W1_now/W1_LY + 20% × W2_now/W2_LY + 30% × W3_now/W3_LY + 40% × W4_now/W4_LY)</code>. Then <code>raw_dev = weighted_pace_ratio − 1</code>.</p>
           <p style="margin:0 0 6px 0"><b>Decision states</b> (refines the raw signal with an OCC sanity check):</p>
           <ul style="margin:0 0 6px 18px;font-size:12.5px;color:#444">
-            <li><b>Tutto su</b> (ratio ≥ 1, both pace and OCC above LY): raise the price.</li>
-            <li><b>Tutto giù</b> (ratio &lt; 1, OCC also below LY): lower the price.</li>
-            <li><b>Ambiguo · freno 50%</b> (ratio &lt; 1 but OCC ≥ LY): the month is OK on occupancy but pace is slowing — apply only half of the negative signal. Brake softened.</li>
-            <li><b>Ambiguo · neutralized OCC90</b> (ratio &lt; 1 but the day's OCC is already ≥ 90%): no need to lower, demand is already there. Factor neutralized.</li>
+            <li><b>All up</b> (ratio ≥ 1, both pace and OCC above LY): raise the price.</li>
+            <li><b>All down</b> (ratio &lt; 1, OCC also below LY): lower the price.</li>
+            <li><b>Ambiguous · 50% brake</b> (ratio &lt; 1 but OCC ≥ LY): the month is OK on occupancy but pace is slowing — apply only half of the negative signal. Brake softened.</li>
+            <li><b>Ambiguous · neutralized OCC90</b> (ratio &lt; 1 but the day's OCC is already ≥ 90%): no need to lower, demand is already there. Factor neutralized.</li>
             <li><b>Annual fallback (property)</b>: no 4-week pace data for this exact month, but the property has an annual pace signal → that signal is used as proxy.</li>
             <li><b>Aggregate fallback (P̄)</b>: not even the annual property signal is available → use the <b>aggregate pace of the other 3 properties</b> (same Florence market). A small <b>P̄</b> badge appears in the RMES cell to flag this.</li>
-            <li><b>Neutralizzato — no data</b>: no pace data anywhere (property nor aggregate) → factor goes n/a, weight redistributed to the other 3 factors.</li>
+            <li><b>Neutralized — no data</b>: no pace data anywhere (property nor aggregate) → factor goes n/a, weight redistributed to the other 3 factors.</li>
           </ul>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, target month June 2026.</b> Pickup last 4 weeks: W1=2, W2=3, W3=5, W4=8 RN (total 18). Same 4 weeks LY: W1=4, W2=5, W3=6, W4=7 RN (total 22). Weighted now: 10%×2 + 20%×3 + 30%×5 + 40%×8 = 0.2 + 0.6 + 1.5 + 3.2 = 5.5. Weighted LY: 10%×4 + 20%×5 + 30%×6 + 40%×7 = 0.4 + 1.0 + 1.8 + 2.8 = 6.0. Ratio = 5.5 / 6.0 = 0.92 → raw dev = −8%. State = "tutto giù" (OCC also below LY) → factor = −8%. Applied to composite: 0.25 × −8% = −2 percentage points.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, target month June 2026.</b> Pickup last 4 weeks: W1=2, W2=3, W3=5, W4=8 RN (total 18). Same 4 weeks LY: W1=4, W2=5, W3=6, W4=7 RN (total 22). Weighted now: 10%×2 + 20%×3 + 30%×5 + 40%×8 = 0.2 + 0.6 + 1.5 + 3.2 = 5.5. Weighted LY: 10%×4 + 20%×5 + 30%×6 + 40%×7 = 0.4 + 1.0 + 1.8 + 2.8 = 6.0. Ratio = 5.5 / 6.0 = 0.92 → raw dev = −8%. State = "all down" (OCC also below LY) → factor = −8%. Applied to composite: 0.25 × −8% = −2 percentage points.</p>
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#ecf3ee;border-radius:6px;font-size:13px;line-height:1.65">
@@ -1855,7 +1855,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li>4 RMES factors today:
               <ul style="margin:4px 0 4px 14px">
                 <li>A · Daily Pickup: 3 bookings entered in the last 7 days, fill rate 100% → <b>+20%</b>. Weighted: 0.25 × 20% = +5 pp.</li>
-                <li>B · Pace Trend: ratio 0.92, state "tutto giù" → <b>−8%</b>. Weighted: 0.25 × −8% = −2 pp.</li>
+                <li>B · Pace Trend: ratio 0.92, state "all down" → <b>−8%</b>. Weighted: 0.25 × −8% = −2 pp.</li>
                 <li>C · Online Pricing: my Beddy_eq vs compset → <b>−20%</b>. Weighted: 0.25 × −20% = −5 pp.</li>
                 <li>D · Demand Expedia: +39%, clamped at +50% → <b>+39%</b>. Weighted: 0.25 × +39% = +9.75 pp.</li>
               </ul>
