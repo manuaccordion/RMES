@@ -42,7 +42,8 @@ const RMES_CLOUD = (function(){
     'rmes_channel_markup_v1',
     'rmes_elasticity_v1',
     'rmes_lastminute_factor_v1',
-    'rmes_foundation_overrides_v1'
+    'rmes_foundation_overrides_v1',
+    'notes_journal_v2'
   ];
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAJuFzabHO3O3XVM3DfeWNThB9Wy0jMkHA",
@@ -245,6 +246,12 @@ function rmesCloudOnRemoteUpdate(){
       if (CURRENT_TAB === 'sell' && typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
       else if (CURRENT_TAB === 'baseprice' && typeof renderBasePriceBreakdown === 'function') { renderBasePriceBreakdown(); if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown(); }
       else if (CURRENT_TAB === 'pri' && typeof renderRMESTab === 'function') renderRMESTab();
+    }
+    // Refresh notes UI (badge + panel se aperto) when notes change remotely
+    if (typeof updateNotesBadge === 'function') updateNotesBadge();
+    const notesPanel = document.getElementById('notes-panel');
+    if (notesPanel && notesPanel.classList.contains('open') && typeof renderNotesPanel === 'function' && typeof getCurrentNotesStruct === 'function'){
+      try { renderNotesPanel(getCurrentNotesStruct()); } catch(e){}
     }
   } catch(e){ console.warn('rmesCloudOnRemoteUpdate failed', e); }
 }
