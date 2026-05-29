@@ -4716,6 +4716,7 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
 function _bpComputeFlags(c){
   const flags = [];
   // F1 — Same-day-LY vince con campione molto piccolo contro DOW grande
+  // Segnale: premium day (NYE, Ferragosto, holiday) basato su pochi dati, da rivedere a mano
   if (c.lyFallback === 'dayMatch' && c.lyObsSameDay <= 3 && c.lyObsDow >= 15){
     flags.push({
       code: 'small_sample_dayMatch',
@@ -4723,17 +4724,19 @@ function _bpComputeFlags(c){
       message: 'The winning ADR (€'+Math.round(c.lyMedianSameDay)+') comes from only '+c.lyObsSameDay+' same-day-LY bookings while the weekday-and-month method had '+c.lyObsDow+' bookings (€'+Math.round(c.lyMedianDow)+'). The small same-day sample may be noisier; review by hand on special-day candidates (NYE, Ferragosto, holidays).'
     });
   }
-  // F2 — LY ADR molto sopra il Monthly Anchor (>2x): segnale anomalo (giorno premium dentro mese debole)
+  // F2 — LY ADR molto sopra il Monthly Anchor (>2x)
+  // Segnale: premium-day in low-season month — il Monthly Anchor MAX probabilmente strozzerà il prezzo
   if (c.lyMedianADR > 0 && c.monthlyAnchor > 0){
     const ratio = c.lyMedianADR / c.monthlyAnchor;
     if (ratio >= 2.0){
       flags.push({
         code: 'lyADR_far_above_monthlyAnchor',
-        severity: 'info',
-        message: 'LY ADR (€'+Math.round(c.lyMedianADR)+') is '+ratio.toFixed(1)+'x the Monthly Anchor (€'+c.monthlyAnchor+'). Premium-day signal inside a low-season month: the Monthly Anchor band may strangle the price (see Anchor max guard-rail below).'
+        severity: 'warn',
+        message: 'LY ADR (€'+Math.round(c.lyMedianADR)+') is '+ratio.toFixed(1)+'x the Monthly Anchor (€'+c.monthlyAnchor+'). Premium-day signal inside a low-season month. Consider a manual Base Price override if the day really sells at premium (the Monthly Anchor band may strangle the price).'
       });
     }
-    // F3 — LY ADR molto sotto il Monthly Anchor (<0.4x): probabili dati sporchi
+    // F3 — LY ADR molto sotto il Monthly Anchor (<0.4x)
+    // Segnale: probabili dati sporchi sulla baseRT in quel weekday
     if (ratio < 0.4 && c.lyMedianADR > 0){
       flags.push({
         code: 'lyADR_far_below_monthlyAnchor',
@@ -4743,43 +4746,13 @@ function _bpComputeFlags(c){
     }
   }
   // F4 — Monthly Anchor MAX strozza forte (>€30 cut)
+  // Segnale: il prezzo ADR storico è molto sopra il Monthly Anchor, il guard-rail taglia
+  // Potenziale opportunità persa — valuta override manuale per quel giorno
   if (c.guardRail === 'max' && c.afterGrowth - c.maxAnchor > 30){
     flags.push({
       code: 'anchor_max_strangle',
-      severity: 'warn',
-      message: 'The Monthly Anchor MAX guard-rail cut the price by €'+Math.round(c.afterGrowth - c.maxAnchor)+' (from €'+Math.round(c.afterGrowth)+' to €'+c.maxAnchor+'). The ADR for this day is much higher than the average for the month — typical for special days (NYE, holidays) inside a low-season month. The Monthly Anchor band represents the seasonal average and limits how far above it the Base Price can go.'
-    });
-  }
-  // F5 — LY ADR molto sotto Floor (<60% del floor): suggerisce dati ridondanti
-  if (c.lyMedianADR > 0 && c.lyMedianADR < c.floor * 0.6){
-    flags.push({
-      code: 'lyADR_far_below_floor',
-      severity: 'info',
-      message: 'LY ADR (€'+Math.round(c.lyMedianADR)+') is only '+((c.lyMedianADR/c.floor)*100).toFixed(0)+'% of the Floor Rate (€'+c.floor+'). The Floor protects: final Base = Floor.'
-    });
-  }
-  // F6 — ADR LY missing (uses Monthly Anchor as starting ADR)
-  if (c.adrUsedFromAnchor){
-    flags.push({
-      code: 'adr_from_anchor',
-      severity: 'info',
-      message: 'No LY bookings found for this date on the base RT. The Monthly Anchor (€'+c.monthlyAnchor+') is used directly as the starting ADR. Very rare situation: typically for brand-new properties or closed months.'
-    });
-  }
-  // F7 — Annual Anchor fallback used (no LY data per the month)
-  if (c.monthlyAnchorSource === 'annual_fallback'){
-    flags.push({
-      code: 'annual_anchor_fallback',
-      severity: 'info',
-      message: 'No LY bookings for this month at all — the Monthly Anchor falls back to the Annual Anchor Price (€'+c.monthlyAnchor+') configured in the RMES tab. Verify the Annual Anchor is set to a sensible value for this property.'
-    });
-  }
-  // F8 — Goal Value disabled (unreliable)
-  if (!c.goalReliable && c.goalUnreliableReason){
-    flags.push({
-      code: 'goal_disabled',
-      severity: 'info',
-      message: 'Goal Value cap DISABLED for this date — '+c.goalUnreliableReason+'. The Base Price flows directly to the Monthly Anchor guard-rail.'
+      severity: 'alert',
+      message: 'The Monthly Anchor MAX guard-rail cut the price by €'+Math.round(c.afterGrowth - c.maxAnchor)+' (from €'+Math.round(c.afterGrowth)+' to €'+c.maxAnchor+'). The ADR for this day is much higher than the seasonal average. If the day really sells at this premium, use a manual Base Price override to break free from the seasonal band.'
     });
   }
   return flags;
@@ -4992,7 +4965,7 @@ function renderBasePriceBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>LY median ADR</b> (Best-of-Two: max between same-day-LY and weekday-and-month-LY medians, 2024+2025, base room type, net of OTA markup) · <b>obs</b> (number of bookings/room-stays of the winning method) · <b>ADR used</b> (<b>(anchor)</b> tag = no LY history, Monthly Anchor used instead) · <b>× growth</b> · <b>after growth</b> · <b>Goal Value cap</b> (red ✓cap = capped down; ⚠ = cap disabled for sanity, fewer than 2 competitors visible or Goal &lt; Floor) · <b>Anchor ±50%</b> (↓max / ↑min = guard-rail acted, based on the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month) · <b>Floor</b> (✓ = floor applied) · <b>Base Price</b> · <b>⚑ Flags</b> (🔴 alert / 🟡 warn / 🔵 info — hover for details, · means no flag).';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>LY median ADR</b> (Best-of-Two: max between same-day-LY and weekday-and-month-LY medians, 2024+2025, base room type, net of OTA markup) · <b>obs</b> (number of bookings/room-stays of the winning method) · <b>ADR used</b> (<b>(anchor)</b> tag = no LY history, Monthly Anchor used instead) · <b>× growth</b> · <b>after growth</b> · <b>Goal Value cap</b> (red ✓cap = capped down; ⚠ = cap disabled for sanity, fewer than 2 competitors visible or Goal &lt; Floor) · <b>Anchor ±50%</b> (↓max / ↑min = guard-rail acted, based on the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month) · <b>Floor</b> (✓ = floor applied) · <b>Base Price</b> · <b>⚑ Flags</b> (🔴 alert = action needed / 🟡 warn = worth a glance; · = no flag).';
   h += '</div>';
   wrap.innerHTML = h;
 }

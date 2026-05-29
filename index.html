@@ -1919,30 +1919,26 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Anchor ±50%</b> — ±50% range around the <b>Monthly Anchor</b> (= true ADR LY of the base RT for that month, 2 years aggregated; fallback to annual Anchor Price if no data). <b>↓max</b> = capped at +50%; <b>↑min</b> = lifted to −50%. Hover the cell to see the Monthly Anchor used and its source (LY data with N RN, or annual fallback).</li>
           <li><b>Floor</b> — the property Floor Rate (hard minimum). <b>✓</b> = the Floor lifted the price (final &lt; Floor before clamping).</li>
           <li><b>→ Base Price</b> — the final number, frozen and stored.</li>
-          <li><b>⚑ Flags</b> — special situations worth noting (🔴 alert / 🟡 warn / 🔵 info). · (centered) = no flag, clean run. Hover the icon to read all flags for the day with the explanation. See dedicated section below.</li>
+          <li><b>⚑ Flags</b> — special situations needing attention (🔴 alert / 🟡 warn). · (centered) = no flag, clean run. Hover the icon to read all flags for the day with the explanation. See dedicated section below.</li>
         </ul>
         <p style="font-size:12.5px"><b>⬇ Export Base Price CSV</b> downloads every column for every day in the selected range, including the flag codes.</p>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">⚑ Flag system — special-situation tags</h4>
         <p>Some days produce a Base Price that is mathematically correct but rests on data worth a second look. The flag system tags these days so you can spot them at a glance and decide whether to act (manually override) or trust the engine. <b>Flags don't change the calculation</b> — they are informational only.</p>
-        <p>Three severity levels:</p>
+        <p>Two severity levels:</p>
         <ul style="margin:6px 0 6px 18px;font-size:13px">
-          <li>🔴 <b>alert</b> — something is off and the number may need manual review.</li>
-          <li>🟡 <b>warn</b> — situation worth noting, the number is still usable.</li>
-          <li>🔵 <b>info</b> — normal but uncommon situation, here for transparency.</li>
+          <li>🔴 <b>alert</b> — action recommended: review and consider a manual Base Price override.</li>
+          <li>🟡 <b>warn</b> — worth a glance: the number is usable but rests on weaker data.</li>
         </ul>
-        <p style="margin-top:8px"><b>List of flag types currently produced</b>:</p>
+        <p style="margin-top:8px"><b>The 4 flag types — only situations that need your attention</b>:</p>
         <ul style="margin:6px 0 6px 18px;font-size:12.5px;line-height:1.65">
-          <li><b>small_sample_dayMatch</b> 🟡 — same-day-LY won with only 2-3 bookings while the weekday-and-month method had ≥15 bookings. The small sample may be noisier — typical on special-day candidates (NYE, Ferragosto, holidays). Worth reviewing by hand to confirm the premium is real.</li>
-          <li><b>lyADR_far_above_monthlyAnchor</b> 🔵 — LY ADR is ≥ 2× the Monthly Anchor. Typical of a single high-ADR weekday in an otherwise low-season month. The Monthly Anchor band (±50% of the seasonal average) may strangle the price.</li>
-          <li><b>lyADR_far_below_monthlyAnchor</b> 🟡 — LY ADR is &lt; 40% of the Monthly Anchor. Possible data quality issue: check the LY bookings for outliers on this weekday.</li>
-          <li><b>anchor_max_strangle</b> 🟡 — the Monthly Anchor MAX guard-rail cut the price by more than €30. Typical for special days (NYE, holidays) inside a low-season month: the high-ADR signal exists but the seasonal band limits how far above the seasonal average the Base Price can go. If you want to break free for that specific day, use a manual Base Price override.</li>
-          <li><b>lyADR_far_below_floor</b> 🔵 — LY ADR is &lt; 60% of the Floor Rate. The Floor protects: final Base = Floor. May indicate dirty historical data; usually fine.</li>
-          <li><b>adr_from_anchor</b> 🔵 — no LY bookings found for this date on the base RT. The Monthly Anchor is used directly as starting ADR. Very rare: typically for brand-new properties or closed months.</li>
-          <li><b>annual_anchor_fallback</b> 🔵 — no LY bookings for the month at all. Monthly Anchor falls back to the Annual Anchor Price configured in the RMES tab. Make sure that value is sensible.</li>
-          <li><b>goal_disabled</b> 🔵 — Goal Value cap disabled because the compset is unreliable (fewer than 2 competitors visible, or Goal &lt; Floor). The Base Price flows through to the Monthly Anchor guard-rail. Normal for low-coverage days; the cap will resume the next day a competitor comes back.</li>
+          <li><b>anchor_max_strangle</b> 🔴 alert — the Monthly Anchor MAX guard-rail cut the price by more than €30. The ADR signal for this day is much higher than the seasonal average. Typical case: NYE, Capodanno or other special days inside a low-season month. <b>Action</b>: if you believe the day truly sells at premium, set a manual Base Price override for that day to break free from the seasonal band.</li>
+          <li><b>lyADR_far_above_monthlyAnchor</b> 🟡 warn — LY ADR is ≥ 2× the Monthly Anchor. A specific weekday consistently sells much higher than the rest of the month (e.g. Monday Davids in December). The Monthly Anchor band may strangle the price. <b>Action</b>: check whether the weekday really has a structural premium and consider overriding.</li>
+          <li><b>lyADR_far_below_monthlyAnchor</b> 🟡 warn — LY ADR is &lt; 40% of the Monthly Anchor. Likely data quality issue: an outlier booking pulling the median down. <b>Action</b>: open the booking list for that weekday and clean the data if needed.</li>
+          <li><b>small_sample_dayMatch</b> 🟡 warn — same-day-LY won with only 2-3 bookings while the weekday-and-month method had ≥15 bookings. Premium-day signal based on a small sample, may be noisier. <b>Action</b>: review by hand on special-day candidates (NYE, Ferragosto, holidays) to confirm the premium is real.</li>
         </ul>
-        <p style="font-size:12.5px;color:#666"><b>Practical use</b>: at the start of a week, scroll the breakdown filtering for days with flags. Address the 🔴 alerts first, glance at the 🟡 warns, ignore the 🔵 info unless you want full transparency. The CSV export includes the <code>flags</code> column with the codes (semicolon-separated) for sorting/filtering in Excel.</p>
+        <p style="font-size:12.5px;color:#666"><b>Practical use</b>: most days have no flag (clean run). When you see ⚑ on a date, hover the icon for the explanation. Address the 🔴 alerts first (typically 5-10 days a year, mostly Capodanno and similar peaks), then glance at 🟡 warns. The CSV export includes the <code>flags</code> column with the codes (semicolon-separated) for sorting/filtering in Excel.</p>
+        <p style="font-size:12.5px;color:#666"><b>Situations that DON'T trigger a flag</b> are visible directly in the columns: ADR used "(anchor)" tag means no LY history; Goal Value "⚠" means cap disabled for sanity (n&lt;2 competitors or Goal&lt;Floor); Floor "✓" means Floor protected. No need for a flag to repeat what the column already shows.</p>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">💡 Section 2 — RMES breakdown</h4>
         <p>How each day's RMES suggestion is built, from the current reference (Last update) through the 4 factors, LMF, Event, to the final price. Only future dates (from today) — RMES doesn't make sense in the past. Header sticky, tooltips on every number.</p>
