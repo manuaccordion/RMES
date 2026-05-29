@@ -534,6 +534,24 @@ function loadData(csvText){
   const all = parseCSV(csvText);
   RAW = [];
   BOOKINGS = [];
+  // === Cache pre-loop: evito 26k+ chiamate ripetute a fp_getChannelMarkups() / structRoomsFor() ===
+  const _markups = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups() : {expedia:17,booking:13,airbnb:10};
+  const _structRoomsCache = {};
+  for (const sk of ['firenze','condotta','alfani','davids']){
+    if (typeof structRoomsFor === 'function'){
+      _structRoomsCache[sk] = new Set(Object.keys(structRoomsFor(sk) || {}));
+    }
+  }
+  function _markupForCanaleFast(canale){
+    const c = (canale || '').toLowerCase();
+    if (c === 'beddy' || c === 'diretto' || c === '—' || c === '' || c.indexOf('diret') !== -1 ||
+        c.indexOf('sito web') !== -1 || c.indexOf('front') !== -1 || c.indexOf('booking engine') !== -1){
+      return 0;
+    }
+    if (c.indexOf('booking') !== -1) return _markups.booking;
+    if (c.indexOf('airbnb') !== -1 || c.indexOf('vrbo') !== -1) return _markups.airbnb;
+    return _markups.expedia;
+  }
   for (const r of all){
     const stato = r['Stato'];
     if (stato !== 'Confermate' && stato !== 'Cancellate') continue;
@@ -557,11 +575,10 @@ function loadData(csvText){
                              : (struct === CFG.structures.condotta.key) ? 'condotta'
                              : (struct === CFG.structures.alfani.key) ? 'alfani'
                              : (struct === CFG.structures.davids.key) ? 'davids' : null;
-    const _validRoomsForStruct = (_structKeyForRooms && typeof structRoomsFor === 'function')
-      ? Object.keys(structRoomsFor(_structKeyForRooms) || {}) : null;
+    const _validRoomsSet = _structKeyForRooms ? _structRoomsCache[_structKeyForRooms] : null;
     let alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
-    if (_validRoomsForStruct && _validRoomsForStruct.length){
-      const _filtered = alloggi.filter(rm => _validRoomsForStruct.includes(rm));
+    if (_validRoomsSet && _validRoomsSet.size){
+      const _filtered = alloggi.filter(rm => _validRoomsSet.has(rm));
       alloggi = _filtered;
     }
     if (!alloggi.length) continue;
@@ -578,24 +595,18 @@ function loadData(csvText){
     const hasFlex = tariffaLower.includes('flessibile') || tariffaLower.includes('standard rate');
     const isNonRefundable = hasNonRimb && !hasFlex;
     const isDirect = (canale === 'Direct' || canale === 'Beddy' || canale === 'Diretto' || canale === '—' || canale === '');
-    const _struct2Key = (struct === 'Firenze Suite') ? 'firenze'
-                      : (struct === 'Condotta 16') ? 'condotta'
-                      : (struct === 'Palazzo Alfani') ? 'alfani'
-                      : (struct === "Florence David's Apartament") ? 'davids' : null;
-    const _markupPct = (typeof fp_markupForChannel === 'function')
-                    ? fp_markupForChannel(canale)
-                    : ((_struct2Key && typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(_struct2Key) : 12);
+    const _markupPct = _markupForCanaleFast(canale);
     const channelMarkup = isDirect ? 0 : (_markupPct / 100);
     const revPerRoomNightCaricato = revPerRoomNight / (1 + channelMarkup);
     RAW.push(r);
     for (const room of alloggi){
       BOOKINGS.push({
-        struct, structKey: _struct2Key, room, prov, canale, ref, guest, tariffa,
+        struct, structKey: _structKeyForRooms, room, prov, canale, ref, guest, tariffa,
         dBook, dIn, dOut, notti,
         revPerNight: revPerRoomNight,
         revPerNightCaricato: revPerRoomNightCaricato,
         channelMarkup,
-        isNonRefundable,                    // true se piano = "Non rimborsabile" (scontato -10%)
+        isNonRefundable,
         revTotal: revPerRoomNight * notti,
         bookYmd: ymd(dBook),
         cancelled: stato === 'Cancellate',
@@ -930,7 +941,14 @@ function monthAllocate(dIn, dOut, revPerNight){
    - LY:    same as STLY but final (all 2025 bookings, not capped by today-364)
    - Forecast: OTB extended from today to 31/12/2026, following LY booking-window shape
    ============================================================ */
+let _BOOKING_CURVE_CACHE = {};
 function bookingCurveData(sel){
+  if (_BOOKING_CURVE_CACHE[sel]) return _BOOKING_CURVE_CACHE[sel];
+  const _r = _bookingCurveDataImpl(sel);
+  _BOOKING_CURVE_CACHE[sel] = _r;
+  return _r;
+}
+function _bookingCurveDataImpl(sel){
   const keys = new Set(structKeysFor(sel));
   const Y_CUR = CUR_YEAR;          // 2026
   const Y_PREV = PREV_YEAR;        // 2025
@@ -3850,7 +3868,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -6413,7 +6431,9 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   }
   const sameDayRes = _gather(sameDayDays);
   let medianSameDay = null;
-  if (sameDayRes.adrObs.length >= 3){
+  // Soglia minima same-day-LY: ≥2 osservazioni (Enis ha 3 camere → 31/12 può avere
+  // solo 2-3 obs LY anche su giorni speciali; con ≥3 il segnale veniva perso).
+  if (sameDayRes.adrObs.length >= 2){
     const arr = sameDayRes.adrObs.slice().sort(function(a,b){return a-b;});
     medianSameDay = arr[Math.floor(arr.length/2)];
   }
@@ -7900,12 +7920,7 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<div class="panel-body" style="padding:12px 16px">';
   h += '<div id="fp-audit-list" style="font-size:12px"></div>';
   h += '</div></div>';
-  h += '<div class="panel" style="margin-bottom:16px">';
-  h += '<div class="panel-head"><div><h3>Ⓔ RT supplements by month <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub">The Base Price is computed <b>only for the baseRT</b> (' + structLbl + ' → <b id="fp-supp-baseRT">—</b>). Other RTs inherit it via a monthly supplement: <code>Base_RT = Base_baseRT + RT_month_supplement</code>. The supplements are <b>derived from history</b> (average RT ADR minus baseRT ADR, split by high/low season, rounded to the nearest multiple of 5), and identical for all days of the same month. <b>Example</b>: if Suite con Terrazza has a May supplement of €70, and the Base Price for Camera Matrim. Deluxe that day is €318, so the Base Price for Suite con Terrazza = €318 + €70 = €388. The same RMES multiplier (×0.767 for the property) applies on top: final price Suite con Terrazza = €388 × 0.767 = €297. Information panel (read-only).</div></div></div>';
-  h += '<div class="panel-body" style="padding:12px 16px">';
-  h += '<div id="fp-supp-table-wrap" style="font-size:12px;overflow-x:auto"></div>';
-  h += '</div></div>';
+  // Ⓔ RT supplements block removed from UI — read-only info, moved to Playbook.
   h += '<div style="display:flex;gap:10px;justify-content:flex-end;padding:14px 0;border-top:1px solid var(--line);margin-top:18px">';
   h += '<button id="fp-reset-defaults" style="font-size:12px;padding:8px 16px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);cursor:pointer">↺ Reset Base Price defaults</button>';
   h += '<button id="fp-recompute" style="font-size:13px;padding:8px 22px;border:1px solid #c4823b;border-radius:5px;background:#c4823b;color:#fff;cursor:pointer;font-weight:700">↻ Recompute Base Price</button>';
@@ -11938,7 +11953,14 @@ function fcstAdrGrowth(structKey){
   const growth = (lyAdr>0 && curAdr>0) ? curAdr/lyAdr : 1.0;
   return { growth, curAdr, lyAdr, curRn, lyRn };
 }
+let _FORECAST_CACHE = {};
 function aggForecast(structKey){
+  if (_FORECAST_CACHE[structKey]) return _FORECAST_CACHE[structKey];
+  const r = _aggForecastImpl(structKey);
+  _FORECAST_CACHE[structKey] = r;
+  return r;
+}
+function _aggForecastImpl(structKey){
   const sel = (structKey === 'both') ? 'condotta' : structKey;
   const inventory = fcstRoomsByRT(sel);
   const rtList = Object.keys(inventory);
@@ -13111,10 +13133,17 @@ function renderRMESConfigTab(){
     chipEl.textContent = labels[sel] || sel;
   }
   const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
-  const sublabel = `property: ${labels[sel]}`;
+  const colors = { firenze: '#3b6b9a', condotta: '#3d7a4b', alfani: '#8e5fa8', davids: '#c0392b' };
+  const lblName = labels[sel] || sel;
+  const lblCol = colors[sel] || '#5a5a5a';
+  const sublabel = '✏️ editing: ' + lblName;
   ['rmes-tab-w-sub','rmes-tab-th-sub'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.textContent = sublabel;
+    if (el){
+      el.textContent = sublabel;
+      el.style.fontWeight = '700';
+      el.style.fontSize = '12px';
+    }
   });
   _renderRmesWeightsBox(sel);
   _renderRmesThresholdsBox(sel);
@@ -13403,8 +13432,8 @@ function _rmesTabApplyAll(){
       const lbl = inp.dataset.evw;
       let v = parseFloat(inp.value);
       if (!isFinite(v)) v = 0;
-      if (v < -10) v = -10;
-      if (v > 10) v = 10;
+      if (v < 0) v = 0;
+      if (v > 20) v = 20;
       if (lbl && v !== 0) w[lbl] = v;  // store only non-zero weights to keep storage clean
     });
     _setEventWeights(w);
@@ -13464,29 +13493,74 @@ function _renderRmesEventsBox(){
     wrap.innerHTML = '<div style="padding:14px;border:1px solid var(--line);border-radius:8px;color:var(--ink-3);font-size:12px">No events loaded. EVENTS_CSV missing or empty in data.js.</div>';
     return;
   }
-  // build a row per event label, with a number input -10..+10
+  // Helper: ymdNum -> DD/MM/YYYY and DD/MM
+  function _ymdShort(ymdN){
+    const m = Math.floor((ymdN%10000)/100), d = ymdN%100;
+    return String(d).padStart(2,'0')+'/'+String(m).padStart(2,'0');
+  }
+  function _ymdLong(ymdN){
+    const y = Math.floor(ymdN/10000), m = Math.floor((ymdN%10000)/100), d = ymdN%100;
+    return String(d).padStart(2,'0')+'/'+String(m).padStart(2,'0')+'/'+y;
+  }
+  // Pre-aggregate event dates (sorted ascending)
+  const datesByLabel = {};
+  if (typeof EVENTS !== 'undefined'){
+    for (const k in EVENTS){
+      const lbl = EVENTS[k];
+      if (!lbl) continue;
+      if (!datesByLabel[lbl]) datesByLabel[lbl] = [];
+      datesByLabel[lbl].push(parseInt(k,10));
+    }
+    for (const lbl in datesByLabel) datesByLabel[lbl].sort((a,b)=>a-b);
+  }
+  // Compact date grouping: consecutive days collapsed into a range
+  function _formatDateGroups(arr){
+    if (!arr || arr.length === 0) return '\u2014';
+    if (arr.length > 12){
+      return _ymdLong(arr[0]) + ' \u2026 ' + _ymdLong(arr[arr.length-1]) + ' (' + arr.length + ' dates)';
+    }
+    const groups = [];
+    let curGroup = [arr[0]];
+    for (let i=1; i<arr.length; i++){
+      const prev = arr[i-1], cur = arr[i];
+      const pd = new Date(Math.floor(prev/10000), Math.floor((prev%10000)/100)-1, prev%100);
+      const cd = new Date(Math.floor(cur/10000), Math.floor((cur%10000)/100)-1, cur%100);
+      const diffD = Math.round((cd - pd) / 86400000);
+      if (diffD === 1){ curGroup.push(cur); }
+      else { groups.push(curGroup); curGroup = [cur]; }
+    }
+    groups.push(curGroup);
+    return groups.map(g => {
+      if (g.length === 1) return _ymdLong(g[0]);
+      return _ymdShort(g[0]) + '\u2013' + _ymdLong(g[g.length-1]);
+    }).join(' \u00b7 ');
+  }
   const rows = labels.map(lbl => {
-    const w = (weights[lbl] != null && isFinite(+weights[lbl])) ? +weights[lbl] : 0;
+    const wRaw = (weights[lbl] != null && isFinite(+weights[lbl])) ? +weights[lbl] : 0;
+    const w = Math.max(0, Math.min(20, wRaw));  // clamp 0..20
     const safeLbl = (typeof escapeHtml === 'function') ? escapeHtml(lbl) : lbl.replace(/[<>&"]/g, '');
-    // count days affected
-    let cnt = 0;
-    if (typeof EVENTS !== 'undefined'){ for (const k in EVENTS){ if (EVENTS[k] === lbl) cnt++; } }
+    const dates = datesByLabel[lbl] || [];
+    const cnt = dates.length;
+    const datesTxt = _formatDateGroups(dates);
+    const safeDates = (typeof escapeHtml === 'function') ? escapeHtml(datesTxt) : datesTxt;
     return '<tr>' +
-      '<td style="padding:6px 10px;font-size:12px;color:var(--ink-1);font-weight:600">' + safeLbl + '</td>' +
-      '<td style="padding:6px 10px;font-size:11px;color:var(--ink-3);text-align:right;font-family:\'DM Mono\',monospace">' + cnt + ' day' + (cnt===1?'':'s') + '</td>' +
-      '<td style="padding:3px 8px;text-align:center">' +
-        '<input type="number" min="-10" max="10" step="1" value="' + w + '" data-evw="' + safeLbl + '" class="rmes-evw-input" style="width:60px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px"> %' +
+      '<td style="padding:8px 10px;font-size:12px;color:var(--ink-1);font-weight:600;vertical-align:top">' + safeLbl +
+        '<div style="font-size:10.5px;color:var(--ink-3);font-weight:400;font-family:\'DM Mono\',monospace;margin-top:3px;line-height:1.4">' + safeDates + '</div>' +
+      '</td>' +
+      '<td style="padding:8px 10px;font-size:11px;color:var(--ink-3);text-align:right;font-family:\'DM Mono\',monospace;vertical-align:top">' + cnt + ' day' + (cnt===1?'':'s') + '</td>' +
+      '<td style="padding:6px 8px;text-align:center;vertical-align:top">' +
+        '<input type="number" min="0" max="20" step="1" value="' + w + '" data-evw="' + safeLbl + '" class="rmes-evw-input" style="width:60px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px"> %' +
       '</td></tr>';
   }).join('');
   wrap.innerHTML =
     '<div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">' +
       '<div style="padding:10px 14px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--line)">' +
         '<div style="font-size:13px;font-weight:700;color:var(--ink-1)">\u2728 Event Factor</div>' +
-        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Price multiplier per event name (\u221210%% to +10%%). Applied as a final multiplier to the RMES price on dates that match the event. Positive = premium, negative = discount, zero = no effect. Weights are shared across all properties.</div>' +
+        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Premium % per event (0%% to +20%%). Applied as a final multiplier to the RMES price on dates that match the event. Higher = premium, 0 = no effect. Weights are shared across all properties.</div>' +
       '</div>' +
-      '<div style="overflow-x:auto;max-height:340px;overflow-y:auto;padding:8px 10px">' +
-        '<table style="border-collapse:collapse;width:100%"><thead><tr>' +
-          '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:left;border-bottom:1px solid var(--line)">Event</th>' +
+      '<div style="overflow-x:auto;max-height:420px;overflow-y:auto;padding:8px 10px">' +
+        '<table style="border-collapse:collapse;width:100%"><thead><tr style="position:sticky;top:0;background:#fff;z-index:2">' +
+          '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:left;border-bottom:1px solid var(--line)">Event \u00b7 Dates</th>' +
           '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:right;border-bottom:1px solid var(--line)">Days</th>' +
           '<th style="padding:6px 10px;font-size:11px;font-weight:600;color:var(--ink-2);text-align:center;border-bottom:1px solid var(--line)">Weight</th>' +
         '</tr></thead><tbody>' + rows + '</tbody></table>' +
