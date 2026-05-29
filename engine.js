@@ -102,6 +102,40 @@ const RMES_CLOUD = (function(){
           try { localStorage.setItem(k, incoming); changed = true; } catch(e){}
         }
       }
+      // ===== 4-factor migration safety net =====
+      // Se Firebase Cloud ha pesi in formato vecchio (5 fattori 20%×5 con price>0),
+      // li forziamo ai nuovi default 25/0/25/25/25 anche su Firestore. Questo evita che
+      // il cloud "ripristini" la configurazione vecchia ad ogni boot.
+      try {
+        const raw = localStorage.getItem('rmes_weights_per_struct_v4');
+        if (raw){
+          const parsed = JSON.parse(raw);
+          const defaults = { occ: 0.25, price: 0.00, pace: 0.25, budget: 0.00, comp: 0.25, airdna: 0.25 };
+          let needsForce = false;
+          for (const s of ['firenze','condotta','alfani','davids']){
+            const p = parsed[s];
+            if (!p) continue;
+            // Criteri: price > 0 (B·ADR ancora attivo) OPPURE occ != 0.25 (somma vecchia ~20%)
+            if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
+              needsForce = true; break;
+            }
+          }
+          if (needsForce){
+            for (const s of ['firenze','condotta','alfani','davids']){
+              parsed[s] = Object.assign({}, defaults);
+            }
+            localStorage.setItem('rmes_weights_per_struct_v4', JSON.stringify(parsed));
+            // Aggiorna anche la variabile in memoria (usata dalla UI senza re-fetch localStorage)
+            if (typeof SELL_RMES_W_ALL !== 'undefined'){
+              for (const s of ['firenze','condotta','alfani','davids']){
+                SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
+              }
+            }
+            console.log('[rmesCloud] 4-factor weights force-applied (cloud had legacy 5-factor config)');
+            changed = true;  // triggera anche un push verso Firestore
+          }
+        }
+      } catch(e){}
     } finally {
       applyingRemote = false;
     }
@@ -3224,14 +3258,27 @@ let SELL_RMES_W_ALL = (function(){
 (function _migrate4Factors(){
   try {
     const flagKey = 'rmes_factors_v4_migration_2026_05_28';
-    if (localStorage.getItem(flagKey)) return;
     const defaults = { occ: 0.25, price: 0.00, pace: 0.25, budget: 0.00, comp: 0.25, airdna: 0.25 };
+    // Controllo idempotente: anche se il flag è già settato, se trovo pesi in formato vecchio
+    // (price > 0 o occ ≠ 0.25) li forzo ai nuovi default. Questo gestisce il caso Firebase Cloud
+    // che ripristina pesi vecchi sovrascrivendo la migrazione locale.
+    let needsForce = false;
     for (const s of ['firenze','condotta','alfani','davids']){
-      SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
+      const p = SELL_RMES_W_ALL[s];
+      if (!p) continue;
+      if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
+        needsForce = true; break;
+      }
     }
-    localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL));
-    localStorage.setItem(flagKey, '1');
-    console.log('[RMES] 4-factor migration applied: weights reset to 25/0/25/25/25 (A·Pickup, B·ADR=0, C·Pace, D·Online, E·Demand)');
+    const hadFlag = !!localStorage.getItem(flagKey);
+    if (!hadFlag || needsForce){
+      for (const s of ['firenze','condotta','alfani','davids']){
+        SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
+      }
+      localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL));
+      localStorage.setItem(flagKey, '1');
+      console.log('[RMES] 4-factor migration applied: weights reset to 25/0/25/25/25' + (hadFlag ? ' (forced: legacy format detected)' : ''));
+    }
   } catch(e){}
 })();
 function saveRmesWeights(){
