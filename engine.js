@@ -5405,7 +5405,7 @@ function renderRmesBreakdown(){
       const ts = r.appliedTs ? new Date(r.appliedTs) : null;
       const dtTxt = (ts && !isNaN(ts.getTime())) ? (pad2(ts.getDate())+'/'+pad2(ts.getMonth()+1)+'/'+ts.getFullYear()) : 'unknown date';
       appliedTip = 'Manual override applied on '+dtTxt;
-      appliedColor = '#3b6b9a';
+      appliedColor = '#b86b1f';
       appliedIcon = '🖋';
     } else {
       appliedTip = 'Base Price (accepted by default — no action taken)';
@@ -7255,10 +7255,10 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       else if (hasFoundationOverride) _src = 'foundation';
       else if (_hasAccepted) _src = 'accepted';
       else _src = 'base';
-      const fpBg = (_src === 'override' || _src === 'foundation') ? '#eef4fb' : (_src === 'accepted' ? '#eef5f0' : '#fef8ed');
-      const fpBorder = (_src === 'override' || _src === 'foundation') ? '#3b6b9a' : (_src === 'accepted' ? '#3d7a4b' : '#c4823b');
-      const fpLabelCol = (_src === 'override' || _src === 'foundation') ? '#1e4a6b' : (_src === 'accepted' ? '#2c5c3c' : '#7a4f1c');
-      const fpPriceCol = (_src === 'override' || _src === 'foundation') ? '#1e4a6b' : (_src === 'accepted' ? '#2c5c3c' : '#5a3a14');
+      const fpBg = (_src === 'override' || _src === 'foundation') ? '#fdf3e7' : (_src === 'accepted' ? '#eef5f0' : '#f5f4f0');
+      const fpBorder = (_src === 'override' || _src === 'foundation') ? '#d99a4e' : (_src === 'accepted' ? '#3d7a4b' : '#a8a8a8');
+      const fpLabelCol = (_src === 'override' || _src === 'foundation') ? '#b86b1f' : (_src === 'accepted' ? '#2c5c3c' : '#6a6a6a');
+      const fpPriceCol = (_src === 'override' || _src === 'foundation') ? '#b86b1f' : (_src === 'accepted' ? '#2c5c3c' : '#5a5a5a');
       const fpIcon = (_src === 'override' || _src === 'foundation') ? '🖋' : (_src === 'accepted' ? '✓' : '⚡');
       let fpLabel, fpSub;
       if (_src === 'override'){
@@ -9118,8 +9118,8 @@ function renderSellStrategy(sel){
           // RT non-base: derivato (sola visualizzazione)
           let cellBg, cellBorder, textStyle, derivedTipPrefix;
           if (nrmOverride != null){
-            cellBg = 'rgba(59,107,154,.06)'; cellBorder = 'rgba(59,107,154,.3)';
-            textStyle = 'color:#1e4a6b;font-weight:600';
+            cellBg = 'rgba(217,154,78,.08)'; cellBorder = 'rgba(184,107,31,.35)';
+            textStyle = 'color:#b86b1f;font-weight:600';
             derivedTipPrefix = `Base Price DERIVED from ${baseRT_fp} (manual override)`;
           } else {
             cellBg = 'rgba(195,131,59,.05)'; cellBorder = 'rgba(195,131,59,.25)';
@@ -9179,11 +9179,11 @@ function renderSellStrategy(sel){
       const fpRTAttrCell = escapeHtml(mainRT);
       const ovrObjMain = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, fpDateAttrISO, mainRT) : null;
       const hasOverride = !!(ovrObjMain && ovrObjMain.price != null && isFinite(ovrObjMain.price));
-      const overrideBadge = hasOverride ? `<span title="RMES final-price override active for ${mainRT}: published price set manually (click for detail)" style="font-size:10px;color:#1e4a6b;font-weight:700;margin-right:2px">🖋</span>` : '';
+      const overrideBadge = hasOverride ? `<span title="RMES final-price override active for ${mainRT}: published price set manually (click for detail)" style="font-size:10px;color:#b86b1f;font-weight:700;margin-right:2px">🖋</span>` : '';
       let cellBorderStyle = '';
       if (hasOverride){
-        cellBgRgba = 'rgba(59,107,154,.12)';
-        cellBorderStyle = 'border:1.5px solid rgba(59,107,154,.55);';
+        cellBgRgba = 'rgba(217,154,78,.14)';
+        cellBorderStyle = 'border:1.5px solid rgba(184,107,31,.55);';
       }
       const paceFromAgg = (mainMults && mainMults._paceFromAggregate === true);
       const paceAggBadge = paceFromAgg ? `<span title="Factor C · Pace Trend: property month-specific data unavailable, using the properties-aggregate pace (marked: similar local market, area and quality tier) as a proxy." style="font-size:9px;color:#8e5fa8;font-weight:700;margin-right:2px;font-family:'DM Mono',monospace">P̄</span>` : '';
@@ -9292,15 +9292,16 @@ function renderSellStrategy(sel){
           const dtTxt = (ts && !isNaN(ts.getTime())) ? `${pad2(ts.getDate())}/${pad2(ts.getMonth()+1)}/${ts.getFullYear()} ${pad2(ts.getHours())}:${pad2(ts.getMinutes())}` : 'unknown date';
           tip = `Active price: €${Math.round(activePrice)}\nSource: manual override 🖋\nSaved: ${dtTxt}`;
           icon = '🖋';
-          txtColor = 'color:#1e4a6b;font-weight:700';
+          txtColor = 'color:#b86b1f;font-weight:700';  // arancione scuro
         } else if (accepted != null){
           const dt = (meta && meta.ts) ? new Date(meta.ts) : null;
           const dtTxt = dt ? `${pad2(dt.getDate())}/${pad2(dt.getMonth()+1)}/${dt.getFullYear()} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}` : 'unknown date';
           tip = `Active price: €${Math.round(activePrice)}\nSource: accepted RMES suggestion ✓\nLast updated: ${dtTxt}`;
           icon = '✓';
-          txtColor = 'color:#2c5c3c;font-weight:700';
+          txtColor = 'color:#2c5c3c;font-weight:700';  // verde
         } else {
           tip = `Active price: €${Math.round(activePrice)}\nSource: Base Price (accepted by default — RMES never explicitly accepted for this day)`;
+          txtColor = 'color:#6a6a6a;font-weight:500';  // grigio esplicito
         }
         return `<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center;${txtColor}" title="${escapeHtml(tip)}">${icon ? icon+' ' : ''}${Math.round(activePrice)}</td>`;
       })()}
@@ -15554,9 +15555,25 @@ function renderBigPicture(){
 function _bigRenderBookingCurve(sel){
   const host = document.getElementById('big-bcurve');
   if (!host) return;
+  const titleEl = document.getElementById('big-bcurve-title');
   let data; try { data = bookingCurveData(sel); } catch(e){ host.innerHTML=''; return; }
   const { otb, stly, ly, forecast, todayDoy, stlyTodayDoy, forecastTotal, lyTotal } = data;
-  // Compute max for y-axis (across all 4 curves, ignoring nulls)
+  // === ACHIEVEMENT % ===
+  // % di forecast annuale già OTB → "we're at X% of where we project to end the year"
+  const otbToday = otb[todayDoy];
+  const achievementPct = (forecastTotal > 0) ? (otbToday / forecastTotal * 100) : null;
+  // Update title with achievement chip
+  if (titleEl){
+    const baseT = 'Booking Curve — cumulative revenue by booking date';
+    const achColor = achievementPct >= 75 ? '#2c5c3c' : (achievementPct >= 40 ? '#b86b1f' : '#a83b3b');
+    const achBg    = achievementPct >= 75 ? '#e8f1ea' : (achievementPct >= 40 ? '#fdf3e7' : '#fbe9e9');
+    const achBdr   = achievementPct >= 75 ? '#b8d4be' : (achievementPct >= 40 ? '#e5c699' : '#d9b3b3');
+    const achChip = (achievementPct != null)
+      ? `<span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:${achColor};background:${achBg};border:1.5px solid ${achBdr};border-radius:14px;padding:3px 11px;margin-left:10px;font-family:'DM Mono',monospace">🎯 ${achievementPct.toFixed(1)}% of yearly forecast</span>`
+      : '';
+    titleEl.innerHTML = baseT + achChip;
+  }
+  // Compute max for y-axis
   let yMax = 0;
   for (let i=1; i<=365; i++){
     if (otb[i] > yMax) yMax = otb[i];
@@ -15565,41 +15582,65 @@ function _bigRenderBookingCurve(sel){
     if (forecast[i] != null && forecast[i] > yMax) yMax = forecast[i];
   }
   if (yMax <= 0){ host.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:30px">No data</div>'; return; }
-  yMax = yMax * 1.05; // 5% headroom
-  const W = 720, H = 280;
-  const padL = 60, padR = 14, padTop = 12, padBot = 36;
+  yMax = yMax * 1.05;
+  const W = 760, H = 320;
+  const padL = 64, padR = 16, padTop = 16, padBot = 40;
   const plotW = W - padL - padR, plotH = H - padTop - padBot;
   const xAt = (doy)=> padL + (doy/365) * plotW;
   const yAt = (v)=> padTop + plotH - (v/yMax)*plotH;
-  // Month tick lines on day-of-year (1st of each month)
-  const monthStarts = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335]; // 2026 non-leap
+  // Gradients & shadow
+  let defs = `<defs>
+    <linearGradient id="bcOtbArea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d99a4e" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#d99a4e" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bcFcstArea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d99a4e" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#d99a4e" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bcOtbLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#b86b1f"/>
+      <stop offset="100%" stop-color="#d99a4e"/>
+    </linearGradient>
+    <linearGradient id="bcLyLine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7a4d96"/>
+      <stop offset="100%" stop-color="#a075b8"/>
+    </linearGradient>
+    <filter id="bcShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="0" dy="1" result="off"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
+  // Month tick lines
+  const monthStarts = [1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
   const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   let grid = '';
   for (let i=0; i<12; i++){
     const x = xAt(monthStarts[i]);
-    grid += `<line x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop+plotH}" stroke="#e8e6e0" stroke-width="1"/>`;
-    grid += `<text x="${x}" y="${H-14}" font-size="10" text-anchor="start" fill="#8a8a8a" font-family="'DM Mono',monospace">${monthLabels[i]}</text>`;
+    grid += `<line x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop+plotH}" stroke="#ece9e2" stroke-width="1"/>`;
+    grid += `<text x="${x+3}" y="${H-16}" font-size="10" text-anchor="start" fill="#9a9a9a" font-family="'DM Mono',monospace" font-weight="600">${monthLabels[i]}</text>`;
   }
-  // Y-axis ticks (4 levels)
   function fmtK(v){
     if (v >= 1000000) return '€'+(v/1000000).toFixed(2)+'M';
     if (v >= 1000) return '€'+Math.round(v/1000)+'k';
     return '€'+Math.round(v);
   }
+  function fmtEurFull(v){ return '€' + Math.round(v).toLocaleString('en-GB'); }
   for (let i=0; i<=4; i++){
     const val = yMax * i / 4;
     const y = yAt(val);
-    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#f0eee9" stroke-width="1"/>`;
-    grid += `<text x="${padL-8}" y="${y+3}" font-size="10" text-anchor="end" fill="#8a8a8a" font-family="'DM Mono',monospace">${fmtK(val)}</text>`;
+    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#f5f3ee" stroke-width="1"/>`;
+    grid += `<text x="${padL-10}" y="${y+3}" font-size="10" text-anchor="end" fill="#9a9a9a" font-family="'DM Mono',monospace" font-weight="600">${fmtK(val)}</text>`;
   }
   // Today vertical line
   const todayX = xAt(todayDoy);
-  grid += `<line x1="${todayX}" y1="${padTop}" x2="${todayX}" y2="${padTop+plotH}" stroke="#c4823b" stroke-width="1" stroke-dasharray="3,3"/>`;
-  grid += `<text x="${todayX+4}" y="${padTop+11}" font-size="10" fill="#c4823b" font-weight="700" font-family="'DM Mono',monospace">today</text>`;
-  // Path builder
-  function pathFrom(arr, startDoy, endDoy){
-    let d = '';
-    let first = true;
+  grid += `<line x1="${todayX}" y1="${padTop}" x2="${todayX}" y2="${padTop+plotH}" stroke="#c4823b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.7"/>`;
+  grid += `<text x="${todayX+5}" y="${padTop+13}" font-size="10" fill="#b86b1f" font-weight="700" font-family="'DM Mono',monospace">today</text>`;
+  // Path builders
+  function pathLine(arr, startDoy, endDoy){
+    let d = '', first = true;
     for (let i=startDoy; i<=endDoy; i++){
       const v = arr[i];
       if (v == null) continue;
@@ -15609,44 +15650,153 @@ function _bigRenderBookingCurve(sel){
     }
     return d;
   }
-  // Final LY (whole year) — thinnest, purple
-  const lyPath = pathFrom(ly, 1, 365);
-  // STLY (up to stlyTodayDoy) — thin, gray
-  const stlyPath = pathFrom(stly, 1, stlyTodayDoy);
-  // OTB (up to todayDoy) — THICKEST, orange
-  const otbPath = pathFrom(otb, 1, todayDoy);
-  // Forecast (from todayDoy to 365) — dashed, orange-ish
-  const fcstPath = pathFrom(forecast, todayDoy, 365);
-  // SVG paths in order: ly (background), stly, forecast (dashed), otb (foreground)
+  function pathArea(arr, startDoy, endDoy){
+    let pts = '', first = true, firstX = null, lastX = null;
+    for (let i=startDoy; i<=endDoy; i++){
+      const v = arr[i];
+      if (v == null) continue;
+      const x = xAt(i), y = yAt(v);
+      if (first){ firstX = x; first = false; }
+      pts += (pts ? `L${x.toFixed(1)},${y.toFixed(1)}` : `M${x.toFixed(1)},${y.toFixed(1)}`);
+      lastX = x;
+    }
+    if (firstX == null) return '';
+    const baseY = yAt(0);
+    return pts + `L${lastX.toFixed(1)},${baseY.toFixed(1)}L${firstX.toFixed(1)},${baseY.toFixed(1)}Z`;
+  }
+  // Paths (LY is now visible for the WHOLE YEAR, including the "tail" after STLY → end of year)
+  const lyPath   = pathLine(ly, 1, 365);
+  const otbPath  = pathLine(otb, 1, todayDoy);
+  const fcstPath = pathLine(forecast, todayDoy, 365);
+  const otbArea  = pathArea(otb, 1, todayDoy);
+  const fcstArea = pathArea(forecast, todayDoy, 365);
   const paths = `
-    <path d="${lyPath}" fill="none" stroke="#8e5fa8" stroke-width="1.6" opacity="0.55"/>
-    <path d="${stlyPath}" fill="none" stroke="#7a7a7a" stroke-width="1.8" opacity="0.75"/>
-    <path d="${fcstPath}" fill="none" stroke="#c4823b" stroke-width="2" stroke-dasharray="6,4" opacity="0.85"/>
-    <path d="${otbPath}" fill="none" stroke="#c4823b" stroke-width="3.2"/>
+    <path d="${otbArea}" fill="url(#bcOtbArea)"/>
+    <path d="${fcstArea}" fill="url(#bcFcstArea)"/>
+    <path d="${lyPath}" fill="none" stroke="url(#bcLyLine)" stroke-width="2.2" opacity="0.75" stroke-linecap="round"/>
+    <path d="${fcstPath}" fill="none" stroke="#d99a4e" stroke-width="2.2" stroke-dasharray="7,5" stroke-linecap="round" opacity="0.85"/>
+    <path d="${otbPath}" fill="none" stroke="url(#bcOtbLine)" stroke-width="3.2" stroke-linecap="round" filter="url(#bcShadow)"/>
   `;
-  // Dot at today on OTB
+  // STLY marker: ONE point on the LY curve at stlyTodayDoy → shows "where we were last year at this point of the cycle"
+  const stlyMarkerX = xAt(stlyTodayDoy);
+  const stlyMarkerY = yAt(ly[stlyTodayDoy] || 0);
+  const stlyMarker = `<g>
+    <circle cx="${stlyMarkerX}" cy="${stlyMarkerY}" r="6" fill="#fff" stroke="#6a6a6a" stroke-width="2.5"/>
+    <circle cx="${stlyMarkerX}" cy="${stlyMarkerY}" r="2.5" fill="#6a6a6a"/>
+    <text x="${stlyMarkerX-7}" y="${stlyMarkerY-9}" font-size="9.5" text-anchor="end" fill="#6a6a6a" font-weight="700" font-family="'DM Mono',monospace">STLY</text>
+  </g>`;
+  // Endpoint dots
   const todayY = yAt(otb[todayDoy]);
-  const todayDot = `<circle cx="${todayX}" cy="${todayY}" r="4" fill="#c4823b" stroke="#fff" stroke-width="1.5"/>`;
-  // Endpoint dot on forecast
+  const todayDot = `<circle cx="${todayX}" cy="${todayY}" r="5" fill="#b86b1f" stroke="#fff" stroke-width="2" filter="url(#bcShadow)"/>`;
   const fcstEndY = yAt(forecast[365]);
-  const fcstEndDot = `<circle cx="${xAt(365)}" cy="${fcstEndY}" r="3" fill="#c4823b" opacity="0.7"/>`;
-  // Endpoint dot on LY
+  const fcstEndDot = `<g><circle cx="${xAt(365)}" cy="${fcstEndY}" r="4" fill="#d99a4e" stroke="#fff" stroke-width="1.5" opacity="0.9"/></g>`;
   const lyEndY = yAt(ly[365]);
-  const lyEndDot = `<circle cx="${xAt(365)}" cy="${lyEndY}" r="3" fill="#8e5fa8" opacity="0.5"/>`;
-  // Legend
-  const legend = `<div style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:11px;color:#5a5a5a;padding:10px 14px 4px;font-family:'DM Mono',monospace">
-    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:3px;background:#c4823b"></span><b>OTB 2026</b> · ${fmtK(otb[todayDoy])}</span>
-    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2.5px;background:#c4823b;background-image:repeating-linear-gradient(to right,#c4823b 0,#c4823b 4px,transparent 4px,transparent 8px)"></span>Forecast · ${fmtK(forecastTotal)}</span>
-    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#7a7a7a"></span>STLY · ${fmtK(stly[stlyTodayDoy])}</span>
-    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#8e5fa8;opacity:.55"></span>LY final · ${fmtK(lyTotal)}</span>
+  const lyEndDot = `<g><circle cx="${xAt(365)}" cy="${lyEndY}" r="3.5" fill="#8e5fa8" stroke="#fff" stroke-width="1.5" opacity="0.75"/></g>`;
+  // Hover overlay
+  const hoverRect = `<rect id="bc-hover-rect" x="${padL}" y="${padTop}" width="${plotW}" height="${plotH}" fill="transparent" style="cursor:crosshair"/>`;
+  const hoverLine = `<line id="bc-hover-line" x1="0" y1="${padTop}" x2="0" y2="${padTop+plotH}" stroke="#5a3a14" stroke-width="1" opacity="0" style="pointer-events:none"/>`;
+  const hoverDotOtb  = `<circle id="bc-hover-dot-otb"  cx="0" cy="0" r="5" fill="#b86b1f" stroke="#fff" stroke-width="2" opacity="0" style="pointer-events:none"/>`;
+  const hoverDotLy   = `<circle id="bc-hover-dot-ly"   cx="0" cy="0" r="4" fill="#7a4d96" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
+  const hoverDotFcst = `<circle id="bc-hover-dot-fcst" cx="0" cy="0" r="4" fill="#d99a4e" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
+  // Legend (rebuilt: removed STLY line, added STLY marker symbol)
+  const legend = `<div style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:11.5px;color:#5a5a5a;padding:12px 14px 4px;font-family:'DM Mono',monospace">
+    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:3px;background:linear-gradient(to right,#b86b1f,#d99a4e);border-radius:2px"></span><b style="color:#5a3a14">OTB 2026</b> · ${fmtK(otb[todayDoy])}</span>
+    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:repeating-linear-gradient(to right,#d99a4e 0,#d99a4e 5px,transparent 5px,transparent 10px);border-radius:2px"></span><b style="color:#b86b1f">Forecast</b> · ${fmtK(forecastTotal)}</span>
+    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:linear-gradient(to right,#7a4d96,#a075b8);opacity:.75;border-radius:2px"></span><b style="color:#7a4d96">LY 2025 (full year)</b> · ${fmtK(lyTotal)}</span>
+    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #6a6a6a;position:relative"><span style="position:absolute;top:50%;left:50%;width:5px;height:5px;background:#6a6a6a;border-radius:50%;transform:translate(-50%,-50%)"></span></span>STLY marker · ${fmtK(ly[stlyTodayDoy] || 0)}</span>
   </div>`;
-  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:920px;height:auto;display:block;margin:0 auto">
-    ${grid}
-    ${paths}
-    ${lyEndDot}
-    ${fcstEndDot}
-    ${todayDot}
-  </svg>${legend}`;
+  host.innerHTML = `<div style="position:relative">
+    <svg id="bc-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;max-width:960px;height:auto;display:block;margin:0 auto">
+      ${defs}
+      ${grid}
+      ${paths}
+      ${lyEndDot}
+      ${fcstEndDot}
+      ${stlyMarker}
+      ${todayDot}
+      ${hoverLine}
+      ${hoverDotLy}
+      ${hoverDotFcst}
+      ${hoverDotOtb}
+      ${hoverRect}
+    </svg>
+    <div id="bc-tooltip" style="position:absolute;display:none;background:rgba(255,255,255,.98);border:1px solid #d4c8b0;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px 12px;font-size:12px;font-family:'DM Sans',sans-serif;pointer-events:none;z-index:10;min-width:200px;line-height:1.5"></div>
+  </div>${legend}`;
+  // Wire hover
+  const svg = host.querySelector('#bc-svg');
+  const rect = host.querySelector('#bc-hover-rect');
+  const line = host.querySelector('#bc-hover-line');
+  const dotO = host.querySelector('#bc-hover-dot-otb');
+  const dotL = host.querySelector('#bc-hover-dot-ly');
+  const dotF = host.querySelector('#bc-hover-dot-fcst');
+  const tip  = host.querySelector('#bc-tooltip');
+  function doyToDate(doy){ return new Date(2026, 0, doy); }
+  function dateLabel(d){
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return days[d.getDay()] + ' ' + d.getDate() + ' ' + months[d.getMonth()];
+  }
+  if (rect){
+    rect.addEventListener('mousemove', function(ev){
+      const svgRect = svg.getBoundingClientRect();
+      const mx = ev.clientX - svgRect.left;
+      const vbX = mx / svgRect.width * W;
+      let doy = Math.round( (vbX - padL) / plotW * 365 );
+      if (doy < 1) doy = 1; if (doy > 365) doy = 365;
+      const x = xAt(doy);
+      line.setAttribute('x1', x); line.setAttribute('x2', x);
+      line.setAttribute('opacity', '0.4');
+      const otbV = (doy <= todayDoy) ? otb[doy] : null;
+      const fcstV = (doy >= todayDoy && forecast[doy] != null) ? forecast[doy] : null;
+      const lyV = ly[doy];
+      if (otbV != null){ dotO.setAttribute('cx',x); dotO.setAttribute('cy', yAt(otbV)); dotO.setAttribute('opacity','1'); } else { dotO.setAttribute('opacity','0'); }
+      if (fcstV != null){ dotF.setAttribute('cx',x); dotF.setAttribute('cy', yAt(fcstV)); dotF.setAttribute('opacity','1'); } else { dotF.setAttribute('opacity','0'); }
+      if (lyV != null){ dotL.setAttribute('cx',x); dotL.setAttribute('cy', yAt(lyV)); dotL.setAttribute('opacity','0.85'); } else { dotL.setAttribute('opacity','0'); }
+      const dateLbl = dateLabel(doyToDate(doy));
+      let html = '<div style="font-weight:700;color:#5a3a14;font-size:12px;margin-bottom:6px;border-bottom:1px solid #ece9e2;padding-bottom:4px">'+dateLbl+'</div>';
+      if (otbV != null){
+        const ach = (forecastTotal > 0) ? (otbV / forecastTotal * 100) : null;
+        const achTxt = ach != null ? ' <span style="font-size:10px;color:#888;font-weight:400">('+ach.toFixed(1)+'% of yearly)</span>' : '';
+        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:3px 0;align-items:baseline"><span style="color:#b86b1f;font-weight:600">● OTB 2026</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14">'+fmtEurFull(otbV)+achTxt+'</b></div>';
+      }
+      if (fcstV != null && doy > todayDoy){
+        const ach = (forecastTotal > 0) ? (fcstV / forecastTotal * 100) : null;
+        const achTxt = ach != null ? ' <span style="font-size:10px;color:#888;font-weight:400">('+ach.toFixed(1)+'% of yearly)</span>' : '';
+        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:3px 0;align-items:baseline"><span style="color:#d99a4e;font-weight:600">⤴ Forecast</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14">'+fmtEurFull(fcstV)+achTxt+'</b></div>';
+      }
+      if (lyV != null){
+        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:3px 0"><span style="color:#7a4d96">● LY 2025</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14">'+fmtEurFull(lyV)+'</b></div>';
+      }
+      // Diff vs LY
+      const ref = otbV != null ? otbV : fcstV;
+      const refLbl = otbV != null ? 'OTB' : 'Forecast';
+      if (ref != null && lyV != null && lyV > 0){
+        const diff = ref - lyV;
+        const pct = diff/lyV*100;
+        const col = diff >= 0 ? '#3d7a4b' : '#a83b3b';
+        const sign = diff >= 0 ? '+' : '';
+        html += '<div style="margin-top:6px;padding-top:5px;border-top:1px solid #ece9e2;font-size:11px;color:#666">'+refLbl+' vs LY: <b style="color:'+col+'">'+sign+fmtEurFull(diff)+' ('+sign+pct.toFixed(1)+'%)</b></div>';
+      }
+      tip.innerHTML = html;
+      tip.style.display = 'block';
+      const hostRect = host.getBoundingClientRect();
+      const tipW = 230, tipH = tip.offsetHeight || 120;
+      let tipX = mx + 14;
+      if (tipX + tipW > hostRect.width) tipX = mx - tipW - 14;
+      let tipY = (ev.clientY - hostRect.top) - tipH/2;
+      if (tipY < 4) tipY = 4;
+      if (tipY + tipH > hostRect.height) tipY = hostRect.height - tipH - 4;
+      tip.style.left = tipX + 'px';
+      tip.style.top = tipY + 'px';
+    });
+    rect.addEventListener('mouseleave', function(){
+      line.setAttribute('opacity', '0');
+      dotO.setAttribute('opacity','0');
+      dotL.setAttribute('opacity','0');
+      dotF.setAttribute('opacity','0');
+      tip.style.display = 'none';
+    });
+  }
 }
 
 function _bigRenderChart(sel){
