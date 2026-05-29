@@ -1922,7 +1922,7 @@ function renderBudget(sel){
     </div>
     <div class="kpi k-budget">
       <div class="kpi-label">% Achievement</div>
-      <div class="kpi-val">${fmtPct(A.totPct,1)}</div>
+      <div class="kpi-val">${Math.round((A.totPct||0)*100)}%</div>
       <div class="kpi-sub">fiscal year target ${fmtEUR(totBud)}</div>
     </div>
     <div class="kpi k-pickup">
@@ -12694,7 +12694,7 @@ function renderForecast(sel){
       <td class="cell-mono" style="background:rgba(91,138,118,.06)" title="${m.targetExactMode ? 'EXACT time-aware target for TODAY: residual RN per stay-date (fcstRn spread via the STLY pattern, minus OTB), summed from each future booking-day to month-end. Today gets the full month volume; near month-end only a few dates remain. D=' + m.daysRemaining + ' days left.' : 'Linear-weights fallback (no LY pattern available). Daily target = (Fct−OTB) × 2/(D+1), D=' + m.daysRemaining + '.'}">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
       <td class="cell-mono ${pkCmpCls}" style="background:rgba(91,138,118,.06);cursor:help" title="${pkCmpTip}">${fmtEUR(m.eurPerDayPickup7)}</td>
       <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(m.eurPerDayPickupStly7)}</td>
-      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06)"><b>${fmtPct(m.achievement,0)}</b></td>
+      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06)" title="OTB ${fmtEUR(m.otbRev)} / YTD+Forecast ${fmtEUR(m.fcstRev)} = ${(m.achievement*100).toFixed(2)}% (rounded · ≥95% green, 70-95% neutral, <70% red)"><b>${Math.round((m.achievement||0)*100)}%</b></td>
     </tr>`;
   }
   const totDiff = totFcstRev - totOtbRev;
@@ -12769,9 +12769,9 @@ function renderForecast(sel){
     <td class="cell-mono" style="background:rgba(91,138,118,.06)" title="${totDaysToEnd} days from today to end of forecast">${totDaysToEnd > 0 ? fmtEUR(totDiff/totDaysToEnd) : '—'}</td>
     <td class="cell-mono" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7/14)}</td>
     <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7Stly/14)}</td>
-    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06)"><b>${fmtPct(totAch,0)}</b></td>
+    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06)" title="Total OTB ${fmtEUR(totOtbRev)} / Total YTD+Forecast ${fmtEUR(totFcstRev)} = ${(totAch*100).toFixed(2)}% (rounded)"><b>${Math.round((totAch||0)*100)}%</b></td>
   </tr>`;
-  document.getElementById('fcst-monthly-table').innerHTML = '<div class="mkpi-sticky-wrap" style="max-height:600px;overflow:auto;position:relative"><table class="data mkpi-sticky-table">' + head + '<tbody>' + body + '</tbody></table></div>';
+  document.getElementById('fcst-monthly-table').innerHTML = '<div class="mkpi-sticky-wrap" style="max-height:calc(100vh - 180px);min-height:340px;overflow:auto;position:relative"><table class="data mkpi-sticky-table">' + head + '<tbody>' + body + '</tbody></table></div>';
   let rtHead = '<thead><tr><th rowspan="2" style="text-align:left">Room Type</th>';
   for (const ym of ymOrder){
     const m = M[ym];
@@ -15184,7 +15184,7 @@ function answerChat(q){
   }
   if (Q.includes('budget') || Q.includes('gap') || Q.includes('target') || Q.includes('achievement')){
     const B = aggBudget(sel);
-    let html = ctx + `<b>Budget ${CFG.fiscal.label} · ${fmtPct(B.totPct,1)} achievement</b><br>
+    let html = ctx + `<b>Budget ${CFG.fiscal.label} · ${Math.round((B.totPct||0)*100)}% achievement</b><br>
       OTB: ${fmtEUR(B.totOtb)} / ${fmtEUR(B.totBud)}<br>
       Gap: <b>${(B.totOtb-B.totBud>=0?'+':'')+fmtEUR(B.totOtb-B.totBud).replace('€','€')}</b><br><br>
       <b>Top months below budget:</b><table><tr><th>Month</th><th>OTB</th><th>Target</th><th>%</th></tr>`;
@@ -15781,19 +15781,26 @@ function _bigRenderBookingCurve(sel){
   let data; try { data = bookingCurveData(sel); } catch(e){ host.innerHTML=''; return; }
   const { otb, stly, ly, forecast, todayDoy, stlyTodayDoy, forecastTotal, lyTotal } = data;
   // === ACHIEVEMENT % ===
-  // % di forecast annuale già OTB → "we're at X% of where we project to end the year"
+  // CUR: OTB di oggi / Forecast annuale = "siamo al X% di dove ci aspettiamo di chiudere"
+  // STLY: STLY di oggi / LY final = "l'anno scorso eravamo al Y% del totale fine anno"
   const otbToday = otb[todayDoy];
+  const stlyToday = (stlyTodayDoy && stly[stlyTodayDoy] != null) ? stly[stlyTodayDoy] : null;
   const achievementPct = (forecastTotal > 0) ? (otbToday / forecastTotal * 100) : null;
-  // Update title with achievement chip
+  const achievementStlyPct = (lyTotal > 0 && stlyToday != null) ? (stlyToday / lyTotal * 100) : null;
+  // Update title with achievement chips
   if (titleEl){
     const baseT = 'Booking Curve — cumulative revenue by booking date';
-    const achColor = achievementPct >= 75 ? '#2c5c3c' : (achievementPct >= 40 ? '#b86b1f' : '#a83b3b');
-    const achBg    = achievementPct >= 75 ? '#e8f1ea' : (achievementPct >= 40 ? '#fdf3e7' : '#fbe9e9');
-    const achBdr   = achievementPct >= 75 ? '#b8d4be' : (achievementPct >= 40 ? '#e5c699' : '#d9b3b3');
+    const _chipColor = (pct) => pct >= 75 ? '#2c5c3c' : (pct >= 40 ? '#b86b1f' : '#a83b3b');
+    const _chipBg    = (pct) => pct >= 75 ? '#e8f1ea' : (pct >= 40 ? '#fdf3e7' : '#fbe9e9');
+    const _chipBdr   = (pct) => pct >= 75 ? '#b8d4be' : (pct >= 40 ? '#e5c699' : '#d9b3b3');
     const achChip = (achievementPct != null)
-      ? `<span style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:${achColor};background:${achBg};border:1.5px solid ${achBdr};border-radius:14px;padding:3px 11px;margin-left:10px;font-family:'DM Mono',monospace">🎯 ${achievementPct.toFixed(1)}% of yearly forecast</span>`
+      ? `<span title="OTB \u20ac${otbToday.toLocaleString('it-IT',{maximumFractionDigits:0})} / Forecast annuale \u20ac${forecastTotal.toLocaleString('it-IT',{maximumFractionDigits:0})}" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:${_chipColor(achievementPct)};background:${_chipBg(achievementPct)};border:1.5px solid ${_chipBdr(achievementPct)};border-radius:14px;padding:3px 11px;margin-left:10px;font-family:'DM Mono',monospace;cursor:help">🎯 ${Math.round(achievementPct)}% of yearly forecast</span>`
       : '';
-    titleEl.innerHTML = baseT + achChip;
+    // Confronto STLY vs LY final (grigio sempre, non semaforo)
+    const achStlyChip = (achievementStlyPct != null)
+      ? `<span title="STLY \u20ac${stlyToday.toLocaleString('it-IT',{maximumFractionDigits:0})} / LY final \u20ac${lyTotal.toLocaleString('it-IT',{maximumFractionDigits:0})} \u2014 a che punto eri l'anno scorso al medesimo booking-day" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#5a3a14;background:#f4f1ea;border:1.5px solid #c9bea6;border-radius:14px;padding:3px 11px;margin-left:6px;font-family:'DM Mono',monospace;cursor:help">\u23F3 LY was at ${Math.round(achievementStlyPct)}%</span>`
+      : '';
+    titleEl.innerHTML = baseT + achChip + achStlyChip;
   }
   // Compute max for y-axis
   let yMax = 0;
@@ -15886,8 +15893,9 @@ function _bigRenderBookingCurve(sel){
     const baseY = yAt(0);
     return pts + `L${lastX.toFixed(1)},${baseY.toFixed(1)}L${firstX.toFixed(1)},${baseY.toFixed(1)}Z`;
   }
-  // Paths (LY is now visible for the WHOLE YEAR, including the "tail" after STLY → end of year)
+  // Paths (4 linee: LY full year, STLY curva fino a stlyTodayDoy, OTB fino a today, Forecast da today a 31/12)
   const lyPath   = pathLine(ly, 1, 365);
+  const stlyPath = pathLine(stly, 1, stlyTodayDoy);
   const otbPath  = pathLine(otb, 1, todayDoy);
   const fcstPath = pathLine(forecast, todayDoy, 365);
   const otbArea  = pathArea(otb, 1, todayDoy);
@@ -15896,6 +15904,7 @@ function _bigRenderBookingCurve(sel){
     <path d="${otbArea}" fill="url(#bcOtbArea)"/>
     <path d="${fcstArea}" fill="url(#bcFcstArea)"/>
     <path d="${lyPath}" fill="none" stroke="url(#bcLyLine)" stroke-width="2.2" opacity="0.75" stroke-linecap="round"/>
+    <path d="${stlyPath}" fill="none" stroke="#6a6a6a" stroke-width="2" stroke-dasharray="3,4" opacity="0.85" stroke-linecap="round"/>
     <path d="${fcstPath}" fill="none" stroke="#d99a4e" stroke-width="2.2" stroke-dasharray="7,5" stroke-linecap="round" opacity="0.85"/>
     <path d="${otbPath}" fill="none" stroke="url(#bcOtbLine)" stroke-width="3.2" stroke-linecap="round" filter="url(#bcShadow)"/>
   `;
@@ -15920,12 +15929,12 @@ function _bigRenderBookingCurve(sel){
   const hoverDotOtb  = `<circle id="bc-hover-dot-otb"  cx="0" cy="0" r="5" fill="#b86b1f" stroke="#fff" stroke-width="2" opacity="0" style="pointer-events:none"/>`;
   const hoverDotLy   = `<circle id="bc-hover-dot-ly"   cx="0" cy="0" r="4" fill="#7a4d96" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
   const hoverDotFcst = `<circle id="bc-hover-dot-fcst" cx="0" cy="0" r="4" fill="#d99a4e" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
-  // Legend (rebuilt: removed STLY line, added STLY marker symbol)
-  const legend = `<div style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:11.5px;color:#5a5a5a;padding:12px 14px 4px;font-family:'DM Mono',monospace">
+  // Legend (4 curve + STLY marker)
+  const legend = `<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;font-size:11.5px;color:#5a5a5a;padding:12px 14px 4px;font-family:'DM Mono',monospace">
     <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:3px;background:linear-gradient(to right,#b86b1f,#d99a4e);border-radius:2px"></span><b style="color:#5a3a14">OTB 2026</b> · ${fmtK(otb[todayDoy])}</span>
     <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:repeating-linear-gradient(to right,#d99a4e 0,#d99a4e 5px,transparent 5px,transparent 10px);border-radius:2px"></span><b style="color:#b86b1f">Forecast</b> · ${fmtK(forecastTotal)}</span>
+    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:repeating-linear-gradient(to right,#6a6a6a 0,#6a6a6a 3px,transparent 3px,transparent 7px);border-radius:2px"></span><b style="color:#5a5a5a">STLY</b> · ${fmtK(stly[stlyTodayDoy] || 0)}</span>
     <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:linear-gradient(to right,#7a4d96,#a075b8);opacity:.75;border-radius:2px"></span><b style="color:#7a4d96">LY 2025 (full year)</b> · ${fmtK(lyTotal)}</span>
-    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #6a6a6a;position:relative"><span style="position:absolute;top:50%;left:50%;width:5px;height:5px;background:#6a6a6a;border-radius:50%;transform:translate(-50%,-50%)"></span></span>STLY marker · ${fmtK(ly[stlyTodayDoy] || 0)}</span>
   </div>`;
   host.innerHTML = `<div style="position:relative">
     <svg id="bc-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;max-width:960px;height:auto;display:block;margin:0 auto">
@@ -15975,29 +15984,23 @@ function _bigRenderBookingCurve(sel){
       if (fcstV != null){ dotF.setAttribute('cx',x); dotF.setAttribute('cy', yAt(fcstV)); dotF.setAttribute('opacity','1'); } else { dotF.setAttribute('opacity','0'); }
       if (lyV != null){ dotL.setAttribute('cx',x); dotL.setAttribute('cy', yAt(lyV)); dotL.setAttribute('opacity','0.85'); } else { dotL.setAttribute('opacity','0'); }
       const dateLbl = dateLabel(doyToDate(doy));
-      let html = '<div style="font-weight:700;color:#5a3a14;font-size:12px;margin-bottom:6px;border-bottom:1px solid #ece9e2;padding-bottom:4px">'+dateLbl+'</div>';
-      if (otbV != null){
-        const ach = (forecastTotal > 0) ? (otbV / forecastTotal * 100) : null;
-        const achTxt = ach != null ? ' <span style="font-size:10px;color:#888;font-weight:400">('+ach.toFixed(1)+'% of yearly)</span>' : '';
-        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:3px 0;align-items:baseline"><span style="color:#b86b1f;font-weight:600">● OTB 2026</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14">'+fmtEurFull(otbV)+achTxt+'</b></div>';
+      // === Tooltip semplificato: SOLO 2 percentuali achievement ===
+      // - Riga 1: OTB% (passato) o Forecast% (futuro) del totale forecast annuale
+      // - Riga 2: STLY% del totale LY final (=  a che punto eravamo l'anno scorso al medesimo doy)
+      let html = '<div style="font-weight:700;color:#5a3a14;font-size:12px;margin-bottom:8px;border-bottom:1px solid #ece9e2;padding-bottom:4px">'+dateLbl+'</div>';
+      // CUR (OTB se passato, Forecast se futuro)
+      const curV = (doy <= todayDoy) ? otbV : fcstV;
+      const curLbl = (doy <= todayDoy) ? 'OTB' : 'Forecast';
+      const curColor = (doy <= todayDoy) ? '#b86b1f' : '#d99a4e';
+      const curIcon = (doy <= todayDoy) ? '●' : '\u2934';
+      if (curV != null && forecastTotal > 0){
+        const pct = curV / forecastTotal * 100;
+        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:4px 0;align-items:baseline"><span style="color:'+curColor+';font-weight:600">'+curIcon+' '+curLbl+' 2026</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:13px">'+Math.round(pct)+'%<span style="font-size:10px;color:#888;font-weight:400"> of forecast</span></b></div>';
       }
-      if (fcstV != null && doy > todayDoy){
-        const ach = (forecastTotal > 0) ? (fcstV / forecastTotal * 100) : null;
-        const achTxt = ach != null ? ' <span style="font-size:10px;color:#888;font-weight:400">('+ach.toFixed(1)+'% of yearly)</span>' : '';
-        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:3px 0;align-items:baseline"><span style="color:#d99a4e;font-weight:600">⤴ Forecast</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14">'+fmtEurFull(fcstV)+achTxt+'</b></div>';
-      }
-      if (lyV != null){
-        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:3px 0"><span style="color:#7a4d96">● LY 2025</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14">'+fmtEurFull(lyV)+'</b></div>';
-      }
-      // Diff vs LY
-      const ref = otbV != null ? otbV : fcstV;
-      const refLbl = otbV != null ? 'OTB' : 'Forecast';
-      if (ref != null && lyV != null && lyV > 0){
-        const diff = ref - lyV;
-        const pct = diff/lyV*100;
-        const col = diff >= 0 ? '#3d7a4b' : '#a83b3b';
-        const sign = diff >= 0 ? '+' : '';
-        html += '<div style="margin-top:6px;padding-top:5px;border-top:1px solid #ece9e2;font-size:11px;color:#666">'+refLbl+' vs LY: <b style="color:'+col+'">'+sign+fmtEurFull(diff)+' ('+sign+pct.toFixed(1)+'%)</b></div>';
+      // LY (STLY = LY value al medesimo doy)
+      if (lyV != null && lyTotal > 0){
+        const pctLY = lyV / lyTotal * 100;
+        html += '<div style="display:flex;justify-content:space-between;gap:14px;margin:4px 0;align-items:baseline"><span style="color:#7a4d96">● STLY (LY at same day)</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:13px">'+Math.round(pctLY)+'%<span style="font-size:10px;color:#888;font-weight:400"> of LY final</span></b></div>';
       }
       tip.innerHTML = html;
       tip.style.display = 'block';
