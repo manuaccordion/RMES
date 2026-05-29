@@ -3739,6 +3739,55 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     o.curOcc  = o.capSum > 0 ? o.curRn  / o.capSum : 0;
     o.stlyOcc = o.capSum > 0 ? o.stlyRn / o.capSum : 0;
   }
+  // ===== A · Daily Pickup index =====
+  // Per ogni stay-date futura calcolo quanti booking confermati sono entrati negli ultimi 1g/7g.
+  // Finestra: prima [today-1, today] (= ieri + oggi). Se 0, allargo a [today-7, today].
+  // Se ancora 0 → niente segnale (fattore 0%) — il fattore si attiva solo con pickup recente.
+  const _pickupByStayDate = {};  // ymd → { recent1g, recent7g }
+  {
+    const _structKeys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
+    const _todayD = new Date(TODAY); _todayD.setHours(0,0,0,0);
+    const _todayN = _todayD.getFullYear()*10000 + (_todayD.getMonth()+1)*100 + _todayD.getDate();
+    const _yesterday = new Date(_todayD); _yesterday.setDate(_yesterday.getDate()-1);
+    const _yesterdayN = _yesterday.getFullYear()*10000 + (_yesterday.getMonth()+1)*100 + _yesterday.getDate();
+    const _d7ago = new Date(_todayD); _d7ago.setDate(_d7ago.getDate()-7);
+    const _d7agoN = _d7ago.getFullYear()*10000 + (_d7ago.getMonth()+1)*100 + _d7ago.getDate();
+    for (const b of BOOKINGS){
+      if (b.cancelled) continue;
+      if (!_structKeys.has(b.struct)) continue;
+      if (b.bookYmd < _d7agoN || b.bookYmd > _todayN) continue;
+      const isRecent1g = (b.bookYmd >= _yesterdayN);  // ieri o oggi
+      const dIn = b.dIn, dOut = b.dOut;
+      if (!dIn || !dOut) continue;
+      for (let dt = new Date(dIn); dt < dOut; dt.setDate(dt.getDate()+1)){
+        const sYmd = dt.getFullYear()*10000 + (dt.getMonth()+1)*100 + dt.getDate();
+        if (sYmd < _todayN) continue;
+        if (!_pickupByStayDate[sYmd]) _pickupByStayDate[sYmd] = { recent1g: 0, recent7g: 0 };
+        _pickupByStayDate[sYmd].recent7g += 1;
+        if (isRecent1g) _pickupByStayDate[sYmd].recent1g += 1;
+      }
+    }
+  }
+  // Scala fill rate per Daily Pickup (in Fase 2 sarà configurabile per struttura via UI)
+  // Scala definitiva: >90% +20%, 71-90% +15%, 51-70% +10%, 21-50% +5%, ≤20% +0%
+  function _pickupDevFromFill(fillRate){
+    if (fillRate > 0.90) return 0.20;
+    if (fillRate >= 0.71) return 0.15;
+    if (fillRate >= 0.51) return 0.10;
+    if (fillRate >= 0.21) return 0.05;
+    return 0;
+  }
+  function _dailyPickupSignal(r){
+    const pk = _pickupByStayDate[r.ymd];
+    if (!pk) return { dev: 0, source: 'no_recent_pickup' };
+    let source = null;
+    if (pk.recent1g > 0) source = 'recent_1g';
+    else if (pk.recent7g > 0) source = 'recent_7g';
+    else return { dev: 0, source: 'no_recent_pickup' };
+    if (!r.cap || r.cap <= 0) return { dev: 0, source: 'no_capacity' };
+    const fillRate = r.curRn / r.cap;
+    return { dev: _pickupDevFromFill(fillRate), source, fillRate, pickupCount: pk.recent1g || pk.recent7g };
+  }
   let _beddyExpediaRatio = null;
   if ((sel === 'firenze' || sel === 'condotta') && typeof beddyExpediaRatio === 'function'){
     const corr = beddyExpediaRatio(sel, 90);
@@ -3935,25 +3984,17 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       _sourceExpediaBeddyEq = exp2.myPriceExpedia / fp_expToBeddyDivisor(sel);
     }
     const _mults_byRT = {};
-    // A · Daily Pickup factor: based on current fill rate (OTB/cap) for the day & RT.
-    // Sempre ≥ 0 (mai abbassa: il LMF gestisce gli abbassamenti close-in).
-    // Scale (opzione B definitiva):
-    //   availableRooms ≤ 1 (sold out o 1 last room) → +20%
-    //   80% ≤ fillRate ≤ 100% → +15%
-    //   60% ≤ fillRate < 80%  → +10%
-    //   30% ≤ fillRate < 60%  → +5%
-    //   fillRate < 30%        →  0%
+    // A · Daily Pickup factor (per-RT): stessa logica della funzione struttura,
+    // ma fill rate calcolato sulla singola RT (curByRT/cap). Si attiva solo con pickup recente
+    // a livello stay-date (intero giorno, tutte le RT condividono lo stesso segnale di pickup).
     function _pickupMultForRT(rt){
+      const sig = _dailyPickupSignal(r);
+      if (sig.source === 'no_recent_pickup' || sig.source === 'no_capacity') return 1;
       const curRn = (r.curByRT[rt] || 0);
       const cap = _invByRT[rt] || 0;
-      if (cap <= 0) return 1;  // niente capacità → neutro
-      const availableRooms = cap - curRn;
-      if (availableRooms <= 1) return 1.20;  // sold out o 1 last room
+      if (cap <= 0) return 1;
       const fillRate = curRn / cap;
-      if (fillRate >= 0.80) return 1.15;
-      if (fillRate >= 0.60) return 1.10;
-      if (fillRate >= 0.30) return 1.05;
-      return 1.00;
+      return 1 + _pickupDevFromFill(fillRate);
     }
     function _priceMultForRT(rt){
       // B · ADR rimosso nella migrazione 4-fattori. Sempre neutro.
@@ -3969,25 +4010,31 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const D_idx = _sourceExpediaBeddyEq / adrBudgetRt;
       return applyThresholds(D_idx, 'budget');
     }
-    // A · Daily Pickup (struttura): basato su fill rate del giorno (cur RN / cap totale)
+    // A · Daily Pickup (struttura): si attiva SOLO se sono entrati booking nelle ultime 1g/7g
+    // per quella stay-date. Se nessun pickup recente → fattore 0% (no segnale).
+    // Se pickup ≥1 → applica la scala fill rate (>90% +20%, 71-90% +15%, 51-70% +10%, 21-50% +5%, ≤20% 0%).
     let occ_mult = 1, A_idx = null, _A_naReason = null;
-    if (r.cap > 0){
-      const _availStruct = r.cap - r.curRn;
-      let _devA = 0;
-      if (_availStruct <= 1){
-        _devA = 0.20;
-      } else {
-        const _fillStruct = r.curRn / r.cap;
-        if (_fillStruct >= 0.80) _devA = 0.15;
-        else if (_fillStruct >= 0.60) _devA = 0.10;
-        else if (_fillStruct >= 0.30) _devA = 0.05;
-        else _devA = 0;
-      }
-      occ_mult = 1 + _devA;
-      A_idx = r.curRn / r.cap;  // fill rate strutturale (info di contesto)
-    } else {
+    const _pickupSignal = _dailyPickupSignal(r);
+    if (_pickupSignal.source === 'no_capacity'){
       _A_naReason = 'capacity not available';
+    } else if (_pickupSignal.source === 'no_recent_pickup'){
+      // Nessuna prenotazione entrata negli ultimi 7 giorni per questa stay-date → fattore neutro
+      occ_mult = 1;
+      A_idx = (r.cap > 0) ? (r.curRn / r.cap) : null;
+      _A_naReason = 'no recent pickup (last 7d) for this stay-date';
+    } else {
+      occ_mult = 1 + _pickupSignal.dev;
+      A_idx = _pickupSignal.fillRate;  // fill rate strutturale (info di contesto)
     }
+    // Salvo info debug per il modal (usate da _buildFactorDetail code='A')
+    const _A_pickupDbg = {
+      source: _pickupSignal.source,
+      pickupCount: _pickupSignal.pickupCount || 0,
+      fillRate: _pickupSignal.fillRate != null ? _pickupSignal.fillRate : (r.cap > 0 ? r.curRn / r.cap : 0),
+      curRn: r.curRn || 0,
+      cap: r.cap || 0,
+      dev: _pickupSignal.dev || 0
+    };
     // B · ADR rimosso nella migrazione 4-fattori. Mantengo le variabili a neutro per non rompere il codice a valle.
     // Il peso del fattore "price" viene azzerato dalla migrazione dei pesi (rmes_factors_v4_migration_2026_05_28).
     let price_mult = 1, B_idx = null, _B_dev_signed = 0, _B_case = 'removed', _B_naReason = 'B·ADR factor removed in 4-factor migration';
@@ -4102,6 +4149,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         _debug: {
           occCur: r.curOcc, occStly: r.stlyOcc, occIdx: A_idx,
           rnCur: r.curRn, capCur: r.cap, rnStly: r.stlyRn, capStly: r.cap,
+          pickupDbg: _A_pickupDbg,  // info pickup recente per modal Daily Pickup
           adrCur: r.curAdr, adrStly: r.stlyAdr, priceIdx: B_idx, priceCase: _B_case, priceDevSigned: _B_dev_signed,
           targetGrowthMo: (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(sel, r.mo) : null,
           paceInfo: (typeof _paceResult === 'object' && _paceResult !== null) ? _paceResult : null,
@@ -4905,7 +4953,7 @@ function renderRmesBreakdown(){
     { t:'Date',             al:'left',  tip:'Stay date', sticky:true },
     { t:'DoW',              al:'right', tip:'Day of week' },
     { t:'Last update',      al:'right', tip:'Price currently active for this stay-date (= the reference the new RMES suggestion is built on). Equals the Base Price if RMES has never been accepted, or the most recent accepted RMES otherwise.' },
-    { t:'A·Pickup',         al:'right', tip:'A · Daily Pickup — single-factor deviation %, weighted. Based on fill rate of the day (OTB/cap). Never negative: it can only push up, never down.' },
+    { t:'A·Pickup',         al:'right', tip:'A · Daily Pickup — single-factor deviation %, weighted. Activates only if new bookings came in for this stay-date in the last 1 day (yesterday+today, fallback 7d). When activated, the % depends on the fill rate (≤20% → 0%, 21–50% → +5%, 51–70% → +10%, 71–90% → +15%, >90% → +20%). Never negative.' },
     { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %, weighted. Compares the booking pace of the last 4 weeks vs the same 4 weeks last year (weeks weighted 10/20/30/40, most recent counts more).' },
     { t:'C·Online',         al:'right', tip:'C · Online Pricing — my Beddy-eq vs Weighted Expedia Compset (no offsets), single-factor dev %, weighted.' },
     { t:'D·Demand',         al:'right', tip:'D · Demand (Expedia) — Expedia search volume vs the month median, single-factor dev %, weighted.' },
@@ -6752,7 +6800,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       rmesSection += '</div>';
       const factors = [
-        {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'fill rate of the day (OTB/cap) — the higher, the more it pushes the price up. Never negative.'},
+        {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'recent bookings (last 1d, fallback 7d) for this stay-date × fill rate scale. Never negative.'},
         {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'4-week booking pace vs same 4 weeks last year (weeks weighted 10/20/30/40, most recent counts more)'},
         {key:'comp_mult',  naKey:'comp',  code:'C', name:'Online Pricing',   color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)'},
         {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'}
@@ -6765,22 +6813,34 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       function _buildFactorDetail(code){
         let h = '<div style="padding:8px 14px 10px 14px;background:#fbfaf7;border-left:3px solid #d4cdb8;font-family:\'DM Mono\',monospace;font-size:11px;line-height:1.7;color:#333">';
         if (code === 'A'){
-          // A · Daily Pickup — fill rate based, never negative
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: based on the fill rate of the day (OTB RN / total capacity). Never negative — only pushes the price up.</div>';
-          const rnCur = dbg.rnCur || 0;
-          const capCur = dbg.capCur || 0;
-          const availRooms = Math.max(0, capCur - rnCur);
+          // A · Daily Pickup — pickup recente (ieri+oggi, fallback 7g) + scala fill rate
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Activated only when new bookings come in for this stay-date. Window: yesterday + today; if none, expand to last 7 days. If no recent pickup → 0% (no signal). When activated, the % depends on the fill rate.</div>';
+          const pkDbg = dbg.pickupDbg || {};
+          const rnCur = pkDbg.curRn || dbg.rnCur || 0;
+          const capCur = pkDbg.cap || dbg.capCur || 0;
           const fillRate = capCur > 0 ? (rnCur / capCur) : 0;
-          h += '<div>Bookings on books (OTB): <b>'+rnCur+' RN</b> on <b>'+capCur+' rooms</b></div>';
-          h += '<div>Fill rate: <b>'+(fillRate*100).toFixed(1)+'%</b> · Available rooms: <b>'+availRooms+'</b></div>';
+          const pkCount = pkDbg.pickupCount || 0;
+          const pkSource = pkDbg.source || 'no_recent_pickup';
+          h += '<div>Recent pickup: <b>';
+          if (pkSource === 'recent_1g') h += pkCount + ' booking(s) in the last 1 day (yesterday + today)';
+          else if (pkSource === 'recent_7g') h += pkCount + ' booking(s) in the last 7 days <span style="color:#999">(none in last 1 day, fallback window)</span>';
+          else if (pkSource === 'no_recent_pickup') h += '0 bookings in the last 7 days → factor stays at 0%';
+          else if (pkSource === 'no_capacity') h += '— (no capacity data)';
+          h += '</b></div>';
+          h += '<div>Bookings on books (OTB): <b>'+rnCur+' RN</b> on <b>'+capCur+' rooms</b> · Fill rate: <b>'+(fillRate*100).toFixed(1)+'%</b></div>';
           h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Threshold matched: <b style="color:#3b6b9a">';
-          let _devLbl = '';
-          if (availRooms <= 1){ _devLbl = 'Sold out or 1 last room → +20%'; }
-          else if (fillRate >= 0.80){ _devLbl = 'Fill 80–99% → +15%'; }
-          else if (fillRate >= 0.60){ _devLbl = 'Fill 60–80% → +10%'; }
-          else if (fillRate >= 0.30){ _devLbl = 'Fill 30–60% → +5%'; }
-          else { _devLbl = 'Fill < 30% → 0% (neutral)'; }
-          h += _devLbl + '</b></div>';
+          if (pkSource === 'no_recent_pickup'){
+            h += 'No signal → +0%';
+          } else if (pkSource === 'no_capacity'){
+            h += '— (no capacity)';
+          } else {
+            if (fillRate > 0.90) h += 'Fill > 90% → +20%';
+            else if (fillRate >= 0.71) h += 'Fill 71–90% → +15%';
+            else if (fillRate >= 0.51) h += 'Fill 51–70% → +10%';
+            else if (fillRate >= 0.21) h += 'Fill 21–50% → +5%';
+            else h += 'Fill ≤ 20% → +0%';
+          }
+          h += '</b></div>';
           h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Applied dev: '+_fpct((mults.occ_mult-1),1)+'</div>';
         } else if (code === 'B'){
           h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — recent weeks count more. The 4 weeks are weighted W1 10% &middot; W2 20% &middot; W3 30% &middot; W4 40% (W4 = most recent), so a slow recent week pulls the pace down more than an old one. Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
@@ -7004,7 +7064,11 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '<div style="font-size:10.5px;color:#888;margin-top:2px">'+(hasOverride?'🖋 Manual override active':'= suggested price (no override)')+'</div>';
       rmesSection += '</div>';
       rmesSection += '<div style="display:flex;gap:6px;align-items:center">';
-      rmesSection += '<input type="number" id="fp-final-input" min="0" max="9999" step="1" value="'+priceRmesFinal.toFixed(0)+'" '+finalDataAttr+' style="width:100px;padding:8px 10px;border:2px solid '+finalBoxColor+';border-radius:5px;font-family:\'DM Mono\',monospace;text-align:right;font-size:18px;font-weight:700;color:'+finalBoxColor+';background:#fff">';
+      // L'input mostra il target RMES "vero" (= rmesSuggested = target su Base puro), non priceRmesFinal
+      // (che è derivato dalla current reference e quindi disallineato quando c'è un override).
+      // Se l'utente clicca Save senza modifiche, salva il target reale.
+      const _inputDefault = (rmesSuggested != null && isFinite(rmesSuggested)) ? rmesSuggested : priceRmesFinal;
+      rmesSection += '<input type="number" id="fp-final-input" min="0" max="9999" step="1" value="'+_inputDefault.toFixed(0)+'" '+finalDataAttr+' style="width:100px;padding:8px 10px;border:2px solid '+finalBoxColor+';border-radius:5px;font-family:\'DM Mono\',monospace;text-align:right;font-size:18px;font-weight:700;color:'+finalBoxColor+';background:#fff">';
       rmesSection += '<span style="color:'+finalBoxColor+';font-size:14px">€</span>';
       rmesSection += '<button id="fp-final-save" '+finalDataAttr+' style="padding:8px 14px;border:1px solid '+finalBoxColor+';background:'+finalBoxColor+';color:#fff;border-radius:5px;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:700;cursor:pointer">💾 Save</button>';
       if (hasOverride){
@@ -12578,7 +12642,7 @@ function _renderRmesWeightsBox(sel){
   if (!wrap) return;
   const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
   const factors = [
-    { key:'occ',    letter:'A', label:'Daily Pickup',    color:'#3b6b9a', desc:'fill rate of the day (OTB / cap)' },
+    { key:'occ',    letter:'A', label:'Daily Pickup',    color:'#3b6b9a', desc:'recent pickup × fill rate (last 1d, fallback 7d)' },
     { key:'pace',   letter:'B', label:'Pace Trend',      color:'#8e5fa8', desc:'pickup 4w month vs STLY (recent week weighted)' },
     { key:'comp',   letter:'C', label:'Online Pricing',  color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)' },
     { key:'airdna', letter:'D', label:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median' },
