@@ -199,10 +199,23 @@ table.data .ovg-d1{background:rgba(59,90,120,.05)}
 table.data .ovg-d2{background:rgba(59,90,120,.08)}
 table.data .ovg-start{border-left:2px solid var(--line-2)}
 table.data thead th.ovg-start{border-left:2px solid var(--line-2)}
+/* === Monthly KPI table: top scrollbar (duplicate of bottom) === */
+.mkpi-topscroll-wrap{
+  border:1px solid var(--line);
+  border-bottom:none;
+  border-radius:6px 6px 0 0;
+  background:var(--surface);
+  /* Make the scrollbar visible / chunky enough to grab */
+}
+.mkpi-topscroll-wrap::-webkit-scrollbar{ height:12px }
+.mkpi-topscroll-wrap::-webkit-scrollbar-track{ background:#f4efe4; border-radius:6px }
+.mkpi-topscroll-wrap::-webkit-scrollbar-thumb{ background:#c9bea6; border-radius:6px; border:2px solid #f4efe4 }
+.mkpi-topscroll-wrap::-webkit-scrollbar-thumb:hover{ background:#a89b7d }
 /* === Monthly KPI table: sticky first column + 2-row sticky header === */
 .mkpi-sticky-wrap{
   border:1px solid var(--line);
-  border-radius:6px;
+  border-top:1px solid var(--line);
+  border-radius:0 0 6px 6px;
   background:var(--surface);
 }
 table.mkpi-sticky-table{
@@ -1118,7 +1131,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           </label>
         </div>
       </div>
-      <div class="panel-body flush" id="fcst-monthly-table" style="overflow-x:auto"></div>
+      <div class="panel-body flush" id="fcst-monthly-table"></div>
     </div>
 
     <div class="chart-grid" style="margin-top:16px">

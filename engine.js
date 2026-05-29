@@ -12778,7 +12778,38 @@ function renderForecast(sel){
     <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7Stly/14)}</td>
     <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06)" title="Total OTB ${fmtEUR(totOtbRev)} / Total Month-1st snapshot ${fmtEUR(totAchDen)} = ${(totAch*100).toFixed(2)}% (rounded · snapshot dove disponibile, altrimenti live forecast)"><b>${Math.round((totAch||0)*100)}%</b></td>
   </tr>`;
-  document.getElementById('fcst-monthly-table').innerHTML = '<div class="mkpi-sticky-wrap" style="max-height:calc(100vh - 180px);min-height:340px;overflow:auto;position:relative"><table class="data mkpi-sticky-table">' + head + '<tbody>' + body + '</tbody></table></div>';
+  document.getElementById('fcst-monthly-table').innerHTML =
+    '<div class="mkpi-topscroll-wrap" id="mkpi-topscroll" style="overflow-x:auto;overflow-y:hidden;height:14px"><div id="mkpi-topscroll-spacer" style="height:1px"></div></div>' +
+    '<div class="mkpi-sticky-wrap" id="mkpi-mainwrap" style="max-height:calc(100vh - 200px);min-height:340px;overflow:auto;position:relative">' +
+      '<table class="data mkpi-sticky-table" id="mkpi-table">' + head + '<tbody>' + body + '</tbody></table>' +
+    '</div>';
+  // === Sync delle 2 scrollbar (top fittizia + main) ===
+  setTimeout(() => {
+    const top = document.getElementById('mkpi-topscroll');
+    const main = document.getElementById('mkpi-mainwrap');
+    const tbl = document.getElementById('mkpi-table');
+    const spacer = document.getElementById('mkpi-topscroll-spacer');
+    if (!top || !main || !tbl || !spacer) return;
+    // La barra in alto rappresenta la stessa larghezza della tabella
+    const updateSpacer = () => { spacer.style.width = tbl.scrollWidth + 'px'; };
+    updateSpacer();
+    // ResizeObserver per ricalcolare se la tabella cambia
+    if (typeof ResizeObserver !== 'undefined'){
+      try { new ResizeObserver(updateSpacer).observe(tbl); } catch(e){}
+    }
+    // Sincronizzazione bidirezionale dello scroll
+    let syncing = false;
+    top.addEventListener('scroll', () => {
+      if (syncing) return; syncing = true;
+      main.scrollLeft = top.scrollLeft;
+      syncing = false;
+    });
+    main.addEventListener('scroll', () => {
+      if (syncing) return; syncing = true;
+      top.scrollLeft = main.scrollLeft;
+      syncing = false;
+    });
+  }, 0);
   let rtHead = '<thead><tr><th rowspan="2" style="text-align:left">Room Type</th>';
   for (const ym of ymOrder){
     const m = M[ym];
