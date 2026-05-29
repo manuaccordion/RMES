@@ -3129,7 +3129,11 @@ let SELL_PKMONTH_FILTER = 'both'; // 'both' = aggregato (default quando CURRENT_
 /* === Pesi RMES per-struttura ===
    Ogni struttura ha la sua configurazione indipendente di pesi.
    Ordine nuovo: A=OCC, B=Price, C=Pace, D=Compset, E=AirDNA (interni A/B/C, esterni D/E) */
-const SELL_RMES_W_DEFAULT = { occ: 0.20, price: 0.20, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20 };
+// 4-factor model (migration 2026-05-28):
+// occ key reused = A·Daily Pickup (fill-rate based)
+// price key set to 0 (B·ADR factor removed, kept for code compatibility)
+// pace = B·Pace Trend, comp = C·Online Pricing, airdna = D·Demand Expedia
+const SELL_RMES_W_DEFAULT = { occ: 0.25, price: 0.00, pace: 0.25, budget: 0.00, comp: 0.25, airdna: 0.25 };
 const SELL_RMES_W_KEY = 'rmes_weights_per_struct_v4';
 let SELL_RMES_W_ALL = (function(){
   try {
@@ -3213,6 +3217,22 @@ let SELL_RMES_W_ALL = (function(){
     alfani:   Object.assign({}, SELL_RMES_W_DEFAULT),
     davids:   Object.assign({}, SELL_RMES_W_DEFAULT),
   };
+})();
+// 4-factor model migration (2026-05-28):
+// Drop legacy B·OCC and B·ADR factors, introduce A·Daily Pickup (occ key reused),
+// reset all weights to 25/0/25/25/25 (occ/price/pace/comp/airdna) across the 4 properties.
+(function _migrate4Factors(){
+  try {
+    const flagKey = 'rmes_factors_v4_migration_2026_05_28';
+    if (localStorage.getItem(flagKey)) return;
+    const defaults = { occ: 0.25, price: 0.00, pace: 0.25, budget: 0.00, comp: 0.25, airdna: 0.25 };
+    for (const s of ['firenze','condotta','alfani','davids']){
+      SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
+    }
+    localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL));
+    localStorage.setItem(flagKey, '1');
+    console.log('[RMES] 4-factor migration applied: weights reset to 25/0/25/25/25 (A·Pickup, B·ADR=0, C·Pace, D·Online, E·Demand)');
+  } catch(e){}
 })();
 function saveRmesWeights(){
   try { localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL)); } catch(e){}
@@ -3915,28 +3935,28 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       _sourceExpediaBeddyEq = exp2.myPriceExpedia / fp_expToBeddyDivisor(sel);
     }
     const _mults_byRT = {};
-    function _occMultForRT(rt){
+    // A · Daily Pickup factor: based on current fill rate (OTB/cap) for the day & RT.
+    // Sempre ≥ 0 (mai abbassa: il LMF gestisce gli abbassamenti close-in).
+    // Scale (opzione B definitiva):
+    //   availableRooms ≤ 1 (sold out o 1 last room) → +20%
+    //   80% ≤ fillRate ≤ 100% → +15%
+    //   60% ≤ fillRate < 80%  → +10%
+    //   30% ≤ fillRate < 60%  → +5%
+    //   fillRate < 30%        →  0%
+    function _pickupMultForRT(rt){
       const curRn = (r.curByRT[rt] || 0);
-      const stlyRn = (r.stlyByRT[rt] || 0);
       const cap = _invByRT[rt] || 0;
-      if (cap <= 0) return 1;
-      const curOcc = curRn / cap;
-      const stlyOcc = stlyRn / cap;
-      if (stlyOcc > 0 && curOcc > 0){
-        return applyThresholds(curOcc / stlyOcc, 'occ');
-      }
-      return 1;
+      if (cap <= 0) return 1;  // niente capacità → neutro
+      const availableRooms = cap - curRn;
+      if (availableRooms <= 1) return 1.20;  // sold out o 1 last room
+      const fillRate = curRn / cap;
+      if (fillRate >= 0.80) return 1.15;
+      if (fillRate >= 0.60) return 1.10;
+      if (fillRate >= 0.30) return 1.05;
+      return 1.00;
     }
     function _priceMultForRT(rt){
-      const curRn = (r.curByRT[rt] || 0);
-      const curRev = (r.curByRTRev[rt] || 0);
-      const stlyRn = (r.stlyByRT[rt] || 0);
-      const stlyRev = (r.stlyByRTRev[rt] || 0);
-      const curAdr = curRn > 0 ? curRev / curRn : 0;
-      const stlyAdr = stlyRn > 0 ? stlyRev / stlyRn : 0;
-      if (stlyAdr > 0 && curAdr > 0){
-        return applyThresholds(curAdr / stlyAdr, 'price');
-      }
+      // B · ADR rimosso nella migrazione 4-fattori. Sempre neutro.
       return 1;
     }
     function _paceMultForRT(rt){
@@ -3949,42 +3969,28 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const D_idx = _sourceExpediaBeddyEq / adrBudgetRt;
       return applyThresholds(D_idx, 'budget');
     }
+    // A · Daily Pickup (struttura): basato su fill rate del giorno (cur RN / cap totale)
     let occ_mult = 1, A_idx = null, _A_naReason = null;
-    if (r.stlyOcc > 0 && r.curOcc > 0){
-      A_idx = r.curOcc / r.stlyOcc;
-      occ_mult = applyThresholds(A_idx, 'occ');
-    } else {
-      _A_naReason = (r.stlyOcc <= 0 && r.curOcc <= 0) ? 'OCC today and STLY both zero'
-                  : (r.stlyOcc <= 0) ? 'OCC STLY (day -364) not available'
-                  : 'OCC today is zero';
-    }
-    let price_mult = 1, B_idx = null, _B_dev_signed = 0, _B_case = null, _B_naReason = null;
-    if (r.stlyAdr > 0 && r.curAdr > 0 && isFinite(r.curAdr) && isFinite(r.stlyAdr)){
-      B_idx = r.curAdr / r.stlyAdr;
-      const adrDev = B_idx - 1;  // es. cur=180, STLY=195 → -0.077
-      if (adrDev < 0){
-        _B_dev_signed = -adrDev;  // positivo
-        _B_case = 'recover_below_LY';
+    if (r.cap > 0){
+      const _availStruct = r.cap - r.curRn;
+      let _devA = 0;
+      if (_availStruct <= 1){
+        _devA = 0.20;
       } else {
-        if (r.stlyOcc > 0 && r.curOcc > 0 && r.curOcc >= r.stlyOcc){
-          _B_dev_signed = 0;
-          _B_case = 'all_good';
-        } else {
-          const tgPct = (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(sel, r.mo) : 5;
-          const tgFrac = (tgPct || 0) / 100;
-          const effective = Math.max(0, adrDev - tgFrac);  // mai negativo → mai dev positivo nel Caso 3
-          _B_dev_signed = -effective;  // dev ≤ 0 (freno o neutro)
-          _B_case = 'brake_softened';
-        }
+        const _fillStruct = r.curRn / r.cap;
+        if (_fillStruct >= 0.80) _devA = 0.15;
+        else if (_fillStruct >= 0.60) _devA = 0.10;
+        else if (_fillStruct >= 0.30) _devA = 0.05;
+        else _devA = 0;
       }
-      if (_B_dev_signed > 0.50) _B_dev_signed = 0.50;
-      if (_B_dev_signed < -0.50) _B_dev_signed = -0.50;
-      price_mult = 1 + _B_dev_signed;
+      occ_mult = 1 + _devA;
+      A_idx = r.curRn / r.cap;  // fill rate strutturale (info di contesto)
     } else {
-      _B_naReason = (r.stlyAdr <= 0 && r.curAdr <= 0) ? 'ADR today and STLY both missing'
-                  : (r.stlyAdr <= 0 || !isFinite(r.stlyAdr)) ? 'ADR STLY (day -364) not available'
-                  : 'ADR today not available (0 bookings)';
+      _A_naReason = 'capacity not available';
     }
+    // B · ADR rimosso nella migrazione 4-fattori. Mantengo le variabili a neutro per non rompere il codice a valle.
+    // Il peso del fattore "price" viene azzerato dalla migrazione dei pesi (rmes_factors_v4_migration_2026_05_28).
+    let price_mult = 1, B_idx = null, _B_dev_signed = 0, _B_case = 'removed', _B_naReason = 'B·ADR factor removed in 4-factor migration';
     const _paceResult = _paceMultForRow(r, true);  // chiedo modalità verbosa per flag n/d
     const pace_mult = (typeof _paceResult === 'object' && _paceResult !== null) ? _paceResult.mult : _paceResult;
     const _C_naReason = (typeof _paceResult === 'object' && _paceResult !== null) ? _paceResult.naReason : null;
@@ -4173,28 +4179,21 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         }
         const _eventBoost = _getEventBoost(r.ymd);
         let _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100) * _eventBoost;
-        // NewRMES cap ±20% rispetto al riferimento (baseRT) per evitare scossoni forti
-        const _capMin = baseRT * 0.80;
-        const _capMax = baseRT * 1.20;
-        if (_priceAfterFactors < _capMin) _priceAfterFactors = _capMin;
-        if (_priceAfterFactors > _capMax) _priceAfterFactors = _capMax;
+        // Cap ±20% RIMOSSO nella migrazione 4-fattori. Restano solo Floor (≥) e Anchor ±50% (sul Base).
         const priceSuggested = Math.max(_priceAfterFactors, _structFloor);
         rmesSuggestedByRT[rt] = priceSuggested;
         rmesDeltaByRT[rt] = priceSuggested - baseRT;   // delta in € rispetto al riferimento corrente
         // ---- TARGET RMES su Base Price strutturale (per la regola "in line" con override) ----
         // Stessa formula ma partendo dal Base puro (ignorando l'override modale finale).
-        // Output: {price, atCap} dove atCap = 'min' | 'max' | 'floor' | null
+        // Output: {price, atCap} dove atCap = 'floor' | null
         if (_basePureValid){
           let baseRT_pure = _basePure;
           if (_suppData && rt !== _suppData.baseRT){
             baseRT_pure = _basePure + _supplementForRT(rt, r.mo);
           }
           let _priceOnBase = baseRT_pure * multRT * (1 + _lmfPct/100) * _eventBoost;
-          const _capMinB = baseRT_pure * 0.80;
-          const _capMaxB = baseRT_pure * 1.20;
+          // Cap ±20% RIMOSSO. Solo Floor.
           let _atCapB = null;
-          if (_priceOnBase < _capMinB){ _priceOnBase = _capMinB; _atCapB = 'min'; }
-          else if (_priceOnBase > _capMaxB){ _priceOnBase = _capMaxB; _atCapB = 'max'; }
           if (_priceOnBase < _structFloor){ _priceOnBase = _structFloor; _atCapB = 'floor'; }
           rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB };
         } else {
@@ -4755,7 +4754,13 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
     const baseRT = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
     if (!baseRT) continue;
     let map;
-    try { map = computeRMESPriceMap(sk, todayN, Math.ceil((dTo - today)/86400000) + 2); }
+    // Usa SEMPRE SELL_RANGE_DAYS (uguale a Sell Strategy) → stessa chiave cache _RMESMAP_TICK
+    // → garantisce che i numeri della tabella RMES breakdown coincidano con quelli della Sell Strategy.
+    // Se SELL_RANGE_DAYS non basta a coprire il range richiesto, lo estendiamo.
+    let _rangeForMap = (typeof SELL_RANGE_DAYS !== 'undefined' && SELL_RANGE_DAYS > 0) ? SELL_RANGE_DAYS : 180;
+    const _minNeeded = Math.ceil((dTo - today)/86400000) + 2;
+    if (_minNeeded > _rangeForMap) _rangeForMap = _minNeeded;
+    try { map = computeRMESPriceMap(sk, todayN, _rangeForMap); }
     catch(e){ console.warn('rmesBreakdown: computeRMESPriceMap failed for '+sk, e); continue; }
     for (let d = new Date(dEffectiveFrom); d <= dTo; d.setDate(d.getDate()+1)){
       const ymdN = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
@@ -4894,21 +4899,20 @@ function renderRmesBreakdown(){
   let h = '<div style="max-height:70vh;overflow:auto;border:1px solid #eee;border-radius:6px">';
   h += '<table class="data-table" style="width:100%;font-size:12px;border-collapse:separate;border-spacing:0">';
   h += '<thead><tr>';
-  const compositeTip = 'Composite multiplier = Σ (weight × dev%) of the 5 RMES factors, capped at ±total cap (default ±30%, configurable per property).\\n\\nIt is the joint signal from the 5 factors BEFORE LMF and Event Factor.\\n\\nFinal price = Last update × Composite × (1 + LMF%) × Event Factor, then bounded ±20% vs Last update and ≥ floor.';
+  const compositeTip = 'Composite multiplier = Σ (weight × dev%) of the 4 RMES factors, capped at ±total cap (default ±30%, configurable per property).\\n\\nIt is the joint signal from the 4 factors BEFORE LMF and Event Factor.\\n\\nFinal price = Last update × Composite × (1 + LMF%) × Event Factor, then ≥ floor.';
   const cols = [
     { t:'Property',         al:'left',  tip:'Property', sticky:true },
     { t:'Date',             al:'left',  tip:'Stay date', sticky:true },
     { t:'DoW',              al:'right', tip:'Day of week' },
     { t:'Last update',      al:'right', tip:'Price currently active for this stay-date (= the reference the new RMES suggestion is built on). Equals the Base Price if RMES has never been accepted, or the most recent accepted RMES otherwise.' },
-    { t:'A·OCC',            al:'right', tip:'A · Demand (OCC) — single-factor deviation %. Already weighted: dev = weight × raw_signal. Sum with the other four to get the composite.' },
-    { t:'B·ADR',            al:'right', tip:'B · Demand (Price) — single-factor deviation %, weighted.' },
-    { t:'C·Pace',           al:'right', tip:'C · Pace Trend — single-factor deviation %, weighted.' },
-    { t:'D·Online',         al:'right', tip:'D · Online Pricing — my Beddy-eq vs Weighted Expedia Compset (no offsets), single-factor dev %, weighted.' },
-    { t:'E·Search',         al:'right', tip:'E · Demand (Expedia) — Expedia search volume vs the month median, single-factor dev %, weighted.' },
+    { t:'A·Pickup',         al:'right', tip:'A · Daily Pickup — single-factor deviation %, weighted. Based on fill rate of the day (OTB/cap). Never negative: it can only push up, never down.' },
+    { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %, weighted. Compares the booking pace of the last 4 weeks vs the same 4 weeks last year (weeks weighted 10/20/30/40, most recent counts more).' },
+    { t:'C·Online',         al:'right', tip:'C · Online Pricing — my Beddy-eq vs Weighted Expedia Compset (no offsets), single-factor dev %, weighted.' },
+    { t:'D·Demand',         al:'right', tip:'D · Demand (Expedia) — Expedia search volume vs the month median, single-factor dev %, weighted.' },
     { t:'Composite',        al:'right', tip:compositeTip },
-    { t:'LMF',              al:'right', tip:'Last-Minute Factor — extra ± % from the LMF matrix (OCC × days to arrival). Applied AFTER the composite.' },
+    { t:'LMF',              al:'right', tip:'Last-Minute Factor — extra ± % from the LMF matrix (OCC × days to arrival). Applied AFTER the composite. This is the only mechanism that can lower the price close-in.' },
     { t:'Event',            al:'right', tip:'Event Factor — additional multiplier when a calendar event is configured with a non-zero weight for that date. Applied AFTER LMF.' },
-    { t:'RMES suggested',   al:'right', tip:'Final suggested price = Last update × Composite × (1+LMF%) × Event, bounded ±20% vs Last update and ≥ floor.' },
+    { t:'RMES suggested',   al:'right', tip:'Final suggested price = Last update × Composite × (1+LMF%) × Event, ≥ floor. The ⚠ icon means the price was clamped to the Floor Rate.' },
     { t:'RMES applied',     al:'right', tip:'Price actually loaded for this date. Source can be: the Base Price if no action was taken (= same as Last update), the accepted RMES if you accepted a suggestion, or a manual override 🖋 if you forced a specific price. Hover the cell to see which one.' },
   ];
   h += cols.map(c => `<th title="${escapeHtml(c.tip||'')}" style="position:sticky;top:0;z-index:2;background:#eaf0eb;padding:8px 9px;border-bottom:2px solid #c5d4c5;text-align:${c.al};white-space:nowrap;cursor:help">${c.t}</th>`).join('');
@@ -4933,11 +4937,10 @@ function renderRmesBreakdown(){
     const wD = r.weights.D != null ? (r.weights.D*100).toFixed(0)+'%' : '?';
     const wE = r.weights.E != null ? (r.weights.E*100).toFixed(0)+'%' : '?';
     let compTip = compositeTip + '\\n\\nThis day:';
-    if (r.devA != null) compTip += '\\nA (w='+wA+'): '+fmtPct(r.devA);
-    if (r.devB != null) compTip += '\\nB (w='+wB+'): '+fmtPct(r.devB);
-    if (r.devC != null) compTip += '\\nC (w='+wC+'): '+fmtPct(r.devC);
-    if (r.devD != null) compTip += '\\nD (w='+wD+'): '+fmtPct(r.devD);
-    if (r.devE != null) compTip += '\\nE (w='+wE+'): '+fmtPct(r.devE);
+    if (r.devA != null) compTip += '\\nA·Pickup (w='+wA+'): '+fmtPct(r.devA);
+    if (r.devC != null) compTip += '\\nB·Pace (w='+wC+'): '+fmtPct(r.devC);
+    if (r.devD != null) compTip += '\\nC·Online (w='+wD+'): '+fmtPct(r.devD);
+    if (r.devE != null) compTip += '\\nD·Demand (w='+wE+'): '+fmtPct(r.devE);
     compTip += '\\n→ Σ = '+fmtPct(r.compositeDevPct) + (r.hitCap ? ' (capped)' : '');
     const eventTip = r.eventName ? ('Event: '+r.eventName+' · factor ×'+r.eventBoost.toFixed(3)) : 'No event configured for this date.';
     h += '<tr style="border-bottom:1px solid #f0eee9">';
@@ -4950,8 +4953,9 @@ function renderRmesBreakdown(){
       const col = (v > 0.5) ? '#2c5c3c' : (v < -0.5 ? '#a83b3b' : '#888');
       return `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${col};border-bottom:1px solid #f0eee9">${fmtPct(v)}</td>`;
     };
+    // 4-factor model: A·Pickup, B·Pace (legacy devC), C·Online (legacy devD), D·Demand (legacy devE).
+    // Legacy devB (B·ADR) removed from display.
     h += cellDev(r.devA);
-    h += cellDev(r.devB);
     h += cellDev(r.devC);
     h += cellDev(r.devD);
     h += cellDev(r.devE);
@@ -4996,7 +5000,7 @@ function renderRmesBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·OCC</b> · <b>B·ADR</b> · <b>C·Pace</b> · <b>D·Online</b> · <b>E·Search</b> · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = at the ±20% cap or floor) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (4-week booking pace vs LY) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -5004,7 +5008,7 @@ function renderRmesBreakdown(){
 function _rmesExportCSV(){
   if (!_RMES_LAST_ROWS || !_RMES_LAST_ROWS.length){ alert('Nothing to export — apply a range first.'); return; }
   const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const header = ['Property','Date','DoW','LastUpdate','accepted_on','weight_A','dev_A_pct','weight_B','dev_B_pct','weight_C','dev_C_pct','weight_D','dev_D_pct','weight_E','dev_E_pct','composite_multiplier','composite_dev_pct','hit_total_cap','LMF_pct','event_name','event_factor','RMES_suggested','RMES_suggested_at_cap','RMES_applied','applied_source','applied_on'];
+  const header = ['Property','Date','DoW','LastUpdate','accepted_on','weight_A_Pickup','dev_A_Pickup_pct','weight_B_Pace','dev_B_Pace_pct','weight_C_Online','dev_C_Online_pct','weight_D_Demand','dev_D_Demand_pct','composite_multiplier','composite_dev_pct','hit_total_cap','LMF_pct','event_name','event_factor','RMES_suggested','RMES_suggested_at_cap','RMES_applied','applied_source','applied_on'];
   const lines = [header.join(',')];
   for (const r of _RMES_LAST_ROWS){
     const dt = new Date(r.iso + 'T00:00:00');
@@ -5018,14 +5022,16 @@ function _rmesExportCSV(){
       dowNames[dt.getDay()],
       r.lastUpdate != null ? r.lastUpdate : '',
       acceptedOn,
+      // A · Daily Pickup (legacy key A)
       r.weights.A != null ? r.weights.A.toFixed(3) : '',
       r.devA != null ? r.devA.toFixed(2) : '',
-      r.weights.B != null ? r.weights.B.toFixed(3) : '',
-      r.devB != null ? r.devB.toFixed(2) : '',
+      // B · Pace Trend (legacy key C)
       r.weights.C != null ? r.weights.C.toFixed(3) : '',
       r.devC != null ? r.devC.toFixed(2) : '',
+      // C · Online Pricing (legacy key D)
       r.weights.D != null ? r.weights.D.toFixed(3) : '',
       r.devD != null ? r.devD.toFixed(2) : '',
+      // D · Demand Expedia (legacy key E)
       r.weights.E != null ? r.weights.E.toFixed(3) : '',
       r.devE != null ? r.devE.toFixed(2) : '',
       r.compositeMult.toFixed(4),
@@ -6521,7 +6527,7 @@ function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, 
   h += '<input type="number" id="fp-popup-override-input" min="0" max="9999" step="5" placeholder="€" value="' + (status === 'override' && state ? state.value.toFixed(0) : (fpCalcNow != null ? fpCalcNow.toFixed(0) : '')) + '" style="flex:0 0 110px;padding:10px;border:1px solid #3b6b9a;background:#eef4fb;border-radius:5px;font-family:\'DM Mono\',monospace;text-align:right;font-size:14px;font-weight:700;color:#1e4a6b">';
   h += '<button id="fp-popup-override" style="flex:1;padding:10px 14px;border:1px solid #3b6b9a;background:#3b6b9a;color:#fff;border-radius:5px;font-family:\'DM Sans\',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:left">';
   h += '<div>🖋 Save override</div>';
-  h += '<div style="font-size:10.5px;font-weight:400;opacity:.85;margin-top:3px">Manual value frozen. The 5 factors will start from here.</div>';
+  h += '<div style="font-size:10.5px;font-weight:400;opacity:.85;margin-top:3px">Manual value frozen. The 4 RMES factors will start from here.</div>';
   h += '</button></div>';
   if (status !== 'proposed'){
     h += '<button id="fp-popup-reset" style="padding:8px 14px;border:1px solid #999;background:#fff;color:#666;border-radius:5px;font-family:\'DM Sans\',sans-serif;font-size:12px;cursor:pointer;text-align:left">';
@@ -6724,7 +6730,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         fpSub = dtTxt ? ('Saved on '+dtTxt+' · the new RMES suggestion starts from this price') : 'Manual override active · the new RMES suggestion starts from this price';
       } else if (_src === 'foundation'){
         fpLabel = 'Last update (manual Base override)';
-        fpSub = 'Manual Base override · the 5 factors apply on top of this price';
+        fpSub = 'Manual Base override · the 4 RMES factors apply on top of this price';
       } else if (_src === 'accepted'){
         const dtTxt = _fmtDateTime(_acceptedMeta.ts);
         fpLabel = 'Last update (accepted RMES)';
@@ -6746,11 +6752,10 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       rmesSection += '</div>';
       const factors = [
-        {key:'occ_mult',   naKey:'occ',   code:'A', name:'Demand (occ)',     color:'#3b6b9a', desc:'current-day OCC vs STLY -364d'},
-        {key:'price_mult', naKey:'price', code:'B', name:'Demand (Price)',   color:'#c4823b', desc:'current-day ADR vs STLY (3 conditional cases)'},
-        {key:'pace_mult',  naKey:'pace',  code:'C', name:'Pace Trend',    color:'#8e5fa8', desc:'Pickup 4w current month vs STLY (recent week weighted) + OCC check'},
-        {key:'comp_mult',  naKey:'comp',  code:'D', name:'Online Pricing', color:'#1e6b4a', desc:'My Expedia vs compset average (invertito)'},
-        {key:'air_mult',   naKey:'air',   code:'E', name:'Demand (Expedia)',  color:'#a83b3b', desc:'Expedia searches vs month median'}
+        {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'fill rate of the day (OTB/cap) — the higher, the more it pushes the price up. Never negative.'},
+        {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'4-week booking pace vs same 4 weeks last year (weeks weighted 10/20/30/40, most recent counts more)'},
+        {key:'comp_mult',  naKey:'comp',  code:'C', name:'Online Pricing',   color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)'},
+        {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'}
       ];
       const naReasons = mults._naReasons || {};
       const dbg = mults._debug || {};
@@ -6760,34 +6765,25 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       function _buildFactorDetail(code){
         let h = '<div style="padding:8px 14px 10px 14px;background:#fbfaf7;border-left:3px solid #d4cdb8;font-family:\'DM Mono\',monospace;font-size:11px;line-height:1.7;color:#333">';
         if (code === 'A'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>OCC_cur / OCC_STLY − 1</code></div>';
-          h += '<div>OCC today: <b>'+_fn((dbg.occCur||0)*100, 1)+'%</b> &nbsp;<span style="color:#888">(RN '+(dbg.rnCur||0)+' / cap '+(dbg.capCur||0)+')</span></div>';
-          h += '<div>OCC STLY (−364d): <b>'+_fn((dbg.occStly||0)*100, 1)+'%</b> &nbsp;<span style="color:#888">(RN '+(dbg.rnStly||0)+' / cap '+(dbg.capStly||0)+')</span></div>';
-          if (dbg.occIdx != null){
-            const dev = dbg.occIdx - 1;
-            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Ratio: <b>'+(dbg.occIdx).toFixed(3)+'</b> · Raw dev: <b>'+_fpct(dev,1)+'</b></div>';
-            h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Applied dev (post user thresholds + clamp ±50%): '+_fpct((mults.occ_mult-1),1)+'</div>';
-          }
+          // A · Daily Pickup — fill rate based, never negative
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: based on the fill rate of the day (OTB RN / total capacity). Never negative — only pushes the price up.</div>';
+          const rnCur = dbg.rnCur || 0;
+          const capCur = dbg.capCur || 0;
+          const availRooms = Math.max(0, capCur - rnCur);
+          const fillRate = capCur > 0 ? (rnCur / capCur) : 0;
+          h += '<div>Bookings on books (OTB): <b>'+rnCur+' RN</b> on <b>'+capCur+' rooms</b></div>';
+          h += '<div>Fill rate: <b>'+(fillRate*100).toFixed(1)+'%</b> · Available rooms: <b>'+availRooms+'</b></div>';
+          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Threshold matched: <b style="color:#3b6b9a">';
+          let _devLbl = '';
+          if (availRooms <= 1){ _devLbl = 'Sold out or 1 last room → +20%'; }
+          else if (fillRate >= 0.80){ _devLbl = 'Fill 80–99% → +15%'; }
+          else if (fillRate >= 0.60){ _devLbl = 'Fill 60–80% → +10%'; }
+          else if (fillRate >= 0.30){ _devLbl = 'Fill 30–60% → +5%'; }
+          else { _devLbl = 'Fill < 30% → 0% (neutral)'; }
+          h += _devLbl + '</b></div>';
+          h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Applied dev: '+_fpct((mults.occ_mult-1),1)+'</div>';
         } else if (code === 'B'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Conditional formula, 3 cases (see below)</div>';
-          h += '<div>ADR today: <b>'+_fmt2(dbg.adrCur)+'</b> · ADR STLY: <b>'+_fmt2(dbg.adrStly)+'</b></div>';
-          if (dbg.priceIdx != null){
-            const adrDev = dbg.priceIdx - 1;
-            h += '<div>Ratio ADR: <b>'+(dbg.priceIdx).toFixed(3)+'</b> · Δ%ADR: <b>'+_fpct(adrDev,1)+'</b></div>';
-            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Case applied: <b style="color:#c4823b">';
-            if (dbg.priceCase === 'recover_below_LY')
-              h += 'CASE 1 — ADR below LY → recovery, raise</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">Dev = −(ratio−1) = '+_fpct(-adrDev,1)+'</div>';
-            else if (dbg.priceCase === 'all_good')
-              h += 'CASE 2 — ADR ≥ LY and OCC ≥ LY → neutral</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">All flat, keep current reference. Dev = 0%</div>';
-            else if (dbg.priceCase === 'brake_softened'){
-              const tg = (dbg.targetGrowthMo || 0) / 100;
-              const eff = adrDev - tg;
-              h += 'CASE 3 — ADR ≥ LY but OCC &lt; LY → softened brake</b><div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">Month target growth: '+(dbg.targetGrowthMo||0).toFixed(1)+'% · Effective = '+_fpct(adrDev,1)+' − '+(dbg.targetGrowthMo||0).toFixed(1)+'% = '+_fpct(eff,1)+' · Dev = −effective = '+_fpct(-eff,1)+'</div>';
-            }
-            h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-clamp ±50%): '+_fpct((mults.price_mult-1),1)+'</div>';
-          }
-        } else if (code === 'C'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — recent weeks count more.</div>';
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — recent weeks count more. The 4 weeks are weighted W1 10% &middot; W2 20% &middot; W3 30% &middot; W4 40% (W4 = most recent), so a slow recent week pulls the pace down more than an old one. Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
           const pi = dbg.paceInfo || {};
           if (pi.pickupCur != null && pi.pickupStly != null){
             h += '<div>Pickup last 4 weeks: <b>'+pi.pickupCur+' RN</b> now vs <b>'+pi.pickupStly+' RN</b> same period last year <span style="color:#999">(real room nights)</span></div>';
@@ -6796,7 +6792,6 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
               h += '<div style="margin-top:3px">Weighted pace ratio: <b>'+pi.ratio.toFixed(3)+'</b> → dev <b>'+_fpct(pi.ratio-1,1)+'</b>';
               if (rawR!=null) h += ' <span style="color:#999">(unweighted would be '+rawR.toFixed(3)+')</span>';
               h += '</div>';
-              h += '<div style="margin-top:3px;color:#888;font-size:11px">The 4 weeks are weighted W1 10% &middot; W2 20% &middot; W3 30% &middot; W4 40% (W4 = most recent), so a slow recent week pulls the pace down more than an old one. Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
             } else if (pi.pickupStly > 0){
               const ratio = pi.pickupCur / pi.pickupStly;
               h += '<div>Ratio pickup: <b>'+ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(ratio-1,1)+'</b></div>';
@@ -6806,18 +6801,18 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           if (pi.source){
             h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">'+pi.source+'</div>';
           }
-          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Dev applicata (post-clamp): '+_fpct((mults.pace_mult-1),1)+'</div>';
-        } else if (code === 'D'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>−(my_BeddyEq / weighted_compset_BeddyEq − 1)</code> · both in Beddy_eq · uses the <b>Weighted Expedia Compset</b> (weights only, <b>no</b> offset)</div>';
+          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-clamp): '+_fpct((mults.pace_mult-1),1)+'</div>';
+        } else if (code === 'C'){
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>−(my_BeddyEq / weighted_compset_BeddyEq − 1)</code> · both in Beddy_eq · uses the <b>Weighted Expedia Compset</b> (weights only, <b>no</b> offset). If my price is above the weighted compset, the factor pushes down; if below, it pushes up.</div>';
           h += '<div>My Expedia price (gross): <b>'+_fmt2(dbg.myExpedia)+'</b> → Beddy_eq: <b>'+_fmt2(dbg.myBeddy)+'</b></div>';
-          h += '<div>Compset average (Beddy_eq + offset): <b>'+_fmt2(dbg.compsetBeddy)+'</b> &nbsp;<span style="color:#888">('+(dbg.compsetSource||'—')+')</span></div>';
+          h += '<div>Weighted Expedia Compset (Beddy_eq): <b>'+_fmt2(dbg.compsetBeddy)+'</b> &nbsp;<span style="color:#888">('+(dbg.compsetSource||'—')+')</span></div>';
           if (dbg.myBeddy != null && dbg.compsetBeddy != null && dbg.compsetBeddy > 0){
             const ratio = dbg.myBeddy / dbg.compsetBeddy;
             h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">My/compset ratio: <b>'+ratio.toFixed(3)+'</b> · Raw inverted dev: <b>'+_fpct(-(ratio-1),1)+'</b></div>';
           }
           h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-thresholds + clamp ±50%): '+_fpct((mults.comp_mult-1),1)+'</div>';
-        } else if (code === 'E'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>(search_cur − month_median) / month_median</code></div>';
+        } else if (code === 'D'){
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>(search_cur − month_median) / month_median</code>. More searches than usual on Expedia for this date = stronger demand signal.</div>';
           h += '<div>Expedia searches today: <b>'+(dbg.searchCur != null ? dbg.searchCur.toLocaleString('en-GB') : '—')+'</b></div>';
           h += '<div>Month search median: <b>'+(dbg.searchP50Mo != null ? Math.round(dbg.searchP50Mo).toLocaleString('en-GB') : '—')+'</b></div>';
           if (dbg.searchDev != null){
@@ -6982,7 +6977,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '</div>';
       } else {
         // Box giallo "RMES would suggest" (mostra il target su Base, con eventuale spiegazione "RMES insiste")
-        let _suggSubtitle = 'Base €'+fmt(_basePureModal!=null?_basePureModal:fpPriceSource)+' × multiplier '+mults.multFinale.toFixed(3)+(_capped?' · capped ±20%/floor':'');
+        let _suggSubtitle = 'Base €'+fmt(_basePureModal!=null?_basePureModal:fpPriceSource)+' × multiplier '+mults.multFinale.toFixed(3)+(_capped?' · clamped to floor':'');
         if (hasOverride){
           const _dir = (_basePureModal != null && rmesSuggested < _basePureModal) ? 'lower' : (_basePureModal != null && rmesSuggested > _basePureModal ? 'raise' : null);
           if (_dir){
@@ -7294,7 +7289,7 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   h += '<div style="font-size:22px;font-weight:700;font-family:\'DM Mono\',monospace;color:#5a3a14">' + fmt(dd.priceFinal) + '</div>';
   h += '</div></div>';
   h += '<div style="margin-top:14px;padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#666;line-height:1.4">';
-  h += '<b>Note</b>: this is the <b>Base Price</b>, the structural price of the day. To see how the Base Price is adjusted by the 5 RMES factors (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia)) to produce the RMES suggested price, click the <b>RMES</b> cell on the right in the table.';
+  h += '<b>Note</b>: this is the <b>Base Price</b>, the structural price of the day. To see how the Base Price is adjusted by the 4 RMES factors (A · Daily Pickup, B · Pace Trend, C · Online Pricing, D · Demand (Expedia)) to produce the RMES suggested price, click the <b>RMES</b> cell on the right in the table.';
   h += '</div>';
   h += '</div>';  // /body
   h += '</div></div>';  // /modal /bg
@@ -8049,7 +8044,7 @@ function renderSellStrategy(sel){
     + '<th colspan="3" class="sell-grp sell-grp-stly">STLY (-364)</th>'
     + '<th colspan="4" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
     + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="Last update — the price currently active for this stay-date. Equals Base Price if RMES has never been accepted, or the most recent RMES suggestion accepted with ✓. This is the reference the next RMES suggestion will be compared against.">Last update<br><span class="sell-th-sub">active price</span></th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES — today\'s pricing engine suggestion. Click anywhere on the cell to see the calculation detail (5 factors + LMF + Event Factor). The ✓ button accepts this price as the new Last update for that date. Capped ±20% vs Last update.">RMES<br><span class="sell-th-sub">price · Δ€ · ✓ accept</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES — today\'s pricing engine suggestion. Click anywhere on the cell to see the calculation detail (4 factors + LMF + Event Factor). The ✓ button accepts this price as the new Last update for that date. Floor Rate is the only lower guard-rail.">RMES<br><span class="sell-th-sub">price · Δ€ · ✓ accept</span></th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + (showExp ? '<th colspan="3" class="sell-grp sell-grp-expedia">Rate Shopper</th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). You only need to touch it occasionally if something looks off: click 🖋 to override a single day, or use Override by period for a range; ↺ to reset. Other RTs show baseRT + monthly supplement (read-only).">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
@@ -8077,7 +8072,11 @@ function renderSellStrategy(sel){
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;
   if (typeof computeRMESPriceMap === 'function' && sel !== 'both'){
-    try { _rmesMapForAlignment = computeRMESPriceMap(sel, SELL_START_YMD, SELL_RANGE_DAYS); }
+    // Usa SEMPRE (todayN, SELL_RANGE_DAYS): stessa chiave cache di _rmesCollectRows e modal
+    // → la mappa è UNA SOLA per turno di render → numeri coincidenti ovunque.
+    const _td = new Date(TODAY); _td.setHours(0,0,0,0);
+    const _tdN = _td.getFullYear()*10000 + (_td.getMonth()+1)*100 + _td.getDate();
+    try { _rmesMapForAlignment = computeRMESPriceMap(sel, _tdN, SELL_RANGE_DAYS); }
     catch(e){ _rmesMapForAlignment = null; }
   }
   for (let i=0; i<A.rows.length; i++){
@@ -8411,17 +8410,15 @@ function renderSellStrategy(sel){
                        `    → Starting base price: ${fmtEUR(basePrice)}\n`;
       }
       const stepMolt =
-        `[2] 6 MOLTIPLICATORI RMES (media pesata):\n` +
-        `    Internal data (per RT, here property values for the baseRT):\n` +
-        `      A · Demand (occ)      idx ${fmtIdx(A_idx)}  → mult ${fmtMult(A_mult)}  × weight ${(wA*100).toFixed(0)}%\n` +
-        `      B · Demand (Price)    idx ${fmtIdx(B_idx)}  → mult ${fmtMult(B_mult)}  × weight ${(wB*100).toFixed(0)}%\n` +
-        `      C · Pace Trend     idx ${fmtIdx(D_idx)}  → mult ${fmtMult(D_mult)}  × weight ${(wC*100).toFixed(0)}% [pickup ${_paceCurRn} RN cur vs ${_paceStlyRn} STLY]\n` +
-        `      D · Budget   idx ${fmtIdx(Budget_idx)}  → mult ${fmtMult(Budget_mult)}  × weight ${(wD*100).toFixed(0)}% [mio expedia vs ADR budget mensile]\n` +
-        `    External data (property, same for all RTs):\n` +
-        `      E · Compset  idx ${fmtIdx(C_idx)}  → mult ${fmtMult(C_mult)}  × weight ${(wE*100).toFixed(0)}%\n` +
-        `      F · Search   ${E_idx!=null?Math.round(E_idx).toLocaleString('en-GB'):'n/a'} searches  → mult ${fmtMult(E_mult)}  × weight ${(wF*100).toFixed(0)}% [${E_ratio!=null?(E_ratio*100).toFixed(0)+'% vs period average':'n/a'}]\n` +
+        `[2] 4 RMES MULTIPLIERS (weighted average):\n` +
+        `    Internal data (property level):\n` +
+        `      A · Daily Pickup    mult ${fmtMult(A_mult)}  × weight ${(wA*100).toFixed(0)}% (fill-rate based, never negative)\n` +
+        `      B · Pace Trend      mult ${fmtMult(D_mult)}  × weight ${(wC*100).toFixed(0)}% [pickup ${_paceCurRn} RN cur vs ${_paceStlyRn} STLY]\n` +
+        `    External data (property level):\n` +
+        `      C · Online Pricing  mult ${fmtMult(C_mult)}  × weight ${(wE*100).toFixed(0)}% [my Beddy_eq vs Weighted Expedia Compset]\n` +
+        `      D · Demand Expedia  mult ${fmtMult(E_mult)}  × weight ${(wF*100).toFixed(0)}% [${E_ratio!=null?(E_ratio*100).toFixed(0)+'% vs month median search':'n/a'}]\n` +
         `\n` +
-        `    Calcolo: ${fmtMult(A_mult)}×${(wA).toFixed(2)} + ${fmtMult(B_mult)}×${(wB).toFixed(2)} + ${fmtMult(D_mult)}×${(wC).toFixed(2)} + ${fmtMult(Budget_mult)}×${(wD).toFixed(2)} + ${fmtMult(C_mult)}×${(wE).toFixed(2)} + ${fmtMult(E_mult)}×${(wF).toFixed(2)}\n` +
+        `    Composite = ${fmtMult(A_mult)}×${(wA).toFixed(2)} + ${fmtMult(D_mult)}×${(wC).toFixed(2)} + ${fmtMult(C_mult)}×${(wE).toFixed(2)} + ${fmtMult(E_mult)}×${(wF).toFixed(2)}\n` +
         `    → Final multiplier: ${fmtMult(multFinale)}\n`;
       const stepFinale =
         `[3] SUGGESTED BASE PRICE:\n` +
@@ -8970,7 +8967,11 @@ function renderSellStrategy(sel){
       const baseRTKey = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
       if (!baseRTKey) return;
       let rmesMap = null;
-      try { rmesMap = computeRMESPriceMap(sk, SELL_START_YMD, SELL_RANGE_DAYS); } catch(e){}
+      try {
+        const _td = new Date(TODAY); _td.setHours(0,0,0,0);
+        const _tdN = _td.getFullYear()*10000 + (_td.getMonth()+1)*100 + _td.getDate();
+        rmesMap = computeRMESPriceMap(sk, _tdN, SELL_RANGE_DAYS);
+      } catch(e){}
       const mapEntry = rmesMap && rmesMap[ymdN];
       if (!mapEntry || !mapEntry.rmesSuggestedByRT || mapEntry.rmesSuggestedByRT[baseRTKey] == null){
         alert('No RMES suggestion for this date.');
@@ -9948,7 +9949,7 @@ function _renderSellColsPills(){
   wrap.innerHTML = blocks.map(b => {
     const on = !!state[b.key];
     const extra = b.highlight ? 'style="border-color:#c4823b;background:'+(on?'rgba(195,131,59,0.18)':'rgba(195,131,59,0.04)')+';color:#7a4f1c;font-weight:600"' : '';
-    const tooltip = b.key === 'allrt' ? ' title="Show extra columns inside the RMES group with price + MLOS for each non-base room type (Suite, Trilocale, Attico etc.). Prices are computed with RT-specific multipliers (A · Demand (occ), B · Demand (Price), C · Pace Trend, D · Online Pricing, E · Demand (Expedia) — tutti a livello struttura."' : '';
+    const tooltip = b.key === 'allrt' ? ' title="Show extra columns inside the RMES group with price + MLOS for each non-base room type (Suite, Trilocale, Attico etc.). Prices are computed with RT-specific multipliers (A · Daily Pickup, B · Pace Trend, C · Online Pricing, D · Demand (Expedia)) — all at property level."' : '';
     return `<button class="sell-col-pill ${on?'on':''}" data-sell-col="${b.key}" ${extra}${tooltip}>${b.label}</button>`;
   }).join('');
   wrap.querySelectorAll('button[data-sell-col]').forEach(btn => {
@@ -10663,7 +10664,7 @@ function renderPricing(sel){
                        : rmesEntry.source === 'otb'     ? 'ADR OTB del giorno'
                        : rmesEntry.source === 'finalLy' ? 'ADR Final LY 2025'
                        : 'sconosciuta';
-          lines.push(`✦ RMES price = base × ${rmesEntry.multFinale.toFixed(3)} (weighted average of 5 factors)`);
+          lines.push(`✦ RMES price = base × ${rmesEntry.multFinale.toFixed(3)} (weighted average of 4 factors)`);
           lines.push(`  Base source: ${srcLbl}`);
           if (rmesEntry.suppApplied > 0){
             lines.push(`  ⚠ Bilocale sold-out → −${fmtEUR(rmesEntry.suppApplied)} (suppl. ${rmesEntry.suppRT})`);
@@ -12577,11 +12578,10 @@ function _renderRmesWeightsBox(sel){
   if (!wrap) return;
   const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
   const factors = [
-    { key:'occ',    letter:'A', label:'Demand (occ)',     color:'#3b6b9a', desc:'OCC today vs STLY -364d' },
-    { key:'price',  letter:'B', label:'Demand (Price)',   color:'#c4823b', desc:'ADR OTB vs STLY (3 cases)' },
-    { key:'pace',   letter:'C', label:'Pace Trend',    color:'#8e5fa8', desc:'pickup 4w month vs STLY (recent week weighted)' },
-    { key:'comp',   letter:'D', label:'Online Pricing', color:'#1e6b4a', desc:'my Exp vs compset (inverted)' },
-    { key:'airdna', letter:'E', label:'Demand (Expedia)',  color:'#a83b3b', desc:'Expedia searches vs month median' },
+    { key:'occ',    letter:'A', label:'Daily Pickup',    color:'#3b6b9a', desc:'fill rate of the day (OTB / cap)' },
+    { key:'pace',   letter:'B', label:'Pace Trend',      color:'#8e5fa8', desc:'pickup 4w month vs STLY (recent week weighted)' },
+    { key:'comp',   letter:'C', label:'Online Pricing',  color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)' },
+    { key:'airdna', letter:'D', label:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median' },
   ];
   let html = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">';
   for (const f of factors){
@@ -12601,7 +12601,7 @@ function _renderRmesWeightsBox(sel){
   if (resetBtn && !resetBtn._wired){
     resetBtn._wired = true;
     resetBtn.onclick = () => {
-      if (!confirm(`Reset the weights of ${RMES_TAB_STRUCT} to 20% × 5 factors?`)) return;
+      if (!confirm(`Reset the weights of ${RMES_TAB_STRUCT} to 25% × 4 factors?`)) return;
       SELL_RMES_W_ALL[RMES_TAB_STRUCT] = Object.assign({}, SELL_RMES_W_DEFAULT);
       saveRmesWeights();
       _renderRmesWeightsBox(RMES_TAB_STRUCT);
@@ -12613,7 +12613,7 @@ function _renderRmesWeightsBox(sel){
   if (resetBtnAll && !resetBtnAll._wired){
     resetBtnAll._wired = true;
     resetBtnAll.onclick = () => {
-      if (!confirm("Resettare i pesi a 20% × 5 fattori per TUTTE le strutture?")) return;
+      if (!confirm("Reset weights to 25% × 4 factors for ALL properties?")) return;
       for (const s of ['firenze','condotta','alfani','davids']){
         SELL_RMES_W_ALL[s] = Object.assign({}, SELL_RMES_W_DEFAULT);
       }
@@ -12778,7 +12778,7 @@ function _renderRmesLmfBox(sel){
     '<div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">' +
       '<div style="padding:10px 14px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--line)">' +
         '<div style="font-size:13px;font-weight:700;color:var(--ink-1)">\u23f1 Last Minute Price Factor</div>' +
-        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Discount/premium % based on the property occupancy that day (rows) and days to arrival (columns). Applied to the RMES suggested price (multiplier after the 5 factors). Negative values = discount, positive = premium.</div>' +
+        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Discount/premium % based on the property occupancy that day (rows) and days to arrival (columns). Applied to the RMES suggested price (after the 4 factors composite). Negative values = discount, positive = premium.</div>' +
       '</div>' +
       '<div style="overflow-x:auto;padding:8px 10px">' +
         '<table style="border-collapse:collapse;margin:0 auto"><thead><tr>' +
