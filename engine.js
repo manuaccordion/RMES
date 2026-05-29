@@ -12492,7 +12492,12 @@ function _aggForecastImpl(structKey){
     // 1-week pickup windows (was 14 days → now 7, as requested)
     m.eurPerDayPickup7 = m.pickupCurRev / 7;
     m.eurPerDayPickupStly7 = m.pickupStlyRev / 7;
-    m.achievement = m.fcstRev > 0 ? m.otbRev / m.fcstRev : 0;
+    // Achievement = Current OTB / Month-1st snapshot forecast (= il forecast salvato il 1° del mese).
+    // Mostra quanto stai onorando il forecast iniziale del mese. Senza snapshot, fallback su fcstRev live (= il forecast attuale).
+    const _achDen = (m.snapshot && m.snapshot.fcstRev > 0) ? m.snapshot.fcstRev : m.fcstRev;
+    m.achievement = _achDen > 0 ? m.otbRev / _achDen : 0;
+    m.achievementDen = _achDen;
+    m.achievementDenSource = (m.snapshot && m.snapshot.fcstRev > 0) ? 'snapshot' : 'live';
     if (monthState === 'CURRENT' || monthState === 'FUTURE'){
       if (typeof fp_maybeAutoSaveSnapshot === 'function'){
         const snapData = {
@@ -12614,7 +12619,7 @@ function renderForecast(sel){
         <th title="Exact time-aware daily pickup target for TODAY. Uses RN expected per stay-date (monthly fcstRn spread with the STLY pattern, minus OTB). Today's target = residual revenue × today's sellable volume / total volume across all future booking-days. Higher with lead time, lower near month-end. Fallback to linear-weights formula if LY data is thin.">€/day to close</th>
         <th title="Revenue acquired in the last 7 days / 7. Green if ≥ the (time-aware) €/day target (on track), red if below.">€/day pickup 7d</th>
         <th title="STLY revenue acquired in the STLY 7-day window (−364d) / 7">€/day pickup STLY 7d</th>
-        <th title="OTB / (YTD+Forecast) Revenue">% Achievement</th>
+        <th title="OTB / Month-1st snapshot forecast (= forecast salvato il 1° del mese). Misura quanto del forecast iniziale è già stato onorato. Se il mese non ha snapshot, fallback su forecast live.">% Achievement</th>
       </tr>
     </thead>`;
   let body = '';
@@ -12694,14 +12699,16 @@ function renderForecast(sel){
       <td class="cell-mono" style="background:rgba(91,138,118,.06)" title="${m.targetExactMode ? 'EXACT time-aware target for TODAY: residual RN per stay-date (fcstRn spread via the STLY pattern, minus OTB), summed from each future booking-day to month-end. Today gets the full month volume; near month-end only a few dates remain. D=' + m.daysRemaining + ' days left.' : 'Linear-weights fallback (no LY pattern available). Daily target = (Fct−OTB) × 2/(D+1), D=' + m.daysRemaining + '.'}">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
       <td class="cell-mono ${pkCmpCls}" style="background:rgba(91,138,118,.06);cursor:help" title="${pkCmpTip}">${fmtEUR(m.eurPerDayPickup7)}</td>
       <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(m.eurPerDayPickupStly7)}</td>
-      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06)" title="OTB ${fmtEUR(m.otbRev)} / YTD+Forecast ${fmtEUR(m.fcstRev)} = ${(m.achievement*100).toFixed(2)}% (rounded · ≥95% green, 70-95% neutral, <70% red)"><b>${Math.round((m.achievement||0)*100)}%</b></td>
+      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06)" title="OTB ${fmtEUR(m.otbRev)} / ${m.achievementDenSource === 'snapshot' ? 'Month-1st snapshot' : 'live forecast (no snapshot)'} ${fmtEUR(m.achievementDen)} = ${(m.achievement*100).toFixed(2)}% (rounded · ≥95% green, 70-95% neutral, <70% red)"><b>${Math.round((m.achievement||0)*100)}%</b></td>
     </tr>`;
   }
   const totDiff = totFcstRev - totOtbRev;
   const totDaysRem = ymOrder.reduce((s,ym)=> s + (M[ym].daysRemaining||0), 0);
   const totPickup7  = ymOrder.reduce((s,ym)=> s + (M[ym].pickupCurRev||0), 0);
   const totPickup7Stly = ymOrder.reduce((s,ym)=> s + (M[ym].pickupStlyRev||0), 0);
-  const totAch = totFcstRev > 0 ? totOtbRev/totFcstRev : 0;
+  // Total achievement: somma OTB / somma denominatori (snapshot dove disponibile, altrimenti live forecast)
+  const totAchDen = ymOrder.reduce((s,ym) => s + ((M[ym].achievementDen) || 0), 0);
+  const totAch = totAchDen > 0 ? totOtbRev/totAchDen : 0;
   const lastYm = ymOrder[ymOrder.length - 1];
   const totDaysToEnd = lastYm ? (M[lastYm].daysRemaining || 0) : 0;
   const totOtbAdr = totOtbRn>0 ? totOtbRev/totOtbRn : 0;
@@ -12769,7 +12776,7 @@ function renderForecast(sel){
     <td class="cell-mono" style="background:rgba(91,138,118,.06)" title="${totDaysToEnd} days from today to end of forecast">${totDaysToEnd > 0 ? fmtEUR(totDiff/totDaysToEnd) : '—'}</td>
     <td class="cell-mono" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7/14)}</td>
     <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7Stly/14)}</td>
-    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06)" title="Total OTB ${fmtEUR(totOtbRev)} / Total YTD+Forecast ${fmtEUR(totFcstRev)} = ${(totAch*100).toFixed(2)}% (rounded)"><b>${Math.round((totAch||0)*100)}%</b></td>
+    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06)" title="Total OTB ${fmtEUR(totOtbRev)} / Total Month-1st snapshot ${fmtEUR(totAchDen)} = ${(totAch*100).toFixed(2)}% (rounded · snapshot dove disponibile, altrimenti live forecast)"><b>${Math.round((totAch||0)*100)}%</b></td>
   </tr>`;
   document.getElementById('fcst-monthly-table').innerHTML = '<div class="mkpi-sticky-wrap" style="max-height:calc(100vh - 180px);min-height:340px;overflow:auto;position:relative"><table class="data mkpi-sticky-table">' + head + '<tbody>' + body + '</tbody></table></div>';
   let rtHead = '<thead><tr><th rowspan="2" style="text-align:left">Room Type</th>';
