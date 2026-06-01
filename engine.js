@@ -625,7 +625,33 @@ function loadData(csvText){
     }
   }
   BOOKINGS.sort((a,b)=> b.bookYmd - a.bookYmd);
+  // === OPTIMIZATION: indici precalcolati per struttura e struct|room ===
+  // Evita iterazioni full BOOKINGS in funzioni che già conoscono la struttura.
+  _BOOKINGS_BY_STRUCT = { firenze:[], condotta:[], alfani:[], davids:[] };
+  _BOOKINGS_BY_SR = {};
+  for (const b of BOOKINGS){
+    const sk = b.structKey;
+    if (_BOOKINGS_BY_STRUCT[sk]) _BOOKINGS_BY_STRUCT[sk].push(b);
+    const srKey = sk + '|' + b.room;
+    if (!_BOOKINGS_BY_SR[srKey]) _BOOKINGS_BY_SR[srKey] = [];
+    _BOOKINGS_BY_SR[srKey].push(b);
+  }
+  // Precalcolo stayYmds[] per ogni booking: array di ymd numerici da dIn (incluso) a dOut (escluso).
+  // Evita di rifare la generazione date dentro i loop dei mesi.
+  for (const b of BOOKINGS){
+    if (b.stayYmds) continue;
+    const arr = [];
+    const d = new Date(b.dIn);
+    const end = b.dOut.getTime();
+    while (d.getTime() < end){
+      arr.push(d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate());
+      d.setDate(d.getDate()+1);
+    }
+    b.stayYmds = arr;
+  }
 }
+let _BOOKINGS_BY_STRUCT = null;
+let _BOOKINGS_BY_SR = null;
 /* Foundation Pricing: pre-compute al caricamento dati */
 function fp_postLoadHook(){
   // --- ONE-SHOT MIGRATION to NewRMES system (Base Price + Acceptance) ---
@@ -4137,19 +4163,33 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     const _yesterdayN = _yesterday.getFullYear()*10000 + (_yesterday.getMonth()+1)*100 + _yesterday.getDate();
     const _d7ago = new Date(_todayD); _d7ago.setDate(_d7ago.getDate()-7);
     const _d7agoN = _d7ago.getFullYear()*10000 + (_d7ago.getMonth()+1)*100 + _d7ago.getDate();
-    for (const b of BOOKINGS){
+    const _pkList = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]) || BOOKINGS;
+    const _pkUseIndex = !!_BOOKINGS_BY_STRUCT;
+    for (let _pi=0; _pi<_pkList.length; _pi++){
+      const b = _pkList[_pi];
       if (b.cancelled) continue;
-      if (!_structKeys.has(b.struct)) continue;
+      if (!_pkUseIndex && !_structKeys.has(b.struct)) continue;
       if (b.bookYmd < _d7agoN || b.bookYmd > _todayN) continue;
       const isRecent1g = (b.bookYmd >= _yesterdayN);  // ieri o oggi
-      const dIn = b.dIn, dOut = b.dOut;
-      if (!dIn || !dOut) continue;
-      for (let dt = new Date(dIn); dt < dOut; dt.setDate(dt.getDate()+1)){
-        const sYmd = dt.getFullYear()*10000 + (dt.getMonth()+1)*100 + dt.getDate();
-        if (sYmd < _todayN) continue;
-        if (!_pickupByStayDate[sYmd]) _pickupByStayDate[sYmd] = { recent1g: 0, recent7g: 0 };
-        _pickupByStayDate[sYmd].recent7g += 1;
-        if (isRecent1g) _pickupByStayDate[sYmd].recent1g += 1;
+      const sy = b.stayYmds;
+      if (sy){
+        for (let j=0; j<sy.length; j++){
+          const sYmd = sy[j];
+          if (sYmd < _todayN) continue;
+          if (!_pickupByStayDate[sYmd]) _pickupByStayDate[sYmd] = { recent1g: 0, recent7g: 0 };
+          _pickupByStayDate[sYmd].recent7g += 1;
+          if (isRecent1g) _pickupByStayDate[sYmd].recent1g += 1;
+        }
+      } else {
+        const dIn = b.dIn, dOut = b.dOut;
+        if (!dIn || !dOut) continue;
+        for (let dt = new Date(dIn); dt < dOut; dt.setDate(dt.getDate()+1)){
+          const sYmd = dt.getFullYear()*10000 + (dt.getMonth()+1)*100 + dt.getDate();
+          if (sYmd < _todayN) continue;
+          if (!_pickupByStayDate[sYmd]) _pickupByStayDate[sYmd] = { recent1g: 0, recent7g: 0 };
+          _pickupByStayDate[sYmd].recent7g += 1;
+          if (isRecent1g) _pickupByStayDate[sYmd].recent1g += 1;
+        }
       }
     }
   }
@@ -6543,9 +6583,16 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   function _gather(allowedDays){
     const adrObs = [];
     const rnByDay = {};
-    for (const b of BOOKINGS){
-      if (b.struct !== structName) continue;
-      if (b.room !== rt) continue;
+    // OPT: indice per (structKey|room) per evitare di iterare tutti BOOKINGS
+    const srKey = structKey + '|' + rt;
+    const list = (_BOOKINGS_BY_SR && _BOOKINGS_BY_SR[srKey]) || BOOKINGS;
+    const useIndex = !!(_BOOKINGS_BY_SR && _BOOKINGS_BY_SR[srKey]);
+    for (let i=0; i<list.length; i++){
+      const b = list[i];
+      if (!useIndex){
+        if (b.struct !== structName) continue;
+        if (b.room !== rt) continue;
+      }
       if (b.stato === 'Cancellate'){
         if (!b.cancelYmd || !b.dIn) continue;
         const cancelDate = fp_ymdNumToDate(b.cancelYmd);
@@ -6557,11 +6604,23 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
       }
       if (!b.dIn || !b.dOut) continue;
       let hits = 0;
-      for (let d = new Date(b.dIn); d < b.dOut; d.setDate(d.getDate()+1)){
-        const k = ymd(d);
-        if (allowedDays.has(k)){
-          hits++;
-          rnByDay[k] = (rnByDay[k] || 0) + 1;
+      // OPT: usa stayYmds precalcolato
+      const sy = b.stayYmds;
+      if (sy){
+        for (let j=0; j<sy.length; j++){
+          const k = sy[j];
+          if (allowedDays.has(k)){
+            hits++;
+            rnByDay[k] = (rnByDay[k] || 0) + 1;
+          }
+        }
+      } else {
+        for (let d = new Date(b.dIn); d < b.dOut; d.setDate(d.getDate()+1)){
+          const k = ymd(d);
+          if (allowedDays.has(k)){
+            hits++;
+            rnByDay[k] = (rnByDay[k] || 0) + 1;
+          }
         }
       }
       if (hits === 0) continue;
@@ -10865,9 +10924,13 @@ function aggPricingDaily(sel, startYmdNum, rangeDays){
     for (let m=1; m<=12; m++) histByMonth[rt][m] = {rev:0, revCaricato:0, rn:0};
   }
   let histTot = 0;
-  for (const b of BOOKINGS){
+  // OPT: usa indice _BOOKINGS_BY_STRUCT (= prefiltrato per sel)
+  const _apdList = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]) || BOOKINGS;
+  const _apdUseIndex = !!_BOOKINGS_BY_STRUCT;
+  for (let _bi=0; _bi<_apdList.length; _bi++){
+    const b = _apdList[_bi];
     if (b.cancelled) continue;
-    if (b.struct !== structKey) continue;
+    if (!_apdUseIndex && b.struct !== structKey) continue;
     if (!(b.room in histRev)) continue;
     let cur = startOfDay(b.dIn);
     const end = startOfDay(b.dOut);
@@ -12007,22 +12070,27 @@ function renderPricingChart(){
      - price medio realizzato = mix di canali (50% storico + 50% ultimi 3 mesi) e tariffe
    =========================================================================== */
 function fcstMixFactor(structKey){
-  const keys = new Set(structKeysFor(structKey));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const cutoff3m = addDays(today, -90);
+  const cutoff3mTime = cutoff3m.getTime();
   let allRn=0, allOtaRn=0, allNrRn=0;
   let recRn=0, recOtaRn=0, recNrRn=0;
-  for (const b of BOOKINGS){
+  // OPT: usa indice precalcolato (fallback a iterazione completa se non disponibile)
+  const list = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]) || BOOKINGS;
+  const useIndex = !!_BOOKINGS_BY_STRUCT;
+  const keys = useIndex ? null : new Set(structKeysFor(structKey));
+  for (let i=0; i<list.length; i++){
+    const b = list[i];
     if (b.cancelled) continue;
-    if (!keys.has(b.struct)) continue;
+    if (!useIndex && !keys.has(b.struct)) continue;
     if (b.bookYmd > TODAY_YMD) continue;
-    const isOTA = (b.channelMarkup && b.channelMarkup > 0);  // canale che ha markup OTA
+    const isOTA = (b.channelMarkup && b.channelMarkup > 0);
     const isNR  = !!b.isNonRefundable;
     const rn = b.notti || 0;
     allRn += rn;
     if (isOTA) allOtaRn += rn;
     if (isNR)  allNrRn  += rn;
-    if (b.dBook >= cutoff3m){
+    if (b.dBook.getTime() >= cutoff3mTime){
       recRn += rn;
       if (isOTA) recOtaRn += rn;
       if (isNR)  recNrRn  += rn;
@@ -12037,55 +12105,89 @@ function fcstMixFactor(structKey){
   const markupFactor = (1 + 0.12*mixOTA) * (1 - 0.10*mixNR);
   return { mixOTA, mixNR, markupFactor, allRn, recRn };
 }
+const _FCST_SUPP_CACHE = {};
 function fcstSupplements(structKey){
+  if (_FCST_SUPP_CACHE[structKey]) return _FCST_SUPP_CACHE[structKey];
   const A = aggPricingDaily(structKey, TODAY_YMD, 1);  // chiamata minima per ottenere i supplementi
-  return { supp: A.supplementoStagione, highSeason: A.highSeason, baseRT: A.baseRT, rtList: A.rtList };
+  const r = { supp: A.supplementoStagione, highSeason: A.highSeason, baseRT: A.baseRT, rtList: A.rtList };
+  _FCST_SUPP_CACHE[structKey] = r;
+  return r;
 }
 function fcstRoomsByRT(structKey){
   return structRoomsFor(structKey);  // {rt: numero camere}
 }
 function fcstFloorShare(structKey){
-  const keys = new Set(structKeysFor(structKey));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const ymdToday = TODAY_YMD;
   const ymdMinus90 = ymd(addDays(today, -90));
   const ymdMinus364 = ymd(addDays(today, -364));
-  const ymdMinus454 = ymd(addDays(today, -454));  // -364 - 90
+  const ymdMinus454 = ymd(addDays(today, -454));
   let curRn = 0, lyRn = 0;
-  for (const b of BOOKINGS){
+  const list = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]) || BOOKINGS;
+  const useIndex = !!_BOOKINGS_BY_STRUCT;
+  const keys = useIndex ? null : new Set(structKeysFor(structKey));
+  for (let i=0; i<list.length; i++){
+    const b = list[i];
     if (b.cancelled) continue;
-    if (!keys.has(b.struct)) continue;
-    let cur = startOfDay(b.dIn);
-    const end = startOfDay(b.dOut);
-    while (cur < end){
-      const k = ymd(cur);
-      if (k > ymdMinus90 && k <= ymdToday) curRn += 1;
-      if (k > ymdMinus454 && k <= ymdMinus364) lyRn += 1;
-      cur = addDays(cur, 1);
+    if (!useIndex && !keys.has(b.struct)) continue;
+    // OPT: usa stayYmds precalcolato invece di iterare date
+    const sy = b.stayYmds;
+    if (sy){
+      for (let j=0; j<sy.length; j++){
+        const k = sy[j];
+        if (k > ymdMinus90 && k <= ymdToday) curRn += 1;
+        if (k > ymdMinus454 && k <= ymdMinus364) lyRn += 1;
+      }
+    } else {
+      // Fallback (non dovrebbe servire)
+      let cur = startOfDay(b.dIn);
+      const end = startOfDay(b.dOut);
+      while (cur < end){
+        const k = ymd(cur);
+        if (k > ymdMinus90 && k <= ymdToday) curRn += 1;
+        if (k > ymdMinus454 && k <= ymdMinus364) lyRn += 1;
+        cur = addDays(cur, 1);
+      }
     }
   }
   const share = (lyRn > 0 && curRn > 0) ? curRn / lyRn : 1.0;
   return { share, curRn, lyRn };
 }
 function fcstShareByMonth(structKey){
-  const keys = new Set(structKeysFor(structKey));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const ymdToday = TODAY_YMD;
   const ymdMinus365 = ymd(addDays(today, -365));
   const ymdMinus728 = ymd(addDays(today, -728));
-  const byMonth = {};  // 'MM' (1-12 padded) → { curRn, lyRn }
-  for (const b of BOOKINGS){
+  const byMonth = {};
+  const list = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]) || BOOKINGS;
+  const useIndex = !!_BOOKINGS_BY_STRUCT;
+  const keys = useIndex ? null : new Set(structKeysFor(structKey));
+  for (let i=0; i<list.length; i++){
+    const b = list[i];
     if (b.cancelled) continue;
-    if (!keys.has(b.struct)) continue;
-    let cur = startOfDay(b.dIn);
-    const end = startOfDay(b.dOut);
-    while (cur < end){
-      const k = ymd(cur);
-      const mm = pad2(cur.getMonth() + 1);
-      if (!byMonth[mm]) byMonth[mm] = { curRn: 0, lyRn: 0 };
-      if (k > ymdMinus365 && k <= ymdToday) byMonth[mm].curRn += 1;
-      if (k > ymdMinus728 && k <= ymdMinus365) byMonth[mm].lyRn += 1;
-      cur = addDays(cur, 1);
+    if (!useIndex && !keys.has(b.struct)) continue;
+    const sy = b.stayYmds;
+    if (sy){
+      for (let j=0; j<sy.length; j++){
+        const k = sy[j];
+        // estrai mese da YYYYMMDD: floor(k/100) % 100
+        const mmNum = Math.floor(k/100) % 100;
+        const mm = mmNum < 10 ? '0'+mmNum : ''+mmNum;
+        if (!byMonth[mm]) byMonth[mm] = { curRn: 0, lyRn: 0 };
+        if (k > ymdMinus365 && k <= ymdToday) byMonth[mm].curRn += 1;
+        if (k > ymdMinus728 && k <= ymdMinus365) byMonth[mm].lyRn += 1;
+      }
+    } else {
+      let cur = startOfDay(b.dIn);
+      const end = startOfDay(b.dOut);
+      while (cur < end){
+        const k = ymd(cur);
+        const mm = pad2(cur.getMonth() + 1);
+        if (!byMonth[mm]) byMonth[mm] = { curRn: 0, lyRn: 0 };
+        if (k > ymdMinus365 && k <= ymdToday) byMonth[mm].curRn += 1;
+        if (k > ymdMinus728 && k <= ymdMinus365) byMonth[mm].lyRn += 1;
+        cur = addDays(cur, 1);
+      }
     }
   }
   const out = {};
@@ -12141,7 +12243,6 @@ function fcstAirdnaMap(){
   return { map, avg, listings: AIRDNA_TOTAL_LISTINGS };
 }
 function fcstAdrGrowth(structKey){
-  const keys = new Set(structKeysFor(structKey));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const ymdToday = TODAY_YMD;
   const ymdMinus90 = ymd(addDays(today, -90));
@@ -12149,20 +12250,34 @@ function fcstAdrGrowth(structKey){
   const ymdMinus454 = ymd(addDays(today, -454));
   let curRn = 0, curRev = 0;
   let lyRn = 0, lyRev = 0;
-  for (const b of BOOKINGS){
+  const list = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]) || BOOKINGS;
+  const useIndex = !!_BOOKINGS_BY_STRUCT;
+  const keys = useIndex ? null : new Set(structKeysFor(structKey));
+  for (let i=0; i<list.length; i++){
+    const b = list[i];
     if (b.cancelled) continue;
-    if (!keys.has(b.struct)) continue;
-    let cur = startOfDay(b.dIn);
-    const end = startOfDay(b.dOut);
-    while (cur < end){
-      const k = ymd(cur);
-      if (k > ymdMinus90 && k <= ymdToday){
-        curRn += 1; curRev += b.revPerNight;
+    if (!useIndex && !keys.has(b.struct)) continue;
+    const sy = b.stayYmds;
+    const rpn = b.revPerNight;
+    if (sy){
+      for (let j=0; j<sy.length; j++){
+        const k = sy[j];
+        if (k > ymdMinus90 && k <= ymdToday){
+          curRn += 1; curRev += rpn;
+        }
+        if (k > ymdMinus454 && k <= ymdMinus364){
+          lyRn += 1; lyRev += rpn;
+        }
       }
-      if (k > ymdMinus454 && k <= ymdMinus364){
-        lyRn += 1; lyRev += b.revPerNight;
+    } else {
+      let cur = startOfDay(b.dIn);
+      const end = startOfDay(b.dOut);
+      while (cur < end){
+        const k = ymd(cur);
+        if (k > ymdMinus90 && k <= ymdToday){ curRn += 1; curRev += rpn; }
+        if (k > ymdMinus454 && k <= ymdMinus364){ lyRn += 1; lyRev += rpn; }
+        cur = addDays(cur, 1);
       }
-      cur = addDays(cur, 1);
     }
   }
   const curAdr = curRn>0 ? curRev/curRn : 0;
@@ -12231,10 +12346,15 @@ function _aggForecastImpl(structKey){
   const APR25_FILL_START = ymdNum(2025, 4, 1);
   const APR25_FILL_END   = ymdNum(2025, 4, 5);
   const easterCorrectionApplied = true;  // sempre attiva: usa solo dati 2025+2026 già disponibili
-  for (const b of BOOKINGS){
+  // OPT: indice per struct + Set per room types
+  const _aggFcstList = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]) || BOOKINGS;
+  const _aggFcstUseIndex = !!_BOOKINGS_BY_STRUCT;
+  const rtSet = new Set(rtList);
+  for (let _bi=0; _bi<_aggFcstList.length; _bi++){
+    const b = _aggFcstList[_bi];
     if (b.cancelled) continue;
-    if (!keys.has(b.struct)) continue;
-    if (!rtList.includes(b.room)) continue;
+    if (!_aggFcstUseIndex && !keys.has(b.struct)) continue;
+    if (!rtSet.has(b.room)) continue;
     let cur = startOfDay(b.dIn);
     const end = startOfDay(b.dOut);
     while (cur < end){
