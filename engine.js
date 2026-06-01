@@ -43,7 +43,9 @@ const RMES_CLOUD = (function(){
     'rmes_elasticity_v1',
     'rmes_lastminute_factor_v1',
     'rmes_foundation_overrides_v1',
-    'notes_journal_v2'
+    'notes_journal_v2',
+    'rmes_dow_premium_v1',
+    'rmes_promos_v1'
   ];
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAJuFzabHO3O3XVM3DfeWNThB9Wy0jMkHA",
@@ -4000,6 +4002,98 @@ function _getEventBoost(ymd){
   const pct = weights[label]; if (pct == null || !isFinite(+pct)) return 1.0;
   return 1 + (+pct)/100;
 }
+
+/* ===========================================================================
+   DOW Premium — premium per giorno della settimana, per struttura.
+   Storage: rmes_dow_premium_v1 = { firenze: [0,0,0,0,0,5,5], condotta: [...], ... }
+   Array di 7 numeri (% premium): [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
+   Default tutti 0% (nessun effetto).
+   =========================================================================== */
+const DOW_PREMIUM_KEY = 'rmes_dow_premium_v1';
+function _getDowPremiumMap(){
+  try { const raw = localStorage.getItem(DOW_PREMIUM_KEY); return raw ? JSON.parse(raw) : {}; }
+  catch(e){ return {}; }
+}
+function _getDowPremium(structKey, dow){
+  const all = _getDowPremiumMap();
+  const arr = all && all[structKey];
+  // Default: Fri (5) e Sat (6) a +5%, gli altri 0. Si attiva solo se l'utente non ha mai salvato per questa struttura.
+  // L'array salvato include sempre 7 valori (anche zeri) quando l'utente salva, quindi presence = user-defined.
+  const DEFAULT_DOW = [0, 0, 0, 0, 0, 5, 5];  // [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
+  if (!Array.isArray(arr) || arr.length !== 7){
+    return DEFAULT_DOW[dow] || 0;
+  }
+  const v = +arr[dow]; return isFinite(v) ? v : 0;
+}
+function _getDowBoost(structKey, ymdNum){
+  if (!structKey || !ymdNum) return 1.0;
+  const d = new Date(Math.floor(ymdNum/10000), Math.floor((ymdNum%10000)/100)-1, ymdNum%100);
+  const dow = d.getDay();
+  const pct = _getDowPremium(structKey, dow);
+  if (!isFinite(pct) || pct === 0) return 1.0;
+  return 1 + pct/100;
+}
+function _setDowPremium(structKey, dowArray){
+  const all = _getDowPremiumMap();
+  const arr = (dowArray || []).slice(0,7).map(v => { const n = +v; return isFinite(n) ? n : 0; });
+  while (arr.length < 7) arr.push(0);
+  // Salva SEMPRE l'array (anche all-zero) perché significa "l'utente ha disattivato il default ven/sab".
+  // Per ripristinare il default, usa la funzione _resetDowPremium (rimuove la entry).
+  all[structKey] = arr;
+  try { localStorage.setItem(DOW_PREMIUM_KEY, JSON.stringify(all)); } catch(e){}
+}
+function _resetDowPremium(structKey){
+  const all = _getDowPremiumMap();
+  delete all[structKey];
+  try { localStorage.setItem(DOW_PREMIUM_KEY, JSON.stringify(all)); } catch(e){}
+}
+
+/* ===========================================================================
+   Promo Overrides — promo ad hoc per struttura.
+   Storage: rmes_promos_v1 = { firenze: [ {id, label, bookFrom, bookTo, stayFrom, stayTo, pct}, ... ], ... }
+   - id: identificatore univoco (timestamp)
+   - label: nome libero (es. "Black Friday")
+   - bookFrom/bookTo: window della data di prenotazione (ymd numero, YYYYMMDD)
+   - stayFrom/stayTo: window della stay-date (ymd numero, YYYYMMDD)
+   - pct: premium % da applicare al RMES suggested per le stay-date nella finestra
+   Una promo è ATTIVA OGGI se: TODAY_YMD ∈ [bookFrom, bookTo]
+   E si applica alla stay-date `s` se: s ∈ [stayFrom, stayTo]
+   Premium cumulativo se più promo si applicano alla stessa data (additivo).
+   =========================================================================== */
+const PROMOS_KEY = 'rmes_promos_v1';
+function _getPromosMap(){
+  try { const raw = localStorage.getItem(PROMOS_KEY); return raw ? JSON.parse(raw) : {}; }
+  catch(e){ return {}; }
+}
+function _getPromosForStruct(structKey){
+  const all = _getPromosMap();
+  return (all && Array.isArray(all[structKey])) ? all[structKey] : [];
+}
+function _setPromosForStruct(structKey, arr){
+  const all = _getPromosMap();
+  if (!arr || arr.length === 0) delete all[structKey];
+  else all[structKey] = arr;
+  try { localStorage.setItem(PROMOS_KEY, JSON.stringify(all)); } catch(e){}
+}
+function _getPromoBoost(structKey, stayYmdNum){
+  if (!structKey || !stayYmdNum) return { boost: 1.0, applied: [] };
+  const list = _getPromosForStruct(structKey);
+  if (!list.length) return { boost: 1.0, applied: [] };
+  const today = (typeof TODAY_YMD !== 'undefined') ? TODAY_YMD : 0;
+  let totalPct = 0;
+  const applied = [];
+  for (const p of list){
+    if (!p || !isFinite(+p.pct) || +p.pct === 0) continue;
+    if (p.bookFrom != null && today < p.bookFrom) continue;
+    if (p.bookTo != null && today > p.bookTo) continue;
+    if (p.stayFrom != null && stayYmdNum < p.stayFrom) continue;
+    if (p.stayTo != null && stayYmdNum > p.stayTo) continue;
+    totalPct += +p.pct;
+    applied.push(p);
+  }
+  if (totalPct === 0) return { boost: 1.0, applied: [] };
+  return { boost: 1 + totalPct/100, applied };
+}
 /* List all distinct event labels that appear in EVENTS, sorted alphabetically */
 function _listEventLabels(){
   if (typeof EVENTS === 'undefined') return [];
@@ -4512,7 +4606,10 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           _lmfPct = fp_lmfLookup(sel, r.curOcc, Math.max(0, _daysToArr));
         }
         const _eventBoost = _getEventBoost(r.ymd);
-        let _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100) * _eventBoost;
+        const _dowBoost = (typeof _getDowBoost === 'function') ? _getDowBoost(sel, r.ymd) : 1;
+        const _promoInfo = (typeof _getPromoBoost === 'function') ? _getPromoBoost(sel, r.ymd) : { boost: 1, applied: [] };
+        const _promoBoost = _promoInfo.boost;
+        let _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100) * _eventBoost * _dowBoost * _promoBoost;
         // Cap ±20% RIMOSSO nella migrazione 4-fattori. Restano solo Floor (≥) e Anchor ±50% (sul Base).
         const priceSuggested = Math.max(_priceAfterFactors, _structFloor);
         rmesSuggestedByRT[rt] = priceSuggested;
@@ -4525,7 +4622,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           if (_suppData && rt !== _suppData.baseRT){
             baseRT_pure = _basePure + _supplementForRT(rt, r.mo);
           }
-          let _priceOnBase = baseRT_pure * multRT * (1 + _lmfPct/100) * _eventBoost;
+          let _priceOnBase = baseRT_pure * multRT * (1 + _lmfPct/100) * _eventBoost * _dowBoost * _promoBoost;
           // Cap ±20% RIMOSSO. Solo Floor.
           let _atCapB = null;
           if (_priceOnBase < _structFloor){ _priceOnBase = _structFloor; _atCapB = 'floor'; }
@@ -5278,6 +5375,18 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         if (typeof _getEventBoost === 'function') eventBoost = _getEventBoost(ymdN);
       } catch(e){}
       const eventName = (typeof getEventForYmd === 'function') ? (getEventForYmd(ymdN) || null) : null;
+      // DOW Premium (weekend uplift)
+      let dowBoost = 1;
+      try { if (typeof _getDowBoost === 'function') dowBoost = _getDowBoost(sk, ymdN); } catch(e){}
+      // Promo Overrides (active today on this stay-date)
+      let promoBoost = 1, promoApplied = [];
+      try {
+        if (typeof _getPromoBoost === 'function'){
+          const _pi = _getPromoBoost(sk, ymdN);
+          promoBoost = _pi.boost;
+          promoApplied = _pi.applied.map(p => ({ id: p.id, label: p.label, pct: p.pct }));
+        }
+      } catch(e){}
       // RMES applied = prezzo effettivamente attivo per quel giorno, con sorgente.
       // Priorità: 1) override manuale Base 🖋, 2) RMES accepted, 3) Base Price (no action).
       // Le prime due hanno un timestamp (savedAt / accepted ts), la terza no.
@@ -5321,6 +5430,9 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         lmfPct,
         eventBoost,
         eventName,
+        dowBoost,
+        promoBoost,
+        promoApplied,
         rmesSugg: rmesSugg != null ? Math.round(rmesSugg) : null,
         rmesSuggAtCap,
         rmesApplied: rmesApplied != null ? Math.round(rmesApplied) : null,
@@ -7530,6 +7642,49 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '<div><span style="font-weight:600;color:#555">\u2728 Event Factor</span>';
         rmesSection += '<div style="font-size:10px;color:#aaa;margin-top:2px">'+_eventLeftSub+'</div></div>';
         rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_eventCol+'">'+(_eventPct>=0?'+':'')+_eventPct.toFixed(0)+'% (\u00d7'+_eventBoostModal.toFixed(3)+')</span>';
+        rmesSection += '</div>';
+        // === DOW Premium row ===
+        const _dowBoostModal = (typeof _getDowBoost === 'function') ? _getDowBoost(structKey, _ymdNumEvent) : 1;
+        const _dowPct = (_dowBoostModal - 1) * 100;
+        const _dowNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const _dowName = _dowNames[td.getDay()];
+        const _dowCol = _dowPct > 0 ? '#1e6b4a' : (_dowPct < 0 ? '#a83b3b' : '#aaa');
+        const _dowBg = _dowPct > 0 ? '#eef4ff' : '#fafafa';
+        const _dowBorder = _dowPct > 0 ? '1px solid #a5c3e8' : '1px solid #eee';
+        // Stato: è il default Fri/Sat +5% o un override custom?
+        const _dowMap = (typeof _getDowPremiumMap === 'function') ? _getDowPremiumMap() : {};
+        const _isUserCustom = !!(_dowMap && _dowMap[structKey]);
+        const _isWeekend = (td.getDay() === 5 || td.getDay() === 6);
+        let _dowSub;
+        if (_dowPct === 0){
+          _dowSub = 'Day of week: <b style="color:#1f3a6b">'+_dowName+'</b> · no premium configured' + (_isWeekend && _isUserCustom ? ' (default Fri/Sat +5% disabled by custom override)' : '');
+        } else if (!_isUserCustom && _isWeekend){
+          _dowSub = 'Day of week: <b style="color:#1f3a6b">'+_dowName+'</b> · <b style="color:#3b6b9a">default weekend uplift</b> (configurable in tab RMES → ⑤ DOW Premium)';
+        } else {
+          _dowSub = 'Day of week: <b style="color:#1f3a6b">'+_dowName+'</b> · custom value for ' + (structKey === 'firenze' ? 'Firenze Suite' : structKey === 'condotta' ? 'Condotta 16' : structKey === 'alfani' ? 'Palazzo Alfani' : 'Enis Guesthouse');
+        }
+        rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:'+_dowBg+';border:'+_dowBorder+';border-radius:4px;margin-bottom:10px;font-size:12px">';
+        rmesSection += '<div><span style="font-weight:600;color:#555">\ud83d\udcc6 DOW Premium</span>';
+        rmesSection += '<div style="font-size:10px;color:#aaa;margin-top:2px">'+_dowSub+'</div></div>';
+        rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_dowCol+'">'+(_dowPct>=0?'+':'')+_dowPct.toFixed(0)+'% (\u00d7'+_dowBoostModal.toFixed(3)+')</span>';
+        rmesSection += '</div>';
+        // === Promo Overrides row ===
+        const _promoInfoModal = (typeof _getPromoBoost === 'function') ? _getPromoBoost(structKey, _ymdNumEvent) : { boost: 1, applied: [] };
+        const _promoBoostModal = _promoInfoModal.boost;
+        const _promoPct = (_promoBoostModal - 1) * 100;
+        const _promoCol = _promoPct > 0 ? '#1e6b4a' : (_promoPct < 0 ? '#a83b3b' : '#aaa');
+        const _promoBg = _promoPct !== 0 ? '#fff4ec' : '#fafafa';
+        const _promoBorder = _promoPct !== 0 ? '1px solid #e8b890' : '1px solid #eee';
+        let _promoSub;
+        if (_promoInfoModal.applied.length === 0){
+          _promoSub = 'No promo active for this stay-date today';
+        } else {
+          _promoSub = 'Active: ' + _promoInfoModal.applied.map(p => (typeof escapeHtml === 'function' ? escapeHtml(p.label || 'Promo') : (p.label || 'Promo')) + ' (' + (p.pct>=0?'+':'') + (+p.pct).toFixed(0) + '%)').join(', ');
+        }
+        rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:'+_promoBg+';border:'+_promoBorder+';border-radius:4px;margin-bottom:10px;font-size:12px">';
+        rmesSection += '<div><span style="font-weight:600;color:#555">\ud83c\udfaf Promo Overrides</span>';
+        rmesSection += '<div style="font-size:10px;color:#aaa;margin-top:2px">'+_promoSub+'</div></div>';
+        rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_promoCol+'">'+(_promoPct>=0?'+':'')+_promoPct.toFixed(0)+'% (\u00d7'+_promoBoostModal.toFixed(3)+')</span>';
         rmesSection += '</div>';
       }
       {
@@ -13250,6 +13405,8 @@ function renderRMESConfigTab(){
   if (typeof _renderRmesPickupThresholdsBox === 'function') _renderRmesPickupThresholdsBox(sel);
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
+  if (typeof _renderRmesDowPremiumBox === 'function') _renderRmesDowPremiumBox(sel);
+  if (typeof _renderRmesPromosBox === 'function') _renderRmesPromosBox(sel);
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
   _rmesTabClearDirty();
   const applyAllBtn = document.getElementById('rmes-tab-apply-all');
@@ -13538,6 +13695,42 @@ function _rmesTabApplyAll(){
     });
     _setEventWeights(w);
   }
+  // DOW Premium inputs (only saved if at least one is non-default; otherwise resetDowPremium ripristina i default)
+  const dowInputs = document.querySelectorAll('.rmes-dow-input');
+  if (dowInputs.length){
+    const dowArr = [0,0,0,0,0,0,0];
+    dowInputs.forEach(inp => {
+      const i = parseInt(inp.dataset.dow, 10);
+      let v = parseFloat(inp.value);
+      if (!isFinite(v)) v = 0;
+      if (v < -50) v = -50;
+      if (v > 50) v = 50;
+      if (i >= 0 && i < 7) dowArr[i] = v;
+    });
+    _setDowPremium(sel, dowArr);
+  }
+  // Promo Overrides — già salvati ad ogni input change in _renderRmesPromosBox.
+  // Qui ricolleziamo per sicurezza (es. se l'utente cambia struttura senza che il blur sia partito).
+  const promoRows = document.querySelectorAll('#rmes-promos-wrap tr[data-promo-id]');
+  if (promoRows.length){
+    const promoArr = [];
+    promoRows.forEach(tr => {
+      const id = tr.getAttribute('data-promo-id');
+      const label = (tr.querySelector('.promo-label')||{}).value || '';
+      const _bf = (tr.querySelector('.promo-bookfrom')||{}).value;
+      const _bt = (tr.querySelector('.promo-bookto')||{}).value;
+      const _sf = (tr.querySelector('.promo-stayfrom')||{}).value;
+      const _st = (tr.querySelector('.promo-stayto')||{}).value;
+      const bookFrom = _bf ? parseInt(_bf.replace(/-/g,''), 10) : null;
+      const bookTo   = _bt ? parseInt(_bt.replace(/-/g,''), 10) : null;
+      const stayFrom = _sf ? parseInt(_sf.replace(/-/g,''), 10) : null;
+      const stayTo   = _st ? parseInt(_st.replace(/-/g,''), 10) : null;
+      const pctI = tr.querySelector('.promo-pct');
+      const pct = pctI ? +pctI.value : 0;
+      promoArr.push({ id, label, bookFrom, bookTo, stayFrom, stayTo, pct: isFinite(pct) ? pct : 0 });
+    });
+    _setPromosForStruct(sel, promoArr);
+  }
   if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
   _rmesTabClearDirty();
   return true;
@@ -13720,6 +13913,178 @@ function _renderRmesEventsBox(){
   if (rb) rb.addEventListener('click', () => {
     _setEventWeights({});
     _renderRmesEventsBox();
+    if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
+  });
+}
+
+/* ============================================================================
+   DOW Premium box — input % per giorno della settimana (per struttura selezionata)
+   ============================================================================ */
+function _renderRmesDowPremiumBox(sel){
+  const wrap = document.getElementById('rmes-dow-premium-wrap');
+  if (!wrap) return;
+  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
+  const lbl = structLabels[sel] || sel;
+  const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dowLong  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const isUserSaved = !!(_getDowPremiumMap()[sel]);
+  const cells = dowNames.map((d, i) => {
+    const v = _getDowPremium(sel, i);
+    const isWeekend = (i === 5 || i === 6);
+    return '<div style="flex:1;min-width:62px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;background:'+(isWeekend ? '#eef4ff' : '#fafafa')+';border:1px solid '+(isWeekend ? '#a5c3e8' : '#e5e1d4')+';border-radius:6px">' +
+      '<div style="font-size:10.5px;font-weight:700;color:'+(isWeekend ? '#1f3a6b' : '#888')+';letter-spacing:.04em">'+d+'</div>' +
+      '<div style="font-size:9px;color:#bbb;font-family:\'DM Mono\',monospace">'+dowLong[i]+'</div>' +
+      '<input type="number" min="-50" max="50" step="1" value="'+v+'" data-dow="'+i+'" class="rmes-dow-input" style="width:56px;padding:5px 6px;border:1px solid '+(isWeekend ? '#a5c3e8' : 'var(--line)')+';border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px;font-weight:600">' +
+      '<div style="font-size:9px;color:#aaa">%</div>' +
+    '</div>';
+  }).join('');
+  wrap.innerHTML =
+    '<div style="border:1px solid var(--line);border-radius:8px;padding:12px;background:#fff">' +
+      '<div style="font-size:11.5px;color:var(--ink-3);margin-bottom:10px;line-height:1.5">' +
+        'Day-of-week premium (% uplift) applied to the RMES suggested price for <b>'+lbl+'</b>. ' +
+        'Default: <b style="color:#1f3a6b">Friday +5%, Saturday +5%</b> (typical weekend uplift). ' +
+        'Use negative values (e.g. −5%) to discount slow weekdays. Set 0% on Fri/Sat to disable the default uplift.' +
+        (isUserSaved ? ' <span style="color:#3d7a4b;font-weight:600">· custom values saved for this property</span>' : ' <span style="color:#888">· using defaults</span>') +
+      '</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">' + cells + '</div>' +
+      '<div style="margin-top:10px;display:flex;gap:8px;align-items:center">' +
+        '<button id="rmes-dow-reset" style="font-size:11px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-2);cursor:pointer">↺ Reset to default (Fri/Sat +5%)</button>' +
+        '<span style="font-size:11px;color:var(--ink-3)">Changes are saved with the "Apply changes" button at the bottom of the tab.</span>' +
+      '</div>' +
+    '</div>';
+  wrap.querySelectorAll('.rmes-dow-input').forEach(inp => {
+    inp.addEventListener('input', () => { if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty(); });
+  });
+  const rb = document.getElementById('rmes-dow-reset');
+  if (rb) rb.addEventListener('click', () => {
+    _resetDowPremium(sel);
+    _renderRmesDowPremiumBox(sel);
+    if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
+  });
+}
+
+/* ============================================================================
+   Promo Overrides box — lista compatta promo per struttura selezionata
+   ============================================================================ */
+function _renderRmesPromosBox(sel){
+  const wrap = document.getElementById('rmes-promos-wrap');
+  if (!wrap) return;
+  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
+  const lbl = structLabels[sel] || sel;
+  const list = _getPromosForStruct(sel);
+  const _todayN = (typeof TODAY_YMD !== 'undefined') ? TODAY_YMD : 0;
+  function _ymdToIso(n){
+    if (n == null) return '';
+    const s = String(n);
+    return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);
+  }
+  function _isoToYmd(iso){
+    if (!iso) return null;
+    return parseInt(iso.replace(/-/g, ''), 10);
+  }
+  function _isActiveToday(p){
+    if (p.bookFrom != null && _todayN < p.bookFrom) return false;
+    if (p.bookTo != null && _todayN > p.bookTo) return false;
+    return true;
+  }
+  // Sort: active first, then by bookFrom asc
+  const sorted = list.slice().sort((a,b) => {
+    const aa = _isActiveToday(a), ab = _isActiveToday(b);
+    if (aa !== ab) return aa ? -1 : 1;
+    return (a.bookFrom || 0) - (b.bookFrom || 0);
+  });
+  const rowsHtml = sorted.length === 0
+    ? '<div style="padding:18px;text-align:center;color:#aaa;font-size:12px;font-style:italic;border:1px dashed var(--line);border-radius:6px;background:#fafafa">No promo configured for '+lbl+'. Click "Add promo" below to create one.</div>'
+    : '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
+      '<thead><tr style="background:#fafafa;border-bottom:1px solid var(--line)">' +
+        '<th style="padding:7px 8px;text-align:left;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Status</th>' +
+        '<th style="padding:7px 8px;text-align:left;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Label</th>' +
+        '<th style="padding:7px 8px;text-align:center;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Booking window</th>' +
+        '<th style="padding:7px 8px;text-align:center;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Stay window</th>' +
+        '<th style="padding:7px 8px;text-align:center;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Premium %</th>' +
+        '<th style="padding:7px 8px"></th>' +
+      '</tr></thead><tbody>' +
+      sorted.map(p => {
+        const active = _isActiveToday(p);
+        const safeLbl = typeof escapeHtml === 'function' ? escapeHtml(p.label || '') : (p.label || '');
+        return '<tr data-promo-id="'+p.id+'" style="border-bottom:1px solid #f0ece0">' +
+          '<td style="padding:8px;vertical-align:middle">' +
+            (active
+              ? '<span style="display:inline-block;background:#e8f5e9;color:#1e6b4a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid #b8d4be">ACTIVE</span>'
+              : '<span style="display:inline-block;background:#f5f5f5;color:#888;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid #e0e0e0">inactive</span>') +
+          '</td>' +
+          '<td style="padding:8px"><input type="text" class="promo-label" value="'+safeLbl+'" placeholder="Promo name" style="width:100%;padding:5px 7px;border:1px solid var(--line);border-radius:4px;font-size:12px;font-family:\'DM Sans\',sans-serif"></td>' +
+          '<td style="padding:8px"><div style="display:flex;gap:4px;justify-content:center;align-items:center"><input type="date" class="promo-bookfrom" value="'+_ymdToIso(p.bookFrom)+'" style="padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11.5px;font-family:\'DM Mono\',monospace"><span style="color:#aaa">→</span><input type="date" class="promo-bookto" value="'+_ymdToIso(p.bookTo)+'" style="padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11.5px;font-family:\'DM Mono\',monospace"></div></td>' +
+          '<td style="padding:8px"><div style="display:flex;gap:4px;justify-content:center;align-items:center"><input type="date" class="promo-stayfrom" value="'+_ymdToIso(p.stayFrom)+'" style="padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11.5px;font-family:\'DM Mono\',monospace"><span style="color:#aaa">→</span><input type="date" class="promo-stayto" value="'+_ymdToIso(p.stayTo)+'" style="padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11.5px;font-family:\'DM Mono\',monospace"></div></td>' +
+          '<td style="padding:8px;text-align:center"><input type="number" class="promo-pct" min="-50" max="50" step="1" value="'+(+p.pct || 0)+'" style="width:60px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px;font-weight:600"> <span style="font-size:10px;color:#aaa">%</span></td>' +
+          '<td style="padding:8px;text-align:center"><button class="promo-del" style="background:transparent;border:1px solid #e8b8b8;color:#a83b3b;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">✕</button></td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table>';
+  wrap.innerHTML =
+    '<div style="border:1px solid var(--line);border-radius:8px;padding:12px;background:#fff">' +
+      '<div style="font-size:11.5px;color:var(--ink-3);margin-bottom:10px;line-height:1.5">' +
+        'Promo overrides for <b>'+lbl+'</b>. Each promo defines a <b>booking window</b> (when the promo is active for new bookings) ' +
+        'and a <b>stay window</b> (which stay-dates the promo affects). When TODAY falls inside the booking window, ' +
+        'all stay-dates inside the stay window receive a <b>premium %</b> on top of the RMES suggested price ' +
+        '(prevents the engine from suggesting too low a price when you are running a promo).' +
+      '</div>' +
+      '<div id="rmes-promos-list">' + rowsHtml + '</div>' +
+      '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
+        '<button id="rmes-promo-add" style="font-size:12px;padding:7px 14px;background:linear-gradient(135deg,#c4823b,#d99a4e);color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer">+ Add promo</button>' +
+        '<span style="font-size:11px;color:var(--ink-3)">Changes are saved with the "Apply changes" button at the bottom of the tab.</span>' +
+      '</div>' +
+    '</div>';
+  // Listeners
+  function _collectAndSave(){
+    const rows = wrap.querySelectorAll('tr[data-promo-id]');
+    const arr = [];
+    rows.forEach(tr => {
+      const id = tr.getAttribute('data-promo-id');
+      const label = (tr.querySelector('.promo-label')||{}).value || '';
+      const bookFrom = _isoToYmd((tr.querySelector('.promo-bookfrom')||{}).value);
+      const bookTo   = _isoToYmd((tr.querySelector('.promo-bookto')||{}).value);
+      const stayFrom = _isoToYmd((tr.querySelector('.promo-stayfrom')||{}).value);
+      const stayTo   = _isoToYmd((tr.querySelector('.promo-stayto')||{}).value);
+      const pctI = tr.querySelector('.promo-pct');
+      const pct = pctI ? +pctI.value : 0;
+      arr.push({ id, label, bookFrom, bookTo, stayFrom, stayTo, pct: isFinite(pct) ? pct : 0 });
+    });
+    _setPromosForStruct(sel, arr);
+  }
+  wrap.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      _collectAndSave();
+      if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
+    });
+  });
+  wrap.querySelectorAll('.promo-del').forEach(btn => {
+    btn.addEventListener('click', (ev) => {
+      const tr = ev.currentTarget.closest('tr[data-promo-id]');
+      if (!tr) return;
+      const id = tr.getAttribute('data-promo-id');
+      const cur = _getPromosForStruct(sel).filter(p => p.id !== id);
+      _setPromosForStruct(sel, cur);
+      _renderRmesPromosBox(sel);
+      if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
+    });
+  });
+  const addBtn = document.getElementById('rmes-promo-add');
+  if (addBtn) addBtn.addEventListener('click', () => {
+    const cur = _getPromosForStruct(sel);
+    const newId = 'p_' + Date.now() + '_' + Math.floor(Math.random()*1000);
+    // Default: booking window = oggi + 14gg, stay window = +30gg da oggi a +60gg
+    const _t = new Date(TODAY); _t.setHours(0,0,0,0);
+    const _bookFromN = _t.getFullYear()*10000 + (_t.getMonth()+1)*100 + _t.getDate();
+    const _t14 = new Date(_t); _t14.setDate(_t14.getDate()+14);
+    const _bookToN = _t14.getFullYear()*10000 + (_t14.getMonth()+1)*100 + _t14.getDate();
+    const _t30 = new Date(_t); _t30.setDate(_t30.getDate()+30);
+    const _stayFromN = _t30.getFullYear()*10000 + (_t30.getMonth()+1)*100 + _t30.getDate();
+    const _t60 = new Date(_t); _t60.setDate(_t60.getDate()+60);
+    const _stayToN = _t60.getFullYear()*10000 + (_t60.getMonth()+1)*100 + _t60.getDate();
+    cur.push({ id: newId, label: 'New promo', bookFrom: _bookFromN, bookTo: _bookToN, stayFrom: _stayFromN, stayTo: _stayToN, pct: 10 });
+    _setPromosForStruct(sel, cur);
+    _renderRmesPromosBox(sel);
     if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
   });
 }
