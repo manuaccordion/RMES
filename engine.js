@@ -9669,19 +9669,20 @@ function renderSellStrategy(sel){
         const delta = targetOnBase - (ref != null ? ref : 0);
         const arrow = (targetOnBase > (ref || 0)) ? '↑' : '↓';
         const cls = (delta > 0.5) ? 'cell-pos' : (delta < -0.5 ? 'cell-neg' : 'cell-flat');
-        const sign = delta > 0 ? '+' : '';
-        const accBadge = hasAcc ? '<span style="font-size:9px;color:#3d7a4b;font-weight:700;display:block">✓ already active</span>' : '';
+        // Il pulsante ✓ accetta ESATTAMENTE il prezzo mostrato in cella (= targetOnBase),
+        // così non c'è discrepanza tra ciò che vede l'utente e ciò che viene salvato.
+        const targetOnBaseRounded = Math.round(targetOnBase);
         const acceptBtn = (Math.abs(delta) >= 0.5 && !hasManualOvr)
-          ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" title="Accept this RMES suggestion as the new current reference for ${r.ymd}" style="margin-top:2px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block">✓</button>`
+          ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" data-rmes-price="${targetOnBaseRounded}" title="Accept this RMES suggestion (€${targetOnBaseRounded}) as the new current reference for ${r.ymd}" style="margin-top:3px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block">✓</button>`
           : '';
         const rmesDir = (basePure != null && targetOnBase < basePure) ? 'down' : (basePure != null && targetOnBase > basePure ? 'up' : 'flat');
         let cellTip;
         if (hasManualOvr){
-          cellTip = `RMES still suggests €${Math.round(targetOnBase)} (target on Base €${basePure!=null?Math.round(basePure):'—'}, direction: ${rmesDir==='down'?'lower the price':rmesDir==='up'?'raise the price':'no change'}).\nYour override is €${Math.round(ref)} — outside the target.${_capNote}\n\nClick to see calculation detail.`;
+          cellTip = `RMES suggests €${targetOnBaseRounded} (target on Base €${basePure!=null?Math.round(basePure):'—'}, direction: ${rmesDir==='down'?'lower the price':rmesDir==='up'?'raise the price':'no change'}).\nYour override is €${Math.round(ref)}.${_capNote}\n\nClick to see calculation detail.`;
         } else {
-          cellTip = `RMES suggests €${Math.round(targetOnBase)}\nCurrent active price (Last update): €${ref!=null?Math.round(ref):'—'}\nΔ vs Last update: ${sign}€${Math.round(delta)}${_capNote}\n\nClick to see calculation detail. The ✓ button accepts this price as the new Last update.`;
+          cellTip = `RMES suggests €${targetOnBaseRounded}\nCurrent active price (Last update): €${ref!=null?Math.round(ref):'—'}${_capNote}\n\nClick to see calculation detail. The ✓ button accepts €${targetOnBaseRounded} as the new Last update.`;
         }
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer;text-align:center" title="${escapeHtml(cellTip)}">${arrow} ${Math.round(targetOnBase)}<br><span style="font-size:10px;font-weight:600">${sign}€${Math.round(delta)}</span> ${acceptBtn}${accBadge}</td>`;
+        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer;text-align:center" title="${escapeHtml(cellTip)}">${arrow} ${targetOnBaseRounded} ${acceptBtn}</td>`;
       })()}
       ${beddyCell}
       ${expCells}
@@ -9812,35 +9813,21 @@ function renderSellStrategy(sel){
       openSellPickupDrill(idx, kind);
     });
   });
-  // NewRMES: listener bottoni ✓ accept (data-rmes-accept = ymd numerico)
+  // NewRMES: listener bottoni ✓ accept
+  // data-rmes-accept = ymd numerico (data)
+  // data-rmes-price  = prezzo RMES ESATTO mostrato in cella (= quello che viene salvato)
   document.getElementById('sell-table-wrap').querySelectorAll('.rmes-accept-btn').forEach(btn => {
     btn.addEventListener('click', (ev) => {
       ev.stopPropagation();
       const ymdN = +btn.dataset.rmesAccept;
-      if (!ymdN || !isFinite(ymdN)) return;
-      // recupera il prezzo suggerito RMES today dalla mappa
+      const newPrice = +btn.dataset.rmesPrice;
+      if (!ymdN || !isFinite(ymdN) || !isFinite(newPrice) || newPrice <= 0) return;
       const sk = CURRENT_STRUCT;
       if (!sk || sk === 'both') { alert('Select a property first.'); return; }
-      const baseRTKey = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
-      if (!baseRTKey) return;
-      let rmesMap = null;
-      try {
-        const _td = new Date(TODAY); _td.setHours(0,0,0,0);
-        const _tdN = _td.getFullYear()*10000 + (_td.getMonth()+1)*100 + _td.getDate();
-        rmesMap = computeRMESPriceMap(sk, _tdN, SELL_RANGE_DAYS);
-      } catch(e){}
-      const mapEntry = rmesMap && rmesMap[ymdN];
-      if (!mapEntry || !mapEntry.rmesSuggestedByRT || mapEntry.rmesSuggestedByRT[baseRTKey] == null){
-        alert('No RMES suggestion for this date.');
-        return;
-      }
-      const newPrice = Math.round(mapEntry.rmesSuggestedByRT[baseRTKey]);
-      const curRef = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sk, ymdN) : null;
       const ymdStr = String(ymdN);
       const dateLbl = ymdStr.slice(6,8) + '/' + ymdStr.slice(4,6) + '/' + ymdStr.slice(0,4);
-      if (!confirm('Accept RMES suggestion?\n\nDate: ' + dateLbl + '\nCurrent reference: ' + (curRef!=null?curRef+' €':'—') + '\nNew accepted price: ' + newPrice + ' €\n\nFrom now on RMES will start from this price for this date.')) return;
+      if (!confirm('Accept RMES suggestion of €' + newPrice + ' for ' + dateLbl + '?')) return;
       newrmesSetAccepted(sk, ymdN, newPrice);
-      // re-render Sell Strategy (così la cella si aggiorna)
       if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
     });
   });
