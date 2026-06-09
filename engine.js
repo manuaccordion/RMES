@@ -4848,6 +4848,44 @@ function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
   _invalidateRmesMapCache();
 }
 
+/* ============================================================
+   RMES SUGGESTED — HELPER UNICO
+   Ritorna il numero RMES finale per (structKey, ymd, baseRT).
+   USATO SIA dalla cella della tabella Sell Strategy CHE dal modal di
+   dettaglio, così il numero è SEMPRE identico. Niente più discrepanze.
+   ============================================================ */
+function _rmesSuggestedForDay(structKey, ymdN, rt){
+  if (!structKey || !ymdN || !rt) return null;
+  if (structKey === 'both') return null;
+  // Trova quanti giorni mancano dal target (per range minimo cache)
+  const _td = new Date(TODAY); _td.setHours(0,0,0,0);
+  const _tdN = _td.getFullYear()*10000 + (_td.getMonth()+1)*100 + _td.getDate();
+  if (ymdN < _tdN) return null;  // RMES non si applica al passato
+  const yy = Math.floor(ymdN/10000);
+  const mm = Math.floor((ymdN%10000)/100)-1;
+  const dd = ymdN%100;
+  const tgtDate = new Date(yy, mm, dd);
+  const daysAhead = Math.ceil((tgtDate.getTime() - _td.getTime()) / 86400000) + 1;
+  if (daysAhead < 1) return null;
+  // Uso SEMPRE la stessa range cache key di Sell Strategy quando possibile
+  const SELL_RANGE = (typeof SELL_RANGE_DAYS === 'number') ? SELL_RANGE_DAYS : 60;
+  const range = Math.max(daysAhead, SELL_RANGE);
+  let rmesMap = null;
+  try { rmesMap = computeRMESPriceMap(structKey, _tdN, range); } catch(e){ return null; }
+  if (!rmesMap) return null;
+  const entry = rmesMap[ymdN];
+  if (!entry) return null;
+  // Priorità: rmesTargetOnBaseByRT[rt].price (target su Base puro) > rmesSuggestedByRT[rt] (target sul ref)
+  // Questo è IL numero che vede l'utente in cella e nel modal — coerenza totale.
+  if (entry.rmesTargetOnBaseByRT && entry.rmesTargetOnBaseByRT[rt] && isFinite(entry.rmesTargetOnBaseByRT[rt].price)){
+    return entry.rmesTargetOnBaseByRT[rt].price;
+  }
+  if (entry.rmesSuggestedByRT && isFinite(entry.rmesSuggestedByRT[rt])){
+    return entry.rmesSuggestedByRT[rt];
+  }
+  return null;
+}
+
 /* Current reference = if accepted exists, use it; otherwise effective base (override or frozen). */
 function newrmesGetCurrentReference(structKey, ymd){
   // Priorità: 1) manual final-price override 🖋 (set via the RMES modal),
@@ -7457,9 +7495,12 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         : (fpPriceSource * mults.multFinale);
       // rmesSuggested = TARGET RMES su Base Price strutturale (ignora override modale).
       // Questo è il "vero" suggerimento da mostrare nel modal, coerente con la cella Sell Strategy.
-      // Se non disponibile (data molto futura senza pre-calcolo), fallback a priceRmesFinal.
+      // USIAMO LO STESSO HELPER UNICO della cella per garantire numeri identici.
+      const _unifiedRmes = (typeof _rmesSuggestedForDay === 'function') ? _rmesSuggestedForDay(d.structKey, _tgtYmdN, d.rt) : null;
       const _targetObjM = (dayData.rmesTargetOnBaseByRT && dayData.rmesTargetOnBaseByRT[d.rt]) ? dayData.rmesTargetOnBaseByRT[d.rt] : null;
-      const _targetOnBase = (_targetObjM && isFinite(_targetObjM.price)) ? _targetObjM.price : priceRmesFinal;
+      const _targetOnBase = (_unifiedRmes != null && isFinite(_unifiedRmes))
+        ? _unifiedRmes
+        : ((_targetObjM && isFinite(_targetObjM.price)) ? _targetObjM.price : priceRmesFinal);
       const _targetAtCap = _targetObjM ? _targetObjM.atCap : null;  // 'min' | 'max' | 'floor' | null
       const rmesSuggested = _targetOnBase;
       // "Base puro" = newrmesGetEffectiveBase (senza override modale), per la regola di direzione.
@@ -9622,25 +9663,40 @@ function renderSellStrategy(sel){
         else if (_atCap === 'max') _capNote = '\n⚠ RMES is at the MAX +20% deviation from Base — it cannot suggest higher than this.';
         else if (_atCap === 'floor') _capNote = '\n⚠ RMES suggestion is clamped to the Floor Rate — it would be lower otherwise.';
         const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        // ===== CELLA RMES SEMPLIFICATA =====
-        // SEMPRE: mostra il numero RMES suggerito + pulsante ✓ accept disponibile.
-        // Nessun "in line", nessuna freccia, nessun delta in cella.
-        // Il numero mostrato qui è ESATTAMENTE quello che viene salvato cliccando ✓
-        // e ESATTAMENTE quello che appare nel modal di dettaglio (apertura con click sulla cella).
-        const targetOnBaseRounded = Math.round(targetOnBase);
-        // Colore di sfondo: verde tenue se vicino al ref (entro ±2%), arancione tenue se diverge.
-        let bgCol = 'rgba(195,131,59,.05)';   // arancione tenue di default
+        // ===== CELLA RMES SEMPLIFICATA + COERENTE CON IL MODAL =====
+        // Uso l'helper unico _rmesSuggestedForDay: stesso identico calcolo che il modal mostra.
+        // Niente più discrepanze tra cella e dettaglio.
+        const _rmesUnified = (typeof _rmesSuggestedForDay === 'function') ? _rmesSuggestedForDay(sel, r.ymd, baseRTKey) : null;
+        const targetOnBaseUnified = (_rmesUnified != null && isFinite(_rmesUnified)) ? _rmesUnified : targetOnBase;
+        const targetOnBaseRounded = Math.round(targetOnBaseUnified);
+        // Direzione vs prezzo attivo (ref): ↑ verde se RMES dice di alzare, ↓ rosso se dice di abbassare.
+        // = se entro ±2%, niente freccia (sei allineato).
+        let arrow = '';
+        let bgCol = 'rgba(195,131,59,.05)';
         let textCol = '#5a3a14';
-        if (ref != null && targetOnBase > 0){
-          const diffPct = Math.abs(ref - targetOnBase) / targetOnBase;
-          if (diffPct <= 0.02){
-            bgCol = 'rgba(74,124,89,.10)';   // verde tenue = già allineato
+        if (ref != null && targetOnBaseUnified > 0){
+          const diffPct = (targetOnBaseUnified - ref) / targetOnBaseUnified;
+          if (Math.abs(diffPct) <= 0.02){
+            // Allineato: sfondo verde tenue, niente freccia
+            bgCol = 'rgba(74,124,89,.10)';
             textCol = '#2c5c3c';
+          } else if (targetOnBaseUnified > ref){
+            // RMES suggerisce ALZARE → freccia verde ↑
+            arrow = '<span style="color:#2c5c3c;font-weight:700;margin-right:3px">↑</span>';
+            bgCol = 'rgba(74,124,89,.08)';
+          } else {
+            // RMES suggerisce ABBASSARE → freccia rossa ↓
+            arrow = '<span style="color:#a83b3b;font-weight:700;margin-right:3px">↓</span>';
+            bgCol = 'rgba(168,59,59,.06)';
+            textCol = '#7a2828';
           }
         }
         const acceptBtn = `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" data-rmes-price="${targetOnBaseRounded}" title="Accept this RMES suggestion (€${targetOnBaseRounded}) as the new active price for ${r.ymd}" style="margin-left:6px;font-size:9px;padding:2px 7px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block;vertical-align:middle">✓</button>`;
-        const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
-        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${targetOnBaseRounded}${acceptBtn}</td>`;
+        const dirHint = ref != null && targetOnBaseUnified > 0 && Math.abs((targetOnBaseUnified - ref) / targetOnBaseUnified) > 0.02
+          ? (targetOnBaseUnified > ref ? '\nRMES suggests to RAISE the price ↑' : '\nRMES suggests to LOWER the price ↓')
+          : '\nRMES is in line with your active price (±2%)';
+        const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${dirHint}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
+        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })()}
       ${beddyCell}
       ${expCells}
