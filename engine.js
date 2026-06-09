@@ -9621,68 +9621,26 @@ function renderSellStrategy(sel){
         if (_atCap === 'min') _capNote = '\n⚠ RMES is at the MAX -20% deviation from Base — it cannot suggest lower than this.';
         else if (_atCap === 'max') _capNote = '\n⚠ RMES is at the MAX +20% deviation from Base — it cannot suggest higher than this.';
         else if (_atCap === 'floor') _capNote = '\n⚠ RMES suggestion is clamped to the Floor Rate — it would be lower otherwise.';
-        // Capisco se c'è un override modale (priorità massima nel ref)
-        const _isoOvrK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
-        const _ovrK = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, _isoOvrK, baseRTKey) : null;
-        const hasManualOvr = !!(_ovrK && _ovrK.price != null && isFinite(_ovrK.price) && _ovrK.price > 0);
-        const acc = (typeof newrmesGetAccepted === 'function') ? newrmesGetAccepted(sel, r.ymd) : null;
-        const hasAcc = (acc != null && isFinite(acc));
-        // Regola "in line" (con tolleranza ±2%) — applicata SE c'è override o accept
-        let inLine = false;
-        let reasonInLine = '';
-        if ((hasManualOvr || hasAcc) && ref != null && targetOnBase > 0 && basePure != null && basePure > 0){
-          const tolerance = 0.02;  // ±2%
-          const diffPct = (ref - targetOnBase) / targetOnBase;
-          if (Math.abs(diffPct) <= tolerance){
-            inLine = true;
-            reasonInLine = 'tolerance';
-          } else {
-            // Direzione del segnale RMES vs Base puro
-            const rmesDirection = (targetOnBase < basePure) ? 'down' : (targetOnBase > basePure ? 'up' : 'flat');
-            if (rmesDirection === 'down' && ref <= targetOnBase){
-              inLine = true;
-              reasonInLine = 'past_down';   // utente ha già abbassato oltre il target
-            } else if (rmesDirection === 'up' && ref >= targetOnBase){
-              inLine = true;
-              reasonInLine = 'past_up';
-            }
-            // Caso flat (target = Base): NON in-line automaticamente. Se diff > tolerance, RMES insiste.
-          }
-        }
         const fpDateISO = String(r.ymd).slice(0,4)+'-'+String(r.ymd).slice(4,6)+'-'+String(r.ymd).slice(6,8);
-        // ----- CASO 1: in-line → mostra ✓ in line -----
-        if (inLine){
-          let tipInLine;
-          if (reasonInLine === 'tolerance'){
-            tipInLine = `RMES target: €${Math.round(targetOnBase)} · Your active price: €${Math.round(ref)}\nDifference within ±2% tolerance → RMES is "in line" with your decision.${_capNote}\n\nClick to see calculation detail.`;
-          } else if (reasonInLine === 'past_down'){
-            tipInLine = `RMES target: €${Math.round(targetOnBase)} (suggesting to LOWER from Base €${Math.round(basePure)})\nYour active price: €${Math.round(ref)} (already at or below the target)\n→ RMES is "in line": you have already lowered enough.${_capNote}\n\nClick to see calculation detail.`;
-          } else if (reasonInLine === 'past_up'){
-            tipInLine = `RMES target: €${Math.round(targetOnBase)} (suggesting to RAISE from Base €${Math.round(basePure)})\nYour active price: €${Math.round(ref)} (already at or above the target)\n→ RMES is "in line": you have already raised enough.${_capNote}\n\nClick to see calculation detail.`;
-          } else {
-            tipInLine = `RMES target: €${Math.round(targetOnBase)} · Your active price: €${Math.round(ref)}\nRMES is "in line" with your decision.\n\nClick to see calculation detail.`;
-          }
-          return `<td class="cell-mono cell-flat" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(74,124,89,.10);cursor:pointer;text-align:center;color:#2c5c3c;font-weight:700" title="${escapeHtml(tipInLine)}">✓ in line</td>`;
-        }
-        // ----- CASO 2: RMES insiste con un target diverso -----
-        // Mostro il target su Base puro (= numero "stabile" che ha senso per la regola).
-        const delta = targetOnBase - (ref != null ? ref : 0);
-        const arrow = (targetOnBase > (ref || 0)) ? '↑' : '↓';
-        const cls = (delta > 0.5) ? 'cell-pos' : (delta < -0.5 ? 'cell-neg' : 'cell-flat');
-        // Il pulsante ✓ accetta ESATTAMENTE il prezzo mostrato in cella (= targetOnBase),
-        // così non c'è discrepanza tra ciò che vede l'utente e ciò che viene salvato.
+        // ===== CELLA RMES SEMPLIFICATA =====
+        // SEMPRE: mostra il numero RMES suggerito + pulsante ✓ accept disponibile.
+        // Nessun "in line", nessuna freccia, nessun delta in cella.
+        // Il numero mostrato qui è ESATTAMENTE quello che viene salvato cliccando ✓
+        // e ESATTAMENTE quello che appare nel modal di dettaglio (apertura con click sulla cella).
         const targetOnBaseRounded = Math.round(targetOnBase);
-        const acceptBtn = (Math.abs(delta) >= 0.5 && !hasManualOvr)
-          ? `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" data-rmes-price="${targetOnBaseRounded}" title="Accept this RMES suggestion (€${targetOnBaseRounded}) as the new current reference for ${r.ymd}" style="margin-top:3px;font-size:9px;padding:1px 6px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block">✓</button>`
-          : '';
-        const rmesDir = (basePure != null && targetOnBase < basePure) ? 'down' : (basePure != null && targetOnBase > basePure ? 'up' : 'flat');
-        let cellTip;
-        if (hasManualOvr){
-          cellTip = `RMES suggests €${targetOnBaseRounded} (target on Base €${basePure!=null?Math.round(basePure):'—'}, direction: ${rmesDir==='down'?'lower the price':rmesDir==='up'?'raise the price':'no change'}).\nYour override is €${Math.round(ref)}.${_capNote}\n\nClick to see calculation detail.`;
-        } else {
-          cellTip = `RMES suggests €${targetOnBaseRounded}\nCurrent active price (Last update): €${ref!=null?Math.round(ref):'—'}${_capNote}\n\nClick to see calculation detail. The ✓ button accepts €${targetOnBaseRounded} as the new Last update.`;
+        // Colore di sfondo: verde tenue se vicino al ref (entro ±2%), arancione tenue se diverge.
+        let bgCol = 'rgba(195,131,59,.05)';   // arancione tenue di default
+        let textCol = '#5a3a14';
+        if (ref != null && targetOnBase > 0){
+          const diffPct = Math.abs(ref - targetOnBase) / targetOnBase;
+          if (diffPct <= 0.02){
+            bgCol = 'rgba(74,124,89,.10)';   // verde tenue = già allineato
+            textCol = '#2c5c3c';
+          }
         }
-        return `<td class="cell-mono ${cls}" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:rgba(195,131,59,.05);cursor:pointer;text-align:center" title="${escapeHtml(cellTip)}">${arrow} ${targetOnBaseRounded} ${acceptBtn}</td>`;
+        const acceptBtn = `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" data-rmes-price="${targetOnBaseRounded}" title="Accept this RMES suggestion (€${targetOnBaseRounded}) as the new active price for ${r.ymd}" style="margin-left:6px;font-size:9px;padding:2px 7px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block;vertical-align:middle">✓</button>`;
+        const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
+        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${targetOnBaseRounded}${acceptBtn}</td>`;
       })()}
       ${beddyCell}
       ${expCells}
