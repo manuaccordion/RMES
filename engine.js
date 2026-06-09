@@ -45,7 +45,8 @@ const RMES_CLOUD = (function(){
     'rmes_foundation_overrides_v1',
     'notes_journal_v2',
     'rmes_dow_premium_v1',
-    'rmes_promos_v1'
+    'rmes_promos_v1',
+    '_data_fingerprint_v1'
   ];
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAJuFzabHO3O3XVM3DfeWNThB9Wy0jMkHA",
@@ -63,6 +64,17 @@ const RMES_CLOUD = (function(){
   let lastRemoteJSON = null;    // ultimo stato remoto applicato (per dedup)
   const statusListeners = [];
 
+  let _lastSyncTime = null;
+  let _lastSyncDirection = null;  // 'push' | 'pull' | null
+  let _syncHistory = [];
+
+  function _logSync(direction){
+    _lastSyncTime = new Date();
+    _lastSyncDirection = direction;
+    _syncHistory.unshift({ t: _lastSyncTime, d: direction });
+    if (_syncHistory.length > 20) _syncHistory.pop();
+  }
+
   function _setStatus(s){
     try { statusListeners.forEach(fn => fn(s)); } catch(e){}
     try {
@@ -76,8 +88,141 @@ const RMES_CLOUD = (function(){
         const m = map[s] || map.offline;
         el.textContent = m.t;
         el.style.color = m.c;
+        el.style.cursor = 'pointer';
+        el.title = 'Click for sync diagnostics';
+        // Bind click for diagnostics panel (only once)
+        if (!el._diagWired){
+          el._diagWired = true;
+          el.addEventListener('click', _showDiagnostics);
+        }
       }
     } catch(e){}
+  }
+
+  function _showDiagnostics(){
+    const existing = document.getElementById('rmes-cloud-diag');
+    if (existing) { existing.remove(); return; }
+    // Raccolta info
+    const wrap = document.createElement('div');
+    wrap.id = 'rmes-cloud-diag';
+    wrap.style.cssText = 'position:fixed;top:60px;right:20px;width:380px;max-width:calc(100vw - 40px);background:#fff;border:1.5px solid #b59e7d;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.25);padding:18px;z-index:10000;font-family:"DM Sans",sans-serif;font-size:12.5px;color:#5a3a14;max-height:calc(100vh - 80px);overflow:auto;';
+    // Header
+    let h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #ece9e2">';
+    h += '<b style="font-size:14px;color:#5a3a14">☁ Sync Diagnostics</b>';
+    h += '<button id="rmes-diag-close" style="background:transparent;border:none;font-size:18px;cursor:pointer;color:#aaa;line-height:1">✕</button>';
+    h += '</div>';
+    // Stato cloud
+    const status = available ? (_lastSyncTime ? 'synced' : 'connecting') : 'offline';
+    const statusColor = status === 'synced' ? '#3d7a4b' : (status === 'connecting' ? '#8a6d3b' : '#a83b3b');
+    h += '<div style="margin-bottom:10px"><b>Cloud status:</b> <span style="color:'+statusColor+';font-weight:700">'+status.toUpperCase()+'</span></div>';
+    // Ultimo sync
+    if (_lastSyncTime){
+      const dt = _lastSyncTime;
+      const dtFmt = dt.getDate().toString().padStart(2,'0')+'/'+(dt.getMonth()+1).toString().padStart(2,'0')+'/'+dt.getFullYear()+' '+dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0')+':'+dt.getSeconds().toString().padStart(2,'0');
+      const ago = Math.floor((Date.now() - dt.getTime())/1000);
+      h += '<div style="margin-bottom:10px"><b>Last sync:</b> '+dtFmt+' ('+(_lastSyncDirection||'?')+', '+ago+'s ago)</div>';
+    } else {
+      h += '<div style="margin-bottom:10px;color:#a83b3b"><b>No sync yet.</b> Configurations are local-only.</div>';
+    }
+    // Data.js version
+    let dataVer = 'unknown';
+    try {
+      if (typeof EMBEDDED_CSV === 'string' && typeof BOOKINGS !== 'undefined'){
+        dataVer = BOOKINGS.length + ' bookings · ' + (typeof EVENTS !== 'undefined' ? Object.keys(EVENTS).length : '?') + ' events';
+      }
+    } catch(e){}
+    h += '<div style="margin-bottom:10px"><b>Data file:</b> '+dataVer+'</div>';
+    // Browser
+    let browser = 'unknown';
+    try {
+      const ua = navigator.userAgent;
+      if (/Edg\//.test(ua)) browser = 'Edge';
+      else if (/Chrome\//.test(ua)) browser = 'Chrome';
+      else if (/Firefox\//.test(ua)) browser = 'Firefox';
+      else if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) browser = 'Safari';
+      const isMac = /Macintosh|Mac OS X/.test(ua);
+      if (isMac) browser += ' (Mac)';
+      else if (/Windows/.test(ua)) browser += ' (Windows)';
+    } catch(e){}
+    h += '<div style="margin-bottom:10px"><b>Browser:</b> '+browser+'</div>';
+    // Keys in localStorage
+    let keysCount = 0;
+    for (const k of SYNC_KEYS){
+      try { if (localStorage.getItem(k) != null) keysCount++; } catch(e){}
+    }
+    h += '<div style="margin-bottom:10px"><b>Synced keys present:</b> '+keysCount+' / '+SYNC_KEYS.length+'</div>';
+    // Recent sync history
+    if (_syncHistory.length){
+      h += '<div style="margin:14px 0 8px;padding-top:10px;border-top:1px solid #ece9e2"><b>Recent sync activity:</b></div>';
+      h += '<div style="font-family:\'DM Mono\',monospace;font-size:11px;background:#fafafa;border:1px solid #ece9e2;border-radius:5px;padding:8px;max-height:120px;overflow:auto">';
+      for (const e of _syncHistory.slice(0, 10)){
+        const t = e.t;
+        const tt = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0')+':'+t.getSeconds().toString().padStart(2,'0');
+        const arrow = e.d === 'push' ? '↑' : (e.d === 'pull' ? '↓' : '·');
+        const arrowCol = e.d === 'push' ? '#3d7a4b' : '#1f3a6b';
+        h += '<div>'+tt+' <span style="color:'+arrowCol+';font-weight:700">'+arrow+'</span> '+e.d+'</div>';
+      }
+      h += '</div>';
+    }
+    // Actions
+    h += '<div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">';
+    h += '<button id="rmes-diag-force-sync" style="padding:10px 12px;background:linear-gradient(135deg,#3d7a4b,#4a8c58);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:12.5px">🔄 Force pull from cloud + reload tabs</button>';
+    h += '<button id="rmes-diag-hard-reload" style="padding:10px 12px;background:#fff;color:#5a3a14;border:1px solid #b59e7d;border-radius:6px;font-weight:600;cursor:pointer;font-size:12.5px">🔁 Hard reload (clears browser cache)</button>';
+    h += '<div style="font-size:10.5px;color:#888;line-height:1.5;margin-top:4px">If you and a colleague see different RMES suggestions: first try <b>Force pull from cloud</b>. If still different, both do <b>Hard reload</b>. The Hard reload re-downloads the latest data.js (might be stale on Mac/Safari).</div>';
+    h += '</div>';
+    wrap.innerHTML = h;
+    document.body.appendChild(wrap);
+    document.getElementById('rmes-diag-close').addEventListener('click', () => wrap.remove());
+    document.getElementById('rmes-diag-force-sync').addEventListener('click', () => {
+      const btn = document.getElementById('rmes-diag-force-sync');
+      btn.textContent = '⏳ Pulling…';
+      btn.disabled = true;
+      _forcePullFromCloud().then(ok => {
+        btn.textContent = ok ? '✓ Pulled. Reloading tabs…' : '✗ Pull failed';
+        setTimeout(() => {
+          if (typeof rmesCloudOnRemoteUpdate === 'function') rmesCloudOnRemoteUpdate();
+          if (typeof renderAll === 'function') { try { renderAll(); } catch(e){} }
+          wrap.remove();
+        }, 500);
+      });
+    });
+    document.getElementById('rmes-diag-hard-reload').addEventListener('click', () => {
+      if (confirm('This will reload the page bypassing the cache. Continue?')){
+        location.reload(true);
+      }
+    });
+  }
+
+  function _forcePullFromCloud(){
+    return new Promise((resolve) => {
+      try {
+        if (!available || !window.firebase || !window.firebase.firestore) { resolve(false); return; }
+        const db = window.firebase.firestore();
+        const ref = db.collection(COLLECTION).doc(DOC_ID);
+        ref.get({ source: 'server' }).then(function(snap){
+          if (snap.exists){
+            const payload = snap.data();
+            if (payload && payload.state){
+              applyingRemote = true;
+              try {
+                for (const k of SYNC_KEYS){
+                  if (payload.state[k] !== undefined){
+                    try { localStorage.setItem(k, payload.state[k]); } catch(e){}
+                  }
+                }
+              } finally { applyingRemote = false; }
+              lastRemoteJSON = JSON.stringify(payload);
+              _logSync('pull');
+              _setStatus('synced');
+              resolve(true);
+            } else { resolve(false); }
+          } else { resolve(false); }
+        }).catch(function(e){
+          console.warn('[rmesCloud] force pull failed', e);
+          resolve(false);
+        });
+      } catch(e){ resolve(false); }
+    });
   }
 
   // Raccoglie lo stato locale (solo le chiavi da sincronizzare presenti)
@@ -161,7 +306,7 @@ const RMES_CLOUD = (function(){
           return id; } catch(e){ return 'unknown'; }
       })();
       db.collection('rmes_shared').doc('state').set(payload)
-        .then(function(){ lastRemoteJSON = JSON.stringify(payload); _setStatus('synced'); })
+        .then(function(){ lastRemoteJSON = JSON.stringify(payload); _logSync('push'); _setStatus('synced'); })
         .catch(function(e){ console.warn('[rmesCloud] push failed', e); _setStatus('offline'); });
     }, 800);  // accorpa scritture ravvicinate
   }
@@ -205,7 +350,7 @@ const RMES_CLOUD = (function(){
             const payload = _collectLocal(); payload._updatedAt = Date.now();
             ref.set(payload).then(function(){ console.log('[rmesCloud] migrated local state to cloud'); }).catch(function(){});
           }
-          ready = true; _setStatus('synced'); clearTimeout(safety); finish();
+          ready = true; _logSync('pull'); _setStatus('synced'); clearTimeout(safety); finish();
           // listener realtime per aggiornamenti altrui
           ref.onSnapshot(function(s){
             if (!s.exists) return;
@@ -216,6 +361,7 @@ const RMES_CLOUD = (function(){
             lastRemoteJSON = j;
             if (changed){
               console.log('[rmesCloud] remote update applied → refreshing');
+              _logSync('pull');
               _setStatus('synced');
               try { if (typeof rmesCloudOnRemoteUpdate === 'function') rmesCloudOnRemoteUpdate(); } catch(e){}
             }
@@ -236,7 +382,11 @@ const RMES_CLOUD = (function(){
     notifyLocalChange: notifyLocalChange,
     isAvailable: function(){ return available; },
     onStatus: function(fn){ statusListeners.push(fn); },
-    _collectLocal: _collectLocal   // per debug
+    _collectLocal: _collectLocal,   // per debug
+    showDiagnostics: _showDiagnostics,
+    forcePullFromCloud: _forcePullFromCloud,
+    getLastSync: function(){ return { time: _lastSyncTime, direction: _lastSyncDirection }; },
+    getSyncHistory: function(){ return _syncHistory.slice(); }
   };
 })();
 
@@ -653,6 +803,102 @@ function loadData(csvText){
 let _BOOKINGS_BY_STRUCT = null;
 let _BOOKINGS_BY_SR = null;
 /* Foundation Pricing: pre-compute al caricamento dati */
+/* ============================================================
+   DATA VERSION CHECK — confronto fingerprint data.js tra browser
+   Ogni browser, al boot, calcola un fingerprint dei BOOKINGS
+   (count + max bookYmd + sum bookYmd negli ultimi 100). Lo salva
+   in Firebase sotto la chiave `_data_fingerprint_v1`.
+   Se due browser hanno fingerprint diversi → uno dei due ha un
+   data.js stantio (cache browser). Mostra avviso visibile.
+   ============================================================ */
+function _computeDataFingerprint(){
+  if (typeof BOOKINGS === 'undefined' || !BOOKINGS.length) return null;
+  let maxBook = 0;
+  let sumLast = 0;
+  for (let i=0; i<BOOKINGS.length; i++){
+    const b = BOOKINGS[i];
+    if (b.bookYmd > maxBook) maxBook = b.bookYmd;
+  }
+  // I primi 100 sono i più recenti (BOOKINGS è ordinato desc per bookYmd)
+  for (let i=0; i<Math.min(100, BOOKINGS.length); i++){
+    sumLast += BOOKINGS[i].bookYmd;
+  }
+  return {
+    count: BOOKINGS.length,
+    maxBookYmd: maxBook,
+    sumLast100: sumLast,
+    eventsCount: (typeof EVENTS !== 'undefined') ? Object.keys(EVENTS).length : 0
+  };
+}
+function _fingerprintsMatch(a, b){
+  if (!a || !b) return false;
+  return a.count === b.count && a.maxBookYmd === b.maxBookYmd && a.sumLast100 === b.sumLast100 && a.eventsCount === b.eventsCount;
+}
+function _checkDataVersionAgainstCloud(){
+  const local = _computeDataFingerprint();
+  if (!local) return;
+  // Salva il proprio fingerprint in localStorage (così Firebase lo sincronizza via SYNC_KEYS)
+  const myEntry = { fingerprint: local, browser: _detectBrowser(), timestamp: Date.now() };
+  try { localStorage.setItem('_data_fingerprint_v1', JSON.stringify(myEntry)); } catch(e){}
+  // Notifica il layer cloud che questa chiave è cambiata
+  try { if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.notifyLocalChange) RMES_CLOUD.notifyLocalChange('_data_fingerprint_v1'); } catch(e){}
+  // Attendi 5s che arrivi il pull da Firebase, poi confronta
+  setTimeout(function(){
+    try {
+      const remoteRaw = localStorage.getItem('_data_fingerprint_v1');
+      if (!remoteRaw) return;
+      const remote = JSON.parse(remoteRaw);
+      // Se il remote ha lo stesso browser+timestamp di me → è il mio stesso fingerprint
+      if (remote.browser === myEntry.browser && Math.abs((remote.timestamp||0) - myEntry.timestamp) < 1000) return;
+      if (!_fingerprintsMatch(local, remote.fingerprint)){
+        console.warn('[DataVersion] MISMATCH — local:', local, 'remote:', remote.fingerprint);
+        _showDataVersionWarning(local, remote);
+      } else {
+        console.log('[DataVersion] OK — same data.js as other browsers');
+      }
+    } catch(e){ console.warn('[DataVersion] post-check failed', e); }
+  }, 5000);
+}
+function _detectBrowser(){
+  try {
+    const ua = navigator.userAgent;
+    let b = 'unknown';
+    if (/Edg\//.test(ua)) b = 'Edge';
+    else if (/Chrome\//.test(ua)) b = 'Chrome';
+    else if (/Firefox\//.test(ua)) b = 'Firefox';
+    else if (/Safari\//.test(ua)) b = 'Safari';
+    if (/Macintosh|Mac OS X/.test(ua)) b += '-Mac';
+    else if (/Windows/.test(ua)) b += '-Win';
+    else if (/Linux/.test(ua)) b += '-Linux';
+    return b + '-' + Math.random().toString(36).substring(2,8);
+  } catch(e){ return 'unknown'; }
+}
+function _showDataVersionWarning(local, remote){
+  // Banner sticky in alto: data.js fuori-data
+  const existing = document.getElementById('data-version-banner');
+  if (existing) return;  // mai duplicato
+  const banner = document.createElement('div');
+  banner.id = 'data-version-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#a83b3b,#c44a4a);color:#fff;padding:12px 20px;z-index:10001;box-shadow:0 4px 12px rgba(0,0,0,.25);font-family:"DM Sans",sans-serif;font-size:13px;display:flex;align-items:center;gap:14px;justify-content:center';
+  const yourFile = local.count + ' bookings · max ' + local.maxBookYmd;
+  const theirFile = remote.fingerprint.count + ' bookings · max ' + remote.fingerprint.maxBookYmd;
+  const moreRecent = remote.fingerprint.maxBookYmd > local.maxBookYmd ? 'theirs' : (remote.fingerprint.maxBookYmd < local.maxBookYmd ? 'yours' : 'same date');
+  let msg = '<b>⚠ Data version mismatch</b> — ';
+  msg += 'Your data.js has ' + yourFile + '. Other browser (' + (remote.browser||'?') + '): ' + theirFile + '.';
+  if (moreRecent === 'theirs') msg += ' <b>Your file is older.</b>';
+  else if (moreRecent === 'yours') msg += ' <b>Your file is newer.</b>';
+  banner.innerHTML = '<div style="flex:1">'+msg+'</div>' +
+    '<button id="data-ver-reload" style="background:#fff;color:#a83b3b;border:none;padding:7px 14px;border-radius:5px;font-weight:700;cursor:pointer;font-size:12.5px">🔁 Hard reload</button>' +
+    '<button id="data-ver-dismiss" style="background:transparent;color:#fff;border:1.5px solid #fff;padding:6px 12px;border-radius:5px;font-weight:600;cursor:pointer;font-size:12.5px">Dismiss</button>';
+  document.body.appendChild(banner);
+  document.getElementById('data-ver-reload').addEventListener('click', function(){
+    location.reload(true);
+  });
+  document.getElementById('data-ver-dismiss').addEventListener('click', function(){
+    banner.remove();
+  });
+}
+
 function fp_postLoadHook(){
   // --- ONE-SHOT MIGRATION to NewRMES system (Base Price + Acceptance) ---
   // Wipes the previous override-based system on first load, then sets a flag so it never runs again.
@@ -729,6 +975,11 @@ function fp_postLoadHook(){
       if (typeof newrmesBootFreezeAll === 'function') newrmesBootFreezeAll();
       // NewRMES: take a snapshot of today's RMES deltas if the date has changed (rotates yesterday's column)
       if (typeof newrmesSnapshotIfNewDay === 'function') newrmesSnapshotIfNewDay();
+      // === DATA VERSION CHECK ===
+      // Compute a fingerprint of the loaded data.js (bookings count + last booking date)
+      // and compare with the one that another browser has stored in Firebase.
+      // If mismatched → the other browser has a stale data.js (or this one does).
+      try { _checkDataVersionAgainstCloud(); } catch(e){ console.warn('[DataVersion] check failed', e); }
     }
   } catch(e){
     console.error('[Foundation] pre-compute failed', e);
