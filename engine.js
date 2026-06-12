@@ -16102,6 +16102,8 @@ function renderCancellations(sel){
 const BW_STATE = {
   otb:    { yms: null },
   cancel: { yms: null },
+  adrTrend: { yms: null },
+  occTrend: { yms: null },
 };
 const BW_BUCKETS = [
   { id:'0-1',   label:'0-1 day',   min:0, max:1 },
@@ -16381,6 +16383,268 @@ function renderBookingWindowCancel(sel){
     lineCurLbl: 'Cancelled ADR',
     lineStyLbl: 'Cancelled ADR (last year)',
   });
+}
+
+/* ===========================================================================
+   ADR Trend & OCC Trend by lead time — sostituiscono i 2 vecchi grafici
+   Forecast vs Final LY · Monthly revenue / Monthly forecast OCC% in Overview.
+   Mostrano la curva di booking pace per i mesi selezionati: per ogni lead time
+   da -60 giorni a 0 (=check-in), mostro il valore aggregato di
+     OTB    → year corrente (bookings con dIn nel mese ed entrati fino ad oggi)
+     STLY   → year-1, mese equivalente, bookings entrati fino al giorno equivalente
+     Forecast → estensione lineare basata sul ratio attuale OTB/STLY
+   =========================================================================== */
+function _trendBookingsForMonths(sel, yms, isStly){
+  // Filtro bookings confermati con dIn nel set di yms (anno corrente o year-1 se isStly).
+  // Per ogni booking: leadTime = (dIn - dBook) in giorni, RN = notti, rev = revPerNight × notti
+  // Espando per ogni notte (un booking di 3 notti = 3 RN, ciascuno con il proprio stay date)
+  if (!yms || yms.size === 0) return [];
+  const result = [];
+  const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+  const TODAY_N = TODAY.getFullYear()*10000 + (TODAY.getMonth()+1)*100 + TODAY.getDate();
+  const TODAY_LY = new Date(TODAY); TODAY_LY.setFullYear(TODAY.getFullYear() - 1);
+  const TODAY_LY_N = TODAY_LY.getFullYear()*10000 + (TODAY_LY.getMonth()+1)*100 + TODAY_LY.getDate();
+  for (const b of BOOKINGS){
+    if (sel !== 'both' && b.structKey !== sel) continue;
+    if (b.dCancel) continue;  // solo confermati
+    if (!b.dIn || !b.dBook) continue;
+    // Per ogni notte del soggiorno
+    const notti = b.notti || 1;
+    for (let i = 0; i < notti; i++){
+      const sd = new Date(b.dIn); sd.setDate(b.dIn.getDate() + i);
+      const sdY = sd.getFullYear();
+      const sdM = sd.getMonth() + 1;
+      const sm = sdY * 100 + sdM;
+      // Per STLY, traslo il mese all'anno precedente
+      const targetSm = isStly ? sm : sm;
+      if (!yms.has(targetSm)) continue;
+      const leadDays = Math.floor((sd.getTime() - b.dBook.getTime()) / 86400000);
+      if (leadDays < 0) continue;
+      const sdN = sdY*10000 + sdM*100 + sd.getDate();
+      // Per OTB current: bookings entrati FINO ad oggi
+      // Per STLY: bookings entrati fino al giorno equivalente di year-1
+      const bookN = b.dBook.getFullYear()*10000 + (b.dBook.getMonth()+1)*100 + b.dBook.getDate();
+      if (isStly){
+        if (bookN > TODAY_LY_N) continue;
+      } else {
+        if (bookN > TODAY_N) continue;
+      }
+      const rev = (b.revPerNight != null && isFinite(b.revPerNight)) ? b.revPerNight : 0;
+      result.push({ leadDays, rev });
+    }
+  }
+  return result;
+}
+
+function _trendBuildCurve(rows, maxLead){
+  // Costruisco la curva cumulativa: per ogni L da 0 a maxLead, sommo i RN con leadDays ≥ L
+  // (cioè: a -60 giorni dal check-in, quanti RN erano già prenotati? Pochi. A 0 giorni, tutti.)
+  // X-axis output: -L (negativo, da -maxLead a 0)
+  const buckets = new Array(maxLead + 1).fill(null).map(() => ({ rn: 0, rev: 0 }));
+  for (const r of rows){
+    // L'RN contribuisce a tutti i bucket con L ≤ leadDays
+    const upTo = Math.min(maxLead, r.leadDays);
+    for (let L = 0; L <= upTo; L++){
+      buckets[L].rn += 1;
+      buckets[L].rev += r.rev;
+    }
+  }
+  // Output: array di {x, rn, rev, adr} dove x = -L
+  // Ma serve la "RN cumulata fino al lead time L vista dal check-in" = vogliamo
+  // a x = -60: pochi RN (solo quelli prenotati ≥60gg prima)
+  // a x = 0: tutti i RN
+  // Quindi buckets[L] (con L = 60) ha i RN con leadDays ≥ 60 (pochi)
+  // buckets[L=0] ha tutti i RN (= leadDays ≥ 0 = tutti)
+  // Perfetto, allineato con la lettura "x = -L".
+  const out = [];
+  for (let L = maxLead; L >= 0; L--){
+    const b = buckets[L];
+    out.push({ x: -L, rn: b.rn, rev: b.rev, adr: b.rn > 0 ? b.rev / b.rn : null });
+  }
+  return out;
+}
+
+function _trendCapacity(sel, yms){
+  // Capacità totale (camere × giorni) per i mesi selezionati
+  if (!yms || yms.size === 0) return 1;
+  let cap = 0;
+  const rooms = structRoomsFor(sel);
+  const roomCount = sel === 'both' ? 27 : Object.values(rooms).reduce((s,n) => s+n, 0);
+  for (const ym of yms){
+    const y = Math.floor(ym/100), m = ym%100;
+    const daysInMonth = new Date(y, m, 0).getDate();
+    cap += roomCount * daysInMonth;
+  }
+  return cap > 0 ? cap : 1;
+}
+
+function _renderTrendChart(containerId, metric /* 'adr' | 'occ' */, sel, yms){
+  const cont = document.getElementById(containerId);
+  if (!cont) return;
+  const MAX_LEAD = 60;
+  // Calcolo curve
+  const rowsOtb  = _trendBookingsForMonths(sel, yms, false);
+  // STLY: stessi mesi ma considero bookings con dIn nell'anno-1
+  const ymsStly = new Set();
+  if (yms) for (const ym of yms){
+    const y = Math.floor(ym/100), m = ym%100;
+    ymsStly.add((y-1)*100 + m);
+  }
+  const rowsStly = _trendBookingsForMonths(sel, ymsStly, true);
+  const curveOtb  = _trendBuildCurve(rowsOtb, MAX_LEAD);
+  const curveStly = _trendBuildCurve(rowsStly, MAX_LEAD);
+  // Forecast: estensione di curveOtb basata sullo shape di curveStly oltre il punto attuale (= il valore a x=0 è tutto quello che entrerà)
+  // Approccio semplice: Forecast(x) = OTB(x) + (STLY-final - STLY(x)) × ratio
+  // dove ratio = OTB-final / STLY-final
+  const otbTotal = curveOtb.length > 0 ? curveOtb[curveOtb.length-1].rn : 0;
+  const stlyTotal = curveStly.length > 0 ? curveStly[curveStly.length-1].rn : 0;
+  const otbRev = curveOtb.length > 0 ? curveOtb[curveOtb.length-1].rev : 0;
+  const stlyRev = curveStly.length > 0 ? curveStly[curveStly.length-1].rev : 0;
+  const ratioRn = stlyTotal > 0 ? otbTotal / stlyTotal : 1;
+  const ratioRev = stlyRev > 0 ? otbRev / stlyRev : 1;
+  const curveForecast = [];
+  for (let i = 0; i < curveOtb.length; i++){
+    const x = curveOtb[i].x;  // -60 → 0
+    const otbVal = curveOtb[i];
+    const stlyVal = curveStly[i];
+    // Final projection (RN) = otbVal.rn + (stlyTotal - stlyVal.rn) × ratioRn
+    const projRn = otbVal.rn + Math.max(0, stlyTotal - stlyVal.rn) * ratioRn;
+    const projRev = otbVal.rev + Math.max(0, stlyRev - stlyVal.rev) * ratioRev;
+    curveForecast.push({ x, rn: projRn, rev: projRev, adr: projRn > 0 ? projRev / projRn : null });
+  }
+
+  // Calcolo i valori da plotare a seconda della metrica
+  const cap = _trendCapacity(sel, yms);
+  function pickVal(pt){
+    if (metric === 'adr') return pt.adr;
+    if (metric === 'occ') return cap > 0 ? (pt.rn / cap) : 0;
+    return null;
+  }
+  // Trovo range Y
+  let yMin = Infinity, yMax = -Infinity;
+  for (const c of [curveOtb, curveStly, curveForecast]){
+    for (const p of c){
+      const v = pickVal(p);
+      if (v != null && isFinite(v)){
+        if (v < yMin) yMin = v;
+        if (v > yMax) yMax = v;
+      }
+    }
+  }
+  if (!isFinite(yMin) || !isFinite(yMax) || yMax === yMin){
+    cont.innerHTML = '<div style="padding:30px;text-align:center;color:var(--ink-3);font-style:italic">Insufficient data for the selected months.</div>';
+    return;
+  }
+  // Padding Y
+  const yPad = (yMax - yMin) * 0.1;
+  yMin = Math.max(0, yMin - yPad);
+  yMax = yMax + yPad;
+  // Costruisco SVG
+  const W = 580, H = 260, PAD_L = 50, PAD_R = 14, PAD_T = 14, PAD_B = 34;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H - PAD_T - PAD_B;
+  function xPx(x){
+    // x va da -MAX_LEAD a 0 → plotW
+    return PAD_L + ((x + MAX_LEAD) / MAX_LEAD) * plotW;
+  }
+  function yPx(v){
+    return PAD_T + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
+  }
+  function fmtVal(v){
+    if (v == null) return '—';
+    if (metric === 'adr') return '€' + Math.round(v);
+    return (v * 100).toFixed(0) + '%';
+  }
+  function buildPath(curve, dashed){
+    let path = '';
+    let started = false;
+    for (const p of curve){
+      const v = pickVal(p);
+      if (v == null || !isFinite(v)) continue;
+      const px = xPx(p.x), py = yPx(v);
+      path += (started ? 'L' : 'M') + px.toFixed(1) + ',' + py.toFixed(1) + ' ';
+      started = true;
+    }
+    return path;
+  }
+  let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block">`;
+  // Grid orizzontale + label Y (5 tick)
+  svg += '<g font-family="DM Mono,monospace" font-size="10" fill="#999">';
+  for (let i = 0; i <= 5; i++){
+    const v = yMin + (yMax - yMin) * (i/5);
+    const py = yPx(v);
+    svg += `<line x1="${PAD_L}" y1="${py.toFixed(1)}" x2="${(W-PAD_R).toFixed(1)}" y2="${py.toFixed(1)}" stroke="#ececec" stroke-width="1"/>`;
+    svg += `<text x="${PAD_L - 6}" y="${py + 3}" text-anchor="end">${fmtVal(v)}</text>`;
+  }
+  // X labels: -60, -45, -30, -15, 0
+  for (const xv of [-60, -45, -30, -15, 0]){
+    const px = xPx(xv);
+    svg += `<line x1="${px.toFixed(1)}" y1="${PAD_T}" x2="${px.toFixed(1)}" y2="${(H-PAD_B).toFixed(1)}" stroke="#ececec" stroke-width="1"/>`;
+    svg += `<text x="${px.toFixed(1)}" y="${(H-PAD_B+18).toFixed(1)}" text-anchor="middle">${xv}d</text>`;
+  }
+  svg += `<text x="${(PAD_L + plotW/2).toFixed(1)}" y="${(H - 4).toFixed(1)}" text-anchor="middle" font-size="10" fill="#666">days before check-in</text>`;
+  svg += '</g>';
+  // Lines: STLY (dashed gray), OTB (solid blue), Forecast (solid orange)
+  const pathStly = buildPath(curveStly, true);
+  const pathOtb  = buildPath(curveOtb, false);
+  const pathFc   = buildPath(curveForecast, false);
+  svg += `<path d="${pathStly}" fill="none" stroke="#888" stroke-width="2" stroke-dasharray="5,3"/>`;
+  svg += `<path d="${pathOtb}"  fill="none" stroke="#3b6b9a" stroke-width="2.5"/>`;
+  svg += `<path d="${pathFc}"   fill="none" stroke="#c4823b" stroke-width="2" stroke-dasharray="2,2"/>`;
+  // Punto finale (highlight, x=0)
+  const finalOtb = curveOtb[curveOtb.length-1];
+  const finalFc = curveForecast[curveForecast.length-1];
+  const finalStly = curveStly[curveStly.length-1];
+  if (finalOtb && pickVal(finalOtb) != null){
+    svg += `<circle cx="${xPx(0).toFixed(1)}" cy="${yPx(pickVal(finalOtb)).toFixed(1)}" r="3.5" fill="#3b6b9a"/>`;
+  }
+  if (finalFc && pickVal(finalFc) != null){
+    svg += `<circle cx="${xPx(0).toFixed(1)}" cy="${yPx(pickVal(finalFc)).toFixed(1)}" r="3" fill="#c4823b" opacity="0.8"/>`;
+  }
+  if (finalStly && pickVal(finalStly) != null){
+    svg += `<circle cx="${xPx(0).toFixed(1)}" cy="${yPx(pickVal(finalStly)).toFixed(1)}" r="3" fill="#888" opacity="0.6"/>`;
+  }
+  // Final value labels on right
+  let labelY = 0;
+  function endLabel(val, color, lbl){
+    if (val == null || !isFinite(val)) return;
+    const py = yPx(val);
+    svg += `<text x="${(W - PAD_R - 4).toFixed(1)}" y="${py.toFixed(1)}" text-anchor="end" font-size="10" font-weight="700" fill="${color}" font-family="DM Mono,monospace">${fmtVal(val)} ${lbl}</text>`;
+  }
+  endLabel(pickVal(finalOtb), '#3b6b9a', 'OTB');
+  endLabel(pickVal(finalFc), '#c4823b', 'FCST');
+  endLabel(pickVal(finalStly), '#888', 'STLY');
+  svg += '</svg>';
+  cont.innerHTML = svg;
+}
+
+function renderAdrTrend(sel){
+  // Default: current month + 5 successivi
+  if (BW_STATE.adrTrend.yms === null){
+    const P = bwPeriod();
+    BW_STATE.adrTrend.yms = new Set();
+    let cy = P.start.getFullYear(), cm = P.start.getMonth()+1;
+    for (let i = 0; i < 6; i++){
+      BW_STATE.adrTrend.yms.add(cy*100 + cm);
+      cm++; if (cm > 12){ cm = 1; cy++; }
+    }
+  }
+  renderBwMonthFilter('adr-trend-mfilter', 'adrTrend', () => renderAdrTrend(CURRENT_STRUCT));
+  _renderTrendChart('adr-trend-chart', 'adr', sel, BW_STATE.adrTrend.yms);
+}
+
+function renderOccTrend(sel){
+  if (BW_STATE.occTrend.yms === null){
+    const P = bwPeriod();
+    BW_STATE.occTrend.yms = new Set();
+    let cy = P.start.getFullYear(), cm = P.start.getMonth()+1;
+    for (let i = 0; i < 6; i++){
+      BW_STATE.occTrend.yms.add(cy*100 + cm);
+      cm++; if (cm > 12){ cm = 1; cy++; }
+    }
+  }
+  renderBwMonthFilter('occ-trend-mfilter', 'occTrend', () => renderOccTrend(CURRENT_STRUCT));
+  _renderTrendChart('occ-trend-chart', 'occ', sel, BW_STATE.occTrend.yms);
 }
 /* ===========================================================================
    TAB AIRBNB — riepilogo 5 listings, stile OTB anno intero (con OCC%/ADR/Rev).
@@ -17180,6 +17444,8 @@ function renderAll(){
   if (typeof renderCancellations === 'function') renderCancellations(CURRENT_STRUCT);
   if (typeof renderBookingWindowOTB === 'function') renderBookingWindowOTB(CURRENT_STRUCT);
   if (typeof renderBookingWindowCancel === 'function') renderBookingWindowCancel(CURRENT_STRUCT);
+  if (typeof renderAdrTrend === 'function') renderAdrTrend(CURRENT_STRUCT);
+  if (typeof renderOccTrend === 'function') renderOccTrend(CURRENT_STRUCT);
   if (typeof renderRateShopper === 'function') renderRateShopper();
   if (typeof renderAirbnb === 'function') renderAirbnb();
   if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function'){

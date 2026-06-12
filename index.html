@@ -679,29 +679,29 @@ table.sell-table-transposed th.sell-tposed-group .sell-tposed-group-label{
 }
 /* Colori per gruppo: sfondo chiaro tono + testo scuro stesso tono (richiesta utente) */
 table.sell-table-transposed th.sell-tposed-group-otb{
-  background:#fbe09e;
-  color:#7a4f1c;
-  border-right:2px solid #c4823b;
+  background:#fbe09e !important;
+  color:#7a4f1c !important;
+  border-right:2px solid #c4823b !important;
 }
 table.sell-table-transposed th.sell-tposed-group-pickup{
-  background:#e0d0f0;
-  color:#5a3a7a;
-  border-right:2px solid #8e5fa8;
+  background:#e0d0f0 !important;
+  color:#5a3a7a !important;
+  border-right:2px solid #8e5fa8 !important;
 }
 table.sell-table-transposed th.sell-tposed-group-stly{
-  background:#c8e0e0;
-  color:#264848;
-  border-right:2px solid #3b6b6b;
+  background:#c8e0e0 !important;
+  color:#264848 !important;
+  border-right:2px solid #3b6b6b !important;
 }
 table.sell-table-transposed th.sell-tposed-group-pkstly{
-  background:#d8d8d8;
-  color:#3a3a3a;
-  border-right:2px solid #888;
+  background:#d8d8d8 !important;
+  color:#3a3a3a !important;
+  border-right:2px solid #888 !important;
 }
 table.sell-table-transposed th.sell-tposed-group-rateshopper{
-  background:#c0d8d8;
-  color:#264848;
-  border-right:2px solid #3a6b6b;
+  background:#c0d8d8 !important;
+  color:#264848 !important;
+  border-right:2px solid #3a6b6b !important;
 }
 
 /* Label cell (sub-label) — sticky sinistra DOPO il group */
@@ -1476,6 +1476,32 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
 
     <div class="chart-grid" style="margin-top:16px">
+      <div class="chart-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <h4>ADR Trend by lead time</h4>
+            <div class="chart-sub">OTB · Forecast · STLY — pace curve from −60 days to check-in</div>
+          </div>
+          <div id="adr-trend-mfilter" class="bw-mfilter"></div>
+        </div>
+        <div id="adr-trend-chart"></div>
+        <div class="chart-legend"><span class="lg"><span class="swatch" style="background:#3b6b9a"></span>OTB</span><span class="lg"><span class="swatch" style="background:#c4823b"></span>Forecast</span><span class="lg"><span class="swatch" style="background:#888;border:1px dashed #888"></span>STLY (LY)</span></div>
+      </div>
+      <div class="chart-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+          <div>
+            <h4>OCC Trend by lead time</h4>
+            <div class="chart-sub">OTB · Forecast · STLY — occupancy build-up over days before check-in</div>
+          </div>
+          <div id="occ-trend-mfilter" class="bw-mfilter"></div>
+        </div>
+        <div id="occ-trend-chart"></div>
+        <div class="chart-legend"><span class="lg"><span class="swatch" style="background:#3b6b9a"></span>OTB</span><span class="lg"><span class="swatch" style="background:#c4823b"></span>Forecast</span><span class="lg"><span class="swatch" style="background:#888;border:1px dashed #888"></span>STLY (LY)</span></div>
+      </div>
+    </div>
+
+    <!-- Legacy charts kept hidden until full validation of new trend charts -->
+    <div class="chart-grid" style="display:none">
       <div class="chart-card">
         <h4>Forecast vs Final LY · Monthly revenue</h4>
         <div class="chart-sub">€ per month — side-by-side bars</div>
