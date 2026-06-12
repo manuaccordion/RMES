@@ -1143,6 +1143,23 @@ function fp_postLoadHook(){
       // and compare with the one that another browser has stored in Firebase.
       // If mismatched → the other browser has a stale data.js (or this one does).
       try { _checkDataVersionAgainstCloud(); } catch(e){ console.warn('[DataVersion] check failed', e); }
+      // === USER PROFILE ===
+      // Se il profilo non è settato, chiede all'utente al primo render.
+      try { ensureUserProfile(); } catch(e){}
+      // Wire-up del chip "You: ..." cliccabile per cambiare profilo
+      try {
+        const chipUser = document.getElementById('chip-user');
+        if (chipUser && !chipUser._wired){
+          chipUser._wired = true;
+          chipUser.addEventListener('click', function(){
+            const cur = getUserProfile() || '?';
+            const choice = prompt('Switch user profile (current: '+cur+').\nType:\n  1 — Emanuele\n  2 — Collega', cur === 'Emanuele' ? '1' : '2');
+            if (choice === '1') { setUserProfile('Emanuele'); }
+            else if (choice === '2') { setUserProfile('Collega'); }
+            if (typeof renderAll === 'function') { try { renderAll(); } catch(e){} }
+          });
+        }
+      } catch(e){}
     }
   } catch(e){
     console.error('[Foundation] pre-compute failed', e);
@@ -5155,6 +5172,38 @@ const FP_BASE_RATE_OVERRIDES_KEY = 'rmes_base_rate_overrides_v1';  // [LEGACY, w
 const NEWRMES_FROZEN_BASE_KEY = 'rmes_frozen_base_v1';
 const NEWRMES_FROZEN_BASE_OVR_KEY = 'rmes_frozen_base_override_v1';
 const NEWRMES_ACCEPTED_KEY = 'rmes_accepted_v1';
+
+/* ============================================================
+   USER PROFILE — Emanuele / Collega
+   Identifica chi sta usando la dashboard, per tracciare l'autore
+   di ogni override/accept. Storage locale (NON sync su Firebase:
+   ogni browser ha il proprio profilo).
+   ============================================================ */
+const USER_PROFILE_KEY = '_user_profile_v1';
+const USER_PROFILES = ['Emanuele', 'Collega'];
+function getUserProfile(){
+  try {
+    const v = localStorage.getItem(USER_PROFILE_KEY);
+    if (v && USER_PROFILES.indexOf(v) >= 0) return v;
+  } catch(e){}
+  return null;  // non ancora scelto
+}
+function setUserProfile(name){
+  if (USER_PROFILES.indexOf(name) < 0) return false;
+  try { localStorage.setItem(USER_PROFILE_KEY, name); } catch(e){}
+  return true;
+}
+function ensureUserProfile(){
+  // Chiamato all'avvio: se non c'è ancora il profilo, chiede all'utente
+  if (getUserProfile()) return;
+  // Setup deferred al primo render
+  setTimeout(function(){
+    const choice = prompt('Welcome! Who is using this dashboard?\nType:\n  1 — Emanuele\n  2 — Collega', '1');
+    if (choice === '1') setUserProfile('Emanuele');
+    else if (choice === '2') setUserProfile('Collega');
+    // se cancella: nessun profilo settato, riprova al prossimo boot
+  }, 1500);
+}
 const NEWRMES_LAST_SUGGESTION_KEY = 'rmes_last_suggestion_v1';
 const NEWRMES_LAST_SUGGESTION_DATE_KEY = 'rmes_last_suggestion_date_v1';
 
@@ -5232,19 +5281,19 @@ function newrmesGetAccepted(structKey, ymd){
   return null;
 }
 function newrmesGetAcceptedMeta(structKey, ymd){
-  // Returns {price, ts} or null. ts is the ISO date of when the accept was made.
+  // Returns {price, ts, author} or null.
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
   const v = all[structKey] && all[structKey][ymd];
   if (v == null) return null;
-  if (typeof v === 'number') return { price: v, ts: null };
-  if (typeof v === 'object' && v.price != null) return { price: v.price, ts: v.ts || null };
+  if (typeof v === 'number') return { price: v, ts: null, author: null };
+  if (typeof v === 'object' && v.price != null) return { price: v.price, ts: v.ts || null, author: v.author || null };
   return null;
 }
 function newrmesSetAccepted(structKey, ymd, price){
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
   if (!all[structKey]) all[structKey] = {};
   if (price == null) delete all[structKey][ymd];
-  else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString() };
+  else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(), author: getUserProfile() || null };
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
   _invalidateRmesMapCache();
 }
@@ -5254,9 +5303,10 @@ function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
   const dFrom = new Date(Math.floor(ymdFrom/10000), Math.floor((ymdFrom%10000)/100)-1, ymdFrom%100);
   const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
   const ts = new Date().toISOString();
+  const author = getUserProfile() || null;
   for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
     const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
-    all[structKey][y] = { price: Math.round(price), ts };
+    all[structKey][y] = { price: Math.round(price), ts, author };
   }
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
   _invalidateRmesMapCache();
@@ -6550,6 +6600,7 @@ function fp_setOverride(structKey, dateISO, rt, price, snapshot){
       price: +price,
       snapshot: snapshot || null,
       savedAt: new Date().toISOString(),
+      author: (typeof getUserProfile === 'function') ? (getUserProfile() || null) : null,
     };
   }
   localStorage.setItem(FP_BASE_RATE_OVERRIDES_KEY, JSON.stringify(all));
@@ -9444,7 +9495,7 @@ function renderSellStrategy(sel){
         }
         const myTxt = myP != null ? fmtEUR(myP) : '—';
         const avgTxt = cAvg != null ? fmtEUR(cAvg) : '—';
-        const avgBadge = avgIsWeighted ? '<sup style="font-size:8px;color:var(--accent);font-weight:700;margin-left:2px" title="Weighted average (weights from the Rate Shopper tab)">w</sup>' : '';
+        const avgBadge = '';
         const avgTooltip = avgIsWeighted
           ? `Weighted compset average (weights configured in Rate Shopper) · diff vs mine: ${diffTxt}`
           : `Arithmetic compset average · diff vs mine: ${diffTxt}`;
@@ -10036,13 +10087,15 @@ function renderSellStrategy(sel){
         if (hasManualOvr){
           const ts = ovr.savedAt ? new Date(ovr.savedAt) : null;
           const dtTxt = (ts && !isNaN(ts.getTime())) ? `${pad2(ts.getDate())}/${pad2(ts.getMonth()+1)}/${ts.getFullYear()} ${pad2(ts.getHours())}:${pad2(ts.getMinutes())}` : 'unknown date';
-          tip = `Active price: €${Math.round(activePrice)}\nSource: manual override 🖋\nSaved: ${dtTxt}`;
+          const authorTxt = (ovr && ovr.author) ? ` by ${ovr.author}` : '';
+          tip = `Active price: €${Math.round(activePrice)}\nSource: manual override 🖋\nSaved: ${dtTxt}${authorTxt}`;
           icon = '🖋';
           txtColor = 'color:#b86b1f;font-weight:700';  // arancione scuro
         } else if (accepted != null){
           const dt = (meta && meta.ts) ? new Date(meta.ts) : null;
           const dtTxt = dt ? `${pad2(dt.getDate())}/${pad2(dt.getMonth()+1)}/${dt.getFullYear()} ${pad2(dt.getHours())}:${pad2(dt.getMinutes())}` : 'unknown date';
-          tip = `Active price: €${Math.round(activePrice)}\nSource: accepted RMES suggestion ✓\nLast updated: ${dtTxt}`;
+          const authorTxt = (meta && meta.author) ? ` by ${meta.author}` : '';
+          tip = `Active price: €${Math.round(activePrice)}\nSource: accepted RMES suggestion ✓\nLast updated: ${dtTxt}${authorTxt}`;
           icon = '✓';
           txtColor = 'color:#2c5c3c;font-weight:700';  // verde
         } else {
@@ -16310,6 +16363,7 @@ function updateChips(){
   chip.classList.add(CURRENT_STRUCT==='firenze'?'struct-fs':CURRENT_STRUCT==='condotta'?'struct-c16':'struct-both');
   const _safeSet = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   _safeSet('chip-today', fmtDateIT(TODAY));
+  _safeSet('chip-user-name', getUserProfile() || 'set name');
   _safeSet('foot-today', fmtDateIT(TODAY));
   _safeSet('topbar-sub', `${structLabel(CURRENT_STRUCT)} · OTB as of ${fmtDateIT(TODAY)} · STLY ${fmtDateIT(STLY)}`);
   _safeSet('otb-cur-date', fmtDateIT(TODAY));

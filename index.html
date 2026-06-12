@@ -936,6 +936,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="chip" id="chip-struct"><span class="dot"></span>Property: <strong id="chip-struct-name">—</strong></div>
     <div class="chip" id="chip-date"><span class="dot"></span>OTB as of <strong id="chip-today">—</strong></div>
     <div class="chip" id="chip-cloud" title="Shared state status. 'synced' = your decisions and config are shared in real time with your colleagues. 'local only' = working offline on this browser; changes will sync when the connection is back."><span id="rmes-cloud-status" style="font-weight:600;color:#a83b3b">⚠ local only</span></div>
+    <div class="chip" id="chip-user" title="Your user profile. Click to switch. Used to track who made each override/accept." style="cursor:pointer"><span class="dot" style="background:#5a3a14"></span>You: <strong id="chip-user-name">—</strong></div>
   </div>
 
   <!-- ============ STRUCT SELECTOR ============ -->
@@ -1303,20 +1304,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px">
           <span class="mono" style="font-size:10px;color:#3b6b9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Base Price approval</span>
           <span id="sell-fp-baseRT-label" style="font-size:11px;color:#666;font-style:italic"></span>
-          
-        </div>
-        <!-- Override per PERIODO (date dal/al) — baseRT, price fisso -->
-        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;margin-top:9px;padding-top:9px;border-top:1px dashed #c8d8e8">
-          <span class="mono" style="font-size:10px;color:#8e5fa8;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Override by period</span>
-          <label style="font-size:11px;color:#666">From <input lang="en-GB" type="date" id="fp-period-from" style="padding:4px 5px;border:1px solid #8e5fa8;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px"></label>
-          <label style="font-size:11px;color:#666">To <input lang="en-GB" type="date" id="fp-period-to" style="padding:4px 5px;border:1px solid #8e5fa8;border-radius:3px;font-family:'DM Mono',monospace;font-size:11px"></label>
-          <span style="display:inline-flex;gap:4px;align-items:center;padding:1px 6px;border:1px dashed #8e5fa8;border-radius:4px">
-            <input type="number" id="fp-period-price" min="0" max="9999" step="5" placeholder="€" style="width:65px;padding:4px 5px;border:1px solid #8e5fa8;background:#f6eefb;border-radius:3px;font-family:'DM Mono',monospace;text-align:right;font-size:11.5px;color:#5a2e72;font-weight:600">
-            <button id="fp-period-override" style="padding:4px 10px;border:1px solid #3b6b9a;background:#3b6b9a;color:#fff;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer" title="Force a final price 🖋 over the period for the baseRT. This OVERRIDES the RMES suggested price: every day in the range will show this exact price as the active 'Last update'. RMES will still suggest deltas vs this new price.">🖋 Override RMES</button>
-            <button id="fp-period-final" style="padding:4px 10px;border:1px solid #3d7a4b;background:#3d7a4b;color:#fff;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer" title="Accept this price as the current reference (= RMES accepted) over the period for the baseRT. Tomorrow's RMES will start from this price.">✓ Accept RMES</button>
-          </span>
-          <button id="fp-period-reset" style="padding:4px 9px;border:1px solid #999;background:#fff;color:#666;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer" title="Removes Base Price overrides and accepted prices for the baseRT for every day in the period.">↺ Reset period</button>
-          <span id="fp-period-msg" style="font-size:10.5px;color:#8e5fa8;font-style:italic"></span>
+          <span style="font-size:10.5px;color:#888;font-style:italic;margin-left:auto">💡 Click a Last update cell to override one day · Right-click (or Shift+click) two cells to override a range</span>
         </div>
       </div>
       <!-- Banner Audit Override globale (popolato dinamicamente da renderSellStrategy) -->
