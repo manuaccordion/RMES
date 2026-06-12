@@ -965,6 +965,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     
     <button class="tab" data-tab="pri"><span class="num">7</span>RMES</button>
     <button class="tab" data-tab="baseprice"><span class="num">8</span>Export Pricing</button>
+    <button class="tab" data-tab="checks"><span class="num">📋</span>Check Updates</button>
     <button class="tab" data-tab="instr"><span class="num">📖</span>Playbook</button>
   </nav>
 </header>
@@ -1611,6 +1612,18 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <button id="rmes-export" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid #2c5c3c;border-radius:6px;background:transparent;color:#2c5c3c;cursor:pointer;font-weight:700">⬇ Export RMES CSV</button>
       </div>
       <div id="rmes-table-wrap" style="overflow-x:auto"></div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION CHECKS — Activity Log ============ -->
+  <section class="tab-panel" id="panel-checks">
+    <div class="section-head">
+      <div>
+        <h2>📋 Check Updates <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">history of price changes by user · stay date · modification date</span></h2>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-body" id="checks-body" style="padding:18px"></div>
     </div>
   </section>
 

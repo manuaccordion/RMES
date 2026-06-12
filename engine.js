@@ -1153,9 +1153,9 @@ function fp_postLoadHook(){
           chipUser._wired = true;
           chipUser.addEventListener('click', function(){
             const cur = getUserProfile() || '?';
-            const choice = prompt('Switch user profile (current: '+cur+').\nType:\n  1 — Emanuele\n  2 — Collega', cur === 'Emanuele' ? '1' : '2');
+            const choice = prompt('Switch user profile (current: '+cur+').\nType:\n  1 — Emanuele\n  2 — Enis', cur === 'Emanuele' ? '1' : '2');
             if (choice === '1') { setUserProfile('Emanuele'); }
-            else if (choice === '2') { setUserProfile('Collega'); }
+            else if (choice === '2') { setUserProfile('Enis'); }
             if (typeof renderAll === 'function') { try { renderAll(); } catch(e){} }
           });
         }
@@ -5174,13 +5174,13 @@ const NEWRMES_FROZEN_BASE_OVR_KEY = 'rmes_frozen_base_override_v1';
 const NEWRMES_ACCEPTED_KEY = 'rmes_accepted_v1';
 
 /* ============================================================
-   USER PROFILE — Emanuele / Collega
+   USER PROFILE — Emanuele / Enis
    Identifica chi sta usando la dashboard, per tracciare l'autore
    di ogni override/accept. Storage locale (NON sync su Firebase:
    ogni browser ha il proprio profilo).
    ============================================================ */
 const USER_PROFILE_KEY = '_user_profile_v1';
-const USER_PROFILES = ['Emanuele', 'Collega'];
+const USER_PROFILES = ['Emanuele', 'Enis'];
 function getUserProfile(){
   try {
     const v = localStorage.getItem(USER_PROFILE_KEY);
@@ -5198,9 +5198,9 @@ function ensureUserProfile(){
   if (getUserProfile()) return;
   // Setup deferred al primo render
   setTimeout(function(){
-    const choice = prompt('Welcome! Who is using this dashboard?\nType:\n  1 — Emanuele\n  2 — Collega', '1');
+    const choice = prompt('Welcome! Who is using this dashboard?\nType:\n  1 — Emanuele\n  2 — Enis', '1');
     if (choice === '1') setUserProfile('Emanuele');
-    else if (choice === '2') setUserProfile('Collega');
+    else if (choice === '2') setUserProfile('Enis');
     // se cancella: nessun profilo settato, riprova al prossimo boot
   }, 1500);
 }
@@ -5984,6 +5984,288 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
     }
   }
   return out;
+}
+
+/* ============================================================
+   CHECK UPDATES — Activity log filtrabile
+   Mostra TUTTI gli override (🖋) e accept (✓) con autore, data
+   modifica e data soggiorno. Filtri: profilo, struttura, range
+   data modifica, range data soggiorno.
+   ============================================================ */
+let _CHECKS_FILTERS = {
+  profile: 'all',     // 'all' | 'Emanuele' | 'Enis' | 'unknown'
+  structKey: 'all',   // 'all' | 'firenze' | 'condotta' | 'alfani' | 'davids'
+  type: 'all',        // 'all' | 'override' | 'accept'
+  modFrom: '',        // ISO date
+  modTo: '',
+  stayFrom: '',
+  stayTo: '',
+};
+let _CHECKS_SORT = { col: 'modAt', dir: 'desc' };  // 'modAt' | 'stayDate' | 'profile' | 'value'
+
+function _checksCollectAll(){
+  // Ritorna array di {profile, structKey, structLabel, type, stayDate, value, modAt, rt}
+  const out = [];
+  // Overrides (🖋)
+  try {
+    const overrides = (typeof fp_getOverrides === 'function')
+      ? fp_getOverrides()
+      : (function(){ try { const r = localStorage.getItem('rmes_base_rate_overrides_v1'); return r ? JSON.parse(r) : {}; } catch(e){ return {}; } })();
+    for (const sk in overrides){
+      if (!overrides[sk] || typeof overrides[sk] !== 'object') continue;
+      for (const iso in overrides[sk]){
+        const rts = overrides[sk][iso];
+        if (!rts || typeof rts !== 'object') continue;
+        for (const rt in rts){
+          const v = rts[rt];
+          if (!v) continue;
+          let price = null, savedAt = null, author = null;
+          if (typeof v === 'number'){ price = v; }
+          else if (typeof v === 'object'){ price = v.price; savedAt = v.savedAt || null; author = v.author || null; }
+          if (price == null || !isFinite(price)) continue;
+          out.push({
+            type: 'override',
+            structKey: sk,
+            structLabel: structLabel(sk),
+            rt: rt,
+            stayDate: iso,
+            value: Math.round(price),
+            modAt: savedAt,
+            profile: author || 'unknown',
+          });
+        }
+      }
+    }
+  } catch(e){ console.warn('checks: overrides collection failed', e); }
+  // Accepts (✓)
+  try {
+    const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
+    for (const sk in all){
+      if (!all[sk] || typeof all[sk] !== 'object') continue;
+      for (const ymdK in all[sk]){
+        const v = all[sk][ymdK];
+        if (v == null) continue;
+        let price = null, ts = null, author = null;
+        if (typeof v === 'number'){ price = v; }
+        else if (typeof v === 'object'){ price = v.price; ts = v.ts || null; author = v.author || null; }
+        if (price == null || !isFinite(price)) continue;
+        const ymdN = +ymdK;
+        const yy = Math.floor(ymdN/10000), mm = Math.floor((ymdN%10000)/100), dd = ymdN%100;
+        const iso = yy+'-'+pad2(mm)+'-'+pad2(dd);
+        out.push({
+          type: 'accept',
+          structKey: sk,
+          structLabel: structLabel(sk),
+          rt: (CFG.structures[sk] && CFG.structures[sk].baseRT) || '',
+          stayDate: iso,
+          value: Math.round(price),
+          modAt: ts,
+          profile: author || 'unknown',
+        });
+      }
+    }
+  } catch(e){ console.warn('checks: accepts collection failed', e); }
+  return out;
+}
+function _checksApplyFilters(rows){
+  const f = _CHECKS_FILTERS;
+  return rows.filter(r => {
+    if (f.profile !== 'all' && r.profile !== f.profile) return false;
+    if (f.structKey !== 'all' && r.structKey !== f.structKey) return false;
+    if (f.type !== 'all' && r.type !== f.type) return false;
+    if (f.modFrom){
+      if (!r.modAt) return false;
+      if (r.modAt.substring(0,10) < f.modFrom) return false;
+    }
+    if (f.modTo){
+      if (!r.modAt) return false;
+      if (r.modAt.substring(0,10) > f.modTo) return false;
+    }
+    if (f.stayFrom && r.stayDate < f.stayFrom) return false;
+    if (f.stayTo && r.stayDate > f.stayTo) return false;
+    return true;
+  });
+}
+function _checksSort(rows){
+  const s = _CHECKS_SORT;
+  const dir = s.dir === 'desc' ? -1 : 1;
+  rows.sort((a, b) => {
+    let av, bv;
+    if (s.col === 'modAt'){ av = a.modAt || ''; bv = b.modAt || ''; }
+    else if (s.col === 'stayDate'){ av = a.stayDate || ''; bv = b.stayDate || ''; }
+    else if (s.col === 'profile'){ av = a.profile || ''; bv = b.profile || ''; }
+    else if (s.col === 'value'){ av = a.value; bv = b.value; }
+    else { av = a.modAt || ''; bv = b.modAt || ''; }
+    if (av < bv) return -1 * dir;
+    if (av > bv) return 1 * dir;
+    return 0;
+  });
+  return rows;
+}
+function _checksFormatModAt(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return pad2(d.getDate())+'/'+pad2(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad2(d.getHours())+':'+pad2(d.getMinutes());
+}
+function _checksFormatStay(iso){
+  if (!iso) return '—';
+  const p = iso.split('-');
+  if (p.length !== 3) return iso;
+  return p[2]+'/'+p[1]+'/'+p[0];
+}
+
+function renderCheckUpdates(){
+  const body = document.getElementById('checks-body');
+  if (!body) return;
+  const all = _checksCollectAll();
+  const filtered = _checksSort(_checksApplyFilters(all.slice()));
+
+  // Filtri controls
+  const f = _CHECKS_FILTERS;
+  let h = '<div style="display:flex;flex-wrap:wrap;gap:14px 18px;align-items:flex-end;padding:14px 16px;background:#faf8f3;border:1px solid #ece5d5;border-radius:8px;margin-bottom:14px;font-size:12px">';
+  // Profile filter
+  h += '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Profile</label>';
+  h += '<select id="chk-flt-profile" style="padding:5px 8px;border:1px solid #c9b896;border-radius:4px;font-size:12px;background:#fff;min-width:130px">';
+  for (const p of [['all','All profiles'],['Emanuele','Emanuele'],['Enis','Enis'],['unknown','— unknown —']]){
+    h += `<option value="${p[0]}"${f.profile===p[0]?' selected':''}>${p[1]}</option>`;
+  }
+  h += '</select></div>';
+  // Property filter
+  h += '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Property</label>';
+  h += '<select id="chk-flt-struct" style="padding:5px 8px;border:1px solid #c9b896;border-radius:4px;font-size:12px;background:#fff;min-width:150px">';
+  for (const p of [['all','All properties'],['firenze','Firenze Suite'],['condotta','Condotta 16'],['alfani','Palazzo Alfani'],['davids','Enis Guesthouse']]){
+    h += `<option value="${p[0]}"${f.structKey===p[0]?' selected':''}>${p[1]}</option>`;
+  }
+  h += '</select></div>';
+  // Type filter
+  h += '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Type</label>';
+  h += '<select id="chk-flt-type" style="padding:5px 8px;border:1px solid #c9b896;border-radius:4px;font-size:12px;background:#fff;min-width:140px">';
+  for (const p of [['all','All types'],['override','🖋 Manual override'],['accept','✓ Accept RMES']]){
+    h += `<option value="${p[0]}"${f.type===p[0]?' selected':''}>${p[1]}</option>`;
+  }
+  h += '</select></div>';
+  // Modified at: from + to
+  h += '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Modified at</label>';
+  h += `<div style="display:flex;gap:5px;align-items:center"><input type="date" id="chk-flt-modfrom" value="${f.modFrom}" style="padding:4px 6px;border:1px solid #c9b896;border-radius:4px;font-size:12px"><span style="color:#888">→</span><input type="date" id="chk-flt-modto" value="${f.modTo}" style="padding:4px 6px;border:1px solid #c9b896;border-radius:4px;font-size:12px"></div>`;
+  h += '</div>';
+  // Stay date: from + to
+  h += '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Stay date</label>';
+  h += `<div style="display:flex;gap:5px;align-items:center"><input type="date" id="chk-flt-stayfrom" value="${f.stayFrom}" style="padding:4px 6px;border:1px solid #c9b896;border-radius:4px;font-size:12px"><span style="color:#888">→</span><input type="date" id="chk-flt-stayto" value="${f.stayTo}" style="padding:4px 6px;border:1px solid #c9b896;border-radius:4px;font-size:12px"></div>`;
+  h += '</div>';
+  // Reset + Export
+  h += '<div style="display:flex;flex-direction:column;gap:4px;margin-left:auto"><label style="font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Actions</label>';
+  h += '<div style="display:flex;gap:6px">';
+  h += '<button id="chk-flt-reset" style="padding:5px 12px;border:1px solid #999;background:#fff;border-radius:4px;cursor:pointer;font-size:12px">↺ Reset</button>';
+  h += '<button id="chk-export-csv" style="padding:5px 12px;border:1px solid #3b6b9a;background:#3b6b9a;color:#fff;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600">⬇ Export CSV</button>';
+  h += '</div></div>';
+  h += '</div>';
+
+  // Stats
+  const cntTotal = all.length;
+  const cntFiltered = filtered.length;
+  h += `<div style="margin-bottom:10px;font-size:12px;color:#666"><b>${cntFiltered}</b> modifications shown${cntTotal!==cntFiltered?` (filtered from ${cntTotal})`:''}.</div>`;
+
+  // Table
+  if (filtered.length === 0){
+    h += '<div style="padding:40px;text-align:center;color:#888;font-style:italic">No modifications match the current filters.</div>';
+  } else {
+    const sortDir = (col) => _CHECKS_SORT.col === col ? (_CHECKS_SORT.dir === 'desc' ? ' ↓' : ' ↑') : '';
+    h += '<div style="overflow-x:auto;border:1px solid #e8e2d3;border-radius:6px"><table style="width:100%;border-collapse:collapse;font-size:12.5px;background:#fff">';
+    h += '<thead style="background:#5a3a14;color:#fff;position:sticky;top:0">';
+    h += '<tr>';
+    h += `<th class="chk-sort" data-col="modAt"   style="padding:9px 11px;text-align:left;cursor:pointer;white-space:nowrap">Modified at${sortDir('modAt')}</th>`;
+    h += `<th class="chk-sort" data-col="profile" style="padding:9px 11px;text-align:left;cursor:pointer;white-space:nowrap">Profile${sortDir('profile')}</th>`;
+    h += '<th style="padding:9px 11px;text-align:left;white-space:nowrap">Type</th>';
+    h += '<th style="padding:9px 11px;text-align:left;white-space:nowrap">Property</th>';
+    h += '<th style="padding:9px 11px;text-align:left;white-space:nowrap">Room type</th>';
+    h += `<th class="chk-sort" data-col="stayDate" style="padding:9px 11px;text-align:left;cursor:pointer;white-space:nowrap">Stay date${sortDir('stayDate')}</th>`;
+    h += `<th class="chk-sort" data-col="value"    style="padding:9px 11px;text-align:right;cursor:pointer;white-space:nowrap">Price${sortDir('value')}</th>`;
+    h += '</tr></thead><tbody>';
+    for (let i=0; i<filtered.length; i++){
+      const r = filtered[i];
+      const bg = i % 2 === 0 ? '#fff' : '#faf8f3';
+      const profCol = r.profile === 'Emanuele' ? '#3b6b9a' : r.profile === 'Enis' ? '#8e5fa8' : '#999';
+      const typeBadge = r.type === 'override'
+        ? '<span style="display:inline-block;background:#fef3e3;color:#b86b1f;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid #e8c899">🖋 Override</span>'
+        : '<span style="display:inline-block;background:#e9f3eb;color:#2c5c3c;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid #b8d4be">✓ Accept</span>';
+      h += `<tr style="background:${bg};border-bottom:1px solid #f0ebe0">`;
+      h += `<td style="padding:8px 11px;font-family:'DM Mono',monospace;color:#5a3a14">${_checksFormatModAt(r.modAt)}</td>`;
+      h += `<td style="padding:8px 11px;font-weight:700;color:${profCol}">${escapeHtml(r.profile)}</td>`;
+      h += `<td style="padding:8px 11px">${typeBadge}</td>`;
+      h += `<td style="padding:8px 11px">${escapeHtml(r.structLabel)}</td>`;
+      h += `<td style="padding:8px 11px;color:#666">${escapeHtml(r.rt || '')}</td>`;
+      h += `<td style="padding:8px 11px;font-family:'DM Mono',monospace">${_checksFormatStay(r.stayDate)}</td>`;
+      h += `<td style="padding:8px 11px;font-family:'DM Mono',monospace;text-align:right;font-weight:700;color:#5a3a14">€${r.value}</td>`;
+      h += '</tr>';
+    }
+    h += '</tbody></table></div>';
+  }
+
+  body.innerHTML = h;
+
+  // Wire up
+  const _onFilterChange = () => {
+    _CHECKS_FILTERS.profile = document.getElementById('chk-flt-profile').value;
+    _CHECKS_FILTERS.structKey = document.getElementById('chk-flt-struct').value;
+    _CHECKS_FILTERS.type = document.getElementById('chk-flt-type').value;
+    _CHECKS_FILTERS.modFrom = document.getElementById('chk-flt-modfrom').value;
+    _CHECKS_FILTERS.modTo = document.getElementById('chk-flt-modto').value;
+    _CHECKS_FILTERS.stayFrom = document.getElementById('chk-flt-stayfrom').value;
+    _CHECKS_FILTERS.stayTo = document.getElementById('chk-flt-stayto').value;
+    renderCheckUpdates();
+  };
+  ['chk-flt-profile','chk-flt-struct','chk-flt-type','chk-flt-modfrom','chk-flt-modto','chk-flt-stayfrom','chk-flt-stayto'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', _onFilterChange);
+  });
+  const btnReset = document.getElementById('chk-flt-reset');
+  if (btnReset){
+    btnReset.addEventListener('click', () => {
+      _CHECKS_FILTERS = { profile:'all', structKey:'all', type:'all', modFrom:'', modTo:'', stayFrom:'', stayTo:'' };
+      renderCheckUpdates();
+    });
+  }
+  document.querySelectorAll('.chk-sort').forEach(th => {
+    th.addEventListener('click', (ev) => {
+      const col = th.getAttribute('data-col');
+      if (_CHECKS_SORT.col === col){
+        _CHECKS_SORT.dir = _CHECKS_SORT.dir === 'desc' ? 'asc' : 'desc';
+      } else {
+        _CHECKS_SORT.col = col;
+        _CHECKS_SORT.dir = 'desc';
+      }
+      renderCheckUpdates();
+    });
+  });
+  const btnExport = document.getElementById('chk-export-csv');
+  if (btnExport){
+    btnExport.addEventListener('click', () => {
+      const rows = _checksSort(_checksApplyFilters(_checksCollectAll().slice()));
+      const lines = ['Modified at,Profile,Type,Property,Room type,Stay date,Price'];
+      for (const r of rows){
+        lines.push([
+          _checksFormatModAt(r.modAt),
+          r.profile,
+          r.type,
+          r.structLabel,
+          '"'+(r.rt||'').replace(/"/g,'""')+'"',
+          r.stayDate,
+          r.value
+        ].join(','));
+      }
+      const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const today = new Date();
+      a.download = 'check_updates_' + today.getFullYear() + pad2(today.getMonth()+1) + pad2(today.getDate()) + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
 }
 
 function renderRmesBreakdown(){
@@ -16404,6 +16686,9 @@ function renderAll(){
   if (typeof renderBookingWindowCancel === 'function') renderBookingWindowCancel(CURRENT_STRUCT);
   if (typeof renderRateShopper === 'function') renderRateShopper();
   if (typeof renderAirbnb === 'function') renderAirbnb();
+  if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function'){
+    try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
+  }
 }
 function setStructure(sel){
   if (CURRENT_STRUCT === sel) return;
@@ -17298,6 +17583,9 @@ function setTab(name){
   }
   if (name === 'baseprice' && typeof renderBasePriceBreakdown === 'function'){
     try { renderBasePriceBreakdown(); if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown(); } catch(e){ console.error('renderBasePriceBreakdown', e); }
+  }
+  if (name === 'checks' && typeof renderCheckUpdates === 'function'){
+    try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
   }
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
