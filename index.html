@@ -1411,6 +1411,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="pri"><span class="num">6</span>RMES</button>
     <button class="tab" data-tab="baseprice"><span class="num">7</span>Export Pricing</button>
     <button class="tab" data-tab="checks"><span class="num">📋</span>Check Updates</button>
+    <button class="tab" data-tab="anomalies"><span class="num">⚠</span>Anomalies</button>
     <button class="tab" data-tab="instr"><span class="num">📖</span>Playbook</button>
   </nav>
 </header>
@@ -2102,6 +2103,21 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     </div>
     <div class="panel">
       <div class="panel-body" id="checks-body" style="padding:18px"></div>
+    </div>
+  </section>
+
+  <!-- ============ SECTION ANOMALIES — Inconsistency checks ============ -->
+  <section class="tab-panel" id="panel-anomalies">
+    <div class="section-head">
+      <div>
+        <h2>⚠ Anomalies <span class="mono" style="font-weight:400;font-size:14px;color:var(--ink-3);margin-left:8px">automated checks for data inconsistencies and potential pricing issues</span></h2>
+      </div>
+      <div class="head-actions">
+        <button id="anomaly-refresh" class="rmes-btn-ghost" title="Re-scan all properties for anomalies">↻ Re-scan</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-body" id="anomalies-body" style="padding:18px"></div>
     </div>
   </section>
 

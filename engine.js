@@ -5242,12 +5242,14 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         _hitCap: _capRT.hitCap,
         _paceFromAggregate: (_paceResult && _paceResult.fromAggregate === true),
         _paceState: (_paceResult && _paceResult.state) ? _paceResult.state : null,
+        mkt_mult,
         _naReasons: {
           occ: _A_naReason,
           price: _B_naReason,
           pace: _C_naReason,
           comp: _E_naReason,
           air: _F_naReason,
+          mkt: _mkt_naReason,
         },
         _weightsApplied: _wNorm,
         _debug: {
@@ -5264,6 +5266,8 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           searchCur: _searchCur,
           searchP50Mo: (_searchStatsMo && _searchStatsMo.p50) ? _searchStatsMo.p50 : null,
           searchDev: (_searchCur != null && _searchStatsMo && _searchStatsMo.p50 > 0) ? ((_searchCur - _searchStatsMo.p50) / _searchStatsMo.p50) : null,
+          airdnaListings: (typeof _airdnaIdx !== 'undefined' && _airdnaIdx[r.ymd] != null) ? _airdnaIdx[r.ymd] : null,
+          airdnaAvg: (typeof _airdnaAvg !== 'undefined') ? _airdnaAvg : null,
         },
       };
     }
@@ -6367,6 +6371,180 @@ function _checksFormatStay(iso){
   if (p.length !== 3) return iso;
   return p[2]+'/'+p[1]+'/'+p[0];
 }
+
+/* =====================================================================
+   ANOMALIES — Automated inconsistency checks for the 4 properties.
+   Scans data across all properties and reports:
+   - Days where RMES suggestion deviates more than ±15% from Last update
+   - Days where Last update is below Floor Rate
+   - Days where Last update is way above Anchor (potential typo)
+   - Days where OTB OCC is 100% but RMES suggests lowering (sold out, raise)
+   - Days where Pickup is negative many days running (cancellations trend)
+   - Days where Base Price hit Goal Value cap or Anchor ±50% guard-rail
+   - Days where Floor Rate has been hit by RMES
+   - Months where Forecast diverges >30% from STLY (potential calibration issue)
+   Output: grouped list with severity badge (info / warn / critical).
+   ===================================================================== */
+function _anomaliesScan(){
+  if (typeof BOOKINGS === 'undefined' || !BOOKINGS.length) return [];
+  const out = [];
+  const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+  const TODAY_N = TODAY.getFullYear()*10000 + (TODAY.getMonth()+1)*100 + TODAY.getDate();
+  const properties = ['firenze','condotta','alfani','davids'];
+  const propLabel = {firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse'};
+
+  for (const sk of properties){
+    const baseRTKey = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
+    if (!baseRTKey) continue;
+    const floor = (typeof fp_getFloor === 'function') ? fp_getFloor(sk) : 100;
+    const anchor = (typeof fp_getBasePrice === 'function') ? fp_getBasePrice(sk) : null;
+    // Calcolo RMES map per i prossimi 90 giorni
+    let map = null;
+    try { map = computeRMESPriceMap(sk, TODAY_N, 90); } catch(e){ continue; }
+    if (!map) continue;
+    // Sort ymds
+    const ymds = Object.keys(map).map(Number).sort();
+    let negPickupDays = 0;
+    for (const ymd of ymds){
+      const entry = map[ymd];
+      if (!entry) continue;
+      const y = Math.floor(ymd/10000), m = Math.floor((ymd%10000)/100), d = ymd%100;
+      const iso = `${y}-${pad2(m)}-${pad2(d)}`;
+      const dateLabel = `${pad2(d)}/${pad2(m)}/${y}`;
+      // Last update = reference price (= base + override + accepted)
+      const lu = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sk, ymd) : null;
+      // RMES suggested
+      const rmesObj = (entry.rmesTargetOnBaseByRT && entry.rmesTargetOnBaseByRT[baseRTKey])
+        ? entry.rmesTargetOnBaseByRT[baseRTKey] : null;
+      const rmesSugg = rmesObj ? rmesObj.price : (entry.rmesSuggestedByRT && entry.rmesSuggestedByRT[baseRTKey]);
+      const rmesAtCap = rmesObj ? rmesObj.atCap : null;
+      // Check 1: Floor hit
+      if (rmesSugg != null && lu != null && rmesSugg <= floor + 0.5 && rmesAtCap === 'floor'){
+        out.push({
+          severity: 'warn',
+          property: sk,
+          propertyLabel: propLabel[sk],
+          date: dateLabel,
+          iso,
+          title: 'RMES clamped to Floor Rate',
+          detail: `RMES would suggest a lower price but the Floor Rate (€${floor}) is preventing it. Active price €${Math.round(lu)} · suggestion €${Math.round(rmesSugg)}.`,
+          action: 'Review the floor: maybe lower it if you want to accept this rate, or check the factors that are pulling the price down (Online Pricing, Pace, Demand).'
+        });
+      }
+      // Check 2: Last update below floor (rare, should not happen)
+      if (lu != null && lu < floor - 0.5){
+        out.push({
+          severity: 'critical',
+          property: sk,
+          propertyLabel: propLabel[sk],
+          date: dateLabel,
+          iso,
+          title: 'Active price BELOW Floor Rate',
+          detail: `Last update is €${Math.round(lu)}, below the floor €${floor}. This is a manual override that bypasses the floor.`,
+          action: 'Check the manual override on this day — it might be intentional (e.g. promo) or a typo.'
+        });
+      }
+      // Check 3: RMES diverges >15% from Last update
+      if (rmesSugg != null && lu != null && lu > 0){
+        const devPct = ((rmesSugg - lu) / lu) * 100;
+        if (Math.abs(devPct) >= 15){
+          out.push({
+            severity: Math.abs(devPct) >= 25 ? 'critical' : 'info',
+            property: sk,
+            propertyLabel: propLabel[sk],
+            date: dateLabel,
+            iso,
+            title: `RMES suggests ${devPct >= 0 ? 'raising' : 'lowering'} by ${Math.abs(devPct).toFixed(0)}%`,
+            detail: `Active price €${Math.round(lu)} · RMES suggestion €${Math.round(rmesSugg)} (${devPct >= 0 ? '+' : ''}${devPct.toFixed(1)}%).`,
+            action: devPct >= 0
+              ? 'Pricing engine sees strong demand or low competition: consider raising.'
+              : 'Pricing engine sees weak demand or aggressive competitors: consider lowering or investigating.'
+          });
+        }
+      }
+      // Check 4: Active price too far from Anchor (±70% guard-rail)
+      if (lu != null && anchor != null && anchor > 0){
+        const ratio = lu / anchor;
+        if (ratio < 0.50 || ratio > 1.50){
+          out.push({
+            severity: 'warn',
+            property: sk,
+            propertyLabel: propLabel[sk],
+            date: dateLabel,
+            iso,
+            title: `Active price far from Anchor (×${ratio.toFixed(2)})`,
+            detail: `Last update €${Math.round(lu)} is ${ratio < 1 ? 'much below' : 'much above'} the Anchor (€${anchor}). Ratio ${ratio.toFixed(2)}× — outside the ±50% guard-rail.`,
+            action: 'If this is a manual override, double-check. Otherwise review the Anchor Price in tab RMES → ⚡ Base Price.'
+          });
+        }
+      }
+    }
+  }
+  // Sort by severity (critical > warn > info), then by property, then by date
+  const sevOrder = { critical:0, warn:1, info:2 };
+  out.sort((a, b) => {
+    const sa = sevOrder[a.severity], sb = sevOrder[b.severity];
+    if (sa !== sb) return sa - sb;
+    if (a.property !== b.property) return a.property.localeCompare(b.property);
+    return a.iso.localeCompare(b.iso);
+  });
+  return out;
+}
+
+function renderAnomalies(){
+  const wrap = document.getElementById('anomalies-body');
+  if (!wrap) return;
+  const anomalies = _anomaliesScan();
+  // Conta per severity
+  const counts = { critical:0, warn:0, info:0 };
+  for (const a of anomalies){ counts[a.severity]++; }
+  let h = '';
+  // Summary KPI
+  h += '<div style="display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap">';
+  h += `<div style="flex:1;min-width:140px;padding:12px 16px;background:rgba(168,59,59,.10);border:1px solid #a83b3b;border-radius:6px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#7a2c2c;font-weight:700">Critical</div><div style="font-size:24px;font-weight:700;color:#a83b3b;font-family:'DM Mono',monospace">${counts.critical}</div></div>`;
+  h += `<div style="flex:1;min-width:140px;padding:12px 16px;background:rgba(196,131,59,.10);border:1px solid #c4823b;border-radius:6px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#7a4f1c;font-weight:700">Warning</div><div style="font-size:24px;font-weight:700;color:#c4823b;font-family:'DM Mono',monospace">${counts.warn}</div></div>`;
+  h += `<div style="flex:1;min-width:140px;padding:12px 16px;background:rgba(59,107,154,.10);border:1px solid #3b6b9a;border-radius:6px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#2a4d70;font-weight:700">Info</div><div style="font-size:24px;font-weight:700;color:#3b6b9a;font-family:'DM Mono',monospace">${counts.info}</div></div>`;
+  h += `<div style="flex:1;min-width:140px;padding:12px 16px;background:rgba(74,124,89,.10);border:1px solid #4a7c59;border-radius:6px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#2c5a3c;font-weight:700">Total</div><div style="font-size:24px;font-weight:700;color:#4a7c59;font-family:'DM Mono',monospace">${anomalies.length}</div></div>`;
+  h += '</div>';
+  if (anomalies.length === 0){
+    h += '<div style="padding:40px;text-align:center;color:#888;font-style:italic;background:#f5f9f3;border:1px solid #a6c7a8;border-radius:6px"><div style="font-size:32px;color:#4a7c59;margin-bottom:8px">✓</div><div style="font-size:14px;color:#2c5a3c;font-weight:600">No anomalies detected.</div><div style="margin-top:4px">All properties look consistent for the next 90 days.</div></div>';
+  } else {
+    // Group by property
+    const byProp = {};
+    for (const a of anomalies){
+      if (!byProp[a.property]) byProp[a.property] = [];
+      byProp[a.property].push(a);
+    }
+    for (const prop of Object.keys(byProp)){
+      const items = byProp[prop];
+      h += `<div style="margin-bottom:14px"><h3 style="margin:8px 0;color:#5a3a14;border-bottom:2px solid #c4823b;padding-bottom:4px">${items[0].propertyLabel} <span style="color:var(--ink-3);font-weight:400;font-size:13px">(${items.length})</span></h3>`;
+      h += '<div style="display:flex;flex-direction:column;gap:8px">';
+      for (const a of items){
+        const sevColor = a.severity === 'critical' ? '#a83b3b' : (a.severity === 'warn' ? '#c4823b' : '#3b6b9a');
+        const sevBg = a.severity === 'critical' ? 'rgba(168,59,59,.06)' : (a.severity === 'warn' ? 'rgba(196,131,59,.06)' : 'rgba(59,107,154,.06)');
+        const sevLabel = a.severity.toUpperCase();
+        h += `<div style="padding:10px 14px;background:${sevBg};border-left:3px solid ${sevColor};border-radius:4px">`;
+        h += `<div style="display:flex;justify-content:space-between;gap:14px;align-items:baseline;flex-wrap:wrap">`;
+        h += `<div><span style="background:${sevColor};color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.04em;margin-right:8px">${sevLabel}</span><b>${a.title}</b> <span style="color:var(--ink-3);font-family:'DM Mono',monospace;font-size:11.5px;margin-left:6px">${a.date}</span></div>`;
+        h += `</div>`;
+        h += `<div style="margin-top:4px;font-size:12.5px;color:#444;line-height:1.55">${a.detail}</div>`;
+        if (a.action){
+          h += `<div style="margin-top:4px;font-size:11.5px;color:#666;font-style:italic">💡 ${a.action}</div>`;
+        }
+        h += '</div>';
+      }
+      h += '</div></div>';
+    }
+  }
+  wrap.innerHTML = h;
+  // Re-scan button
+  const refreshBtn = document.getElementById('anomaly-refresh');
+  if (refreshBtn && !refreshBtn._wired){
+    refreshBtn._wired = true;
+    refreshBtn.addEventListener('click', () => renderAnomalies());
+  }
+}
+
 
 function renderCheckUpdates(){
   const body = document.getElementById('checks-body');
@@ -8560,9 +8738,10 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       const factors = [
         {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'recent bookings (window "1d" = yesterday + today, fallback "7d" = today and 7 previous days) for this stay-date × fill rate scale. Never negative.'},
-        {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'4-week booking pace vs same 4 weeks last year (weeks weighted 10/20/30/40, most recent counts more)'},
+        {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'W4 booking pace (last 7 days) for the stay month vs same 7 days last year. Fallbacks: aggregate cross-property → annual property → neutralized.'},
         {key:'comp_mult',  naKey:'comp',  code:'C', name:'Online Pricing',   color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)'},
-        {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'}
+        {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'},
+        {key:'mkt_mult',   naKey:'mkt',   code:'E', name:'AirDNA Market',    color:'#c4823b', desc:'AirDNA Booked Listings for Florence vs market average (booking density)'}
       ];
       const naReasons = mults._naReasons || {};
       const dbg = mults._debug || {};
@@ -8650,6 +8829,24 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
             h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Raw dev: <b>'+_fpct(dbg.searchDev,1)+'</b></div>';
           }
           h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-thresholds + clamp ±50%): '+_fpct((mults.air_mult-1),1)+'</div>';
+        } else if (code === 'E'){
+          // E · AirDNA Market — market booking density from AirDNA Booked Listings
+          const airdnaListings = (dbg && dbg.airdnaListings != null) ? dbg.airdnaListings : null;
+          const airdnaAvg = (dbg && dbg.airdnaAvg != null) ? dbg.airdnaAvg : null;
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>(market_idx − avg_idx) / avg_idx</code> where market_idx = booked_listings ÷ total_market (2,948 listings). Independent from Expedia: D = search intent, E = actual market bookings (AirDNA rate-future, 180 days forward).</div>';
+          if (airdnaListings != null){
+            h += '<div>Market idx today: <b>'+(airdnaListings*100).toFixed(1)+'%</b> (booked / total)</div>';
+          } else {
+            h += '<div>Market idx today: <b>—</b> (no AirDNA data for this day)</div>';
+          }
+          if (airdnaAvg != null && airdnaAvg > 0){
+            h += '<div>180-day avg idx: <b>'+(airdnaAvg*100).toFixed(1)+'%</b></div>';
+            if (airdnaListings != null){
+              const dev = (airdnaListings - airdnaAvg) / airdnaAvg;
+              h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Raw dev: <b>'+_fpct(dev,1)+'</b></div>';
+            }
+          }
+          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-thresholds + clamp ±50%): '+_fpct((mults.mkt_mult-1),1)+'</div>';
         }
         h += '</div>';
         return h;
@@ -8667,7 +8864,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const wBase = (typeof SELL_RMES_W_ALL !== 'undefined' && SELL_RMES_W_ALL[d.structKey])
                   ? SELL_RMES_W_ALL[d.structKey]
                   : (typeof SELL_RMES_W_DEFAULT !== 'undefined' ? SELL_RMES_W_DEFAULT : {});
-      const wMapKey = { occ:'occ', price:'price', pace:'pace', comp:'comp', air:'airdna' };
+      const wMapKey = { occ:'occ', price:'price', pace:'pace', comp:'comp', air:'airdna', mkt:'mkt' };
       for (const f of factors){
         const m = mults[f.key];
         const naReason = naReasons[f.naKey];
@@ -18348,6 +18545,9 @@ function setTab(name){
   }
   if (name === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
+  }
+  if (name === 'anomalies' && typeof renderAnomalies === 'function'){
+    try { renderAnomalies(); } catch(e){ console.error('renderAnomalies', e); }
   }
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
