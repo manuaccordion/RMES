@@ -503,7 +503,7 @@ table.sell-table-transposed thead .sell-tposed-corner{
   border-right:2px solid #c4823b;
   padding:10px 14px;
   position:sticky;left:0;top:0;z-index:8;
-  min-width:140px;
+  min-width:176px;  /* group (36) + label (140) */
 }
 /* Date column headers (top row) */
 table.sell-table-transposed thead .sell-tposed-datecol{
@@ -634,6 +634,72 @@ table.sell-table-transposed tbody td.sell-block-expedia{
   max-height:75vh;
   border:1px solid var(--line);
   border-radius:6px;
+}
+
+/* === Group cell (rowspan) — etichetta verticale del gruppo === */
+table.sell-table-transposed th.sell-tposed-group{
+  background:#5a3a14;
+  color:#fff;
+  font-weight:700;
+  font-size:10px;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  text-align:center;
+  vertical-align:middle;
+  padding:6px 4px;
+  border-right:2px solid #3a2510;
+  border-bottom:1px solid var(--line);
+  position:sticky;left:0;z-index:4;
+  min-width:36px;
+  max-width:36px;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  white-space:nowrap;
+}
+table.sell-table-transposed th.sell-tposed-group .sell-tposed-group-label{
+  display:inline-block;
+  letter-spacing:.12em;
+}
+/* Colori per gruppo */
+table.sell-table-transposed th.sell-tposed-group-otb{background:linear-gradient(180deg,#c4823b,#a36825)}
+table.sell-table-transposed th.sell-tposed-group-pickup{background:linear-gradient(180deg,#8e5fa8,#6e3f88)}
+table.sell-table-transposed th.sell-tposed-group-stly{background:linear-gradient(180deg,#3b6b6b,#2b4f4f)}
+table.sell-table-transposed th.sell-tposed-group-pkstly{background:linear-gradient(180deg,#888,#5e5e5e)}
+table.sell-table-transposed th.sell-tposed-group-rateshopper{background:linear-gradient(180deg,#3a6b6b,#264848)}
+
+/* Label cell (sub-label) — sticky sinistra DOPO il group */
+table.sell-table-transposed th.sell-tposed-label{
+  left:36px;  /* dopo la group cell */
+}
+/* Per metric SENZA gruppo (LU, RMES, Event), la label è sticky a left:0 */
+table.sell-table-transposed tbody tr.sell-tr-lu th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-rmes th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-event th.sell-tposed-label{
+  left:0;
+}
+
+/* === Centratura forzata di TUTTI i numeri nelle celle === */
+table.sell-table-transposed tbody td{
+  text-align:center !important;
+}
+table.sell-table-transposed tbody td span,
+table.sell-table-transposed tbody td a{
+  text-align:center !important;
+}
+
+/* === Riga Event: pulita (no background arancione, no decorazioni search-pressure) === */
+table.sell-table-transposed tbody tr.sell-tr-event th.sell-tposed-label{
+  background:#fdfbf6;
+  color:var(--ink-2);
+  border-left:3px solid var(--line);
+}
+table.sell-table-transposed tbody tr.sell-tr-event td{
+  background:#fdfbf6 !important;
+  color:var(--ink-2);
+  font-size:11.5px;
+  font-style:italic;
+  white-space:normal;  /* eventi lunghi vanno a capo */
+  padding:6px 8px;
 }
 /* Bordi verticali interni per le celle dati: solo il bordo sinistro del gruppo */
 table.data.sell-table tbody td{border-bottom:1px solid var(--line)}

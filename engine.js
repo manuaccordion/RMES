@@ -9644,20 +9644,18 @@ function _sellCompRank(structKey, iso, myExpedia){
 /* === Trasposizione tabella Sell Strategy: date in COLONNE, metriche in RIGHE ===
    Approccio: parso il DOM esistente (date in righe) e costruisco la tabella trasposta.
    Mantiene tutti gli attributi data-* (data-lu-struct, data-rmes-struct, ecc.) → i listener
-   attaccati DOPO la trasposizione (riga successiva) funzionano correttamente.
+   attaccati DOPO la trasposizione funzionano correttamente.
    Layout output:
-     - Header: cella vuota in alto-sx + 1 colonna per ogni data (DD/MM + DoW)
-     - Riga "LAST UPDATE": card oro per ogni data
-     - Riga "RMES":         card verde per ogni data
-     - Riga "Event":        nome evento (se presente)
-     - Riga "DoW":          giorno settimana
-     - Righe OTB:           RN, OCC, ADR
-     - Righe Pickup:        New, Cancel, ΔRN, ADR
-     - Righe STLY:          RN, OCC, ADR
-     - Righe PickupSTLY:    New, Cancel, ΔRN, ADR
-     - Riga Beddy           (se showBeddy)
-     - Righe RateShopper:   Mine, Compset (se showExp)
-     - Riga Base Price
+     - Header: 2 celle (gruppo + label) + 1 colonna per ogni data (DD/MM/AAAA + DoW)
+     - Riga "LAST UPDATE" e "RMES": card oro/verde, no gruppo (label colspan=2)
+     - Riga "Event": no gruppo
+     - Righe OTB:        gruppo "OTB" (rowspan=3) + sub-label RN/OCC/ADR
+     - Righe Pickup:     gruppo "PICKUP" (rowspan=4) + New/Cancel/ΔRN/ADR
+     - Righe STLY:       gruppo "STLY" (rowspan=3) + RN/OCC/ADR
+     - Righe PickupSTLY: gruppo "PK·STLY" (rowspan=4) + ...
+     - Riga Beddy:       (no gruppo)
+     - Righe Mine/Compset: gruppo "RATE SHOPPER" (rowspan=2)
+   Skipped (richiesta utente): Date row (duplicato dell'header), DoW row (idem), Base Price (duplicato di LAST UPDATE).
 */
 function _sellTransposeTable(wrap, showBeddy, showExp){
   if (!wrap) return;
@@ -9666,61 +9664,84 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
   // Conta le righe dati (esclusa la totals row)
   const dataRows = Array.from(orig.querySelectorAll('tbody tr')).filter(tr => !tr.classList.contains('total'));
   if (dataRows.length === 0) return;
-  // Lista delle metriche IN ORDINE (= ordine delle <td> nella riga originale)
-  // Ogni voce: { key, label, cssClass (optional), sub (= sub-label small grey) }
-  const metrics = [
-    { key:'lu',        label:'LAST UPDATE',     sub:'active price',   cssClass:'sell-tr-lu' },
-    { key:'rmes',      label:'RMES',            sub:'price · Δ€ · ✓', cssClass:'sell-tr-rmes' },
-    { key:'date',      label:'Date',            sub:'' },
-    { key:'event',     label:'Event',           sub:'' },
-    { key:'dow',       label:'DoW',             sub:'' },
-    { key:'otbRn',     label:'OTB · RN',        sub:'sold',           cssClass:'sell-tr-otb' },
-    { key:'otbOcc',    label:'OTB · OCC',       sub:'%',              cssClass:'sell-tr-otb' },
-    { key:'otbAdr',    label:'OTB · ADR',       sub:'€',              cssClass:'sell-tr-otb' },
-    { key:'pkNew',     label:'Pickup · New',    sub:'1d',             cssClass:'sell-tr-pickup' },
-    { key:'pkCancel',  label:'Pickup · Cancel', sub:'1d',             cssClass:'sell-tr-pickup' },
-    { key:'pkDRn',     label:'Pickup · ΔRN',    sub:'net',            cssClass:'sell-tr-pickup' },
-    { key:'pkAdr',     label:'Pickup · ADR',    sub:'€',              cssClass:'sell-tr-pickup' },
-    { key:'stlyRn',    label:'STLY · RN',       sub:'-364',           cssClass:'sell-tr-stly' },
-    { key:'stlyOcc',   label:'STLY · OCC',      sub:'%',              cssClass:'sell-tr-stly' },
-    { key:'stlyAdr',   label:'STLY · ADR',      sub:'€',              cssClass:'sell-tr-stly' },
-    { key:'pkStNew',   label:'PkSTLY · New',    sub:'1d',             cssClass:'sell-tr-pkstly' },
-    { key:'pkStCancel',label:'PkSTLY · Cancel', sub:'1d',             cssClass:'sell-tr-pkstly' },
-    { key:'pkStDRn',   label:'PkSTLY · ΔRN',    sub:'net',            cssClass:'sell-tr-pkstly' },
-    { key:'pkStAdr',   label:'PkSTLY · ADR',    sub:'€',              cssClass:'sell-tr-pkstly' },
+  // Lista delle metriche IN ORDINE (= ordine delle <td> nella riga originale).
+  // - "show:false" = metrica saltata (non resa nel layout trasposto)
+  // - "group" = etichetta del gruppo per il rowspan della 1ª colonna
+  // - "groupColor" = striscia colore del gruppo
+  const allMetrics = [
+    { key:'lu',        show:true,  label:'LAST UPDATE',  sub:'active price',   cssClass:'sell-tr-lu' },
+    { key:'rmes',      show:true,  label:'RMES',         sub:'price · Δ€ · ✓', cssClass:'sell-tr-rmes' },
+    { key:'date',      show:false },                                          // duplicato dell'header → SKIP
+    { key:'event',     show:true,  label:'Event',        sub:'',               cssClass:'sell-tr-event' },
+    { key:'dow',       show:false },                                          // duplicato dell'header → SKIP
+    { key:'otbRn',     show:true,  label:'RN',  sub:'sold',  group:'OTB',     cssClass:'sell-tr-otb' },
+    { key:'otbOcc',    show:true,  label:'OCC', sub:'%',     group:'OTB',     cssClass:'sell-tr-otb' },
+    { key:'otbAdr',    show:true,  label:'ADR', sub:'€',     group:'OTB',     cssClass:'sell-tr-otb' },
+    { key:'pkNew',     show:true,  label:'New',    sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup' },
+    { key:'pkCancel',  show:true,  label:'Cancel', sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup' },
+    { key:'pkDRn',     show:true,  label:'ΔRN',    sub:'net', group:'PICKUP', cssClass:'sell-tr-pickup' },
+    { key:'pkAdr',     show:true,  label:'ADR',    sub:'€',   group:'PICKUP', cssClass:'sell-tr-pickup' },
+    { key:'stlyRn',    show:true,  label:'RN',  sub:'-364', group:'STLY',     cssClass:'sell-tr-stly' },
+    { key:'stlyOcc',   show:true,  label:'OCC', sub:'%',    group:'STLY',     cssClass:'sell-tr-stly' },
+    { key:'stlyAdr',   show:true,  label:'ADR', sub:'€',    group:'STLY',     cssClass:'sell-tr-stly' },
+    { key:'pkStNew',   show:true,  label:'New',    sub:'1d',  group:'PK·STLY', cssClass:'sell-tr-pkstly' },
+    { key:'pkStCancel',show:true,  label:'Cancel', sub:'1d',  group:'PK·STLY', cssClass:'sell-tr-pkstly' },
+    { key:'pkStDRn',   show:true,  label:'ΔRN',    sub:'net', group:'PK·STLY', cssClass:'sell-tr-pkstly' },
+    { key:'pkStAdr',   show:true,  label:'ADR',    sub:'€',   group:'PK·STLY', cssClass:'sell-tr-pkstly' },
   ];
-  if (showBeddy) metrics.push({ key:'beddy', label:'Beddy', sub:'PMS €', cssClass:'sell-tr-beddy' });
-  if (showExp){
-    metrics.push({ key:'expMine',    label:'My Expedia',  sub:'rank',  cssClass:'sell-tr-exp' });
-    metrics.push({ key:'expCompset', label:'Compset',     sub:'avg',   cssClass:'sell-tr-exp' });
+  if (showBeddy){
+    allMetrics.push({ key:'beddy', show:true, label:'Beddy', sub:'PMS €', cssClass:'sell-tr-beddy' });
   }
-  metrics.push({ key:'basePrice', label:'Base Price', sub:'structural', cssClass:'sell-tr-base' });
+  if (showExp){
+    allMetrics.push({ key:'expMine',    show:true, label:'My Expedia', sub:'rank', group:'RATE SHOPPER', cssClass:'sell-tr-exp' });
+    allMetrics.push({ key:'expCompset', show:true, label:'Compset',    sub:'avg',  group:'RATE SHOPPER', cssClass:'sell-tr-exp' });
+  }
+  // Base Price = duplicato di LAST UPDATE (quando non c'è override) → SKIP richiesta utente
+  allMetrics.push({ key:'basePrice', show:false });
+
+  // Calcolo rowspans per i gruppi consecutivi
+  const groupSpans = {};  // {firstMetricKey: rowspan}
+  let currentGroup = null, groupStart = -1, groupCount = 0;
+  for (let i = 0; i < allMetrics.length; i++){
+    const m = allMetrics[i];
+    if (!m.show) continue;
+    const g = m.group || null;
+    if (g === currentGroup && g != null){
+      groupCount++;
+    } else {
+      if (currentGroup != null && groupStart >= 0){
+        groupSpans[allMetrics[groupStart].key] = groupCount;
+      }
+      currentGroup = g;
+      groupStart = i;
+      groupCount = 1;
+    }
+  }
+  if (currentGroup != null && groupStart >= 0){
+    groupSpans[allMetrics[groupStart].key] = groupCount;
+  }
 
   // Costruisco la nuova tabella
   const newTbl = document.createElement('table');
   newTbl.className = 'data sell-table sell-table-transposed';
 
-  // THEAD: cella label + 1 cella per data
+  // THEAD: 2 celle iniziali (group corner + label corner) + 1 cella per data
   const thead = document.createElement('thead');
   const trH = document.createElement('tr');
   trH.className = 'sell-tposed-head';
   const cornerTh = document.createElement('th');
   cornerTh.className = 'sell-tposed-corner';
+  cornerTh.colSpan = 2;
   cornerTh.innerHTML = '<span style="font-size:10px;color:var(--ink-3);font-weight:500;letter-spacing:.04em;text-transform:uppercase">Metric ↓ / Date →</span>';
   trH.appendChild(cornerTh);
-  // Per ogni data row originale, prendo data + DoW dalla 3a e 5a <td> (= date e dow celle, ordine: lu, rmes, date, event, dow)
-  const dateLabels = [];  // [{dateText, dowText, ymd}]
+  // Per ogni data row originale, prendo data + DoW dalla 3a e 5a <td>
   for (const dr of dataRows){
     const tds = dr.children;
-    // Indici: 0=LU, 1=RMES, 2=Date, 3=Event, 4=DoW
     const dateText = (tds[2] ? tds[2].textContent.trim() : '');
     const dowText  = (tds[4] ? tds[4].textContent.trim() : '');
-    const ymd = dr.dataset.ymd || (tds[0] && tds[0].dataset.luYmd) || '';
-    dateLabels.push({ dateText, dowText, ymd });
     const thD = document.createElement('th');
     thD.className = 'sell-tposed-datecol';
-    // Weekend: rosso
-    const isWE = (dowText === 'Ven' || dowText === 'Sab' || dowText === 'Dom');
+    const isWE = (dowText === 'Ven' || dowText === 'Sab' || dowText === 'Dom' || dowText === 'Fri' || dowText === 'Sat' || dowText === 'Sun');
     const dowColor = isWE ? 'color:#c4823b;font-weight:700' : 'color:var(--ink-2);font-weight:500';
     thD.innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em">${dateText}</div>
                      <div style="font-size:10.5px;${dowColor};margin-top:1px">${dowText}</div>`;
@@ -9729,25 +9750,49 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
   thead.appendChild(trH);
   newTbl.appendChild(thead);
 
-  // TBODY: una riga per metric
+  // TBODY: una riga per metric (escludendo show:false)
   const tbody = document.createElement('tbody');
-  for (let mIdx = 0; mIdx < metrics.length; mIdx++){
-    const m = metrics[mIdx];
+  for (let mIdx = 0; mIdx < allMetrics.length; mIdx++){
+    const m = allMetrics[mIdx];
+    if (!m.show) continue;
     const tr = document.createElement('tr');
     if (m.cssClass) tr.className = m.cssClass;
-    // Label cell (prima colonna)
-    const labelTd = document.createElement('th');
-    labelTd.className = 'sell-tposed-label';
-    labelTd.scope = 'row';
-    labelTd.innerHTML = `<div class="sell-tposed-label-main">${m.label}</div>${m.sub ? `<div class="sell-tposed-label-sub">${m.sub}</div>` : ''}`;
-    tr.appendChild(labelTd);
-    // Cella per ogni data (= per ogni dataRow originale, prendo la mIdx-esima td)
+    // Group cell (rowspan) — appare SOLO sulla prima riga del gruppo
+    if (m.group && groupSpans[m.key]){
+      const groupTh = document.createElement('th');
+      groupTh.className = 'sell-tposed-group sell-tposed-group-' + (m.group||'').replace(/[^a-z0-9]+/gi,'').toLowerCase();
+      groupTh.rowSpan = groupSpans[m.key];
+      groupTh.scope = 'rowgroup';
+      groupTh.innerHTML = '<div class="sell-tposed-group-label">' + m.group + '</div>';
+      tr.appendChild(groupTh);
+    }
+    // Label cell — solo sub-label (RN/OCC/ADR/...). Per metric SENZA gruppo, colspan=2.
+    const labelTh = document.createElement('th');
+    labelTh.className = 'sell-tposed-label';
+    labelTh.scope = 'row';
+    if (!m.group){
+      labelTh.colSpan = 2;
+    }
+    labelTh.innerHTML = `<div class="sell-tposed-label-main">${m.label}</div>${m.sub ? `<div class="sell-tposed-label-sub">${m.sub}</div>` : ''}`;
+    tr.appendChild(labelTh);
+    // Celle per ogni data (= per ogni dataRow originale, prendo la mIdx-esima td)
     for (let dIdx = 0; dIdx < dataRows.length; dIdx++){
       const origCell = dataRows[dIdx].children[mIdx];
       if (origCell){
-        // Clone il nodo (mantengo attributi data-*, classi, contenuto HTML)
         const cloned = origCell.cloneNode(true);
-        // Cambio <td> name se serve (rimane td)
+        // Per la riga Event: rimuovo l'inline background (search pressure orange)
+        if (m.key === 'event'){
+          cloned.style.background = '';
+          cloned.style.backgroundColor = '';
+        }
+        // Per il DoW inline color: rimuovo dato che la riga Date/DoW non c'è più
+        if (m.key === 'event' || m.key === 'lu' || m.key === 'rmes'){
+          // tutte le celle delle prime righe: niente inline bg
+          if (m.key !== 'lu' && m.key !== 'rmes'){
+            cloned.style.background = '';
+            cloned.style.backgroundColor = '';
+          }
+        }
         tr.appendChild(cloned);
       } else {
         const td = document.createElement('td');
