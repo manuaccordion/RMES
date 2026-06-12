@@ -6373,178 +6373,554 @@ function _checksFormatStay(iso){
 }
 
 /* =====================================================================
-   ANOMALIES — Automated inconsistency checks for the 4 properties.
-   Scans data across all properties and reports:
-   - Days where RMES suggestion deviates more than ±15% from Last update
-   - Days where Last update is below Floor Rate
-   - Days where Last update is way above Anchor (potential typo)
-   - Days where OTB OCC is 100% but RMES suggests lowering (sold out, raise)
-   - Days where Pickup is negative many days running (cancellations trend)
-   - Days where Base Price hit Goal Value cap or Anchor ±50% guard-rail
-   - Days where Floor Rate has been hit by RMES
-   - Months where Forecast diverges >30% from STLY (potential calibration issue)
-   Output: grouped list with severity badge (info / warn / critical).
+   ASSISTANT — Floating chat widget with rule-based intent parsing.
+   Capabilities:
+   - Stats: OCC, ADR, RN, Revenue for a property/month/year-to-date
+   - Anomalies: scan all properties for floor hits, big RMES deviations, etc.
+   - Playbook search: look up explanations from the in-page Playbook
+   - Pricing/strategy: contextual suggestions for a given date/property
+   Storage: assistant_history_v1 (LOCAL, not synced) — last 50 messages.
+   Designed to run on local data only (no external API call).
    ===================================================================== */
-function _anomaliesScan(){
-  if (typeof BOOKINGS === 'undefined' || !BOOKINGS.length) return [];
-  const out = [];
+const ASSISTANT_HISTORY_KEY = 'assistant_history_v1';
+const ASSISTANT_MAX_HISTORY = 50;
+
+const ASSISTANT_PROPS = {
+  firenze:  { label: 'Firenze Suite',     keys: ['firenze','suite','firenze suite'] },
+  condotta: { label: 'Condotta 16',       keys: ['condotta','condotta 16','condotta16'] },
+  alfani:   { label: 'Palazzo Alfani',    keys: ['alfani','palazzo','palazzo alfani'] },
+  davids:   { label: 'Enis Guesthouse',   keys: ['davids','david\'s','david','enis','guesthouse'] },
+};
+
+const ASSISTANT_MONTHS_IT_EN = {
+  'gennaio':1,'febbraio':2,'marzo':3,'aprile':4,'maggio':5,'giugno':6,
+  'luglio':7,'agosto':8,'settembre':9,'ottobre':10,'novembre':11,'dicembre':12,
+  'january':1,'february':2,'march':3,'april':4,'may':5,'june':6,
+  'july':7,'august':8,'september':9,'october':10,'november':11,'december':12,
+  'jan':1,'feb':2,'mar':3,'apr':4,'jun':6,'jul':7,'aug':8,'sep':9,'sept':9,'oct':10,'nov':11,'dec':12,
+};
+
+function assistantLoadHistory(){
+  try {
+    const s = localStorage.getItem(ASSISTANT_HISTORY_KEY);
+    if (!s) return [];
+    const arr = JSON.parse(s);
+    return Array.isArray(arr) ? arr : [];
+  } catch(e){ return []; }
+}
+function assistantSaveHistory(hist){
+  try {
+    const trimmed = hist.slice(-ASSISTANT_MAX_HISTORY);
+    localStorage.setItem(ASSISTANT_HISTORY_KEY, JSON.stringify(trimmed));
+  } catch(e){}
+}
+
+function assistantParseQuery(q){
+  const lower = q.toLowerCase().trim();
+  // Identify property
+  let property = null;
+  for (const sk in ASSISTANT_PROPS){
+    for (const key of ASSISTANT_PROPS[sk].keys){
+      if (lower.indexOf(key) >= 0){ property = sk; break; }
+    }
+    if (property) break;
+  }
+  // Identify month
+  let month = null;
+  for (const mName in ASSISTANT_MONTHS_IT_EN){
+    if (lower.indexOf(mName) >= 0){ month = ASSISTANT_MONTHS_IT_EN[mName]; break; }
+  }
+  // Identify year
+  const yearMatch = lower.match(/\b(20\d{2})\b/);
+  const year = yearMatch ? parseInt(yearMatch[1]) : null;
+  // Identify next/last
+  const isNext = /\b(next|prossimo|prossima)\b/.test(lower);
+  const isLast = /\b(last|scorso|scorsa|previous|past)\b/.test(lower);
+  const isToday = /\b(today|oggi)\b/.test(lower);
+  const isYtd = /\b(ytd|year[- ]to[- ]date)\b/.test(lower);
+  // Identify intent type
+  let intent = 'unknown';
+  if (/\b(anomal|incongru|problem|issue|check|controll)/.test(lower)) intent = 'anomalies';
+  else if (/\b(adr|tariff|prezzo medio|average price|average rate|prezzi medi)/.test(lower)) intent = 'stat_adr';
+  else if (/\b(occ|occupanc|occupazion|fill)/.test(lower)) intent = 'stat_occ';
+  else if (/\b(rn|room.?night|notti vendute|nights sold|stay night)/.test(lower)) intent = 'stat_rn';
+  else if (/\b(revenue|fatturat|incass|ricav)/.test(lower)) intent = 'stat_revenue';
+  else if (/\b(strategy|strategia|consigl|advice|suggest|recommend|alza|abbass|raise|lower|cosa fare|what should)/.test(lower)) intent = 'strategy';
+  else if (/\b(floor|anchor|cap|markup|playbook|how does|come funziona|spiega|explain|cosa è|what is|cosa significa|qual è)/.test(lower)) intent = 'playbook';
+  else if (/\b(hello|hi|ciao|salve|hey)/.test(lower)) intent = 'greet';
+  else if (/\b(help|aiuto|che cosa puoi|what can you)/.test(lower)) intent = 'help';
+  return { intent, property, month, year, isNext, isLast, isToday, isYtd, raw: q };
+}
+
+function _assistantResolveMonthYear(parsed){
+  // Returns {year, month, label} from parsed.month/year/isNext.
+  const today = new Date();
+  let y = parsed.year, m = parsed.month;
+  if (parsed.isNext && !m){
+    const next = new Date(today.getFullYear(), today.getMonth()+1, 1);
+    return { year: next.getFullYear(), month: next.getMonth()+1, label: ASSISTANT_MONTH_NAMES[next.getMonth()] + ' ' + next.getFullYear() };
+  }
+  if (parsed.isLast && !m){
+    const prev = new Date(today.getFullYear(), today.getMonth()-1, 1);
+    return { year: prev.getFullYear(), month: prev.getMonth()+1, label: ASSISTANT_MONTH_NAMES[prev.getMonth()] + ' ' + prev.getFullYear() };
+  }
+  if (m){
+    if (!y){
+      // Pick the closest future occurrence of this month
+      const currY = today.getFullYear();
+      const currM = today.getMonth() + 1;
+      y = m < currM ? currY + 1 : currY;
+    }
+    return { year: y, month: m, label: ASSISTANT_MONTH_NAMES[m-1] + ' ' + y };
+  }
+  // Default: current month
+  return { year: today.getFullYear(), month: today.getMonth()+1, label: ASSISTANT_MONTH_NAMES[today.getMonth()] + ' ' + today.getFullYear() + ' (current)' };
+}
+
+const ASSISTANT_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function _assistantPropList(parsed){
+  // If property specified, only that one; otherwise all 4.
+  if (parsed.property) return [parsed.property];
+  return ['firenze','condotta','alfani','davids'];
+}
+
+function _assistantPropCapacity(sk){
+  // Total rooms per property (used for OCC denominator)
+  const rooms = (CFG && CFG.structures && CFG.structures[sk] && CFG.structures[sk].rooms) ? CFG.structures[sk].rooms : null;
+  if (!rooms) return 1;
+  let n = 0;
+  for (const r in rooms) n += rooms[r];
+  return n || 1;
+}
+
+function _assistantComputeMonthStats(sk, year, month){
+  // Compute OCC, ADR, RN, Revenue for a property/year/month from BOOKINGS.
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const capRoom = _assistantPropCapacity(sk);
+  const capTotal = capRoom * daysInMonth;
+  let rn = 0, revenue = 0;
+  for (const b of BOOKINGS){
+    if (b.structKey !== sk) continue;
+    if (b.dCancel) continue;
+    if (!b.dIn) continue;
+    // Per ogni notte
+    const notti = b.notti || 1;
+    for (let i = 0; i < notti; i++){
+      const sd = new Date(b.dIn); sd.setDate(b.dIn.getDate() + i);
+      if (sd.getFullYear() !== year) continue;
+      if (sd.getMonth() + 1 !== month) continue;
+      rn++;
+      const rev = (b.revPerNight != null && isFinite(b.revPerNight)) ? b.revPerNight : 0;
+      revenue += rev;
+    }
+  }
+  const occ = capTotal > 0 ? (rn / capTotal) : 0;
+  const adr = rn > 0 ? (revenue / rn) : 0;
+  return { rn, revenue, occ, adr, capTotal, daysInMonth, capRoom };
+}
+
+function assistantHandleStats(parsed, metric){
+  const { year, month, label } = _assistantResolveMonthYear(parsed);
+  const props = _assistantPropList(parsed);
+  // Build table
+  const metricLabel = {stat_occ:'OCC %', stat_adr:'ADR', stat_rn:'RN sold', stat_revenue:'Revenue'}[metric];
+  let h = `<h4>${metricLabel} · ${label}</h4>`;
+  h += '<table><thead><tr><th>Property</th><th class="num">RN</th><th class="num">OCC</th><th class="num">ADR</th><th class="num">Revenue</th></tr></thead><tbody>';
+  let totalRn = 0, totalRev = 0, totalCap = 0;
+  for (const sk of props){
+    const s = _assistantComputeMonthStats(sk, year, month);
+    totalRn += s.rn;
+    totalRev += s.revenue;
+    totalCap += s.capTotal;
+    h += `<tr><td>${ASSISTANT_PROPS[sk].label}</td><td class="num">${s.rn}</td><td class="num">${(s.occ*100).toFixed(0)}%</td><td class="num">€${Math.round(s.adr)}</td><td class="num">€${Math.round(s.revenue).toLocaleString('en-GB')}</td></tr>`;
+  }
+  if (props.length > 1){
+    const totalOcc = totalCap > 0 ? totalRn/totalCap : 0;
+    const totalAdr = totalRn > 0 ? totalRev/totalRn : 0;
+    h += `<tr style="border-top:2px solid #ccc;font-weight:700"><td>All</td><td class="num">${totalRn}</td><td class="num">${(totalOcc*100).toFixed(0)}%</td><td class="num">€${Math.round(totalAdr)}</td><td class="num">€${Math.round(totalRev).toLocaleString('en-GB')}</td></tr>`;
+  }
+  h += '</tbody></table>';
+  h += '<div class="small" style="margin-top:6px">Source: BOOKINGS, net of OTA markup (revPerNight). Cancellations excluded.</div>';
+  return h;
+}
+
+function assistantHandleAnomalies(parsed){
+  // Compact inline anomaly scan: limited to 90 days forward, all properties.
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
   const TODAY_N = TODAY.getFullYear()*10000 + (TODAY.getMonth()+1)*100 + TODAY.getDate();
-  const properties = ['firenze','condotta','alfani','davids'];
-  const propLabel = {firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse'};
-
-  for (const sk of properties){
+  const props = parsed.property ? [parsed.property] : ['firenze','condotta','alfani','davids'];
+  const anomalies = [];
+  for (const sk of props){
     const baseRTKey = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
     if (!baseRTKey) continue;
     const floor = (typeof fp_getFloor === 'function') ? fp_getFloor(sk) : 100;
     const anchor = (typeof fp_getBasePrice === 'function') ? fp_getBasePrice(sk) : null;
-    // Calcolo RMES map per i prossimi 90 giorni
     let map = null;
     try { map = computeRMESPriceMap(sk, TODAY_N, 90); } catch(e){ continue; }
     if (!map) continue;
-    // Sort ymds
     const ymds = Object.keys(map).map(Number).sort();
-    let negPickupDays = 0;
     for (const ymd of ymds){
       const entry = map[ymd];
       if (!entry) continue;
       const y = Math.floor(ymd/10000), m = Math.floor((ymd%10000)/100), d = ymd%100;
-      const iso = `${y}-${pad2(m)}-${pad2(d)}`;
       const dateLabel = `${pad2(d)}/${pad2(m)}/${y}`;
-      // Last update = reference price (= base + override + accepted)
       const lu = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sk, ymd) : null;
-      // RMES suggested
-      const rmesObj = (entry.rmesTargetOnBaseByRT && entry.rmesTargetOnBaseByRT[baseRTKey])
-        ? entry.rmesTargetOnBaseByRT[baseRTKey] : null;
+      const rmesObj = (entry.rmesTargetOnBaseByRT && entry.rmesTargetOnBaseByRT[baseRTKey]) ? entry.rmesTargetOnBaseByRT[baseRTKey] : null;
       const rmesSugg = rmesObj ? rmesObj.price : (entry.rmesSuggestedByRT && entry.rmesSuggestedByRT[baseRTKey]);
       const rmesAtCap = rmesObj ? rmesObj.atCap : null;
-      // Check 1: Floor hit
       if (rmesSugg != null && lu != null && rmesSugg <= floor + 0.5 && rmesAtCap === 'floor'){
-        out.push({
-          severity: 'warn',
-          property: sk,
-          propertyLabel: propLabel[sk],
-          date: dateLabel,
-          iso,
-          title: 'RMES clamped to Floor Rate',
-          detail: `RMES would suggest a lower price but the Floor Rate (€${floor}) is preventing it. Active price €${Math.round(lu)} · suggestion €${Math.round(rmesSugg)}.`,
-          action: 'Review the floor: maybe lower it if you want to accept this rate, or check the factors that are pulling the price down (Online Pricing, Pace, Demand).'
-        });
+        anomalies.push({sev:'warn', sk, dateLabel, t:`Floor hit on ${ASSISTANT_PROPS[sk].label}`, d:`Active €${Math.round(lu)} · RMES wants below floor €${floor}`});
       }
-      // Check 2: Last update below floor (rare, should not happen)
       if (lu != null && lu < floor - 0.5){
-        out.push({
-          severity: 'critical',
-          property: sk,
-          propertyLabel: propLabel[sk],
-          date: dateLabel,
-          iso,
-          title: 'Active price BELOW Floor Rate',
-          detail: `Last update is €${Math.round(lu)}, below the floor €${floor}. This is a manual override that bypasses the floor.`,
-          action: 'Check the manual override on this day — it might be intentional (e.g. promo) or a typo.'
-        });
+        anomalies.push({sev:'critical', sk, dateLabel, t:`Below floor on ${ASSISTANT_PROPS[sk].label}`, d:`Override €${Math.round(lu)} < floor €${floor}`});
       }
-      // Check 3: RMES diverges >15% from Last update
       if (rmesSugg != null && lu != null && lu > 0){
         const devPct = ((rmesSugg - lu) / lu) * 100;
-        if (Math.abs(devPct) >= 15){
-          out.push({
-            severity: Math.abs(devPct) >= 25 ? 'critical' : 'info',
-            property: sk,
-            propertyLabel: propLabel[sk],
-            date: dateLabel,
-            iso,
-            title: `RMES suggests ${devPct >= 0 ? 'raising' : 'lowering'} by ${Math.abs(devPct).toFixed(0)}%`,
-            detail: `Active price €${Math.round(lu)} · RMES suggestion €${Math.round(rmesSugg)} (${devPct >= 0 ? '+' : ''}${devPct.toFixed(1)}%).`,
-            action: devPct >= 0
-              ? 'Pricing engine sees strong demand or low competition: consider raising.'
-              : 'Pricing engine sees weak demand or aggressive competitors: consider lowering or investigating.'
-          });
+        if (Math.abs(devPct) >= 20){
+          anomalies.push({sev: Math.abs(devPct)>=30?'critical':'info', sk, dateLabel, t:`RMES ${devPct>=0?'+':''}${devPct.toFixed(0)}% on ${ASSISTANT_PROPS[sk].label}`, d:`Active €${Math.round(lu)} → suggested €${Math.round(rmesSugg)}`});
         }
       }
-      // Check 4: Active price too far from Anchor (±70% guard-rail)
       if (lu != null && anchor != null && anchor > 0){
         const ratio = lu / anchor;
         if (ratio < 0.50 || ratio > 1.50){
-          out.push({
-            severity: 'warn',
-            property: sk,
-            propertyLabel: propLabel[sk],
-            date: dateLabel,
-            iso,
-            title: `Active price far from Anchor (×${ratio.toFixed(2)})`,
-            detail: `Last update €${Math.round(lu)} is ${ratio < 1 ? 'much below' : 'much above'} the Anchor (€${anchor}). Ratio ${ratio.toFixed(2)}× — outside the ±50% guard-rail.`,
-            action: 'If this is a manual override, double-check. Otherwise review the Anchor Price in tab RMES → ⚡ Base Price.'
-          });
+          anomalies.push({sev:'warn', sk, dateLabel, t:`Far from anchor on ${ASSISTANT_PROPS[sk].label}`, d:`Active €${Math.round(lu)} vs anchor €${anchor} (×${ratio.toFixed(2)})`});
         }
       }
     }
   }
-  // Sort by severity (critical > warn > info), then by property, then by date
-  const sevOrder = { critical:0, warn:1, info:2 };
-  out.sort((a, b) => {
-    const sa = sevOrder[a.severity], sb = sevOrder[b.severity];
-    if (sa !== sb) return sa - sb;
-    if (a.property !== b.property) return a.property.localeCompare(b.property);
-    return a.iso.localeCompare(b.iso);
+  const sevOrder = {critical:0, warn:1, info:2};
+  anomalies.sort((a,b)=>{
+    const sa=sevOrder[a.sev], sb=sevOrder[b.sev];
+    if (sa!==sb) return sa-sb;
+    return a.dateLabel.localeCompare(b.dateLabel);
   });
-  return out;
-}
-
-function renderAnomalies(){
-  const wrap = document.getElementById('anomalies-body');
-  if (!wrap) return;
-  const anomalies = _anomaliesScan();
-  // Conta per severity
-  const counts = { critical:0, warn:0, info:0 };
-  for (const a of anomalies){ counts[a.severity]++; }
-  let h = '';
-  // Summary KPI
-  h += '<div style="display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap">';
-  h += `<div style="flex:1;min-width:140px;padding:12px 16px;background:rgba(168,59,59,.10);border:1px solid #a83b3b;border-radius:6px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#7a2c2c;font-weight:700">Critical</div><div style="font-size:24px;font-weight:700;color:#a83b3b;font-family:'DM Mono',monospace">${counts.critical}</div></div>`;
-  h += `<div style="flex:1;min-width:140px;padding:12px 16px;background:rgba(196,131,59,.10);border:1px solid #c4823b;border-radius:6px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#7a4f1c;font-weight:700">Warning</div><div style="font-size:24px;font-weight:700;color:#c4823b;font-family:'DM Mono',monospace">${counts.warn}</div></div>`;
-  h += `<div style="flex:1;min-width:140px;padding:12px 16px;background:rgba(59,107,154,.10);border:1px solid #3b6b9a;border-radius:6px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#2a4d70;font-weight:700">Info</div><div style="font-size:24px;font-weight:700;color:#3b6b9a;font-family:'DM Mono',monospace">${counts.info}</div></div>`;
-  h += `<div style="flex:1;min-width:140px;padding:12px 16px;background:rgba(74,124,89,.10);border:1px solid #4a7c59;border-radius:6px"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#2c5a3c;font-weight:700">Total</div><div style="font-size:24px;font-weight:700;color:#4a7c59;font-family:'DM Mono',monospace">${anomalies.length}</div></div>`;
-  h += '</div>';
+  const counts = {critical:0,warn:0,info:0};
+  for (const a of anomalies) counts[a.sev]++;
   if (anomalies.length === 0){
-    h += '<div style="padding:40px;text-align:center;color:#888;font-style:italic;background:#f5f9f3;border:1px solid #a6c7a8;border-radius:6px"><div style="font-size:32px;color:#4a7c59;margin-bottom:8px">✓</div><div style="font-size:14px;color:#2c5a3c;font-weight:600">No anomalies detected.</div><div style="margin-top:4px">All properties look consistent for the next 90 days.</div></div>';
-  } else {
-    // Group by property
-    const byProp = {};
-    for (const a of anomalies){
-      if (!byProp[a.property]) byProp[a.property] = [];
-      byProp[a.property].push(a);
+    return `<h4>Anomaly scan · 90 days forward</h4><p><span class="pill-sev success">OK</span>No anomalies detected. Everything looks consistent.</p>`;
+  }
+  let h = `<h4>Anomaly scan · 90 days forward</h4>`;
+  h += `<p class="small">Found <b>${anomalies.length}</b> issues: `;
+  if (counts.critical) h += `<span class="pill-sev critical">${counts.critical}</span>`;
+  if (counts.warn) h += `<span class="pill-sev warn">${counts.warn}</span>`;
+  if (counts.info) h += `<span class="pill-sev info">${counts.info}</span>`;
+  h += '</p>';
+  h += '<ul style="margin:0;padding-left:18px;font-size:12px">';
+  const maxShow = 15;
+  for (let i = 0; i < Math.min(maxShow, anomalies.length); i++){
+    const a = anomalies[i];
+    h += `<li><span class="pill-sev ${a.sev}">${a.sev.toUpperCase()}</span><code>${a.dateLabel}</code> · ${a.t}<br><span class="small">${a.d}</span></li>`;
+  }
+  h += '</ul>';
+  if (anomalies.length > maxShow){
+    h += `<p class="small">…and ${anomalies.length - maxShow} more. Refine with property or date in your question.</p>`;
+  }
+  return h;
+}
+
+function assistantHandlePlaybook(parsed){
+  // Search the Playbook DOM for matching text.
+  const q = parsed.raw.toLowerCase().replace(/[?.,!]/g,'').trim();
+  const stopwords = new Set(['what','is','the','a','an','how','does','do','cosa','è','come','funziona','un','una','il','la','di','del','dei','che','si','what\'s','che','spiega','explain']);
+  const words = q.split(/\s+/).filter(w => w.length >= 3 && !stopwords.has(w));
+  if (words.length === 0){
+    return `<h4>Playbook search</h4><p>Please ask a more specific question, e.g. "What is the floor rate?" or "How does Pace Trend work?"</p>`;
+  }
+  // Iterate over <details> blocks with id starting with instr-
+  const blocks = document.querySelectorAll('details[id^="instr-"]');
+  const matches = [];
+  blocks.forEach(b => {
+    const text = (b.textContent || '').toLowerCase();
+    let score = 0;
+    for (const w of words){
+      const idx = text.indexOf(w);
+      if (idx >= 0) score++;
     }
-    for (const prop of Object.keys(byProp)){
-      const items = byProp[prop];
-      h += `<div style="margin-bottom:14px"><h3 style="margin:8px 0;color:#5a3a14;border-bottom:2px solid #c4823b;padding-bottom:4px">${items[0].propertyLabel} <span style="color:var(--ink-3);font-weight:400;font-size:13px">(${items.length})</span></h3>`;
-      h += '<div style="display:flex;flex-direction:column;gap:8px">';
-      for (const a of items){
-        const sevColor = a.severity === 'critical' ? '#a83b3b' : (a.severity === 'warn' ? '#c4823b' : '#3b6b9a');
-        const sevBg = a.severity === 'critical' ? 'rgba(168,59,59,.06)' : (a.severity === 'warn' ? 'rgba(196,131,59,.06)' : 'rgba(59,107,154,.06)');
-        const sevLabel = a.severity.toUpperCase();
-        h += `<div style="padding:10px 14px;background:${sevBg};border-left:3px solid ${sevColor};border-radius:4px">`;
-        h += `<div style="display:flex;justify-content:space-between;gap:14px;align-items:baseline;flex-wrap:wrap">`;
-        h += `<div><span style="background:${sevColor};color:#fff;padding:2px 7px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.04em;margin-right:8px">${sevLabel}</span><b>${a.title}</b> <span style="color:var(--ink-3);font-family:'DM Mono',monospace;font-size:11.5px;margin-left:6px">${a.date}</span></div>`;
-        h += `</div>`;
-        h += `<div style="margin-top:4px;font-size:12.5px;color:#444;line-height:1.55">${a.detail}</div>`;
-        if (a.action){
-          h += `<div style="margin-top:4px;font-size:11.5px;color:#666;font-style:italic">💡 ${a.action}</div>`;
-        }
-        h += '</div>';
+    if (score > 0){
+      const title = b.querySelector('summary') ? (b.querySelector('summary').textContent || '').trim() : b.id;
+      // Get a snippet around the first match
+      const firstW = words.find(w => text.indexOf(w) >= 0);
+      const firstIdx = firstW ? text.indexOf(firstW) : 0;
+      const startIdx = Math.max(0, firstIdx - 80);
+      const endIdx = Math.min(text.length, firstIdx + 220);
+      let snippet = text.substring(startIdx, endIdx).replace(/\s+/g,' ').trim();
+      if (startIdx > 0) snippet = '…' + snippet;
+      if (endIdx < text.length) snippet = snippet + '…';
+      // Highlight the matched words
+      for (const w of words){
+        const re = new RegExp('('+w.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')+')', 'gi');
+        snippet = snippet.replace(re, '<b>$1</b>');
       }
-      h += '</div></div>';
+      matches.push({ id: b.id, title, snippet, score });
+    }
+  });
+  matches.sort((a,b) => b.score - a.score);
+  if (matches.length === 0){
+    return `<h4>Playbook search</h4><p>No match found in the Playbook for: <i>"${parsed.raw}"</i>. Try one of: floor rate, anchor, RMES factors, base price, target growth, OTA markup.</p>`;
+  }
+  let h = '<h4>Playbook search</h4>';
+  h += `<p class="small">Top ${Math.min(3, matches.length)} matches:</p>`;
+  for (let i = 0; i < Math.min(3, matches.length); i++){
+    const m = matches[i];
+    h += `<div style="margin-bottom:8px;padding:6px 9px;background:#f5f5f0;border-left:3px solid #c4823b;border-radius:3px">`;
+    h += `<div style="font-weight:700;font-size:12px;color:#5a3a14">${m.title}</div>`;
+    h += `<div class="small" style="margin-top:3px;line-height:1.4">${m.snippet}</div>`;
+    h += `</div>`;
+  }
+  h += `<p class="small">Open the Playbook tab for the full text.</p>`;
+  return h;
+}
+
+function assistantHandleStrategy(parsed){
+  // Contextual strategy advice based on RMES output for a property/month.
+  const { year, month, label } = _assistantResolveMonthYear(parsed);
+  const props = _assistantPropList(parsed);
+  const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+  const TODAY_N = TODAY.getFullYear()*10000 + (TODAY.getMonth()+1)*100 + TODAY.getDate();
+  let h = `<h4>Strategy · ${label}</h4>`;
+  const insights = [];
+  for (const sk of props){
+    const baseRTKey = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
+    if (!baseRTKey) continue;
+    const s = _assistantComputeMonthStats(sk, year, month);
+    // Map RMES suggestions for the month
+    let map = null;
+    try { map = computeRMESPriceMap(sk, TODAY_N, 90); } catch(e){}
+    let sumLu = 0, sumRmes = 0, n = 0, floorHits = 0;
+    if (map){
+      for (const ymd of Object.keys(map).map(Number)){
+        const y = Math.floor(ymd/10000), m = Math.floor((ymd%10000)/100);
+        if (y !== year || m !== month) continue;
+        const entry = map[ymd];
+        const lu = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sk, ymd) : null;
+        const rmesObj = (entry.rmesTargetOnBaseByRT && entry.rmesTargetOnBaseByRT[baseRTKey]) ? entry.rmesTargetOnBaseByRT[baseRTKey] : null;
+        const rmesSugg = rmesObj ? rmesObj.price : null;
+        if (lu != null && rmesSugg != null){
+          sumLu += lu; sumRmes += rmesSugg; n++;
+          if (rmesObj && rmesObj.atCap === 'floor') floorHits++;
+        }
+      }
+    }
+    const avgLu = n > 0 ? sumLu/n : null;
+    const avgRmes = n > 0 ? sumRmes/n : null;
+    const avgDev = (avgLu != null && avgLu > 0 && avgRmes != null) ? ((avgRmes - avgLu) / avgLu * 100) : null;
+    insights.push({ sk, occ:s.occ, adr:s.adr, rn:s.rn, avgLu, avgRmes, avgDev, floorHits, daysScanned: n });
+  }
+  // Render
+  if (insights.length === 0) return h + '<p>No data available for this period.</p>';
+  for (const i of insights){
+    const label = ASSISTANT_PROPS[i.sk].label;
+    h += `<div style="margin-bottom:10px;padding:8px 10px;background:#fafaf5;border-left:3px solid #3b6b9a;border-radius:3px">`;
+    h += `<div style="font-weight:700;font-size:12.5px;color:#2a4d70;margin-bottom:4px">${label}</div>`;
+    const occPct = (i.occ * 100).toFixed(0);
+    const occBadge = i.occ >= 0.80 ? 'success' : (i.occ >= 0.50 ? 'info' : 'warn');
+    h += `<div class="small">OTB so far: <span class="pill-sev ${occBadge}">${occPct}%</span> OCC · ${i.rn} RN · ADR €${Math.round(i.adr || 0)}</div>`;
+    if (i.avgLu != null){
+      h += `<div class="small" style="margin-top:3px">Avg Last Update €${Math.round(i.avgLu)} · Avg RMES suggest €${Math.round(i.avgRmes)} (${i.avgDev>=0?'+':''}${i.avgDev.toFixed(1)}%)</div>`;
+    }
+    // Heuristic advice
+    const advice = [];
+    if (i.occ >= 0.85){
+      advice.push('💡 OTB very high — consider <b>raising prices</b> on remaining days to maximize revenue.');
+    } else if (i.occ >= 0.65 && i.avgDev != null && i.avgDev > 5){
+      advice.push('💡 OCC healthy, RMES wants to push up. <b>Accept RMES</b> via tab Export Pricing for a quick lift.');
+    } else if (i.occ < 0.40 && i.avgDev != null && i.avgDev < -5){
+      advice.push('💡 OCC weak and RMES is signaling to lower. Check competitors & demand; consider a <b>last-minute push</b> via LMF.');
+    } else if (i.avgDev != null && Math.abs(i.avgDev) <= 3){
+      advice.push('💡 Active prices are well aligned with RMES — no urgent action needed.');
+    } else {
+      advice.push('💡 Mixed signals — review the day-by-day in <b>tab Sell Strategy</b> for the month.');
+    }
+    if (i.floorHits >= 3){
+      advice.push(`⚠ Floor was hit on <b>${i.floorHits} days</b> this month. Consider lowering Floor or reviewing the negative factors (Online Pricing, Pace).`);
+    }
+    for (const a of advice){
+      h += `<div style="margin-top:5px;padding:4px 8px;background:#fff;border-radius:3px;font-size:12px">${a}</div>`;
+    }
+    h += `</div>`;
+  }
+  return h;
+}
+
+function assistantHandle(query){
+  const parsed = assistantParseQuery(query);
+  if (parsed.intent === 'greet'){
+    return `<p>Hi! I can help with stats (OCC/ADR/RN), anomaly checks, Playbook lookups and pricing strategy. Try: <i>"any anomalies?"</i> · <i>"OCC August Firenze"</i> · <i>"strategy next month"</i></p>`;
+  }
+  if (parsed.intent === 'help'){
+    return `<h4>What I can do</h4>
+      <ul>
+        <li><b>Stats</b> — e.g. <i>"ADR July Alfani"</i>, <i>"OCC next month"</i>, <i>"revenue Firenze August"</i></li>
+        <li><b>Anomalies</b> — e.g. <i>"any anomalies?"</i>, <i>"check Condotta"</i></li>
+        <li><b>Playbook</b> — e.g. <i>"what is the floor rate?"</i>, <i>"how does Pace Trend work?"</i></li>
+        <li><b>Strategy</b> — e.g. <i>"strategy August Firenze"</i>, <i>"should I raise prices?"</i></li>
+      </ul>
+      <p class="small">I work on local data only — your data stays in this browser.</p>`;
+  }
+  if (parsed.intent === 'anomalies') return assistantHandleAnomalies(parsed);
+  if (parsed.intent === 'stat_occ') return assistantHandleStats(parsed, 'stat_occ');
+  if (parsed.intent === 'stat_adr') return assistantHandleStats(parsed, 'stat_adr');
+  if (parsed.intent === 'stat_rn') return assistantHandleStats(parsed, 'stat_rn');
+  if (parsed.intent === 'stat_revenue') return assistantHandleStats(parsed, 'stat_revenue');
+  if (parsed.intent === 'strategy') return assistantHandleStrategy(parsed);
+  if (parsed.intent === 'playbook') return assistantHandlePlaybook(parsed);
+  return `<p>I'm not sure what you're asking. Try one of:</p>
+    <ul>
+      <li>📊 <i>"OCC July Firenze"</i> · <i>"ADR next month"</i></li>
+      <li>⚠ <i>"any anomalies?"</i></li>
+      <li>📖 <i>"what is the floor rate?"</i></li>
+      <li>💡 <i>"strategy August"</i></li>
+    </ul>
+    <p class="small">Type "help" for the full list of commands.</p>`;
+}
+
+function assistantAppendMessage(role, html){
+  const messagesEl = document.getElementById('chat-body');
+  if (!messagesEl) return;
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  // Inline style (since CSS for the existing chat is generic)
+  if (role === 'user'){
+    div.style.cssText = 'align-self:flex-end;background:linear-gradient(135deg,#3b6b9a,#2a4d70);color:#fff;padding:9px 13px;border-radius:12px;border-bottom-right-radius:4px;max-width:88%;font-size:13px;line-height:1.5;word-wrap:break-word';
+    div.textContent = html;
+  } else {
+    div.style.cssText = 'align-self:flex-start;background:#fff;color:var(--ink);padding:9px 13px;border-radius:12px;border-bottom-left-radius:4px;max-width:88%;font-size:13px;line-height:1.5;border:1px solid var(--line);word-wrap:break-word';
+    div.innerHTML = html;
+  }
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function assistantSubmit(query){
+  query = (query || '').trim();
+  if (!query) return;
+  assistantAppendMessage('user', query);
+  const hist = assistantLoadHistory();
+  hist.push({ role: 'user', text: query, ts: Date.now() });
+  // Typing indicator
+  const messagesEl = document.getElementById('chat-body');
+  const typing = document.createElement('div');
+  typing.className = 'chat-typing';
+  typing.style.cssText = 'align-self:flex-start;padding:8px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;font-size:12px;color:var(--ink-3);font-style:italic';
+  typing.textContent = 'Thinking •••';
+  messagesEl.appendChild(typing);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  setTimeout(() => {
+    try { typing.remove(); } catch(e){}
+    let answerHtml;
+    try { answerHtml = assistantHandle(query); }
+    catch(e){ answerHtml = '<p>Sorry, I hit an error processing that question.</p><p class="small">' + (e.message || e) + '</p>'; }
+    assistantAppendMessage('bot', answerHtml);
+    hist.push({ role: 'bot', html: answerHtml, ts: Date.now() });
+    assistantSaveHistory(hist);
+  }, 280);
+}
+
+// Suggested questions shown above the input
+const ASSISTANT_SUGGESTIONS = [
+  'Any anomalies?',
+  'ADR July Firenze',
+  'OCC next month',
+  'Revenue August',
+  'Strategy Condotta',
+  'What is the floor rate?',
+  'How does Pace work?',
+  'Help',
+];
+
+function assistantInit(){
+  const fab = document.getElementById('chat-fab');
+  const panel = document.getElementById('chat-panel');
+  const closeBtn = document.getElementById('chat-close');
+  const sendBtn = document.getElementById('chat-send');
+  const input = document.getElementById('chat-input');
+  const messagesEl = document.getElementById('chat-body');
+  const suggEl = document.getElementById('chat-suggestions');
+  if (!fab || !panel) return;
+  // Populate suggestions
+  if (suggEl){
+    suggEl.innerHTML = ASSISTANT_SUGGESTIONS.map(s =>
+      `<button class="chat-sugg" data-q="${s}" style="font-size:11.5px;background:#fff;border:1px solid var(--line);padding:5px 10px;border-radius:14px;cursor:pointer;color:var(--ink-2)">${s}</button>`
+    ).join('');
+    suggEl.querySelectorAll('.chat-sugg').forEach(b => {
+      b.addEventListener('click', () => assistantSubmit(b.dataset.q || b.textContent));
+    });
+  }
+  // Update context label
+  const ctxEl = document.getElementById('chat-ctx');
+  if (ctxEl){
+    const propMap = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', both:'All properties' };
+    const ctx = propMap[CURRENT_STRUCT] || CURRENT_STRUCT;
+    ctxEl.textContent = 'Context: ' + ctx;
+  }
+  // Toggle open/close
+  if (!fab._wired){
+    fab._wired = true;
+    fab.addEventListener('click', () => {
+      panel.classList.toggle('open');
+      if (panel.classList.contains('open')){
+        // Refresh context on each open
+        if (ctxEl){
+          const propMap = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', both:'All properties' };
+          ctxEl.textContent = 'Context: ' + (propMap[CURRENT_STRUCT] || CURRENT_STRUCT);
+        }
+        setTimeout(() => { try { input.focus(); } catch(e){} }, 50);
+      }
+    });
+  }
+  if (closeBtn && !closeBtn._wired){
+    closeBtn._wired = true;
+    closeBtn.addEventListener('click', () => panel.classList.remove('open'));
+  }
+  // Restore history on first init
+  if (messagesEl && messagesEl.children.length === 0){
+    const hist = assistantLoadHistory();
+    if (hist.length === 0){
+      const welcome = document.createElement('div');
+      welcome.style.cssText = 'align-self:flex-start;background:linear-gradient(135deg,#fff,#f5f9fc);color:var(--ink);padding:11px 14px;border-radius:12px;border-bottom-left-radius:4px;max-width:90%;font-size:13px;line-height:1.5;border:1px solid #bcdfe8';
+      welcome.innerHTML = `<div style="font-weight:700;color:#2a4d70;margin-bottom:5px">👋 Welcome</div><p style="margin:0">I'm your local data assistant. Ask about <b>OCC/ADR/RN</b>, run an <b>anomaly check</b>, look up the <b>Playbook</b>, or get <b>strategy advice</b>. Try a suggestion below or type your question.</p>`;
+      messagesEl.appendChild(welcome);
+    } else {
+      for (const m of hist){
+        const div = document.createElement('div');
+        if (m.role === 'user'){
+          div.style.cssText = 'align-self:flex-end;background:linear-gradient(135deg,#3b6b9a,#2a4d70);color:#fff;padding:9px 13px;border-radius:12px;border-bottom-right-radius:4px;max-width:88%;font-size:13px;line-height:1.5;word-wrap:break-word';
+          div.textContent = m.text;
+        } else {
+          div.style.cssText = 'align-self:flex-start;background:#fff;color:var(--ink);padding:9px 13px;border-radius:12px;border-bottom-left-radius:4px;max-width:88%;font-size:13px;line-height:1.5;border:1px solid var(--line);word-wrap:break-word';
+          div.innerHTML = m.html || '';
+        }
+        messagesEl.appendChild(div);
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight;
     }
   }
-  wrap.innerHTML = h;
-  // Re-scan button
-  const refreshBtn = document.getElementById('anomaly-refresh');
-  if (refreshBtn && !refreshBtn._wired){
-    refreshBtn._wired = true;
-    refreshBtn.addEventListener('click', () => renderAnomalies());
+  // Send
+  if (sendBtn && !sendBtn._wired){
+    sendBtn._wired = true;
+    sendBtn.addEventListener('click', () => {
+      const q = input.value;
+      input.value = '';
+      assistantSubmit(q);
+    });
+  }
+  // Enter key
+  if (input && !input._wired){
+    input._wired = true;
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        const q = input.value;
+        input.value = '';
+        assistantSubmit(q);
+      }
+    });
   }
 }
 
+// Alias for existing _boot() call
+function initChat(){ assistantInit(); }
 
 function renderCheckUpdates(){
   const body = document.getElementById('checks-body');
@@ -17405,194 +17781,6 @@ function niceCeil(v){
   return nice * Math.pow(10,exp);
 }
 /* ============================================================
-   CHAT AI - rule-based revenue assistant
-   ============================================================ */
-const CHAT_SUGG = [
-  'July revenue',
-  'Top channel Firenze',
-  'ADR Suite',
-  'Pickup last week',
-  'Budget gap Condotta',
-  'Change vs STLY',
-];
-function initChat(){
-  document.getElementById('chat-suggestions').innerHTML = CHAT_SUGG.map(s=>`<button class="chat-sugg">${s}</button>`).join('');
-  document.querySelectorAll('.chat-sugg').forEach(b=>{
-    b.addEventListener('click', ()=>{ document.getElementById('chat-input').value = b.textContent; sendChat(); });
-  });
-  document.getElementById('chat-fab').addEventListener('click', ()=>{
-    const p = document.getElementById('chat-panel');
-    p.classList.toggle('open');
-    if (p.classList.contains('open') && !document.getElementById('chat-body').children.length){
-      addBotMsg(welcomeMsg());
-    }
-  });
-  document.getElementById('chat-close').addEventListener('click', ()=>{
-    document.getElementById('chat-panel').classList.remove('open');
-  });
-  document.getElementById('chat-send').addEventListener('click', sendChat);
-  document.getElementById('chat-input').addEventListener('keydown', e=>{
-    if (e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendChat(); }
-  });
-}
-function welcomeMsg(){
-  return `Hi! I'm your Revenue AI. I can analyze bookings, OTB, ADR, OCC, pickup, budget and channels.<br>
-  Current context: <b>${structLabel(CURRENT_STRUCT)}</b>.<br>
-  <span style="font-size:11.5px;color:#8a8a8a">You can force the property in the question: <i>"July revenue Firenze"</i>, <i>"budget gap Condotta"</i>, <i>"top channel both"</i>.</span><br>
-  Prova: <i>"revenue july", "top channel", "ADR by room type", "pickup", "budget gap", "vs STLY"</i>.`;
-}
-function addUserMsg(t){
-  const el = document.createElement('div'); el.className='msg user'; el.textContent=t;
-  const body = document.getElementById('chat-body'); body.appendChild(el); body.scrollTop = body.scrollHeight;
-}
-function addBotMsg(html){
-  const el = document.createElement('div'); el.className='msg bot'; el.innerHTML=html;
-  const body = document.getElementById('chat-body'); body.appendChild(el); body.scrollTop = body.scrollHeight;
-}
-function sendChat(){
-  const inp = document.getElementById('chat-input');
-  const q = inp.value.trim(); if (!q) return;
-  inp.value=''; addUserMsg(q);
-  setTimeout(()=>addBotMsg(answerChat(q)), 120);
-}
-/* Detect if user is asking about a specific structure.
-   Returns {sel, override} where override=true means the user explicitly
-   named a structure different from (or matching) CURRENT_STRUCT. */
-function detectStructInQuery(Q){
-  const reFs   = /\b(firenze\s*suite|firenze|fs)\b/;
-  const reC16  = /\b(condotta\s*16|condotta|c16)\b/;
-  const reBoth = /\b(entrambe|gruppo|tutte\s+le\s+strutture|both|tutte)\b/;
-  const hitFs   = reFs.test(Q);
-  const hitC16  = reC16.test(Q);
-  const hitBoth = reBoth.test(Q);
-  if (hitBoth) return { sel:'both', override: CURRENT_STRUCT!=='both' };
-  if (hitFs && !hitC16) return { sel:'firenze', override: CURRENT_STRUCT!=='firenze' };
-  if (hitC16 && !hitFs) return { sel:'condotta', override: CURRENT_STRUCT!=='condotta' };
-  if (hitFs && hitC16)  return { sel:'both',     override: CURRENT_STRUCT!=='both' };
-  return { sel: CURRENT_STRUCT, override:false };
-}
-function answerChat(q){
-  const Q = q.toLowerCase();
-  const det = detectStructInQuery(Q);
-  const sel = det.sel;
-  const A = aggOTBYearly(sel);
-  const overrideBadge = det.override
-    ? `<span style="display:inline-block;font-size:9.5px;background:#3b6b6b;color:#fff;padding:1px 6px;border-radius:8px;margin-left:6px;letter-spacing:.04em">FROM QUESTION</span>`
-    : '';
-  const ctx = `<div style="font-size:10.5px;color:#8a8a8a;margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">${structLabel(sel)}${overrideBadge}</div>`;
-  let monthHit = 0;
-  for (let i=0;i<12;i++){
-    const re = new RegExp('\\b' + CFG.monthsIT[i] + '\\b', 'i');
-    if (re.test(Q)) { monthHit = i+1; break; }
-  }
-  if (!monthHit){
-    for (let i=0;i<12;i++){
-      const re = new RegExp('\\b' + CFG.monthsITLong[i].toLowerCase() + '\\b', 'i');
-      if (re.test(Q)) { monthHit = i+1; break; }
-    }
-  }
-  if (monthHit>0){
-    const r = A.monthRows[monthHit-1];
-    return ctx + `<b>${CFG.monthsITLong[monthHit-1]} 2026</b><br>
-      Revenue OTB: <b>${fmtEUR(r.revC)}</b> (STLY ${fmtEUR(r.revP)}, ${fmtPctVar(r.dRevPct)})<br>
-      OCC: <b>${fmtPct(r.occC,1)}</b> (${fmtPctPP(r.dOcc)})<br>
-      ADR: <b>${fmtAdr(r.adrC)}</b> (${fmtPctVar(r.dAdrPct)})<br>
-      Room nights: ${fmtNum(r.rnC)} su capacità.`;
-  }
-  if (Q.includes('canale') || Q.includes('canali')){
-    const rows = Object.entries(A.canCur).sort((a,b)=>b[1].rev-a[1].rev).slice(0,5);
-    let html = ctx + '<b>Top channels · 2026 OTB</b><table><tr><th>Channel</th><th>RN</th><th>Revenue</th><th>vs STLY</th></tr>';
-    for (const [k,v] of rows){
-      const p = A.canPrev[k] || {rev:0};
-      const d = p.rev>0 ? (v.rev-p.rev)/p.rev : NaN;
-      html += `<tr><td>${escapeHtml(k)}</td><td>${fmtNum(v.rn)}</td><td>${fmtEUR(v.rev)}</td><td>${isFinite(d)?fmtPctVar(d):'nuovo'}</td></tr>`;
-    }
-    html += '</table>';
-    return html;
-  }
-  if (Q.includes('provenienz') || Q.includes('source') || Q.includes('origin')){
-    const rows = Object.entries(A.provCur).sort((a,b)=>b[1].rev-a[1].rev);
-    let html = ctx + '<b>Source · 2026 OTB</b><table><tr><th>Source</th><th>RN</th><th>Revenue</th></tr>';
-    for (const [k,v] of rows){
-      html += `<tr><td>${escapeHtml(k)}</td><td>${fmtNum(v.rn)}</td><td>${fmtEUR(v.rev)}</td></tr>`;
-    }
-    html += '</table>';
-    return html;
-  }
-  if (Q.includes('adr') || Q.includes('room type') || Q.includes('tipologia') || Q.includes('camera') || Q.includes('suite') || Q.includes('bilocale') || Q.includes('trilocale') || Q.includes('attico') || Q.includes('deluxe')){
-    const RT = aggRoomType(sel);
-    let html = ctx + `<b>OCC and ADR by Room Type · 2026 vs STLY</b><table><tr><th>RT</th><th>OCC '26</th><th>ADR '26</th><th>OCC '25</th><th>ADR '25</th></tr>`;
-    for (const rt of RT.rtList){
-      const d = RT.rtData[rt];
-      html += `<tr><td>${escapeHtml(rt)}</td><td>${fmtPct(d.occC,1)}</td><td>${fmtAdr(d.adrC)}</td><td>${fmtPct(d.occP,1)}</td><td>${fmtAdr(d.adrP)}</td></tr>`;
-    }
-    html += '</table>';
-    return html;
-  }
-  if (Q.includes('budget') || Q.includes('gap') || Q.includes('target') || Q.includes('achievement')){
-    const B = aggBudget(sel);
-    let html = ctx + `<b>Budget ${CFG.fiscal.label} · ${Math.round((B.totPct||0)*100)}% achievement</b><br>
-      OTB: ${fmtEUR(B.totOtb)} / ${fmtEUR(B.totBud)}<br>
-      Gap: <b>${(B.totOtb-B.totBud>=0?'+':'')+fmtEUR(B.totOtb-B.totBud).replace('€','€')}</b><br><br>
-      <b>Top months below budget:</b><table><tr><th>Month</th><th>OTB</th><th>Target</th><th>%</th></tr>`;
-    const sorted = [...B.rows].filter(r=>r.target>0).sort((a,b)=>(a.pct||0)-(b.pct||0)).slice(0,5);
-    for (const r of sorted){
-      const ml = `${CFG.monthsITLong[r.m-1]} ${r.y}`;
-      html += `<tr><td>${ml}</td><td>${fmtEUR(r.otb)}</td><td>${fmtEUR(r.target)}</td><td>${fmtPct(r.pct,0)}</td></tr>`;
-    }
-    html += '</table>';
-    return html;
-  }
-  if (Q.includes('pickup') || Q.includes('settiman')){
-    const P = aggPickup(sel);
-    let totC=0,totP=0,bkC=0,bkP=0;
-    for (const k of P.rtAxis){ P.rt[k].forEach(c=>{totC+=c.rn; bkC+=c.bk;}); P.rtS[k].forEach(c=>{totP+=c.rn; bkP+=c.bk;}); }
-    let html = ctx + `<b>Pickup last 4 weeks</b><br>
-      RN 2026: <b>${totC}</b> · STLY: ${totP} (${fmtPctVar((totC-totP)/Math.max(totP,1))})<br>
-      Bookings 2026: <b>${bkC}</b> · STLY: ${bkP}<br><br>
-      <b>By week (RN 2026 vs STLY)</b><table><tr><th>W</th><th>2026</th><th>STLY</th></tr>`;
-    for (let i=0;i<P.weeks.length;i++){
-      let c=0,p=0;
-      for (const k of P.rtAxis){ c+=P.rt[k][i].rn; p+=P.rtS[k][i].rn; }
-      html += `<tr><td>W${i+1} ${pad2(P.weeks[i].start.getDate())}/${pad2(P.weeks[i].start.getMonth()+1)}</td><td>${c}</td><td>${p}</td></tr>`;
-    }
-    html += '</table>';
-    return html;
-  }
-  if (Q.includes('stly') || Q.includes('confronto') || Q.includes('vs') || Q.includes('variazione')){
-    return ctx + `<b>Full year · 2026 vs STLY</b><br>
-      Revenue: <b>${fmtEUR(A.tot.revC)}</b> vs ${fmtEUR(A.tot.revP)} (${fmtPctVar(A.tot.dRevPct)})<br>
-      OCC: <b>${fmtPct(A.tot.occC,1)}</b> vs ${fmtPct(A.tot.occP,1)} (${fmtPctPP(A.tot.dOcc)})<br>
-      ADR: <b>${fmtAdr(A.tot.adrC)}</b> vs ${fmtAdr(A.tot.adrP)} (${fmtPctVar(A.tot.dAdrPct)})<br>
-      RN: <b>${fmtNum(A.tot.rnC)}</b> vs ${fmtNum(A.tot.rnP)}`;
-  }
-  if (Q.includes('top') || Q.includes('best') || Q.includes('miglior')){
-    const sorted = [...A.monthRows].sort((a,b)=>b.revC-a.revC).slice(0,5);
-    let html = ctx + '<b>Top months by revenue 2026</b><table><tr><th>Month</th><th>Revenue</th><th>OCC</th><th>ADR</th></tr>';
-    for (const r of sorted){
-      html += `<tr><td>${CFG.monthsITLong[r.m-1]}</td><td>${fmtEUR(r.revC)}</td><td>${fmtPct(r.occC,1)}</td><td>${fmtAdr(r.adrC)}</td></tr>`;
-    }
-    html += '</table>';
-    return html;
-  }
-  if (Q.includes('totale') || Q.includes('anno') || Q.includes('overall')){
-    return ctx + `<b>Full year 2026</b><br>
-      Revenue OTB: <b>${fmtEUR(A.tot.revC)}</b><br>
-      OCC: <b>${fmtPct(A.tot.occC,1)}</b><br>
-      ADR: <b>${fmtAdr(A.tot.adrC)}</b><br>
-      Room Nights: <b>${fmtNum(A.tot.rnC)}</b> / capacità ${fmtNum(A.tot.capC)}<br>
-      vs STLY: ${fmtPctVar(A.tot.dRevPct)} revenue, ${fmtPctPP(A.tot.dOcc)} OCC.`;
-  }
-  return ctx + `I can help with:<br>
-  • <b>Month</b>: "July revenue", "August ADR"<br>
-  • <b>Channel</b>: "top channel", "Booking vs Website"<br>
-  • <b>Room type</b>: "ADR Suite", "OCC Bilocale"<br>
-  • <b>Budget</b>: "budget gap", "achievement"<br>
-  • <b>Pickup</b>: "weekly pickup", "last 4 weeks"<br>
-  • <b>STLY</b>: "vs STLY", "year change"<br>
-  • <b>Property</b>: add <i>"Firenze"</i>, <i>"Condotta"</i> or <i>"both"</i> to any question to switch property just for that answer.`;
-}
-/* ============================================================
    INIT & EVENT WIRING
    ============================================================ */
 function updateChips(){
@@ -18545,9 +18733,6 @@ function setTab(name){
   }
   if (name === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
-  }
-  if (name === 'anomalies' && typeof renderAnomalies === 'function'){
-    try { renderAnomalies(); } catch(e){ console.error('renderAnomalies', e); }
   }
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
