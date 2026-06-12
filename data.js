@@ -1,5 +1,31 @@
 const EMBEDDED_CSV = `numero di riferimento,Data/ora prenotazione,Data/ora ultima modifica,Canale,prenotante,Alloggi,Piani tariffari,Data inizio soggiorno,Data partenza,Num. notti,Totale,Struttura,Stato,Tassa di soggiorno,Provenienza
-68D0E9386A,09/06/2026 23:06,,Expedia,George Williams,Camera Matrimoniale Deluxe,Non rimborsabile,22/06/2026,25/06/2026,3,575.38,Firenze Suite,Confermate,0,OTA
+D8CEFF91D6,29/05/2026 17:34,11/06/2026 10:21,Booking,CHERIE FUINO,Camera Matrimoniale Deluxe,Non rimborsabile,11/06/2026,14/06/2026,3,685.7,Firenze Suite,Confermate,,
+0B058F3D81,04/06/2026 13:54,11/06/2026 10:21,Booking,Yoram itzhak maimon,Camera Matrimoniale Deluxe,Flessibile,12/06/2026,15/06/2026,3,1037.71,Firenze Suite,Confermate,,
+B7C8204F58,11/06/2026 09:58,,Booking,Stefan Spiric,Camera Matrimoniale Deluxe,Non rimborsabile,22/06/2026,23/06/2026,1,193.3,Firenze Suite,Confermate,,
+648A28DE19,11/06/2026 09:43,,Beddy,Susan Craig,Camera Matrimoniale Deluxe,Non rimborsabile,27/09/2026,07/10/2026,10,2788,Firenze Suite,Confermate,0,Non Specificato
+11870260A3,11/06/2026 09:16,11/06/2026 09:24,Booking,Tracie Munoz,Trilocale,Standard rate,03/07/2026,04/07/2026,1,375.66,Condotta 16,Cancellate,,
+1C39E9D1C4,11/06/2026 03:11,,Booking,Qiao Siyang,Suite,Non rimborsabile,27/06/2026,02/07/2026,5,1046.86,Firenze Suite,Confermate,,
+2B59551634,10/06/2026 23:30,,Booking,Efrat Busani,Camera Matrimoniale Deluxe,Flessibile,12/06/2026,17/06/2026,5,1102.19,Firenze Suite,Confermate,,
+A01D3493C6,10/06/2026 19:32,,Booking,Joachim Mortensen,Camera Matrimoniale Deluxe,Non rimborsabile,17/06/2026,19/06/2026,2,370.32,Firenze Suite,Confermate,,
+E80BA09D50,10/06/2026 19:17,,Booking,Zainab Fadahunsi,Suite con Terrazza,Flessibile,18/06/2026,21/06/2026,3,851.19,Firenze Suite,Confermate,,
+E92DF64556,10/06/2026 17:28,,Booking,Steven Hewer,Bilocale,Standard rate,12/06/2026,15/06/2026,3,655.63,Condotta 16,Confermate,,
+11742C662C,10/06/2026 17:07,,Booking,McAuliffe Billee,Trilocale,Standard rate,05/09/2026,06/09/2026,1,434.07,Condotta 16,Confermate,,
+BCF918F5C1,10/06/2026 14:18,10/06/2026 16:22,Beddy,Clara Blanc,Suite,Flessibile,15/06/2026,16/06/2026,1,158,Firenze Suite,Confermate,0,Sito web
+8C2B55E3C7,10/06/2026 15:32,,Booking,Estelle Yarrow,Suite,Flessibile,10/06/2026,15/06/2026,5,1140.57,Firenze Suite,Confermate,,
+F63CD687B6,10/06/2026 14:16,,Booking,Emma Satisky,Camera Matrimoniale Deluxe,Non rimborsabile,25/06/2026,26/06/2026,1,206.86,Firenze Suite,Confermate,,
+E330BE88C8,10/06/2026 11:46,10/06/2026 11:56,Beddy,Boris Ber,Bilocale,Non rimborsabile,12/06/2026,15/06/2026,3,580,Condotta 16,Confermate,0,Non Specificato
+BF410D1BFF,10/06/2026 10:36,,Booking,Marcelina Milczarek,Bilocale,Non rimborsabile,17/06/2026,18/06/2026,1,272.97,Condotta 16,Confermate,,
+68D0E9386A,09/06/2026 23:06,10/06/2026 09:38,Expedia,George Williams,Camera Matrimoniale Deluxe,Non rimborsabile,22/06/2026,25/06/2026,3,575.38,Firenze Suite,Confermate,0,OTA
+4B795EE67C,01/06/2026 10:20,10/06/2026 09:38,Booking,Costa Kazistov,Camera Matrimoniale Deluxe,Non rimborsabile,26/06/2026,29/06/2026,3,644.71,Firenze Suite,Confermate,,
+CEAF3D8D16,07/06/2026 16:13,10/06/2026 09:38,Booking,Sara Melly,Camera Matrimoniale Deluxe,Flessibile,23/06/2026,30/06/2026,7,1592.18,Firenze Suite,Confermate,,
+E7BDD0C8C5,13/04/2026 17:18,10/06/2026 09:38,Beddy,Hannah Yi,Camera Matrimoniale Deluxe,Flessibile,24/06/2026,28/06/2026,4,996,Firenze Suite,Confermate,0,Sito web
+8574D178D4,02/06/2026 21:53,10/06/2026 09:21,Booking,Eulalia Juan Ruiz,Trilocale,Standard rate,27/06/2026,29/06/2026,2,947.12,Condotta 16,Cancellate,,
+4986D028C5,10/06/2026 09:21,,Expedia,BIANCA MARIA DE LAZZERO,Bilocale,Standard rate,02/07/2026,08/07/2026,6,1274.98,Condotta 16,Confermate,0,OTA
+A25B6F5C83,05/06/2026 05:38,10/06/2026 06:55,Booking,Vera MA,Bilocale,Standard rate,29/09/2026,01/10/2026,2,695.2,Condotta 16,Cancellate,,
+5CAD91983B,10/06/2026 06:53,,Booking,Vera MA,Bilocale,Standard rate,30/09/2026,02/10/2026,2,771.42,Condotta 16,Confermate,,
+B73DFB9407,21/01/2026 19:27,10/06/2026 06:21,Beddy,Jessica Tyndall,Camera Matrimoniale Deluxe,Flessibile,19/06/2026,23/06/2026,4,996,Firenze Suite,Cancellate,0,Sito web
+27D86E8037,19/05/2026 08:41,10/06/2026 00:39,Booking,paula Bonny,Suite,Flessibile,19/06/2026,24/06/2026,5,1421.56,Firenze Suite,Cancellate,,
+9ABCDF8973,10/06/2026 00:35,,Booking,Casandra Mota,Bilocale,Standard rate,11/06/2026,16/06/2026,5,1190.31,Condotta 16,Confermate,,
 7B43440548,09/06/2026 22:30,,Booking,svetlana beshentseva,"Bilocale, Bilocale","Standard rate, Standard rate",09/06/2026,10/06/2026,1,361.72,Condotta 16,Confermate,,
 E205B02EA7,04/06/2026 08:39,09/06/2026 17:11,Booking,Sanda Rezgui,Bilocale,Standard rate,17/07/2026,25/07/2026,8,1541.35,Condotta 16,Cancellate,,
 0EFEA777E5,09/06/2026 15:54,,Booking,Alix Tricot,Camera Matrimoniale Deluxe,Non rimborsabile,26/06/2026,28/06/2026,2,476.13,Firenze Suite,Confermate,,
@@ -12,14 +38,12 @@ BFF0880691,04/06/2026 22:09,08/06/2026 09:57,Expedia,Shawn Hoopes,Trilocale,Non 
 295FBACF1C,16/03/2026 03:44,08/06/2026 09:57,Beddy,Sandeep Singh Caberwal,Trilocale,Standard rate,08/06/2026,13/06/2026,5,2473.5,Condotta 16,Confermate,0,Sito web
 203B370184,07/06/2026 04:58,08/06/2026 09:31,Booking,Arturo Vazquez reyes,Camera Matrimoniale Deluxe,Non rimborsabile,15/06/2026,18/06/2026,3,910.55,Firenze Suite,Confermate,,
 00B2087CC1,10/05/2026 06:30,08/06/2026 09:26,Booking,Sanat Shah,"Suite con Terrazza, Suite con Terrazza","Flessibile, Flessibile",13/06/2026,17/06/2026,4,3536.68,Firenze Suite,Confermate,,
-D8CEFF91D6,29/05/2026 17:34,08/06/2026 09:24,Booking,CHERIE FUINO,Camera Matrimoniale Deluxe,Non rimborsabile,11/06/2026,14/06/2026,3,685.7,Firenze Suite,Confermate,,
 8C0209CAE4,28/05/2026 21:31,08/06/2026 09:24,Booking,Camille Yabut,Camera Matrimoniale Deluxe,Flessibile,08/06/2026,16/06/2026,8,2032.69,Firenze Suite,Confermate,,
 3E3ADBE61A,14/05/2026 10:22,08/06/2026 09:23,Booking,Bethany Garnett,Bilocale,Non rimborsabile,05/06/2026,08/06/2026,3,722.66,Condotta 16,Confermate,,
 9F469B4CC8,08/06/2026 05:06,,Booking,Bridgette Agostino,Trilocale,Standard rate,26/06/2026,27/06/2026,1,424.98,Condotta 16,Confermate,,
 70C86CE01F,08/06/2026 03:50,,Booking,Zena Borg,Trilocale,Standard rate,08/07/2026,10/07/2026,2,691.19,Condotta 16,Confermate,,
 1B63986527,07/06/2026 21:43,,Expedia,Alessandro Spreafico,Trilocale,Non rimborsabile,15/07/2026,16/07/2026,1,213.05,Condotta 16,Confermate,0,OTA
 F767E0D337,07/06/2026 21:14,,Booking,Bernhard Hohenegger,Trilocale,Standard rate,12/07/2026,13/07/2026,1,355.44,Condotta 16,Confermate,,
-CEAF3D8D16,07/06/2026 16:13,,Booking,Sara Melly,Camera Matrimoniale Deluxe,Flessibile,23/06/2026,30/06/2026,7,1592.18,Firenze Suite,Confermate,,
 799E7FF528,07/06/2026 15:53,,Expedia,LU XI,Suite,Non rimborsabile,14/07/2026,16/07/2026,2,291.25,Firenze Suite,Confermate,0,OTA
 3B147CABF8,15/05/2026 09:24,07/06/2026 09:25,Booking,Robert Mieczyslaw Wyslocki,"Suite, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",05/06/2026,07/06/2026,2,1157.08,Firenze Suite,Confermate,,
 5E5817D96E,07/06/2026 05:47,,Expedia,Jeanne Hannah,Trilocale,Standard rate,02/07/2026,04/07/2026,2,476.29,Condotta 16,Confermate,0,OTA
@@ -33,8 +57,6 @@ EC1046969C,05/06/2026 16:42,05/06/2026 19:24,Booking,Sura Majed,Trilocale,Standa
 A3EF2E31C9,29/04/2026 21:26,05/06/2026 16:02,Booking,Merle Reinmoller,Bilocale,Standard rate,05/06/2026,10/06/2026,5,1226.4,Condotta 16,Confermate,,
 B6CEC63A9D,05/06/2026 10:23,05/06/2026 10:25,Beddy,MAITHRI ARISHANAPALLY,"Trilocale, Trilocale","Non rimborsabile, Non rimborsabile",22/06/2026,26/06/2026,4,3070,Condotta 16,Confermate,0,Sito web
 7EE5EDCE20,29/05/2026 09:15,05/06/2026 10:25,Beddy,Nikhil Kohli,Trilocale,Non rimborsabile,21/06/2026,23/06/2026,2,673,Condotta 16,Confermate,0,Non Specificato
-A25B6F5C83,05/06/2026 05:38,,Booking,Vera MA,Bilocale,Standard rate,29/09/2026,01/10/2026,2,695.2,Condotta 16,Confermate,,
-0B058F3D81,04/06/2026 13:54,,Booking,Yoram itzhak maimon,Camera Matrimoniale Deluxe,Flessibile,12/06/2026,15/06/2026,3,1037.71,Firenze Suite,Confermate,,
 DC15F44DFA,01/06/2026 11:34,04/06/2026 11:28,Booking,Kevin Shirley,Suite,Flessibile,04/06/2026,05/06/2026,1,178.82,Firenze Suite,Confermate,,
 6CEAC8A849,19/04/2026 20:31,04/06/2026 09:33,Beddy,Dorna Alvandi-Peirs,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",04/07/2026,05/07/2026,1,322.2,Firenze Suite,Confermate,0,Sito web
 96FB4CCC95,26/05/2026 23:48,04/06/2026 09:33,Booking,Onali Shabbir Petiwala,Bilocale,Standard rate,21/07/2026,25/07/2026,4,1357.63,Condotta 16,Confermate,,
@@ -45,7 +67,6 @@ DC15F44DFA,01/06/2026 11:34,04/06/2026 11:28,Booking,Kevin Shirley,Suite,Flessib
 DDAB75B8ED,27/05/2026 10:04,03/06/2026 13:07,Booking,Fran Sorin,Bilocale,Standard rate,21/06/2026,25/06/2026,4,1252.49,Condotta 16,Cancellate,,
 0A27B020CE,13/05/2026 03:28,03/06/2026 12:37,Beddy,Stephen Scott Berlin,Suite,Non rimborsabile,07/06/2026,13/06/2026,6,1542.6,Firenze Suite,Confermate,0,Sito web
 99CA0617BC,03/06/2026 03:43,,Expedia,Guillaume Blondin,Attico,Non rimborsabile,09/07/2026,12/07/2026,3,784.87,Condotta 16,Confermate,0,OTA
-8574D178D4,02/06/2026 21:53,,Booking,Eulalia Juan Ruiz,Trilocale,Standard rate,27/06/2026,29/06/2026,2,947.12,Condotta 16,Confermate,,
 63CEA93E8C,02/06/2026 18:54,,Beddy,Maksim Shashlov,"Trilocale, Trilocale","Non rimborsabile, Non rimborsabile",19/07/2026,21/07/2026,2,1246,Condotta 16,Confermate,0,Sito web
 7B96D3852C,02/06/2026 18:43,,Expedia,Enrique Anaya Mendez,Trilocale,Non rimborsabile,16/06/2026,21/06/2026,5,1522.03,Condotta 16,Confermate,0,OTA
 AAAFC69458,02/06/2026 11:27,,Booking,Leah Harry,Trilocale,Non rimborsabile,21/07/2026,24/07/2026,3,717.24,Condotta 16,Confermate,,
@@ -55,7 +76,6 @@ DA1F666B29,01/06/2026 00:09,01/06/2026 22:55,Booking,Alejandro Fernandez Vazquez
 1B1D5F739C,01/06/2026 22:04,,Booking,George Pasca,Bilocale,Non rimborsabile,16/06/2026,17/06/2026,1,309.59,Condotta 16,Confermate,,
 1C89B116AD,03/05/2026 01:44,01/06/2026 13:12,Booking,Adrian Lembong,Trilocale,Standard rate,19/06/2026,22/06/2026,3,1524.42,Condotta 16,Cancellate,,
 DC4E5C6F3B,01/06/2026 12:54,,Booking,Gloria Coppola,Attico,Standard rate,01/06/2026,03/06/2026,2,889.25,Condotta 16,Confermate,,
-4B795EE67C,01/06/2026 10:20,,Booking,Costa Kazistov,Camera Matrimoniale Deluxe,Non rimborsabile,26/06/2026,29/06/2026,3,644.71,Firenze Suite,Confermate,,
 B44379E000,01/06/2026 07:27,,Expedia,FNU NARENHUA,Trilocale,Standard rate,04/07/2026,06/07/2026,2,488.92,Condotta 16,Confermate,0,OTA
 2F30CB97FD,11/05/2026 03:05,01/06/2026 07:26,Booking,Yifei Tong; Chuyi Ye; Zetong Jia; Yuru Fu,Trilocale,Standard rate,23/06/2026,25/06/2026,2,1141.76,Condotta 16,Cancellate,,
 B22D0219E6,01/06/2026 07:14,,Booking,PATRICIA CORRAL ALEXANDER,Trilocale,Standard rate,06/07/2026,08/07/2026,2,612.12,Condotta 16,Confermate,,
@@ -136,7 +156,6 @@ A77030A6DA,22/05/2026 07:29,,Expedia,YI LIU,Camera Matrimoniale Deluxe,Miglior t
 EA4AADAECA,20/05/2026 12:52,,Expedia,Ksenia Falko,Suite con Terrazza,Miglior tariffa garantita PKG,07/06/2026,10/06/2026,3,943,Firenze Suite,Confermate,0,OTA
 EF75180651,19/02/2026 05:07,20/05/2026 08:44,Beddy,Shelby Anne Holmgren,Camera Matrimoniale Deluxe,Non rimborsabile,21/05/2026,23/05/2026,2,466.2,Firenze Suite,Confermate,0,Sito web
 9E66773240,25/02/2026 05:28,20/05/2026 08:43,Beddy,Olivia Ariel Muchmore Strange,Camera Matrimoniale Deluxe,Non rimborsabile,20/05/2026,23/05/2026,3,690.3,Firenze Suite,Confermate,0,Sito web
-27D86E8037,19/05/2026 08:41,20/05/2026 08:42,Booking,paula Bonny,Suite,Flessibile,19/06/2026,24/06/2026,5,1421.56,Firenze Suite,Confermate,,
 8542659ACF,06/05/2026 23:52,20/05/2026 08:42,Beddy,David Montgomery,Suite,Non rimborsabile,21/06/2026,23/06/2026,2,451.44,Firenze Suite,Confermate,0,Sito web
 CC04092E9A,16/05/2026 10:51,20/05/2026 02:00,Booking,Luciana Maia,Camera Matrimoniale Deluxe,Flessibile,30/05/2026,01/06/2026,2,753.41,Firenze Suite,Cancellate,,
 F7630334A9,20/05/2026 00:23,,Expedia,Tom Marasheski,Bilocale,Non rimborsabile,15/06/2026,19/06/2026,4,1519.41,Condotta 16,Confermate,0,OTA
@@ -362,7 +381,6 @@ BD15126AD4,14/04/2026 21:55,,Booking,Nico Kising,Bilocale,Non rimborsabile,18/04
 05132E2E47,14/04/2026 21:20,,Beddy,Maurice den Boer,Bilocale,Standard rate,15/11/2026,19/11/2026,4,456,Condotta 16,Confermate,0,Sito web
 A3F6B1E706,14/04/2026 11:35,14/04/2026 11:42,Booking,Srijan Chugh,Camera Matrimoniale Deluxe,Flessibile,24/04/2026,27/04/2026,3,713.44,Firenze Suite,Cancellate,,
 EE4713A885,13/04/2026 19:20,13/04/2026 21:11,Beddy,JOURDAN ELLIOT CHINN,Suite con Terrazza,Non rimborsabile,11/04/2026,13/04/2026,2,459.26,Firenze Suite,Confermate,0,Sito web
-E7BDD0C8C5,13/04/2026 17:18,,Beddy,Hannah Yi,Camera Matrimoniale Deluxe,Flessibile,24/06/2026,28/06/2026,4,996,Firenze Suite,Confermate,0,Sito web
 C79E88CBB6,13/04/2026 17:14,13/04/2026 17:15,Beddy,Hannah Yi,Camera Matrimoniale Deluxe,Flessibile,24/06/2026,27/06/2026,3,747,Firenze Suite,Cancellate,0,Sito web
 59D53FFA75,13/04/2026 14:49,13/04/2026 14:57,Booking,HANXIANG LU,Camera Matrimoniale Deluxe,Flessibile,05/06/2026,08/06/2026,3,1465.8,Firenze Suite,Cancellate,,
 9FD7E9942E,16/03/2026 05:01,13/04/2026 03:31,Booking,kristen demarco,Attico,Standard rate,26/04/2026,30/04/2026,4,1836.56,Condotta 16,Cancellate,,
@@ -871,7 +889,6 @@ FD7E0FAA80,09/01/2026 19:07,25/01/2026 09:30,Booking,Kara Welborn,Trilocale,Stan
 75627CCDDB,21/01/2026 00:05,22/01/2026 22:05,Booking,Hans Jakob Auga,Suite con Terrazza,Flessibile,11/02/2026,13/02/2026,2,377.52,Firenze Suite,Cancellate,,
 1816FFB263,22/01/2026 11:19,22/01/2026 11:23,Booking,James Slade,Camera Matrimoniale Deluxe,Non rimborsabile,22/01/2026,24/01/2026,2,185.06,Firenze Suite,Confermate,,
 2A87582CCA,17/01/2026 17:36,22/01/2026 11:23,Booking,Anatoli Kaminov,Camera Matrimoniale Deluxe,Non rimborsabile,24/01/2026,27/01/2026,3,367.66,Firenze Suite,Confermate,,
-B73DFB9407,21/01/2026 19:27,,Beddy,Jessica Tyndall,Camera Matrimoniale Deluxe,Flessibile,19/06/2026,23/06/2026,4,996,Firenze Suite,Confermate,0,Sito web
 C4B5C80EF7,21/01/2026 18:40,,Booking,Virginia Lewis,Trilocale,Standard rate,02/11/2026,04/11/2026,2,610.84,Condotta 16,Confermate,,
 F46EF15380,19/01/2026 09:50,21/01/2026 16:26,Beddy,Massimiliano Lombardo,Suite,Non rimborsabile,21/01/2026,22/01/2026,1,75.6,Firenze Suite,Confermate,0,Sito web
 934D47DE86,06/01/2026 22:51,21/01/2026 16:25,Beddy,Tammy Gowland,Suite,Non rimborsabile,21/01/2026,23/01/2026,2,205,Firenze Suite,Confermate,0,Sito web
@@ -4130,6 +4147,19 @@ D6053578B6,22/04/2024 13:10,22/04/2024 13:15,Beddy,Peter Dullehan,Camera Matrimo
 FB4B30EA41,22/04/2024 12:29,,Beddy,Deja Elder,Camera Matrimoniale Deluxe,Flessibile,21/04/2024,24/04/2024,3,685.95,Firenze Suite,Confermate,0,Sito web
 609FD96DEA,21/04/2024 10:17,,Booking,Negar Mokhtarihaj,Suite,Non rimborsabile,21/05/2024,24/05/2024,3,1093.5,Firenze Suite,Confermate,0,OTA
 15BDE09165,11/04/2024 10:17,,Booking,Michael Brourman,Suite con Terrazza,Flessibile,12/05/2024,15/05/2024,3,1630.8,Firenze Suite,Confermate,0,OTA
+17981836E6,11/06/2026 14:04,,Ctrip,YANG GAO,Classic,Tariffa Rimborsabile - Pernottamento,03/07/2026,05/07/2026,2,533.17,Palazzo Alfani,Confermate,0,OTA
+C68FAD8B73,11/06/2026 12:54,,Ctrip,XUMEI QIN,Deluxe,Tariffa Rimborsabile - Pernottamento,07/07/2026,09/07/2026,2,654.51,Palazzo Alfani,Confermate,0,OTA
+C8F56A71D8,08/06/2026 06:30,11/06/2026 11:20,Ctrip,YANG GAO,Classic,Tariffa Rimborsabile - Pernottamento,10/07/2026,11/07/2026,1,254.45,Palazzo Alfani,Cancellate,0,OTA
+3F44C6BC97,11/06/2026 08:45,,Ctrip,HUI QIAO,Classic,Tariffa Rimborsabile - Pernottamento,25/07/2026,28/07/2026,3,754.64,Palazzo Alfani,Confermate,0,OTA
+CE31785948,11/06/2026 08:18,,Ctrip,Rebecca Barmore,Classic,Tariffa Rimborsabile - Pernottamento,23/09/2026,27/09/2026,4,1600.32,Palazzo Alfani,Confermate,0,OTA
+46DC75103E,11/06/2026 05:12,,Ctrip,XIAOJING ZHANG,Superior,Tariffa Rimborsabile - Pernottamento,04/08/2026,06/08/2026,2,379.9,Palazzo Alfani,Confermate,0,OTA
+9169AD4167,11/06/2026 05:11,,Ctrip,XIAOJING ZHANG,Classic,Tariffa Rimborsabile - Pernottamento,04/08/2026,06/08/2026,2,377.36,Palazzo Alfani,Confermate,0,OTA
+2B9BB0077A,11/06/2026 04:26,,Ctrip,PENG TANG,Junior suite,Tariffa Rimborsabile - Pernottamento,19/06/2026,21/06/2026,2,423.09,Palazzo Alfani,Confermate,0,OTA
+9713203D05,11/06/2026 04:19,,Ctrip,CHANGKUN FU,Classic,Tariffa Rimborsabile - Pernottamento,25/06/2026,26/06/2026,1,283.95,Palazzo Alfani,Confermate,0,OTA
+AC8332D773,11/06/2026 01:38,,Beddy,Gail Villarin,Classic,Tariffa Esclusiva,19/06/2026,21/06/2026,2,536.75,Palazzo Alfani,Confermate,0,Sito web
+79C177AB9F,10/06/2026 15:19,,Ctrip,JIUYI ZHAO,Classic,Tariffa Rimborsabile - Pernottamento,11/08/2026,13/08/2026,2,348.86,Palazzo Alfani,Confermate,0,OTA
+3F1BD1C0AC,10/06/2026 14:37,,Ctrip,YINUO XUN,Superior,Tariffa Rimborsabile - Pernottamento,13/07/2026,14/07/2026,1,257.61,Palazzo Alfani,Confermate,0,OTA
+1A4A68CB04,10/06/2026 05:48,10/06/2026 06:59,Booking,GONG WENTING ZHOU KAIRAN,Junior suite,Tariffa Rimborsabile - Pernottamento,01/10/2026,02/10/2026,1,426.38,Palazzo Alfani,Cancellate,0,OTA
 D4B379572F,09/06/2026 20:19,09/06/2026 20:20,Ctrip,HAOJIA HUANG,Classic,Tariffa Non Rimborsabile - Pernottamento,29/06/2026,01/07/2026,2,359.81,Palazzo Alfani,Confermate,0,OTA
 946260E738,05/06/2026 07:40,09/06/2026 20:20,Ctrip,JIA XU,Classic,Tariffa Rimborsabile - Pernottamento,30/06/2026,02/07/2026,2,485.25,Palazzo Alfani,Confermate,0,OTA
 798D5EBD2D,09/06/2026 18:01,,Ctrip,ZHIYU YE,Superior,Tariffa Rimborsabile - Pernottamento,16/06/2026,17/06/2026,1,354.87,Palazzo Alfani,Confermate,0,OTA
@@ -4161,9 +4191,8 @@ F98A466505,06/05/2026 12:04,08/06/2026 13:26,Ctrip,BINQI FENG,Superior,Tariffa R
 0B67F48DE0,07/06/2026 17:30,08/06/2026 13:20,Ctrip,DONGXU HAN,Classic,Tariffa Rimborsabile - Pernottamento,23/06/2026,25/06/2026,2,444.68,Palazzo Alfani,Confermate,0,OTA
 A9CD3CDE4E,12/04/2026 08:10,08/06/2026 13:16,Ctrip,XIAOXIA CHEN,Classic,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,505.68,Palazzo Alfani,Confermate,0,OTA
 285D513A32,01/06/2026 14:42,08/06/2026 13:16,Beddy,Darren Moran Sheils,Classic,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,567,Palazzo Alfani,Confermate,0,Non Specificato
-C8F56A71D8,08/06/2026 06:30,08/06/2026 13:15,Ctrip,YANG GAO,Classic,Tariffa Rimborsabile - Pernottamento,10/07/2026,11/07/2026,1,254.45,Palazzo Alfani,Confermate,0,OTA
 66BEBF5AEB,05/06/2026 23:37,08/06/2026 13:14,Booking,Zoi Tzikou,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,15/07/2026,3,986.15,Palazzo Alfani,Confermate,0,OTA
-D36D39B276,20/05/2026 10:12,08/06/2026 12:40,Ctrip,ZIWEI LI,Classic,Tariffa Rimborsabile - Pernottamento,14/06/2026,15/06/2026,1,310.85,Palazzo Alfani,Confermate,0,OTA
+D36D39B276,20/05/2026 10:12,08/06/2026 12:40,Ctrip,ZIWEI LI,Classic,Tariffa Rimborsabile - Pernottamento,14/06/2026,15/06/2026,1,317.85,Palazzo Alfani,Confermate,7,OTA
 E1B406132B,27/12/2025 14:57,08/06/2026 12:32,Beddy,Gianni Lo Russo ESMERALDA DI LORUSSO GIOVANNI E C. S.A.S.,Superior,Tariffa Rimborsabile - Pernottamento,15/06/2026,19/06/2026,4,1928,Palazzo Alfani,Confermate,28,Non Specificato
 2C048EF119,30/03/2026 17:21,08/06/2026 12:26,Booking,GERARDO ORFANELLI,Deluxe,Tariffa Non Rimborsabile - Pernottamento,09/06/2026,10/06/2026,1,373.15,Palazzo Alfani,Confermate,14,OTA
 5652BACD26,29/04/2026 07:24,08/06/2026 12:19,Booking,Wang Huan,Classic,Tariffa Rimborsabile - Pernottamento,20/08/2026,22/08/2026,2,626.56,Palazzo Alfani,Confermate,0,OTA
@@ -4556,7 +4585,7 @@ E47FF6E052,21/03/2026 10:12,21/03/2026 13:58,Booking,WANG TING,Superior,Tariffa 
 6AD60110ED,22/01/2026 01:56,19/03/2026 12:28,Booking,SIMONE DE ARAUJO FEITOZA ALEXANDRE RIBEIRO FEITOZA ALEXANDRE RIBEIRO FEITOZA JUNIOR BEATRIZ DE ARAUJO FEITO,Classic,Tariffa Non Rimborsabile - Pernottamento,21/07/2026,24/07/2026,3,801.06,Palazzo Alfani,Confermate,0,OTA
 A6265EBBE6,14/01/2026 02:36,19/03/2026 12:28,Expedia,TINGTING YE,Classic,Flessibile pacchetto,19/07/2026,21/07/2026,2,375.04,Palazzo Alfani,Confermate,0,OTA
 A1C4DF4F7D,22/01/2026 08:49,19/03/2026 12:26,Beddy,Dr David Joyce Joyce,Superior,Tariffa Rimborsabile - Pernottamento,11/07/2026,12/07/2026,1,275,Palazzo Alfani,Confermate,0,Sito web
-7DBBF073B4,07/03/2026 14:13,19/03/2026 12:17,Ctrip,YUN SHEN,Classic,Tariffa Rimborsabile - Pernottamento,09/06/2026,11/06/2026,2,616.56,Palazzo Alfani,Confermate,0,OTA
+7DBBF073B4,07/03/2026 14:13,19/03/2026 12:17,Ctrip,GUANYU WU,Classic,Tariffa Rimborsabile - Pernottamento,09/06/2026,11/06/2026,2,658.56,Palazzo Alfani,Confermate,42,OTA
 A2F7FD3AEE,11/03/2026 18:55,19/03/2026 12:14,Expedia,Elizabeth Salas,Classic,Flessibile pacchetto,26/05/2026,29/05/2026,3,911.36,Palazzo Alfani,Confermate,63,OTA
 5737392AFB,14/01/2026 19:13,19/03/2026 12:12,Beddy,Samantha Omichinski,"Junior suite, Classic","Tariffa Non Rimborsabile con Colazione inclusa, Tariffa Non Rimborsabile con Colazione inclusa",29/05/2026,31/05/2026,2,1459,Palazzo Alfani,Confermate,56,Sito web
 93D10A6152,09/02/2026 23:28,19/03/2026 11:57,Expedia,Earl Alqueza,Classic,Non rimborsabile pacchetto,05/05/2026,09/05/2026,4,1131.09,Palazzo Alfani,Confermate,84,OTA
@@ -6929,7 +6958,9 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2183,04/05/2026 00:09:00,,Expedia,Taylor Cathryn Byykkonen,Verde,Verde,31/08/2026,04/09/2026,4,449.79,Florence David's Apartament,Confermate,48,Expedia
 2193,10/05/2026 11:33:11,,Booking,Jansen Björn,Verde,Verde - Non Rimborsabile OTA,20/08/2026,23/08/2026,3,321.32,Florence David's Apartament,Confermate,36,Booking
 2222,01/06/2026 11:08:00,,Expedia Affilia,WOOSEOK IM,Blu,Blu - Non Rimborsabile OTA,06/08/2026,08/08/2026,2,199.19,Florence David's Apartament,Confermate,24,Expedia Affilia
+2229,11/06/2026 05:17:00,,Expedia,SOPHIE ET MICHEL KORHEL,Senape,Senape,04/08/2026,09/08/2026,5,465.96,Florence David's Apartament,Confermate,90,Expedia
 2216,31/05/2026 15:53:18,,Booking,Berthé Jehan,Blu,Blu - Non Rimborsabile OTA,03/08/2026,05/08/2026,2,167.16,Florence David's Apartament,Confermate,24,Booking
+2230,11/06/2026 15:59:58,,Airbnb,Pato Alanis Alanis Ortega,Verde,Verde - Standard,02/08/2026,03/08/2026,1,89.74,Florence David's Apartament,Confermate,0,Airbnb
 2169,27/04/2026 16:29:00,,Expedia Affilia,Hiu Yin Li,Blu,Blu,26/07/2026,29/07/2026,3,212.2,Florence David's Apartament,Confermate,36,Expedia Affilia
 2220,31/05/2026 20:44:08,,Booking,Balbás Paula,Blu,Blu - Non Rimborsabile OTA,24/07/2026,26/07/2026,2,203.89,Florence David's Apartament,Confermate,24,Booking
 2218,31/05/2026 16:52:53,,Booking,SANSON Jasmine,Senape,Senape - Non Rimborsabile OTA,19/07/2026,22/07/2026,3,391.69,Florence David's Apartament,Confermate,54,Booking
@@ -6941,6 +6972,7 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2170,28/04/2026 18:18:00,,Expedia Affilia,Francesca Wilhelmina van Tartwijk,Verde,Verde,06/07/2026,10/07/2026,4,392.5,Florence David's Apartament,Confermate,48,Expedia Affilia
 2087,09/03/2026 08:16:00,,Expedia,Zhirong Zhang,Blu,Blu - Standard,05/07/2026,10/07/2026,5,594.37,Florence David's Apartament,Confermate,30,Expedia
 2155,19/04/2026 02:26:54,,Booking,Amourgis Ashley,Verde,Verde - Non Rimborsabile OTA,04/07/2026,05/07/2026,1,126.52,Florence David's Apartament,Confermate,12,Booking
+2188,04/05/2026 15:09:00,10/05/2026,Expedia,Ziyue Tian,Senape,Senape,03/07/2026,07/07/2026,4,445.51,Florence David's Apartament,Cancellate,24,Expedia
 2197,10/05/2026 19:42:58,,Booking,Ilic Adrian,Verde,Verde - Standard,30/06/2026,01/07/2026,1,132.13,Florence David's Apartament,Confermate,12,Booking
 2122,30/03/2026 09:44:47,,Booking,smales stacy,Blu,Blu - Standard,30/06/2026,02/07/2026,2,270.04,Florence David's Apartament,Confermate,24,Booking
 2226,06/06/2026 02:08:03,,Airbnb,Ligia Galicia,Senape,Senape - Standard,29/06/2026,30/06/2026,1,105.71,Florence David's Apartament,Confermate,0,Airbnb
@@ -6949,16 +6981,21 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2203,14/05/2026 00:22:05,,Booking,Mizumoto Ikuko,Senape,Senape - Standard,26/06/2026,28/06/2026,2,448.79,Florence David's Apartament,Confermate,36,Booking
 2201,11/05/2026 23:47:54,,Booking,Daniela Ventaglini,Blu,Blu - Non Rimborsabile OTA,26/06/2026,28/06/2026,2,321,Florence David's Apartament,Confermate,24,Booking
 2200,11/05/2026 22:36:32,,Booking,maccarana enzo riccardo,Verde,Verde - Non Rimborsabile OTA,26/06/2026,27/06/2026,1,185.45,Florence David's Apartament,Confermate,12,Booking
+2086,09/03/2026 03:40:10,09/03/2026,Booking,Amadori Heather,Verde,Verde - Standard,24/06/2026,28/06/2026,4,769.63,Florence David's Apartament,Cancellate,0,Booking
 2196,10/05/2026 19:41:01,,Booking,Taran Oksana,Verde,Verde - Non Rimborsabile OTA,23/06/2026,25/06/2026,2,301.04,Florence David's Apartament,Confermate,24,Booking
 2150,14/04/2026 07:49:00,,Expedia,Lauren Pendergast,Blu,Blu,23/06/2026,25/06/2026,2,203.75,Florence David's Apartament,Confermate,12,Expedia
 2026,24/01/2026 13:48:24,,Booking Engine,HYEONGJUN KIM,Blu,Blu - Standard,22/06/2026,23/06/2026,1,142.68,Florence David's Apartament,Confermate,12,Booking Engine
 2168,27/04/2026 03:02:09,,Booking,Rohrbach Sydney,Senape,Senape - Non Rimborsabile OTA,21/06/2026,24/06/2026,3,444.12,Florence David's Apartament,Confermate,36,Booking
 2109,25/03/2026 23:52:58,,Booking,Gomes Ricardo,Verde,Verde - Standard,20/06/2026,23/06/2026,3,533.36,Florence David's Apartament,Confermate,36,Booking
+2105,23/03/2026 15:42:46,27/03/2026,Booking,Gomes Ricardo,Blu,Blu - Standard,19/06/2026,22/06/2026,3,558.15,Florence David's Apartament,Cancellate,0,Booking
 2190,07/05/2026 11:20:00,,Expedia,Manfred Schwayer,Blu,Blu - Standard,18/06/2026,21/06/2026,3,456.91,Florence David's Apartament,Confermate,18,Expedia
 2227,08/06/2026 12:44:35,,Booking,URIBE ANDREA,Verde,Verde - Non Rimborsabile OTA,17/06/2026,19/06/2026,2,371.12,Florence David's Apartament,Confermate,12,Booking
 2143,10/04/2026 22:39:00,,Expedia,Taslim Hassam,Blu,Blu - Non Rimborsabile OTA,14/06/2026,18/06/2026,4,663.23,Florence David's Apartament,Confermate,24,Expedia
 2123,31/03/2026 04:54:00,,Expedia,Taslim Hassam,Senape,Senape,14/06/2026,18/06/2026,4,772.18,Florence David's Apartament,Confermate,72,Expedia
+2228,10/06/2026 20:38:11,,Airbnb,Monica Fernandez,Blu,Blu - Standard,13/06/2026,14/06/2026,1,120.92,Florence David's Apartament,Confermate,0,Airbnb
 2225,04/06/2026 20:30:19,,Booking,Della Porta Serena,Senape,Senape - Non Rimborsabile OTA,13/06/2026,14/06/2026,1,171.37,Florence David's Apartament,Confermate,12,Booking
+2217,31/05/2026 16:45:25,09/06/2026,Booking,WANG XUESONG,Blu,Blu - Standard,13/06/2026,14/06/2026,1,199,Florence David's Apartament,Cancellate,0,Booking
+2167,26/04/2026 20:24:30,13/05/2026,Booking,Lacopeta Cinzia,Senape,Senape - Standard,13/06/2026,14/06/2026,1,246.25,Florence David's Apartament,Cancellate,0,Booking
 2219,31/05/2026 18:46:22,,Booking,Hiller Victor,Verde,Verde - Non Rimborsabile OTA,12/06/2026,14/06/2026,2,381.16,Florence David's Apartament,Confermate,24,Booking
 2211,23/05/2026 23:18:42,,Booking Engine,Alexa Gesuele,Blu,Blu - Non Rimborsabile BE,09/06/2026,11/06/2026,2,334.8,Florence David's Apartament,Confermate,24,Booking Engine
 2185,04/05/2026 01:53:00,,Expedia,Mark Rackley,Senape,Senape,07/06/2026,09/06/2026,2,294.27,Florence David's Apartament,Confermate,36,Expedia
@@ -6968,10 +7005,12 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2161,22/04/2026 16:58:01,,Booking Engine,Inna Pak,Blu,Blu - Standard,05/06/2026,08/06/2026,3,501.6,Florence David's Apartament,Confermate,36,Booking Engine
 2207,20/05/2026 11:46:06,,Booking,Abadal Toni,Verde,Verde - Non Rimborsabile OTA,04/06/2026,06/06/2026,2,335.3,Florence David's Apartament,Confermate,24,Booking
 2192,09/05/2026 19:09:00,,Expedia,Roberto Martinez,Verde,Verde,03/06/2026,04/06/2026,1,117.3,Florence David's Apartament,Confermate,12,Expedia
+2187,04/05/2026 16:10:36,04/05/2026,Booking Engine,Mariana  Gonzalez ,Verde,Verde - Non Rimborsabile BE,03/06/2026,05/06/2026,2,289.87,Florence David's Apartament,Cancellate,0,Booking Engine
 2110,26/03/2026 13:02:00,,Expedia,Albert Puddyford,Blu,Blu - Non Rimborsabile OTA,02/06/2026,04/06/2026,2,265.57,Florence David's Apartament,Confermate,24,Expedia
 2214,31/05/2026 14:13:02,,Airbnb,Lorenzo Dal Cin,Verde,Verde - Standard,31/05/2026,02/06/2026,2,230.68,Florence David's Apartament,Confermate,0,Airbnb
 2215,31/05/2026 14:12:08,,Booking,Gabriele Parri,Senape,Senape - Standard,31/05/2026,01/06/2026,1,125.52,Florence David's Apartament,Confermate,12,Booking
 2213,31/05/2026 14:01:25,,Booking,Weigt Finja,Blu,Blu - Standard,31/05/2026,02/06/2026,2,231.66,Florence David's Apartament,Confermate,24,Booking
+2198,11/05/2026 00:23:24,20/05/2026,Booking,Benvenuti Ludovica,Senape,Senape - Standard,30/05/2026,31/05/2026,1,207.24,Florence David's Apartament,Cancellate,0,Booking
 2210,21/05/2026 14:39:04,,Booking,Kostas Markos,Senape,Senape - Non Rimborsabile OTA,29/05/2026,31/05/2026,2,409.16,Florence David's Apartament,Confermate,24,Booking
 2181,03/05/2026 20:47:00,,Expedia,Murat Şişkolu,Verde,Verde,28/05/2026,31/05/2026,3,402.91,Florence David's Apartament,Confermate,36,Expedia
 2152,16/04/2026 22:05:00,,Expedia,Rachel DeNome,Blu,Blu - Non Rimborsabile OTA,28/05/2026,31/05/2026,3,448.41,Florence David's Apartament,Confermate,36,Expedia
@@ -6989,6 +7028,7 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2124,01/04/2026 14:50:00,,Expedia,Rodrigo Will Ribeiro,Blu,Blu,18/05/2026,22/05/2026,4,498.74,Florence David's Apartament,Confermate,24,Expedia
 2199,11/05/2026 20:00:13,,Booking,Scherbakova Ksenia,Senape,Senape - Non Rimborsabile OTA,17/05/2026,20/05/2026,3,429.94,Florence David's Apartament,Confermate,36,Booking
 2174,01/05/2026 18:02:01,,Booking,ISHIKAWA YUDAI,Verde,Verde - Non Rimborsabile OTA,17/05/2026,19/05/2026,2,305.55,Florence David's Apartament,Confermate,24,Booking
+2141,10/04/2026 16:43:21,29/04/2026,Booking Engine,JyunKai Jhan,Senape,Senape - Standard,17/05/2026,20/05/2026,3,529.83,Florence David's Apartament,Cancellate,0,Booking Engine
 2103,20/03/2026 03:21:17,,Booking,Geissel Katelynn,Blu,Blu - Non Rimborsabile OTA,16/05/2026,18/05/2026,2,366.54,Florence David's Apartament,Confermate,24,Booking
 2189,06/05/2026 19:49:00,,Expedia,Eric Odell,Blu,Blu - Non Rimborsabile OTA,15/05/2026,16/05/2026,1,142.33,Florence David's Apartament,Confermate,6,Expedia
 2163,23/04/2026 19:16:48,,Booking,Martinović Ivana,Senape,Senape - Non Rimborsabile OTA,14/05/2026,17/05/2026,3,657.84,Florence David's Apartament,Confermate,54,Booking
@@ -6997,11 +7037,15 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2191,07/05/2026 22:04:05,,Booking,Nechifor Antonio,Blu,Blu - Non Rimborsabile OTA,12/05/2026,13/05/2026,1,130.98,Florence David's Apartament,Confermate,12,Booking
 2131,05/04/2026 13:58:00,,Expedia Affilia,ANVAR SHARIPOV,Verde,Verde,12/05/2026,17/05/2026,5,694.3,Florence David's Apartament,Confermate,30,Expedia Affilia
 2165,26/04/2026 05:23:51,,Booking Engine,Joey Reddin,Senape,Senape - Non Rimborsabile BE,11/05/2026,13/05/2026,2,305.71,Florence David's Apartament,Confermate,24,Booking Engine
+2116,29/03/2026 02:02:00,29/03/2026,Expedia,Pankaj Topiwala,Senape,Senape - Standard,10/05/2026,14/05/2026,4,683.36,Florence David's Apartament,Cancellate,48,Expedia
 2115,28/03/2026 23:38:28,,Booking,Puerta Pino Wilson,Blu,Blu - Non Rimborsabile OTA,10/05/2026,12/05/2026,2,333.13,Florence David's Apartament,Confermate,24,Booking
 2164,24/04/2026 22:42:00,,Hotels.com,Caroline Côté,Verde,Verde - Standard,09/05/2026,12/05/2026,3,486.18,Florence David's Apartament,Confermate,36,Hotels.com
 2134,07/04/2026 01:11:00,,Expedia,Isabel DiCampo,Blu,Blu,09/05/2026,10/05/2026,1,143.21,Florence David's Apartament,Confermate,12,Expedia
 2179,03/05/2026 22:20:49,,Booking,enrico vigezzi,Verde,Verde - Non Rimborsabile OTA,08/05/2026,09/05/2026,1,140.3,Florence David's Apartament,Confermate,12,Booking
 2176,03/05/2026 19:14:31,,Booking,Nilsson Ture,Senape,Senape - Non Rimborsabile OTA,08/05/2026,11/05/2026,3,448.43,Florence David's Apartament,Confermate,36,Booking
+2162,22/04/2026 21:54:30,03/05/2026,Booking,Datukishvili Nino,Senape,Senape - Standard,08/05/2026,11/05/2026,3,587.19,Florence David's Apartament,Cancellate,0,Booking
+2148,13/04/2026 23:34:45,14/04/2026,Booking,Ulyanau Maksim,Verde,Verde - Non Rimborsabile OTA,08/05/2026,11/05/2026,3,591.99,Florence David's Apartament,Cancellate,0,Booking
+2091,11/03/2026 23:54:00,19/04/2026,Expedia,Melissa Degolier,Senape,Senape - Standard,08/05/2026,10/05/2026,2,397.95,Florence David's Apartament,Cancellate,36,Expedia
 2071,05/03/2026 16:09:23,,Booking,Desbiens-Leclerc Alison,Blu,Blu - Non Rimborsabile OTA,06/05/2026,09/05/2026,3,553.58,Florence David's Apartament,Confermate,36,Booking
 2160,22/04/2026 09:12:35,,Booking,Van Der Merwe Mariska,Blu,Blu - Non Rimborsabile OTA,05/05/2026,06/05/2026,1,143.74,Florence David's Apartament,Confermate,12,Booking
 2157,19/04/2026 20:14:44,,Booking,Pittarello Stefano,Senape,Senape - Non Rimborsabile OTA,05/05/2026,07/05/2026,2,302.96,Florence David's Apartament,Confermate,24,Booking
@@ -7009,6 +7053,7 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2072,07/03/2026 14:17:13,,Booking,Boudova Aneta,Blu,Blu - Standard,03/05/2026,05/05/2026,2,302.08,Florence David's Apartament,Confermate,24,Booking
 2055,15/02/2026 14:00:53,,Booking,Poede Lisa,Verde,Verde - Standard,03/05/2026,05/05/2026,2,336.31,Florence David's Apartament,Confermate,24,Booking
 2045,08/02/2026 22:38:00,,Expedia,HUGO BRANQUINHO PEREIRA,Senape,Senape,03/05/2026,05/05/2026,2,319.2,Florence David's Apartament,Confermate,36,Expedia
+1975,03/01/2026 12:22:27,03/01/2026,Booking,Minnis Eleni,Blu,Blu - Standard,03/05/2026,05/05/2026,2,300.99,Florence David's Apartament,Cancellate,0,Booking
 2151,15/04/2026 13:54:50,,Booking,Hausmann Marta,Verde,Verde - Non Rimborsabile OTA,02/05/2026,03/05/2026,1,194.05,Florence David's Apartament,Confermate,12,Booking
 2119,30/03/2026 03:38:00,,Expedia,Kevin Chou,Senape,Senape - Non Rimborsabile OTA,01/05/2026,03/05/2026,2,381.48,Florence David's Apartament,Confermate,24,Expedia
 2068,01/03/2026 15:52:55,,Booking,Rovira Patricio,Verde,Verde - Non Rimborsabile OTA,30/04/2026,02/05/2026,2,383.74,Florence David's Apartament,Confermate,24,Booking
@@ -7016,9 +7061,13 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2101,19/03/2026 05:18:00,,Expedia,Janet Richmond,Blu,Blu,29/04/2026,03/05/2026,4,549.22,Florence David's Apartament,Confermate,48,Expedia
 2130,04/04/2026 17:07:00,,Expedia Affilia,CHRISTOPHER JOHNSTONE,Senape,Senape - Standard,28/04/2026,01/05/2026,3,467.11,Florence David's Apartament,Confermate,36,Expedia Affilia
 2126,03/04/2026 08:19:04,,Booking,WAN JUNSHEN,Blu,Blu - Non Rimborsabile OTA,28/04/2026,29/04/2026,1,139.24,Florence David's Apartament,Confermate,12,Booking
+2067,01/03/2026 10:04:28,01/03/2026,Booking,Persson Magnus,Senape,Senape - Standard,28/04/2026,01/05/2026,3,574.79,Florence David's Apartament,Cancellate,0,Booking
+1973,31/12/2025 03:48:24,22/03/2026,Booking,Raina Vinay,Senape,Senape - Standard,28/04/2026,30/04/2026,2,367.2,Florence David's Apartament,Cancellate,0,Booking
 2098,18/03/2026 10:30:39,,Booking,Adriaan &amp; Michelle Louw,Verde,Verde - Standard,27/04/2026,28/04/2026,1,163.4,Florence David's Apartament,Confermate,12,Booking
+2036,01/02/2026 12:14:55,23/02/2026,Booking,YANAGISAWA NATSUMI,Verde,Verde - Standard,27/04/2026,02/05/2026,5,1001.8,Florence David's Apartament,Cancellate,0,Booking
 2166,26/04/2026 08:31:25,,Booking,Rusu Marius,Senape,Senape - Standard,26/04/2026,28/04/2026,2,213.26,Florence David's Apartament,Confermate,24,Booking
 2144,11/04/2026 08:47:00,,Expedia Affilia,DEBORA ROLLO,Senape,Senape,25/04/2026,26/04/2026,1,112.61,Florence David's Apartament,Confermate,12,Expedia Affilia
+2083,08/03/2026 19:43:25,09/04/2026,Booking,Wartanian Anjela,Senape,Senape - Standard,25/04/2026,28/04/2026,3,560.82,Florence David's Apartament,Cancellate,0,Booking
 2079,08/03/2026 16:05:28,,Booking,Celik Dilan,Blu,Blu - Non Rimborsabile OTA,25/04/2026,27/04/2026,2,307.12,Florence David's Apartament,Confermate,24,Booking
 2159,21/04/2026 02:08:53,,Airbnb,Slaveana Iatcu,Blu,Blu - Standard,24/04/2026,25/04/2026,1,116.36,Florence David's Apartament,Confermate,0,Airbnb
 2107,24/03/2026 18:38:00,,Expedia,Xymena Garcia Manzano,Blu,Blu - Non Rimborsabile OTA,22/04/2026,24/04/2026,2,233.26,Florence David's Apartament,Confermate,24,Expedia
@@ -7031,17 +7080,23 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2121,30/03/2026 09:30:28,,Booking,Rizzo Luca,Senape,Senape - Standard,18/04/2026,20/04/2026,2,344.95,Florence David's Apartament,Confermate,24,Booking
 2138,10/04/2026 10:46:39,,Booking,Ault Sharla,Blu,Blu - Non Rimborsabile OTA,17/04/2026,19/04/2026,2,265.59,Florence David's Apartament,Confermate,12,Booking
 2090,09/03/2026 15:57:35,,Booking,Datoń Dawid,Verde,Verde - Standard,17/04/2026,19/04/2026,2,371.81,Florence David's Apartament,Confermate,24,Booking
+2024,21/01/2026 04:05:53,15/03/2026,Booking,Shore Jessica,Senape,Senape - Standard,17/04/2026,21/04/2026,4,677.78,Florence David's Apartament,Cancellate,0,Booking
+1996,10/01/2026 03:21:40,10/04/2026,Booking,Whitla Emma,Blu,Blu - Standard,17/04/2026,20/04/2026,3,487.96,Florence David's Apartament,Cancellate,0,Booking
 2146,12/04/2026 23:40:02,,Booking,Del Castillo Fossati Alicia,Senape,Senape - Non Rimborsabile OTA,16/04/2026,18/04/2026,2,286.34,Florence David's Apartament,Confermate,36,Booking
 2145,11/04/2026 19:11:41,,Booking,Gvalia Giorgi,Verde,Verde - Non Rimborsabile OTA,16/04/2026,17/04/2026,1,118.94,Florence David's Apartament,Confermate,12,Booking
 2135,07/04/2026 12:35:07,,Booking,Szlaga Tomasz,Senape,Senape - Non Rimborsabile OTA,15/04/2026,16/04/2026,1,130.56,Florence David's Apartament,Confermate,12,Booking
+2056,15/02/2026 14:00:47,28/03/2026,Booking,FIGAS MARIA ROSA,Senape,Senape - Non Rimborsabile OTA,14/04/2026,17/04/2026,3,456.31,Florence David's Apartament,Cancellate,0,Booking
+2005,13/01/2026 10:50:32,13/01/2026,Booking,Paulsen Susanne,Verde,Verde - Standard,14/04/2026,15/04/2026,1,151.16,Florence David's Apartament,Cancellate,0,Booking
 2136,07/04/2026 14:27:00,,Expedia Affilia,Mary Diane Boquila,Senape,Senape,13/04/2026,15/04/2026,2,176.4,Florence David's Apartament,Confermate,24,Expedia Affilia
 2035,31/01/2026 23:07:05,,Booking,galeano facundo ariel,Verde,Verde - Non Rimborsabile OTA,13/04/2026,16/04/2026,3,391.91,Florence David's Apartament,Confermate,36,Booking
 2018,18/01/2026 12:54:49,,Booking,Schönenberger Barbara,Blu,Blu - Non Rimborsabile OTA,13/04/2026,17/04/2026,4,525.24,Florence David's Apartament,Confermate,48,Booking
 2066,27/02/2026 08:17:00,,Expedia,Bérengère d'Allens,Blu,Blu - Non Rimborsabile OTA,11/04/2026,12/04/2026,1,124.18,Florence David's Apartament,Confermate,12,Expedia
+2015,18/01/2026 04:40:13,22/01/2026,Booking,Zapata Saavedra Maira Janeth,Senape,Senape - Standard,10/04/2026,13/04/2026,3,499.13,Florence David's Apartament,Cancellate,0,Booking
 2078,08/03/2026 15:45:16,,Booking,Ballof Lino,Blu,Blu - Non Rimborsabile OTA,09/04/2026,11/04/2026,2,236.13,Florence David's Apartament,Confermate,24,Booking
 2027,24/01/2026 23:54:00,,Expedia,Leslie Searl,Senape,Senape - Non Rimborsabile OTA,09/04/2026,12/04/2026,3,372.14,Florence David's Apartament,Confermate,36,Expedia
 1979,03/01/2026 19:16:31,,Booking,Mangiola Michel,Verde,Verde - Min Stay 5 notti,08/04/2026,13/04/2026,5,641.43,Florence David's Apartament,Confermate,60,Booking
 2089,09/03/2026 15:47:27,,Booking,CHEN YUNTZU,Senape,Senape - Non Rimborsabile OTA,07/04/2026,09/04/2026,2,283.75,Florence David's Apartament,Confermate,24,Booking
+2010,16/01/2026 19:30:13,05/02/2026,Booking,Herrero Ana,Senape,Senape - Standard,07/04/2026,09/04/2026,2,329.71,Florence David's Apartament,Cancellate,0,Booking
 2001,12/01/2026 06:42:25,,Booking,Huang Jason,Blu,Blu - Non Rimborsabile OTA,07/04/2026,09/04/2026,2,271.3,Florence David's Apartament,Confermate,24,Booking
 2133,06/04/2026 10:27:00,,Expedia,Egla Agalliu,Blu,Blu - Standard,06/04/2026,07/04/2026,1,89.2,Florence David's Apartament,Confermate,12,Expedia
 2054,15/02/2026 03:04:53,,Booking,MITCHELL CHRISTINA,Verde,Verde - Non Rimborsabile OTA,06/04/2026,08/04/2026,2,262.29,Florence David's Apartament,Confermate,24,Booking
@@ -7070,13 +7125,17 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2031,27/01/2026 20:34:38,,Booking,Güldali Fatih,Senape,Senape - Non Rimborsabile OTA,21/03/2026,22/03/2026,1,121.6,Florence David's Apartament,Confermate,12,Booking
 2008,14/01/2026 20:11:32,,Booking Engine,Riccardo Di Giovanni,Blu,Blu - Non Rimborsabile BE,21/03/2026,22/03/2026,1,94.32,Florence David's Apartament,Confermate,12,Booking Engine
 2100,18/03/2026 19:47:11,,Airbnb,Joseph Sheehan,Senape,Senape - Standard,20/03/2026,21/03/2026,1,67.68,Florence David's Apartament,Confermate,0,Airbnb
+2023,21/01/2026 02:55:00,21/01/2026,Booking,Lima Hericka,Senape,Senape - Standard,20/03/2026,23/03/2026,3,397.9,Florence David's Apartament,Cancellate,0,Booking
 2012,16/01/2026 21:48:37,,Booking,Rasic Ivana,Verde,Verde - Non Rimborsabile OTA,20/03/2026,23/03/2026,3,314.58,Florence David's Apartament,Confermate,36,Booking
 2037,01/02/2026 16:22:46,,Booking,Narmontas Evaldas,Senape,Senape - Standard,19/03/2026,20/03/2026,1,107.75,Florence David's Apartament,Confermate,12,Booking
+1871,02/10/2025 17:20:12,02/10/2025,Booking,Pulaha Enis,Blu,Blu - Standard,19/03/2026,21/03/2026,2,283.14,Florence David's Apartament,Cancellate,0,Booking
 2093,12/03/2026 17:32:21,,Booking,Caldarola Lavinia,Verde,Verde - Non Rimborsabile OTA,18/03/2026,20/03/2026,2,135.6,Florence David's Apartament,Confermate,24,Booking
+2061,23/02/2026 09:24:31,12/03/2026,Booking,Solevska Angelov Vera,Verde,Verde - Standard,18/03/2026,20/03/2026,2,184.45,Florence David's Apartament,Cancellate,0,Booking
 2094,13/03/2026 14:00:00,,Expedia,Ava Hofstede,Verde,Verde - Non Rimborsabile OTA,17/03/2026,18/03/2026,1,48.82,Florence David's Apartament,Confermate,12,Expedia
 2021,19/01/2026 22:47:41,,Booking,González Murgui Carles,Blu,Blu - Standard,17/03/2026,21/03/2026,4,376.39,Florence David's Apartament,Confermate,48,Booking
 2096,15/03/2026 13:34:23,,Booking,Wnuk Michał,Senape,Senape - Standard,16/03/2026,18/03/2026,2,133.11,Florence David's Apartament,Confermate,24,Booking
 2074,07/03/2026 20:16:53,,Booking,Demirci Nisa,Blu,Blu - Non Rimborsabile OTA,15/03/2026,17/03/2026,2,118.11,Florence David's Apartament,Confermate,24,Booking
+2070,03/03/2026 02:47:57,03/03/2026,Booking,Brad Goldstrom,Blu,Blu - Standard,15/03/2026,17/03/2026,2,167.69,Florence David's Apartament,Cancellate,0,Booking
 2000,11/01/2026 21:22:53,,Booking,RENAULT Adeline,Senape,Senape - Standard,14/03/2026,16/03/2026,2,190.06,Florence David's Apartament,Confermate,24,Booking
 1980,04/01/2026 13:17:02,,Booking,Morales Pablo,Verde,Verde - Standard,14/03/2026,17/03/2026,3,253.29,Florence David's Apartament,Confermate,36,Booking
 1997,10/01/2026 16:29:00,,Expedia Affilia,NAGISA SAIKA,Blu,Blu,13/03/2026,15/03/2026,2,127.52,Florence David's Apartament,Confermate,24,Expedia Affilia
@@ -7084,15 +7143,21 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2060,22/02/2026 18:44:57,,Booking,Plescia Letizia,Senape,Senape - Standard,11/03/2026,14/03/2026,3,327.49,Florence David's Apartament,Confermate,36,Booking
 2057,18/02/2026 19:26:16,,Booking,Tamanini Chiara,Verde,Verde - Standard,11/03/2026,14/03/2026,3,285.07,Florence David's Apartament,Confermate,18,Booking
 2085,08/03/2026 23:30:53,,Booking,Marinelli Micaela,Blu,Blu - Standard,10/03/2026,12/03/2026,2,139.43,Florence David's Apartament,Confermate,12,Booking
+2007,14/01/2026 13:18:00,03/02/2026,Booking,SERVIEN Philippine,Verde,Verde - Standard,10/03/2026,13/03/2026,3,282,Florence David's Apartament,Cancellate,0,Booking
+1994,09/01/2026 03:22:00,04/03/2026,Expedia Affilia,Guanlin Liang,Blu,Blu - Standard,10/03/2026,12/03/2026,2,135.8,Florence David's Apartament,Cancellate,24,Expedia Affilia
 2082,08/03/2026 19:12:35,,Airbnb,Dalia Matijosaitiene,Senape,Senape - Standard,09/03/2026,10/03/2026,1,61.68,Florence David's Apartament,Confermate,0,Airbnb
 2030,27/01/2026 11:49:43,,Airbnb,Mateus Brognoli Silvano,Blu,Blu - Standard,09/03/2026,10/03/2026,1,64.22,Florence David's Apartament,Confermate,0,Airbnb
 1978,03/01/2026 18:50:47,,Booking,yuanyu lin,Verde,Verde - Standard,08/03/2026,10/03/2026,2,160.36,Florence David's Apartament,Confermate,24,Booking
 2049,11/02/2026 18:48:42,,Booking,Carro Piero,Senape,Senape - Non Rimborsabile OTA,07/03/2026,09/03/2026,2,187.79,Florence David's Apartament,Confermate,24,Booking
 2048,11/02/2026 14:24:21,,Booking,Scalondro Giulia,Verde,Verde - Standard,07/03/2026,08/03/2026,1,99.47,Florence David's Apartament,Confermate,12,Booking
+2020,19/01/2026 19:10:49,19/01/2026,Booking,LEE WONYOUNG,Verde,Verde - Non Rimborsabile OTA,07/03/2026,08/03/2026,1,88.36,Florence David's Apartament,Cancellate,0,Booking
+1999,11/01/2026 19:59:37,12/01/2026,Booking,Avila Sara,Verde,Verde - Standard,06/03/2026,08/03/2026,2,176.8,Florence David's Apartament,Cancellate,0,Booking
+1998,11/01/2026 08:34:53,22/01/2026,Booking,Kaczmarek Dagmara,Senape,Senape - Standard,06/03/2026,08/03/2026,2,206.85,Florence David's Apartament,Cancellate,0,Booking
 1993,08/01/2026 23:34:59,,Booking,Avila Sara,Blu,Blu - Standard,06/03/2026,09/03/2026,3,240.45,Florence David's Apartament,Confermate,36,Booking
 2064,25/02/2026 23:02:37,,Booking,Barcia Calvino Maria,Senape,Senape - Standard,05/03/2026,07/03/2026,2,165.83,Florence David's Apartament,Confermate,24,Booking
 2029,26/01/2026 21:56:11,,Booking Engine,Isabel Schmuhl,Verde,Verde - Non Rimborsabile BE,05/03/2026,07/03/2026,2,135.8,Florence David's Apartament,Confermate,24,Booking Engine
 2009,16/01/2026 05:10:55,,Booking,Araújo Pedro,Blu,Blu - Non Rimborsabile OTA,04/03/2026,05/03/2026,1,74.88,Florence David's Apartament,Confermate,12,Booking
+1944,30/11/2025 21:30:24,06/01/2026,Booking,Martin Sanchez Coral Maria,Verde,Verde - Standard,02/03/2026,06/03/2026,4,367.36,Florence David's Apartament,Cancellate,0,Booking
 1990,06/01/2026 23:52:57,,Booking,Martin Sanchez Coral Maria,Blu,Blu - Standard,01/03/2026,04/03/2026,3,201.93,Florence David's Apartament,Confermate,36,Booking
 1987,05/01/2026 13:58:19,,Booking,Soares Sylvia,Senape,Senape - Non Rimborsabile OTA,01/03/2026,05/03/2026,4,311.87,Florence David's Apartament,Confermate,48,Booking
 2034,29/01/2026 09:30:30,,Booking,Kitsos Alice,Senape,Senape - Standard,28/02/2026,01/03/2026,1,99.25,Florence David's Apartament,Confermate,12,Booking
@@ -7100,10 +7165,12 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 2050,12/02/2026 16:50:25,,Booking,Costa Maddalena,Blu,Blu - Non Rimborsabile OTA,27/02/2026,01/03/2026,2,165.43,Florence David's Apartament,Confermate,24,Booking
 2028,26/01/2026 21:53:53,,Booking Engine,Isabel Schmuhl,Verde,Verde - Non Rimborsabile BE,27/02/2026,28/02/2026,1,67.16,Florence David's Apartament,Confermate,12,Booking Engine
 2058,21/02/2026 15:55:13,,Booking Engine,Giada Innocenti,Senape,Senape - Non Rimborsabile BE,24/02/2026,26/02/2026,2,120.39,Florence David's Apartament,Confermate,24,Booking Engine
+2032,28/01/2026 04:05:01,10/02/2026,Booking,Vu Hoang Phat,Blu,Blu - Standard,24/02/2026,01/03/2026,5,401.32,Florence David's Apartament,Cancellate,0,Booking
 2059,22/02/2026 12:57:38,,Booking,Grujev Galena,Blu,Blu - Standard,23/02/2026,27/02/2026,4,260.84,Florence David's Apartament,Confermate,24,Booking
 2017,18/01/2026 12:51:40,,Booking,Fernández Rodríguez Laura,Senape,Senape - Non Rimborsabile OTA,21/02/2026,24/02/2026,3,259.83,Florence David's Apartament,Confermate,36,Booking
 1977,03/01/2026 17:30:16,,Booking,Melo Edna,Blu,Blu - Standard,17/02/2026,23/02/2026,6,445.64,Florence David's Apartament,Confermate,72,Booking
 1976,03/01/2026 16:20:10,,Booking,Melo Thaís,Verde,Verde - Standard,17/02/2026,23/02/2026,6,499.51,Florence David's Apartament,Confermate,72,Booking
+1933,25/11/2025 10:20:02,05/12/2025,Booking,Pohis Anatoli,Blu,Blu - Standard,17/02/2026,22/02/2026,5,461.44,Florence David's Apartament,Cancellate,0,Booking
 2039,01/02/2026 19:49:57,,Booking,Scone Rebeca,Senape,Senape - Min Stay 5 notti,16/02/2026,21/02/2026,5,421.93,Florence David's Apartament,Confermate,60,Booking
 2046,10/02/2026 13:12:39,,Booking,Hana Sedláčková,Verde,Verde - Non Rimborsabile OTA,15/02/2026,16/02/2026,1,66.18,Florence David's Apartament,Confermate,12,Booking
 1966,25/12/2025 16:27:26,,Booking,Stanizzi Elisa,Blu,Blu - Standard,14/02/2026,16/02/2026,2,165.37,Florence David's Apartament,Confermate,24,Booking
@@ -7113,23 +7180,35 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1969,28/12/2025 16:29:06,,Booking,Marta Odrowska,Blu,Blu - Non Rimborsabile OTA,12/02/2026,14/02/2026,2,138.52,Florence David's Apartament,Confermate,24,Booking
 2043,06/02/2026 09:13:00,,Expedia Affilia,XINSHAN JI,Blu,Blu,10/02/2026,12/02/2026,2,96.24,Florence David's Apartament,Confermate,24,Expedia Affilia
 1984,04/01/2026 22:05:43,,Booking,Ruiz Ucotich Jonatan David,Verde,Verde - Non Rimborsabile OTA,10/02/2026,12/02/2026,2,131.89,Florence David's Apartament,Confermate,24,Booking
+1983,04/01/2026 21:37:53,06/02/2026,Booking,Ji Xinshan,Blu,Blu - Standard,10/02/2026,12/02/2026,2,137.32,Florence David's Apartament,Cancellate,0,Booking
 2041,05/02/2026 21:24:41,,Airbnb,Rike Läpple,Verde,Verde - Standard,09/02/2026,10/02/2026,1,49.01,Florence David's Apartament,Confermate,0,Airbnb
 2040,02/02/2026 10:41:59,,Booking,Papi Lucia,Blu,Blu - Standard,07/02/2026,08/02/2026,1,70.06,Florence David's Apartament,Confermate,12,Booking
+2022,20/01/2026 00:31:07,02/02/2026,Booking,Marinone Alessandro,Blu,Blu - Standard,07/02/2026,08/02/2026,1,80.78,Florence David's Apartament,Cancellate,0,Booking
+1974,02/01/2026 22:36:43,13/01/2026,Booking,Gonzalez de Chavarri Jone,Blu,Blu - Standard,07/02/2026,10/02/2026,3,244.23,Florence David's Apartament,Cancellate,0,Booking
 1434,18/01/2025 19:18:46,,Booking,Fausto Fazi,Senape,Senape - Standard,07/02/2026,09/02/2026,2,208.44,Florence David's Apartament,Confermate,12,Booking
 2042,05/02/2026 22:20:39,,Booking,Cruz Nohemi,Senape,Senape - Standard,06/02/2026,07/02/2026,1,77.28,Florence David's Apartament,Confermate,12,Booking
 2038,01/02/2026 17:11:07,,Booking,Ilaria Ciardiello,Verde,Verde - Non Rimborsabile OTA,06/02/2026,08/02/2026,2,148.62,Florence David's Apartament,Confermate,24,Booking
+1991,07/01/2026 12:38:53,01/02/2026,Booking,Zamfirescu Anamaria,Verde,Verde - Standard,06/02/2026,08/02/2026,2,167.07,Florence David's Apartament,Cancellate,0,Booking
+1988,05/01/2026 14:46:53,06/01/2026,Booking,Lamanna Valeria,Verde,Verde - Standard,06/02/2026,09/02/2026,3,229.79,Florence David's Apartament,Cancellate,0,Booking
 2019,18/01/2026 17:39:43,,Booking,pagaria roberto,Verde,Verde - Standard,02/02/2026,04/02/2026,2,148.72,Florence David's Apartament,Confermate,24,Booking
+2011,16/01/2026 21:41:15,22/01/2026,Booking,Dalbosco Grace,Blu,Blu - Standard,02/02/2026,03/02/2026,1,63.31,Florence David's Apartament,Cancellate,0,Booking
+1995,09/01/2026 17:12:31,26/01/2026,Booking,FERNANDEZ FERNANDEZ ANDREA,Senape,Senape - Standard,02/02/2026,05/02/2026,3,230.73,Florence David's Apartament,Cancellate,0,Booking
+1925,20/11/2025 17:54:13,21/11/2025,Booking,Zanelli Federica,Blu,Blu - Standard,02/02/2026,06/02/2026,4,290.3,Florence David's Apartament,Cancellate,0,Booking
 1961,19/12/2025 15:20:10,,Booking,Cucinotta D'allura Adriana,Blu,Blu - Standard,31/01/2026,01/02/2026,1,68.76,Florence David's Apartament,Confermate,12,Booking
+1960,19/12/2025 00:42:11,19/12/2025,Booking,Fabbri Gabriele,Blu,Blu - Standard,31/01/2026,01/02/2026,1,68.76,Florence David's Apartament,Cancellate,0,Booking
 1982,04/01/2026 21:03:45,,Booking,tripodi tommaso,Senape,Senape - Standard,30/01/2026,01/02/2026,2,166.25,Florence David's Apartament,Confermate,24,Booking
 1947,02/12/2025 17:14:32,,Booking,hsuehhsuan OU,Senape,Senape - Non Rimborsabile OTA,27/01/2026,30/01/2026,3,253.27,Florence David's Apartament,Confermate,54,Booking
 1945,01/12/2025 10:56:30,,Booking,Boerchi Diego,Verde,Verde - Min Stay 5 notti,27/01/2026,01/02/2026,5,343.48,Florence David's Apartament,Confermate,30,Booking
 1893,27/10/2025 11:18:49,,Booking,SON CHANGMIN,Blu,Blu - Standard,27/01/2026,31/01/2026,4,322.87,Florence David's Apartament,Confermate,48,Booking
+2004,12/01/2026 22:42:44,23/01/2026,Airbnb,Jenna Grogan,Blu,Blu - Standard,26/01/2026,27/01/2026,1,54.08,Florence David's Apartament,Cancellate,0,Airbnb
 1968,26/12/2025 16:39:02,,Booking,Abbracciavento Francesca,Verde,Verde - Standard,23/01/2026,25/01/2026,2,158.42,Florence David's Apartament,Confermate,24,Booking
 1918,17/11/2025 13:13:34,,Booking,Wiąckowski Krzysztof,Blu,Blu - Non Rimborsabile OTA,23/01/2026,26/01/2026,3,194.86,Florence David's Apartament,Confermate,36,Booking
 1869,01/10/2025 09:28:20,,Booking,Jiyeon HONG,Senape,Senape - Non Rimborsabile OTA,23/01/2026,26/01/2026,3,336.45,Florence David's Apartament,Confermate,36,Booking
 2016,18/01/2026 08:52:42,,Booking Engine,Isabelle Gougenheim,Senape,Senape - Non Rimborsabile BE,22/01/2026,23/01/2026,1,50.4,Florence David's Apartament,Confermate,6,Booking Engine
 1989,06/01/2026 16:15:24,,Booking,Ravasio Carolina,Senape,Senape - Standard,20/01/2026,21/01/2026,1,86.17,Florence David's Apartament,Confermate,12,Booking
+1906,08/11/2025 19:44:55,28/11/2025,Booking,Cravcenco Irina,Verde,Verde - Standard,19/01/2026,21/01/2026,2,184.74,Florence David's Apartament,Cancellate,0,Booking
 1926,21/11/2025 02:09:21,,Booking,Márquez Francisca,Verde,Verde - Non Rimborsabile OTA,17/01/2026,19/01/2026,2,136.29,Florence David's Apartament,Confermate,24,Booking
+1911,11/11/2025 19:27:02,12/11/2025,Booking,Denizhan Dilara,Senape,Senape - Standard,17/01/2026,19/01/2026,2,179.09,Florence David's Apartament,Cancellate,0,Booking
 1905,08/11/2025 18:41:09,,Booking Engine,Riccardo Mangano,Blu,Blu - Min Stay 5 notti,17/01/2026,23/01/2026,6,363.12,Florence David's Apartament,Confermate,72,Booking Engine
 1950,04/12/2025 20:34:55,,Booking Engine,Diego Cagna ,Senape,Senape - Standard,16/01/2026,18/01/2026,2,168.8,Florence David's Apartament,Confermate,24,Booking Engine
 2006,13/01/2026 17:38:09,,Booking,Calloni Lorenzo,Senape,Senape - Standard,14/01/2026,15/01/2026,1,61.88,Florence David's Apartament,Confermate,6,Booking
@@ -7148,10 +7227,12 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1937,26/11/2025 23:13:02,,Booking,Zafeiriou Eleni,Senape,Senape - Min Stay 5 notti,01/01/2026,06/01/2026,5,563.58,Florence David's Apartament,Confermate,60,Booking
 1936,26/11/2025 22:37:29,,Booking,Liberali Tommaso,Blu,Blu - Non Rimborsabile OTA,31/12/2025,01/01/2026,1,155.64,Florence David's Apartament,Confermate,12,Booking
 1900,04/11/2025 21:13:05,,Booking,Tzogka Christina,Verde,Verde - Non Rimborsabile OTA,31/12/2025,02/01/2026,2,331.98,Florence David's Apartament,Confermate,24,Booking
+1898,01/11/2025 20:51:05,26/11/2025,Booking,Fortes Castellano Maria,Blu,Blu - Standard,31/12/2025,02/01/2026,2,350.17,Florence David's Apartament,Cancellate,0,Booking
 1972,30/12/2025 00:48:46,,Booking,nathaly veliz,Blu,Blu - Standard,30/12/2025,31/12/2025,1,74.19,Florence David's Apartament,Confermate,12,Booking
 1892,27/10/2025 03:09:06,,Booking,Villarroel Cantor Ana Victoria,Senape,Senape - Standard,30/12/2025,01/01/2026,2,426.72,Florence David's Apartament,Confermate,24,Booking
 1964,22/12/2025 20:30:19,,Booking,Daniele Marino,Senape,Senape - Standard,29/12/2025,30/12/2025,1,108.62,Florence David's Apartament,Confermate,18,Booking
 1941,28/11/2025 22:16:21,,Booking,Mantiero Christian,Senape,Senape - Non Rimborsabile OTA,27/12/2025,29/12/2025,2,249.18,Florence David's Apartament,Confermate,24,Booking
+1904,07/11/2025 20:17:39,18/11/2025,Booking,Tovmasyan Armenuhi,Senape,Senape - Standard,27/12/2025,29/12/2025,2,304.92,Florence David's Apartament,Cancellate,0,Booking
 1965,25/12/2025 15:27:56,,Booking,Moreira Eugenio Carlos,Senape,Senape - Standard,26/12/2025,27/12/2025,1,81.21,Florence David's Apartament,Confermate,18,Booking
 1923,20/11/2025 17:31:17,,Booking,Di Stefano Luca,Blu,Blu - Non Rimborsabile OTA,26/12/2025,30/12/2025,4,519.32,Florence David's Apartament,Confermate,48,Booking
 1949,04/12/2025 19:48:54,,Booking,Zhang Shuo,Senape,Senape - Non Rimborsabile OTA,25/12/2025,26/12/2025,1,108.86,Florence David's Apartament,Confermate,18,Booking
@@ -7159,17 +7240,26 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1954,09/12/2025 17:44:30,,Booking,roberto rosanò,Blu,Blu - Standard,24/12/2025,26/12/2025,2,204.82,Florence David's Apartament,Confermate,24,Booking
 1962,20/12/2025 14:38:55,,Airbnb,Christian Antonelli,Blu,Blu - Standard,20/12/2025,21/12/2025,1,59.15,Florence David's Apartament,Confermate,0,Airbnb
 1959,17/12/2025 17:09:03,,Booking,ROY CHOWDHURY SHWETA,Senape,Senape - Standard,20/12/2025,22/12/2025,2,153.84,Florence David's Apartament,Confermate,24,Booking
+1920,18/11/2025 16:38:52,08/12/2025,Booking,Benavides Jessica,Blu,Blu - Standard,19/12/2025,20/12/2025,1,71.53,Florence David's Apartament,Cancellate,0,Booking
 1938,27/11/2025 14:19:00,,Expedia Affilia,HIROAKI ITO,Verde,Verde,16/12/2025,17/12/2025,1,48.27,Florence David's Apartament,Confermate,12,Expedia Affilia
 1955,10/12/2025 10:43:08,,Booking Engine,Khamoah  D’alberti,Blu,Blu - Non Rimborsabile BE,13/12/2025,14/12/2025,1,57.6,Florence David's Apartament,Confermate,12,Booking Engine
 1921,18/11/2025 22:06:14,,Booking,Graziani Ilaria,Verde,Verde - Standard,13/12/2025,14/12/2025,1,79.94,Florence David's Apartament,Confermate,12,Booking
+1917,17/11/2025 13:12:45,18/11/2025,Booking,Renato Gino,Verde,Verde - Standard,13/12/2025,14/12/2025,1,85.54,Florence David's Apartament,Cancellate,0,Booking
+1899,02/11/2025 20:13:51,16/11/2025,Booking,Chianese Giovanni,Verde,Verde - Standard,13/12/2025,14/12/2025,1,86.43,Florence David's Apartament,Cancellate,0,Booking
+1894,27/10/2025 23:12:15,07/12/2025,Booking,González Colino Sara,Blu,Blu - Standard,13/12/2025,17/12/2025,4,287.28,Florence David's Apartament,Cancellate,0,Booking
 1958,12/12/2025 17:14:28,,Booking,Di cristofaro Antonio vincenzo,Verde,Verde - Standard,12/12/2025,13/12/2025,1,53.31,Florence David's Apartament,Confermate,12,Booking
 1946,01/12/2025 21:37:05,,Booking,Aceto Rosy,Blu,Blu - Non Rimborsabile OTA,12/12/2025,13/12/2025,1,80.64,Florence David's Apartament,Confermate,6,Booking
 1929,22/11/2025 14:55:10,,Booking,Premchandralal Rashmi,Senape,Senape - Standard,11/12/2025,15/12/2025,4,330.63,Florence David's Apartament,Confermate,48,Booking
 1903,06/11/2025 22:18:50,,Booking,Laprocina Marianna,Blu,Blu - Standard,11/12/2025,12/12/2025,1,66.48,Florence David's Apartament,Confermate,6,Booking
+1897,01/11/2025 13:42:44,21/11/2025,Booking,Ronco Elisa,Senape,Senape - Standard,11/12/2025,14/12/2025,3,223,Florence David's Apartament,Cancellate,0,Booking
 1932,24/11/2025 23:24:20,,Booking,NARDINI ELEONORA,Senape,Senape - Standard,09/12/2025,11/12/2025,2,150.52,Florence David's Apartament,Confermate,12,Booking
+1928,21/11/2025 21:56:22,21/11/2025,Booking,Martinez Almeida Ana,Senape,Senape - Standard,09/12/2025,13/12/2025,4,307.33,Florence David's Apartament,Cancellate,0,Booking
+1902,05/11/2025 22:06:06,27/11/2025,Booking,Antuña San Emeterio María,Verde,Verde - Standard,09/12/2025,11/12/2025,2,121.18,Florence David's Apartament,Cancellate,0,Booking
 1845,14/09/2025 17:22:33,,Booking,Abes Hande,Blu,Blu - Non Rimborsabile OTA,08/12/2025,11/12/2025,3,204.05,Florence David's Apartament,Confermate,36,Booking
 1943,30/11/2025 11:48:49,,Booking,Melone Margherita,Senape,Senape - Standard,06/12/2025,08/12/2025,2,233.85,Florence David's Apartament,Confermate,24,Booking
 1914,12/11/2025 19:21:24,,Booking,Zuccheri Roberto,Verde,Verde - Non Rimborsabile OTA,06/12/2025,08/12/2025,2,210.1,Florence David's Apartament,Confermate,24,Booking
+1885,13/10/2025 22:16:42,30/11/2025,Booking,Dario Balzano,Senape,Senape - Standard,06/12/2025,09/12/2025,3,296.71,Florence David's Apartament,Cancellate,0,Booking
+1883,12/10/2025 21:19:25,12/11/2025,Booking,Marcaccio Emanuele,Verde,Verde - Standard,06/12/2025,08/12/2025,2,209.39,Florence David's Apartament,Cancellate,0,Booking
 1856,26/09/2025 13:27:46,,Booking,Gatto Cristian,Blu,Blu - Standard,06/12/2025,08/12/2025,2,216.81,Florence David's Apartament,Confermate,24,Booking
 1953,05/12/2025 17:09:26,,Booking,Sammons Andrew,Verde,Verde - Standard,05/12/2025,06/12/2025,1,67.2,Florence David's Apartament,Confermate,12,Booking
 1952,05/12/2025 16:56:58,,Booking,magliacane luca Stanislao,Senape,Senape - Standard,05/12/2025,06/12/2025,1,60.93,Florence David's Apartament,Confermate,12,Booking
@@ -7181,6 +7271,7 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1878,08/10/2025 18:30:09,,Booking,Peruzzu Stefano,Verde,Verde - Standard,29/11/2025,01/12/2025,2,199.59,Florence David's Apartament,Confermate,24,Booking
 1873,03/10/2025 17:05:24,,FrontOffice,Michela,Senape,Senape - Standard,29/11/2025,01/12/2025,2,188,Florence David's Apartament,Confermate,24,FrontOffice
 1940,28/11/2025 17:15:38,,Booking,Campanella Ivan,Verde,Verde - Standard,28/11/2025,29/11/2025,1,89.6,Florence David's Apartament,Confermate,6,Booking
+1919,17/11/2025 21:08:14,19/11/2025,Booking,Jiménez Manuel,Verde,Verde - Standard,28/11/2025,29/11/2025,1,100.98,Florence David's Apartament,Cancellate,0,Booking
 1948,25/11/2025 13:50:00,,Expedia Affilia,Yulianti,Senape,Senape - Standard,27/11/2025,29/11/2025,2,124.25,Florence David's Apartament,Confermate,24,Expedia Affilia
 1942,25/11/2025 13:50:00,,Expedia Affilia,Yulianti Supanti,Blu,Blu - Standard,27/11/2025,29/11/2025,2,50.92,Florence David's Apartament,Confermate,6,Expedia Affilia
 1909,10/11/2025 17:22:29,,Booking,SARRABERE Jade,Verde,Verde - Non Rimborsabile OTA,25/11/2025,28/11/2025,3,234.15,Florence David's Apartament,Confermate,18,Booking
@@ -7191,47 +7282,62 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1872,02/10/2025 21:24:28,,Booking Engine,federica verdini,Senape,Senape - Standard,21/11/2025,23/11/2025,2,220.8,Florence David's Apartament,Confermate,36,Booking Engine
 1848,20/09/2025 15:56:31,,Booking Engine,Luca Marc,Blu,Blu,20/11/2025,22/11/2025,2,145.35,Florence David's Apartament,Confermate,24,Booking Engine
 1895,28/10/2025 15:51:53,,Booking Engine,ChaeYoung(Klara) Kim,Senape,Senape,19/11/2025,21/11/2025,2,141.7,Florence David's Apartament,Confermate,24,Booking Engine
+1891,26/10/2025 20:54:09,28/10/2025,Booking,Marazzi Patrizia Maria,Senape,Senape - Standard,19/11/2025,21/11/2025,2,161.28,Florence David's Apartament,Cancellate,0,Booking
 1861,28/09/2025 18:19:05,,Booking,Parker Isobel,Verde,Verde - Standard,18/11/2025,22/11/2025,4,326.11,Florence David's Apartament,Confermate,48,Booking
 1879,08/10/2025 21:41:38,,FrontOffice,Alessio,Senape,Senape,17/11/2025,19/11/2025,2,126,Florence David's Apartament,Confermate,24,FrontOffice
 1916,15/11/2025 22:16:30,,Booking,Kowalik Maciej,Verde,Verde - Standard,16/11/2025,18/11/2025,2,149.78,Florence David's Apartament,Confermate,12,Booking
 1913,12/11/2025 08:24:31,,Booking,Moura Bruna,Senape,Senape - Standard,15/11/2025,16/11/2025,1,96.77,Florence David's Apartament,Confermate,12,Booking
+1912,11/11/2025 22:04:44,11/11/2025,Booking,Presti Davide,Senape,Senape - Standard,15/11/2025,16/11/2025,1,96.77,Florence David's Apartament,Cancellate,0,Booking
 1829,08/09/2025 13:56:42,,Booking,Tarakanov Ivan,Blu,Blu - Non Rimborsabile OTA,15/11/2025,18/11/2025,3,232.55,Florence David's Apartament,Confermate,36,Booking
+1901,04/11/2025 21:58:33,09/11/2025,Booking,Prozzillo Valeria,Senape,Senape - Standard,14/11/2025,16/11/2025,2,182.61,Florence David's Apartament,Cancellate,0,Booking
 1907,09/11/2025 22:05:54,,Booking,Erdogan Cem,Senape,Senape - Non Rimborsabile OTA,13/11/2025,15/11/2025,2,195.9,Florence David's Apartament,Confermate,24,Booking
 1866,29/09/2025 16:43:10,,Booking,Vaquerizo Gómez Yolanda,Verde,Verde - Standard,13/11/2025,16/11/2025,3,266.4,Florence David's Apartament,Confermate,36,Booking
 1880,09/10/2025 00:01:06,,Booking,Navarro leonardo Estela,Verde,Verde - Standard,10/11/2025,12/11/2025,2,156.82,Florence David's Apartament,Confermate,24,Booking
 1823,06/09/2025 02:58:46,,Booking,Ferreira Cristie,Blu,Blu - Non Rimborsabile OTA,10/11/2025,13/11/2025,3,211.62,Florence David's Apartament,Confermate,36,Booking
 1847,16/09/2025 21:26:07,,Booking,Zengin Serdar,Senape,Senape - Standard,08/11/2025,11/11/2025,3,297.59,Florence David's Apartament,Confermate,36,Booking
+1844,14/09/2025 15:43:17,13/10/2025,Booking,GUO ZEQUAN,Blu,Blu - Standard,08/11/2025,10/11/2025,2,190.93,Florence David's Apartament,Cancellate,0,Booking
 1842,13/09/2025 10:16:32,,Booking,Escriu Ramon,Verde,Verde - Standard,08/11/2025,10/11/2025,2,187.11,Florence David's Apartament,Confermate,24,Booking
 1886,15/10/2025 15:34:40,,Booking,Slamic Francesca,Blu,Blu - Standard,07/11/2025,09/11/2025,2,217.41,Florence David's Apartament,Confermate,24,Booking
+1874,05/10/2025 11:08:37,30/10/2025,Booking,Minnella Marilena Agatav,Senape,Senape - Standard,06/11/2025,08/11/2025,2,210.28,Florence David's Apartament,Cancellate,0,Booking
 1896,01/11/2025 13:30:00,,Booking,gomez andrea,Blu,Blu - Standard,04/11/2025,07/11/2025,3,212.06,Florence David's Apartament,Confermate,36,Booking
 1870,01/10/2025 15:28:04,,Booking,nouchi marine,Verde,Verde - Standard,02/11/2025,06/11/2025,4,350.17,Florence David's Apartament,Confermate,48,Booking
 1843,14/09/2025 12:32:26,,Booking,wang shuning,Blu,Blu - Non Rimborsabile OTA,01/11/2025,03/11/2025,2,198.07,Florence David's Apartament,Confermate,24,Booking
 1852,24/09/2025 12:58:08,,Booking,trapani federica,Senape,Senape - Standard,31/10/2025,02/11/2025,2,269.98,Florence David's Apartament,Confermate,24,Booking
+1824,06/09/2025 12:24:58,23/09/2025,Booking,Pisani Alessandra,Senape,Senape - Standard,31/10/2025,05/11/2025,5,600.53,Florence David's Apartament,Cancellate,0,Booking
 1815,02/09/2025 22:25:03,,Booking,Manolio Sara,Verde,Verde - Standard,31/10/2025,02/11/2025,2,250.37,Florence David's Apartament,Confermate,24,Booking
 1840,12/09/2025 20:50:13,,Booking,Nauck Carolin,Senape,Senape - Standard,30/10/2025,31/10/2025,1,115.63,Florence David's Apartament,Confermate,12,Booking
 1807,01/09/2025 00:32:52,,Booking,Mandel Nadalutti Nicolás,Blu,Blu - Non Rimborsabile OTA,30/10/2025,01/11/2025,2,198.92,Florence David's Apartament,Confermate,24,Booking
 1875,05/10/2025 14:07:22,,Booking,Chioccia Federico,Verde,Verde - Standard,28/10/2025,30/10/2025,2,323.92,Florence David's Apartament,Confermate,24,Booking
 1808,01/09/2025 01:05:23,,Booking,Pinheiro Ivan,Blu,Blu - Non Rimborsabile OTA,28/10/2025,30/10/2025,2,190.45,Florence David's Apartament,Confermate,24,Booking
+1802,30/08/2025 10:38:54,02/10/2025,Booking,KLARE Jan,Verde,Verde - Standard,28/10/2025,31/10/2025,3,359.97,Florence David's Apartament,Cancellate,0,Booking
 1797,26/08/2025 22:22:20,,Booking,Szypula Patryk,Senape,Senape - Non Rimborsabile OTA,28/10/2025,30/10/2025,2,268.19,Florence David's Apartament,Confermate,24,Booking
+1784,17/08/2025 23:09:29,31/08/2025,Booking,Azeka Ester Aki Koyama,Blu,Blu - Standard,28/10/2025,31/10/2025,3,376.2,Florence David's Apartament,Cancellate,0,Booking
+1846,16/09/2025 09:45:05,26/09/2025,Booking,kaya ayşe nur,Senape,Senape - Standard,27/10/2025,28/10/2025,1,122.76,Florence David's Apartament,Cancellate,0,Booking
 1814,02/09/2025 22:07:26,,Booking,Marcos Fuentes Marina,Blu,Blu - Standard,27/10/2025,28/10/2025,1,115.83,Florence David's Apartament,Confermate,12,Booking
 1881,10/10/2025 12:55:46,,Booking,sivritepe burte,Senape,Senape - Standard,26/10/2025,28/10/2025,2,262.15,Florence David's Apartament,Confermate,24,Booking
 1838,11/09/2025 16:44:32,,Booking,Volodymyr Taranenko,Verde,Verde - Standard,26/10/2025,28/10/2025,2,256.6,Florence David's Apartament,Confermate,24,Booking
 1833,09/09/2025 12:33:16,,Booking,Vázquez Elena,Blu,Blu - Standard,26/10/2025,27/10/2025,1,122.76,Florence David's Apartament,Confermate,12,Booking
 1889,17/10/2025 21:00:27,,Booking,García Delgado Maria Del Pilar,Blu,Blu - Standard,25/10/2025,26/10/2025,1,140.18,Florence David's Apartament,Confermate,12,Booking
+1819,04/09/2025 19:28:57,17/10/2025,Booking,Matera Stefania,Blu,Blu - Standard,24/10/2025,26/10/2025,2,263.74,Florence David's Apartament,Cancellate,0,Booking
 1820,05/09/2025 13:02:04,,Booking,Cavestri Alberto,Verde,Verde - Standard,23/10/2025,26/10/2025,3,459.36,Florence David's Apartament,Confermate,36,Booking
 1817,04/09/2025 12:31:33,,Booking,Vázquez Elena,Senape,Senape - Standard,22/10/2025,26/10/2025,4,568.65,Florence David's Apartament,Confermate,48,Booking
 1805,31/08/2025 19:36:12,,Booking,Baek Soyeon,Blu,Blu - Standard,21/10/2025,24/10/2025,3,397.39,Florence David's Apartament,Confermate,36,Booking
 1849,22/09/2025 01:23:31,,Booking,Sawai Masayo,Senape,Senape - Standard,20/10/2025,22/10/2025,2,297,Florence David's Apartament,Confermate,24,Booking
+1831,08/09/2025 19:40:32,17/09/2025,Booking,Sinigoski Debora,Senape,Senape - Standard,20/10/2025,22/10/2025,2,377.12,Florence David's Apartament,Cancellate,0,Booking
 1853,24/09/2025 18:15:02,,Booking,Rapacka Iwona,Senape,Senape - Standard,18/10/2025,20/10/2025,2,316,Florence David's Apartament,Confermate,24,Booking
+1825,06/09/2025 12:39:08,15/09/2025,Booking,Shelest Olga,Senape,Senape - Standard,18/10/2025,20/10/2025,2,312.04,Florence David's Apartament,Cancellate,0,Booking
 1806,31/08/2025 21:29:30,,Booking,Calzada Leire,Blu,Blu - Non Rimborsabile OTA,18/10/2025,21/10/2025,3,410.76,Florence David's Apartament,Confermate,36,Booking
 1888,16/10/2025 21:45:17,,Booking,Tada Soh,Blu,Blu - Standard,17/10/2025,18/10/2025,1,124.34,Florence David's Apartament,Confermate,12,Booking
+1864,29/09/2025 13:43:39,14/10/2025,Booking,Villamizar Jorge Alexander,Blu,Blu - Standard,16/10/2025,18/10/2025,2,285.91,Florence David's Apartament,Cancellate,0,Booking
 1803,31/08/2025 16:58:24,,Booking,Uksul Esra,Verde,Verde - Min Stay 5 notti,16/10/2025,21/10/2025,5,754.85,Florence David's Apartament,Confermate,60,Booking
 1795,26/08/2025 14:19:35,,Booking,Toro Gaviria Nelly Alejandra,Senape,Senape - Standard,16/10/2025,18/10/2025,2,347.49,Florence David's Apartament,Confermate,24,Booking
 1887,15/10/2025 15:46:00,,Booking,Dürr Harald,Blu,Blu - Standard,15/10/2025,17/10/2025,2,242.35,Florence David's Apartament,Confermate,24,Booking
 1882,12/10/2025 16:04:53,,Booking,Lunegova Tatiana,Verde,Verde - Standard,14/10/2025,15/10/2025,1,138.6,Florence David's Apartament,Confermate,12,Booking
+1832,09/09/2025 12:04:51,03/10/2025,Booking,García Rodríguez Ismael,Verde,Verde - Standard,14/10/2025,16/10/2025,2,293.84,Florence David's Apartament,Cancellate,0,Booking
 1783,17/08/2025 21:13:14,,Booking,Hauck Samantha,Senape,Senape - Standard,14/10/2025,15/10/2025,1,181.04,Florence David's Apartament,Confermate,18,Booking
 1822,05/09/2025 20:30:24,,Booking,Herrmann Andrea,Senape,Senape - Standard,12/10/2025,14/10/2025,2,290.67,Florence David's Apartament,Confermate,24,Booking
 1813,02/09/2025 19:23:29,,Booking,damnotti federica,Blu,Blu - Non Rimborsabile OTA,12/10/2025,15/10/2025,3,424.12,Florence David's Apartament,Confermate,36,Booking
+1779,16/08/2025 09:06:31,22/08/2025,Booking,Fatouros Ioannis,Blu,Blu - Standard,12/10/2025,14/10/2025,2,275.32,Florence David's Apartament,Cancellate,0,Booking
 1781,16/08/2025 23:07:48,,Booking,Guimarães Marcio,Verde,Verde - Standard,11/10/2025,14/10/2025,3,493.76,Florence David's Apartament,Confermate,36,Booking
 1787,21/08/2025 04:33:46,,Booking Engine,Michael  Parr,Blu,Blu - Standard,10/10/2025,12/10/2025,2,309.6,Florence David's Apartament,Confermate,24,Booking Engine
 1860,28/09/2025 16:33:54,,Booking Engine,Sandra Opack,Blu,Blu,09/10/2025,10/10/2025,1,150.71,Florence David's Apartament,Confermate,12,Booking Engine
@@ -7239,6 +7345,7 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1800,28/08/2025 09:41:57,,Booking Engine,DONGHOON  KIM,Verde,Verde - Non Rimborsabile OTA,09/10/2025,11/10/2025,2,315.19,Florence David's Apartament,Confermate,24,Booking Engine
 1877,07/10/2025 08:20:39,,Booking,Hatton Allison,Verde,Verde - Standard,08/10/2025,09/10/2025,1,150.48,Florence David's Apartament,Confermate,12,Booking
 1876,06/10/2025 13:05:31,,Booking,Levy Clara,Verde,Verde - Standard,07/10/2025,08/10/2025,1,150.48,Florence David's Apartament,Confermate,12,Booking
+1867,30/09/2025 16:06:51,02/10/2025,Booking,Kuhn Marliese,Verde,Verde - Standard,07/10/2025,08/10/2025,1,159.28,Florence David's Apartament,Cancellate,0,Booking
 1778,14/08/2025 10:56:01,,Booking,Saba Elena,Senape,Senape - Standard,07/10/2025,09/10/2025,2,421.77,Florence David's Apartament,Confermate,36,Booking
 1835,09/09/2025 13:05:32,,Booking,song lajin,Verde,Verde - Standard,06/10/2025,07/10/2025,1,156.82,Florence David's Apartament,Confermate,12,Booking
 1801,29/08/2025 06:46:10,,Booking Engine,Rudy Dindault,Blu,Blu - Non Rimborsabile OTA,06/10/2025,09/10/2025,3,419.23,Florence David's Apartament,Confermate,36,Booking Engine
@@ -7246,28 +7353,37 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1865,29/09/2025 13:47:49,,Booking,Vallejos Miriam nerida,Blu,Blu - Standard,04/10/2025,05/10/2025,1,164.74,Florence David's Apartament,Confermate,12,Booking
 1857,27/09/2025 12:52:13,,Booking,Lustig Sebastiano,Senape,Senape - Standard,04/10/2025,07/10/2025,3,513.22,Florence David's Apartament,Confermate,36,Booking
 1851,22/09/2025 20:54:46,,Booking,Torres Carolina,Verde,Verde - Standard,04/10/2025,06/10/2025,2,361.15,Florence David's Apartament,Confermate,24,Booking
+1827,07/09/2025 14:37:56,26/09/2025,Booking,Henwood Paige,Senape,Senape - Standard,04/10/2025,07/10/2025,3,496.59,Florence David's Apartament,Cancellate,0,Booking
+1786,20/08/2025 16:39:54,22/09/2025,Booking,Pedro Santiago,Verde,Verde - Standard,04/10/2025,06/10/2025,2,374.22,Florence David's Apartament,Cancellate,0,Booking
 1858,28/09/2025 13:05:26,,Booking,luo xingyun,Verde,Verde - Standard,03/10/2025,04/10/2025,1,147.31,Florence David's Apartament,Confermate,12,Booking
 1863,29/09/2025 12:58:48,,Booking,Kekesi Szilard,Blu,Blu - Standard,02/10/2025,04/10/2025,2,316,Florence David's Apartament,Confermate,24,Booking
+1816,04/09/2025 10:07:53,29/09/2025,Booking,Büyüköz Berfu,Blu,Blu - Standard,02/10/2025,05/10/2025,3,555.98,Florence David's Apartament,Cancellate,0,Booking
 1811,02/09/2025 16:27:33,,Booking,Chen Yiwei,Senape,Senape - Non Rimborsabile OTA,02/10/2025,04/10/2025,2,453.52,Florence David's Apartament,Confermate,24,Booking
 1839,12/09/2025 14:06:30,,Booking,Jiang Limei,Blu,Blu - Non Rimborsabile OTA,01/10/2025,02/10/2025,1,189.6,Florence David's Apartament,Confermate,12,Booking
 1799,27/08/2025 22:53:22,,Booking,Hernández Vergara Angela Victoria,Verde,Verde - Standard,01/10/2025,03/10/2025,2,380.46,Florence David's Apartament,Confermate,24,Booking
+1763,21/07/2025 17:43:21,29/08/2025,Booking,Loterio Marques Ligia,Blu,Blu - Standard,01/10/2025,06/10/2025,5,980.94,Florence David's Apartament,Cancellate,0,Booking
 1836,09/09/2025 13:16:21,,Booking,Frazer Barbara,Verde,Verde - Standard,30/09/2025,01/10/2025,1,155.23,Florence David's Apartament,Confermate,12,Booking
 1828,07/09/2025 20:08:43,,Booking,Chabloz Florence,Senape,Senape - Standard,29/09/2025,02/10/2025,3,547.38,Florence David's Apartament,Confermate,18,Booking
 1755,19/07/2025 02:40:32,,Booking,HERSCHAFT KELLI MARA,Verde,Verde - Non Rimborsabile OTA,28/09/2025,30/09/2025,2,324.19,Florence David's Apartament,Confermate,24,Booking
 1810,01/09/2025 19:18:36,,Booking,Costa Martina,Senape,Senape - Standard,26/09/2025,28/09/2025,2,344.52,Florence David's Apartament,Confermate,24,Booking
 1804,31/08/2025 18:49:49,,Booking,XU FENGKAI,Verde,Verde - Standard,26/09/2025,28/09/2025,2,371.45,Florence David's Apartament,Confermate,24,Booking
+1769,01/08/2025 16:26:10,11/08/2025,Booking,Stewart Gary,Senape,Senape - Standard,26/09/2025,29/09/2025,3,694.09,Florence David's Apartament,Cancellate,0,Booking
 1855,24/09/2025 23:38:23,,Booking,Herrera Gerson,Verde,Verde - Standard,25/09/2025,26/09/2025,1,150.48,Florence David's Apartament,Confermate,12,Booking
+1854,24/09/2025 21:25:39,24/09/2025,Booking,Garcia Norma,Verde,Verde - Standard,25/09/2025,26/09/2025,1,158.4,Florence David's Apartament,Cancellate,0,Booking
 1774,09/08/2025 11:50:47,,Booking,Papadopoulou Kyriaki,Senape,Senape - Standard,24/09/2025,26/09/2025,2,425.9,Florence David's Apartament,Confermate,24,Booking
 1756,19/07/2025 18:21:16,,Booking,"Lim Ming De, Jed",Blu,Blu - Standard,24/09/2025,01/10/2025,7,1346.4,Florence David's Apartament,Confermate,84,Booking
 1796,26/08/2025 14:37:20,,Booking,wood nicole,Senape,Senape - Standard,22/09/2025,24/09/2025,2,408.32,Florence David's Apartament,Confermate,24,Booking
 1809,01/09/2025 12:44:49,,Booking,Tokar Stanislav,Blu,Blu - Standard,21/09/2025,24/09/2025,3,468.08,Florence David's Apartament,Confermate,36,Booking
+1788,21/08/2025 21:03:13,26/08/2025,Booking,Dinç Burak,Blu,Blu - Standard,21/09/2025,24/09/2025,3,496.28,Florence David's Apartament,Cancellate,0,Booking
 1760,20/07/2025 20:48:21,,Booking,Maria Francisca Alvarez Meza,Verde,Verde - Non Rimborsabile OTA,21/09/2025,25/09/2025,4,690.52,Florence David's Apartament,Confermate,24,Booking
 1837,09/09/2025 23:07:30,,Booking,Picchi Cecilia,Verde,Verde - Standard,20/09/2025,21/09/2025,1,172.66,Florence David's Apartament,Confermate,12,Booking
+1834,09/09/2025 12:33:29,09/09/2025,Booking,MENEGON DANIELA,Verde,Verde - Standard,20/09/2025,21/09/2025,1,172.66,Florence David's Apartament,Cancellate,0,Booking
 1830,08/09/2025 15:12:02,,Booking,Bach Alex,Verde,Verde - Standard,19/09/2025,20/09/2025,1,177.41,Florence David's Apartament,Confermate,12,Booking
 1826,06/09/2025 23:44:51,,Booking,BRONZE COTRIM WILSON CARLOS,Senape,Senape - Non Rimborsabile OTA,19/09/2025,22/09/2025,3,509.57,Florence David's Apartament,Confermate,36,Booking
 1758,20/07/2025 15:21:45,,Booking,Boros Stefan,Blu,Blu - Non Rimborsabile OTA,17/09/2025,21/09/2025,4,621.02,Florence David's Apartament,Confermate,48,Booking
 1757,20/07/2025 13:54:06,,Booking,Villanti Rose,Verde,Verde - Non Rimborsabile OTA,16/09/2025,19/09/2025,3,432.54,Florence David's Apartament,Confermate,36,Booking
 1812,02/09/2025 19:11:53,,Booking,Ștefania Crainic,Verde,Verde - Standard,15/09/2025,16/09/2025,1,134.64,Florence David's Apartament,Confermate,12,Booking
+1790,22/08/2025 10:59:47,22/08/2025,Booking,Romero Anna,Verde,Verde - Standard,14/09/2025,16/09/2025,2,348.39,Florence David's Apartament,Cancellate,0,Booking
 1759,20/07/2025 19:22:29,,Booking,Garcia Álvarez Isabel,Blu,Blu - Standard,14/09/2025,17/09/2025,3,410.76,Florence David's Apartament,Confermate,36,Booking
 1761,21/07/2025 00:08:59,,Booking,Sinclair Mary,Senape,Senape - Min Stay 5 notti,13/09/2025,19/09/2025,6,803.56,Florence David's Apartament,Confermate,72,Booking
 1791,22/08/2025 17:39:27,,Booking Engine,Amanda Reeder,Verde,Verde - Standard,12/09/2025,15/09/2025,3,478.4,Florence David's Apartament,Confermate,36,Booking Engine
@@ -7280,35 +7396,53 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1744,12/07/2025 01:23:25,,Booking,OLIVERA NIEVES,Blu,Blu - Non Rimborsabile OTA,06/09/2025,09/09/2025,3,406.3,Florence David's Apartament,Confermate,36,Booking
 1770,04/08/2025 20:03:41,,Booking,Mingarelli Alessandra,Senape,Senape - Standard,05/09/2025,07/09/2025,2,311.85,Florence David's Apartament,Confermate,24,Booking
 1765,22/07/2025 22:41:11,,Booking,Tsoulides Cécile,Verde,Verde - Standard,05/09/2025,07/09/2025,2,298.49,Florence David's Apartament,Confermate,12,Booking
+1751,15/07/2025 12:24:53,17/07/2025,Booking,Pascual Cristina,Verde,Verde - Standard,05/09/2025,07/09/2025,2,305.61,Florence David's Apartament,Cancellate,0,Booking
 1746,12/07/2025 15:51:52,,Booking,Brophy Matthew,Senape,Senape - Non Rimborsabile OTA,03/09/2025,05/09/2025,2,282.71,Florence David's Apartament,Confermate,24,Booking
 1738,08/07/2025 01:18:54,,Booking,Tosatti Tatiana,Blu,Blu - Non Rimborsabile OTA,03/09/2025,06/09/2025,3,376.67,Florence David's Apartament,Confermate,36,Booking
+1736,30/06/2025 19:42:48,30/06/2025,Booking,Pojo Fábio,Blu,Blu - Non Rimborsabile OTA,03/09/2025,06/09/2025,3,359.75,Florence David's Apartament,Cancellate,0,Booking
+1720,24/06/2025 10:04:24,25/06/2025,Booking,Clemen Anabel,Verde,Verde - Standard,02/09/2025,09/09/2025,7,1186.02,Florence David's Apartament,Cancellate,0,Booking
 1737,04/07/2025 06:28:29,,Booking,montoleone Natascia,Senape,Senape - Standard,01/09/2025,02/09/2025,1,177.47,Florence David's Apartament,Confermate,18,Booking
+1793,25/08/2025 22:30:46,26/08/2025,Booking,Tirendi Giulia Maria Novella,Senape,Senape - Standard,31/08/2025,01/09/2025,1,71.28,Florence David's Apartament,Cancellate,0,Booking
 1752,17/07/2025 21:10:44,,Booking,CRUZ MORALES YASMANY,Blu,Blu - Standard,31/08/2025,03/09/2025,3,328.78,Florence David's Apartament,Confermate,18,Booking
 1739,08/07/2025 02:00:19,,Booking,Miyasaka Wataru,Verde,Verde - Standard,31/08/2025,05/09/2025,5,656.67,Florence David's Apartament,Confermate,60,Booking
 1798,27/08/2025 13:35:05,,Booking,Boixados Blanca,Senape,Senape - Standard,29/08/2025,31/08/2025,2,201.38,Florence David's Apartament,Confermate,24,Booking
+1776,11/08/2025 05:11:33,13/08/2025,Booking,BARCENA MARIA AGUSTINA,Senape,Senape - Standard,29/08/2025,01/09/2025,3,289.07,Florence David's Apartament,Cancellate,0,Booking
+1732,30/06/2025 12:45:50,16/07/2025,Booking,Prokofeva Alina,Senape,Senape - Standard,28/08/2025,31/08/2025,3,319.97,Florence David's Apartament,Cancellate,0,Booking
 1701,16/06/2025 12:10:17,,Booking,Porcel Gómez Berta,Blu,Blu - Non Rimborsabile OTA,28/08/2025,31/08/2025,3,286.9,Florence David's Apartament,Confermate,36,Booking
 1794,26/08/2025 11:28:12,,Booking,Bringezu Jette,Blu,Blu - Standard,27/08/2025,28/08/2025,1,67.32,Florence David's Apartament,Confermate,12,Booking
 1780,16/08/2025 16:35:43,,Booking,Mitovska Sarvanoska Elena,Senape,Senape - Standard,27/08/2025,29/08/2025,2,176.61,Florence David's Apartament,Confermate,24,Booking
 1724,26/06/2025 23:49:52,,Booking,Soltys Piotr,Verde,Verde - Standard,27/08/2025,30/08/2025,3,309.67,Florence David's Apartament,Confermate,36,Booking
+1717,23/06/2025 10:43:43,28/06/2025,Booking,Börner Hannah,Senape,Senape - Standard,27/08/2025,28/08/2025,1,112.46,Florence David's Apartament,Cancellate,0,Booking
 1789,22/08/2025 03:25:27,,Booking Engine,Giulia Marraffa,Blu,Blu - Non Rimborsabile OTA,26/08/2025,27/08/2025,1,66.24,Florence David's Apartament,Confermate,12,Booking Engine
 1792,25/08/2025 13:02:31,,Booking,Manson Amy,Verde,Verde - Standard,25/08/2025,27/08/2025,2,140.8,Florence David's Apartament,Confermate,24,Booking
+1734,30/06/2025 14:24:41,11/07/2025,Booking,ABASHEVA BAYAN,Senape,Senape - Standard,25/08/2025,28/08/2025,3,319.18,Florence David's Apartament,Cancellate,0,Booking
+1730,29/06/2025 22:53:31,08/07/2025,Booking,Horn Daniel,Verde,Verde - Standard,25/08/2025,27/08/2025,2,175.03,Florence David's Apartament,Cancellate,0,Booking
 1747,13/07/2025 17:34:27,,Booking,Witzens Anja,Senape,Senape - Standard,24/08/2025,27/08/2025,3,344.16,Florence David's Apartament,Confermate,54,Booking
 1692,12/06/2025 18:52:42,,Booking,GUENINCHAULT Romain,Blu,Blu - Standard,23/08/2025,26/08/2025,3,282.15,Florence David's Apartament,Confermate,36,Booking
 1745,12/07/2025 14:28:10,,Booking,Μιχαέλα Μουρτζίλα,Senape,Senape - Standard,22/08/2025,24/08/2025,2,231.56,Florence David's Apartament,Confermate,36,Booking
 1708,19/06/2025 11:17:04,,Booking,pedrotti ashlyn,Blu,Blu - Standard,22/08/2025,23/08/2025,1,89.5,Florence David's Apartament,Confermate,12,Booking
 1696,14/06/2025 11:52:45,,Booking,Martinez Valentina,Verde,Verde - Non Rimborsabile OTA,22/08/2025,25/08/2025,3,287.81,Florence David's Apartament,Confermate,36,Booking
 1782,17/08/2025 12:29:51,,Booking,Granell Pablo,Senape,Senape - Standard,21/08/2025,22/08/2025,1,84.74,Florence David's Apartament,Confermate,12,Booking
+1753,18/07/2025 11:08:07,18/07/2025,Booking,Wiktoria Lenicka,Senape,Senape - Standard,21/08/2025,22/08/2025,1,103.1,Florence David's Apartament,Cancellate,0,Booking
 1726,27/06/2025 22:56:37,,Booking,CANDITA Christian,Verde,Verde - Standard,21/08/2025,22/08/2025,1,101.38,Florence David's Apartament,Confermate,12,Booking
+1709,19/06/2025 13:57:36,06/07/2025,Booking,Bastiaanse Simone,Senape,Senape - Standard,21/08/2025,25/08/2025,4,433.23,Florence David's Apartament,Cancellate,0,Booking
+1705,17/06/2025 15:08:12,18/06/2025,Booking,Pietramala Martina,Verde,Verde - Standard,21/08/2025,22/08/2025,1,96.62,Florence David's Apartament,Cancellate,0,Booking
+1688,12/06/2025 00:47:47,12/06/2025,Booking,Torres Rodriguez Juan Manuel,Senape,Senape - Standard,21/08/2025,24/08/2025,3,377.19,Florence David's Apartament,Cancellate,0,Booking
 1785,19/08/2025 11:53:13,,Booking Engine,Antonella  Del galdo ,Senape,Senape - Standard,20/08/2025,21/08/2025,1,109,Florence David's Apartament,Confermate,12,Booking Engine
+1742,09/07/2025 13:27:09,26/07/2025,Booking,bel isabel,Senape,Senape - Standard,20/08/2025,21/08/2025,1,101.38,Florence David's Apartament,Cancellate,0,Booking
 1754,19/07/2025 01:59:38,,Booking,Ramirez Katherin,Senape,Senape - Standard,19/08/2025,20/08/2025,1,103.9,Florence David's Apartament,Confermate,18,Booking
 1750,14/07/2025 20:11:42,,Booking,Scafariu Fanica,Senape,Senape - Standard,18/08/2025,19/08/2025,1,113.4,Florence David's Apartament,Confermate,18,Booking
 1694,13/06/2025 19:27:35,,Booking,Campolina Fernanda,Verde,Verde - Non Rimborsabile OTA,18/08/2025,21/08/2025,3,282.37,Florence David's Apartament,Confermate,36,Booking
 1729,29/06/2025 19:07:58,,Booking,Quintero Javier,Senape,Senape - Standard,16/08/2025,18/08/2025,2,194.04,Florence David's Apartament,Confermate,24,Booking
 1589,22/04/2025 10:18:41,,Booking,Olaru Catalin,Blu,Blu - Min Stay 5 notti,16/08/2025,22/08/2025,6,601.13,Florence David's Apartament,Confermate,72,Booking
 1766,25/07/2025 01:54:11,,Booking,Morales Brenes María Soledad,Blu,Blu - Standard,14/08/2025,16/08/2025,2,184.54,Florence David's Apartament,Confermate,24,Booking
+1714,22/06/2025 11:19:18,16/07/2025,Booking,MAYUWANG ARRATI,Blu,Blu - Standard,14/08/2025,16/08/2025,2,198,Florence David's Apartament,Cancellate,0,Booking
 1704,17/06/2025 10:32:45,,Booking,Querol Javier,Senape,Senape - Standard,13/08/2025,16/08/2025,3,338.98,Florence David's Apartament,Confermate,36,Booking
+1735,30/06/2025 19:41:58,03/08/2025,Booking,Liu Qiuying,Senape,Senape - Standard,12/08/2025,13/08/2025,1,120.53,Florence David's Apartament,Cancellate,0,Booking
 1690,12/06/2025 14:12:14,,Booking,Alarcón Ronda Lourdes,Verde,Verde - Min Stay 5 notti,12/08/2025,18/08/2025,6,535.39,Florence David's Apartament,Confermate,72,Booking
+1689,12/06/2025 11:19:25,12/06/2025,Booking,Alarcón Ronda Lourdes,Verde,Verde - Standard,12/08/2025,18/08/2025,6,669.24,Florence David's Apartament,Cancellate,0,Booking
 1768,29/07/2025 14:52:21,,Booking,Mazzaro Angela,Senape,Senape - Standard,11/08/2025,12/08/2025,1,111.82,Florence David's Apartament,Confermate,18,Booking
+1711,20/06/2025 17:30:54,20/06/2025,Booking,Nunes dos Santos Mariana,Senape,Senape - Standard,10/08/2025,13/08/2025,3,396.43,Florence David's Apartament,Cancellate,0,Booking
 1656,27/05/2025 15:08:02,,Booking,Palacios Carlos Luis,Blu,Blu - Non Rimborsabile OTA,10/08/2025,14/08/2025,4,415.34,Florence David's Apartament,Confermate,48,Booking
 1609,29/04/2025 22:40:00,,Booking,Tupinambá Wakin Nathalia,Verde,Verde - Non Rimborsabile OTA,10/08/2025,11/08/2025,1,116.59,Florence David's Apartament,Confermate,12,Booking
 1731,30/06/2025 09:37:12,,Booking,kagianta evgenia,Senape,Senape - Standard,09/08/2025,11/08/2025,2,220.39,Florence David's Apartament,Confermate,36,Booking
@@ -7317,6 +7451,7 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1771,07/08/2025 14:03:24,,Booking,Ashkenazi Yonatan,Blu,Blu - Standard,07/08/2025,08/08/2025,1,71.28,Florence David's Apartament,Confermate,12,Booking
 1710,19/06/2025 16:19:02,,Booking,Long Yanyu,Senape,Senape - Standard,07/08/2025,09/08/2025,2,261.65,Florence David's Apartament,Confermate,36,Booking
 1767,26/07/2025 23:28:41,,Booking,Alvarez Maria Dolores,Verde,Verde - Standard,05/08/2025,08/08/2025,3,284.33,Florence David's Apartament,Confermate,36,Booking
+1718,23/06/2025 12:32:21,23/07/2025,Booking,Zhu Wang,Verde,Verde - Standard,05/08/2025,08/08/2025,3,308.09,Florence David's Apartament,Cancellate,0,Booking
 1648,21/05/2025 18:40:18,,Booking,Seitz Franziska,Senape,Senape - Standard,04/08/2025,07/08/2025,3,415.8,Florence David's Apartament,Confermate,36,Booking
 1578,17/04/2025 21:42:07,,Booking,Caballero Gema,Blu,Blu - Standard,03/08/2025,07/08/2025,4,447.48,Florence David's Apartament,Confermate,48,Booking
 1604,28/04/2025 22:25:04,,Booking,Tupinambá Wakin Nathalia,Verde,Verde - Non Rimborsabile OTA,02/08/2025,05/08/2025,3,330.63,Florence David's Apartament,Confermate,36,Booking
@@ -7333,9 +7468,13 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1662,29/05/2025 22:58:25,,Booking,Ji Yanghuang,Senape,Senape - Standard,23/07/2025,26/07/2025,3,504.81,Florence David's Apartament,Confermate,36,Booking
 1713,22/06/2025 09:51:06,,Booking,Katanaev Vladislav,Verde,Verde - Standard,22/07/2025,24/07/2025,2,213.05,Florence David's Apartament,Confermate,24,Booking
 1560,10/04/2025 21:55:38,,Booking,Olaizola Unanue Nerea,Blu,Blu - Min Stay 5 notti,22/07/2025,27/07/2025,5,534.6,Florence David's Apartament,Confermate,60,Booking
+1554,08/04/2025 09:47:12,13/07/2025,Booking,Peñate Anabel,Senape,Senape - Standard,22/07/2025,23/07/2025,1,162.32,Florence David's Apartament,Cancellate,0,Booking
 1740,08/07/2025 18:37:14,,Booking,Shintaku Yoshiki,Verde,Verde - Standard,21/07/2025,22/07/2025,1,91.87,Florence David's Apartament,Confermate,12,Booking
+1719,23/06/2025 18:03:38,30/06/2025,Booking,Mary Claire Cannestra,Verde,Verde - Standard,21/07/2025,22/07/2025,1,111.67,Florence David's Apartament,Cancellate,0,Booking
 1715,22/06/2025 19:05:19,,Booking,Hoflehner Christian,Blu,Blu - Standard,21/07/2025,22/07/2025,1,91.87,Florence David's Apartament,Confermate,12,Booking
+1544,04/04/2025 23:11:34,30/05/2025,Booking,mason Bobbie,Verde,Verde - Standard,21/07/2025,23/07/2025,2,256.61,Florence David's Apartament,Cancellate,0,Booking
 1712,21/06/2025 00:19:14,,Booking,Basilaia Ekaterine,Verde,Verde - Standard,19/07/2025,21/07/2025,2,209.88,Florence David's Apartament,Confermate,24,Booking
+1646,20/05/2025 16:55:58,07/07/2025,Booking,楊 絜婷,Senape,Senape - Standard,19/07/2025,22/07/2025,3,494.83,Florence David's Apartament,Cancellate,0,Booking
 1741,09/07/2025 05:20:58,,Booking,PARK HEE YOUNG,Senape,Senape - Standard,18/07/2025,20/07/2025,2,233.06,Florence David's Apartament,Confermate,24,Booking
 1611,03/05/2025 11:46:09,,Booking,van Compernolle Tanguy,Blu,Blu - Standard,18/07/2025,21/07/2025,3,403.92,Florence David's Apartament,Confermate,36,Booking
 1607,29/04/2025 15:57:43,,Booking,Sangalli Isabella,Senape,Senape - Min Stay 5 notti,13/07/2025,18/07/2025,5,763.21,Florence David's Apartament,Confermate,90,Booking
@@ -7348,23 +7487,35 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1687,11/06/2025 12:33:48,,Booking,Aureau Daphne,Verde,Verde - Standard,09/07/2025,12/07/2025,3,331.45,Florence David's Apartament,Confermate,36,Booking
 1723,25/06/2025 07:49:01,,Booking,Pasta Emilia Germana,Verde,Verde - Standard,08/07/2025,09/07/2025,1,95.04,Florence David's Apartament,Confermate,12,Booking
 1721,24/06/2025 20:56:41,,Booking,Akyuz derya,Senape,Senape - Standard,08/07/2025,10/07/2025,2,214.63,Florence David's Apartament,Confermate,24,Booking
+1691,12/06/2025 17:05:03,02/07/2025,Booking,saricicek zeynep,Blu,Blu - Standard,08/07/2025,10/07/2025,2,218.79,Florence David's Apartament,Cancellate,0,Booking
 1725,27/06/2025 21:35:42,,Booking,MILICI EUGENIO,Senape,Senape - Standard,07/07/2025,08/07/2025,1,133.2,Florence David's Apartament,Confermate,12,Booking
 1707,19/06/2025 10:09:04,,Booking,Lee Kwangjoo,Senape,Senape - Standard,05/07/2025,07/07/2025,2,262.94,Florence David's Apartament,Confermate,12,Booking
 1727,29/06/2025 15:25:02,,Booking,Ninh Lan,Senape,Senape - Standard,04/07/2025,05/07/2025,1,114.55,Florence David's Apartament,Confermate,18,Booking
 1588,21/04/2025 23:32:15,,Booking,Balaji Vaishali,Blu,Blu - Min Stay 5 notti,03/07/2025,08/07/2025,5,668.8,Florence David's Apartament,Confermate,60,Booking
+1641,12/05/2025 14:43:40,24/06/2025,Booking,Scott Owen,Senape,Senape - Standard,02/07/2025,03/07/2025,1,193.23,Florence David's Apartament,Cancellate,0,Booking
 1591,22/04/2025 14:19:34,,Booking,Adamek Shawn,Verde,Verde - Standard,01/07/2025,08/07/2025,7,1120.68,Florence David's Apartament,Confermate,42,Booking
 1697,14/06/2025 15:24:59,,Booking,Hernandez Priscilla,Blu,Blu - Standard,30/06/2025,03/07/2025,3,420.75,Florence David's Apartament,Confermate,18,Booking
 1693,12/06/2025 19:28:18,,Booking,Guerra Francesco,Verde,Verde - Standard,30/06/2025,01/07/2025,1,115.63,Florence David's Apartament,Confermate,12,Booking
+1659,28/05/2025 14:29:55,01/06/2025,Booking,Gamble David,Verde,Verde - Standard,30/06/2025,01/07/2025,1,134.64,Florence David's Apartament,Cancellate,0,Booking
 1622,05/05/2025 10:14:43,,Booking,Gea Jesus,Senape,Senape - Standard,30/06/2025,01/07/2025,1,153.36,Florence David's Apartament,Confermate,12,Booking
+1531,29/03/2025 01:41:46,25/04/2025,Booking,Coleman AnneLise,Senape,Senape - Standard,28/06/2025,03/07/2025,5,948.42,Florence David's Apartament,Cancellate,0,Booking
 1459,03/02/2025 21:11:18,,Booking,Murray Elenni,Verde,Verde - Non Rimborsabile OTA,28/06/2025,30/06/2025,2,320.51,Florence David's Apartament,Confermate,24,Booking
 1683,08/06/2025 21:24:05,,Booking,Grześkowiak Izabela,Senape,Senape - Standard,27/06/2025,30/06/2025,3,408.67,Florence David's Apartament,Confermate,36,Booking
+1605,29/04/2025 07:30:35,03/06/2025,Booking,xue shengdan,Senape,Senape - Standard,27/06/2025,29/06/2025,2,336.03,Florence David's Apartament,Cancellate,0,Booking
 1552,08/04/2025 01:00:41,,Booking,Saz Laura,Blu,Blu - Standard,27/06/2025,30/06/2025,3,472.24,Florence David's Apartament,Confermate,36,Booking
+1703,17/06/2025 08:14:50,21/06/2025,Booking,Bello Sergio,Blu,Blu - Standard,26/06/2025,27/06/2025,1,106.13,Florence David's Apartament,Cancellate,0,Booking
+1676,04/06/2025 08:59:57,05/06/2025,Booking,Tombeur Vincent,Blu,Blu - Standard,26/06/2025,27/06/2025,1,132,Florence David's Apartament,Cancellate,0,Booking
 1645,15/05/2025 19:47:46,,Booking,Rodriguez Cifuentes Lina Elizabeth,Senape,Senape - Standard,26/06/2025,27/06/2025,1,166.46,Florence David's Apartament,Confermate,18,Booking
 1631,08/05/2025 13:43:23,,Booking,Wraith Adele,Verde,Verde - Standard,26/06/2025,28/06/2025,2,278.79,Florence David's Apartament,Confermate,24,Booking
+1638,11/05/2025 20:33:20,19/06/2025,Booking,Delgado Judith,Senape,Senape - Standard,24/06/2025,26/06/2025,2,316.01,Florence David's Apartament,Cancellate,0,Booking
+1615,03/05/2025 16:01:16,08/05/2025,Booking,Boscan Abdon,Senape,Senape - Standard,24/06/2025,26/06/2025,2,363.76,Florence David's Apartament,Cancellate,0,Booking
 1592,22/04/2025 16:39:13,,Booking,Thabbanthom Thirawan,Blu,Blu - Non Rimborsabile OTA,24/06/2025,26/06/2025,2,298.75,Florence David's Apartament,Confermate,24,Booking
 1570,13/04/2025 13:37:36,,Booking,Burrell Madeleine,Verde,Verde - Non Rimborsabile OTA,24/06/2025,26/06/2025,2,316.96,Florence David's Apartament,Confermate,24,Booking
+1606,29/04/2025 13:34:12,03/05/2025,Booking,Li yuning,Senape,Senape - Standard,23/06/2025,25/06/2025,2,341.64,Florence David's Apartament,Cancellate,0,Booking
 1699,15/06/2025 00:09:18,,Booking,Khalwadekar Ajinkya,Senape,Senape - Standard,21/06/2025,24/06/2025,3,418.61,Florence David's Apartament,Confermate,54,Booking
 1672,02/06/2025 21:58:40,,Booking,ivuts ksenia,Verde,Verde - Non Rimborsabile OTA,21/06/2025,24/06/2025,3,465.42,Florence David's Apartament,Confermate,36,Booking
+1621,05/05/2025 01:13:22,02/06/2025,Booking,BI Yuwei,Verde,Verde - Standard,21/06/2025,23/06/2025,2,299.38,Florence David's Apartament,Cancellate,0,Booking
+1616,03/05/2025 17:53:52,09/06/2025,Booking,JUN HASEONG,Senape,Senape - Standard,21/06/2025,24/06/2025,3,531.86,Florence David's Apartament,Cancellate,0,Booking
 1601,26/04/2025 22:14:42,,Booking,Rossouw Jana,Blu,Blu - Standard,21/06/2025,24/06/2025,3,493.61,Florence David's Apartament,Confermate,36,Booking
 1630,08/05/2025 10:31:36,,Booking,Dormans Thijs,Blu,Blu - Standard,19/06/2025,21/06/2025,2,331.84,Florence David's Apartament,Confermate,12,Booking
 1680,05/06/2025 21:41:07,,Booking,Margaret Ansbach,Senape,Senape - Standard,18/06/2025,21/06/2025,3,555.99,Florence David's Apartament,Confermate,36,Booking
@@ -7375,53 +7526,72 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1637,11/05/2025 17:15:17,,Booking,Fusar Poli Davide,Blu,Blu - Standard,16/06/2025,19/06/2025,3,506.08,Florence David's Apartament,Confermate,36,Booking
 1695,14/06/2025 00:33:11,,Booking,Audisio Valerio,Senape,Senape - Standard,15/06/2025,16/06/2025,1,114.05,Florence David's Apartament,Confermate,12,Booking
 1682,07/06/2025 15:30:21,,Airbnb,Elisabetta Gregorutti,Blu,Blu - Standard,15/06/2025,16/06/2025,1,143.65,Florence David's Apartament,Confermate,0,Airbnb
+1647,21/05/2025 12:06:47,05/06/2025,Booking,Sierra Vásquez Sofía,Blu,Blu - Standard,15/06/2025,16/06/2025,1,166.32,Florence David's Apartament,Cancellate,0,Booking
+1632,08/05/2025 14:54:52,09/06/2025,Booking,Castaldo Carola,Senape,Senape - Standard,15/06/2025,16/06/2025,1,213.19,Florence David's Apartament,Cancellate,0,Booking
 1668,31/05/2025 15:56:25,,Booking,Monaco Davide,Blu,Blu - Standard,14/06/2025,15/06/2025,1,151.27,Florence David's Apartament,Confermate,12,Booking
 1650,22/05/2025 17:53:39,,Booking,Lacopeta Cinzia,Senape,Senape - Standard,14/06/2025,15/06/2025,1,186.12,Florence David's Apartament,Confermate,12,Booking
 1628,06/05/2025 19:26:27,,Booking,cRuz Elisa,Verde,Verde - Standard,14/06/2025,16/06/2025,2,361.94,Florence David's Apartament,Confermate,24,Booking
 1686,10/06/2025 22:34:35,,Booking,Licup Glenn Marbella,Verde,Verde - Standard,13/06/2025,14/06/2025,1,137.02,Florence David's Apartament,Confermate,12,Booking
+1664,29/05/2025 23:53:58,01/06/2025,Booking,Aytin Belkıs,Senape,Senape - Standard,12/06/2025,13/06/2025,1,153.65,Florence David's Apartament,Cancellate,0,Booking
 1660,28/05/2025 16:50:03,,Booking,Lyu Wenli,Blu,Blu - Standard,12/06/2025,14/06/2025,2,328.68,Florence David's Apartament,Confermate,24,Booking
+1614,03/05/2025 15:32:36,08/06/2025,Booking,Ishimi Remi,Verde,Verde - Standard,12/06/2025,14/06/2025,2,365.9,Florence David's Apartament,Cancellate,0,Booking
 1685,09/06/2025 01:28:18,,Booking,Zink Vanessa,Verde,Verde - Standard,11/06/2025,13/06/2025,2,274.83,Florence David's Apartament,Confermate,12,Booking
 1675,03/06/2025 20:29:55,,Booking,Casia Charmaine,Senape,Senape - Standard,11/06/2025,13/06/2025,2,344.81,Florence David's Apartament,Confermate,36,Booking
 1671,02/06/2025 13:51:49,,Booking,Di Bonaventura Casto,Blu,Blu - Standard,10/06/2025,12/06/2025,2,217.01,Florence David's Apartament,Confermate,24,Booking
 1677,04/06/2025 16:13:42,,Booking,Del Volgo Valentina,Senape,Senape - Standard,09/06/2025,10/06/2025,1,142.56,Florence David's Apartament,Confermate,12,Booking
+1667,30/05/2025 15:39:55,31/05/2025,Booking,Benedetti gian luca,Senape,Senape - Standard,09/06/2025,11/06/2025,2,327.38,Florence David's Apartament,Cancellate,0,Booking
 1661,29/05/2025 08:37:34,,Booking,Marcon Giulio,Blu,Blu - Standard,08/06/2025,10/06/2025,2,249.48,Florence David's Apartament,Confermate,24,Booking
 1541,03/04/2025 22:55:28,,Booking,Poulli Savvina,Verde,Verde - Standard,08/06/2025,11/06/2025,3,465.1,Florence David's Apartament,Confermate,36,Booking
 1665,30/05/2025 00:26:57,,Booking,Rigali Noemi,Senape,Senape - Standard,06/06/2025,08/06/2025,2,307.3,Florence David's Apartament,Confermate,24,Booking
 1658,28/05/2025 13:48:56,,Booking,TARHAN ALPER,Blu,Blu - Standard,06/06/2025,08/06/2025,2,331.85,Florence David's Apartament,Confermate,24,Booking
+1657,28/05/2025 12:20:41,28/05/2025,Booking,lavarini beatrice,Blu,Blu - Standard,06/06/2025,08/06/2025,2,331.85,Florence David's Apartament,Cancellate,0,Booking
 1666,30/05/2025 07:38:30,,Booking,García Crespi Silvia,Senape,Senape - Standard,05/06/2025,06/06/2025,1,153.65,Florence David's Apartament,Confermate,12,Booking
 1663,29/05/2025 23:17:00,,Booking,mauri corrado,Blu,Blu - Standard,05/06/2025,06/06/2025,1,129.89,Florence David's Apartament,Confermate,12,Booking
+1529,27/03/2025 16:00:13,28/05/2025,Booking,Vainilovich Nadezda,Blu,Blu - Standard,05/06/2025,15/06/2025,10,2214.63,Florence David's Apartament,Cancellate,0,Booking
+1474,09/02/2025 17:29:11,29/05/2025,Booking,IVANOVA-DIATLOVA TATIANA,Senape,Senape - Standard,05/06/2025,14/06/2025,9,2194.83,Florence David's Apartament,Cancellate,0,Booking
 1652,25/05/2025 03:34:41,,Booking,Chen Jing,Blu,Blu - Standard,04/06/2025,05/06/2025,1,103.75,Florence David's Apartament,Confermate,12,Booking
 1608,29/04/2025 20:15:40,,Booking,Field Adam,Senape,Senape - Standard,02/06/2025,05/06/2025,3,543.31,Florence David's Apartament,Confermate,36,Booking
 1603,28/04/2025 15:09:18,,Booking,Shtirkova Yoana,Blu,Blu - Standard,02/06/2025,04/06/2025,2,294.92,Florence David's Apartament,Confermate,24,Booking
 1542,04/04/2025 07:11:24,,Booking,Serralta Sandra,Verde,Verde - Min Stay 5 notti,02/06/2025,08/06/2025,6,1038.3,Florence David's Apartament,Confermate,72,Booking
 1655,27/05/2025 15:08:04,,Booking,Philie Sandrine,Verde,Verde - Standard,01/06/2025,02/06/2025,1,127.51,Florence David's Apartament,Confermate,6,Booking
+1618,03/05/2025 22:36:58,26/05/2025,Booking,Anaclerico Ramona,Verde,Verde - Standard,01/06/2025,02/06/2025,1,132.26,Florence David's Apartament,Cancellate,0,Booking
 1617,03/05/2025 18:48:09,,Booking,Tricotti Giulia,Blu,Blu - Standard,01/06/2025,02/06/2025,1,116.42,Florence David's Apartament,Confermate,12,Booking
 1577,17/04/2025 14:39:37,,Booking,Paris Katia,Senape,Senape - Standard,01/06/2025,02/06/2025,1,178.2,Florence David's Apartament,Confermate,12,Booking
 1612,03/05/2025 13:42:55,,Booking,Herrera Ahmed,Verde,Verde - Standard,28/05/2025,29/05/2025,1,125.14,Florence David's Apartament,Confermate,12,Booking
 1653,25/05/2025 09:49:25,,Booking,Cavallier Francesco,Blu,Blu - Standard,27/05/2025,29/05/2025,2,207.5,Florence David's Apartament,Confermate,24,Booking
+1597,26/04/2025 07:26:49,22/05/2025,Booking,Bel Linda,Blu,Blu - Standard,27/05/2025,29/05/2025,2,303.83,Florence David's Apartament,Cancellate,0,Booking
 1575,16/04/2025 22:35:32,,Booking,Liamis Panagiotis,Senape,Senape - Non Rimborsabile OTA,27/05/2025,29/05/2025,2,379.48,Florence David's Apartament,Confermate,24,Booking
+1574,16/04/2025 11:35:13,22/04/2025,Booking,Qukovci Vuniqi Ardita,Blu,Blu - Standard,27/05/2025,29/05/2025,2,310.96,Florence David's Apartament,Cancellate,0,Booking
 1521,24/03/2025 21:12:08,,Booking,CALDERA DE FEX ESTEBAN,Verde,Verde - Non Rimborsabile OTA,26/05/2025,28/05/2025,2,329.7,Florence David's Apartament,Confermate,24,Booking
 1537,31/03/2025 01:13:15,,Booking,Andrés Mejía,Blu,Blu - Non Rimborsabile OTA,25/05/2025,27/05/2025,2,301.47,Florence David's Apartament,Confermate,24,Booking
 1600,26/04/2025 17:32:39,,Booking,YEE MYA MYA,Verde,Verde - Standard,24/05/2025,26/05/2025,2,373.23,Florence David's Apartament,Confermate,12,Booking
+1489,22/02/2025 13:05:46,03/05/2025,Booking,Karakoleva Gabriela,Senape,Senape - Standard,24/05/2025,26/05/2025,2,419.76,Florence David's Apartament,Cancellate,0,Booking
 1629,07/05/2025 13:30:02,,Booking,VOISIN Audrey,Senape,Senape - Standard,23/05/2025,26/05/2025,3,504.51,Florence David's Apartament,Confermate,36,Booking
 1598,26/04/2025 09:12:52,,Booking,Casarin Iris,Blu,Blu - Standard,23/05/2025,25/05/2025,2,359.97,Florence David's Apartament,Confermate,24,Booking
+1563,11/04/2025 08:13:08,24/04/2025,Booking,Corsi Irma,Blu,Blu - Standard,23/05/2025,25/05/2025,2,399.96,Florence David's Apartament,Cancellate,0,Booking
 1649,21/05/2025 19:26:32,,FrontOffice,Marinella Girotti,Senape,Senape - Standard,22/05/2025,23/05/2025,1,140,Florence David's Apartament,Confermate,6,FrontOffice
 1613,03/05/2025 15:27:35,,Booking,Thierbach Felix,Verde,Verde - Standard,22/05/2025,24/05/2025,2,309.67,Florence David's Apartament,Confermate,24,Booking
 1634,09/05/2025 18:50:17,,Booking,Ketterer Jeremias,Senape,Senape - Standard,21/05/2025,22/05/2025,1,149.69,Florence David's Apartament,Confermate,12,Booking
+1619,04/05/2025 01:28:31,06/05/2025,Booking,Amaris Mario,Senape,Senape - Standard,21/05/2025,24/05/2025,3,492.62,Florence David's Apartament,Cancellate,0,Booking
+1532,29/03/2025 03:07:15,13/04/2025,Booking,Taylor Teresa,Verde,Verde - Standard,21/05/2025,23/05/2025,2,351.94,Florence David's Apartament,Cancellate,0,Booking
+1480,16/02/2025 02:50:58,01/05/2025,Booking,Shukla Ananya,Senape,Senape - Standard,21/05/2025,24/05/2025,3,695.52,Florence David's Apartament,Cancellate,0,Booking
 1572,13/04/2025 22:07:46,,Booking,McAnespie Danielle,Verde,Verde - Non Rimborsabile OTA,20/05/2025,22/05/2025,2,326.98,Florence David's Apartament,Confermate,24,Booking
 1539,01/04/2025 13:28:48,,Booking,Zervelis Margot,Senape,Senape - Standard,20/05/2025,21/05/2025,1,192.62,Florence David's Apartament,Confermate,18,Booking
 1640,12/05/2025 00:08:17,,Booking,Pierdicca Nazzareno,Senape,Senape - Standard,19/05/2025,20/05/2025,1,127.51,Florence David's Apartament,Confermate,6,Booking
 1596,25/04/2025 23:30:36,,Booking,Wittwer Günter,Blu,Blu - Standard,19/05/2025,23/05/2025,4,596.09,Florence David's Apartament,Confermate,48,Booking
+1519,23/03/2025 07:30:22,25/04/2025,Booking,Tigran Baghdasaryan Seda Muradyan,Blu,Blu - Standard,19/05/2025,23/05/2025,4,629.05,Florence David's Apartament,Cancellate,0,Booking
 1551,07/04/2025 23:10:06,,Booking,Wu Dali,Verde,Verde - Non Rimborsabile OTA,18/05/2025,20/05/2025,2,317.87,Florence David's Apartament,Confermate,24,Booking
 1584,19/04/2025 17:55:16,,Booking,Chang Joanna,Senape,Senape - Non Rimborsabile OTA,17/05/2025,19/05/2025,2,423.09,Florence David's Apartament,Confermate,36,Booking
 1528,26/03/2025 15:05:11,,Booking,Domenico Basilicata,Blu,Blu - Standard,17/05/2025,19/05/2025,2,358.19,Florence David's Apartament,Confermate,24,Booking
 1633,08/05/2025 22:23:46,,Booking,Bazzan Eddy,Senape,Senape - Standard,16/05/2025,17/05/2025,1,148.1,Florence David's Apartament,Confermate,6,Booking
 1636,11/05/2025 12:25:40,,Booking,Beattie Holly,Senape,Senape - Standard,15/05/2025,16/05/2025,1,125.14,Florence David's Apartament,Confermate,12,Booking
+1626,06/05/2025 08:58:07,07/05/2025,Booking,Aliaga Eva,Senape,Senape - Standard,15/05/2025,17/05/2025,2,325.8,Florence David's Apartament,Cancellate,0,Booking
 1482,16/02/2025 21:22:06,,Booking,Famille Guerette-Berthiaume,Verde,Verde - Standard,15/05/2025,18/05/2025,3,583.61,Florence David's Apartament,Confermate,36,Booking
 1644,14/05/2025 18:02:07,,Booking,Ben Ouaghrem Amira,Senape,Senape - Standard,14/05/2025,15/05/2025,1,111.67,Florence David's Apartament,Confermate,12,Booking
 1625,06/05/2025 06:32:20,,Booking,Minea Ana Maria,Blu,Blu - Standard,14/05/2025,17/05/2025,3,396,Florence David's Apartament,Confermate,36,Booking
 1610,30/04/2025 23:13:38,,Booking,Thompson Amy,Senape,Senape - Standard,13/05/2025,14/05/2025,1,197.01,Florence David's Apartament,Confermate,12,Booking
 1562,11/04/2025 04:10:21,,Booking,Cymberknop Andrea,Verde,Verde - Standard,13/05/2025,15/05/2025,2,343.03,Florence David's Apartament,Confermate,24,Booking
+1507,16/03/2025 23:16:00,22/04/2025,Booking,GRAVANIS ANTONIOS,Senape,Senape - Standard,13/05/2025,17/05/2025,4,825.07,Florence David's Apartament,Cancellate,0,Booking
 1639,11/05/2025 22:05:10,,Booking,Tamme Kristjan,Senape,Senape - Standard,12/05/2025,13/05/2025,1,111.67,Florence David's Apartament,Confermate,12,Booking
 1559,10/04/2025 18:21:45,,Booking,LEE JIHUN,Blu,Blu - Standard,12/05/2025,14/05/2025,2,326.1,Florence David's Apartament,Confermate,24,Booking
 1620,04/05/2025 17:58:04,,Booking,Lavao Hely,Blu,Blu - Standard,11/05/2025,12/05/2025,1,90.29,Florence David's Apartament,Confermate,12,Booking
@@ -7429,53 +7599,81 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1527,26/03/2025 12:00:16,,Booking,Sarmiento Jenna,Verde,Verde - Standard,09/05/2025,11/05/2025,2,395.6,Florence David's Apartament,Confermate,24,Booking
 1516,20/03/2025 21:09:14,,Booking,Mary Langford,Blu,Blu - Standard,09/05/2025,11/05/2025,2,384.03,Florence David's Apartament,Confermate,24,Booking
 1627,06/05/2025 11:20:52,,Booking,Enario Kniki Helouise,Verde,Verde - Standard,08/05/2025,09/05/2025,1,105.34,Florence David's Apartament,Confermate,12,Booking
+1583,19/04/2025 14:35:16,04/05/2025,Booking,Brüel-Sasse Petra,Verde,Verde - Standard,08/05/2025,09/05/2025,1,181.17,Florence David's Apartament,Cancellate,0,Booking
 1599,26/04/2025 13:52:03,,Booking,Stepanova Natalia,Blu,Blu - Standard,07/05/2025,09/05/2025,2,277.99,Florence David's Apartament,Confermate,24,Booking
 1536,30/03/2025 20:12:55,,Booking,Modica Giuseppe,Senape,Senape - Standard,07/05/2025,11/05/2025,4,848.72,Florence David's Apartament,Confermate,48,Booking
+1533,30/03/2025 09:31:54,09/04/2025,Booking,he yipin,Blu,Blu - Standard,07/05/2025,09/05/2025,2,319.87,Florence David's Apartament,Cancellate,0,Booking
 1624,05/05/2025 23:51:53,,Booking,Berger Sarah,Senape,Senape - Standard,06/05/2025,07/05/2025,1,95.83,Florence David's Apartament,Confermate,12,Booking
 1623,05/05/2025 10:40:37,,Booking,Barlan Murat,Blu,Blu - Standard,06/05/2025,07/05/2025,1,82.37,Florence David's Apartament,Confermate,12,Booking
 1543,04/04/2025 17:37:51,,Booking,Pang Diane,Verde,Verde - Non Rimborsabile OTA,06/05/2025,08/05/2025,2,312.41,Florence David's Apartament,Confermate,24,Booking
 1513,19/03/2025 15:43:07,,Booking,kim hyobae,Senape,Senape - Standard,04/05/2025,06/05/2025,2,328.78,Florence David's Apartament,Confermate,24,Booking
 1510,18/03/2025 17:37:39,,Booking,Gillen Liz,Blu,Blu - Standard,04/05/2025,06/05/2025,2,277.99,Florence David's Apartament,Confermate,24,Booking
 1503,11/03/2025 15:17:42,,Booking,Dinescu Dana,Verde,Verde - Standard,03/05/2025,06/05/2025,3,523.91,Florence David's Apartament,Confermate,36,Booking
+1499,08/03/2025 00:04:13,17/03/2025,Booking,Diniz Carvalho Larissa,Blu,Blu - Standard,03/05/2025,05/05/2025,2,352.84,Florence David's Apartament,Cancellate,0,Booking
 1595,25/04/2025 14:16:56,,Booking,Marcucci Giulia,Senape,Senape - Standard,02/05/2025,04/05/2025,2,408.4,Florence David's Apartament,Confermate,36,Booking
 1573,15/04/2025 23:29:25,,Booking,Palma Tobias,Blu,Blu - Standard,02/05/2025,04/05/2025,2,422.33,Florence David's Apartament,Confermate,24,Booking
+1564,11/04/2025 13:12:24,23/04/2025,Booking,Ceovic Helena,Senape,Senape - Standard,02/05/2025,04/05/2025,2,502.85,Florence David's Apartament,Cancellate,0,Booking
 1593,22/04/2025 21:11:45,,Booking,Valentina Mirandola,Verde,Verde - Standard,01/05/2025,03/05/2025,2,344.81,Florence David's Apartament,Confermate,24,Booking
+1582,19/04/2025 09:13:19,19/04/2025,Booking,Verdino Maria,Verde,Verde - Standard,01/05/2025,03/05/2025,2,398.27,Florence David's Apartament,Cancellate,0,Booking
+1557,09/04/2025 09:38:19,09/04/2025,Booking,Katie Kirkpatrick,Verde,Verde - Standard,01/05/2025,03/05/2025,2,474.21,Florence David's Apartament,Cancellate,0,Booking
+1461,05/02/2025 00:49:57,06/02/2025,Booking,Daly Margo,Senape,Senape - Non Rimborsabile OTA,01/05/2025,03/05/2025,2,490.49,Florence David's Apartament,Cancellate,0,Booking
 1602,27/04/2025 23:43:33,,Booking Engine,María Luisa  García López ,Senape,Senape - Standard,29/04/2025,02/05/2025,3,441,Florence David's Apartament,Confermate,18,Booking Engine
+1556,08/04/2025 22:56:27,25/04/2025,Booking,Creta Antonio,Senape,Senape - Standard,29/04/2025,02/05/2025,3,531.04,Florence David's Apartament,Cancellate,0,Booking
 1476,10/02/2025 15:51:34,,Booking,Phang Teen Teen,Verde,Verde - Non Rimborsabile OTA,28/04/2025,01/05/2025,3,445.1,Florence David's Apartament,Confermate,36,Booking
 1475,10/02/2025 15:46:36,,Booking,Khaw Soo Wan,Blu,Blu - Non Rimborsabile OTA,28/04/2025,02/05/2025,4,595.93,Florence David's Apartament,Confermate,48,Booking
+1441,21/01/2025 19:24:10,08/04/2025,Booking,özgün Furkan,Senape,Senape - Standard,28/04/2025,30/04/2025,2,321.65,Florence David's Apartament,Cancellate,0,Booking
 1565,11/04/2025 20:27:01,,Booking,Lee Eunjung,Senape,Senape - Standard,27/04/2025,29/04/2025,2,247.9,Florence David's Apartament,Confermate,24,Booking
 1525,25/03/2025 20:56:30,,Booking,Gabriele Cazzin,Verde,Verde - Standard,27/04/2025,28/04/2025,1,128.3,Florence David's Apartament,Confermate,12,Booking
 1579,18/04/2025 09:39:42,,Booking,fleuret sylvie,Blu,Blu - Standard,26/04/2025,28/04/2025,2,237.01,Florence David's Apartament,Confermate,24,Booking
+1512,18/03/2025 21:50:51,16/04/2025,Booking,Gomberti Manuela,Blu,Blu - Standard,26/04/2025,28/04/2025,2,268.19,Florence David's Apartament,Cancellate,0,Booking
+1509,17/03/2025 21:22:01,18/03/2025,Booking,Garbulsky Sebastian,Blu,Blu - Standard,26/04/2025,28/04/2025,2,298.49,Florence David's Apartament,Cancellate,0,Booking
 1576,17/04/2025 14:16:55,,Booking,Maycacayan Mary Ann Roxan,Verde,Verde - Standard,25/04/2025,27/04/2025,2,358.18,Florence David's Apartament,Confermate,24,Booking
 1495,02/03/2025 13:30:14,,Booking,Cinzia Baldan,Senape,Senape - Standard,25/04/2025,27/04/2025,2,507.31,Florence David's Apartament,Confermate,36,Booking
 1594,23/04/2025 15:30:52,,Booking,Dicorato Giulia,Senape,Senape - Standard,24/04/2025,25/04/2025,1,126.07,Florence David's Apartament,Confermate,18,Booking
 1587,21/04/2025 20:45:17,,Booking,Klaišienė Eglė,Verde,Verde - Standard,24/04/2025,25/04/2025,1,103.75,Florence David's Apartament,Confermate,12,Booking
 1524,25/03/2025 19:05:47,,Booking,lahontaa Marie,Blu,Blu - Non Rimborsabile OTA,24/04/2025,26/04/2025,2,359.77,Florence David's Apartament,Confermate,24,Booking
+1514,20/03/2025 12:24:12,12/04/2025,Booking,Matsuoka Hiroaki,Verde,Verde - Standard,24/04/2025,27/04/2025,3,514.11,Florence David's Apartament,Cancellate,0,Booking
 1486,19/02/2025 22:36:27,,Booking,Ng Claire Yee Hwee,Blu,Blu - Non Rimborsabile OTA,22/04/2025,24/04/2025,2,263.95,Florence David's Apartament,Confermate,24,Booking
 1481,16/02/2025 18:16:27,,Booking Engine,Andrea De Girolamo,Senape,Senape - Standard,22/04/2025,24/04/2025,2,379,Florence David's Apartament,Confermate,36,Booking Engine
 1538,31/03/2025 17:11:33,,Booking,Barbuto Paola,Blu,Blu - Standard,19/04/2025,22/04/2025,3,513.21,Florence David's Apartament,Confermate,36,Booking
 1523,25/03/2025 08:11:53,,Booking,Alifanova Viktoriia,Senape,Senape - Standard,19/04/2025,21/04/2025,2,457.33,Florence David's Apartament,Confermate,24,Booking
+1511,18/03/2025 19:38:41,18/03/2025,Booking,Liptak Szabolcs,Senape,Senape - Standard,19/04/2025,21/04/2025,2,457.38,Florence David's Apartament,Cancellate,0,Booking
 1425,13/01/2025 03:41:44,,Booking,Tate Andrew,Verde,Verde - Min Stay 5 notti,19/04/2025,24/04/2025,5,777.05,Florence David's Apartament,Confermate,60,Booking
 1581,18/04/2025 12:56:51,,FrontOffice,Martina,Verde,Verde - Standard,18/04/2025,19/04/2025,1,100,Florence David's Apartament,Confermate,12,FrontOffice
+1580,18/04/2025 11:40:55,18/04/2025,FrontOffice,Enis,Verde,Verde - Standard,18/04/2025,19/04/2025,1,0,Florence David's Apartament,Cancellate,0,FrontOffice
 1567,12/04/2025 16:30:40,,Booking,Paganotto Davide,Blu,Blu - Standard,18/04/2025,19/04/2025,1,120.38,Florence David's Apartament,Confermate,12,Booking
 1548,06/04/2025 22:16:03,,Booking,Tsou Yun Cheng,Blu,Blu - Non Rimborsabile OTA,17/04/2025,18/04/2025,1,117.5,Florence David's Apartament,Confermate,12,Booking
+1505,15/03/2025 11:37:19,29/03/2025,Booking,Evgenia Potapova,Blu,Blu - Standard,17/04/2025,22/04/2025,5,1037.13,Florence David's Apartament,Cancellate,0,Booking
 1571,13/04/2025 15:09:23,,Booking,Blazquez Janice Fernanda,Verde,Verde - Standard,15/04/2025,18/04/2025,3,357.3,Florence David's Apartament,Confermate,36,Booking
 1553,08/04/2025 09:33:10,,Booking,Zylberman Noya,Blu,Blu - Standard,15/04/2025,17/04/2025,2,239.58,Florence David's Apartament,Confermate,24,Booking
+1549,07/04/2025 00:23:11,12/04/2025,Booking,Paice Alexandra,Verde,Verde - Standard,15/04/2025,18/04/2025,3,396.99,Florence David's Apartament,Cancellate,0,Booking
+1526,26/03/2025 10:42:06,09/04/2025,Booking,Bacci Elena,Verde,Verde - Standard,14/04/2025,15/04/2025,1,138.11,Florence David's Apartament,Cancellate,0,Booking
 1561,10/04/2025 23:54:21,,Booking,Antonina Obraztsova,Verde,Verde - Standard,13/04/2025,15/04/2025,2,196.42,Florence David's Apartament,Confermate,24,Booking
+1558,09/04/2025 19:25:24,10/04/2025,Booking,Janus Karel,Verde,Verde - Standard,13/04/2025,14/04/2025,1,93.56,Florence David's Apartament,Cancellate,0,Booking
+1550,07/04/2025 19:53:20,08/04/2025,Booking,Janus Karel,Verde,Verde - Standard,13/04/2025,14/04/2025,1,103.95,Florence David's Apartament,Cancellate,0,Booking
 1547,05/04/2025 13:18:01,,Booking,Kronthaler Christoph,Blu,Blu - Non Rimborsabile OTA,13/04/2025,15/04/2025,2,201.28,Florence David's Apartament,Confermate,24,Booking
 1457,03/02/2025 06:21:00,,Booking,Gao Matthew,Senape,Senape - Standard,13/04/2025,18/04/2025,5,1148.31,Florence David's Apartament,Confermate,90,Booking
 1566,12/04/2025 12:22:01,,FrontOffice,Alvisi Chiara,Senape,Senape,12/04/2025,13/04/2025,1,132,Florence David's Apartament,Confermate,18,FrontOffice
 1540,02/04/2025 12:30:01,,Booking,Sole Gemma,Blu,Blu - Standard,12/04/2025,13/04/2025,1,155.93,Florence David's Apartament,Confermate,12,Booking
+1534,30/03/2025 16:34:30,02/04/2025,Booking,Angarano Gabriele,Senape,Senape - Standard,12/04/2025,13/04/2025,1,169.29,Florence David's Apartament,Cancellate,0,Booking
+1491,24/02/2025 14:06:26,24/03/2025,Booking,Zanellato Agnese,Senape,Senape - Standard,12/04/2025,13/04/2025,1,183.71,Florence David's Apartament,Cancellate,0,Booking
+1488,21/02/2025 21:09:14,01/04/2025,Booking,keser yaratilmis gul deniz,Blu,Blu - Standard,12/04/2025,14/04/2025,2,286.01,Florence David's Apartament,Cancellate,0,Booking
 1520,24/03/2025 20:56:59,,Booking,Palacios Lara,Blu,Blu - Standard,10/04/2025,12/04/2025,2,253.05,Florence David's Apartament,Confermate,24,Booking
 1410,04/01/2025 04:26:13,,Booking,Williams Geoff,Verde,Verde - Non Rimborsabile OTA,10/04/2025,13/04/2025,3,483.35,Florence David's Apartament,Confermate,36,Booking
 1546,05/04/2025 10:25:13,,Booking,Sciarretta Annamaria,Blu,Blu - Standard,09/04/2025,10/04/2025,1,108.9,Florence David's Apartament,Confermate,12,Booking
 1545,05/04/2025 08:17:37,,Booking,Priestman Ryan,Blu,Blu - Standard,08/04/2025,09/04/2025,1,103.95,Florence David's Apartament,Confermate,12,Booking
+1497,07/03/2025 10:13:40,01/04/2025,Booking,Karakuş Aykut,Blu,Blu - Standard,08/04/2025,10/04/2025,2,261.07,Florence David's Apartament,Cancellate,0,Booking
 1518,22/03/2025 16:16:45,,Booking,Polcaro Gianluca,Blu,Blu - Standard,07/04/2025,08/04/2025,1,98.9,Florence David's Apartament,Confermate,12,Booking
 1483,18/02/2025 00:26:13,,Booking,Cardozo Jesica,Verde,Verde - Non Rimborsabile OTA,07/04/2025,10/04/2025,3,364.78,Florence David's Apartament,Confermate,36,Booking
 1432,18/01/2025 02:59:31,,Booking,clifton gong,Senape,Senape - Standard,07/04/2025,12/04/2025,5,844.59,Florence David's Apartament,Confermate,90,Booking
+1431,17/01/2025 09:55:04,04/03/2025,Booking,Jiramaneekul Tanaporn,Blu,Blu - Standard,07/04/2025,10/04/2025,3,379.56,Florence David's Apartament,Cancellate,0,Booking
+1429,16/01/2025 05:57:48,16/01/2025,Booking,Chen Hsiung Wen,Verde,Verde - Standard,07/04/2025,09/04/2025,2,271.76,Florence David's Apartament,Cancellate,0,Booking
 1535,30/03/2025 18:54:23,,Booking,Chi Su Yun,Verde,Verde - Standard,06/04/2025,07/04/2025,1,88.21,Florence David's Apartament,Confermate,12,Booking
 1492,26/02/2025 22:21:08,,Booking,Castorani Rebecca,Blu,Blu - Non Rimborsabile OTA,05/04/2025,07/04/2025,2,298.75,Florence David's Apartament,Confermate,24,Booking
+1445,26/01/2025 02:11:40,10/02/2025,Booking,Embalagens Degam,Blu,Blu - Standard,05/04/2025,07/04/2025,2,284.23,Florence David's Apartament,Cancellate,0,Booking
 1517,21/03/2025 14:23:49,,Booking,Pantaleo Gaetano,Verde,Verde - Standard,04/04/2025,06/04/2025,2,265.52,Florence David's Apartament,Confermate,24,Booking
+1494,01/03/2025 18:32:33,10/03/2025,Booking,MAVRIC Tanja,Verde,Verde - Standard,04/04/2025,06/04/2025,2,317.19,Florence David's Apartament,Cancellate,0,Booking
+1479,15/02/2025 07:25:19,15/02/2025,Booking,Papadopoulou Vasiliki,Verde,Verde - Standard,04/04/2025,06/04/2025,2,307.39,Florence David's Apartament,Cancellate,0,Booking
 1467,08/02/2025 11:50:23,,Booking,Lavalle merchan Pilar,Senape,Senape - Non Rimborsabile OTA,04/04/2025,07/04/2025,3,482.23,Florence David's Apartament,Confermate,54,Booking
 1447,28/01/2025 18:24:46,,Booking,Vaquer Obrador Joan Carles,Blu,Blu - Non Rimborsabile OTA,03/04/2025,05/04/2025,2,258.21,Florence David's Apartament,Confermate,24,Booking
 1522,24/03/2025 22:20:23,,Booking,ibañez Eva,Blu,Blu - Standard,02/04/2025,03/04/2025,1,88.21,Florence David's Apartament,Confermate,12,Booking
@@ -7488,8 +7686,10 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1485,19/02/2025 08:05:47,,Booking,Persa Carmen,Verde,Verde - Standard,26/03/2025,28/03/2025,2,219.18,Florence David's Apartament,Confermate,24,Booking
 1487,21/02/2025 02:32:32,,Booking,Queiroz Wickert Marcio,Senape,Senape - Non Rimborsabile OTA,25/03/2025,27/03/2025,2,234.88,Florence David's Apartament,Confermate,36,Booking
 1468,08/02/2025 14:49:10,,Booking,Salafia Om Sharan,Blu,Blu - Standard,24/03/2025,28/03/2025,4,382.24,Florence David's Apartament,Confermate,24,Booking
+1337,13/11/2024 11:05:40,30/01/2025,Booking,Diana Ilaria,Blu,Blu - Standard,24/03/2025,29/03/2025,5,507.87,Florence David's Apartament,Cancellate,0,Booking
 1473,09/02/2025 13:50:29,,Booking Engine,Giuseppina  Rasa,Senape,Senape - Non Rimborsabile OTA,22/03/2025,24/03/2025,2,257.6,Florence David's Apartament,Confermate,24,Booking Engine
 1471,09/02/2025 03:31:38,,Booking,Amaya Garcia Yaneth Itzel,Blu,Blu - Non Rimborsabile OTA,22/03/2025,24/03/2025,2,225.67,Florence David's Apartament,Confermate,24,Booking
+1464,07/02/2025 08:59:40,07/02/2025,Booking,Fedele Daria,Blu,Blu - Standard,22/03/2025,24/03/2025,2,198.69,Florence David's Apartament,Cancellate,0,Booking
 1515,20/03/2025 16:59:15,,FrontOffice,Ariel Medica ,Blu,Blu - Non Rimborsabile OTA,21/03/2025,22/03/2025,1,70,Florence David's Apartament,Confermate,6,FrontOffice
 1462,05/02/2025 18:52:23,,Booking,VINÍCUS DIAS FREITAS MARCIO,Verde,Verde - Standard,21/03/2025,24/03/2025,3,347.5,Florence David's Apartament,Confermate,36,Booking
 1508,17/03/2025 07:35:09,,Booking,Liberatore Claudia,Verde,Verde - Standard,20/03/2025,21/03/2025,1,76.82,Florence David's Apartament,Confermate,6,Booking
@@ -7498,10 +7698,16 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1469,08/02/2025 20:06:56,,Booking,Hvenegaard Sofie,Verde,Verde - Standard,17/03/2025,20/03/2025,3,316.8,Florence David's Apartament,Confermate,36,Booking
 1451,30/01/2025 02:17:37,,Booking,matarese deborah,Blu,Blu - Non Rimborsabile OTA,16/03/2025,19/03/2025,3,228.7,Florence David's Apartament,Confermate,36,Booking
 1504,11/03/2025 20:43:26,,Booking,esen ömer çağrı,Senape,Senape - Standard,15/03/2025,16/03/2025,1,108.7,Florence David's Apartament,Confermate,12,Booking
+1501,09/03/2025 20:44:08,11/03/2025,Booking,esen ömer çağrı,Senape,Senape - Standard,15/03/2025,16/03/2025,1,110.48,Florence David's Apartament,Cancellate,0,Booking
+1435,19/01/2025 09:32:58,08/03/2025,Booking,Λιάππη Γεωργία,Senape,Senape - Standard,15/03/2025,17/03/2025,2,212.95,Florence David's Apartament,Cancellate,0,Booking
+1396,22/12/2024 15:47:09,07/02/2025,Booking,Noguerol Marilo,Verde,Verde - Standard,15/03/2025,17/03/2025,2,200.48,Florence David's Apartament,Cancellate,0,Booking
+1384,09/12/2024 18:04:34,28/01/2025,Booking,Niso Angela,Blu,Blu - Standard,15/03/2025,18/03/2025,3,261.06,Florence David's Apartament,Cancellate,0,Booking
 1498,07/03/2025 11:24:13,,Booking,D'Amico Rosy,Senape,Senape - Standard,14/03/2025,15/03/2025,1,132.92,Florence David's Apartament,Confermate,18,Booking
 1477,11/02/2025 20:33:30,,Booking,Ledesma Cristina,Verde,Verde - Non Rimborsabile OTA,14/03/2025,17/03/2025,3,273.78,Florence David's Apartament,Confermate,12,Booking
 1458,03/02/2025 20:08:20,,Booking Engine,Marco Babato ,Blu,Blu - Standard,14/03/2025,16/03/2025,2,259,Florence David's Apartament,Confermate,24,Booking Engine
+1502,10/03/2025 17:58:36,15/03/2025,Booking,Fionda Antonio,Verde,Verde - Standard,12/03/2025,14/03/2025,2,198.69,Florence David's Apartament,Cancellate,0,Booking
 1460,04/02/2025 20:55:40,,Booking,Frasson Cristina,Senape,Senape - Non Rimborsabile OTA,12/03/2025,14/03/2025,2,238.96,Florence David's Apartament,Confermate,36,Booking
+1419,10/01/2025 19:11:22,05/03/2025,Booking,Mutinati Giovanni,Verde,Verde - Standard,12/03/2025,14/03/2025,2,214.83,Florence David's Apartament,Cancellate,0,Booking
 1395,22/12/2024 12:41:17,,Booking,Ferrara Maria Teresa,Blu,Blu - Non Rimborsabile OTA,12/03/2025,14/03/2025,2,165.19,Florence David's Apartament,Confermate,24,Booking
 1389,16/12/2024 09:30:49,,Booking,Bordier Jenny,Verde,Verde - Standard,10/03/2025,12/03/2025,2,179.98,Florence David's Apartament,Confermate,24,Booking
 1490,23/02/2025 13:48:00,,FrontOffice,Elene Machkhaneli,Senape,Senape - Standard,09/03/2025,12/03/2025,3,284.4,Florence David's Apartament,Confermate,36,FrontOffice
@@ -7510,60 +7716,86 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1423,12/01/2025 21:52:37,,Booking,Alba Blanco Alquezar,Blu,Blu - Standard,06/03/2025,08/03/2025,2,186.22,Florence David's Apartament,Confermate,24,Booking
 1388,15/12/2024 19:38:13,,Booking,Aleman Belen,Verde,Verde - Non Rimborsabile OTA,06/03/2025,10/03/2025,4,344.81,Florence David's Apartament,Confermate,48,Booking
 1472,09/02/2025 08:28:02,,Booking,Diaconu Calin,Senape,Senape - Standard,05/03/2025,07/03/2025,2,188.89,Florence David's Apartament,Confermate,24,Booking
+1426,14/01/2025 08:54:04,26/01/2025,Booking,UY ROGILLO,"Verde, Senape","Verde - Standard, Senape - Standard",04/03/2025,06/03/2025,2,445.5,Florence David's Apartament,Cancellate,0,Booking
+1493,28/02/2025 16:42:05,28/02/2025,Booking,Battisti Davide,Senape,Senape - Standard,03/03/2025,05/03/2025,2,190.18,Florence David's Apartament,Cancellate,0,Booking
 1422,12/01/2025 18:01:14,,Booking,Vincent Ducros,Blu,Blu - Non Rimborsabile OTA,03/03/2025,05/03/2025,2,156.6,Florence David's Apartament,Confermate,24,Booking
 1420,10/01/2025 22:09:55,,Booking,Scialdone Rossella,Senape,Senape - Standard,01/03/2025,03/03/2025,2,233.68,Florence David's Apartament,Confermate,24,Booking
 1399,25/12/2024 23:29:37,,Booking,perot sandra,Verde,Verde - Standard,01/03/2025,04/03/2025,3,302.05,Florence David's Apartament,Confermate,36,Booking
 1363,25/11/2024 21:15:35,,Booking,Patel Mitul,Blu,Blu - Standard,26/02/2025,03/03/2025,5,436.59,Florence David's Apartament,Confermate,60,Booking
 1407,02/01/2025 09:56:11,,Booking,Vadon Eleonore,Verde,Verde - Standard,25/02/2025,27/02/2025,2,171.27,Florence David's Apartament,Confermate,24,Booking
+1416,09/01/2025 10:32:12,18/02/2025,Booking,GÖRGÜN HİKMET NEŞE,Blu,Blu - Standard,24/02/2025,26/02/2025,2,147.51,Florence David's Apartament,Cancellate,0,Booking
+1408,02/01/2025 18:54:07,23/02/2025,Booking,machkhaneli elene,Senape,Senape - Standard,23/02/2025,26/02/2025,3,257.49,Florence David's Apartament,Cancellate,0,Booking
 1413,06/01/2025 19:44:10,,Booking,Cassanego Laura,Verde,Verde - Standard,22/02/2025,24/02/2025,2,174.63,Florence David's Apartament,Confermate,24,Booking
 1478,12/02/2025 13:21:21,,Booking,Opivalova Sofia,Senape,Senape - Non Rimborsabile OTA,21/02/2025,23/02/2025,2,206.7,Florence David's Apartament,Confermate,24,Booking
 1364,26/11/2024 18:05:13,,Booking,Koričova Ivana,Blu,Blu - Non Rimborsabile OTA,21/02/2025,23/02/2025,2,144.34,Florence David's Apartament,Confermate,24,Booking
+1359,24/11/2024 15:16:53,10/02/2025,Booking,Pfattner Hermann,Senape,Senape - Standard,21/02/2025,23/02/2025,2,220.32,Florence David's Apartament,Cancellate,0,Booking
+1465,07/02/2025 14:48:02,07/02/2025,Booking,Telpiz Irina,Blu,Blu - Standard,19/02/2025,21/02/2025,2,155.68,Florence David's Apartament,Cancellate,0,Booking
 1453,30/01/2025 14:13:26,,Booking,Davies Mary Anne,Senape,Senape - Standard,19/02/2025,21/02/2025,2,220.71,Florence David's Apartament,Confermate,24,Booking
+1484,18/02/2025 02:05:25,18/02/2025,Booking,FFG Massimo,Verde,Verde - Standard,18/02/2025,21/02/2025,3,256.66,Florence David's Apartament,Cancellate,0,Booking
 1466,07/02/2025 21:57:59,,Booking,tuttolomondo giovanna,Senape,Senape - Non Rimborsabile OTA,17/02/2025,19/02/2025,2,170.32,Florence David's Apartament,Confermate,0,Booking
 1428,14/01/2025 19:20:56,,Booking,Batista Azevedo Lydia,Blu,Blu - Standard,16/02/2025,19/02/2025,3,197.81,Florence David's Apartament,Confermate,36,Booking
 1463,07/02/2025 08:09:28,,Booking,Maisto Rosa,Verde,Verde - Standard,14/02/2025,17/02/2025,3,277.69,Florence David's Apartament,Confermate,36,Booking
 1427,14/01/2025 17:17:15,,Booking,KATO KINUE,Senape,Senape - Standard,14/02/2025,16/02/2025,2,248.91,Florence David's Apartament,Confermate,36,Booking
+1406,31/12/2024 10:34:01,07/02/2025,Booking,Campestre Sara,Verde,Verde - Standard,14/02/2025,16/02/2025,2,209.39,Florence David's Apartament,Cancellate,0,Booking
 1360,25/11/2024 13:07:06,,Booking,Vezzi Yasmine,Blu,Blu - Standard,14/02/2025,16/02/2025,2,160.38,Florence David's Apartament,Confermate,24,Booking
+1211,11/09/2024 19:15:22,11/09/2024,Booking,KOH SOYOUNG,Blu,Blu - Standard,12/02/2025,14/02/2025,2,178.2,Florence David's Apartament,Cancellate,0,Booking
 1392,17/12/2024 10:34:39,,Booking,Karina Salado,Blu,Blu - Standard,11/02/2025,13/02/2025,2,136.33,Florence David's Apartament,Confermate,24,Booking
 1470,08/02/2025 20:11:08,,Booking,Arrua Oviedo Laura,Senape,Senape - Standard,08/02/2025,09/02/2025,1,84.15,Florence David's Apartament,Confermate,6,Booking
 1455,01/02/2025 14:53:32,,Booking,Colombo Enea,Verde,Verde - Standard,08/02/2025,10/02/2025,2,168.3,Florence David's Apartament,Confermate,24,Booking
+1430,17/01/2025 09:09:00,31/01/2025,Booking,Donazzan Allegra,Verde,Verde - Standard,07/02/2025,10/02/2025,3,253.94,Florence David's Apartament,Cancellate,0,Booking
 1456,01/02/2025 20:55:39,,Booking,Vieira Júnior José Ignácio,Senape,Senape - Standard,06/02/2025,08/02/2025,2,215.74,Florence David's Apartament,Confermate,36,Booking
 1405,30/12/2024 22:35:14,,Booking,Muñoz Palacios Ignacio,Blu,Blu - Non Rimborsabile OTA,06/02/2025,09/02/2025,3,229.89,Florence David's Apartament,Confermate,36,Booking
+1397,22/12/2024 17:05:32,10/01/2025,Booking,Liu Mengyao,Verde,Verde - Standard,06/02/2025,09/02/2025,3,310.97,Florence David's Apartament,Cancellate,0,Booking
 1379,09/12/2024 14:06:30,,Booking,LIU CHUN CHEN,Blu,Blu - Non Rimborsabile OTA,04/02/2025,06/02/2025,2,96.22,Florence David's Apartament,Confermate,24,Booking
 1376,05/12/2024 17:42:19,,Booking,tuttolomondo giovanna,Senape,Senape - Non Rimborsabile OTA,04/02/2025,06/02/2025,2,168.4,Florence David's Apartament,Confermate,24,Booking
 1444,25/01/2025 22:46:43,,Booking,LIU HUA,Blu,Blu - Non Rimborsabile OTA,02/02/2025,04/02/2025,2,118.41,Florence David's Apartament,Confermate,12,Booking
+1346,18/11/2024 14:32:58,18/11/2024,Booking,Wexler Tzuf,Senape,Senape - Standard,02/02/2025,05/02/2025,3,360.45,Florence David's Apartament,Cancellate,0,Booking
 1452,30/01/2025 12:31:20,,Booking,Andrea Riva,Senape,Senape - Standard,01/02/2025,02/02/2025,1,99.83,Florence David's Apartament,Confermate,12,Booking
 1454,30/01/2025 16:26:38,,FrontOffice,JAIRO ARTURO SUAREZ,Senape,Senape - Standard,31/01/2025,01/02/2025,1,84,Florence David's Apartament,Confermate,11,FrontOffice
+1421,11/01/2025 10:58:47,15/01/2025,Booking,Procaccino Rossana,Senape,Senape - Standard,31/01/2025,02/02/2025,2,190.67,Florence David's Apartament,Cancellate,0,Booking
 1401,29/12/2024 10:38:08,,Booking,Pesiridi Aikaterini,Blu,Blu - Non Rimborsabile OTA,31/01/2025,02/02/2025,2,132.31,Florence David's Apartament,Confermate,23,Booking
 1449,29/01/2025 10:43:29,,Booking,Partijo Krystal,Verde,Verde - Min Stay 5 notti,30/01/2025,06/02/2025,7,518.59,Florence David's Apartament,Confermate,41,Booking
 1450,29/01/2025 21:18:12,,Booking,Suarez Jairo,Senape,Senape - Standard,29/01/2025,31/01/2025,2,176.72,Florence David's Apartament,Confermate,22,Booking
 1443,24/01/2025 23:58:37,,Booking,Alfredo FERLAINO,Blu,Blu - Standard,29/01/2025,31/01/2025,2,124.74,Florence David's Apartament,Confermate,22,Booking
+1442,21/01/2025 22:29:37,22/01/2025,Booking,Carrizo Ana Maria,Senape,Senape - Standard,29/01/2025,31/01/2025,2,214.2,Florence David's Apartament,Cancellate,0,Booking
+1131,12/07/2024 13:58:28,20/01/2025,Booking,Gerum Christin,Blu,Blu - Standard,27/01/2025,30/01/2025,3,297,Florence David's Apartament,Cancellate,0,Booking
+1446,26/01/2025 20:55:41,27/01/2025,Booking,Tolo Auguste,Blu,Blu - Standard,26/01/2025,29/01/2025,3,187.11,Florence David's Apartament,Cancellate,0,Booking
 1418,10/01/2025 14:40:04,,Booking,KOLB Lisa,Senape,Senape - Standard,26/01/2025,29/01/2025,3,264.63,Florence David's Apartament,Confermate,33,Booking
 1382,09/12/2024 16:24:29,,Booking,Muratori Helena,Verde,Verde - Non Rimborsabile OTA,25/01/2025,28/01/2025,3,198.87,Florence David's Apartament,Confermate,33,Booking
 1438,20/01/2025 13:32:30,,Booking,Franco Annalisa,Senape,Senape - Standard,24/01/2025,26/01/2025,2,178.2,Florence David's Apartament,Confermate,22,Booking
 1371,02/12/2024 20:37:26,,Booking,Maltese Stefano,Blu,Blu - Standard,24/01/2025,26/01/2025,2,169.3,Florence David's Apartament,Confermate,22,Booking
 1437,19/01/2025 21:19:26,,Booking,SHAO IHSUAN,Verde,Verde - Non Rimborsabile OTA,22/01/2025,24/01/2025,2,135.44,Florence David's Apartament,Confermate,22,Booking
+1374,03/12/2024 16:42:20,14/01/2025,Booking,Pashkevich Darya,Senape,Senape - Standard,21/01/2025,25/01/2025,4,383.15,Florence David's Apartament,Cancellate,0,Booking
+1436,19/01/2025 18:39:21,19/01/2025,Booking,Bouba Seck,Senape,Senape - Standard,19/01/2025,23/01/2025,4,320.76,Florence David's Apartament,Cancellate,0,Booking
 1403,29/12/2024 19:29:47,,Booking,sciotto giuseppe,Verde,Verde - Non Rimborsabile OTA,19/01/2025,21/01/2025,2,128.3,Florence David's Apartament,Confermate,22,Booking
 1393,17/12/2024 20:32:45,,Booking,Sansenacq Christine,Blu,Blu - Non Rimborsabile OTA,19/01/2025,23/01/2025,4,240.56,Florence David's Apartament,Confermate,44,Booking
 1409,03/01/2025 13:28:02,,Booking,Lattuada Patrizia,Senape,Senape - Non Rimborsabile OTA,17/01/2025,19/01/2025,2,196.79,Florence David's Apartament,Confermate,33,Booking
 1387,10/12/2024 22:27:01,,Booking,Villa Irene,Verde,Verde - Standard,17/01/2025,19/01/2025,2,169.3,Florence David's Apartament,Confermate,22,Booking
+1386,10/12/2024 11:36:57,27/12/2024,Booking,Fasone Marina,Senape,Senape - Standard,17/01/2025,19/01/2025,2,160.38,Florence David's Apartament,Cancellate,0,Booking
 1380,09/12/2024 15:39:32,,Booking,Fernández Ocaña Francisco,Blu,Blu - Non Rimborsabile OTA,17/01/2025,19/01/2025,2,118.68,Florence David's Apartament,Confermate,22,Booking
 1424,12/01/2025 22:21:57,,Booking,BARAN YALÇINKAYA,Senape,Senape - Non Rimborsabile OTA,14/01/2025,16/01/2025,2,169.3,Florence David's Apartament,Confermate,22,Booking
 1415,07/01/2025 12:38:10,,Booking,González Ramblado Rafael,Blu,Blu - Standard,14/01/2025,16/01/2025,2,147.02,Florence David's Apartament,Confermate,22,Booking
 1414,07/01/2025 09:37:43,,Booking,Pastrana Campuzano Laura,Verde,Verde - Standard,14/01/2025,17/01/2025,3,229.88,Florence David's Apartament,Confermate,33,Booking
 1390,17/12/2024 00:27:24,,Booking,Macaro Tommaso,Senape,Senape - Non Rimborsabile OTA,10/01/2025,12/01/2025,2,160.38,Florence David's Apartament,Confermate,22,Booking
+1383,09/12/2024 16:57:22,19/12/2024,Booking,Elmas Sinem,Verde,Verde - Standard,10/01/2025,12/01/2025,2,139.89,Florence David's Apartament,Cancellate,0,Booking
 1369,29/11/2024 17:19:18,,Booking,Raul Fernandez,Blu,Blu - Non Rimborsabile OTA,10/01/2025,13/01/2025,3,208.49,Florence David's Apartament,Confermate,33,Booking
 1375,04/12/2024 13:34:31,,Booking,Martin Tato Sonia,Verde,Verde - Standard,07/01/2025,10/01/2025,3,240.57,Florence David's Apartament,Confermate,33,Booking
 1378,08/12/2024 15:20:10,,Booking,Turiaco Fabrizio,Senape,Senape - Standard,05/01/2025,06/01/2025,1,113.85,Florence David's Apartament,Confermate,11,Booking
 1368,28/11/2024 19:03:50,,Booking Engine,Matteo Vignaroli,Verde,Verde - Non Rimborsabile OTA,04/01/2025,06/01/2025,2,225,Florence David's Apartament,Confermate,22,Booking Engine
+1365,27/11/2024 00:44:59,27/11/2024,Booking,Fracassi Daniele,Verde,Verde - Standard,04/01/2025,06/01/2025,2,222.76,Florence David's Apartament,Cancellate,0,Booking
 1220,16/09/2024 13:21:50,,Booking,Nastri Rita,Blu,Blu - Standard,04/01/2025,06/01/2025,2,213.84,Florence David's Apartament,Confermate,22,Booking
+1206,09/09/2024 04:23:48,21/09/2024,Booking,Li Lei,Senape,Senape - Standard,04/01/2025,06/01/2025,2,316.8,Florence David's Apartament,Cancellate,0,Booking
 1373,02/12/2024 22:34:07,,Booking,Erdas Eleonora,Senape,Senape - Non Rimborsabile OTA,03/01/2025,05/01/2025,2,216.52,Florence David's Apartament,Confermate,22,Booking
+1362,25/11/2024 15:56:18,01/12/2024,Booking,Lentino Salvatore,Senape,Senape - Standard,03/01/2025,06/01/2025,3,369.78,Florence David's Apartament,Cancellate,0,Booking
 1400,26/12/2024 19:55:27,,Booking Engine,Corrado Vicinelli ,Senape,Senape - Standard,02/01/2025,03/01/2025,1,122,Florence David's Apartament,Confermate,16.5,Booking Engine
+1355,21/11/2024 12:49:10,23/11/2024,Booking,Ruiz ortega Ana María,Senape,Senape - Standard,02/01/2025,04/01/2025,2,308.62,Florence David's Apartament,Cancellate,0,Booking
 1338,13/11/2024 17:24:36,,Booking,López Abad Roberto,Blu,Blu - Standard,02/01/2025,04/01/2025,2,222.76,Florence David's Apartament,Confermate,22,Booking
 1218,13/09/2024 19:53:00,,Booking,Maffei Lorenzo,Verde,Verde - Standard,02/01/2025,04/01/2025,2,231.66,Florence David's Apartament,Confermate,22,Booking
+1190,29/08/2024 06:12:54,27/10/2024,Booking,Jee Hye Seo,Blu,Blu - Standard,02/01/2025,04/01/2025,2,196.02,Florence David's Apartament,Cancellate,0,Booking
 1381,09/12/2024 16:10:58,,Booking,Dunbar Jessica Shantel,Verde,Verde - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,335.2,Florence David's Apartament,Confermate,22,Booking
 1357,23/11/2024 20:04:57,,Booking,Chaput Edgar,Blu,Blu - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,352.03,Florence David's Apartament,Confermate,22,Booking
 1341,16/11/2024 16:55:52,,Booking,Melissa Revelli,Senape,Senape - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,436.56,Florence David's Apartament,Confermate,33,Booking
+1367,28/11/2024 18:50:10,29/11/2024,Booking,Fabrizio Golfi,Verde,Verde - Non Rimborsabile OTA,30/12/2024,01/01/2025,2,443.72,Florence David's Apartament,Cancellate,0,Booking
 
 `;
 const AIRBNB_DATA = []  /* Airbnb data moved to separate dashboard (airbnb_dashboard.html) */;
