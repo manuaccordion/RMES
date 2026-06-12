@@ -845,9 +845,193 @@ function loadEvents(csvText){
     EVENTS[k] = lbl;
   }
 }
+/* AirDNA Florence market data — Booked Listings & Daily Rate, 180 days forward.
+   Used by the D·Demand factor (AirDNA market booking density) and as the market reference.
+   Source: AirDNA Rate Future export, 12 Jun 2026.
+*/
+const AIRDNA_CSV = `
+"Date","Booked Listings","Daily Rate"
+"2026-06-12","2393","306"
+"2026-06-13","2525","310"
+"2026-06-14","2300","301"
+"2026-06-15","2312","295"
+"2026-06-16","2468","297"
+"2026-06-17","2427","296"
+"2026-06-18","2144","298"
+"2026-06-19","2008","300"
+"2026-06-20","1900","302"
+"2026-06-21","1758","291"
+"2026-06-22","1779","287"
+"2026-06-23","1863","287"
+"2026-06-24","1942","293"
+"2026-06-25","2115","296"
+"2026-06-26","2369","298"
+"2026-06-27","2051","303"
+"2026-06-28","1599","295"
+"2026-06-29","1514","286"
+"2026-06-30","1479","280"
+"2026-07-01","1438","278"
+"2026-07-02","1393","273"
+"2026-07-03","1428","285"
+"2026-07-04","1392","284"
+"2026-07-05","1317","268"
+"2026-07-06","1359","261"
+"2026-07-07","1392","262"
+"2026-07-08","1363","267"
+"2026-07-09","1335","265"
+"2026-07-10","1301","266"
+"2026-07-11","1301","270"
+"2026-07-12","1224","258"
+"2026-07-13","1211","253"
+"2026-07-14","1306","246"
+"2026-07-15","1369","243"
+"2026-07-16","1210","260"
+"2026-07-17","1126","264"
+"2026-07-18","1143","266"
+"2026-07-19","1100","252"
+"2026-07-20","1127","257"
+"2026-07-21","1140","250"
+"2026-07-22","1137","248"
+"2026-07-23","1112","250"
+"2026-07-24","1057","256"
+"2026-07-25","988","258"
+"2026-07-26","908","253"
+"2026-07-27","876","246"
+"2026-07-28","798","248"
+"2026-07-29","787","248"
+"2026-07-30","767","258"
+"2026-07-31","749","258"
+"2026-08-01","824","253"
+"2026-08-02","785","246"
+"2026-08-03","791","242"
+"2026-08-04","834","241"
+"2026-08-05","806","241"
+"2026-08-06","781","242"
+"2026-08-07","766","248"
+"2026-08-08","775","246"
+"2026-08-09","707","246"
+"2026-08-10","722","247"
+"2026-08-11","677","246"
+"2026-08-12","644","238"
+"2026-08-13","649","245"
+"2026-08-14","657","253"
+"2026-08-15","641","253"
+"2026-08-16","612","243"
+"2026-08-17","610","240"
+"2026-08-18","618","237"
+"2026-08-19","622","241"
+"2026-08-20","613","250"
+"2026-08-21","573","262"
+"2026-08-22","561","258"
+"2026-08-23","532","251"
+"2026-08-24","519","259"
+"2026-08-25","509","254"
+"2026-08-26","514","258"
+"2026-08-27","521","260"
+"2026-08-28","519","259"
+"2026-08-29","574","258"
+"2026-08-30","559","260"
+"2026-08-31","553","272"
+"2026-09-01","597","274"
+"2026-09-02","658","275"
+"2026-09-03","715","280"
+"2026-09-04","784","296"
+"2026-09-05","840","301"
+"2026-09-06","839","298"
+"2026-09-07","858","285"
+"2026-09-08","915","285"
+"2026-09-09","950","288"
+"2026-09-10","985","297"
+"2026-09-11","973","306"
+"2026-09-12","991","303"
+"2026-09-13","926","290"
+"2026-09-14","913","295"
+"2026-09-15","919","284"
+"2026-09-16","922","289"
+"2026-09-17","938","296"
+"2026-09-18","964","312"
+"2026-09-19","988","310"
+"2026-09-20","958","300"
+"2026-09-21","936","289"
+"2026-09-22","946","292"
+"2026-09-23","981","296"
+"2026-09-24","964","310"
+"2026-09-25","948","310"
+"2026-09-26","941","312"
+"2026-09-27","882","292"
+"2026-09-28","892","290"
+"2026-09-29","940","289"
+"2026-09-30","965","294"
+"2026-10-01","975","291"
+"2026-10-02","927","295"
+"2026-10-03","900","298"
+"2026-10-04","789","288"
+"2026-10-05","713","287"
+"2026-10-06","733","289"
+"2026-10-07","708","291"
+"2026-10-08","713","290"
+"2026-10-09","675","301"
+"2026-10-10","667","299"
+"2026-10-11","617","288"
+"2026-10-12","601","282"
+"2026-10-13","599","282"
+"2026-10-14","561","282"
+"2026-10-15","556","281"
+"2026-10-16","533","278"
+"2026-10-17","504","288"
+"2026-10-18","453","276"
+"2026-10-19","428","278"
+"2026-10-20","453","284"
+"2026-10-21","435","282"
+"2026-10-22","403","282"
+"2026-10-23","379","288"
+"2026-10-24","358","286"
+"2026-10-25","307","266"
+"2026-10-26","287","255"
+"2026-10-27","265","246"
+"2026-10-28","248","254"
+"2026-10-29","235","262"
+"2026-10-30","223","266"
+"2026-10-31","221","270"
+"2026-11-01","211","244"
+"2026-11-02","192","221"
+"2026-11-03","183","210"
+"2026-11-04","191","210"
+"2026-11-05","191","218"
+"2026-11-06","196","214"
+"2026-11-07","189","213"
+"2026-11-08","160","191"
+"2026-11-09","148","180"
+"2026-11-10","140","177"
+"2026-11-11","136","178"
+"2026-11-12","137","184"
+"2026-11-13","141","194"
+"2026-11-14","143","191"
+"2026-11-15","116","174"
+"2026-11-16","113","173"
+"2026-11-17","103","164"
+"2026-11-18","99","176"
+"2026-11-19","104","188"
+"2026-11-20","118","211"
+"2026-11-21","149","238"
+"2026-11-22","152","247"
+"2026-11-23","166","253"
+"2026-11-24","164","257"
+"2026-11-25","138","258"
+"2026-11-26","177","237"
+"2026-11-27","311","244"
+"2026-11-28","381","231"
+"2026-11-29","319","227"
+"2026-11-30","139","217"
+`;
+
 function loadAirdna(csvText){
   MARKET_RATES = [];
-  const rows = parseCSV(csvText);
+  // AirDNA CSV exports use quoted fields ("Date","Booked Listings","Daily Rate").
+  // parseCSV() doesn't handle quotes → strip them before parsing.
+  // trim() removes leading/trailing whitespace (incl. leading newline from template literals).
+  const cleaned = (csvText || '').replace(/"/g, '').trim();
+  const rows = parseCSV(cleaned);
   for (const r of rows){
     const ds = (r['Date']||'').trim();
     if (!ds) continue;
@@ -4400,22 +4584,19 @@ function _getPaceAggBoth(){
   if (_PACE_AGG_BOTH_CACHE) return _PACE_AGG_BOTH_CACHE;
   if (typeof aggPickup !== 'function') return null;
   const pkAgg = aggPickup('both');
-  const PACE_WEEK_INDEXES = [0, 1, 2, 3];
-  const _PW = (typeof PACE_WEEK_WEIGHTS !== 'undefined' && PACE_WEEK_WEIGHTS.length===4) ? PACE_WEEK_WEIGHTS : [0.10,0.20,0.30,0.40];
+  // SIMPLIFIED: usa SOLO W4 (indice 3 = ultimi 7 giorni = pickup più recente).
+  // Niente più mix pesato 4-settimane: il segnale W4 è il più reattivo al mercato.
+  const W4 = 3;
   const byStayMonth = {};  // ym → { rawMult, ratio, pickupCur, pickupStly }
   if (pkAgg && pkAgg.sm && pkAgg.smS){
     const allMonths = new Set([...Object.keys(pkAgg.sm), ...Object.keys(pkAgg.smS)]);
     for (const ym of allMonths){
-      let mCur = 0, mStly = 0;          // RN reali (per display)
-      let wCur = 0, wStly = 0;          // RN pesati (per il ratio)
-      for (const i of PACE_WEEK_INDEXES){
-        if (pkAgg.sm[ym] && pkAgg.sm[ym][i]) { mCur  += pkAgg.sm[ym][i].rn;  wCur  += pkAgg.sm[ym][i].rn  * _PW[i]; }
-        if (pkAgg.smS[ym] && pkAgg.smS[ym][i]) { mStly += pkAgg.smS[ym][i].rn; wStly += pkAgg.smS[ym][i].rn * _PW[i]; }
-      }
-      if (mStly > 0 && mCur > 0){
-        const ratio = (wStly > 0) ? (wCur / wStly) : (mCur / mStly);
+      const cur  = (pkAgg.sm[ym]  && pkAgg.sm[ym][W4])  ? pkAgg.sm[ym][W4].rn  : 0;
+      const stly = (pkAgg.smS[ym] && pkAgg.smS[ym][W4]) ? pkAgg.smS[ym][W4].rn : 0;
+      if (stly > 0 && cur > 0){
+        const ratio = cur / stly;
         const rawMult = (typeof applyThresholds === 'function') ? applyThresholds(ratio, 'pace') : 1;
-        byStayMonth[ym] = { rawMult, ratio, pickupCur: mCur, pickupStly: mStly };
+        byStayMonth[ym] = { rawMult, ratio, pickupCur: cur, pickupStly: stly };
       }
     }
   }
@@ -4710,13 +4891,12 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
   if (typeof aggPickup === 'function'){
     const pkAgg = aggPickup(sel);
     let curRn = 0, stlyRn = 0;
-    const PACE_WEEK_INDEXES = [0, 1, 2, 3];  // tutte le 4 settimane (28 days)
+    // SIMPLIFIED: solo W4 (indice 3 = ultimi 7gg, il pickup più recente).
+    // Niente più mix pesato 4w: il segnale W4 cattura subito il cambio di mercato.
+    const W4 = 3;
     for (const rt of pkAgg.rtAxis){
-      let rtCur = 0, rtStly = 0;
-      for (const i of PACE_WEEK_INDEXES){
-        if (pkAgg.rt[rt] && pkAgg.rt[rt][i]) rtCur  += pkAgg.rt[rt][i].rn;
-        if (pkAgg.rtS[rt] && pkAgg.rtS[rt][i]) rtStly += pkAgg.rtS[rt][i].rn;
-      }
+      const rtCur  = (pkAgg.rt[rt]  && pkAgg.rt[rt][W4])  ? pkAgg.rt[rt][W4].rn  : 0;
+      const rtStly = (pkAgg.rtS[rt] && pkAgg.rtS[rt][W4]) ? pkAgg.rtS[rt][W4].rn : 0;
       curRn  += rtCur;
       stlyRn += rtStly;
       _paceMultByRT[rt] = (rtStly > 0 && rtCur > 0) ? applyThresholds(rtCur / rtStly, 'pace') : 1;
@@ -4725,33 +4905,23 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       _paceRatio = curRn / stlyRn;
       _paceMult = applyThresholds(_paceRatio, 'pace');
     }
-    const _paceStateByStayMonth = {};  // ym → {state, rawMult, ratio}
+    const _paceStateByStayMonth = {};  // ym → {state, rawMult, ratio, pickupCur, pickupStly}
     if (pkAgg.sm && pkAgg.smS){
       const allMonths = new Set([...Object.keys(pkAgg.sm), ...Object.keys(pkAgg.smS)]);
       for (const ym of allMonths){
-        let mCur = 0, mStly = 0;
-        for (const i of PACE_WEEK_INDEXES){
-          if (pkAgg.sm[ym] && pkAgg.sm[ym][i]) mCur  += pkAgg.sm[ym][i].rn;
-          if (pkAgg.smS[ym] && pkAgg.smS[ym][i]) mStly += pkAgg.smS[ym][i].rn;
-        }
+        // Solo W4 per il mese di soggiorno
+        const mCur  = (pkAgg.sm[ym]  && pkAgg.sm[ym][W4])  ? pkAgg.sm[ym][W4].rn  : 0;
+        const mStly = (pkAgg.smS[ym] && pkAgg.smS[ym][W4]) ? pkAgg.smS[ym][W4].rn : 0;
         if (mStly > 0 && mCur > 0){
           const paceRatio = mCur / mStly;
           const rawMult = applyThresholds(paceRatio, 'pace');
-          if (paceRatio >= 1){
-            _paceStateByStayMonth[ym] = {state:'tutto_su', rawMult, ratio:paceRatio, pickupCur: mCur, pickupStly: mStly};
-            _paceMultByStayMonth[ym] = rawMult;  // legacy field (per backward compat)
-          } else {
-            const occMo = _occByMonth[ym];
-            if (occMo && occMo.curOcc >= occMo.stlyOcc && occMo.curOcc > 0){
-              _paceStateByStayMonth[ym] = {state:'ambiguo', rawMult, ratio:paceRatio, pickupCur: mCur, pickupStly: mStly};
-              _paceMultByStayMonth[ym] = 1;  // placeholder per backward compat
-            } else {
-              _paceStateByStayMonth[ym] = {state:'tutto_giù', rawMult, ratio:paceRatio, pickupCur: mCur, pickupStly: mStly};
-              _paceMultByStayMonth[ym] = rawMult;
-            }
-          }
+          // Stato unico per il "caso normale": ha dati W4 per il mese.
+          // I 3 stati richiesti dall'utente (annual fallback / aggregate fallback / neutralized)
+          // sono GIÀ gestiti in _paceMultForRow quando _paceStateByStayMonth[ym] è null/missing.
+          _paceStateByStayMonth[ym] = { state: 'mese_w4', rawMult, ratio: paceRatio, pickupCur: mCur, pickupStly: mStly };
+          _paceMultByStayMonth[ym] = rawMult;
         } else {
-          _paceStateByStayMonth[ym] = {state:'fallback', rawMult:_paceMult, ratio:null, pickupCur: mCur, pickupStly: mStly};
+          _paceStateByStayMonth[ym] = { state: 'fallback', rawMult: _paceMult, ratio: null, pickupCur: mCur, pickupStly: mStly };
           _paceMultByStayMonth[ym] = _paceMult;
         }
       }
@@ -4760,64 +4930,46 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
   function _paceMultForRow(r, verbose){
     const ym = `${r.y}-${pad2(r.mo)}`;
     const st = (typeof _paceStateByStayMonth !== 'undefined') ? _paceStateByStayMonth[ym] : null;
-    if (!st){
-      const aggPaceByMonth = (typeof _getPaceAggBoth === 'function') ? _getPaceAggBoth() : null;
-      const aggForMonth = aggPaceByMonth ? aggPaceByMonth[ym] : null;
-      if (aggForMonth && isFinite(aggForMonth.rawMult)){
-        const aggRatio = aggForMonth.ratio;
-        const aggRaw = aggForMonth.rawMult;
-        let aggMult = aggRaw;
-        let aggState = 'fallback_agg_tutto_su';
-        let aggSource = 'properties-aggregate pace (month ' + ym + ', ' + aggForMonth.pickupCur + ' RN vs ' + aggForMonth.pickupStly + ' RN STLY)';
-        if (aggRatio >= 1){
-          aggMult = aggRaw;  // alza
-          aggState = 'fallback_agg_tutto_su';
-        } else {
-          const occMo = _occByMonth[ym];
-          if (occMo && occMo.curOcc >= occMo.stlyOcc && occMo.curOcc > 0){
-            if (r.curOcc != null && r.curOcc >= 0.90){
-              aggMult = 1;
-              aggState = 'fallback_agg_ambiguous_neutralized_OCC90';
-              aggSource += ' · day OCC≥90%: neutralized';
-            } else {
-              const dev = aggRaw - 1;
-              aggMult = 1 + dev * 0.5;
-              aggState = 'fallback_agg_ambiguo_freno_50pct';
-              aggSource += ' · ambiguous month, 50% brake';
-            }
-          } else {
-            aggMult = aggRaw;
-            aggState = 'fallback_agg_tutto_giù';
-          }
-        }
-        return verbose ? {
-          mult: aggMult, naReason: null, state: aggState, rawMult: aggRaw,
-          ratio: aggRatio, pickupCur: aggForMonth.pickupCur, pickupStly: aggForMonth.pickupStly,
-          source: aggSource, fromAggregate: true
-        } : aggMult;
-      }
-      const fbDev = (_paceMult != null && isFinite(_paceMult)) ? Math.abs(_paceMult - 1) : 0;
-      if (fbDev > 0.15){
-        return verbose ? {
-          mult: 1, naReason: 'monthly pace unavailable for property or properties-aggregate; extreme annual fallback (' + ((_paceMult-1)*100).toFixed(0) + '%): factor neutralized',
-          state: 'neutralizzato_no_dati', rawMult: 1,
-          source: 'pace 4w month-specific unavailable for this property or the others · property annual fallback would be ' + (_paceMult>1?'+':'') + ((_paceMult-1)*100).toFixed(0) + '% (extreme): factor neutralized and weight redistributed to the others'
-        } : 1;
-      }
+    // CASO NORMALE: ho dati W4 per il mese di soggiorno → applico rawMult diretto.
+    if (st && st.state === 'mese_w4'){
+      return verbose ? {
+        mult: st.rawMult, naReason: null, state: 'mese_w4', rawMult: st.rawMult,
+        pickupCur: st.pickupCur, pickupStly: st.pickupStly,
+        source: 'W4 pickup for stay month ' + ym + ' (' + st.pickupCur + ' RN cur vs ' + st.pickupStly + ' RN STLY)'
+      } : st.rawMult;
+    }
+    // FALLBACK 1: aggregate (P̄) cross-property — usa il pace W4 di tutte le strutture per il mese.
+    const aggPaceByMonth = (typeof _getPaceAggBoth === 'function') ? _getPaceAggBoth() : null;
+    const aggForMonth = aggPaceByMonth ? aggPaceByMonth[ym] : null;
+    if (aggForMonth && isFinite(aggForMonth.rawMult)){
+      return verbose ? {
+        mult: aggForMonth.rawMult, naReason: null, state: 'fallback_aggregate', rawMult: aggForMonth.rawMult,
+        ratio: aggForMonth.ratio, pickupCur: aggForMonth.pickupCur, pickupStly: aggForMonth.pickupStly,
+        source: 'aggregate W4 pickup of all properties for stay month ' + ym + ' (' + aggForMonth.pickupCur + ' RN cur vs ' + aggForMonth.pickupStly + ' RN STLY)',
+        fromAggregate: true
+      } : aggForMonth.rawMult;
+    }
+    // FALLBACK 2: annual property — usa la media W4 annuale della struttura corrente.
+    // Se il fallback annuale è estremo (>±15%) lo neutralizziamo per sicurezza.
+    const fbDev = (_paceMult != null && isFinite(_paceMult)) ? Math.abs(_paceMult - 1) : 0;
+    if (fbDev > 0.15){
+      return verbose ? {
+        mult: 1, naReason: 'no W4 data for month or aggregate; annual fallback is extreme (' + ((_paceMult-1)*100).toFixed(0) + '%): factor neutralized',
+        state: 'neutralizzato_no_dati', rawMult: 1,
+        source: 'no W4 data for stay month or aggregate; annual fallback would be ' + (_paceMult>1?'+':'') + ((_paceMult-1)*100).toFixed(0) + '% (extreme): factor neutralized'
+      } : 1;
+    }
+    if (_paceMult != null && isFinite(_paceMult) && _paceMult !== 1){
       return verbose ? {
         mult: _paceMult, naReason: null, state: 'fallback_annuale_struct', rawMult: _paceMult,
-        source: 'annual pace of this property (month-specific unavailable for this property or the other 3, but the annual fallback is moderate)'
+        source: 'annual W4 pace of this property (month-specific and aggregate unavailable)'
       } : _paceMult;
     }
-    if (st.state === 'ambiguo'){
-      if (r.curOcc != null && r.curOcc >= 0.90){
-        return verbose ? { mult: 1, naReason: null, state: 'ambiguo_neutralizzato_OCC90', rawMult: st.rawMult, pickupCur: st.pickupCur, pickupStly: st.pickupStly, source: 'ambiguous month but day with OCC ≥90%, neutralized to 1.0' } : 1;
-      }
-      const dev = st.rawMult - 1;
-      const mFinal = 1 + dev * 0.5;
-      return verbose ? { mult: mFinal, naReason: null, state: 'ambiguo_freno_50pct', rawMult: st.rawMult, pickupCur: st.pickupCur, pickupStly: st.pickupStly, source: 'ambiguous month (pace down but month OCC above LY), 50% brake' } : mFinal;
-    }
-    return verbose ? { mult: st.rawMult, naReason: null, state: st.state, rawMult: st.rawMult, pickupCur: st.pickupCur, pickupStly: st.pickupStly, source: st.state === 'tutto_giù' ? 'month declining (pace and OCC ↓), full brake' : (st.state === 'tutto_su' ? 'month rising (pickup ≥ LY), raise' : 'pace current month vs STLY') } : st.rawMult;
+    // FALLBACK 3: neutralized — nessun dato.
+    return verbose ? {
+      mult: 1, naReason: null, state: 'neutralizzato_no_dati', rawMult: 1,
+      source: 'no W4 pace data available — factor neutralized'
+    } : 1;
   }
   const AIRDNA_TOTAL_LISTINGS = 2948;
   const _airdnaIdx = {};
@@ -4989,17 +5141,32 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       _E_naReason = 'My Expedia price unavailable for the day';
     }
     let air_mult = 1, _F_naReason = null;
-    const _isoK_search = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
-    const _ymKey_search = `${r.y}-${pad2(r.mo)}`;
-    const _searchCur = (typeof EXPEDIA_DATA !== 'undefined' && EXPEDIA_DATA && EXPEDIA_DATA.search_current)
-      ? EXPEDIA_DATA.search_current[_isoK_search] : null;
-    const _searchStatsMo = (typeof expSearchStatsByMonth === 'function') ? expSearchStatsByMonth(_ymKey_search) : null;
-    if (_searchCur != null && _searchStatsMo && _searchStatsMo.p50 > 0){
-      const _searchDev = (_searchCur - _searchStatsMo.p50) / _searchStatsMo.p50;
-      air_mult = applyThresholds(1 + _searchDev, 'airdna');
+    // D · Demand factor — prima sorgente: AirDNA Booked Listings (market booking density).
+    // Fallback: Expedia search statistics (deviazione vs mediana mensile).
+    // Quando MARKET_RATES (AirDNA CSV) ha dati per il giorno → usa quelli come segnale primario,
+    // perché riflettono direttamente la pressione di domanda del mercato AirDNA Florence.
+    let _searchCur = null;     // visibile fuori per debug paceInfo
+    let _searchStatsMo = null;
+    const _airdnaSignal = (typeof _airdnaIdx !== 'undefined' && _airdnaIdx[r.ymd] != null)
+      ? _airdnaIdx[r.ymd] : null;
+    if (_airdnaSignal != null && _airdnaAvg > 0){
+      // Segnale = (utilizzo mercato / utilizzo medio del periodo) — 1 → deviazione
+      const _airdnaDev = (_airdnaSignal - _airdnaAvg) / _airdnaAvg;
+      air_mult = applyThresholds(1 + _airdnaDev, 'airdna');
     } else {
-      _F_naReason = (_searchCur == null) ? 'Daily Expedia searches not available'
-                  : 'Monthly search median not computable';
+      // Fallback: Expedia search current vs monthly median
+      const _isoK_search = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+      const _ymKey_search = `${r.y}-${pad2(r.mo)}`;
+      _searchCur = (typeof EXPEDIA_DATA !== 'undefined' && EXPEDIA_DATA && EXPEDIA_DATA.search_current)
+        ? EXPEDIA_DATA.search_current[_isoK_search] : null;
+      _searchStatsMo = (typeof expSearchStatsByMonth === 'function') ? expSearchStatsByMonth(_ymKey_search) : null;
+      if (_searchCur != null && _searchStatsMo && _searchStatsMo.p50 > 0){
+        const _searchDev = (_searchCur - _searchStatsMo.p50) / _searchStatsMo.p50;
+        air_mult = applyThresholds(1 + _searchDev, 'airdna');
+      } else {
+        _F_naReason = (_searchCur == null) ? 'AirDNA & Expedia daily searches both unavailable'
+                    : 'Monthly search median not computable';
+      }
     }
     const A_mult = occ_mult, B_mult = price_mult, C_mult = comp_mult, D_mult = pace_mult, E_mult = air_mult;
     const F_mult = air_mult;  // alias per il nuovo schema ABCDEF
@@ -8434,7 +8601,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
               h += '<div>Ratio pickup: <b>'+ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(ratio-1,1)+'</b></div>';
             }
           }
-          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Decision state: <b style="color:#8e5fa8">'+(({'alza':'raise','ambiguo':'ambiguous','ambiguo_freno_50pct':'ambiguous · 50% brake','ambiguo_neutralizzato_OCC90':'ambiguous · neutralized (OCC90)','fallback':'fallback','fallback_annuale_struct':'annual fallback (property)','freno_pieno':'full brake','neutralizzato_no_dati':'neutralized (no data)','tutto_giù':'all down','tutto_su':'all up'}[pi.state]) || pi.state || '—')+'</b></div>';
+          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Decision state: <b style="color:#8e5fa8">'+(({'mese_w4':'W4 month','fallback_aggregate':'aggregate fallback (P̄)','fallback_annuale_struct':'annual fallback (property)','neutralizzato_no_dati':'neutralized — no data','fallback':'fallback'}[pi.state]) || pi.state || '—')+'</b></div>';
           if (pi.source){
             h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">'+pi.source+'</div>';
           }
