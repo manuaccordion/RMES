@@ -487,6 +487,154 @@ table.data.sell-table tbody td[data-rmes-struct] .rmes-accept-btn:hover{
   background:#2c5c3c !important;
   box-shadow:0 2px 4px rgba(0,0,0,.25);
 }
+
+/* === Sell Strategy Trasposta — date in colonne, metriche in righe === */
+table.data.sell-table-transposed{
+  width:auto;
+  min-width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  table-layout:auto;
+}
+/* Corner (top-left) */
+table.sell-table-transposed thead .sell-tposed-corner{
+  background:linear-gradient(135deg,#f4ede0,#e8dcc6);
+  border-bottom:2px solid #c4823b;
+  border-right:2px solid #c4823b;
+  padding:10px 14px;
+  position:sticky;left:0;top:0;z-index:8;
+  min-width:140px;
+}
+/* Date column headers (top row) */
+table.sell-table-transposed thead .sell-tposed-datecol{
+  padding:8px 12px;
+  background:linear-gradient(180deg,#fdfbf6,#f5ede0);
+  border-bottom:2px solid #c4823b;
+  border-right:1px solid var(--line);
+  min-width:78px;
+  text-align:center;
+  position:sticky;top:0;z-index:5;
+  white-space:nowrap;
+}
+/* Row label cells (first column of body) */
+table.sell-table-transposed tbody th.sell-tposed-label{
+  background:linear-gradient(90deg,#f4ede0,#fdfbf6);
+  padding:8px 12px;
+  text-align:left;
+  font-weight:600;
+  color:var(--ink);
+  border-right:2px solid #c4823b;
+  border-bottom:1px solid var(--line);
+  position:sticky;left:0;z-index:3;
+  min-width:140px;
+  white-space:nowrap;
+}
+table.sell-table-transposed .sell-tposed-label-main{
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:.02em;
+}
+table.sell-table-transposed .sell-tposed-label-sub{
+  font-size:9.5px;
+  font-weight:500;
+  color:var(--ink-3);
+  letter-spacing:.04em;
+  text-transform:uppercase;
+  margin-top:1px;
+}
+/* Body cells in transposed table */
+table.sell-table-transposed tbody td{
+  padding:7px 10px;
+  border-right:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  text-align:center;
+  white-space:nowrap;
+}
+/* Special row styling — LAST UPDATE */
+table.sell-table-transposed tbody tr.sell-tr-lu th.sell-tposed-label{
+  background:linear-gradient(135deg,#fef0d4,#fbe09e);
+  color:#5a3a14;
+  border-right:3px solid #c4823b;
+}
+table.sell-table-transposed tbody tr.sell-tr-lu td{
+  background:linear-gradient(135deg,rgba(254,240,212,.35),rgba(251,224,158,.22));
+  font-size:14px;
+  font-weight:700;
+}
+table.sell-table-transposed tbody tr.sell-tr-lu td:hover{
+  background:linear-gradient(135deg,rgba(254,240,212,.65),rgba(251,224,158,.5));
+  transform:scale(1.02);
+}
+/* Special row styling — RMES */
+table.sell-table-transposed tbody tr.sell-tr-rmes th.sell-tposed-label{
+  background:linear-gradient(135deg,#e3f2e8,#bcdfc8);
+  color:#1f4f30;
+  border-right:3px solid #3d7a4b;
+  border-bottom:2px solid #3d7a4b;
+}
+table.sell-table-transposed tbody tr.sell-tr-rmes td{
+  background:linear-gradient(135deg,rgba(227,242,232,.50),rgba(188,223,200,.35));
+  font-size:14px;
+  font-weight:700;
+  border-bottom:2px solid #3d7a4b;
+}
+table.sell-table-transposed tbody tr.sell-tr-rmes td:hover{
+  background:linear-gradient(135deg,rgba(227,242,232,.75),rgba(188,223,200,.55));
+}
+/* Group color stripes — OTB orange, Pickup purple, STLY teal, PkSTLY gray */
+table.sell-table-transposed tbody tr.sell-tr-otb th.sell-tposed-label{
+  background:linear-gradient(90deg,rgba(195,131,59,.16),#fdfbf6);
+  border-left:3px solid #c4823b;
+  color:#7a4f1c;
+}
+table.sell-table-transposed tbody tr.sell-tr-pickup th.sell-tposed-label{
+  background:linear-gradient(90deg,rgba(142,95,168,.16),#fdfbf6);
+  border-left:3px solid #8e5fa8;
+  color:#5a3a7a;
+}
+table.sell-table-transposed tbody tr.sell-tr-stly th.sell-tposed-label{
+  background:linear-gradient(90deg,rgba(59,107,107,.14),#fdfbf6);
+  border-left:3px solid #3b6b6b;
+  color:#264848;
+}
+table.sell-table-transposed tbody tr.sell-tr-pkstly th.sell-tposed-label{
+  background:linear-gradient(90deg,rgba(138,138,138,.18),#fdfbf6);
+  border-left:3px solid #888;
+  color:#444;
+}
+table.sell-table-transposed tbody tr.sell-tr-beddy th.sell-tposed-label{
+  background:linear-gradient(90deg,rgba(30,107,74,.14),#fdfbf6);
+  border-left:3px solid #1e6b4a;
+  color:#0e4a30;
+}
+table.sell-table-transposed tbody tr.sell-tr-exp th.sell-tposed-label{
+  background:linear-gradient(90deg,rgba(58,107,107,.14),#fdfbf6);
+  border-left:3px solid #3a6b6b;
+  color:#264848;
+}
+table.sell-table-transposed tbody tr.sell-tr-base th.sell-tposed-label{
+  background:linear-gradient(90deg,rgba(195,131,59,.22),#f5ede0);
+  border-left:3px solid #c4823b;
+  color:#5a3a14;
+  font-weight:700;
+}
+/* Reset border-left dalle vecchie classi del layout originale */
+table.sell-table-transposed tbody td.sell-grp-otb-cell,
+table.sell-table-transposed tbody td.sell-grp-pickup-cell,
+table.sell-table-transposed tbody td.sell-grp-stly-cell,
+table.sell-table-transposed tbody td.sell-grp-pkstly-cell,
+table.sell-table-transposed tbody td.sell-block-fp,
+table.sell-table-transposed tbody td.sell-block-expedia{
+  border-left:none !important;
+}
+/* Wrap responsive: il trasposto può essere larghissimo (60-90 colonne) → scroll orizzontale */
+.sell-tposed-scroll-wrap{
+  overflow-x:auto;
+  overflow-y:auto;
+  max-height:75vh;
+  border:1px solid var(--line);
+  border-radius:6px;
+}
 /* Bordi verticali interni per le celle dati: solo il bordo sinistro del gruppo */
 table.data.sell-table tbody td{border-bottom:1px solid var(--line)}
 table.data.sell-table th:first-child,
@@ -1505,12 +1653,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="rmes-box-head">
         <div class="rmes-box-icon">⚖️</div>
         <div class="rmes-box-titles">
-          <h3>① Weights of the 4 RMES factors</h3>
+          <h3>① Weights of the 5 RMES factors</h3>
           <div class="rmes-box-sub" id="rmes-tab-w-sub">property: —</div>
         </div>
         <div class="rmes-box-actions">
-          <button id="rmes-tab-w-reset" class="rmes-btn-ghost" title="Reset current property weights to 25% × 4 factors">↺ Reset 25%×4 (current)</button>
-          <button id="rmes-tab-w-reset-all" class="rmes-btn-solid rmes-btn-blue" title="Reset weights to 25% × 4 factors for ALL properties">↺ Reset 25%×4 (all)</button>
+          <button id="rmes-tab-w-reset" class="rmes-btn-ghost" title="Reset current property weights to 20% × 5 factors">↺ Reset 20%×5 (current)</button>
+          <button id="rmes-tab-w-reset-all" class="rmes-btn-solid rmes-btn-blue" title="Reset weights to 20% × 5 factors for ALL properties">↺ Reset 20%×5 (all)</button>
         </div>
       </div>
       <div class="rmes-box-body">
@@ -1944,7 +2092,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <p style="margin:0;font-size:13px;color:#666">The final price is always bounded by the <b>Floor Rate</b> (hard minimum) and the Base Price stays within <b>±50% of the Monthly Anchor</b> (sanity rail = true ADR LY of the base RT for that month). The only mechanism that can lower the price close-in is the LMF.</p>
         </div>
 
-        <h4 style="margin:18px 0 6px 0;color:#5a3a14">Block ① — Weights of the 4 RMES factors</h4>
+        <h4 style="margin:18px 0 6px 0;color:#5a3a14">Block ① — Weights of the 5 RMES factors</h4>
         <p>How much each of the 4 factors contributes to the daily adjustment. Default: <b>25% × 4 = 100%</b>. The sum of weights is normalized automatically. Each factor is internally capped at ±50% on the raw signal.</p>
 
         <div style="margin:12px 0 10px 0;padding:12px 14px;background:#f5f0ea;border-radius:6px;font-size:13px;line-height:1.65">

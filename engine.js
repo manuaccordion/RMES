@@ -9641,6 +9641,132 @@ function _sellCompRank(structKey, iso, myExpedia){
   const rank = prices.filter(p => p < myExpedia).length + 1;
   return { rank, total: prices.length + 1 };
 }
+/* === Trasposizione tabella Sell Strategy: date in COLONNE, metriche in RIGHE ===
+   Approccio: parso il DOM esistente (date in righe) e costruisco la tabella trasposta.
+   Mantiene tutti gli attributi data-* (data-lu-struct, data-rmes-struct, ecc.) → i listener
+   attaccati DOPO la trasposizione (riga successiva) funzionano correttamente.
+   Layout output:
+     - Header: cella vuota in alto-sx + 1 colonna per ogni data (DD/MM + DoW)
+     - Riga "LAST UPDATE": card oro per ogni data
+     - Riga "RMES":         card verde per ogni data
+     - Riga "Event":        nome evento (se presente)
+     - Riga "DoW":          giorno settimana
+     - Righe OTB:           RN, OCC, ADR
+     - Righe Pickup:        New, Cancel, ΔRN, ADR
+     - Righe STLY:          RN, OCC, ADR
+     - Righe PickupSTLY:    New, Cancel, ΔRN, ADR
+     - Riga Beddy           (se showBeddy)
+     - Righe RateShopper:   Mine, Compset (se showExp)
+     - Riga Base Price
+*/
+function _sellTransposeTable(wrap, showBeddy, showExp){
+  if (!wrap) return;
+  const orig = wrap.querySelector('table.sell-table');
+  if (!orig) return;
+  // Conta le righe dati (esclusa la totals row)
+  const dataRows = Array.from(orig.querySelectorAll('tbody tr')).filter(tr => !tr.classList.contains('total'));
+  if (dataRows.length === 0) return;
+  // Lista delle metriche IN ORDINE (= ordine delle <td> nella riga originale)
+  // Ogni voce: { key, label, cssClass (optional), sub (= sub-label small grey) }
+  const metrics = [
+    { key:'lu',        label:'LAST UPDATE',     sub:'active price',   cssClass:'sell-tr-lu' },
+    { key:'rmes',      label:'RMES',            sub:'price · Δ€ · ✓', cssClass:'sell-tr-rmes' },
+    { key:'date',      label:'Date',            sub:'' },
+    { key:'event',     label:'Event',           sub:'' },
+    { key:'dow',       label:'DoW',             sub:'' },
+    { key:'otbRn',     label:'OTB · RN',        sub:'sold',           cssClass:'sell-tr-otb' },
+    { key:'otbOcc',    label:'OTB · OCC',       sub:'%',              cssClass:'sell-tr-otb' },
+    { key:'otbAdr',    label:'OTB · ADR',       sub:'€',              cssClass:'sell-tr-otb' },
+    { key:'pkNew',     label:'Pickup · New',    sub:'1d',             cssClass:'sell-tr-pickup' },
+    { key:'pkCancel',  label:'Pickup · Cancel', sub:'1d',             cssClass:'sell-tr-pickup' },
+    { key:'pkDRn',     label:'Pickup · ΔRN',    sub:'net',            cssClass:'sell-tr-pickup' },
+    { key:'pkAdr',     label:'Pickup · ADR',    sub:'€',              cssClass:'sell-tr-pickup' },
+    { key:'stlyRn',    label:'STLY · RN',       sub:'-364',           cssClass:'sell-tr-stly' },
+    { key:'stlyOcc',   label:'STLY · OCC',      sub:'%',              cssClass:'sell-tr-stly' },
+    { key:'stlyAdr',   label:'STLY · ADR',      sub:'€',              cssClass:'sell-tr-stly' },
+    { key:'pkStNew',   label:'PkSTLY · New',    sub:'1d',             cssClass:'sell-tr-pkstly' },
+    { key:'pkStCancel',label:'PkSTLY · Cancel', sub:'1d',             cssClass:'sell-tr-pkstly' },
+    { key:'pkStDRn',   label:'PkSTLY · ΔRN',    sub:'net',            cssClass:'sell-tr-pkstly' },
+    { key:'pkStAdr',   label:'PkSTLY · ADR',    sub:'€',              cssClass:'sell-tr-pkstly' },
+  ];
+  if (showBeddy) metrics.push({ key:'beddy', label:'Beddy', sub:'PMS €', cssClass:'sell-tr-beddy' });
+  if (showExp){
+    metrics.push({ key:'expMine',    label:'My Expedia',  sub:'rank',  cssClass:'sell-tr-exp' });
+    metrics.push({ key:'expCompset', label:'Compset',     sub:'avg',   cssClass:'sell-tr-exp' });
+  }
+  metrics.push({ key:'basePrice', label:'Base Price', sub:'structural', cssClass:'sell-tr-base' });
+
+  // Costruisco la nuova tabella
+  const newTbl = document.createElement('table');
+  newTbl.className = 'data sell-table sell-table-transposed';
+
+  // THEAD: cella label + 1 cella per data
+  const thead = document.createElement('thead');
+  const trH = document.createElement('tr');
+  trH.className = 'sell-tposed-head';
+  const cornerTh = document.createElement('th');
+  cornerTh.className = 'sell-tposed-corner';
+  cornerTh.innerHTML = '<span style="font-size:10px;color:var(--ink-3);font-weight:500;letter-spacing:.04em;text-transform:uppercase">Metric ↓ / Date →</span>';
+  trH.appendChild(cornerTh);
+  // Per ogni data row originale, prendo data + DoW dalla 3a e 5a <td> (= date e dow celle, ordine: lu, rmes, date, event, dow)
+  const dateLabels = [];  // [{dateText, dowText, ymd}]
+  for (const dr of dataRows){
+    const tds = dr.children;
+    // Indici: 0=LU, 1=RMES, 2=Date, 3=Event, 4=DoW
+    const dateText = (tds[2] ? tds[2].textContent.trim() : '');
+    const dowText  = (tds[4] ? tds[4].textContent.trim() : '');
+    const ymd = dr.dataset.ymd || (tds[0] && tds[0].dataset.luYmd) || '';
+    dateLabels.push({ dateText, dowText, ymd });
+    const thD = document.createElement('th');
+    thD.className = 'sell-tposed-datecol';
+    // Weekend: rosso
+    const isWE = (dowText === 'Ven' || dowText === 'Sab' || dowText === 'Dom');
+    const dowColor = isWE ? 'color:#c4823b;font-weight:700' : 'color:var(--ink-2);font-weight:500';
+    thD.innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em">${dateText}</div>
+                     <div style="font-size:10.5px;${dowColor};margin-top:1px">${dowText}</div>`;
+    trH.appendChild(thD);
+  }
+  thead.appendChild(trH);
+  newTbl.appendChild(thead);
+
+  // TBODY: una riga per metric
+  const tbody = document.createElement('tbody');
+  for (let mIdx = 0; mIdx < metrics.length; mIdx++){
+    const m = metrics[mIdx];
+    const tr = document.createElement('tr');
+    if (m.cssClass) tr.className = m.cssClass;
+    // Label cell (prima colonna)
+    const labelTd = document.createElement('th');
+    labelTd.className = 'sell-tposed-label';
+    labelTd.scope = 'row';
+    labelTd.innerHTML = `<div class="sell-tposed-label-main">${m.label}</div>${m.sub ? `<div class="sell-tposed-label-sub">${m.sub}</div>` : ''}`;
+    tr.appendChild(labelTd);
+    // Cella per ogni data (= per ogni dataRow originale, prendo la mIdx-esima td)
+    for (let dIdx = 0; dIdx < dataRows.length; dIdx++){
+      const origCell = dataRows[dIdx].children[mIdx];
+      if (origCell){
+        // Clone il nodo (mantengo attributi data-*, classi, contenuto HTML)
+        const cloned = origCell.cloneNode(true);
+        // Cambio <td> name se serve (rimane td)
+        tr.appendChild(cloned);
+      } else {
+        const td = document.createElement('td');
+        td.className = 'cell-mono cell-flat';
+        td.textContent = '—';
+        tr.appendChild(td);
+      }
+    }
+    tbody.appendChild(tr);
+  }
+  newTbl.appendChild(tbody);
+
+  // Sostituisco la tabella nel wrap, wrappandola in un container scrollabile
+  const scrollWrap = document.createElement('div');
+  scrollWrap.className = 'sell-tposed-scroll-wrap';
+  scrollWrap.appendChild(newTbl);
+  orig.parentNode.replaceChild(scrollWrap, orig);
+}
+
 function renderSellStrategy(sel){
   const chipEl = document.getElementById('sell-struct-chip');
   if (chipEl) chipEl.textContent = structLabel(sel);
@@ -10104,7 +10230,7 @@ function renderSellStrategy(sel){
         // Order: Mine → Compset (Mine w/RMES rimosso su richiesta utente)
         expCells = myCellWithRank + compsetCell;
       } else {
-        expCells = `<td class="cell-mono cell-flat sell-block-expedia" colspan="2" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
+        expCells = `<td class="cell-mono cell-flat sell-block-expedia" style="background:rgba(58,107,107,.04);text-align:center">—</td><td class="cell-mono cell-flat sell-block-expedia" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
       }
     }
     let cellMercato = '';
@@ -10782,6 +10908,9 @@ function renderSellStrategy(sel){
   </tr>`;
   html += '</tbody></table>';
   document.getElementById('sell-table-wrap').innerHTML = html;
+  // === Trasposizione tabella (date in COLONNE, metriche in RIGHE) — richiesta utente ===
+  try { _sellTransposeTable(document.getElementById('sell-table-wrap'), showBeddy, showExp); }
+  catch(e){ console.error('[sell] transpose failed', e); }
   _renderSellRtFilterPills(sel);
   (function _renderAuditBanner(){
     const banner = document.getElementById('sell-audit-banner');
@@ -14689,10 +14818,11 @@ function _renderRmesWeightsBox(sel){
   if (!wrap) return;
   const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
   const factors = [
-    { key:'occ',    letter:'A', label:'Daily Pickup',    color:'#3b6b9a', desc:'recent pickup × fill rate (window "1d" = yesterday + today, fallback "7d")' },
-    { key:'pace',   letter:'B', label:'Pace Trend',      color:'#8e5fa8', desc:'pickup 4w month vs STLY (recent week weighted)' },
-    { key:'comp',   letter:'C', label:'Online Pricing',  color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)' },
-    { key:'airdna', letter:'D', label:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median' },
+    { key:'occ',    letter:'A', label:'Daily Pickup',       color:'#3b6b9a', desc:'recent pickup × fill rate (window "1d" = yesterday + today, fallback "7d")' },
+    { key:'pace',   letter:'B', label:'Pace Trend',         color:'#8e5fa8', desc:'W4 pickup of stay month vs STLY (fallback: aggregate / annual / neutralized)' },
+    { key:'comp',   letter:'C', label:'Online Pricing',     color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)' },
+    { key:'airdna', letter:'D', label:'Demand (Expedia)',   color:'#a83b3b', desc:'Expedia searches vs month median' },
+    { key:'mkt',    letter:'E', label:'AirDNA Market',      color:'#c4823b', desc:'AirDNA Booked Listings vs market average (booking density of Florence rentals)' },
   ];
   let html = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">';
   for (const f of factors){
@@ -14712,7 +14842,7 @@ function _renderRmesWeightsBox(sel){
   if (resetBtn && !resetBtn._wired){
     resetBtn._wired = true;
     resetBtn.onclick = () => {
-      if (!confirm(`Reset the weights of ${RMES_TAB_STRUCT} to 25% × 4 factors?`)) return;
+      if (!confirm(`Reset the weights of ${RMES_TAB_STRUCT} to 20% × 5 factors?`)) return;
       SELL_RMES_W_ALL[RMES_TAB_STRUCT] = Object.assign({}, SELL_RMES_W_DEFAULT);
       saveRmesWeights();
       _renderRmesWeightsBox(RMES_TAB_STRUCT);
@@ -14724,7 +14854,7 @@ function _renderRmesWeightsBox(sel){
   if (resetBtnAll && !resetBtnAll._wired){
     resetBtnAll._wired = true;
     resetBtnAll.onclick = () => {
-      if (!confirm("Reset weights to 25% × 4 factors for ALL properties?")) return;
+      if (!confirm("Reset weights to 20% × 5 factors for ALL properties?")) return;
       for (const s of ['firenze','condotta','alfani','davids']){
         SELL_RMES_W_ALL[s] = Object.assign({}, SELL_RMES_W_DEFAULT);
       }
