@@ -657,16 +657,14 @@ table.sell-table-transposed tbody td.sell-block-expedia{
 
 /* === Group cell (rowspan) — etichetta verticale del gruppo === */
 table.sell-table-transposed th.sell-tposed-group{
-  background:#5a3a14;
-  color:#fff;
-  font-weight:700;
-  font-size:10px;
-  letter-spacing:.10em;
+  font-weight:800;
+  font-size:11px;
+  letter-spacing:.14em;
   text-transform:uppercase;
   text-align:center;
   vertical-align:middle;
   padding:6px 4px;
-  border-right:2px solid #3a2510;
+  border-right:2px solid var(--line);
   border-bottom:1px solid var(--line);
   position:sticky;left:0;z-index:4;
   min-width:36px;
@@ -677,14 +675,34 @@ table.sell-table-transposed th.sell-tposed-group{
 }
 table.sell-table-transposed th.sell-tposed-group .sell-tposed-group-label{
   display:inline-block;
-  letter-spacing:.12em;
+  letter-spacing:.14em;
 }
-/* Colori per gruppo */
-table.sell-table-transposed th.sell-tposed-group-otb{background:linear-gradient(180deg,#c4823b,#a36825)}
-table.sell-table-transposed th.sell-tposed-group-pickup{background:linear-gradient(180deg,#8e5fa8,#6e3f88)}
-table.sell-table-transposed th.sell-tposed-group-stly{background:linear-gradient(180deg,#3b6b6b,#2b4f4f)}
-table.sell-table-transposed th.sell-tposed-group-pkstly{background:linear-gradient(180deg,#888,#5e5e5e)}
-table.sell-table-transposed th.sell-tposed-group-rateshopper{background:linear-gradient(180deg,#3a6b6b,#264848)}
+/* Colori per gruppo: sfondo chiaro tono + testo scuro stesso tono (richiesta utente) */
+table.sell-table-transposed th.sell-tposed-group-otb{
+  background:#fbe09e;
+  color:#7a4f1c;
+  border-right:2px solid #c4823b;
+}
+table.sell-table-transposed th.sell-tposed-group-pickup{
+  background:#e0d0f0;
+  color:#5a3a7a;
+  border-right:2px solid #8e5fa8;
+}
+table.sell-table-transposed th.sell-tposed-group-stly{
+  background:#c8e0e0;
+  color:#264848;
+  border-right:2px solid #3b6b6b;
+}
+table.sell-table-transposed th.sell-tposed-group-pkstly{
+  background:#d8d8d8;
+  color:#3a3a3a;
+  border-right:2px solid #888;
+}
+table.sell-table-transposed th.sell-tposed-group-rateshopper{
+  background:#c0d8d8;
+  color:#264848;
+  border-right:2px solid #3a6b6b;
+}
 
 /* Label cell (sub-label) — sticky sinistra DOPO il group */
 table.sell-table-transposed th.sell-tposed-label{
@@ -1323,13 +1341,13 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="otb" style="display:none"><span class="num">2</span>Overview (alt)</button>
     <button class="tab" data-tab="fcst"><span class="num">2</span>Overview</button>
     <button class="tab" data-tab="hist" style="display:none"><span class="num">5</span>Historical Data</button>
-    <button class="tab" data-tab="pk"><span class="num">3</span>Pickup Matrix</button>
-    <button class="tab" data-tab="cancel"><span class="num">4</span>CXLTrend</button>
-    <button class="tab" data-tab="rt"><span class="num">5</span>OCC by Room Type</button>
-    <button class="tab" data-tab="rate"><span class="num">6</span>Rate Shopper</button>
+    <button class="tab" data-tab="pk"><span class="num">3</span>Pickup &amp; CXL</button>
+    <button class="tab" data-tab="cancel" style="display:none"><span class="num">4</span>CXLTrend</button>
+    <button class="tab" data-tab="rt"><span class="num">4</span>OCC by Room Type</button>
+    <button class="tab" data-tab="rate"><span class="num">5</span>Rate Shopper</button>
     
-    <button class="tab" data-tab="pri"><span class="num">7</span>RMES</button>
-    <button class="tab" data-tab="baseprice"><span class="num">8</span>Export Pricing</button>
+    <button class="tab" data-tab="pri"><span class="num">6</span>RMES</button>
+    <button class="tab" data-tab="baseprice"><span class="num">7</span>Export Pricing</button>
     <button class="tab" data-tab="checks"><span class="num">📋</span>Check Updates</button>
     <button class="tab" data-tab="instr"><span class="num">📖</span>Playbook</button>
   </nav>
@@ -1420,62 +1438,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   </section>
 
   <!-- ============ SECTION 7: CANCELLAZIONI ============ -->
-  <section class="tab-panel" id="panel-cancel">
-    <div class="section-head">
-      <div>
-        <h2>CXLTrend</h2>
-        
-      </div>
-    </div>
-
-    <div class="kpi-grid" id="cancel-kpis"></div>
-
-    <div class="chart-grid">
-      <div class="chart-card">
-        <h4>Cancellations by month</h4>
-        <div class="chart-sub">Number of room-bookings cancelled · last 12 months</div>
-        <div id="cancel-chart-month"></div>
-      </div>
-      <div class="chart-card">
-        <h4>Cancellations by channel</h4>
-        <div class="chart-sub">Percentage mix by source channel</div>
-        <div id="cancel-chart-channel"></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h3>Monthly detail</h3>
-        </div>
-      </div>
-      <div class="panel-body flush">
-        <div class="table-wrap"><table class="data" id="cancel-monthly"></table></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h3>Cancellation rate by channel</h3>
-        </div>
-      </div>
-      <div class="panel-body flush">
-        <div class="table-wrap"><table class="data" id="cancel-channel"></table></div>
-      </div>
-    </div>
-
-    <!-- Booking window chart - cancellate -->
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h3>Cancellation booking window</h3>
-          <div class="panel-sub" id="cancel-bw-sub"></div>
-        </div>
-        <div id="cancel-bw-mfilter" class="bw-mfilter"></div>
-      </div>
-      <div class="panel-body" id="cancel-bw-chart"></div>
-    </div>
+  <section class="tab-panel" id="panel-cancel" style="display:none">
+    <!-- Content moved to panel-pk (Pickup & CXL unified tab) -->
   </section>
 
   <!-- ============ SECTION 3: FORECAST ============ -->
@@ -1545,13 +1509,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- Booking window chart (rolling 12 closed months) -->
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h3>Booking window</h3>
-          <div class="panel-sub" id="otb-bw-sub"></div>
-        </div>
         <div id="otb-bw-mfilter" class="bw-mfilter"></div>
       </div>
       <div class="panel-body" id="otb-bw-chart"></div>
@@ -1562,7 +1519,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   <section class="tab-panel" id="panel-pk">
     <div class="section-head">
       <div>
-        <h2>Pickup Matrix</h2>
+        <h2>Pickup Matrix &amp; Cancellations</h2>
         
       </div>
       <div class="head-actions">
@@ -1584,6 +1541,75 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head"><div><h3>Stay Month × Week</h3></div></div>
       <div class="panel-body flush"><div class="pickup-grid"><table class="pickup" id="pk-sm-table"></table></div></div>
       <div class="panel-body" style="border-top:1px solid var(--line)"><div id="pk-sm-chart"></div></div>
+    </div>
+
+    <!-- ============ BOOKING WINDOW (reservation) — spostato da Overview ============ -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Booking window</h3>
+          <div class="panel-sub" id="otb-bw-sub"></div>
+        </div>
+
+    <!-- ============ CANCELLATIONS (spostato dalla vecchia tab CXLTrend) ============ -->
+    <div style="margin:24px 0 8px 0;padding:12px 18px;background:rgba(168,59,59,.06);border-left:4px solid #a83b3b;border-radius:4px">
+      <h2 style="margin:0;color:#7a2c2c;font-size:18px">CXLTrend — cancellations</h2>
+    </div>
+
+    <div class="section-head" style="display:none">
+      <div>
+        <!-- title moved to header above -->
+        
+      </div>
+    </div>
+
+    <div class="kpi-grid" id="cancel-kpis"></div>
+
+    <div class="chart-grid">
+      <div class="chart-card">
+        <h4>Cancellations by month</h4>
+        <div class="chart-sub">Number of room-bookings cancelled · last 12 months</div>
+        <div id="cancel-chart-month"></div>
+      </div>
+      <div class="chart-card">
+        <h4>Cancellations by channel</h4>
+        <div class="chart-sub">Percentage mix by source channel</div>
+        <div id="cancel-chart-channel"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Monthly detail</h3>
+        </div>
+      </div>
+      <div class="panel-body flush">
+        <div class="table-wrap"><table class="data" id="cancel-monthly"></table></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Cancellation rate by channel</h3>
+        </div>
+      </div>
+      <div class="panel-body flush">
+        <div class="table-wrap"><table class="data" id="cancel-channel"></table></div>
+      </div>
+    </div>
+
+    <!-- Booking window chart - cancellate -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Cancellation booking window</h3>
+          <div class="panel-sub" id="cancel-bw-sub"></div>
+        </div>
+        <div id="cancel-bw-mfilter" class="bw-mfilter"></div>
+      </div>
+      <div class="panel-body" id="cancel-bw-chart"></div>
     </div>
   </section>
 
