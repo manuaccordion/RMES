@@ -279,7 +279,7 @@ const RMES_CLOUD = (function(){
           return;
         }
         const db = window.firebase.firestore();
-        const ref = db.collection(COLLECTION).doc(DOC_ID);
+        const ref = db.collection('rmes_shared').doc('state');
 
         function applyPayload(snap){
           if (!snap.exists){
@@ -343,7 +343,7 @@ const RMES_CLOUD = (function(){
           return;
         }
         const db = window.firebase.firestore();
-        const ref = db.collection(COLLECTION).doc(DOC_ID);
+        const ref = db.collection('rmes_shared').doc('state');
         const payload = { state: _collectLocal(), _updatedAt: Date.now() };
         ref.set(payload).then(function(){
           lastRemoteJSON = JSON.stringify(payload);
