@@ -67,6 +67,7 @@ const RMES_CLOUD = (function(){
   let _lastSyncTime = null;
   let _lastSyncDirection = null;  // 'push' | 'pull' | null
   let _syncHistory = [];
+  let _lastPushError = null;
 
   function _logSync(direction){
     _lastSyncTime = new Date();
@@ -186,31 +187,86 @@ const RMES_CLOUD = (function(){
       }
       h += '</div>';
     }
+    // Last push error (if any)
+    if (_lastPushError){
+      h += '<div style="margin-bottom:10px;padding:8px 10px;background:#fde8e6;border:1px solid #e8a8a3;border-radius:5px;color:#a83b3b;font-size:11.5px"><b>⚠ Last push error:</b> '+_lastPushError+'<div style="font-size:10px;color:#8a3030;margin-top:4px">Your latest changes may not be on the cloud. Try <b>Force PUSH</b> below.</div></div>';
+    }
     // Actions
     h += '<div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">';
-    h += '<button id="rmes-diag-force-sync" style="padding:10px 12px;background:linear-gradient(135deg,#3d7a4b,#4a8c58);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:12.5px">🔄 Force pull from cloud + reload tabs</button>';
+    h += '<button id="rmes-diag-force-pull" style="padding:10px 12px;background:linear-gradient(135deg,#3d7a4b,#4a8c58);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:12.5px">🔄 Force PULL from cloud (overwrite local)</button>';
+    h += '<button id="rmes-diag-force-push" style="padding:10px 12px;background:linear-gradient(135deg,#3b6b9a,#4a8cb8);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:12.5px">⬆ Force PUSH local to cloud (overwrite remote)</button>';
     h += '<button id="rmes-diag-hard-reload" style="padding:10px 12px;background:#fff;color:#5a3a14;border:1px solid #b59e7d;border-radius:6px;font-weight:600;cursor:pointer;font-size:12.5px">🔁 Hard reload (clears browser cache)</button>';
-    h += '<div style="font-size:10.5px;color:#888;line-height:1.5;margin-top:4px">If you and a colleague see different RMES suggestions: first try <b>Force pull from cloud</b>. If still different, both do <b>Hard reload</b>. The Hard reload re-downloads the latest data.js (might be stale on Mac/Safari).</div>';
+    h += '<button id="rmes-diag-nuclear" style="padding:10px 12px;background:#fff;color:#a83b3b;border:1px solid #e8a8a3;border-radius:6px;font-weight:600;cursor:pointer;font-size:12.5px">💥 Nuclear reset (wipe local & reload from cloud)</button>';
+    h += '<div style="font-size:10.5px;color:#888;line-height:1.5;margin-top:6px"><b>Force PULL</b>: scarica TUTTO dal cloud, sovrascrive il tuo locale (perdi modifiche locali non syncate). <b>Force PUSH</b>: spinge il TUO locale sul cloud, sovrascrive il remoto (sovrascrivi modifiche di altri). <b>Hard reload</b>: ricarica i file di programma. <b>Nuclear reset</b>: cancella TUTTO il tuo localStorage e reload — usalo solo se nient\'altro funziona.</div>';
+    h += '<div id="rmes-diag-result" style="margin-top:10px;font-size:11px;font-family:\'DM Mono\',monospace;color:#5a3a14;white-space:pre-wrap;max-height:120px;overflow:auto"></div>';
     h += '</div>';
     wrap.innerHTML = h;
     document.body.appendChild(wrap);
     document.getElementById('rmes-diag-close').addEventListener('click', () => wrap.remove());
-    document.getElementById('rmes-diag-force-sync').addEventListener('click', () => {
-      const btn = document.getElementById('rmes-diag-force-sync');
+
+    function _showResult(msg, isErr){
+      const el = document.getElementById('rmes-diag-result');
+      if (el){
+        el.style.color = isErr ? '#a83b3b' : '#3d7a4b';
+        el.textContent = msg;
+      }
+    }
+
+    document.getElementById('rmes-diag-force-pull').addEventListener('click', () => {
+      const btn = document.getElementById('rmes-diag-force-pull');
       btn.textContent = '⏳ Pulling…';
       btn.disabled = true;
-      _forcePullFromCloud().then(ok => {
-        btn.textContent = ok ? '✓ Pulled. Reloading tabs…' : '✗ Pull failed';
-        setTimeout(() => {
-          if (typeof rmesCloudOnRemoteUpdate === 'function') rmesCloudOnRemoteUpdate();
-          if (typeof renderAll === 'function') { try { renderAll(); } catch(e){} }
-          wrap.remove();
-        }, 500);
+      _showResult('Pulling from cloud…');
+      _forcePullFromCloud().then(res => {
+        if (res.ok){
+          let msg = '✓ Pull OK (source: ' + (res.source || '?') + '). Reloading tabs…';
+          if (res.warning) msg += '\n⚠ ' + res.warning;
+          _showResult(msg);
+          btn.textContent = '✓ Pulled';
+          setTimeout(() => {
+            if (typeof rmesCloudOnRemoteUpdate === 'function') rmesCloudOnRemoteUpdate();
+            if (typeof renderAll === 'function') { try { renderAll(); } catch(e){} }
+          }, 800);
+        } else {
+          _showResult('✗ PULL FAILED:\n' + (res.error || 'Unknown error'), true);
+          btn.textContent = '✗ Failed — see details below';
+          btn.disabled = false;
+        }
       });
     });
+
+    document.getElementById('rmes-diag-force-push').addEventListener('click', () => {
+      if (!confirm('Force PUSH will overwrite the cloud with YOUR current local data.\nAny changes another person made and you did not see yet will be LOST.\n\nContinue?')) return;
+      const btn = document.getElementById('rmes-diag-force-push');
+      btn.textContent = '⏳ Pushing…';
+      btn.disabled = true;
+      _showResult('Pushing local to cloud…');
+      _forcePushToCloud().then(res => {
+        if (res.ok){
+          _showResult('✓ Push OK. Your local state is now on the cloud.');
+          btn.textContent = '✓ Pushed';
+        } else {
+          _showResult('✗ PUSH FAILED:\n' + (res.error || 'Unknown error'), true);
+          btn.textContent = '✗ Failed';
+          btn.disabled = false;
+        }
+      });
+    });
+
     document.getElementById('rmes-diag-hard-reload').addEventListener('click', () => {
       if (confirm('This will reload the page bypassing the cache. Continue?')){
         location.reload(true);
+      }
+    });
+
+    document.getElementById('rmes-diag-nuclear').addEventListener('click', () => {
+      if (!confirm('NUCLEAR RESET will WIPE all your local data (accepted RMES, overrides, weights, notes, promos, DOW, ecc.) and reload the page.\n\nThe cloud will then re-populate the dashboard. Use this ONLY if nothing else works.\n\nContinue?')) return;
+      const r = _nuclearResetLocal();
+      if (r.ok){
+        alert('Wiped ' + r.cleared + ' local keys. Page will reload now.');
+        location.reload(true);
+      } else {
+        alert('Reset failed: ' + r.error);
       }
     });
   }
@@ -218,33 +274,113 @@ const RMES_CLOUD = (function(){
   function _forcePullFromCloud(){
     return new Promise((resolve) => {
       try {
-        if (!available || !window.firebase || !window.firebase.firestore) { resolve(false); return; }
+        if (!available || !window.firebase || !window.firebase.firestore) {
+          resolve({ ok: false, error: 'Firebase not available. Check internet connection.' });
+          return;
+        }
         const db = window.firebase.firestore();
         const ref = db.collection(COLLECTION).doc(DOC_ID);
+
+        function applyPayload(snap){
+          if (!snap.exists){
+            return { ok: false, error: 'Cloud document does not exist.' };
+          }
+          const payload = snap.data();
+          if (!payload || !payload.state){
+            return { ok: false, error: 'Cloud document is empty or malformed.' };
+          }
+          applyingRemote = true;
+          try {
+            for (const k of SYNC_KEYS){
+              if (payload.state[k] !== undefined){
+                try { localStorage.setItem(k, payload.state[k]); } catch(e){}
+              }
+            }
+          } finally { applyingRemote = false; }
+          lastRemoteJSON = JSON.stringify(payload);
+          _logSync('pull');
+          _setStatus('synced');
+          return { ok: true };
+        }
+
+        // Try server-only first (forces fresh fetch, bypasses Firestore cache)
         ref.get({ source: 'server' }).then(function(snap){
-          if (snap.exists){
-            const payload = snap.data();
-            if (payload && payload.state){
-              applyingRemote = true;
-              try {
-                for (const k of SYNC_KEYS){
-                  if (payload.state[k] !== undefined){
-                    try { localStorage.setItem(k, payload.state[k]); } catch(e){}
-                  }
-                }
-              } finally { applyingRemote = false; }
-              lastRemoteJSON = JSON.stringify(payload);
-              _logSync('pull');
-              _setStatus('synced');
-              resolve(true);
-            } else { resolve(false); }
-          } else { resolve(false); }
-        }).catch(function(e){
-          console.warn('[rmesCloud] force pull failed', e);
-          resolve(false);
+          const r = applyPayload(snap);
+          if (r.ok) resolve({ ok: true, source: 'server' });
+          else resolve({ ok: false, error: r.error, source: 'server' });
+        }).catch(function(err1){
+          console.warn('[rmesCloud] server-only fetch failed, trying default', err1);
+          // Fallback: try default (cache OR server)
+          ref.get().then(function(snap){
+            const r = applyPayload(snap);
+            if (r.ok) resolve({
+              ok: true,
+              source: 'default',
+              warning: 'Used Firestore cache fallback (server fetch failed: ' + (err1.message || err1.code || err1) + '). Data may not be the very latest.'
+            });
+            else resolve({ ok: false, error: r.error, source: 'default' });
+          }).catch(function(err2){
+            resolve({
+              ok: false,
+              error: 'Both server and cache failed.\nServer error: ' + (err1.message || err1.code || err1) + '\nCache error: ' + (err2.message || err2.code || err2)
+            });
+          });
         });
-      } catch(e){ resolve(false); }
+      } catch(e){
+        resolve({ ok: false, error: 'Exception: ' + (e.message || String(e)) });
+      }
     });
+  }
+
+  // Force PUSH: spinge il localStorage CORRENTE sul cloud, sovrascrivendo lo stato remoto.
+  // Utile quando il chip dice "synced" ma in realtà le tue modifiche non sono mai arrivate al cloud
+  // (push fallito silenziosamente).
+  function _forcePushToCloud(){
+    return new Promise((resolve) => {
+      try {
+        if (!available || !window.firebase || !window.firebase.firestore) {
+          resolve({ ok: false, error: 'Firebase not available. Check internet connection.' });
+          return;
+        }
+        const db = window.firebase.firestore();
+        const ref = db.collection(COLLECTION).doc(DOC_ID);
+        const payload = { state: _collectLocal(), _updatedAt: Date.now() };
+        ref.set(payload).then(function(){
+          lastRemoteJSON = JSON.stringify(payload);
+          _logSync('push');
+          _setStatus('synced');
+          _lastPushError = null;
+          resolve({ ok: true });
+        }).catch(function(err){
+          _lastPushError = err.message || err.code || String(err);
+          resolve({ ok: false, error: _lastPushError });
+        });
+      } catch(e){
+        resolve({ ok: false, error: 'Exception: ' + (e.message || String(e)) });
+      }
+    });
+  }
+
+  // Nuclear: cancella TUTTO il localStorage RMES, poi ricarica.
+  // L'init successivo pullerà fresh dal cloud.
+  function _nuclearResetLocal(){
+    try {
+      for (const k of SYNC_KEYS){
+        try { localStorage.removeItem(k); } catch(e){}
+      }
+      // Anche le chiavi di migrazione e i flag
+      const allKeys = [];
+      for (let i=0; i<localStorage.length; i++){
+        const k = localStorage.key(i);
+        if (k && (k.startsWith('rmes_') || k === '_data_fingerprint_v1' || k === 'notes_journal_v2')) allKeys.push(k);
+      }
+      for (const k of allKeys){
+        try { localStorage.removeItem(k); } catch(e){}
+      }
+      return { ok: true, cleared: allKeys.length };
+    } catch(e){
+      return { ok: false, error: e.message || String(e) };
+    }
   }
 
   // Raccoglie lo stato locale (solo le chiavi da sincronizzare presenti)
@@ -328,8 +464,8 @@ const RMES_CLOUD = (function(){
           return id; } catch(e){ return 'unknown'; }
       })();
       db.collection('rmes_shared').doc('state').set(payload)
-        .then(function(){ lastRemoteJSON = JSON.stringify(payload); _logSync('push'); _setStatus('synced'); })
-        .catch(function(e){ console.warn('[rmesCloud] push failed', e); _setStatus('offline'); });
+        .then(function(){ lastRemoteJSON = JSON.stringify(payload); _logSync('push'); _setStatus('synced'); _lastPushError = null; })
+        .catch(function(e){ console.warn('[rmesCloud] push failed', e); _setStatus('offline'); _lastPushError = (e && (e.message || e.code)) || String(e); });
     }, 800);  // accorpa scritture ravvicinate
   }
 
@@ -404,11 +540,14 @@ const RMES_CLOUD = (function(){
     notifyLocalChange: notifyLocalChange,
     isAvailable: function(){ return available; },
     onStatus: function(fn){ statusListeners.push(fn); },
-    _collectLocal: _collectLocal,   // per debug
+    _collectLocal: _collectLocal,
     showDiagnostics: _showDiagnostics,
     forcePullFromCloud: _forcePullFromCloud,
+    forcePushToCloud: _forcePushToCloud,
+    nuclearResetLocal: _nuclearResetLocal,
     getLastSync: function(){ return { time: _lastSyncTime, direction: _lastSyncDirection }; },
-    getSyncHistory: function(){ return _syncHistory.slice(); }
+    getSyncHistory: function(){ return _syncHistory.slice(); },
+    getLastPushError: function(){ return _lastPushError; }
   };
 })();
 
