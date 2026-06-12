@@ -523,7 +523,7 @@ table.sell-table-transposed tbody th.sell-tposed-label{
   text-align:left;
   font-weight:600;
   color:var(--ink);
-  border-right:2px solid #c4823b;
+  border-right:1px solid var(--line);
   border-bottom:1px solid var(--line);
   position:sticky;left:0;z-index:3;
   min-width:140px;
@@ -554,7 +554,7 @@ table.sell-table-transposed tbody td{
 table.sell-table-transposed tbody tr.sell-tr-lu th.sell-tposed-label{
   background:linear-gradient(135deg,#fef0d4,#fbe09e);
   color:#5a3a14;
-  border-right:3px solid #c4823b;
+  border-right:1px solid var(--line);
 }
 table.sell-table-transposed tbody tr.sell-tr-lu td{
   background:linear-gradient(135deg,rgba(254,240,212,.35),rgba(251,224,158,.22));
@@ -569,7 +569,7 @@ table.sell-table-transposed tbody tr.sell-tr-lu td:hover{
 table.sell-table-transposed tbody tr.sell-tr-rmes th.sell-tposed-label{
   background:linear-gradient(135deg,#e3f2e8,#bcdfc8);
   color:#1f4f30;
-  border-right:3px solid #3d7a4b;
+  border-right:1px solid var(--line);
   border-bottom:2px solid #3d7a4b;
 }
 table.sell-table-transposed tbody tr.sell-tr-rmes td{
@@ -2340,7 +2340,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         </div>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">Block ① — Weights of the 5 RMES factors</h4>
-        <p>How much each of the 4 factors contributes to the daily adjustment. Default: <b>25% × 4 = 100%</b>. The sum of weights is normalized automatically. Each factor is internally capped at ±50% on the raw signal.</p>
+        <p>How much each of the <b>5 factors</b> contributes to the daily adjustment. Default: <b>20% × 5 = 100%</b>. The sum of weights is normalized automatically. Each factor is internally capped at ±50% on the raw signal.</p>
 
         <div style="margin:12px 0 10px 0;padding:12px 14px;background:#f5f0ea;border-radius:6px;font-size:13px;line-height:1.65">
           <p style="margin:0 0 6px 0;font-weight:700;color:#3b6b9a">A · Daily Pickup <span style="color:#888;font-weight:400">— "did anything happen for this day recently?"</span></p>
@@ -2360,20 +2360,16 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <div style="margin:10px 0;padding:12px 14px;background:#f1edf5;border-radius:6px;font-size:13px;line-height:1.65">
           <p style="margin:0 0 6px 0;font-weight:700;color:#8e5fa8">B · Pace Trend <span style="color:#888;font-weight:400">— "are we booking faster or slower than last year?"</span></p>
-          <p style="margin:0 0 6px 0"><b>What it measures.</b> The booking pace of the month of stay over the <b>last 4 weeks</b>, compared to the same 4 weeks last year (STLY = same time last year, day-of-week aligned). It looks at the <b>real room-nights picked up</b>, not the prices.</p>
-          <p style="margin:0 0 6px 0"><b>The 4 weeks are weighted</b>: W1 = 10% · W2 = 20% · W3 = 30% · W4 = 40%, where W4 is the <b>most recent</b> week. A slow recent week pulls the pace down more than an old one. Older information matters less.</p>
-          <p style="margin:0 0 6px 0">Formula: <code>weighted_pace_ratio = (10% × W1_now/W1_LY + 20% × W2_now/W2_LY + 30% × W3_now/W3_LY + 40% × W4_now/W4_LY)</code>. Then <code>raw_dev = weighted_pace_ratio − 1</code>.</p>
-          <p style="margin:0 0 6px 0"><b>Decision states</b> (refines the raw signal with an OCC sanity check):</p>
+          <p style="margin:0 0 6px 0"><b>What it measures.</b> The booking pace of the month of stay over the <b>last 7 days (W4 window)</b>, compared to the same 7 days last year (STLY = same time last year, day-of-week aligned). It looks at the <b>real room-nights picked up</b>, not the prices. Only the most recent week is used because it captures the current market signal most reliably.</p>
+          <p style="margin:0 0 6px 0">Formula: <code>pace_ratio = W4_now / W4_LY</code> (where W4 = pickup of the last 7 days for the target stay-month). Then <code>raw_dev = pace_ratio − 1</code>, clamped at ±50%.</p>
+          <p style="margin:0 0 6px 0"><b>Decision states</b> (3 simplified states):</p>
           <ul style="margin:0 0 6px 18px;font-size:12.5px;color:#444">
-            <li><b>All up</b> (ratio ≥ 1, both pace and OCC above LY): raise the price.</li>
-            <li><b>All down</b> (ratio &lt; 1, OCC also below LY): lower the price.</li>
-            <li><b>Ambiguous · 50% brake</b> (ratio &lt; 1 but OCC ≥ LY): the month is OK on occupancy but pace is slowing — apply only half of the negative signal. Brake softened.</li>
-            <li><b>Ambiguous · neutralized OCC90</b> (ratio &lt; 1 but the day's OCC is already ≥ 90%): no need to lower, demand is already there. Factor neutralized.</li>
-            <li><b>Annual fallback (property)</b>: no 4-week pace data for this exact month, but the property has an annual pace signal → that signal is used as proxy.</li>
-            <li><b>Aggregate fallback (P̄)</b>: not even the annual property signal is available → use the <b>aggregate pace of the other 3 properties</b> (same Florence market). A small <b>P̄</b> badge appears in the RMES cell to flag this.</li>
-            <li><b>Neutralized — no data</b>: no pace data anywhere (property nor aggregate) → factor goes n/a, weight redistributed to the other 3 factors.</li>
+            <li><b>W4 month</b>: the property has fresh W4 pickup data for the target stay month. The pace ratio is applied directly to user-configured thresholds.</li>
+            <li><b>Aggregate fallback (P̄)</b>: no W4 data for this property/month → use the <b>aggregate W4 pace of all 4 properties</b> (same Florence market). A small <b>P̄</b> badge appears in the RMES cell to flag this.</li>
+            <li><b>Annual fallback (property)</b>: not even aggregate available → use the property's annual W4 pace as proxy. If extreme (>±15%), neutralized for safety.</li>
+            <li><b>Neutralized — no data</b>: no pace data anywhere → factor goes n/a, weight redistributed to the other 4 factors.</li>
           </ul>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, target month June 2026.</b> Pickup last 4 weeks: W1=2, W2=3, W3=5, W4=8 RN (total 18). Same 4 weeks LY: W1=4, W2=5, W3=6, W4=7 RN (total 22). Weighted now: 10%×2 + 20%×3 + 30%×5 + 40%×8 = 0.2 + 0.6 + 1.5 + 3.2 = 5.5. Weighted LY: 10%×4 + 20%×5 + 30%×6 + 40%×7 = 0.4 + 1.0 + 1.8 + 2.8 = 6.0. Ratio = 5.5 / 6.0 = 0.92 → raw dev = −8%. State = "all down" (OCC also below LY) → factor = −8%. Applied to composite: 0.25 × −8% = −2 percentage points.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, target month June 2026.</b> Pickup in last 7 days (W4) for stays in June: 8 RN. Same 7 days last year (W4 LY): 7 RN. Ratio = 8 / 7 = 1.14 → raw dev = +14%. State = "W4 month". Applied to composite: 0.20 × +14% = +2.8 percentage points.</p>
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#ecf3ee;border-radius:6px;font-size:13px;line-height:1.65">
@@ -2390,12 +2386,19 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, 15/07/2026.</b> Searches today: 12,500. Month-July median: 9,000. Raw dev: (12,500 − 9,000) / 9,000 = +39%. Clamped to +50% if higher. Applied to composite: 0.25 × +39% = +10 percentage points.</p>
         </div>
 
+        <div style="margin:10px 0;padding:12px 14px;background:#fdf3e3;border-radius:6px;font-size:13px;line-height:1.65">
+          <p style="margin:0 0 6px 0;font-weight:700;color:#c4823b">E · AirDNA Market <span style="color:#888;font-weight:400">— "how booked is the Florence rental market right now?"</span></p>
+          <p style="margin:0 0 6px 0"><b>What it measures.</b> AirDNA Booked Listings index for Florence (the number of short-term rental listings already booked for the target date) compared to the <b>average</b> over the next 180 days. Independent from Expedia: D looks at search intent, E looks at <b>actual market bookings</b>.</p>
+          <p style="margin:0 0 6px 0">Formula: <code>market_idx = listings_booked_for_day / total_market_listings (= 2948)</code>; <code>raw_dev = (market_idx − period_avg_idx) / period_avg_idx</code>. Then user thresholds may apply. Clamped at ±50%.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Florence market, 20/07/2026.</b> AirDNA Booked Listings: 2,250 out of 2,948 (= idx 0.76). Average market idx over 180 days: 0.55. Raw dev: (0.76 − 0.55) / 0.55 = +38% (very high demand). Applied to composite: 0.20 × +38% = +7.6 percentage points. <i>Note:</i> AirDNA data is loaded from the rate-future CSV (180 days forward). For dates beyond the AirDNA horizon, the factor goes n/a and weight is redistributed.</p>
+        </div>
+
         <div style="margin:14px 0;padding:12px 14px;background:#fffdf7;border-left:3px solid #c4823b;font-size:13px;line-height:1.65">
-          <p style="margin:0 0 6px 0;font-weight:700">How the 4 dev% combine into the Composite multiplier</p>
+          <p style="margin:0 0 6px 0;font-weight:700">How the 5 dev% combine into the Composite multiplier</p>
           <p style="margin:0 0 6px 0">After each factor produces its <b>raw dev%</b> (clamped at ±50%, with the per-factor sanity rules above), the Composite is the <b>weighted average</b>:</p>
-          <p style="margin:0 0 6px 0;font-family:'DM Mono',monospace;background:#fff;padding:8px 10px;border-radius:4px;font-size:12px">Composite = 1 + (w<sub>A</sub>×dev<sub>A</sub> + w<sub>B</sub>×dev<sub>B</sub> + w<sub>C</sub>×dev<sub>C</sub> + w<sub>D</sub>×dev<sub>D</sub>)</p>
-          <p style="margin:0 0 6px 0">The Composite is then <b>capped at ±total cap</b> (default ±30%, configurable in Block ②). So the joint signal of the 4 factors can never push the price more than ±30% on a single day.</p>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example with the 4 numbers above</b> (Pickup +20%, Pace −8%, Online −20%, Demand +39%): Composite = 1 + (0.25×0.20 + 0.25×−0.08 + 0.25×−0.20 + 0.25×0.39) = 1 + (0.05 − 0.02 − 0.05 + 0.0975) = 1 + 0.078 = <b>×1.078</b> (= +7.8% on the Base Price). Below the ±30% cap, no further trimming.</p>
+          <p style="margin:0 0 6px 0;font-family:'DM Mono',monospace;background:#fff;padding:8px 10px;border-radius:4px;font-size:12px">Composite = 1 + (w<sub>A</sub>×dev<sub>A</sub> + w<sub>B</sub>×dev<sub>B</sub> + w<sub>C</sub>×dev<sub>C</sub> + w<sub>D</sub>×dev<sub>D</sub> + w<sub>E</sub>×dev<sub>E</sub>)</p>
+          <p style="margin:0 0 6px 0">The Composite is then <b>capped at ±total cap</b> (default ±30%, configurable in Block ②). So the joint signal of the 5 factors can never push the price more than ±30% on a single day.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example with 5 factors</b> (Pickup +20%, Pace +14%, Online −20%, Demand +39%, AirDNA +38%, all at 20% weight): Composite = 1 + (0.20×0.20 + 0.20×0.14 + 0.20×−0.20 + 0.20×0.39 + 0.20×0.38) = 1 + (0.04 + 0.028 − 0.04 + 0.078 + 0.076) = 1 + 0.182 = <b>×1.182</b>. Capped to +30% if higher → final Composite = ×1.30.</p>
         </div>
 
         <div style="margin:14px 0;padding:12px 14px;background:#fef7e8;border-left:3px solid #c4823b;font-size:13px;line-height:1.65">
