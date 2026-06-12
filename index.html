@@ -704,6 +704,68 @@ table.sell-table-transposed th.sell-tposed-group-rateshopper{
   border-right:2px solid #3a6b6b !important;
 }
 
+/* === Sfondo celle dati colorato per gruppo (rispecchia lo sfondo dell'etichetta a sx) === */
+/* OTB: sfondo arancione chiaro su tutte le celle dati */
+table.sell-table-transposed tbody tr.sell-tr-otb td:not(.sell-tposed-label){
+  background:rgba(251,224,158,.30);
+}
+/* PICKUP: sfondo viola chiaro */
+table.sell-table-transposed tbody tr.sell-tr-pickup td:not(.sell-tposed-label){
+  background:rgba(224,208,240,.32);
+}
+/* STLY: sfondo teal chiaro */
+table.sell-table-transposed tbody tr.sell-tr-stly td:not(.sell-tposed-label){
+  background:rgba(200,224,224,.32);
+}
+/* PK·STLY: sfondo grigio chiaro */
+table.sell-table-transposed tbody tr.sell-tr-pkstly td:not(.sell-tposed-label){
+  background:rgba(216,216,216,.32);
+}
+/* RATE SHOPPER: sfondo teal/blu chiaro */
+table.sell-table-transposed tbody tr.sell-tr-exp td:not(.sell-tposed-label){
+  background:rgba(192,216,216,.32);
+}
+/* Beddy: sfondo verde scuro chiaro */
+table.sell-table-transposed tbody tr.sell-tr-beddy td:not(.sell-tposed-label){
+  background:rgba(30,107,74,.10);
+}
+
+/* === Separatore spesso tra gruppi diversi (= riga più alta del colore del gruppo) === */
+/* Bordo BASSO dell'ultima riga di un gruppo, spesso, del colore "pieno" del gruppo.
+   Identifico l'ultima riga di un gruppo come quella PRIMA di una diversa cssClass. */
+/* OTB → ultima riga è ADR (sell-tr-otb), prima di PICKUP (sell-tr-pickup) */
+table.sell-table-transposed tbody tr.sell-tr-otb + tr.sell-tr-pickup th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-otb + tr.sell-tr-pickup td{
+  border-top:4px solid #c4823b !important;
+}
+/* PICKUP → STLY */
+table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-stly th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-stly td{
+  border-top:4px solid #8e5fa8 !important;
+}
+/* STLY → PK·STLY */
+table.sell-table-transposed tbody tr.sell-tr-stly + tr.sell-tr-pkstly th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-stly + tr.sell-tr-pkstly td{
+  border-top:4px solid #3b6b6b !important;
+}
+/* PK·STLY → BEDDY (se presente) o EXP */
+table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-beddy th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-beddy td,
+table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-exp th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-exp td{
+  border-top:4px solid #888 !important;
+}
+/* BEDDY → EXP */
+table.sell-table-transposed tbody tr.sell-tr-beddy + tr.sell-tr-exp th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-beddy + tr.sell-tr-exp td{
+  border-top:4px solid #1e6b4a !important;
+}
+/* Event → OTB (separatore tra "header section" e gruppi metrici) */
+table.sell-table-transposed tbody tr.sell-tr-event + tr.sell-tr-otb th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-event + tr.sell-tr-otb td{
+  border-top:3px solid var(--ink-3) !important;
+}
+
 /* Label cell (sub-label) — sticky sinistra DOPO il group */
 table.sell-table-transposed th.sell-tposed-label{
   left:36px;  /* dopo la group cell */
@@ -1534,11 +1596,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div class="panel-body flush"><div class="table-wrap"><table class="data" id="otb-can-table"></table></div></div>
       </div>
     </div>
-
-        <div id="otb-bw-mfilter" class="bw-mfilter"></div>
-      </div>
-      <div class="panel-body" id="otb-bw-chart"></div>
-    </div>
   </section>
 
   <!-- ============ SECTION 4: PICKUP ============ -->
@@ -1576,6 +1633,10 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <h3>Booking window</h3>
           <div class="panel-sub" id="otb-bw-sub"></div>
         </div>
+        <div id="otb-bw-mfilter" class="bw-mfilter"></div>
+      </div>
+      <div class="panel-body" id="otb-bw-chart"></div>
+    </div>
 
     <!-- ============ CANCELLATIONS (spostato dalla vecchia tab CXLTrend) ============ -->
     <div style="margin:24px 0 8px 0;padding:12px 18px;background:rgba(168,59,59,.06);border-left:4px solid #a83b3b;border-radius:4px">
