@@ -628,12 +628,31 @@ table.sell-table-transposed tbody td.sell-block-expedia{
   border-left:none !important;
 }
 /* Wrap responsive: il trasposto può essere larghissimo (60-90 colonne) → scroll orizzontale */
+.sell-tposed-outer{
+  position:relative;
+}
+.sell-tposed-scroll-top{
+  overflow-x:auto;
+  overflow-y:hidden;
+  height:16px;
+  border:1px solid var(--line);
+  border-bottom:none;
+  border-top-left-radius:6px;
+  border-top-right-radius:6px;
+  background:#f5ede0;
+}
+.sell-tposed-scroll-top-inner{
+  height:1px;
+  width:0;  /* sovrascritto dal JS con la width vera */
+}
 .sell-tposed-scroll-wrap{
   overflow-x:auto;
   overflow-y:auto;
   max-height:75vh;
   border:1px solid var(--line);
-  border-radius:6px;
+  border-top:none;
+  border-bottom-left-radius:6px;
+  border-bottom-right-radius:6px;
 }
 
 /* === Group cell (rowspan) — etichetta verticale del gruppo === */
@@ -700,6 +719,55 @@ table.sell-table-transposed tbody tr.sell-tr-event td{
   font-style:italic;
   white-space:normal;  /* eventi lunghi vanno a capo */
   padding:6px 8px;
+}
+
+/* === Colori condizionali OCC sull'header data e sulla riga OTB·OCC === */
+/* 5 livelli: vlow (≤20% rosso) · low (21-40%) · mid (41-60%) · high (61-80%) · vhigh (>80% verde) */
+table.sell-table-transposed thead th.sell-tposed-datecol.occ-lvl-vlow{
+  border-bottom:4px solid #c0524e;
+  background:linear-gradient(180deg,#fdfbf6,#fce8e6);
+}
+table.sell-table-transposed thead th.sell-tposed-datecol.occ-lvl-low{
+  border-bottom:4px solid #e08a86;
+  background:linear-gradient(180deg,#fdfbf6,#fdf0ee);
+}
+table.sell-table-transposed thead th.sell-tposed-datecol.occ-lvl-mid{
+  border-bottom:4px solid #d4b96a;
+  background:linear-gradient(180deg,#fdfbf6,#fbf6e4);
+}
+table.sell-table-transposed thead th.sell-tposed-datecol.occ-lvl-high{
+  border-bottom:4px solid #87b385;
+  background:linear-gradient(180deg,#fdfbf6,#eef6ed);
+}
+table.sell-table-transposed thead th.sell-tposed-datecol.occ-lvl-vhigh{
+  border-bottom:4px solid #4a8c4a;
+  background:linear-gradient(180deg,#fdfbf6,#e2efe1);
+}
+/* Cella OTB·OCC: background pieno con colore livello */
+table.sell-table-transposed tbody td.occ-lvl-vlow{
+  background:#fcd5d2 !important;
+  color:#7a2f2c;
+  font-weight:700;
+}
+table.sell-table-transposed tbody td.occ-lvl-low{
+  background:#fae6e3 !important;
+  color:#9a4a45;
+  font-weight:700;
+}
+table.sell-table-transposed tbody td.occ-lvl-mid{
+  background:#f8eecb !important;
+  color:#7a5e1c;
+  font-weight:700;
+}
+table.sell-table-transposed tbody td.occ-lvl-high{
+  background:#d7ead4 !important;
+  color:#365e34;
+  font-weight:700;
+}
+table.sell-table-transposed tbody td.occ-lvl-vhigh{
+  background:#b5d8b2 !important;
+  color:#1e4a1e;
+  font-weight:800;
 }
 /* Bordi verticali interni per le celle dati: solo il bordo sinistro del gruppo */
 table.data.sell-table tbody td{border-bottom:1px solid var(--line)}

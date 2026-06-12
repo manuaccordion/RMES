@@ -9721,6 +9721,21 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
     groupSpans[allMetrics[groupStart].key] = groupCount;
   }
 
+  // Calcolo occLvl per ogni data — 5 livelli di occupazione OTB
+  // (vlow ≤20% · low 21-40% · mid 41-60% · high 61-80% · vhigh >80%)
+  const occLvls = dataRows.map(function(dr){
+    const occCell = dr.children[6];  // indice 6 = OTB OCC nella tr originale
+    if (!occCell) return null;
+    const txt = (occCell.textContent || '').replace('%','').trim();
+    const n = parseFloat(txt);
+    if (!isFinite(n)) return null;
+    if (n <= 20) return 'vlow';
+    if (n <= 40) return 'low';
+    if (n <= 60) return 'mid';
+    if (n <= 80) return 'high';
+    return 'vhigh';
+  });
+
   // Costruisco la nuova tabella
   const newTbl = document.createElement('table');
   newTbl.className = 'data sell-table sell-table-transposed';
@@ -9735,12 +9750,14 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
   cornerTh.innerHTML = '<span style="font-size:10px;color:var(--ink-3);font-weight:500;letter-spacing:.04em;text-transform:uppercase">Metric ↓ / Date →</span>';
   trH.appendChild(cornerTh);
   // Per ogni data row originale, prendo data + DoW dalla 3a e 5a <td>
-  for (const dr of dataRows){
+  for (let dIdxH = 0; dIdxH < dataRows.length; dIdxH++){
+    const dr = dataRows[dIdxH];
     const tds = dr.children;
     const dateText = (tds[2] ? tds[2].textContent.trim() : '');
     const dowText  = (tds[4] ? tds[4].textContent.trim() : '');
     const thD = document.createElement('th');
     thD.className = 'sell-tposed-datecol';
+    if (occLvls[dIdxH]) thD.classList.add('occ-lvl-' + occLvls[dIdxH]);
     const isWE = (dowText === 'Ven' || dowText === 'Sab' || dowText === 'Dom' || dowText === 'Fri' || dowText === 'Sat' || dowText === 'Sun');
     const dowColor = isWE ? 'color:#c4823b;font-weight:700' : 'color:var(--ink-2);font-weight:500';
     thD.innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em">${dateText}</div>
@@ -9785,13 +9802,9 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
           cloned.style.background = '';
           cloned.style.backgroundColor = '';
         }
-        // Per il DoW inline color: rimuovo dato che la riga Date/DoW non c'è più
-        if (m.key === 'event' || m.key === 'lu' || m.key === 'rmes'){
-          // tutte le celle delle prime righe: niente inline bg
-          if (m.key !== 'lu' && m.key !== 'rmes'){
-            cloned.style.background = '';
-            cloned.style.backgroundColor = '';
-          }
+        // Per la riga OTB·OCC: applico il livello colore (vlow→vhigh)
+        if (m.key === 'otbOcc' && occLvls[dIdx]){
+          cloned.classList.add('occ-lvl-' + occLvls[dIdx]);
         }
         tr.appendChild(cloned);
       } else {
@@ -9805,11 +9818,45 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
   }
   newTbl.appendChild(tbody);
 
-  // Sostituisco la tabella nel wrap, wrappandola in un container scrollabile
+  // Sostituisco la tabella nel wrap, wrappandola in un container con DOPPIO scrollbar:
+  // uno in alto (fake, per scrolling rapido) e uno in basso (vero, con la tabella).
+  // I due sono sincronizzati via event listener.
+  const outer = document.createElement('div');
+  outer.className = 'sell-tposed-outer';
+  // Scrollbar in alto (fake)
+  const topScroll = document.createElement('div');
+  topScroll.className = 'sell-tposed-scroll-top';
+  const topInner = document.createElement('div');
+  topInner.className = 'sell-tposed-scroll-top-inner';
+  topScroll.appendChild(topInner);
+  // Container scrollabile vero (tabella)
   const scrollWrap = document.createElement('div');
   scrollWrap.className = 'sell-tposed-scroll-wrap';
   scrollWrap.appendChild(newTbl);
-  orig.parentNode.replaceChild(scrollWrap, orig);
+  // Componi: outer { topScroll, scrollWrap }
+  outer.appendChild(topScroll);
+  outer.appendChild(scrollWrap);
+  orig.parentNode.replaceChild(outer, orig);
+
+  // Dopo l'inserimento, calcolo la width della tabella per il topInner e sincronizzo gli scroll
+  setTimeout(function(){
+    if (newTbl && newTbl.scrollWidth){
+      topInner.style.width = newTbl.scrollWidth + 'px';
+    }
+    let syncing = false;
+    topScroll.addEventListener('scroll', function(){
+      if (syncing) return;
+      syncing = true;
+      scrollWrap.scrollLeft = topScroll.scrollLeft;
+      syncing = false;
+    });
+    scrollWrap.addEventListener('scroll', function(){
+      if (syncing) return;
+      syncing = true;
+      topScroll.scrollLeft = scrollWrap.scrollLeft;
+      syncing = false;
+    });
+  }, 0);
 }
 
 function renderSellStrategy(sel){
@@ -14869,11 +14916,11 @@ function _renderRmesWeightsBox(sel){
     { key:'airdna', letter:'D', label:'Demand (Expedia)',   color:'#a83b3b', desc:'Expedia searches vs month median' },
     { key:'mkt',    letter:'E', label:'AirDNA Market',      color:'#c4823b', desc:'AirDNA Booked Listings vs market average (booking density of Florence rentals)' },
   ];
-  let html = '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">';
+  let html = '<div style="display:flex;gap:8px;flex-wrap:nowrap;align-items:stretch;overflow-x:auto;padding-bottom:4px">';
   for (const f of factors){
     html += _wcard(f, W);
   }
-  html += '<div style="margin-left:auto;display:flex;flex-direction:column;gap:4px"><div style="font-size:10px;color:var(--ink-3);font-weight:700;letter-spacing:.04em;text-transform:uppercase">Total</div><div id="rmes-tab-w-sum" style="padding:6px 14px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:\'DM Mono\',monospace;font-weight:700;font-size:14px">Σ —</div></div>';
+  html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;justify-content:center;padding:0 10px"><div style="font-size:10px;color:var(--ink-3);font-weight:700;letter-spacing:.04em;text-transform:uppercase">Total</div><div id="rmes-tab-w-sum" style="padding:6px 14px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:\'DM Mono\',monospace;font-weight:700;font-size:14px;text-align:center">Σ —</div></div>';
   html += '</div>';
   wrap.innerHTML = html;
   wrap.querySelectorAll('.rmes-w-input').forEach(inp => {
@@ -14933,13 +14980,12 @@ function _rmesTabClearDirty(){
 }
 function _wcard(f, W){
   const v = Math.round((W[f.key] || 0) * 100);
-  return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;background:#fff;border:1px solid ${f.color}40;border-radius:6px;min-width:78px">
-    <div style="display:flex;align-items:center;gap:4px">
-      <span style="background:${f.color};color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace">${f.letter}</span>
-      <span style="font-size:11px;font-weight:600;color:${f.color}">${f.label}</span>
+  return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;background:#fff;border:1px solid ${f.color}40;border-radius:6px;min-width:130px;flex:1 1 0;max-width:200px" title="${escapeHtml(f.desc)}">
+    <div style="display:flex;align-items:center;gap:4px;white-space:nowrap">
+      <span style="background:${f.color};color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0">${f.letter}</span>
+      <span style="font-size:11px;font-weight:600;color:${f.color};overflow:hidden;text-overflow:ellipsis">${f.label}</span>
     </div>
     <input type="number" min="0" max="100" step="5" value="${v}" data-rmesw="${f.key}" class="rmes-w-input" style="width:50px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;font-family:'DM Mono',monospace;font-size:13px;text-align:right;font-weight:700">
-    <div style="font-size:9px;color:var(--ink-3);font-style:italic">${f.desc}</div>
   </div>`;
 }
 function _rmesTabSyncWeights(sel){
