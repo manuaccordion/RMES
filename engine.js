@@ -419,7 +419,7 @@ const RMES_CLOUD = (function(){
         const raw = localStorage.getItem('rmes_weights_per_struct_v4');
         if (raw){
           const parsed = JSON.parse(raw);
-          const defaults = { occ: 0.25, price: 0.00, pace: 0.25, budget: 0.00, comp: 0.25, airdna: 0.25 };
+          const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
           let needsForce = false;
           for (const s of ['firenze','condotta','alfani','davids']){
             const p = parsed[s];
@@ -1372,6 +1372,26 @@ function fp_postLoadHook(){
       console.log('[NewRMES] Wipe v4 complete. Removed ' + removed + ' unknown-author entries.');
     }
   } catch(e){ console.error('[NewRMES] wipe v4 failed', e); }
+
+  // --- ONE-SHOT WIPE v5: reset pesi a 5 fattori (12/06/2026) ---
+  // Reason: introdotto il nuovo fattore E·AirDNA Market come 5° fattore separato.
+  // I pesi vecchi (4 attivi a 25%) vanno aggiornati a 5 attivi a 20%.
+  try {
+    const WIPE5_FLAG = 'rmes_5factor_v5_2026_06_12';
+    if (!localStorage.getItem(WIPE5_FLAG)){
+      console.log('[NewRMES] Wipe v5: resetting weights to 5-factor default (20% each)…');
+      try {
+        const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
+        const w = {};
+        for (const sk of ['firenze','condotta','alfani','davids']){
+          w[sk] = Object.assign({}, defaults);
+        }
+        localStorage.setItem('rmes_weights_per_struct_v4', JSON.stringify(w));
+      } catch(e){ console.warn('wipe5 weights failed', e); }
+      try { localStorage.setItem(WIPE5_FLAG, '1'); } catch(e){}
+      console.log('[NewRMES] Wipe v5 complete. 5-factor weights active.');
+    }
+  } catch(e){ console.error('[NewRMES] wipe v5 failed', e); }
 
 
   try {
@@ -4022,7 +4042,7 @@ let SELL_PKMONTH_FILTER = 'both'; // 'both' = aggregato (default quando CURRENT_
 // occ key reused = A·Daily Pickup (fill-rate based)
 // price key set to 0 (B·ADR factor removed, kept for code compatibility)
 // pace = B·Pace Trend, comp = C·Online Pricing, airdna = D·Demand Expedia
-const SELL_RMES_W_DEFAULT = { occ: 0.25, price: 0.00, pace: 0.25, budget: 0.00, comp: 0.25, airdna: 0.25 };
+const SELL_RMES_W_DEFAULT = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
 const SELL_RMES_W_KEY = 'rmes_weights_per_struct_v4';
 let SELL_RMES_W_ALL = (function(){
   try {
@@ -4113,7 +4133,7 @@ let SELL_RMES_W_ALL = (function(){
 (function _migrate4Factors(){
   try {
     const flagKey = 'rmes_factors_v4_migration_2026_05_28';
-    const defaults = { occ: 0.25, price: 0.00, pace: 0.25, budget: 0.00, comp: 0.25, airdna: 0.25 };
+    const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
     // Controllo idempotente: anche se il flag è già settato, se trovo pesi in formato vecchio
     // (price > 0 o occ ≠ 0.25) li forzo ai nuovi default. Questo gestisce il caso Firebase Cloud
     // che ripristina pesi vecchi sovrascrivendo la migrazione locale.
@@ -4158,6 +4178,7 @@ const RMES_TH_DEFAULT = {
   budget: { lo: 0.9,  hi: 1.1,  multLow: 1.10, multMid: 1.05, multHigh: 1.00 },
   comp:   { lo: 0.8,  hi: 1.1,  multLow: 1.10, multMid: 1.00, multHigh: 0.90 },
   airdna: { lo: 0.50, hi: 0.75, multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
+  mkt:    { lo: 0.50, hi: 0.75, multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
 };
 const RMES_TH_KEY = 'rmes_thresholds_per_struct_v3';
 const RMES_CAP_KEY = 'rmes_total_cap_v1';  // Cap totale sulla somma Σ(deviazione × peso) - default 0.30 (=30%)
@@ -5030,9 +5051,10 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     return _suppData.highSeason.has(month) ? s.alta : s.bassa;
   }
   const W = getCurrentWeights();
-  const wSum = (W.occ + W.price + W.comp + W.pace + (W.budget||0) + W.airdna) || 1;
+  const wSum = (W.occ + W.price + W.comp + W.pace + (W.budget||0) + W.airdna + (W.mkt||0)) || 1;
   const wOcc = W.occ/wSum, wPrice = W.price/wSum, wPace = W.pace/wSum, wComp = W.comp/wSum, wAir = W.airdna/wSum;
-  const wA = wOcc, wB = wPrice, wC = wPace, wD = wComp, wE = wAir;
+  const wMkt = (W.mkt != null ? W.mkt : 0) / wSum;  // E · AirDNA Market — nuovo fattore
+  const wA = wOcc, wB = wPrice, wC = wPace, wD = wComp, wE = wAir, wF = wMkt;
   const wBudget = (W.budget != null ? W.budget : 0) / wSum;
   const _invByRT = (_inventoryByRT || {});
   const _rtList = Object.keys(_invByRT);
@@ -5141,32 +5163,33 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       _E_naReason = 'My Expedia price unavailable for the day';
     }
     let air_mult = 1, _F_naReason = null;
-    // D · Demand factor — prima sorgente: AirDNA Booked Listings (market booking density).
-    // Fallback: Expedia search statistics (deviazione vs mediana mensile).
-    // Quando MARKET_RATES (AirDNA CSV) ha dati per il giorno → usa quelli come segnale primario,
-    // perché riflettono direttamente la pressione di domanda del mercato AirDNA Florence.
-    let _searchCur = null;     // visibile fuori per debug paceInfo
+    // D · Demand factor (Expedia search) — segnale "domanda" basato su Expedia search current vs monthly median.
+    // RIMASTO INVARIATO dal sistema esistente. Il nuovo fattore E · AirDNA è SEPARATO (vedi sotto).
+    let _searchCur = null;
     let _searchStatsMo = null;
+    const _isoK_search = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
+    const _ymKey_search = `${r.y}-${pad2(r.mo)}`;
+    _searchCur = (typeof EXPEDIA_DATA !== 'undefined' && EXPEDIA_DATA && EXPEDIA_DATA.search_current)
+      ? EXPEDIA_DATA.search_current[_isoK_search] : null;
+    _searchStatsMo = (typeof expSearchStatsByMonth === 'function') ? expSearchStatsByMonth(_ymKey_search) : null;
+    if (_searchCur != null && _searchStatsMo && _searchStatsMo.p50 > 0){
+      const _searchDev = (_searchCur - _searchStatsMo.p50) / _searchStatsMo.p50;
+      air_mult = applyThresholds(1 + _searchDev, 'airdna');
+    } else {
+      _F_naReason = (_searchCur == null) ? 'Daily Expedia searches not available'
+                  : 'Monthly search median not computable';
+    }
+    // E · AirDNA Market factor — NUOVO fattore di domanda basato su AirDNA Booked Listings
+    // (densità di prenotazioni nel mercato Firenze). Indipendente da Expedia.
+    // Il valore mkt_mult è poi applicato nel composite con peso W.mkt.
+    let mkt_mult = 1, _mkt_naReason = null;
     const _airdnaSignal = (typeof _airdnaIdx !== 'undefined' && _airdnaIdx[r.ymd] != null)
       ? _airdnaIdx[r.ymd] : null;
     if (_airdnaSignal != null && _airdnaAvg > 0){
-      // Segnale = (utilizzo mercato / utilizzo medio del periodo) — 1 → deviazione
       const _airdnaDev = (_airdnaSignal - _airdnaAvg) / _airdnaAvg;
-      air_mult = applyThresholds(1 + _airdnaDev, 'airdna');
+      mkt_mult = applyThresholds(1 + _airdnaDev, 'airdna');
     } else {
-      // Fallback: Expedia search current vs monthly median
-      const _isoK_search = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
-      const _ymKey_search = `${r.y}-${pad2(r.mo)}`;
-      _searchCur = (typeof EXPEDIA_DATA !== 'undefined' && EXPEDIA_DATA && EXPEDIA_DATA.search_current)
-        ? EXPEDIA_DATA.search_current[_isoK_search] : null;
-      _searchStatsMo = (typeof expSearchStatsByMonth === 'function') ? expSearchStatsByMonth(_ymKey_search) : null;
-      if (_searchCur != null && _searchStatsMo && _searchStatsMo.p50 > 0){
-        const _searchDev = (_searchCur - _searchStatsMo.p50) / _searchStatsMo.p50;
-        air_mult = applyThresholds(1 + _searchDev, 'airdna');
-      } else {
-        _F_naReason = (_searchCur == null) ? 'AirDNA & Expedia daily searches both unavailable'
-                    : 'Monthly search median not computable';
-      }
+      _mkt_naReason = 'AirDNA market data not available for this day';
     }
     const A_mult = occ_mult, B_mult = price_mult, C_mult = comp_mult, D_mult = pace_mult, E_mult = air_mult;
     const F_mult = air_mult;  // alias per il nuovo schema ABCDEF
@@ -5177,14 +5200,16 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         pace:  (_C_naReason != null),
         comp:  (_E_naReason != null),
         air:   (_F_naReason != null),
+        mkt:   (_mkt_naReason != null),
       };
-      const wRaw = { occ: wOcc, price: wPrice, pace: wPace, budget: wBudget, comp: wComp, air: wAir };
+      const wRaw = { occ: wOcc, price: wPrice, pace: wPace, budget: wBudget, comp: wComp, air: wAir, mkt: wMkt };
       let activeSum = wBudget;  // budget è sempre "attivo" (no naReason)
       if (!naFlags.occ)   activeSum += wOcc;
       if (!naFlags.price) activeSum += wPrice;
       if (!naFlags.pace)  activeSum += wPace;
       if (!naFlags.comp)  activeSum += wComp;
       if (!naFlags.air)   activeSum += wAir;
+      if (!naFlags.mkt)   activeSum += wMkt;
       if (activeSum <= 0.001) return wRaw;
       return {
         occ:    naFlags.occ   ? 0 : wOcc   / activeSum,
@@ -5193,10 +5218,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         budget: wBudget / activeSum,
         comp:   naFlags.comp  ? 0 : wComp  / activeSum,
         air:    naFlags.air   ? 0 : wAir   / activeSum,
+        mkt:    naFlags.mkt   ? 0 : wMkt   / activeSum,
       };
     }
     const _wNorm = _normalizeWeights();
-    const _multFinaleRaw = _wNorm.occ*occ_mult + _wNorm.price*price_mult + _wNorm.pace*pace_mult + _wNorm.budget*budget_mult + _wNorm.comp*comp_mult + _wNorm.air*air_mult;
+    const _multFinaleRaw = _wNorm.occ*occ_mult + _wNorm.price*price_mult + _wNorm.pace*pace_mult + _wNorm.budget*budget_mult + _wNorm.comp*comp_mult + _wNorm.air*air_mult + (_wNorm.mkt||0)*mkt_mult;
     const _capStruct = (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.25;
     const _cappedStruct = applyTotalCap(_multFinaleRaw - 1, _capStruct);
     const multFinale = _cappedStruct.mult;
@@ -5205,7 +5231,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const price_rt = price_mult;   // ADR struttura del giorno
       const pace_rt = pace_mult;     // Pace mese di stay (struttura)
       const budget_rt = budget_mult; // Budget struttura
-      const _mfin_rt_raw = _wNorm.occ*occ_rt + _wNorm.price*price_rt + _wNorm.pace*pace_rt + _wNorm.budget*budget_rt + _wNorm.comp*comp_mult + _wNorm.air*air_mult;
+      const _mfin_rt_raw = _wNorm.occ*occ_rt + _wNorm.price*price_rt + _wNorm.pace*pace_rt + _wNorm.budget*budget_rt + _wNorm.comp*comp_mult + _wNorm.air*air_mult + (_wNorm.mkt||0)*mkt_mult;
       const _capRT = applyTotalCap(_mfin_rt_raw - 1, _capStruct);
       const mfin_rt = _capRT.mult;
       _mults_byRT[rt] = {
@@ -9566,6 +9592,16 @@ function fp_renderFoundationConfigBox(structKey){
       const offset = parseFloat(inp.value);
       if (isFinite(offset)) fp_setCompsetOffset(structKey, cn, offset);
     });
+    // BUG FIX: forza push immediato a Firebase (default è debounced 800ms).
+    // Senza questo, se l'utente naviga via prima di 800ms, il cambio non arriva al cloud
+    // e al prossimo refresh viene sovrascritto dal valore vecchio.
+    try {
+      if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.forcePushToCloud){
+        RMES_CLOUD.forcePushToCloud().then(function(res){
+          if (!res.ok) console.warn('[Apply] cloud push failed:', res.error);
+        });
+      }
+    } catch(e){ console.warn('[Apply] cloud push exception', e); }
     const btn = document.getElementById('fp-recompute');
     btn.disabled = true;
     btn.textContent = '⏳ Calcolo in corso...';
@@ -9943,11 +9979,24 @@ function renderSellStrategy(sel){
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;
   if (typeof computeRMESPriceMap === 'function' && sel !== 'both'){
-    // Usa SEMPRE (todayN, SELL_RANGE_DAYS): stessa chiave cache di _rmesCollectRows e modal
+    // Usa SEMPRE (todayN, range): stessa chiave cache di _rmesCollectRows e modal
     // → la mappa è UNA SOLA per turno di render → numeri coincidenti ovunque.
     const _td = new Date(TODAY); _td.setHours(0,0,0,0);
     const _tdN = _td.getFullYear()*10000 + (_td.getMonth()+1)*100 + _td.getDate();
-    try { _rmesMapForAlignment = computeRMESPriceMap(sel, _tdN, SELL_RANGE_DAYS); }
+    // BUG FIX: il range deve coprire fino all'ultimo giorno mostrato in tabella,
+    // non solo SELL_RANGE_DAYS giorni da oggi. Esempio: se l'utente scegli date picker
+    // 01/07/2026 + 60d, la tabella va dal 01/07 al 29/08 ma TODAY è 12/06 → servono
+    // 79 giorni di mappa, non 60.
+    let _rangeForAlign = SELL_RANGE_DAYS;
+    if (A.rows && A.rows.length > 0){
+      const _lastRow = A.rows[A.rows.length - 1];
+      const _lastYmd = _lastRow.ymd;
+      const _ly = Math.floor(_lastYmd/10000), _lm = Math.floor((_lastYmd%10000)/100), _ld = _lastYmd%100;
+      const _lastDate = new Date(_ly, _lm-1, _ld);
+      const _daysFromToday = Math.ceil((_lastDate.getTime() - _td.getTime()) / 86400000) + 1;
+      if (_daysFromToday > _rangeForAlign) _rangeForAlign = _daysFromToday;
+    }
+    try { _rmesMapForAlignment = computeRMESPriceMap(sel, _tdN, _rangeForAlign); }
     catch(e){ _rmesMapForAlignment = null; }
   }
   for (let i=0; i<A.rows.length; i++){
