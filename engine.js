@@ -10047,7 +10047,7 @@ function renderSellStrategy(sel){
           tip = `Active price: €${Math.round(activePrice)}\nSource: Base Price (accepted by default — RMES never explicitly accepted for this day)`;
           txtColor = 'color:#6a6a6a;font-weight:500';  // grigio esplicito
         }
-        return `<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center;${txtColor}" title="${escapeHtml(tip)}">${icon ? icon+' ' : ''}${Math.round(activePrice)}</td>`;
+        return `<td class="cell-mono cell-flat sell-lu-cell" data-lu-struct="${sel}" data-lu-rt="${escapeHtml(baseRTKey)}" data-lu-ymd="${r.ymd}" data-lu-iso="${_isoOvr}" data-lu-current="${Math.round(activePrice)}" style="background:rgba(195,131,59,.03);text-align:center;cursor:pointer;${txtColor}" title="${escapeHtml(tip)}\n\n📝 Click to edit (manual override) — Shift+click to start range selection">${icon ? icon+' ' : ''}${Math.round(activePrice)}</td>`;
       })()}
       <!-- RMES today (today's suggested price + variation + ✓ accept, clickable for detail) -->
       ${(function(){
@@ -10253,6 +10253,20 @@ function renderSellStrategy(sel){
       const ymdStr = String(ymdN);
       const dateLbl = ymdStr.slice(6,8) + '/' + ymdStr.slice(4,6) + '/' + ymdStr.slice(0,4);
       if (!confirm('Accept RMES suggestion of €' + newPrice + ' for ' + dateLbl + '?')) return;
+      // BUG FIX: se per quel giorno esiste un manual override modale (fp_setOverride),
+      // questo ha priorità sull'accepted in newrmesGetCurrentReference → il LAST UPDATE
+      // non si aggiornerebbe. Cancello l'override per rendere l'accept effettivo.
+      try {
+        if (typeof fp_setOverride === 'function' && typeof fp_ymdNumToDate === 'function' && typeof fp_isoDate === 'function'){
+          const baseRT = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
+          const d = fp_ymdNumToDate(ymdN);
+          if (baseRT && d){
+            const iso = fp_isoDate(d);
+            // Imposta override a null per quel giorno + baseRT (rimuove il 🖋)
+            fp_setOverride(sk, iso, baseRT, null);
+          }
+        }
+      } catch(e){ console.warn('clear override failed', e); }
       newrmesSetAccepted(sk, ymdN, newPrice);
       if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
     });
@@ -10262,6 +10276,87 @@ function renderSellStrategy(sel){
       try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
     }
   };
+  // === LAST UPDATE CELL: inline editor (click) + range selection (Shift+click) ===
+  // Click semplice → prompt per nuovo prezzo (override singolo giorno)
+  // Shift+click → marca cella come "start range", al prossimo Shift+click chiede il prezzo per il range
+  let _luRangeStart = null;  // {ymdN, isoFrom}
+  document.getElementById('sell-table-wrap').querySelectorAll('.sell-lu-cell').forEach(cell => {
+    cell.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const sk = cell.getAttribute('data-lu-struct');
+      const rt = cell.getAttribute('data-lu-rt');
+      const ymdN = +cell.getAttribute('data-lu-ymd');
+      const iso = cell.getAttribute('data-lu-iso');
+      const current = +cell.getAttribute('data-lu-current');
+      if (!sk || !rt || !ymdN || !iso) return;
+      const dateLbl = iso.split('-').reverse().join('/');
+      // SHIFT+CLICK → range selection
+      if (ev.shiftKey){
+        if (!_luRangeStart){
+          // Primo shift+click: marca inizio range
+          _luRangeStart = { ymdN, iso, cellEl: cell };
+          cell.style.outline = '2px solid #b86b1f';
+          cell.style.outlineOffset = '-2px';
+          cell.title = '📍 Range start: ' + dateLbl + '\nShift+click on the END date to set override for the range.\nClick anywhere else to cancel.';
+          return;
+        }
+        // Secondo shift+click: applica range
+        let ymdFrom = _luRangeStart.ymdN, ymdTo = ymdN;
+        let isoFrom = _luRangeStart.iso, isoTo = iso;
+        if (ymdFrom > ymdTo){
+          [ymdFrom, ymdTo] = [ymdTo, ymdFrom];
+          [isoFrom, isoTo] = [isoTo, isoFrom];
+        }
+        const startCell = _luRangeStart.cellEl;
+        _luRangeStart = null;
+        if (startCell) { startCell.style.outline = ''; startCell.style.outlineOffset = ''; }
+        const lblFrom = isoFrom.split('-').reverse().join('/');
+        const lblTo = isoTo.split('-').reverse().join('/');
+        const priceStr = prompt('Override RMES for range ' + lblFrom + ' → ' + lblTo + '\n\nEnter the new price (€). Leave empty to cancel.', '');
+        if (!priceStr) return;
+        const price = parseFloat(priceStr.replace(',', '.'));
+        if (!isFinite(price) || price <= 0){ alert('Invalid price.'); return; }
+        // Applica override per ogni giorno del range
+        try {
+          if (typeof fp_setOverride !== 'function' || typeof fp_ymdNumToDate !== 'function') {
+            alert('Override function not available.'); return;
+          }
+          const dFrom = fp_ymdNumToDate(ymdFrom);
+          const dTo = fp_ymdNumToDate(ymdTo);
+          if (!dFrom || !dTo) { alert('Invalid date range.'); return; }
+          let count = 0;
+          for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
+            const isoD = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
+            fp_setOverride(sk, isoD, rt, price);
+            count++;
+          }
+          if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
+        } catch(e){
+          console.error('range override failed', e);
+          alert('Range override failed: ' + e.message);
+        }
+        return;
+      }
+      // CLICK SEMPLICE → editor singolo giorno
+      if (_luRangeStart){
+        // Cancello eventuale range start
+        if (_luRangeStart.cellEl) { _luRangeStart.cellEl.style.outline = ''; _luRangeStart.cellEl.style.outlineOffset = ''; }
+        _luRangeStart = null;
+      }
+      const priceStr = prompt('Manual override for ' + dateLbl + '\n\nCurrent active price: €' + current + '\nEnter new price (€). Empty to clear the override.', String(current));
+      if (priceStr === null) return;  // utente cancel
+      if (priceStr === ''){
+        // Clear override
+        if (typeof fp_setOverride === 'function') fp_setOverride(sk, iso, rt, null);
+        if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
+        return;
+      }
+      const price = parseFloat(priceStr.replace(',', '.'));
+      if (!isFinite(price) || price <= 0){ alert('Invalid price.'); return; }
+      if (typeof fp_setOverride === 'function') fp_setOverride(sk, iso, rt, price);
+      if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
+    });
+  });
   document.getElementById('sell-table-wrap').querySelectorAll('.fp-inline-override').forEach(btn => {
     btn.addEventListener('click', (ev) => {
       ev.stopPropagation();
