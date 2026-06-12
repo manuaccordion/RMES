@@ -6373,6 +6373,187 @@ function _checksFormatStay(iso){
 }
 
 /* =====================================================================
+   EXPEDIA PRICE HISTORY & ALERTS — local snapshot + delta detection.
+   Saves a compact snapshot of every (struct × player × ymd → price) tuple
+   on each boot. Keeps last 7 snapshots in FIFO. When current data differs
+   from the previous snapshot by ±30% on any single key, raises an alert.
+   Storage (LOCAL only, not synced):
+   - expedia_snapshots_v1: array of {ts, data:{key→price}}
+   - expedia_alerts_v1: array of last computed alerts
+   - expedia_alerts_seen_v1: timestamp of last user view (for badge)
+   ===================================================================== */
+const EXP_HIST_KEY = 'expedia_snapshots_v1';
+const EXP_ALERTS_KEY = 'expedia_alerts_v1';
+const EXP_ALERTS_SEEN_KEY = 'expedia_alerts_seen_v1';
+const EXP_HIST_MAX = 5;
+const EXP_ALERT_THRESHOLD = 0.30;  // 30%
+const EXP_MIN_PRICE = 50;          // ignora prezzi sotto 50€ (errori/MLOS leak)
+
+function _expBuildSnapshot(){
+  // Compact map: key = "struct|player|ymd" → price (number)
+  // Filtra date < (oggi-7gg) per limitare la dimensione del localStorage.
+  if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return {};
+  const today = new Date(); today.setHours(0,0,0,0);
+  today.setDate(today.getDate() - 7);
+  const minYmd = today.toISOString().slice(0,10);
+  const snap = {};
+  const structs = ['firenze','condotta','alfani','davids'];
+  const myField = { firenze:'firenze', condotta:'condotta', alfani:'alfani', davids:'davids' };
+  const compField = {
+    firenze:  'competitors_firenze',
+    condotta: 'competitors',
+    alfani:   'competitors_alfani',
+    davids:   'competitors_davids',
+  };
+  for (const sk of structs){
+    const myMap = EXPEDIA_DATA[myField[sk]];
+    if (myMap && typeof myMap === 'object'){
+      for (const ymd in myMap){
+        if (ymd < minYmd) continue;
+        const p = myMap[ymd];
+        if (p != null && isFinite(p) && p >= EXP_MIN_PRICE){
+          snap[sk + '|@my|' + ymd] = Math.round(p);
+        }
+      }
+    }
+    const compMap = EXPEDIA_DATA[compField[sk]];
+    if (compMap && typeof compMap === 'object'){
+      for (const compName in compMap){
+        const m = compMap[compName];
+        if (!m || typeof m !== 'object') continue;
+        for (const ymd in m){
+          if (ymd < minYmd) continue;
+          const p = m[ymd];
+          if (p != null && isFinite(p) && p >= EXP_MIN_PRICE){
+            snap[sk + '|' + compName + '|' + ymd] = Math.round(p);
+          }
+        }
+      }
+    }
+  }
+  return snap;
+}
+
+function _expSnapshotsLoad(){
+  try {
+    const s = localStorage.getItem(EXP_HIST_KEY);
+    if (!s) return [];
+    const arr = JSON.parse(s);
+    return Array.isArray(arr) ? arr : [];
+  } catch(e){ return []; }
+}
+
+function _expSnapshotsSave(arr){
+  try { localStorage.setItem(EXP_HIST_KEY, JSON.stringify(arr.slice(-EXP_HIST_MAX))); } catch(e){}
+}
+
+function _expBuildAlerts(prevSnap, newSnap){
+  // Per ogni chiave presente in entrambi, calcolo delta% e tengo se ≥ threshold
+  const alerts = [];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const todayYmd = today.toISOString().slice(0,10);
+  for (const key of Object.keys(newSnap)){
+    if (!(key in prevSnap)) continue;
+    const oldP = prevSnap[key];
+    const newP = newSnap[key];
+    if (!oldP || !newP || oldP < EXP_MIN_PRICE || newP < EXP_MIN_PRICE) continue;
+    const dev = (newP - oldP) / oldP;
+    if (Math.abs(dev) >= EXP_ALERT_THRESHOLD){
+      const parts = key.split('|');
+      if (parts.length !== 3) continue;
+      const [sk, player, ymd] = parts;
+      // Ignora date passate (alert relevant solo per futuro)
+      if (ymd < todayYmd) continue;
+      alerts.push({ sk, player, ymd, oldP, newP, dev });
+    }
+  }
+  // Sort by absolute deviation desc, then date asc
+  alerts.sort((a, b) => {
+    const da = Math.abs(b.dev) - Math.abs(a.dev);
+    if (da !== 0) return da;
+    return a.ymd.localeCompare(b.ymd);
+  });
+  return alerts;
+}
+
+function expedia_runAlertCheck(){
+  if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return [];
+  const newSnap = _expBuildSnapshot();
+  if (Object.keys(newSnap).length === 0) return [];
+  const snapshots = _expSnapshotsLoad();
+  let alerts = [];
+  if (snapshots.length > 0){
+    const lastSnap = snapshots[snapshots.length - 1].data || {};
+    alerts = _expBuildAlerts(lastSnap, newSnap);
+  }
+  // Salvo nuovo snapshot solo se cambiato dall'ultimo
+  const newSnapStr = JSON.stringify(newSnap);
+  const lastSnapStr = snapshots.length > 0 ? JSON.stringify(snapshots[snapshots.length-1].data) : null;
+  if (newSnapStr !== lastSnapStr){
+    snapshots.push({ ts: Date.now(), data: newSnap });
+    _expSnapshotsSave(snapshots);
+  }
+  // Save current alerts
+  try { localStorage.setItem(EXP_ALERTS_KEY, JSON.stringify(alerts)); } catch(e){}
+  return alerts;
+}
+
+function expedia_loadAlerts(){
+  try {
+    const s = localStorage.getItem(EXP_ALERTS_KEY);
+    return s ? JSON.parse(s) : [];
+  } catch(e){ return []; }
+}
+
+function expedia_hasUnseenAlerts(){
+  const alerts = expedia_loadAlerts();
+  if (!alerts.length) return false;
+  let seenTs = 0;
+  try { seenTs = parseInt(localStorage.getItem(EXP_ALERTS_SEEN_KEY) || '0'); } catch(e){}
+  // Confronto contro timestamp dell'ultimo snapshot
+  const snapshots = _expSnapshotsLoad();
+  const lastSnapTs = snapshots.length > 0 ? snapshots[snapshots.length-1].ts : 0;
+  return lastSnapTs > seenTs;
+}
+
+function expedia_markAlertsSeen(){
+  try { localStorage.setItem(EXP_ALERTS_SEEN_KEY, String(Date.now())); } catch(e){}
+}
+
+function expedia_formatAlertsHtml(alerts){
+  if (!alerts || alerts.length === 0){
+    return `<h4>Expedia price changes (vs previous load)</h4><p><span class="pill-sev success">OK</span>No significant variations ≥ ±${(EXP_ALERT_THRESHOLD*100).toFixed(0)}%.</p>`;
+  }
+  const propLabel = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
+  // Count up / down
+  let up = 0, down = 0;
+  for (const a of alerts){ if (a.dev > 0) up++; else down++; }
+  let h = `<h4>Expedia price changes (vs previous load)</h4>`;
+  h += `<p class="small">Found <b>${alerts.length}</b> variations ≥ ±${(EXP_ALERT_THRESHOLD*100).toFixed(0)}%: `;
+  if (up) h += `<span class="pill-sev info">${up} ↑</span>`;
+  if (down) h += `<span class="pill-sev warn">${down} ↓</span>`;
+  h += '</p>';
+  h += '<ul style="margin:0;padding-left:18px;font-size:12px">';
+  const maxShow = 15;
+  for (let i = 0; i < Math.min(maxShow, alerts.length); i++){
+    const a = alerts[i];
+    const playerLabel = (a.player === '@my') ? 'MY price' : a.player;
+    const isMy = (a.player === '@my');
+    const sev = a.dev > 0 ? 'info' : 'warn';
+    const arrow = a.dev > 0 ? '↑' : '↓';
+    const ymdDate = a.ymd.split('-');
+    const dateLabel = ymdDate.length === 3 ? `${ymdDate[2]}/${ymdDate[1]}/${ymdDate[0]}` : a.ymd;
+    h += `<li><span class="pill-sev ${sev}">${arrow} ${(a.dev*100 >= 0 ? '+' : '')}${(a.dev*100).toFixed(0)}%</span><code>${dateLabel}</code> · <b>${propLabel[a.sk] || a.sk}</b>${isMy ? ' (MY)' : ' · ' + playerLabel}<br><span class="small">€${a.oldP} → €${a.newP}</span></li>`;
+  }
+  h += '</ul>';
+  if (alerts.length > maxShow){
+    h += `<p class="small">…and ${alerts.length - maxShow} more.</p>`;
+  }
+  h += '<p class="small" style="margin-top:6px;font-style:italic">Snapshot compares the current load to the previous load — relevant after a data refresh.</p>';
+  return h;
+}
+
+/* =====================================================================
    ASSISTANT — Floating chat widget with rule-based intent parsing.
    Capabilities:
    - Stats: OCC, ADR, RN, Revenue for a property/month/year-to-date
@@ -6440,7 +6621,8 @@ function assistantParseQuery(q){
   const isYtd = /\b(ytd|year[- ]to[- ]date)\b/.test(lower);
   // Identify intent type
   let intent = 'unknown';
-  if (/\b(anomal|incongru|problem|issue|check|controll)/.test(lower)) intent = 'anomalies';
+  if (/\b(expedia.*(alert|change|variazion|cambi)|price.*(change|alert|variazion)|competitor.*(change|alert|variazion)|price.*shift|sbalz|salt)/.test(lower)) intent = 'expedia_alerts';
+  else if (/\b(anomal|incongru|problem|issue|check|controll)/.test(lower)) intent = 'anomalies';
   else if (/\b(adr|tariff|prezzo medio|average price|average rate|prezzi medi)/.test(lower)) intent = 'stat_adr';
   else if (/\b(occ|occupanc|occupazion|fill)/.test(lower)) intent = 'stat_occ';
   else if (/\b(rn|room.?night|notti vendute|nights sold|stay night)/.test(lower)) intent = 'stat_rn';
@@ -6758,7 +6940,22 @@ function assistantHandle(query){
       </ul>
       <p class="small">I work on local data only — your data stays in this browser.</p>`;
   }
-  if (parsed.intent === 'anomalies') return assistantHandleAnomalies(parsed);
+  if (parsed.intent === 'anomalies'){
+    // Marca alerts come viste
+    if (typeof expedia_markAlertsSeen === 'function') expedia_markAlertsSeen();
+    if (typeof _updateChatFabBadge === 'function') _updateChatFabBadge();
+    // Combino anomalie + Expedia alerts
+    const anomHtml = assistantHandleAnomalies(parsed);
+    const expAlerts = (typeof expedia_loadAlerts === 'function') ? expedia_loadAlerts() : [];
+    const expHtml = expedia_formatAlertsHtml(expAlerts);
+    return expHtml + '<div style="margin:14px 0;height:1px;background:var(--line)"></div>' + anomHtml;
+  }
+  if (parsed.intent === 'expedia_alerts'){
+    if (typeof expedia_markAlertsSeen === 'function') expedia_markAlertsSeen();
+    if (typeof _updateChatFabBadge === 'function') _updateChatFabBadge();
+    const expAlerts = (typeof expedia_loadAlerts === 'function') ? expedia_loadAlerts() : [];
+    return expedia_formatAlertsHtml(expAlerts);
+  }
   if (parsed.intent === 'stat_occ') return assistantHandleStats(parsed, 'stat_occ');
   if (parsed.intent === 'stat_adr') return assistantHandleStats(parsed, 'stat_adr');
   if (parsed.intent === 'stat_rn') return assistantHandleStats(parsed, 'stat_rn');
@@ -6820,12 +7017,11 @@ function assistantSubmit(query){
 // Suggested questions shown above the input
 const ASSISTANT_SUGGESTIONS = [
   'Any anomalies?',
+  'Expedia price changes',
   'ADR July Firenze',
   'OCC next month',
-  'Revenue August',
   'Strategy Condotta',
   'What is the floor rate?',
-  'How does Pace work?',
   'Help',
 ];
 
@@ -6876,10 +7072,19 @@ function assistantInit(){
   // Restore history on first init
   if (messagesEl && messagesEl.children.length === 0){
     const hist = assistantLoadHistory();
+    // Verifica se ci sono Expedia alerts (le anticipo nel welcome)
+    let alertsBadge = '';
+    try {
+      const expAlerts = (typeof expedia_loadAlerts === 'function') ? expedia_loadAlerts() : [];
+      const hasUnseen = (typeof expedia_hasUnseenAlerts === 'function') ? expedia_hasUnseenAlerts() : false;
+      if (expAlerts.length > 0 && hasUnseen){
+        alertsBadge = `<div style="margin-top:8px;padding:8px 10px;background:#fdecec;border-left:3px solid #a83b3b;border-radius:3px;font-size:12px;color:#7a2c2c"><b>🚨 ${expAlerts.length} Expedia price changes ≥ ±30%</b> detected since last data refresh. Type <i>"any anomalies?"</i> to view them.</div>`;
+      }
+    } catch(e){}
     if (hist.length === 0){
       const welcome = document.createElement('div');
       welcome.style.cssText = 'align-self:flex-start;background:linear-gradient(135deg,#fff,#f5f9fc);color:var(--ink);padding:11px 14px;border-radius:12px;border-bottom-left-radius:4px;max-width:90%;font-size:13px;line-height:1.5;border:1px solid #bcdfe8';
-      welcome.innerHTML = `<div style="font-weight:700;color:#2a4d70;margin-bottom:5px">👋 Welcome</div><p style="margin:0">I'm your local data assistant. Ask about <b>OCC/ADR/RN</b>, run an <b>anomaly check</b>, look up the <b>Playbook</b>, or get <b>strategy advice</b>. Try a suggestion below or type your question.</p>`;
+      welcome.innerHTML = `<div style="font-weight:700;color:#2a4d70;margin-bottom:5px">👋 Welcome</div><p style="margin:0">I'm your local data assistant. Ask about <b>OCC/ADR/RN</b>, run an <b>anomaly check</b>, look up the <b>Playbook</b>, or get <b>strategy advice</b>. Try a suggestion below or type your question.</p>${alertsBadge}`;
       messagesEl.appendChild(welcome);
     } else {
       for (const m of hist){
@@ -6892,6 +7097,13 @@ function assistantInit(){
           div.innerHTML = m.html || '';
         }
         messagesEl.appendChild(div);
+      }
+      // Append alerts badge if any
+      if (alertsBadge){
+        const alertDiv = document.createElement('div');
+        alertDiv.style.cssText = 'align-self:stretch;margin:4px 0';
+        alertDiv.innerHTML = alertsBadge;
+        messagesEl.appendChild(alertDiv);
       }
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -6920,7 +7132,21 @@ function assistantInit(){
 }
 
 // Alias for existing _boot() call
-function initChat(){ assistantInit(); }
+function initChat(){
+  // Esegui controllo Expedia alerts (confronta data attuale con ultimo snapshot)
+  try { if (typeof expedia_runAlertCheck === 'function') expedia_runAlertCheck(); } catch(e){ console.error('expedia_runAlertCheck', e); }
+  assistantInit();
+  _updateChatFabBadge();
+}
+
+function _updateChatFabBadge(){
+  const fab = document.getElementById('chat-fab');
+  if (!fab) return;
+  let hasAlerts = false;
+  try { hasAlerts = (typeof expedia_hasUnseenAlerts === 'function') ? expedia_hasUnseenAlerts() : false; } catch(e){}
+  if (hasAlerts) fab.classList.add('has-alerts');
+  else fab.classList.remove('has-alerts');
+}
 
 function renderCheckUpdates(){
   const body = document.getElementById('checks-body');

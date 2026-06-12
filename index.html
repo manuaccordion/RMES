@@ -1113,6 +1113,14 @@ table.sell-table thead th:first-child{
   transition:transform .2s;
 }
 .chat-fab:hover{transform:translateY(-2px) scale(1.04)}
+.chat-fab.has-alerts::after{
+  content:''; position:absolute; top:5px; right:5px;
+  width:14px; height:14px; border-radius:50%;
+  background:#a83b3b; border:2px solid #fff;
+  box-shadow:0 0 0 1px #a83b3b;
+  animation:fabPulse 1.6s infinite;
+}
+@keyframes fabPulse{ 0%,100%{opacity:1} 50%{opacity:.55} }
 .chat-panel{
   position:fixed;right:22px;bottom:88px;z-index:150;
   width:380px;max-width:calc(100vw - 32px);
