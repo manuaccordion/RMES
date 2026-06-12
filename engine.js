@@ -5179,15 +5179,24 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       _F_naReason = (_searchCur == null) ? 'Daily Expedia searches not available'
                   : 'Monthly search median not computable';
     }
-    // E · AirDNA Market factor — NUOVO fattore di domanda basato su AirDNA Booked Listings
-    // (densità di prenotazioni nel mercato Firenze). Indipendente da Expedia.
-    // Il valore mkt_mult è poi applicato nel composite con peso W.mkt.
+    // E · AirDNA Market factor — confronta densità di prenotazioni del mercato
+    // Firenze (AirDNA: booked / total listings) con la NOSTRA OCC OTB sulla stessa data.
+    // Logica: se il mercato è più pieno di me, ho margine per alzare; se sono più
+    // pieno del mercato sono già forte e non spingo oltre. Indipendente da Expedia.
+    // Deadband ±5% per evitare reazioni a rumore. Pendenza 0.80 (più conservativa
+    // della pura proporzionalità per ridurre la frequenza di cap a ±50%).
     let mkt_mult = 1, _mkt_naReason = null;
     const _airdnaSignal = (typeof _airdnaIdx !== 'undefined' && _airdnaIdx[r.ymd] != null)
       ? _airdnaIdx[r.ymd] : null;
-    if (_airdnaSignal != null && _airdnaAvg > 0){
-      const _airdnaDev = (_airdnaSignal - _airdnaAvg) / _airdnaAvg;
-      mkt_mult = applyThresholds(1 + _airdnaDev, 'airdna');
+    if (_airdnaSignal != null){
+      const _myOcc = (r.curOcc != null && isFinite(r.curOcc)) ? r.curOcc : 0;
+      const _occGap = _airdnaSignal - _myOcc;  // positivo = mercato più pieno di me
+      let _rawDev = 0;
+      if (Math.abs(_occGap) >= 0.05){
+        // Deadband 5%: variazioni piccole = rumore, le ignoro
+        _rawDev = _occGap * 0.80;  // pendenza più gentile della pura proporzionalità
+      }
+      mkt_mult = applyThresholds(1 + _rawDev, 'airdna');
     } else {
       _mkt_naReason = 'AirDNA market data not available for this day';
     }
@@ -9343,7 +9352,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'W4 booking pace (last 7 days) for the stay month vs same 7 days last year. Fallbacks: aggregate cross-property → annual property → neutralized.'},
         {key:'comp_mult',  naKey:'comp',  code:'C', name:'Online Pricing',   color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)'},
         {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'},
-        {key:'mkt_mult',   naKey:'mkt',   code:'E', name:'AirDNA Market',    color:'#c4823b', desc:'AirDNA Booked Listings for Florence vs market average (booking density)'}
+        {key:'mkt_mult',   naKey:'mkt',   code:'E', name:'AirDNA Market',    color:'#c4823b', desc:'AirDNA Booked Listings vs MY OCC on the same day. Headroom signal: market more booked than me = raise; my OCC ahead of market = no push.'}
       ];
       const naReasons = mults._naReasons || {};
       const dbg = mults._debug || {};
@@ -9432,21 +9441,25 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           }
           h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-thresholds + clamp ±50%): '+_fpct((mults.air_mult-1),1)+'</div>';
         } else if (code === 'E'){
-          // E · AirDNA Market — market booking density from AirDNA Booked Listings
+          // E · AirDNA Market — market booking density vs my OCC
           const airdnaListings = (dbg && dbg.airdnaListings != null) ? dbg.airdnaListings : null;
-          const airdnaAvg = (dbg && dbg.airdnaAvg != null) ? dbg.airdnaAvg : null;
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>(market_idx − avg_idx) / avg_idx</code> where market_idx = booked_listings ÷ total_market (2,948 listings). Independent from Expedia: D = search intent, E = actual market bookings (AirDNA rate-future, 180 days forward).</div>';
+          const myOcc = (dbg && dbg.occCur != null) ? dbg.occCur : null;
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>raw_dev = (market_idx − my_OCC) × 0.80</code> with a ±5% deadband. Positive when the market is more booked than us (we have headroom to raise); negative when we are more booked than the market (no extra push needed). Capped ±50%.</div>';
           if (airdnaListings != null){
-            h += '<div>Market idx today: <b>'+(airdnaListings*100).toFixed(1)+'%</b> (booked / total)</div>';
+            h += '<div>Market booked: <b>'+(airdnaListings*100).toFixed(1)+'%</b> (AirDNA, ' + Math.round(airdnaListings*2948) + ' / 2,948 listings)</div>';
           } else {
-            h += '<div>Market idx today: <b>—</b> (no AirDNA data for this day)</div>';
+            h += '<div>Market booked: <b>—</b> (no AirDNA data for this day)</div>';
           }
-          if (airdnaAvg != null && airdnaAvg > 0){
-            h += '<div>180-day avg idx: <b>'+(airdnaAvg*100).toFixed(1)+'%</b></div>';
-            if (airdnaListings != null){
-              const dev = (airdnaListings - airdnaAvg) / airdnaAvg;
-              h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Raw dev: <b>'+_fpct(dev,1)+'</b></div>';
-            }
+          if (myOcc != null){
+            h += '<div>My OCC (OTB): <b>'+(myOcc*100).toFixed(1)+'%</b></div>';
+          }
+          if (airdnaListings != null && myOcc != null){
+            const gap = airdnaListings - myOcc;
+            const gapAbs = Math.abs(gap);
+            const within = gapAbs < 0.05;
+            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Gap (market − me): <b>'+(gap>=0?'+':'')+(gap*100).toFixed(1)+'%</b>'+(within?' <span style="color:#888;font-size:10.5px;font-style:italic">(inside ±5% deadband → neutralized)</span>':'')+'</div>';
+            const rawDev = within ? 0 : gap * 0.80;
+            h += '<div>Raw dev (gap × 0.80): <b>'+_fpct(rawDev,1)+'</b></div>';
           }
           h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-thresholds + clamp ±50%): '+_fpct((mults.mkt_mult-1),1)+'</div>';
         }

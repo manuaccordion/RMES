@@ -2395,10 +2395,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#fdf3e3;border-radius:6px;font-size:13px;line-height:1.65">
-          <p style="margin:0 0 6px 0;font-weight:700;color:#c4823b">E · AirDNA Market <span style="color:#888;font-weight:400">— "how booked is the Florence rental market right now?"</span></p>
-          <p style="margin:0 0 6px 0"><b>What it measures.</b> AirDNA Booked Listings index for Florence (the number of short-term rental listings already booked for the target date) compared to the <b>average</b> over the next 180 days. Independent from Expedia: D looks at search intent, E looks at <b>actual market bookings</b>.</p>
-          <p style="margin:0 0 6px 0">Formula: <code>market_idx = listings_booked_for_day / total_market_listings (= 2948)</code>; <code>raw_dev = (market_idx − period_avg_idx) / period_avg_idx</code>. Then user thresholds may apply. Clamped at ±50%.</p>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Florence market, 20/07/2026.</b> AirDNA Booked Listings: 2,250 out of 2,948 (= idx 0.76). Average market idx over 180 days: 0.55. Raw dev: (0.76 − 0.55) / 0.55 = +38% (very high demand). Applied to composite: 0.20 × +38% = +7.6 percentage points. <i>Note:</i> AirDNA data is loaded from the rate-future CSV (180 days forward). For dates beyond the AirDNA horizon, the factor goes n/a and weight is redistributed.</p>
+          <p style="margin:0 0 6px 0;font-weight:700;color:#c4823b">E · AirDNA Market <span style="color:#888;font-weight:400">— "is the Florence market more or less booked than us right now?"</span></p>
+          <p style="margin:0 0 6px 0"><b>What it measures.</b> AirDNA Booked Listings index for Florence (booked listings ÷ total market = 2,948) compared <b>directly to MY current OCC for the same day</b>. It is a <i>headroom</i> signal: if the market is fuller than us, the market is running ahead — we have margin to raise. If we are fuller than the market, we're already strong — no extra push needed. Independent from Expedia (D = search intent; E = actual market bookings).</p>
+          <p style="margin:0 0 6px 0">Formula: <code>gap = market_idx − my_OCC</code>; then <code>raw_dev = gap × 0.80</code> if <code>|gap| ≥ 5%</code>, otherwise 0 (deadband). Clamped at ±50%.</p>
+          <p style="margin:0 0 6px 0"><b>Deadband &amp; gentle slope.</b> The 5% deadband filters noise around equilibrium (so small differences don't trigger movement). The 0.80 slope (vs pure proportionality 1.00) makes the signal less aggressive — sustained gaps still drive material moves, but everyday fluctuations stay near zero.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Examples — Florence market, 20/07/2026.</b><br>
+            <b>(a) Headroom.</b> Market 70% booked, my OCC 40% → gap +30% → raw dev +24% → composite contribution at 20% weight: +4.8 pp. The market is running ahead of us, room to raise.<br>
+            <b>(b) Already strong.</b> Market 50% booked, my OCC 80% → gap −30% → raw dev −24% → contribution −4.8 pp. We're fuller than the market, no extra push.<br>
+            <b>(c) Neutral.</b> Market 55% booked, my OCC 58% → gap −3% → inside ±5% deadband → raw dev 0. No movement on this factor.<br>
+            <b>(d) Floor case.</b> Market 30%, my OCC 25% → gap +5% (exactly on the deadband edge) → raw dev +4% → tiny lift, +0.8 pp at 20% weight.</p>
         </div>
 
         <div style="margin:14px 0;padding:12px 14px;background:#fffdf7;border-left:3px solid #c4823b;font-size:13px;line-height:1.65">
