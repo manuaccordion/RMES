@@ -786,22 +786,35 @@ function normCanale(raw){
   // Ctrip family
   if (u === 'CTRIP' || u === 'CTRIPV4' || u === 'TRIP.COM') return 'Ctrip';
   // DIRECT = booking acquired through the property PMS directly (no OTA fees).
-  // Both Beddy (Firenze/Condotta/Alfani PMS) and Krossbooking (Davids PMS) live here,
-  // plus PrenMan/FrontOffice/Booking Engine/website/walk-in — all "no OTA" cases.
+  // Includes:
+  //   - PMS native: Beddy (Firenze/Condotta/Alfani), Krossbooking (Enis Guesthouse)
+  //   - Internal/manual: PrenMan, FrontOffice, Booking Engine, Diretto, Direct, Walk-in
+  //   - Branded website channels: Sito web, Website, SimpleBooking, Google (Google Hotel Ads from own site)
+  //   - Manual bookings: Riprotezione (rebooking after issue), Telefonata (phone booking)
+  // All these = "no OTA" cases and should be aggregated for clean YoY comparison.
   if (u === 'BEDDY' || u === 'DIRETTO' || u === 'DIRECT' || u === 'PRENMAN' || u === 'FRONTOFFICE'
    || u === 'KROSSBOOKING' || u === 'BOOKING ENGINE' || u === 'SITO WEB' || u === 'WEBSITE'
-   || u === 'WALK-IN' || u === 'WALK IN' || u === 'WALKIN') return 'Direct';
-  if (u === 'SIMPLEBOOKING') return 'SimpleBooking';
+   || u === 'WALK-IN' || u === 'WALK IN' || u === 'WALKIN'
+   || u === 'SIMPLEBOOKING' || u === 'SIMPLE BOOKING'
+   || u === 'GOOGLE' || u === 'GOOGLEHPA-ORGANIC' || u === 'GOOGLE HOTEL ADS' || u === 'GHA'
+   || u === 'RIPROTEZIONE' || u === 'TELEFONATA' || u === 'PHONE') return 'Direct';
   if (u === 'AIRBNB') return 'Airbnb';
   if (u === 'VRBO') return 'VRBO';
   if (u === 'ITALCAMEL') return 'Italcamel';
-  if (u === 'GOOGLEHPA-ORGANIC' || u === 'GOOGLE') return 'Google';
   // Fallback: title-case
   return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
 }
 function normProv(p, canale){
   const t = (p||'').trim();
   if (t && t!=='Non Specificato' && t!=='Non specificato'){
+    // Normalize 2025/2026 naming variants for clean YoY comparison
+    const u = t.toLowerCase();
+    // OTA family: 2025 had "Ota", 2026 has "OTA"
+    if (u === 'ota') return 'OTA';
+    // Sito web family: 2025 had "Website" + "Mobile", 2026 has "Sito web".
+    // Riprotezione + Telefonata are manual direct bookings → same group as Sito web.
+    if (u === 'website' || u === 'mobile' || u === 'sito web' || u === 'sitoweb'
+     || u === 'riprotezione' || u === 'telefonata') return 'Sito web';
     return t;
   }
   const c = (canale||'').trim().toLowerCase();
@@ -1124,6 +1137,58 @@ function fp_postLoadHook(){
     }
   } catch(e){ console.error('[NewRMES] wipe v3 failed', e); }
 
+  // --- ONE-SHOT WIPE v4: clear entries without author (Manu, 12/06/2026) ---
+  // Reason: profile system introduced — pre-profile entries appear as "unknown" in
+  // the Check Updates tab. Cleared so the audit log starts clean with Emanuele/Enis.
+  try {
+    const WIPE4_FLAG = 'rmes_clear_unknown_authors_v4_2026_06_12';
+    if (!localStorage.getItem(WIPE4_FLAG)){
+      console.log('[NewRMES] Wipe v4: clearing accept/override entries without author…');
+      let removed = 0;
+      // Clear accepted entries with no author
+      try {
+        const acc = _newrmesLoadObj('rmes_accepted_v1');
+        for (const sk in acc){
+          if (!acc[sk] || typeof acc[sk] !== 'object') continue;
+          for (const ymdK in acc[sk]){
+            const v = acc[sk][ymdK];
+            const author = (typeof v === 'object' && v && v.author) ? v.author : null;
+            if (!author){
+              delete acc[sk][ymdK];
+              removed++;
+            }
+          }
+          if (Object.keys(acc[sk]).length === 0) delete acc[sk];
+        }
+        _newrmesSaveObj('rmes_accepted_v1', acc);
+      } catch(e){ console.warn('wipe4 accepted failed', e); }
+      // Clear overrides with no author
+      try {
+        const ovr = JSON.parse(localStorage.getItem('rmes_base_rate_overrides_v1') || '{}');
+        for (const sk in ovr){
+          if (!ovr[sk] || typeof ovr[sk] !== 'object') continue;
+          for (const iso in ovr[sk]){
+            const rts = ovr[sk][iso];
+            if (!rts || typeof rts !== 'object') continue;
+            for (const rt in rts){
+              const v = rts[rt];
+              const author = (typeof v === 'object' && v && v.author) ? v.author : null;
+              if (!author){
+                delete rts[rt];
+                removed++;
+              }
+            }
+            if (Object.keys(rts).length === 0) delete ovr[sk][iso];
+          }
+          if (Object.keys(ovr[sk]).length === 0) delete ovr[sk];
+        }
+        localStorage.setItem('rmes_base_rate_overrides_v1', JSON.stringify(ovr));
+      } catch(e){ console.warn('wipe4 overrides failed', e); }
+      try { localStorage.setItem(WIPE4_FLAG, '1'); } catch(e){}
+      console.log('[NewRMES] Wipe v4 complete. Removed ' + removed + ' unknown-author entries.');
+    }
+  } catch(e){ console.error('[NewRMES] wipe v4 failed', e); }
+
 
   try {
     if (typeof _invalidatePaceAggCache === 'function') _invalidatePaceAggCache();
@@ -1146,18 +1211,13 @@ function fp_postLoadHook(){
       // === USER PROFILE ===
       // Se il profilo non è settato, chiede all'utente al primo render.
       try { ensureUserProfile(); } catch(e){}
-      // Wire-up del chip "You: ..." cliccabile per cambiare profilo
+      // Wire-up chip "You: ..." — NON cliccabile per evitare cambi accidentali.
+      // Per resettare manualmente: console → localStorage.removeItem('_user_profile_v1') + reload.
       try {
         const chipUser = document.getElementById('chip-user');
-        if (chipUser && !chipUser._wired){
-          chipUser._wired = true;
-          chipUser.addEventListener('click', function(){
-            const cur = getUserProfile() || '?';
-            const choice = prompt('Switch user profile (current: '+cur+').\nType:\n  1 — Emanuele\n  2 — Enis', cur === 'Emanuele' ? '1' : '2');
-            if (choice === '1') { setUserProfile('Emanuele'); }
-            else if (choice === '2') { setUserProfile('Enis'); }
-            if (typeof renderAll === 'function') { try { renderAll(); } catch(e){} }
-          });
+        if (chipUser){
+          chipUser.style.cursor = 'default';
+          chipUser.title = 'Your user profile (locked for safety). To change, contact admin.';
         }
       } catch(e){}
     }
