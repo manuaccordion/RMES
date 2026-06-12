@@ -286,21 +286,22 @@ const RMES_CLOUD = (function(){
             return { ok: false, error: 'Cloud document does not exist.' };
           }
           const payload = snap.data();
-          if (!payload || !payload.state){
+          if (!payload || typeof payload !== 'object'){
             return { ok: false, error: 'Cloud document is empty or malformed.' };
           }
           applyingRemote = true;
+          let appliedCount = 0;
           try {
             for (const k of SYNC_KEYS){
-              if (payload.state[k] !== undefined){
-                try { localStorage.setItem(k, payload.state[k]); } catch(e){}
+              if (payload[k] !== undefined && payload[k] !== null){
+                try { localStorage.setItem(k, payload[k]); appliedCount++; } catch(e){}
               }
             }
           } finally { applyingRemote = false; }
           lastRemoteJSON = JSON.stringify(payload);
           _logSync('pull');
           _setStatus('synced');
-          return { ok: true };
+          return { ok: true, appliedCount };
         }
 
         // Try server-only first (forces fresh fetch, bypasses Firestore cache)
@@ -344,7 +345,8 @@ const RMES_CLOUD = (function(){
         }
         const db = window.firebase.firestore();
         const ref = db.collection('rmes_shared').doc('state');
-        const payload = { state: _collectLocal(), _updatedAt: Date.now() };
+        const payload = _collectLocal();
+        payload._updatedAt = Date.now();
         ref.set(payload).then(function(){
           lastRemoteJSON = JSON.stringify(payload);
           _logSync('push');
@@ -10047,7 +10049,7 @@ function renderSellStrategy(sel){
           tip = `Active price: €${Math.round(activePrice)}\nSource: Base Price (accepted by default — RMES never explicitly accepted for this day)`;
           txtColor = 'color:#6a6a6a;font-weight:500';  // grigio esplicito
         }
-        return `<td class="cell-mono cell-flat sell-lu-cell" data-lu-struct="${sel}" data-lu-rt="${escapeHtml(baseRTKey)}" data-lu-ymd="${r.ymd}" data-lu-iso="${_isoOvr}" data-lu-current="${Math.round(activePrice)}" style="background:rgba(195,131,59,.03);text-align:center;cursor:pointer;${txtColor}" title="${escapeHtml(tip)}\n\n📝 Click to edit (manual override) — Shift+click to start range selection">${icon ? icon+' ' : ''}${Math.round(activePrice)}</td>`;
+        return `<td class="cell-mono cell-flat sell-lu-cell" data-lu-struct="${sel}" data-lu-rt="${escapeHtml(baseRTKey)}" data-lu-ymd="${r.ymd}" data-lu-iso="${_isoOvr}" data-lu-current="${Math.round(activePrice)}" style="background:rgba(195,131,59,.03);text-align:center;cursor:pointer;${txtColor}" title="${escapeHtml(tip)}\n\n📝 Click to edit (manual override) — Right-click (or Shift+click) to start range selection">${icon ? icon+' ' : ''}${Math.round(activePrice)}</td>`;
       })()}
       <!-- RMES today (today's suggested price + variation + ✓ accept, clickable for detail) -->
       ${(function(){
@@ -10276,13 +10278,75 @@ function renderSellStrategy(sel){
       try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
     }
   };
-  // === LAST UPDATE CELL: inline editor (click) + range selection (Shift+click) ===
+  // === LAST UPDATE CELL: inline editor (click) + range selection (Shift+click OR right-click) ===
   // Click semplice → prompt per nuovo prezzo (override singolo giorno)
-  // Shift+click → marca cella come "start range", al prossimo Shift+click chiede il prezzo per il range
-  let _luRangeStart = null;  // {ymdN, isoFrom}
+  // Shift+click OPPURE right-click → marca cella come "start range"; al prossimo Shift/right-click chiede il prezzo per il range
+  let _luRangeStart = null;  // {ymdN, isoFrom, cellEl}
+
+  // Helper: gestisce un "range click" (chiamato sia da shift+click che da right-click)
+  function _handleLuRangeClick(cell){
+    const sk = cell.getAttribute('data-lu-struct');
+    const rt = cell.getAttribute('data-lu-rt');
+    const ymdN = +cell.getAttribute('data-lu-ymd');
+    const iso = cell.getAttribute('data-lu-iso');
+    if (!sk || !rt || !ymdN || !iso) return;
+    const dateLbl = iso.split('-').reverse().join('/');
+    if (!_luRangeStart){
+      // Primo click: marca inizio range
+      _luRangeStart = { ymdN, iso, cellEl: cell };
+      cell.style.outline = '2px solid #b86b1f';
+      cell.style.outlineOffset = '-2px';
+      cell.title = '📍 Range start: ' + dateLbl + '\nClick again (Shift+click or right-click) on the END date to apply the override.\nClick anywhere else to cancel.';
+      return;
+    }
+    // Secondo click: applica range
+    let ymdFrom = _luRangeStart.ymdN, ymdTo = ymdN;
+    let isoFrom = _luRangeStart.iso, isoTo = iso;
+    if (ymdFrom > ymdTo){
+      [ymdFrom, ymdTo] = [ymdTo, ymdFrom];
+      [isoFrom, isoTo] = [isoTo, isoFrom];
+    }
+    const startCell = _luRangeStart.cellEl;
+    _luRangeStart = null;
+    if (startCell) { startCell.style.outline = ''; startCell.style.outlineOffset = ''; }
+    const lblFrom = isoFrom.split('-').reverse().join('/');
+    const lblTo = isoTo.split('-').reverse().join('/');
+    const priceStr = prompt('Override RMES for range ' + lblFrom + ' → ' + lblTo + '\n\nEnter the new price (€). Leave empty to cancel.', '');
+    if (!priceStr) return;
+    const price = parseFloat(priceStr.replace(',', '.'));
+    if (!isFinite(price) || price <= 0){ alert('Invalid price.'); return; }
+    try {
+      if (typeof fp_setOverride !== 'function' || typeof fp_ymdNumToDate !== 'function') {
+        alert('Override function not available.'); return;
+      }
+      const dFrom = fp_ymdNumToDate(ymdFrom);
+      const dTo = fp_ymdNumToDate(ymdTo);
+      if (!dFrom || !dTo) { alert('Invalid date range.'); return; }
+      for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
+        const isoD = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
+        fp_setOverride(sk, isoD, rt, price);
+      }
+      if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
+    } catch(e){
+      console.error('range override failed', e);
+      alert('Range override failed: ' + e.message);
+    }
+  }
+
   document.getElementById('sell-table-wrap').querySelectorAll('.sell-lu-cell').forEach(cell => {
+    // Right-click → range selection (no menu contestuale)
+    cell.addEventListener('contextmenu', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      _handleLuRangeClick(cell);
+    });
     cell.addEventListener('click', (ev) => {
       ev.stopPropagation();
+      // SHIFT+CLICK → range selection (alternativa al right-click)
+      if (ev.shiftKey){
+        _handleLuRangeClick(cell);
+        return;
+      }
       const sk = cell.getAttribute('data-lu-struct');
       const rt = cell.getAttribute('data-lu-rt');
       const ymdN = +cell.getAttribute('data-lu-ymd');
@@ -10290,53 +10354,6 @@ function renderSellStrategy(sel){
       const current = +cell.getAttribute('data-lu-current');
       if (!sk || !rt || !ymdN || !iso) return;
       const dateLbl = iso.split('-').reverse().join('/');
-      // SHIFT+CLICK → range selection
-      if (ev.shiftKey){
-        if (!_luRangeStart){
-          // Primo shift+click: marca inizio range
-          _luRangeStart = { ymdN, iso, cellEl: cell };
-          cell.style.outline = '2px solid #b86b1f';
-          cell.style.outlineOffset = '-2px';
-          cell.title = '📍 Range start: ' + dateLbl + '\nShift+click on the END date to set override for the range.\nClick anywhere else to cancel.';
-          return;
-        }
-        // Secondo shift+click: applica range
-        let ymdFrom = _luRangeStart.ymdN, ymdTo = ymdN;
-        let isoFrom = _luRangeStart.iso, isoTo = iso;
-        if (ymdFrom > ymdTo){
-          [ymdFrom, ymdTo] = [ymdTo, ymdFrom];
-          [isoFrom, isoTo] = [isoTo, isoFrom];
-        }
-        const startCell = _luRangeStart.cellEl;
-        _luRangeStart = null;
-        if (startCell) { startCell.style.outline = ''; startCell.style.outlineOffset = ''; }
-        const lblFrom = isoFrom.split('-').reverse().join('/');
-        const lblTo = isoTo.split('-').reverse().join('/');
-        const priceStr = prompt('Override RMES for range ' + lblFrom + ' → ' + lblTo + '\n\nEnter the new price (€). Leave empty to cancel.', '');
-        if (!priceStr) return;
-        const price = parseFloat(priceStr.replace(',', '.'));
-        if (!isFinite(price) || price <= 0){ alert('Invalid price.'); return; }
-        // Applica override per ogni giorno del range
-        try {
-          if (typeof fp_setOverride !== 'function' || typeof fp_ymdNumToDate !== 'function') {
-            alert('Override function not available.'); return;
-          }
-          const dFrom = fp_ymdNumToDate(ymdFrom);
-          const dTo = fp_ymdNumToDate(ymdTo);
-          if (!dFrom || !dTo) { alert('Invalid date range.'); return; }
-          let count = 0;
-          for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
-            const isoD = dd.getFullYear() + '-' + String(dd.getMonth()+1).padStart(2,'0') + '-' + String(dd.getDate()).padStart(2,'0');
-            fp_setOverride(sk, isoD, rt, price);
-            count++;
-          }
-          if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
-        } catch(e){
-          console.error('range override failed', e);
-          alert('Range override failed: ' + e.message);
-        }
-        return;
-      }
       // CLICK SEMPLICE → editor singolo giorno
       if (_luRangeStart){
         // Cancello eventuale range start
