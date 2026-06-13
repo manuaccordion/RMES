@@ -7356,7 +7356,7 @@ function renderRmesBreakdown(){
     { t:'DoW',              al:'right', tip:'Day of week' },
     { t:'Last update',      al:'right', tip:'Price currently active for this stay-date (= the reference the new RMES suggestion is built on). Equals the Base Price if RMES has never been accepted, or the most recent accepted RMES otherwise.' },
     { t:'A·Pickup',         al:'right', tip:'A · Daily Pickup — single-factor deviation %, weighted. Activates only if new bookings came in for this stay-date in the window "yesterday + today" (2 calendar days). If 0 bookings → expands to "today and the 7 previous days" (8 calendar days). NOTE: this is the only place in the dashboard where today is included in pickup — the Sell Strategy "Pickup Nd" column and the Big Picture pickup chart instead use the standard rule (today excluded). When activated, the % depends on the fill rate (≤20% → 0%, 21–50% → +5%, 51–70% → +10%, 71–90% → +15%, >90% → +20%). Never negative.' },
-    { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %, weighted. Compares the booking pace of the last 4 weeks vs the same 4 weeks last year (weeks weighted 10/20/30/40, most recent counts more).' },
+    { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %. Compares the booking pace of the last 7 days (W4 window) vs the same 7 days last year. Only the most recent week is used as the freshest market signal.' },
     { t:'C·Online',         al:'right', tip:'C · Online Pricing — my Beddy-eq vs Weighted Expedia Compset (no offsets), single-factor dev %, weighted.' },
     { t:'D·Demand',         al:'right', tip:'D · Demand (Expedia) — Expedia search volume vs the month median, single-factor dev %, weighted.' },
     { t:'Composite',        al:'right', tip:compositeTip },
@@ -7450,7 +7450,7 @@ function renderRmesBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (4-week booking pace vs LY) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (W4 = last 7 days booking pace vs LY) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>E·AirDNA</b> (market booked vs my OCC, headroom signal) · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -9404,18 +9404,15 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           h += '</b></div>';
           h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Applied dev: '+_fpct((mults.occ_mult-1),1)+'</div>';
         } else if (code === 'B'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — recent weeks count more. The 4 weeks are weighted W1 10% &middot; W2 20% &middot; W3 30% &middot; W4 40% (W4 = most recent), so a slow recent week pulls the pace down more than an old one. Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — only the most recent 7 days (W4 window) are used as the freshest market signal. Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
           const pi = dbg.paceInfo || {};
           if (pi.pickupCur != null && pi.pickupStly != null){
-            h += '<div>Pickup last 4 weeks: <b>'+pi.pickupCur+' RN</b> now vs <b>'+pi.pickupStly+' RN</b> same period last year <span style="color:#999">(real room nights)</span></div>';
+            h += '<div>Pickup last 7 days: <b>'+pi.pickupCur+' RN</b> now vs <b>'+pi.pickupStly+' RN</b> same period last year <span style="color:#999">(real room nights)</span></div>';
             if (pi.ratio != null){
-              const rawR = pi.pickupStly>0 ? (pi.pickupCur/pi.pickupStly) : null;
-              h += '<div style="margin-top:3px">Weighted pace ratio: <b>'+pi.ratio.toFixed(3)+'</b> → dev <b>'+_fpct(pi.ratio-1,1)+'</b>';
-              if (rawR!=null) h += ' <span style="color:#999">(unweighted would be '+rawR.toFixed(3)+')</span>';
-              h += '</div>';
+              h += '<div style="margin-top:3px">Pace ratio (W4): <b>'+pi.ratio.toFixed(3)+'</b> → dev <b>'+_fpct(pi.ratio-1,1)+'</b></div>';
             } else if (pi.pickupStly > 0){
               const ratio = pi.pickupCur / pi.pickupStly;
-              h += '<div>Ratio pickup: <b>'+ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(ratio-1,1)+'</b></div>';
+              h += '<div>Pace ratio: <b>'+ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(ratio-1,1)+'</b></div>';
             }
           }
           h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Decision state: <b style="color:#8e5fa8">'+(({'mese_w4':'W4 month','fallback_aggregate':'aggregate fallback (P̄)','fallback_annuale_struct':'annual fallback (property)','neutralizzato_no_dati':'neutralized — no data','fallback':'fallback'}[pi.state]) || pi.state || '—')+'</b></div>';
