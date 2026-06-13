@@ -738,27 +738,30 @@ table.sell-table-transposed tbody tr.sell-tr-otb + tr.sell-tr-pickup th.sell-tpo
 table.sell-table-transposed tbody tr.sell-tr-otb + tr.sell-tr-pickup td{
   border-top:4px solid #c4823b !important;
 }
-/* PICKUP → STLY */
+/* PICKUP → EXP (Rate Shopper) — nuovo ordine: RATE SHOPPER ora prima di STLY */
+table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-exp th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-exp td{
+  border-top:4px solid #8e5fa8 !important;
+}
+/* PICKUP → STLY (fallback se RATE SHOPPER non visibile) */
 table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-stly th.sell-tposed-label,
 table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-stly td{
   border-top:4px solid #8e5fa8 !important;
+}
+/* EXP (Rate Shopper) → STLY */
+table.sell-table-transposed tbody tr.sell-tr-exp + tr.sell-tr-stly th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-exp + tr.sell-tr-stly td{
+  border-top:4px solid #3a6b6b !important;
 }
 /* STLY → PK·STLY */
 table.sell-table-transposed tbody tr.sell-tr-stly + tr.sell-tr-pkstly th.sell-tposed-label,
 table.sell-table-transposed tbody tr.sell-tr-stly + tr.sell-tr-pkstly td{
   border-top:4px solid #3b6b6b !important;
 }
-/* PK·STLY → BEDDY (se presente) o EXP */
+/* PK·STLY → BEDDY (se presente) */
 table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-beddy th.sell-tposed-label,
-table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-beddy td,
-table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-exp th.sell-tposed-label,
-table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-exp td{
+table.sell-table-transposed tbody tr.sell-tr-pkstly + tr.sell-tr-beddy td{
   border-top:4px solid #888 !important;
-}
-/* BEDDY → EXP */
-table.sell-table-transposed tbody tr.sell-tr-beddy + tr.sell-tr-exp th.sell-tposed-label,
-table.sell-table-transposed tbody tr.sell-tr-beddy + tr.sell-tr-exp td{
-  border-top:4px solid #1e6b4a !important;
 }
 /* Event → OTB (separatore tra "header section" e gruppi metrici) */
 table.sell-table-transposed tbody tr.sell-tr-event + tr.sell-tr-otb th.sell-tposed-label,
