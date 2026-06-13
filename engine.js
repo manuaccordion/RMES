@@ -10486,17 +10486,17 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
     { key:'otbRn',     show:true,  label:'RN',  sub:'sold',  group:'OTB',     cssClass:'sell-tr-otb' },
     { key:'otbOcc',    show:true,  label:'OCC', sub:'%',     group:'OTB',     cssClass:'sell-tr-otb' },
     { key:'otbAdr',    show:true,  label:'ADR', sub:'€',     group:'OTB',     cssClass:'sell-tr-otb' },
-    { key:'pkNew',     show:true,  label:'New',    sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup' },
-    { key:'pkCancel',  show:true,  label:'Cancel', sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup' },
-    { key:'pkDRn',     show:true,  label:'ΔRN',    sub:'net', group:'PICKUP', cssClass:'sell-tr-pickup' },
-    { key:'pkAdr',     show:true,  label:'ADR',    sub:'€',   group:'PICKUP', cssClass:'sell-tr-pickup' },
   ];
-  // RATE SHOPPER spostato PRIMA di STLY (richiesta utente)
+  // RATE SHOPPER tra OTB e PICKUP (richiesta utente)
   if (showExp){
     allMetrics.push({ key:'expMine',    show:true, label:'My Expedia', sub:'rank', group:'RATE SHOPPER', cssClass:'sell-tr-exp' });
     allMetrics.push({ key:'expCompset', show:true, label:'Compset',    sub:'avg',  group:'RATE SHOPPER', cssClass:'sell-tr-exp' });
   }
   allMetrics.push(
+    { key:'pkNew',     show:true,  label:'New',    sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup' },
+    { key:'pkCancel',  show:true,  label:'Cancel', sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup' },
+    { key:'pkDRn',     show:true,  label:'ΔRN',    sub:'net', group:'PICKUP', cssClass:'sell-tr-pickup' },
+    { key:'pkAdr',     show:true,  label:'ADR',    sub:'€',   group:'PICKUP', cssClass:'sell-tr-pickup' },
     { key:'stlyRn',    show:true,  label:'RN',  sub:'-364', group:'STLY',     cssClass:'sell-tr-stly' },
     { key:'stlyOcc',   show:true,  label:'OCC', sub:'%',    group:'STLY',     cssClass:'sell-tr-stly' },
     { key:'stlyAdr',   show:true,  label:'ADR', sub:'€',    group:'STLY',     cssClass:'sell-tr-stly' },

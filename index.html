@@ -733,25 +733,25 @@ table.sell-table-transposed tbody tr.sell-tr-beddy td:not(.sell-tposed-label){
 /* === Separatore spesso tra gruppi diversi (= riga più alta del colore del gruppo) === */
 /* Bordo BASSO dell'ultima riga di un gruppo, spesso, del colore "pieno" del gruppo.
    Identifico l'ultima riga di un gruppo come quella PRIMA di una diversa cssClass. */
-/* OTB → ultima riga è ADR (sell-tr-otb), prima di PICKUP (sell-tr-pickup) */
+/* OTB → EXP (Rate Shopper) — nuovo ordine: RATE SHOPPER ora tra OTB e PICKUP */
+table.sell-table-transposed tbody tr.sell-tr-otb + tr.sell-tr-exp th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-otb + tr.sell-tr-exp td{
+  border-top:4px solid #c4823b !important;
+}
+/* OTB → PICKUP (fallback se RATE SHOPPER non visibile) */
 table.sell-table-transposed tbody tr.sell-tr-otb + tr.sell-tr-pickup th.sell-tposed-label,
 table.sell-table-transposed tbody tr.sell-tr-otb + tr.sell-tr-pickup td{
   border-top:4px solid #c4823b !important;
 }
-/* PICKUP → EXP (Rate Shopper) — nuovo ordine: RATE SHOPPER ora prima di STLY */
-table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-exp th.sell-tposed-label,
-table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-exp td{
-  border-top:4px solid #8e5fa8 !important;
+/* EXP (Rate Shopper) → PICKUP */
+table.sell-table-transposed tbody tr.sell-tr-exp + tr.sell-tr-pickup th.sell-tposed-label,
+table.sell-table-transposed tbody tr.sell-tr-exp + tr.sell-tr-pickup td{
+  border-top:4px solid #3a6b6b !important;
 }
-/* PICKUP → STLY (fallback se RATE SHOPPER non visibile) */
+/* PICKUP → STLY */
 table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-stly th.sell-tposed-label,
 table.sell-table-transposed tbody tr.sell-tr-pickup + tr.sell-tr-stly td{
   border-top:4px solid #8e5fa8 !important;
-}
-/* EXP (Rate Shopper) → STLY */
-table.sell-table-transposed tbody tr.sell-tr-exp + tr.sell-tr-stly th.sell-tposed-label,
-table.sell-table-transposed tbody tr.sell-tr-exp + tr.sell-tr-stly td{
-  border-top:4px solid #3a6b6b !important;
 }
 /* STLY → PK·STLY */
 table.sell-table-transposed tbody tr.sell-tr-stly + tr.sell-tr-pkstly th.sell-tposed-label,
