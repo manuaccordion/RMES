@@ -10477,36 +10477,41 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
   // - "show:false" = metrica saltata (non resa nel layout trasposto)
   // - "group" = etichetta del gruppo per il rowspan della 1ª colonna
   // - "groupColor" = striscia colore del gruppo
+  // - "origIdx" = posizione FISSA della cella nella TABELLA SORGENTE (non in questo array)
+  //              così possiamo riordinare le righe display senza rompere la lettura.
   const allMetrics = [
-    { key:'lu',        show:true,  label:'LAST UPDATE',  sub:'active price',   cssClass:'sell-tr-lu' },
-    { key:'rmes',      show:true,  label:'RMES',         sub:'price · Δ€ · ✓', cssClass:'sell-tr-rmes' },
-    { key:'date',      show:false },                                          // duplicato dell'header → SKIP
-    { key:'event',     show:true,  label:'Event',        sub:'',               cssClass:'sell-tr-event' },
-    { key:'dow',       show:false },                                          // duplicato dell'header → SKIP
-    { key:'otbRn',     show:true,  label:'RN',  sub:'sold',  group:'OTB',     cssClass:'sell-tr-otb' },
-    { key:'otbOcc',    show:true,  label:'OCC', sub:'%',     group:'OTB',     cssClass:'sell-tr-otb' },
-    { key:'otbAdr',    show:true,  label:'ADR', sub:'€',     group:'OTB',     cssClass:'sell-tr-otb' },
+    { key:'lu',        show:true,  label:'LAST UPDATE',  sub:'active price',   cssClass:'sell-tr-lu',    origIdx:0 },
+    { key:'rmes',      show:true,  label:'RMES',         sub:'price · Δ€ · ✓', cssClass:'sell-tr-rmes',  origIdx:1 },
+    { key:'date',      show:false, origIdx:2 },                                // duplicato dell'header → SKIP
+    { key:'event',     show:true,  label:'Event',        sub:'',               cssClass:'sell-tr-event', origIdx:3 },
+    { key:'dow',       show:false, origIdx:4 },                                // duplicato dell'header → SKIP
+    { key:'otbRn',     show:true,  label:'RN',  sub:'sold',  group:'OTB',     cssClass:'sell-tr-otb',    origIdx:5 },
+    { key:'otbOcc',    show:true,  label:'OCC', sub:'%',     group:'OTB',     cssClass:'sell-tr-otb',    origIdx:6 },
+    { key:'otbAdr',    show:true,  label:'ADR', sub:'€',     group:'OTB',     cssClass:'sell-tr-otb',    origIdx:7 },
   ];
   // RATE SHOPPER tra OTB e PICKUP (richiesta utente)
+  // origIdx dipende da showBeddy: se beddy presente, expMine sta a 20, altrimenti 19.
+  const _expMineOrigIdx = 19 + (showBeddy ? 1 : 0);
+  const _expCompsetOrigIdx = _expMineOrigIdx + 1;
   if (showExp){
-    allMetrics.push({ key:'expMine',    show:true, label:'My Expedia', sub:'rank', group:'RATE SHOPPER', cssClass:'sell-tr-exp' });
-    allMetrics.push({ key:'expCompset', show:true, label:'Compset',    sub:'avg',  group:'RATE SHOPPER', cssClass:'sell-tr-exp' });
+    allMetrics.push({ key:'expMine',    show:true, label:'My Expedia', sub:'rank', group:'RATE SHOPPER', cssClass:'sell-tr-exp', origIdx:_expMineOrigIdx });
+    allMetrics.push({ key:'expCompset', show:true, label:'Compset',    sub:'avg',  group:'RATE SHOPPER', cssClass:'sell-tr-exp', origIdx:_expCompsetOrigIdx });
   }
   allMetrics.push(
-    { key:'pkNew',     show:true,  label:'New',    sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup' },
-    { key:'pkCancel',  show:true,  label:'Cancel', sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup' },
-    { key:'pkDRn',     show:true,  label:'ΔRN',    sub:'net', group:'PICKUP', cssClass:'sell-tr-pickup' },
-    { key:'pkAdr',     show:true,  label:'ADR',    sub:'€',   group:'PICKUP', cssClass:'sell-tr-pickup' },
-    { key:'stlyRn',    show:true,  label:'RN',  sub:'-364', group:'STLY',     cssClass:'sell-tr-stly' },
-    { key:'stlyOcc',   show:true,  label:'OCC', sub:'%',    group:'STLY',     cssClass:'sell-tr-stly' },
-    { key:'stlyAdr',   show:true,  label:'ADR', sub:'€',    group:'STLY',     cssClass:'sell-tr-stly' },
-    { key:'pkStNew',   show:true,  label:'New',    sub:'1d',  group:'PK·STLY', cssClass:'sell-tr-pkstly' },
-    { key:'pkStCancel',show:true,  label:'Cancel', sub:'1d',  group:'PK·STLY', cssClass:'sell-tr-pkstly' },
-    { key:'pkStDRn',   show:true,  label:'ΔRN',    sub:'net', group:'PK·STLY', cssClass:'sell-tr-pkstly' },
-    { key:'pkStAdr',   show:true,  label:'ADR',    sub:'€',   group:'PK·STLY', cssClass:'sell-tr-pkstly' }
+    { key:'pkNew',     show:true,  label:'New',    sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:8  },
+    { key:'pkCancel',  show:true,  label:'Cancel', sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:9  },
+    { key:'pkDRn',     show:true,  label:'ΔRN',    sub:'net', group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:10 },
+    { key:'pkAdr',     show:true,  label:'ADR',    sub:'€',   group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:11 },
+    { key:'stlyRn',    show:true,  label:'RN',  sub:'-364', group:'STLY',     cssClass:'sell-tr-stly',   origIdx:12 },
+    { key:'stlyOcc',   show:true,  label:'OCC', sub:'%',    group:'STLY',     cssClass:'sell-tr-stly',   origIdx:13 },
+    { key:'stlyAdr',   show:true,  label:'ADR', sub:'€',    group:'STLY',     cssClass:'sell-tr-stly',   origIdx:14 },
+    { key:'pkStNew',   show:true,  label:'New',    sub:'1d',  group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:15 },
+    { key:'pkStCancel',show:true,  label:'Cancel', sub:'1d',  group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:16 },
+    { key:'pkStDRn',   show:true,  label:'ΔRN',    sub:'net', group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:17 },
+    { key:'pkStAdr',   show:true,  label:'ADR',    sub:'€',   group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:18 }
   );
   if (showBeddy){
-    allMetrics.push({ key:'beddy', show:true, label:'Beddy', sub:'PMS €', cssClass:'sell-tr-beddy' });
+    allMetrics.push({ key:'beddy', show:true, label:'Beddy', sub:'PMS €', cssClass:'sell-tr-beddy', origIdx:19 });
   }
   // Base Price = duplicato di LAST UPDATE (quando non c'è override) → SKIP richiesta utente
   allMetrics.push({ key:'basePrice', show:false });
@@ -10604,9 +10609,9 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
     }
     labelTh.innerHTML = `<div class="sell-tposed-label-main">${m.label}</div>${m.sub ? `<div class="sell-tposed-label-sub">${m.sub}</div>` : ''}`;
     tr.appendChild(labelTh);
-    // Celle per ogni data (= per ogni dataRow originale, prendo la mIdx-esima td)
+    // Celle per ogni data (= per ogni dataRow originale, prendo la cella in posizione m.origIdx)
     for (let dIdx = 0; dIdx < dataRows.length; dIdx++){
-      const origCell = dataRows[dIdx].children[mIdx];
+      const origCell = (m.origIdx != null) ? dataRows[dIdx].children[m.origIdx] : dataRows[dIdx].children[mIdx];
       if (origCell){
         const cloned = origCell.cloneNode(true);
         // Per la riga Event: rimuovo l'inline background (search pressure orange)
