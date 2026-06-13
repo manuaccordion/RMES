@@ -4029,6 +4029,7 @@ function beddyExpediaRatio(sel, lookbackDays){
      whose bookYmd <= (TODAY - 364)
    ============================================================ */
 let SELL_START_YMD = null;       // chosen start date (YMD num)
+let _lastSellStruct = null;       // last struct rendered (used to detect struct change → reset scroll)
 let SELL_START_USER_SET = false; // true once the user manually picks a date in this session
 let SELL_RANGE_DAYS = 180;        // 30 | 60 | 90 | 180 | 365
 let SELL_PICKUP_DAYS = 1;        // N days for pickup snapshot
@@ -10466,6 +10467,28 @@ function _sellCompRank(structKey, iso, myExpedia){
      - Righe Mine/Compset: gruppo "RATE SHOPPER" (rowspan=2)
    Skipped (richiesta utente): Date row (duplicato dell'header), DoW row (idem), Base Price (duplicato di LAST UPDATE).
 */
+/* Helper: preserva lo scroll orizzontale della Sell Strategy attraverso un re-render.
+   Cattura scrollLeft prima dell'azione e lo riapplica al wrap ricostruito.
+   Uso: _preserveSellHorizontalScroll(() => renderSellStrategy(sk));
+*/
+function _preserveSellHorizontalScroll(fn){
+  let saved = 0;
+  try {
+    const w = document.querySelector('.sell-tposed-scroll-wrap');
+    if (w) saved = w.scrollLeft || 0;
+  } catch(e){}
+  try { fn(); } catch(e){ throw e; }
+  // Dopo il render: aspetta un frame perché il DOM si stabilizzi, poi riapplica scrollLeft
+  requestAnimationFrame(() => {
+    try {
+      const w = document.querySelector('.sell-tposed-scroll-wrap');
+      const tw = document.querySelector('.sell-tposed-scroll-top');
+      if (w) w.scrollLeft = saved;
+      if (tw) tw.scrollLeft = saved;
+    } catch(e){}
+  });
+}
+
 function _sellTransposeTable(wrap, showBeddy, showExp){
   if (!wrap) return;
   const orig = wrap.querySelector('table.sell-table');
@@ -10677,6 +10700,16 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
 }
 
 function renderSellStrategy(sel){
+  // Salva lo scroll orizzontale del wrap trasposto prima di ricostruire, così l'utente
+  // resta nella stessa posizione (es. agosto) dopo un accept/override invece di tornare a oggi.
+  // ECCEZIONE: se è cambiata la struttura → reset a 0 (= torna a oggi sulla nuova struttura).
+  let _savedSellScrollLeft = 0;
+  const _sameStruct = (typeof _lastSellStruct !== 'undefined') && (_lastSellStruct === sel);
+  try {
+    const _w = document.querySelector('.sell-tposed-scroll-wrap');
+    if (_w && _sameStruct) _savedSellScrollLeft = _w.scrollLeft || 0;
+  } catch(e){}
+  _lastSellStruct = sel;
   const chipEl = document.getElementById('sell-struct-chip');
   if (chipEl) chipEl.textContent = structLabel(sel);
   const _cfBtn = document.getElementById('sell-compute-foundation');
@@ -11820,6 +11853,18 @@ function renderSellStrategy(sel){
   // === Trasposizione tabella (date in COLONNE, metriche in RIGHE) — richiesta utente ===
   try { _sellTransposeTable(document.getElementById('sell-table-wrap'), showBeddy, showExp); }
   catch(e){ console.error('[sell] transpose failed', e); }
+  // Ripristina lo scroll orizzontale (vedi save all'inizio della funzione) — così l'utente
+  // resta sulla data che stava modificando invece di tornare a oggi dopo un accept/override.
+  if (_savedSellScrollLeft > 0){
+    requestAnimationFrame(() => {
+      try {
+        const _w = document.querySelector('.sell-tposed-scroll-wrap');
+        const _tw = document.querySelector('.sell-tposed-scroll-top');
+        if (_w) _w.scrollLeft = _savedSellScrollLeft;
+        if (_tw) _tw.scrollLeft = _savedSellScrollLeft;
+      } catch(e){}
+    });
+  }
   _renderSellRtFilterPills(sel);
   (function _renderAuditBanner(){
     const banner = document.getElementById('sell-audit-banner');
