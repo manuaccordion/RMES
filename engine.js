@@ -6164,6 +6164,7 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
       const devC = (m.pace_mult != null && isFinite(m.pace_mult)) ? (m.pace_mult - 1) * 100 : null;
       const devD = (m.comp_mult != null && isFinite(m.comp_mult)) ? (m.comp_mult - 1) * 100 : null;
       const devE = (m.air_mult != null && isFinite(m.air_mult)) ? (m.air_mult - 1) * 100 : null;
+      const devF = (m.mkt_mult != null && isFinite(m.mkt_mult)) ? (m.mkt_mult - 1) * 100 : null;
       // Composite multiplier (Σ peso×dev, capped). Già nel _rawSumDev (somma pre-cap) e multFinale (post-cap).
       const compositeMult = (m.multFinale != null && isFinite(m.multFinale)) ? m.multFinale : 1;
       const compositeDevPct = (compositeMult - 1) * 100;
@@ -6233,8 +6234,9 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
           C: w.pace != null ? w.pace : null,
           D: w.comp != null ? w.comp : null,
           E: w.air != null ? w.air : null,
+          F: w.mkt != null ? w.mkt : null,
         },
-        devA, devB, devC, devD, devE,
+        devA, devB, devC, devD, devE, devF,
         compositeMult, compositeDevPct, hitCap,
         lmfPct,
         eventBoost,
@@ -7350,7 +7352,7 @@ function renderRmesBreakdown(){
   let h = '<div style="max-height:70vh;overflow:auto;border:1px solid #eee;border-radius:6px">';
   h += '<table class="data-table" style="width:100%;font-size:12px;border-collapse:separate;border-spacing:0">';
   h += '<thead><tr>';
-  const compositeTip = 'Composite multiplier = Σ (weight × dev%) of the 4 RMES factors, capped at ±total cap (default ±30%, configurable per property).\\n\\nIt is the joint signal from the 4 factors BEFORE LMF and Event Factor.\\n\\nFinal price = Last update × Composite × (1 + LMF%) × Event Factor, then ≥ floor.';
+  const compositeTip = 'Composite multiplier = Σ (weight × dev%) of the 5 RMES factors, capped at ±total cap (default ±30%, configurable per property).\\n\\nIt is the joint signal from the 5 factors BEFORE LMF and Event Factor.\\n\\nFinal price = Last update × Composite × (1 + LMF%) × Event Factor, then ≥ floor.';
   const cols = [
     { t:'Property',         al:'left',  tip:'Property', sticky:true },
     { t:'Date',             al:'left',  tip:'Stay date', sticky:true },
@@ -7360,6 +7362,7 @@ function renderRmesBreakdown(){
     { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %. Compares the booking pace of the last 7 days (W4 window) vs the same 7 days last year. Only the most recent week is used as the freshest market signal.' },
     { t:'C·Online',         al:'right', tip:'C · Online Pricing — my Beddy-eq vs Weighted Expedia Compset (no offsets), single-factor dev %, weighted.' },
     { t:'D·Demand',         al:'right', tip:'D · Demand (Expedia) — Expedia search volume vs the month median, single-factor dev %, weighted.' },
+    { t:'E·AirDNA',         al:'right', tip:'E · AirDNA Market — market booked listings (Florence) compared to MY OCC on the same day. Headroom signal: positive when the market is fuller than us (we have margin to raise), negative when we are fuller than the market (no extra push). Deadband ±5%, slope 0.80.' },
     { t:'Composite',        al:'right', tip:compositeTip },
     { t:'LMF',              al:'right', tip:'Last-Minute Factor — extra ± % from the LMF matrix (OCC × days to arrival). Applied AFTER the composite. This is the only mechanism that can lower the price close-in.' },
     { t:'Event',            al:'right', tip:'Event Factor — additional multiplier when a calendar event is configured with a non-zero weight for that date. Applied AFTER LMF.' },
@@ -7387,11 +7390,13 @@ function renderRmesBreakdown(){
     const wC = r.weights.C != null ? (r.weights.C*100).toFixed(0)+'%' : '?';
     const wD = r.weights.D != null ? (r.weights.D*100).toFixed(0)+'%' : '?';
     const wE = r.weights.E != null ? (r.weights.E*100).toFixed(0)+'%' : '?';
+    const wF = r.weights.F != null ? (r.weights.F*100).toFixed(0)+'%' : '?';
     let compTip = compositeTip + '\\n\\nThis day:';
     if (r.devA != null) compTip += '\\nA·Pickup (w='+wA+'): '+fmtPct(r.devA);
     if (r.devC != null) compTip += '\\nB·Pace (w='+wC+'): '+fmtPct(r.devC);
     if (r.devD != null) compTip += '\\nC·Online (w='+wD+'): '+fmtPct(r.devD);
     if (r.devE != null) compTip += '\\nD·Demand (w='+wE+'): '+fmtPct(r.devE);
+    if (r.devF != null) compTip += '\\nE·AirDNA (w='+wF+'): '+fmtPct(r.devF);
     compTip += '\\n→ Σ = '+fmtPct(r.compositeDevPct) + (r.hitCap ? ' (capped)' : '');
     const eventTip = r.eventName ? ('Event: '+r.eventName+' · factor ×'+r.eventBoost.toFixed(3)) : 'No event configured for this date.';
     h += '<tr style="border-bottom:1px solid #f0eee9">';
@@ -7410,6 +7415,7 @@ function renderRmesBreakdown(){
     h += cellDev(r.devC);
     h += cellDev(r.devD);
     h += cellDev(r.devE);
+    h += cellDev(r.devF);
     const compCol = (r.compositeDevPct > 0.5) ? '#2c5c3c' : (r.compositeDevPct < -0.5 ? '#a83b3b' : '#888');
     h += `<td title="${escapeHtml(compTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${compCol};font-weight:700;cursor:help;border-bottom:1px solid #f0eee9">${fmtMult(r.compositeMult)} <span style="font-weight:400;color:#888;font-size:10px">(${fmtPct(r.compositeDevPct)})</span></td>`;
     h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${r.lmfPct>0.5?'#2c5c3c':(r.lmfPct<-0.5?'#a83b3b':'#888')};border-bottom:1px solid #f0eee9">${fmtPct(r.lmfPct)}</td>`;
@@ -7459,7 +7465,7 @@ function renderRmesBreakdown(){
 function _rmesExportCSV(){
   if (!_RMES_LAST_ROWS || !_RMES_LAST_ROWS.length){ alert('Nothing to export — apply a range first.'); return; }
   const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const header = ['Property','Date','DoW','LastUpdate','accepted_on','weight_A_Pickup','dev_A_Pickup_pct','weight_B_Pace','dev_B_Pace_pct','weight_C_Online','dev_C_Online_pct','weight_D_Demand','dev_D_Demand_pct','composite_multiplier','composite_dev_pct','hit_total_cap','LMF_pct','event_name','event_factor','RMES_suggested','RMES_suggested_at_cap','RMES_applied','applied_source','applied_on'];
+  const header = ['Property','Date','DoW','LastUpdate','accepted_on','weight_A_Pickup','dev_A_Pickup_pct','weight_B_Pace','dev_B_Pace_pct','weight_C_Online','dev_C_Online_pct','weight_D_Demand','dev_D_Demand_pct','weight_E_AirDNA','dev_E_AirDNA_pct','composite_multiplier','composite_dev_pct','hit_total_cap','LMF_pct','event_name','event_factor','RMES_suggested','RMES_suggested_at_cap','RMES_applied','applied_source','applied_on'];
   const lines = [header.join(',')];
   for (const r of _RMES_LAST_ROWS){
     const dt = new Date(r.iso + 'T00:00:00');
@@ -7485,6 +7491,9 @@ function _rmesExportCSV(){
       // D · Demand Expedia (legacy key E)
       r.weights.E != null ? r.weights.E.toFixed(3) : '',
       r.devE != null ? r.devE.toFixed(2) : '',
+      // E · AirDNA Market (legacy key F = mkt)
+      r.weights.F != null ? r.weights.F.toFixed(3) : '',
+      r.devF != null ? r.devF.toFixed(2) : '',
       r.compositeMult.toFixed(4),
       r.compositeDevPct.toFixed(2),
       r.hitCap ? 'yes' : 'no',
