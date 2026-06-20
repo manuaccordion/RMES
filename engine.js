@@ -7209,11 +7209,53 @@ function renderCheckUpdates(){
   // Stats
   const cntTotal = all.length;
   const cntFiltered = filtered.length;
-  h += `<div style="margin-bottom:10px;font-size:12px;color:#666"><b>${cntFiltered}</b> modifications shown${cntTotal!==cntFiltered?` (filtered from ${cntTotal})`:''}.</div>`;
+  // Conteggio per tipo (raw, pre-filtri)
+  let cntOvr = 0, cntAcc = 0, cntWithModAt = 0;
+  let latestModAt = '';
+  for (const r of all){
+    if (r.type === 'override') cntOvr++;
+    else if (r.type === 'accept') cntAcc++;
+    if (r.modAt){
+      cntWithModAt++;
+      if (r.modAt > latestModAt) latestModAt = r.modAt;
+    }
+  }
+  let statsLine = `<b>${cntFiltered}</b> modifications shown${cntTotal!==cntFiltered?` (filtered from <b>${cntTotal}</b> total)`:''}.`;
+  if (cntTotal > 0){
+    statsLine += ` <span style="color:#999">· In storage: ${cntAcc} ✓ accept · ${cntOvr} 🖋 override`;
+    if (latestModAt){
+      const ld = new Date(latestModAt);
+      if (!isNaN(ld.getTime())){
+        statsLine += ` · last activity: ${pad2(ld.getDate())}/${pad2(ld.getMonth()+1)}/${ld.getFullYear()} ${pad2(ld.getHours())}:${pad2(ld.getMinutes())}`;
+      }
+    }
+    statsLine += '</span>';
+  }
+  h += `<div style="margin-bottom:10px;font-size:12px;color:#666">${statsLine}</div>`;
 
-  // Table
+  // Table / empty state
   if (filtered.length === 0){
-    h += '<div style="padding:40px;text-align:center;color:#888;font-style:italic">No modifications match the current filters.</div>';
+    if (cntTotal === 0){
+      // Nessuna modifica salvata in assoluto (storage vuoto)
+      h += '<div style="padding:30px 24px;text-align:center;color:#888;background:#fdfaf3;border:1px dashed #d4c5a0;border-radius:6px"><div style="font-size:14px;color:#5a3a14;font-weight:600;margin-bottom:6px">No history yet</div><div style="font-style:italic;line-height:1.5">No price changes have been saved so far on this device. Modifications will appear here after you accept an RMES (✓) or set a manual override (🖋) from the Sell Strategy tab.<br><br>If you expected to see changes from another device (other phone/computer), they should sync automatically as long as the cloud indicator shows ☁ synced.</div></div>';
+    } else {
+      // Modifiche esistono ma il filtro le esclude tutte
+      h += '<div style="padding:30px 24px;text-align:center;color:#888;background:#fdfaf3;border:1px dashed #d4c5a0;border-radius:6px"><div style="font-size:14px;color:#5a3a14;font-weight:600;margin-bottom:6px">No matches for the current filters</div><div style="font-style:italic;line-height:1.5">There are <b>'+cntTotal+'</b> total modifications saved, but none of them matches the active filters. Common reasons: stay date range too narrow, profile selected that has no entries, modification date range too tight.<br><br>Click <b>Reset</b> above to clear filters and see everything.</div></div>';
+      // Mostra le 3 più recenti senza filtro come hint
+      const latest3 = all.slice().sort((a,b) => (b.modAt||'').localeCompare(a.modAt||'')).slice(0, 3);
+      if (latest3.length){
+        h += '<div style="margin-top:14px;padding:12px 14px;background:#fff;border:1px solid #e8e2d3;border-radius:6px;font-size:12px"><div style="font-weight:600;color:#5a3a14;margin-bottom:8px">Latest activity (any filter):</div><ul style="margin:0;padding-left:20px;line-height:1.7">';
+        for (const r of latest3){
+          const md = r.modAt ? new Date(r.modAt) : null;
+          const mdTxt = (md && !isNaN(md.getTime())) ? `${pad2(md.getDate())}/${pad2(md.getMonth()+1)}/${md.getFullYear()} ${pad2(md.getHours())}:${pad2(md.getMinutes())}` : '—';
+          const stp = r.stayDate ? r.stayDate.split('-') : null;
+          const stTxt = stp && stp.length === 3 ? `${stp[2]}/${stp[1]}/${stp[0]}` : (r.stayDate || '—');
+          const typeTxt = r.type === 'override' ? '🖋 Override' : '✓ Accept';
+          h += `<li><b>${mdTxt}</b> · ${typeTxt} · ${r.structLabel} · stay <b>${stTxt}</b> · €${r.value} · by ${r.profile||'unknown'}</li>`;
+        }
+        h += '</ul></div>';
+      }
+    }
   } else {
     const sortDir = (col) => _CHECKS_SORT.col === col ? (_CHECKS_SORT.dir === 'desc' ? ' ↓' : ' ↑') : '';
     h += '<div style="max-height:65vh;overflow:auto;border:1px solid #e8e2d3;border-radius:6px"><table style="width:100%;border-collapse:collapse;font-size:12.5px;background:#fff">';
