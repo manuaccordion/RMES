@@ -1973,26 +1973,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- ============ DOW PREMIUM — blu ============ -->
-    <div class="rmes-box rmes-box-blue">
-      <div class="rmes-box-head">
-        <div class="rmes-box-icon">📅</div>
-        <div class="rmes-box-titles">
-          <h3>⑤ DOW Premium</h3>
-          <div class="rmes-box-sub">weekly premium per day-of-week (typically Fri/Sat are higher demand)</div>
-        </div>
-      </div>
-      <div class="rmes-box-body">
-        <div id="rmes-dow-premium-wrap"></div>
-      </div>
-    </div>
-
     <!-- ============ PROMOS — peach ============ -->
     <div class="rmes-box rmes-box-peach">
       <div class="rmes-box-head">
         <div class="rmes-box-icon">🎯</div>
         <div class="rmes-box-titles">
-          <h3>⑥ Promo Overrides</h3>
+          <h3>⑤ Promo Overrides</h3>
           <div class="rmes-box-sub">temporary premium for promo periods · acts on RMES suggested price</div>
         </div>
       </div>
@@ -2194,7 +2180,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
               <li><span style="color:#2c5c3c;font-weight:700">✓ in line</span> in green → your active price is already in tune with the engine (within ±2% of the target, or you've moved past the target in the same direction the engine wanted).</li>
               <li><b>⚠</b> next to the price (in the modal and Export Pricing) → the target hit the <b>Floor Rate</b> and was clamped. The engine wanted to go lower but cannot.</li>
             </ul>
-            Click anywhere on the cell to open the full <b>calculation modal</b> with the 4 factors, LMF and Event Factor breakdown.
+            Click anywhere on the cell to open the full <b>calculation modal</b> with the 5 factors, LMF and Event Factor breakdown.
           </li>
           <li><b>Rate Shopper</b> — Mine w/RMES · Mine · Compset, all in Expedia space, with the market rank (1 = cheapest in the compset). <b>Note</b>: any Expedia value &lt; 10 € is filtered out (it's a minimum-stay number leaked into the price column, not a real rate).</li>
         </ul>
@@ -2218,7 +2204,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <p style="margin:0 0 8px 0"><b>Concrete example — Firenze Suite, single day</b>:</p>
           <ul style="margin:6px 0 8px 18px">
             <li>Base Price = <b>€283</b> (frozen, structural)</li>
-            <li>4 factors result in a Composite multiplier of <b>×0.92</b> (market is slightly weak)</li>
+            <li>the 5 factors result in a Composite multiplier of <b>×0.92</b> (market is slightly weak)</li>
             <li>RMES target on Base = 283 × 0.92 = <b>€260</b> (no Floor here, so the target stands). This is the engine's "true suggestion".</li>
           </ul>
           <p style="margin:0 0 8px 0">Now four scenarios depending on what you do:</p>
@@ -2345,7 +2331,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <p style="margin:0 0 6px 0;font-size:13px">For each stay-date, two layers stack up:</p>
           <ol style="margin:0 0 6px 18px;font-size:13px">
             <li><b>Base Price</b> — the structural fair price for that day (built once from history + market + the property anchor). It is the default active price unless you act.</li>
-            <li><b>RMES suggestion</b> — the daily target, computed as <code>Base Price × Composite × (1 + LMF%) × Event Factor</code>, where <b>Composite</b> is the weighted average of the 4 RMES factors. RMES <b>compares</b> the target to the price you currently have loaded and either insists (↓/↑) or shows ✓ in line.</li>
+            <li><b>RMES suggestion</b> — the daily target, computed as <code>Base Price × Composite × (1 + LMF%) × Event Factor</code>, where <b>Composite</b> is the weighted average of the 5 RMES factors. RMES <b>compares</b> the target to the price you currently have loaded and either insists (↓/↑) or shows ✓ in line.</li>
           </ol>
           <p style="margin:0;font-size:13px;color:#666">The final price is always bounded by the <b>Floor Rate</b> (hard minimum) and the Base Price stays within <b>±50% of the Monthly Anchor</b> (sanity rail = true ADR LY of the base RT for that month). The only mechanism that can lower the price close-in is the LMF.</p>
         </div>
@@ -2366,35 +2352,36 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <tr><td style="padding:2px 10px 2px 0;color:#666">Fill &gt; 90%</td><td style="font-family:'DM Mono',monospace">+20%</td></tr>
           </table>
           <p style="margin:0 0 6px 0"><b>Never negative.</b> The factor only pushes the price up. To <b>lower</b> the price close-in (e.g. last-minute discount for a still-empty day), the system uses the separate <b>LMF</b> matrix (see below). Daily Pickup and LMF are independent.</p>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze Suite, 30/05/2026.</b> Fill rate: 8 RN booked on 8 rooms = 100% &gt; 90%. Recent pickup: 3 bookings entered in the primary window (yesterday + today). Factor activates → matches "Fill &gt; 90% → +20%". Raw dev: +20%. Applied to composite: 0.25 × 20% = +5 percentage points of contribution.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze Suite, 30/05/2026.</b> Fill rate: 8 RN booked on 8 rooms = 100% &gt; 90%. Recent pickup: 3 bookings entered in the primary window (yesterday + today). Factor activates → matches "Fill &gt; 90% → +20%". Raw dev: +20%. Applied to composite: 0.20 × 20% = +4 percentage points of contribution.</p>
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#f1edf5;border-radius:6px;font-size:13px;line-height:1.65">
           <p style="margin:0 0 6px 0;font-weight:700;color:#8e5fa8">B · Pace Trend <span style="color:#888;font-weight:400">— "are we booking faster or slower than last year?"</span></p>
-          <p style="margin:0 0 6px 0"><b>What it measures.</b> The booking pace of the month of stay over the <b>last 7 days (W4 window)</b>, compared to the same 7 days last year (STLY = same time last year, day-of-week aligned). It looks at the <b>real room-nights picked up</b>, not the prices. Only the most recent week is used because it captures the current market signal most reliably.</p>
-          <p style="margin:0 0 6px 0">Formula: <code>pace_ratio = W4_now / W4_LY</code> (where W4 = pickup of the last 7 days for the target stay-month). Then <code>raw_dev = pace_ratio − 1</code>, clamped at ±50%.</p>
-          <p style="margin:0 0 6px 0"><b>Decision states</b> (3 simplified states):</p>
+          <p style="margin:0 0 6px 0"><b>What it measures.</b> The booking pace of the month of stay over the <b>last 2 weeks</b>, compared to the same 2 weeks last year (STLY = same time last year, day-of-week aligned). It looks at the <b>real room-nights picked up</b>, not the prices. The two weeks are <b>blended</b>: the most recent week (W4) weighs <b>60%</b> and the previous week (W3) weighs <b>40%</b>. Using two weeks instead of one smooths the noise on small properties (Enis Guesthouse, Condotta 16), where a single quiet week can otherwise swing the factor hard.</p>
+          <p style="margin:0 0 6px 0">Formula: <code>blended_RN = 0.60 × W4 + 0.40 × W3</code> for both current year and LY (W4 = last 7 days, W3 = the 7 days before that). Then <code>pace_ratio = blended_now / blended_LY</code> and <code>raw_dev = pace_ratio − 1</code>, clamped at ±50%.</p>
+          <p style="margin:0 0 6px 0"><b>Decision states</b>:</p>
           <ul style="margin:0 0 6px 18px;font-size:12.5px;color:#444">
-            <li><b>W4 month</b>: the property has fresh W4 pickup data for the target stay month. The pace ratio is applied directly to user-configured thresholds.</li>
-            <li><b>Aggregate fallback (P̄)</b>: no W4 data for this property/month → use the <b>aggregate W4 pace of all 4 properties</b> (same Florence market). A small <b>P̄</b> badge appears in the RMES cell to flag this.</li>
-            <li><b>Annual fallback (property)</b>: not even aggregate available → use the property's annual W4 pace as proxy. If extreme (>±15%), neutralized for safety.</li>
-            <li><b>Neutralized — no data</b>: no pace data anywhere → factor goes n/a, weight redistributed to the other 4 factors.</li>
+            <li><b>2-week pace (month)</b>: the property has fresh 2-week pace data for the target stay month. The pace ratio is applied directly to user-configured thresholds.</li>
+            <li><b>Aggregate fallback (P̄)</b>: no pace data for this property/month → use the <b>aggregate 2-week pace of all 4 properties</b> (same Florence market). A small <b>P̄</b> badge appears in the RMES cell to flag this.</li>
+            <li><b>Annual fallback (property)</b>: not even aggregate available → use the property's annual pace as proxy. If extreme (>±15%), neutralized for safety.</li>
+            <li><b>Neutralized — no data</b>: no pace data anywhere → factor goes n/a, weight redistributed to the other active factors.</li>
           </ul>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, target month June 2026.</b> Pickup in last 7 days (W4) for stays in June: 8 RN. Same 7 days last year (W4 LY): 7 RN. Ratio = 8 / 7 = 1.14 → raw dev = +14%. State = "W4 month". Applied to composite: 0.20 × +14% = +2.8 percentage points.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, target month June 2026.</b> Last week (W4) picked up 8 RN, the week before (W3) 6 RN → blended now = 0.60×8 + 0.40×6 = 7.2 RN. Same 2 weeks last year: W4 7 RN, W3 5 RN → blended LY = 0.60×7 + 0.40×5 = 6.2 RN. Ratio = 7.2 / 6.2 = 1.16 → raw dev = +16%. State = "2-week pace (month)". Applied to composite: 0.20 × +16% = +3.2 percentage points.</p>
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#ecf3ee;border-radius:6px;font-size:13px;line-height:1.65">
           <p style="margin:0 0 6px 0;font-weight:700;color:#1e6b4a">C · Online Pricing <span style="color:#888;font-weight:400">— "am I priced too high or too low vs my visible competitors?"</span></p>
           <p style="margin:0 0 6px 0"><b>What it measures.</b> My current Expedia price vs the <b>Weighted Expedia Compset</b> (= weighted average of competitor prices on Expedia, with the per-competitor weights configured in Rate Shopper / RMES, but <b>without</b> the offset). All prices are converted to Beddy-equivalent first so the comparison is apples-to-apples.</p>
           <p style="margin:0 0 6px 0">Formula: <code>my_BeddyEq = my_Expedia / (1 + Expedia_markup) / (1 − channel_commission)</code> (typically ÷1.17 ÷ 0.90 for Expedia in Italy). Then <code>raw_inverted_dev = −(my_BeddyEq / weighted_compset_BeddyEq − 1)</code>. The <b>minus sign</b> is intentional: if I am cheaper than the compset, the ratio is &lt; 1 and the dev is positive (= raise me); if I am more expensive, the ratio is &gt; 1 and the dev is negative (= lower me).</p>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Alfani, single day.</b> My Expedia price: €350. My Beddy-eq: 350 ÷ 1.17 ÷ 0.90 = €332. Weighted Expedia Compset (Beddy-eq): €277. Ratio: 332 / 277 = 1.20. Raw inverted dev: −(1.20 − 1) = −20%. Clamped at −50%. Applied to composite: 0.25 × −20% = −5 percentage points. The market is calling me to lower.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Alfani, single day.</b> My Expedia price: €350. My Beddy-eq: 350 ÷ 1.17 ÷ 0.90 = €332. Weighted Expedia Compset (Beddy-eq): €277. Ratio: 332 / 277 = 1.20. Raw inverted dev: −(1.20 − 1) = −20%. Clamped at −50%. Applied to composite: 0.20 × −20% = −4 percentage points. The market is calling me to lower.</p>
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#f5ecec;border-radius:6px;font-size:13px;line-height:1.65">
           <p style="margin:0 0 6px 0;font-weight:700;color:#a83b3b">D · Demand (Expedia) <span style="color:#888;font-weight:400">— "is search volume above or below average for this month?"</span></p>
-          <p style="margin:0 0 6px 0"><b>What it measures.</b> Daily Expedia search volume for the property's destination, compared to the <b>median</b> of search volumes for the same calendar month. Above the median = stronger demand than usual → push up. Below = weaker demand → push down.</p>
-          <p style="margin:0 0 6px 0">Formula: <code>raw_dev = (search_cur − month_median_search) / month_median_search</code>. Then user-defined thresholds may soften the raw signal (configured in Block ② RMES total cap, if applicable). Clamped at ±50%.</p>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, 15/07/2026.</b> Searches today: 12,500. Month-July median: 9,000. Raw dev: (12,500 − 9,000) / 9,000 = +39%. Clamped to +50% if higher. Applied to composite: 0.25 × +39% = +10 percentage points.</p>
+          <p style="margin:0 0 6px 0"><b>What it measures.</b> Daily Expedia search volume for the property's destination, compared to the <b>median</b> of search volumes for the same calendar month. Above the median = stronger demand than usual → push up. Below = weaker demand → push down. This is the only <b>leading</b> automatic factor: searches move <i>before</i> bookings, so D can catch an unexpected demand spike (an unplanned bridge, a sudden surge) that the other factors only see once rooms are already filling.</p>
+          <p style="margin:0 0 6px 0;padding:8px 12px;background:#fff3e0;border-left:3px solid #c4823b;font-size:12.5px"><b>⚠ D switches OFF on event dates.</b> When the day has an event with a <b>weight ≠ 0%</b> set in the Event Factor (Block ④), the searches signal is <b>muted</b> for that day (it goes n/a and its weight is redistributed). Reason: an event already drives searches up, so its demand is <b>already priced into the Event Factor</b> — keeping D on would count the same surge twice. On dates with <b>no event</b>, or with an event left at <b>0%</b> (label only, no price effect), D stays fully active.</p>
+          <p style="margin:0 0 6px 0">Formula: <code>raw_dev = (search_cur − month_median_search) / month_median_search</code>. Clamped at ±50%.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, 15/07/2026.</b> Searches today: 12,500. Month-July median: 9,000. Raw dev: (12,500 − 9,000) / 9,000 = +39%. Clamped to +50% if higher. No event configured for the day → D active. Applied to composite: 0.20 × +39% = +7.8 percentage points.</p>
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#fdf3e3;border-radius:6px;font-size:13px;line-height:1.65">
@@ -2425,9 +2412,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li><b>A · Daily Pickup</b>: no new booking entered for this stay-date in the fallback window (today + 7 previous days = 8 calendar days) → factor neutral. Weight redistributed. <i>(Common on far-future dates with no booking activity yet.)</i></li>
             <li><b>B · Pace Trend</b>: no booking pace data for the month-of-stay on this property. The engine falls back to the <b>aggregate pace of the other 3 properties</b> (same Florence market) as proxy — a small <b>P̄</b> badge appears in the RMES cell. If even the aggregate is missing, the factor goes n/a and weight is redistributed.</li>
             <li><b>C · Online Pricing</b>: my Expedia price is missing for the day, or no compset visible. Factor n/a, weight redistributed. <i>(Most frequent cause: Expedia hasn't loaded yet for that date.)</i></li>
-            <li><b>D · Demand (Expedia)</b>: Expedia search volume not loaded for that day, or no monthly median to compare to. Factor n/a, weight redistributed.</li>
+            <li><b>D · Demand (Expedia)</b>: Expedia search volume not loaded for that day, or no monthly median to compare to. <b>Also muted on purpose</b> on any date that has an event with a weight ≠ 0% (the event's demand is already in the Event Factor — see Block ④). Factor n/a, weight redistributed.</li>
           </ul>
-          <p style="margin:0;color:#666;font-size:12px"><b>Concrete example.</b> Default weights 25/25/25/25. If <b>C · Online Pricing</b> is n/a today (no Expedia price), the active weights become 33.3%/33.3%/—/33.3% for Pickup/Pace/Demand. The Composite is computed only on the 3 active factors, each at 33.3%. The math is consistent and you can verify it by hovering the Weight column in the modal: the strike-through 25% means "originally", and the +X% next to it means "redistributed bonus".</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Concrete example.</b> Default weights 20/20/20/20/20 (A/B/C/D/E). On a date with an event weight set, <b>D · Demand switches off</b>, so the active weights become 25%/25%/25%/—/25% for Pickup/Pace/Online/AirDNA. The Composite is computed only on the 4 active factors, each at 25%. You can verify it by hovering the Weight column in the modal: the strike-through 20% means "originally", and the +5% next to it means "redistributed bonus". The same redistribution happens whenever any factor goes n/a (e.g. no Expedia price → C drops, the other four share its weight).</p>
         </div>
 
         <div style="margin:14px 0;padding:12px 14px;background:#fff5f5;border-left:3px solid #a83b3b;font-size:13px;line-height:1.65">
@@ -2454,6 +2441,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p>For each event (loaded from <code>EVENTS_CSV</code>) you set a <b>premium % from 0% to +20%</b>. On days that match the event, the RMES price is multiplied by <code>(1 + event%)</code>. Only positive premiums are allowed (no discount on event dates). 0% = no effect.</p>
         <p>Every event row shows <b>the actual dates affected</b> (e.g. <code>04–10/06/2026 · 04–10/06/2027</code> for Calcio Storico): consecutive days are collapsed into a range, non-consecutive dates listed separately. So you can see at a glance which days the weight applies to without going to a calendar.</p>
         <p>Weights are <b>shared across all 4 properties</b>: an event like "Pitti" has the same weight everywhere.</p>
+        <p style="margin:6px 0;padding:8px 12px;background:#f5ecec;border-left:3px solid #a83b3b;font-size:12.5px"><b>Interaction with D · Demand.</b> Setting any weight other than 0% on a date <b>automatically mutes the D · Demand (Expedia searches) factor</b> for that date — its weight is redistributed to the other factors. The event already captures the demand surge, so leaving the searches signal on would double-count it. Leave an event at 0% (label only) and D stays active.</p>
         <p><i>If the box shows "No events loaded": <code>EVENTS_CSV</code> is missing or empty in data.js. Regenerate data.js via Claude Code.</i></p>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">⚡ Base Price block — the structural fair price for the day</h4>
@@ -2556,19 +2544,20 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <p style="margin:0 0 6px 0"><b>📐 Full end-to-end example — Firenze Suite, single day</b></p>
           <ol style="margin:0 0 0 18px">
             <li>Base Price (step 5 above) = <b>€283</b> (frozen).</li>
-            <li>4 RMES factors today:
+            <li>This day has the event "Pre Festa della Repubblica" with a weight set (+3%), so <b>D · Demand is muted</b> and the four active factors share the weight at <b>25% each</b>:
               <ul style="margin:4px 0 4px 14px">
                 <li>A · Daily Pickup: 3 bookings entered in the primary window (yesterday + today), fill rate 100% → <b>+20%</b>. Weighted: 0.25 × 20% = +5 pp.</li>
-                <li>B · Pace Trend: ratio 0.92, state "all down" → <b>−8%</b>. Weighted: 0.25 × −8% = −2 pp.</li>
+                <li>B · Pace Trend: 2-week blend ratio 0.92 → <b>−8%</b>. Weighted: 0.25 × −8% = −2 pp.</li>
                 <li>C · Online Pricing: my Beddy_eq vs compset → <b>−20%</b>. Weighted: 0.25 × −20% = −5 pp.</li>
-                <li>D · Demand Expedia: +39%, clamped at +50% → <b>+39%</b>. Weighted: 0.25 × +39% = +9.75 pp.</li>
+                <li>D · Demand Expedia: <b>muted</b> (event weight set) → weight redistributed, 0 pp.</li>
+                <li>E · AirDNA Market: market running ahead of us → <b>+10%</b>. Weighted: 0.25 × +10% = +2.5 pp.</li>
               </ul>
             </li>
-            <li>Composite raw = 1 + (5 − 2 − 5 + 9.75)/100 = 1 + 7.75/100 = <b>×1.078</b>. Within ±30% cap → no trimming.</li>
+            <li>Composite raw = 1 + (5 − 2 − 5 + 2.5)/100 = 1 + 0.5/100 = <b>×1.005</b>. Within ±30% cap → no trimming.</li>
             <li>LMF for today: OCC 100% × 3 days to arrival → matrix says +0% (no discount needed, nearly full). LMF factor = 1.00.</li>
-            <li>Event Factor: it's a calendar day with "Pre Festa della Repubblica" event, weight set to +3% → Event Factor = 1.03.</li>
-            <li><b>Final RMES target</b> = 283 × 1.078 × 1.00 × 1.03 = <b>€314</b> (rounded). Floor €150 not triggered.</li>
-            <li>RMES cell shows <b>↑ €314</b>. You can ✓ accept it (Last update becomes €314 green) or click it for the full detail modal.</li>
+            <li>Event Factor: weight +3% → Event Factor = 1.03.</li>
+            <li><b>Final RMES target</b> = 283 × 1.005 × 1.00 × 1.03 = <b>€293</b> (rounded). Floor €150 not triggered.</li>
+            <li>RMES cell shows <b>↑ €293</b>. You can ✓ accept it (Last update becomes €293 green) or click it for the full detail modal.</li>
           </ol>
         </div>
       </div>
@@ -2620,7 +2609,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p style="font-size:12.5px;color:#666"><b>Situations that DON'T trigger a flag</b> are visible directly in the columns: ADR used "(anchor)" tag means no LY history; Goal Value "⚠" means cap disabled for sanity (n&lt;2 competitors or Goal&lt;Floor); Floor "✓" means Floor protected. No need for a flag to repeat what the column already shows.</p>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">💡 Section 2 — RMES breakdown</h4>
-        <p>How each day's RMES suggestion is built, from the current reference (Last update) through the 4 factors, LMF, Event, to the final price. Only future dates (from today) — RMES doesn't make sense in the past. Header sticky, tooltips on every number.</p>
+        <p>How each day's RMES suggestion is built, from the current reference (Last update) through the 5 factors, LMF, Event, to the final price. Only future dates (from today) — RMES doesn't make sense in the past. Header sticky, tooltips on every number.</p>
         <p><b>Columns</b>:</p>
         <ul style="margin:6px 0 6px 18px;font-size:13px">
           <li><b>Property · Date · DoW</b> — identifier.</li>
@@ -2641,7 +2630,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             </ul>
           </li>
         </ul>
-        <p style="font-size:12.5px"><b>⬇ Export RMES CSV</b> downloads every column (4 dev%, 4 weights, composite, LMF, event, suggested, applied, applied_source, applied_on, accepted_on) for the selected range. Use this for audit and for sharing the engine's decisions with anyone outside the dashboard.</p>
+        <p style="font-size:12.5px"><b>⬇ Export RMES CSV</b> downloads every column (5 dev%, 5 weights, composite, LMF, event, suggested, applied, applied_source, applied_on, accepted_on) for the selected range. Use this for audit and for sharing the engine's decisions with anyone outside the dashboard.</p>
 
         <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12.5px"><b>The numbers in this tab match exactly what you see in Sell Strategy.</b> If you see different numbers for the same day, it's a bug — please flag it.</p>
       </div>
@@ -2651,7 +2640,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <details class="panel" style="margin-bottom:14px;border-left:3px solid #3d7a4b">
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">☁ Shared state (real-time sync)</summary>
       <div style="padding:0 18px 16px">
-        <p>RMES decisions (accepted prices, overrides) and the whole configuration (the 4-factor weights, total cap, Daily Pickup thresholds, floor, anchor, target growth, LMF matrix, event weights, compset weights/offsets) are <b>shared in real time</b> between everyone who opens the dashboard. When one person accepts a price or changes a setting, the others see it without re-importing anything, on any browser or device.</p>
+        <p>RMES decisions (accepted prices, overrides) and the whole configuration (the 5-factor weights, total cap, Daily Pickup thresholds, floor, anchor, target growth, LMF matrix, event weights, compset weights/offsets) are <b>shared in real time</b> between everyone who opens the dashboard. When one person accepts a price or changes a setting, the others see it without re-importing anything, on any browser or device.</p>
         <p>The chip in the top bar shows the status: <b>☁ synced</b> = your changes are saved to the shared store and you are seeing everyone's latest state; <b>⚠ local only</b> = the connection to the shared store is unavailable, so you are working on this browser alone — everything still works and will sync automatically when the connection is back.</p>
         <p>If two people change the same thing at the same moment, the <b>last save wins</b>. In practice you almost never edit the exact same date at the exact same second, so this is rarely an issue.</p>
       </div>
@@ -2681,7 +2670,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Annual Anchor Price (fallback)</dt>
           <dd style="margin:2px 0 8px 18px">Single annual reference number per property (Firenze 220 · Condotta 280 · Alfani 270 · Enis 145). Used as guard-rail only when no LY booking data exists for the target month. Configurable in the RMES tab.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RMES delta</dt>
-          <dd style="margin:2px 0 8px 18px">Today's adjustment on top of the Base Price, computed from the 4 factors (Daily Pickup, Pace Trend, Online Pricing, Demand Expedia) + LMF + Event Factor. The 4-factor composite is capped at ±total cap (default 30%); the final price is clamped to the Floor Rate.</dd>
+          <dd style="margin:2px 0 8px 18px">Today's adjustment on top of the Base Price, computed from the 5 factors (Daily Pickup, Pace Trend, Online Pricing, Demand Expedia, AirDNA Market) + LMF + Event Factor. The composite is capped at ±total cap (default 30%); the final price is clamped to the Floor Rate.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">baseRT</dt>
           <dd style="margin:2px 0 8px 18px">The reference Room Type for each property (Camera Matrimoniale Deluxe for Firenze, Bilocale for Condotta, Classic for Alfani, Senape for Davids). Base Price is computed at the baseRT, other RTs inherit Base + monthly supplement.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RT supplement</dt>

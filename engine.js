@@ -671,6 +671,16 @@ const CFG = {
 /* David's: budget = forecast (LY × growth). Vedi _davidsBudgetForecast(). */
 const _DAVIDS_BUDGET_GROWTH = 1.08;
 const PACE_WEEK_WEIGHTS = [0.10, 0.20, 0.30, 0.40];
+/* B·Pace Trend — segnale su DUE settimane (smussa il rumore sulle strutture piccole):
+   W4 (ultimi 7gg, più recente) pesa 60%, W3 (i 7gg precedenti) pesa 40%.
+   weekArr[3] = W4, weekArr[2] = W3 (vedi getPickupWeeks: index 3 = settimana più recente). */
+const PACE_BLEND = { w4: 0.60, w3: 0.40 };
+function _paceBlendRn(weekArr){
+  if (!weekArr) return 0;
+  const w4 = (weekArr[3] && isFinite(weekArr[3].rn)) ? weekArr[3].rn : 0;
+  const w3 = (weekArr[2] && isFinite(weekArr[2].rn)) ? weekArr[2].rn : 0;
+  return PACE_BLEND.w4 * w4 + PACE_BLEND.w3 * w3;
+}
 /* -------- DATES -------- */
 const TODAY = new Date();
 TODAY.setHours(23,59,59,999);
@@ -4432,15 +4442,14 @@ function _getPaceAggBoth(){
   if (_PACE_AGG_BOTH_CACHE) return _PACE_AGG_BOTH_CACHE;
   if (typeof aggPickup !== 'function') return null;
   const pkAgg = aggPickup('both');
-  // SIMPLIFIED: usa SOLO W4 (indice 3 = ultimi 7 giorni = pickup più recente).
-  // Niente più mix pesato 4-settimane: il segnale W4 è il più reattivo al mercato.
-  const W4 = 3;
+  // B·Pace su DUE settimane: blend W4×0.60 + W3×0.40 (vedi _paceBlendRn).
+  // Smussa il rumore del pace sulle strutture con poche camere.
   const byStayMonth = {};  // ym → { rawMult, ratio, pickupCur, pickupStly }
   if (pkAgg && pkAgg.sm && pkAgg.smS){
     const allMonths = new Set([...Object.keys(pkAgg.sm), ...Object.keys(pkAgg.smS)]);
     for (const ym of allMonths){
-      const cur  = (pkAgg.sm[ym]  && pkAgg.sm[ym][W4])  ? pkAgg.sm[ym][W4].rn  : 0;
-      const stly = (pkAgg.smS[ym] && pkAgg.smS[ym][W4]) ? pkAgg.smS[ym][W4].rn : 0;
+      const cur  = _paceBlendRn(pkAgg.sm[ym]);
+      const stly = _paceBlendRn(pkAgg.smS[ym]);
       if (stly > 0 && cur > 0){
         const ratio = cur / stly;
         const rawMult = (typeof applyThresholds === 'function') ? applyThresholds(ratio, 'pace') : 1;
@@ -4739,12 +4748,10 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
   if (typeof aggPickup === 'function'){
     const pkAgg = aggPickup(sel);
     let curRn = 0, stlyRn = 0;
-    // SIMPLIFIED: solo W4 (indice 3 = ultimi 7gg, il pickup più recente).
-    // Niente più mix pesato 4w: il segnale W4 cattura subito il cambio di mercato.
-    const W4 = 3;
+    // B·Pace su DUE settimane: blend W4×0.60 + W3×0.40 (vedi _paceBlendRn).
     for (const rt of pkAgg.rtAxis){
-      const rtCur  = (pkAgg.rt[rt]  && pkAgg.rt[rt][W4])  ? pkAgg.rt[rt][W4].rn  : 0;
-      const rtStly = (pkAgg.rtS[rt] && pkAgg.rtS[rt][W4]) ? pkAgg.rtS[rt][W4].rn : 0;
+      const rtCur  = _paceBlendRn(pkAgg.rt[rt]);
+      const rtStly = _paceBlendRn(pkAgg.rtS[rt]);
       curRn  += rtCur;
       stlyRn += rtStly;
       _paceMultByRT[rt] = (rtStly > 0 && rtCur > 0) ? applyThresholds(rtCur / rtStly, 'pace') : 1;
@@ -4757,15 +4764,13 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     if (pkAgg.sm && pkAgg.smS){
       const allMonths = new Set([...Object.keys(pkAgg.sm), ...Object.keys(pkAgg.smS)]);
       for (const ym of allMonths){
-        // Solo W4 per il mese di soggiorno
-        const mCur  = (pkAgg.sm[ym]  && pkAgg.sm[ym][W4])  ? pkAgg.sm[ym][W4].rn  : 0;
-        const mStly = (pkAgg.smS[ym] && pkAgg.smS[ym][W4]) ? pkAgg.smS[ym][W4].rn : 0;
+        // B·Pace su DUE settimane: blend W4×0.60 + W3×0.40 (vedi _paceBlendRn).
+        const mCur  = _paceBlendRn(pkAgg.sm[ym]);
+        const mStly = _paceBlendRn(pkAgg.smS[ym]);
         if (mStly > 0 && mCur > 0){
           const paceRatio = mCur / mStly;
           const rawMult = applyThresholds(paceRatio, 'pace');
-          // Stato unico per il "caso normale": ha dati W4 per il mese.
-          // I 3 stati richiesti dall'utente (annual fallback / aggregate fallback / neutralized)
-          // sono GIÀ gestiti in _paceMultForRow quando _paceStateByStayMonth[ym] è null/missing.
+          // Stato unico per il "caso normale": ha dati blend 2 settimane per il mese.
           _paceStateByStayMonth[ym] = { state: 'mese_w4', rawMult, ratio: paceRatio, pickupCur: mCur, pickupStly: mStly };
           _paceMultByStayMonth[ym] = rawMult;
         } else {
@@ -4783,7 +4788,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       return verbose ? {
         mult: st.rawMult, naReason: null, state: 'mese_w4', rawMult: st.rawMult,
         pickupCur: st.pickupCur, pickupStly: st.pickupStly,
-        source: 'W4 pickup for stay month ' + ym + ' (' + st.pickupCur + ' RN cur vs ' + st.pickupStly + ' RN STLY)'
+        source: 'pace 2-week blend (W4×0.60 + W3×0.40) for stay month ' + ym + ' (' + (+st.pickupCur).toFixed(1) + ' RN cur vs ' + (+st.pickupStly).toFixed(1) + ' RN STLY)'
       } : st.rawMult;
     }
     // FALLBACK 1: aggregate (P̄) cross-property — usa il pace W4 di tutte le strutture per il mese.
@@ -4793,7 +4798,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       return verbose ? {
         mult: aggForMonth.rawMult, naReason: null, state: 'fallback_aggregate', rawMult: aggForMonth.rawMult,
         ratio: aggForMonth.ratio, pickupCur: aggForMonth.pickupCur, pickupStly: aggForMonth.pickupStly,
-        source: 'aggregate W4 pickup of all properties for stay month ' + ym + ' (' + aggForMonth.pickupCur + ' RN cur vs ' + aggForMonth.pickupStly + ' RN STLY)',
+        source: 'aggregate pace 2-week blend of all properties for stay month ' + ym + ' (' + (+aggForMonth.pickupCur).toFixed(1) + ' RN cur vs ' + (+aggForMonth.pickupStly).toFixed(1) + ' RN STLY)',
         fromAggregate: true
       } : aggForMonth.rawMult;
     }
@@ -5006,6 +5011,15 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       _F_naReason = (_searchCur == null) ? 'Daily Expedia searches not available'
                   : 'Monthly search median not computable';
     }
+    // D·Demand si SPEGNE sulle date con un evento che ha un peso ≠ 0 (Event Factor attivo):
+    // la domanda dell'evento è già prezzata nell'Event Factor, quindi tenere acceso anche
+    // il segnale ricerche raddoppierebbe lo stesso fenomeno. Sulle date senza evento, o con
+    // evento a 0% (solo etichetta), D resta acceso per catturare i picchi di domanda non previsti.
+    // Il peso liberato viene redistribuito automaticamente sugli altri fattori (vedi _normalizeWeights).
+    if ((typeof _getEventBoost === 'function') && _getEventBoost(r.ymd) !== 1){
+      air_mult = 1;
+      _F_naReason = 'Switched off on this event date (weight set in the Event Factor) — demand is already priced into the Event Factor, so the searches signal is muted to avoid double-counting';
+    }
     // E · AirDNA Market factor — confronta densità di prenotazioni del mercato
     // Firenze (AirDNA: booked / total listings) con la NOSTRA OCC OTB sulla stessa data.
     // Logica: se il mercato è più pieno di me, ho margine per alzare; se sono più
@@ -5170,10 +5184,9 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           _lmfPct = fp_lmfLookup(sel, r.curOcc, Math.max(0, _daysToArr));
         }
         const _eventBoost = _getEventBoost(r.ymd);
-        const _dowBoost = (typeof _getDowBoost === 'function') ? _getDowBoost(sel, r.ymd) : 1;
         const _promoInfo = (typeof _getPromoBoost === 'function') ? _getPromoBoost(sel, r.ymd) : { boost: 1, applied: [] };
         const _promoBoost = _promoInfo.boost;
-        let _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100) * _eventBoost * _dowBoost * _promoBoost;
+        let _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
         // Cap ±20% RIMOSSO nella migrazione 4-fattori. Restano solo Floor (≥) e Anchor ±50% (sul Base).
         const priceSuggested = Math.max(_priceAfterFactors, _structFloor);
         rmesSuggestedByRT[rt] = priceSuggested;
@@ -5186,7 +5199,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           if (_suppData && rt !== _suppData.baseRT){
             baseRT_pure = _basePure + _supplementForRT(rt, r.mo);
           }
-          let _priceOnBase = baseRT_pure * multRT * (1 + _lmfPct/100) * _eventBoost * _dowBoost * _promoBoost;
+          let _priceOnBase = baseRT_pure * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
           // Cap ±20% RIMOSSO. Solo Floor.
           let _atCapB = null;
           if (_priceOnBase < _structFloor){ _priceOnBase = _structFloor; _atCapB = 'floor'; }
@@ -6011,9 +6024,6 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         if (typeof _getEventBoost === 'function') eventBoost = _getEventBoost(ymdN);
       } catch(e){}
       const eventName = (typeof getEventForYmd === 'function') ? (getEventForYmd(ymdN) || null) : null;
-      // DOW Premium (weekend uplift)
-      let dowBoost = 1;
-      try { if (typeof _getDowBoost === 'function') dowBoost = _getDowBoost(sk, ymdN); } catch(e){}
       // Promo Overrides (active today on this stay-date)
       let promoBoost = 1, promoApplied = [];
       try {
@@ -6067,7 +6077,6 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         lmfPct,
         eventBoost,
         eventName,
-        dowBoost,
         promoBoost,
         promoApplied,
         rmesSugg: rmesSugg != null ? Math.round(rmesSugg) : null,
@@ -7227,7 +7236,7 @@ function renderRmesBreakdown(){
     { t:'DoW',              al:'right', tip:'Day of week' },
     { t:'Last update',      al:'right', tip:'Price currently active for this stay-date (= the reference the new RMES suggestion is built on). Equals the Base Price if RMES has never been accepted, or the most recent accepted RMES otherwise.' },
     { t:'A·Pickup',         al:'right', tip:'A · Daily Pickup — single-factor deviation %, weighted. Activates only if new bookings came in for this stay-date in the window "yesterday + today" (2 calendar days). If 0 bookings → expands to "today and the 7 previous days" (8 calendar days). NOTE: this is the only place in the dashboard where today is included in pickup — the Sell Strategy "Pickup Nd" column and the Big Picture pickup chart instead use the standard rule (today excluded). When activated, the % depends on the fill rate (≤20% → 0%, 21–50% → +5%, 51–70% → +10%, 71–90% → +15%, >90% → +20%). Never negative.' },
-    { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %. Compares the booking pace of the last 7 days (W4 window) vs the same 7 days last year. Only the most recent week is used as the freshest market signal.' },
+    { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %. Compares the booking pace of the last 2 weeks vs the same 2 weeks last year, weighting the most recent week 60% and the previous week 40% (smooths noise on small properties).' },
     { t:'C·Online',         al:'right', tip:'C · Online Pricing — my Beddy-eq vs Weighted Expedia Compset (no offsets), single-factor dev %, weighted.' },
     { t:'D·Demand',         al:'right', tip:'D · Demand (Expedia) — Expedia search volume vs the month median, single-factor dev %, weighted.' },
     { t:'E·AirDNA',         al:'right', tip:'E · AirDNA Market — market booked listings (Florence) compared to MY OCC on the same day. Headroom signal: positive when the market is fuller than us (we have margin to raise), negative when we are fuller than the market (no extra push). Deadband ±5%, slope 0.80.' },
@@ -7325,7 +7334,7 @@ function renderRmesBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (W4 = last 7 days booking pace vs LY) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>E·AirDNA</b> (market booked vs my OCC, headroom signal) · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (last 2 weeks booking pace vs LY, W4×60% + W3×40%) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>E·AirDNA</b> (market booked vs my OCC, headroom signal) · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -9204,7 +9213,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         fpSub = dtTxt ? ('Saved on '+dtTxt+' · the new RMES suggestion starts from this price') : 'Manual override active · the new RMES suggestion starts from this price';
       } else if (_src === 'foundation'){
         fpLabel = 'Last update (manual Base override)';
-        fpSub = 'Manual Base override · the 4 RMES factors apply on top of this price';
+        fpSub = 'Manual Base override · the 5 RMES factors apply on top of this price';
       } else if (_src === 'accepted'){
         const dtTxt = _fmtDateTime(_acceptedMeta.ts);
         fpLabel = 'Last update (accepted RMES)';
@@ -9227,7 +9236,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       const factors = [
         {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'recent bookings (window "1d" = yesterday + today, fallback "7d" = today and 7 previous days) for this stay-date × fill rate scale. Never negative.'},
-        {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'W4 booking pace (last 7 days) for the stay month vs same 7 days last year. Fallbacks: aggregate cross-property → annual property → neutralized.'},
+        {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'last 2 weeks booking pace for the stay month vs same 2 weeks last year (W4×60% + W3×40%). Fallbacks: aggregate cross-property → annual property → neutralized.'},
         {key:'comp_mult',  naKey:'comp',  code:'C', name:'Online Pricing',   color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)'},
         {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'},
         {key:'mkt_mult',   naKey:'mkt',   code:'E', name:'AirDNA Market',    color:'#c4823b', desc:'AirDNA Booked Listings vs MY OCC on the same day. Headroom signal: market more booked than me = raise; my OCC ahead of market = no push.'}
@@ -9282,18 +9291,18 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           h += '</b></div>';
           h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Applied dev: '+_fpct((mults.occ_mult-1),1)+'</div>';
         } else if (code === 'B'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — only the most recent 7 days (W4 window) are used as the freshest market signal. Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — the last 2 weeks are used, weighting the most recent week 60% and the previous week 40% (smooths noise on small properties). Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
           const pi = dbg.paceInfo || {};
           if (pi.pickupCur != null && pi.pickupStly != null){
-            h += '<div>Pickup last 7 days: <b>'+pi.pickupCur+' RN</b> now vs <b>'+pi.pickupStly+' RN</b> same period last year <span style="color:#999">(real room nights)</span></div>';
+            h += '<div>Pace last 2 weeks: <b>'+(+pi.pickupCur).toFixed(1)+' RN</b> now vs <b>'+(+pi.pickupStly).toFixed(1)+' RN</b> same period last year <span style="color:#999">(weighted room nights, W4×60% + W3×40%)</span></div>';
             if (pi.ratio != null){
-              h += '<div style="margin-top:3px">Pace ratio (W4): <b>'+pi.ratio.toFixed(3)+'</b> → dev <b>'+_fpct(pi.ratio-1,1)+'</b></div>';
+              h += '<div style="margin-top:3px">Pace ratio (2-week blend): <b>'+pi.ratio.toFixed(3)+'</b> → dev <b>'+_fpct(pi.ratio-1,1)+'</b></div>';
             } else if (pi.pickupStly > 0){
               const ratio = pi.pickupCur / pi.pickupStly;
               h += '<div>Pace ratio: <b>'+ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(ratio-1,1)+'</b></div>';
             }
           }
-          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Decision state: <b style="color:#8e5fa8">'+(({'mese_w4':'W4 month','fallback_aggregate':'aggregate fallback (P̄)','fallback_annuale_struct':'annual fallback (property)','neutralizzato_no_dati':'neutralized — no data','fallback':'fallback'}[pi.state]) || pi.state || '—')+'</b></div>';
+          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Decision state: <b style="color:#8e5fa8">'+(({'mese_w4':'2-week pace (month)','fallback_aggregate':'aggregate fallback (P̄)','fallback_annuale_struct':'annual fallback (property)','neutralizzato_no_dati':'neutralized — no data','fallback':'fallback'}[pi.state]) || pi.state || '—')+'</b></div>';
           if (pi.source){
             h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">'+pi.source+'</div>';
           }
@@ -9430,31 +9439,6 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '<div><span style="font-weight:600;color:#555">\u2728 Event Factor</span>';
         rmesSection += '<div style="font-size:10px;color:#aaa;margin-top:2px">'+_eventLeftSub+'</div></div>';
         rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_eventCol+'">'+(_eventPct>=0?'+':'')+_eventPct.toFixed(0)+'% (\u00d7'+_eventBoostModal.toFixed(3)+')</span>';
-        rmesSection += '</div>';
-        // === DOW Premium row ===
-        const _dowBoostModal = (typeof _getDowBoost === 'function') ? _getDowBoost(structKey, _ymdNumEvent) : 1;
-        const _dowPct = (_dowBoostModal - 1) * 100;
-        const _dowNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-        const _dowName = _dowNames[td.getDay()];
-        const _dowCol = _dowPct > 0 ? '#1e6b4a' : (_dowPct < 0 ? '#a83b3b' : '#aaa');
-        const _dowBg = _dowPct > 0 ? '#eef4ff' : '#fafafa';
-        const _dowBorder = _dowPct > 0 ? '1px solid #a5c3e8' : '1px solid #eee';
-        // Stato: è il default Fri/Sat +5% o un override custom?
-        const _dowMap = (typeof _getDowPremiumMap === 'function') ? _getDowPremiumMap() : {};
-        const _isUserCustom = !!(_dowMap && _dowMap[structKey]);
-        const _isWeekend = (td.getDay() === 5 || td.getDay() === 6);
-        let _dowSub;
-        if (_dowPct === 0){
-          _dowSub = 'Day of week: <b style="color:#1f3a6b">'+_dowName+'</b> · no premium configured' + (_isWeekend && _isUserCustom ? ' (default Fri/Sat +5% disabled by custom override)' : '');
-        } else if (!_isUserCustom && _isWeekend){
-          _dowSub = 'Day of week: <b style="color:#1f3a6b">'+_dowName+'</b> · <b style="color:#3b6b9a">default weekend uplift</b> (configurable in tab RMES → ⑤ DOW Premium)';
-        } else {
-          _dowSub = 'Day of week: <b style="color:#1f3a6b">'+_dowName+'</b> · custom value for ' + (structKey === 'firenze' ? 'Firenze Suite' : structKey === 'condotta' ? 'Condotta 16' : structKey === 'alfani' ? 'Palazzo Alfani' : 'Enis Guesthouse');
-        }
-        rmesSection += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:'+_dowBg+';border:'+_dowBorder+';border-radius:4px;margin-bottom:10px;font-size:12px">';
-        rmesSection += '<div><span style="font-weight:600;color:#555">\ud83d\udcc6 DOW Premium</span>';
-        rmesSection += '<div style="font-size:10px;color:#aaa;margin-top:2px">'+_dowSub+'</div></div>';
-        rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_dowCol+'">'+(_dowPct>=0?'+':'')+_dowPct.toFixed(0)+'% (\u00d7'+_dowBoostModal.toFixed(3)+')</span>';
         rmesSection += '</div>';
         // === Promo Overrides row ===
         const _promoInfoModal = (typeof _getPromoBoost === 'function') ? _getPromoBoost(structKey, _ymdNumEvent) : { boost: 1, applied: [] };
@@ -9870,7 +9854,7 @@ function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   h += '<div style="font-size:22px;font-weight:700;font-family:\'DM Mono\',monospace;color:#5a3a14">' + fmt(dd.priceFinal) + '</div>';
   h += '</div></div>';
   h += '<div style="margin-top:14px;padding:8px 12px;background:#f5f5f5;border-radius:4px;font-size:11px;color:#666;line-height:1.4">';
-  h += '<b>Note</b>: this is the <b>Base Price</b>, the structural price of the day. To see how the Base Price is adjusted by the 4 RMES factors (A · Daily Pickup, B · Pace Trend, C · Online Pricing, D · Demand (Expedia)) to produce the RMES suggested price, click the <b>RMES</b> cell on the right in the table.';
+  h += '<b>Note</b>: this is the <b>Base Price</b>, the structural price of the day. To see how the Base Price is adjusted by the 5 RMES factors (A · Daily Pickup, B · Pace Trend, C · Online Pricing, D · Demand (Expedia), E · AirDNA Market) to produce the RMES suggested price, click the <b>RMES</b> cell on the right in the table.';
   h += '</div>';
   h += '</div>';  // /body
   h += '</div></div>';  // /modal /bg
@@ -13620,7 +13604,7 @@ function renderPricing(sel){
                        : rmesEntry.source === 'otb'     ? 'ADR OTB del giorno'
                        : rmesEntry.source === 'finalLy' ? 'ADR Final LY 2025'
                        : 'sconosciuta';
-          lines.push(`✦ RMES price = base × ${rmesEntry.multFinale.toFixed(3)} (weighted average of 4 factors)`);
+          lines.push(`✦ RMES price = base × ${rmesEntry.multFinale.toFixed(3)} (weighted average of 5 factors)`);
           lines.push(`  Base source: ${srcLbl}`);
           if (rmesEntry.suppApplied > 0){
             lines.push(`  ⚠ Bilocale sold-out → −${fmtEUR(rmesEntry.suppApplied)} (suppl. ${rmesEntry.suppRT})`);
@@ -15620,7 +15604,6 @@ function renderRMESConfigTab(){
   if (typeof _renderRmesPickupThresholdsBox === 'function') _renderRmesPickupThresholdsBox(sel);
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
-  if (typeof _renderRmesDowPremiumBox === 'function') _renderRmesDowPremiumBox(sel);
   if (typeof _renderRmesPromosBox === 'function') _renderRmesPromosBox(sel);
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
   _rmesTabClearDirty();
@@ -15650,7 +15633,7 @@ function _renderRmesWeightsBox(sel){
   const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
   const factors = [
     { key:'occ',    letter:'A', label:'Daily Pickup',       color:'#3b6b9a', desc:'recent pickup × fill rate (window "1d" = yesterday + today, fallback "7d")' },
-    { key:'pace',   letter:'B', label:'Pace Trend',         color:'#8e5fa8', desc:'W4 pickup of stay month vs STLY (fallback: aggregate / annual / neutralized)' },
+    { key:'pace',   letter:'B', label:'Pace Trend',         color:'#8e5fa8', desc:'last 2 weeks pace of stay month vs STLY, W4×60% + W3×40% (fallback: aggregate / annual / neutralized)' },
     { key:'comp',   letter:'C', label:'Online Pricing',     color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)' },
     { key:'airdna', letter:'D', label:'Demand (Expedia)',   color:'#a83b3b', desc:'Expedia searches vs month median' },
     { key:'mkt',    letter:'E', label:'AirDNA Market',      color:'#c4823b', desc:'AirDNA Booked Listings vs market average (booking density of Florence rentals)' },
@@ -15910,20 +15893,6 @@ function _rmesTabApplyAll(){
     });
     _setEventWeights(w);
   }
-  // DOW Premium inputs (only saved if at least one is non-default; otherwise resetDowPremium ripristina i default)
-  const dowInputs = document.querySelectorAll('.rmes-dow-input');
-  if (dowInputs.length){
-    const dowArr = [0,0,0,0,0,0,0];
-    dowInputs.forEach(inp => {
-      const i = parseInt(inp.dataset.dow, 10);
-      let v = parseFloat(inp.value);
-      if (!isFinite(v)) v = 0;
-      if (v < -50) v = -50;
-      if (v > 50) v = 50;
-      if (i >= 0 && i < 7) dowArr[i] = v;
-    });
-    _setDowPremium(sel, dowArr);
-  }
   // Promo Overrides — già salvati ad ogni input change in _renderRmesPromosBox.
   // Qui ricolleziamo per sicurezza (es. se l'utente cambia struttura senza che il blur sia partito).
   const promoRows = document.querySelectorAll('#rmes-promos-wrap tr[data-promo-id]');
@@ -15970,7 +15939,7 @@ function _renderRmesLmfBox(sel){
     '<div style="border:1px solid var(--line);border-radius:8px;overflow:hidden">' +
       '<div style="padding:10px 14px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--line)">' +
         '<div style="font-size:13px;font-weight:700;color:var(--ink-1)">\u23f1 Last Minute Price Factor</div>' +
-        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Discount/premium % based on the property occupancy that day (rows) and days to arrival (columns). Applied to the RMES suggested price (after the 4 factors composite). Negative values = discount, positive = premium.</div>' +
+        '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Discount/premium % based on the property occupancy that day (rows) and days to arrival (columns). Applied to the RMES suggested price (after the 5 factors composite). Negative values = discount, positive = premium.</div>' +
       '</div>' +
       '<div style="overflow-x:auto;padding:8px 10px">' +
         '<table style="border-collapse:collapse;margin:0 auto"><thead><tr>' +
@@ -16128,52 +16097,6 @@ function _renderRmesEventsBox(){
   if (rb) rb.addEventListener('click', () => {
     _setEventWeights({});
     _renderRmesEventsBox();
-    if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
-  });
-}
-
-/* ============================================================================
-   DOW Premium box — input % per giorno della settimana (per struttura selezionata)
-   ============================================================================ */
-function _renderRmesDowPremiumBox(sel){
-  const wrap = document.getElementById('rmes-dow-premium-wrap');
-  if (!wrap) return;
-  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
-  const lbl = structLabels[sel] || sel;
-  const dowNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const dowLong  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const isUserSaved = !!(_getDowPremiumMap()[sel]);
-  const cells = dowNames.map((d, i) => {
-    const v = _getDowPremium(sel, i);
-    const isWeekend = (i === 5 || i === 6);
-    return '<div style="flex:1;min-width:62px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;background:'+(isWeekend ? '#eef4ff' : '#fafafa')+';border:1px solid '+(isWeekend ? '#a5c3e8' : '#e5e1d4')+';border-radius:6px">' +
-      '<div style="font-size:10.5px;font-weight:700;color:'+(isWeekend ? '#1f3a6b' : '#888')+';letter-spacing:.04em">'+d+'</div>' +
-      '<div style="font-size:9px;color:#bbb;font-family:\'DM Mono\',monospace">'+dowLong[i]+'</div>' +
-      '<input type="number" min="-50" max="50" step="1" value="'+v+'" data-dow="'+i+'" class="rmes-dow-input" style="width:56px;padding:5px 6px;border:1px solid '+(isWeekend ? '#a5c3e8' : 'var(--line)')+';border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px;font-weight:600">' +
-      '<div style="font-size:9px;color:#aaa">%</div>' +
-    '</div>';
-  }).join('');
-  wrap.innerHTML =
-    '<div style="border:1px solid var(--line);border-radius:8px;padding:12px;background:#fff">' +
-      '<div style="font-size:11.5px;color:var(--ink-3);margin-bottom:10px;line-height:1.5">' +
-        'Day-of-week premium (% uplift) applied to the RMES suggested price for <b>'+lbl+'</b>. ' +
-        'Default: <b style="color:#1f3a6b">Friday +5%, Saturday +5%</b> (typical weekend uplift). ' +
-        'Use negative values (e.g. −5%) to discount slow weekdays. Set 0% on Fri/Sat to disable the default uplift.' +
-        (isUserSaved ? ' <span style="color:#3d7a4b;font-weight:600">· custom values saved for this property</span>' : ' <span style="color:#888">· using defaults</span>') +
-      '</div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap">' + cells + '</div>' +
-      '<div style="margin-top:10px;display:flex;gap:8px;align-items:center">' +
-        '<button id="rmes-dow-reset" style="font-size:11px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-2);cursor:pointer">↺ Reset to default (Fri/Sat +5%)</button>' +
-        '<span style="font-size:11px;color:var(--ink-3)">Changes are saved with the "Apply changes" button at the bottom of the tab.</span>' +
-      '</div>' +
-    '</div>';
-  wrap.querySelectorAll('.rmes-dow-input').forEach(inp => {
-    inp.addEventListener('input', () => { if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty(); });
-  });
-  const rb = document.getElementById('rmes-dow-reset');
-  if (rb) rb.addEventListener('click', () => {
-    _resetDowPremium(sel);
-    _renderRmesDowPremiumBox(sel);
     if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
   });
 }
