@@ -5342,6 +5342,7 @@ function _invalidateRmesMapCache(){
   if (typeof _RMESMAP_TICK !== 'undefined') _RMESMAP_TICK = {};
 }
 function newrmesSetFrozenBaseOverride(structKey, ymd, price){
+  try { logDecision(structKey, ymd, price == null ? 'reset_override' : 'override', price); } catch(e){}
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
   if (!all[structKey]) all[structKey] = {};
   if (price == null) delete all[structKey][ymd];
@@ -5352,7 +5353,7 @@ function newrmesSetFrozenBaseOverride(structKey, ymd, price){
 function newrmesClearFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo){
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
   if (!all[structKey]) return;
-  for (const k in all[structKey]){ const n = +k; if (n >= ymdFrom && n <= ymdTo) delete all[structKey][k]; }
+  for (const k in all[structKey]){ const n = +k; if (n >= ymdFrom && n <= ymdTo){ try { logDecision(structKey, n, 'reset_override_range', null); } catch(e){} delete all[structKey][k]; } }
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
   _invalidateRmesMapCache();
 }
@@ -5364,6 +5365,7 @@ function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
   const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
   for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
     const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
+    try { logDecision(structKey, y, 'override_range', price); } catch(e){}
     all[structKey][y] = Math.round(price);
   }
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
@@ -5375,6 +5377,146 @@ function newrmesGetEffectiveBase(structKey, ymd){
   const ovr = newrmesGetFrozenBaseOverride(structKey, ymd);
   if (ovr != null) return ovr;
   return newrmesGetFrozenBase(structKey, ymd);
+}
+
+/* ============================================================================
+   AUDIT LOG — local append-only decision log (NOT synced to Firebase).
+   ----------------------------------------------------------------------------
+   Captures every human pricing decision (accept ✓, override 🖋, reset ↺) with
+   the full engine context at the moment of the action, so decisions can be
+   reviewed and learned from later. Stored locally per browser as an append-only
+   array (each device keeps its own log; combine via CSV export). Deliberately
+   kept OUT of SYNC_KEYS: an append-only log must not be overwritten by the
+   "last write wins" shared-state document.
+   Outcome fields (did the day book, at what price) are left null here — they are
+   reconciled against bookings in a later phase.
+   ============================================================================ */
+const AUDIT_LOG_KEY = 'rmes_audit_log_v1';
+const AUDIT_LOG_CAP = 8000;            // max entries kept locally (oldest trimmed)
+let _AUDIT_SUPPRESS = true;            // true during boot/migrations → no logging
+function _auditEnable(){ _AUDIT_SUPPRESS = false; }
+function _auditLoad(){
+  try { const raw = localStorage.getItem(AUDIT_LOG_KEY); const a = raw ? JSON.parse(raw) : []; return Array.isArray(a) ? a : []; }
+  catch(e){ return []; }
+}
+function _auditSave(arr){
+  try { localStorage.setItem(AUDIT_LOG_KEY, JSON.stringify(arr)); } catch(e){ console.warn('[audit] save failed', e && e.message); }
+}
+/* Build the decision context snapshot for (structKey, ymd) BEFORE the action is
+   persisted, so RMES_suggested / Last update reflect what the user was acting on. */
+function _auditCaptureSnapshot(structKey, ymd){
+  const snap = {
+    base_price: null, effective_base: null, last_update_ref: null,
+    rmes_suggested: null, composite: null,
+    dev_pickup_pct: null, dev_pace_pct: null, dev_online_pct: null, dev_demand_pct: null, dev_airdna_pct: null,
+    d_demand_off_event: null, lmf_pct: null, event_name: null, event_factor: null
+  };
+  try {
+    const baseRT = (typeof CFG !== 'undefined' && CFG.structures[structKey]) ? CFG.structures[structKey].baseRT : null;
+    try { snap.base_price = newrmesGetFrozenBase(structKey, ymd); } catch(e){}
+    try { snap.effective_base = newrmesGetEffectiveBase(structKey, ymd); } catch(e){}
+    try { snap.last_update_ref = newrmesGetCurrentReference(structKey, ymd); } catch(e){}
+    if (baseRT){
+      try { snap.rmes_suggested = _rmesSuggestedForDay(structKey, ymd, baseRT); } catch(e){}
+      // Full factor breakdown from the cached RMES map (same numbers the modal shows).
+      try {
+        const _td = new Date(TODAY); _td.setHours(0,0,0,0);
+        const _tdN = _td.getFullYear()*10000 + (_td.getMonth()+1)*100 + _td.getDate();
+        if (ymd >= _tdN){
+          const yy = Math.floor(ymd/10000), mm = Math.floor((ymd%10000)/100)-1, dd = ymd%100;
+          const daysAhead = Math.ceil((new Date(yy,mm,dd).getTime() - _td.getTime())/86400000) + 1;
+          const SELL_RANGE = (typeof SELL_RANGE_DAYS === 'number') ? SELL_RANGE_DAYS : 60;
+          const map = computeRMESPriceMap(structKey, _tdN, Math.max(daysAhead, SELL_RANGE));
+          const entry = map && map[ymd];
+          const m = entry && entry.multsByRT && entry.multsByRT[baseRT];
+          if (m){
+            const na = m._naReasons || {};
+            const wd = (k)=> (m._weightsApplied && m._weightsApplied[k] != null && m[k+'_mult'] != null && na[k]==null)
+                              ? (m._weightsApplied[k] * (m[k+'_mult'] - 1) * 100) : null;
+            snap.composite       = (m.multFinale != null) ? +m.multFinale.toFixed(4) : null;
+            snap.dev_pickup_pct  = wd('occ');   // A
+            snap.dev_pace_pct    = wd('pace');  // B
+            snap.dev_online_pct  = wd('comp');  // C
+            snap.dev_demand_pct  = wd('air');   // D
+            snap.dev_airdna_pct  = wd('mkt');   // E
+            // D·Demand muted because of an event weight on this date?
+            snap.d_demand_off_event = !!(na.air && /event/i.test(na.air));
+          }
+          // LMF for the day (same lookup the modal uses): OCC × days-to-arrival matrix.
+          if (entry && typeof fp_lmfLookup === 'function'){
+            const daysToArr = Math.max(0, Math.round((new Date(yy,mm,dd).getTime() - _td.getTime())/86400000));
+            try { snap.lmf_pct = fp_lmfLookup(structKey, entry.curOcc, daysToArr); } catch(e){}
+          }
+        }
+      } catch(e){}
+    }
+    try { const eb = (typeof _getEventBoost === 'function') ? _getEventBoost(ymd) : 1; snap.event_factor = +eb.toFixed(3); } catch(e){}
+    try { snap.event_name = (typeof EVENTS !== 'undefined' && EVENTS && EVENTS[ymd]) ? EVENTS[ymd] : null; } catch(e){}
+  } catch(e){}
+  return snap;
+}
+/* Append one decision entry. action ∈ accept | override | reset_accept |
+   reset_override | accept_range | override_range | reset_override_range. */
+function logDecision(structKey, ymd, action, chosenPrice){
+  if (_AUDIT_SUPPRESS) return;
+  if (!structKey || structKey === 'both' || !ymd) return;
+  try {
+    const snap = _auditCaptureSnapshot(structKey, ymd);
+    const cp = (chosenPrice != null && isFinite(chosenPrice)) ? Math.round(chosenPrice) : null;
+    const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const yy = Math.floor(ymd/10000), mm = Math.floor((ymd%10000)/100)-1, dd = ymd%100;
+    const entry = {
+      ts: new Date().toISOString(),
+      author: (typeof getUserProfile === 'function') ? (getUserProfile() || 'unknown') : 'unknown',
+      struct: structKey,
+      ymd: ymd,
+      dow: dow[new Date(yy,mm,dd).getDay()],
+      action: action,
+      chosen_price: cp,
+      base_price: snap.base_price,
+      effective_base: snap.effective_base,
+      last_update_ref: snap.last_update_ref,
+      rmes_suggested: snap.rmes_suggested,
+      composite: snap.composite,
+      dev_pickup_pct: snap.dev_pickup_pct,
+      dev_pace_pct: snap.dev_pace_pct,
+      dev_online_pct: snap.dev_online_pct,
+      dev_demand_pct: snap.dev_demand_pct,
+      dev_airdna_pct: snap.dev_airdna_pct,
+      d_demand_off_event: snap.d_demand_off_event,
+      lmf_pct: snap.lmf_pct,
+      event_name: snap.event_name,
+      event_factor: snap.event_factor,
+      delta_vs_rmes: (cp != null && snap.rmes_suggested != null) ? (cp - Math.round(snap.rmes_suggested)) : null,
+      delta_vs_base: (cp != null && snap.effective_base != null) ? (cp - Math.round(snap.effective_base)) : null,
+      // outcome fields — reconciled later against bookings
+      outcome_booked: null, outcome_adr: null, outcome_reconciled_at: null
+    };
+    const arr = _auditLoad();
+    arr.push(entry);
+    if (arr.length > AUDIT_LOG_CAP) arr.splice(0, arr.length - AUDIT_LOG_CAP);
+    _auditSave(arr);
+  } catch(e){ console.warn('[audit] logDecision failed', e && e.message); }
+}
+function _auditCsvCell(v){
+  if (v == null) return '';
+  const s = String(v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+function _auditExportCSV(){
+  const arr = _auditLoad();
+  if (!arr.length){ alert('Audit log is empty — accept, override or reset a price first.'); return; }
+  const cols = ['ts','author','struct','ymd','dow','action','chosen_price','base_price','effective_base','last_update_ref','rmes_suggested','composite','dev_pickup_pct','dev_pace_pct','dev_online_pct','dev_demand_pct','dev_airdna_pct','d_demand_off_event','lmf_pct','event_name','event_factor','delta_vs_rmes','delta_vs_base','outcome_booked','outcome_adr','outcome_reconciled_at'];
+  const lines = [cols.join(',')];
+  for (const e of arr){ lines.push(cols.map(c => _auditCsvCell(e[c])).join(',')); }
+  const csv = lines.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const stamp = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.href = url; a.download = 'audit_log_' + stamp + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 /* === ACCEPTANCE === */
@@ -5396,6 +5538,7 @@ function newrmesGetAcceptedMeta(structKey, ymd){
   return null;
 }
 function newrmesSetAccepted(structKey, ymd, price){
+  try { logDecision(structKey, ymd, price == null ? 'reset_accept' : 'accept', price); } catch(e){}
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
   if (!all[structKey]) all[structKey] = {};
   if (price == null) delete all[structKey][ymd];
@@ -5412,6 +5555,7 @@ function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
   const author = getUserProfile() || null;
   for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
     const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
+    try { logDecision(structKey, y, 'accept_range', price); } catch(e){}
     all[structKey][y] = { price: Math.round(price), ts, author };
   }
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
@@ -17925,6 +18069,9 @@ function renderAll(){
   if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
   }
+  // Audit log: enable only after the first full render (boot + one-shot migrations done),
+  // so wipes/migrations don't generate log entries.
+  if (typeof _auditEnable === 'function') _auditEnable();
 }
 function setStructure(sel){
   if (CURRENT_STRUCT === sel) return;

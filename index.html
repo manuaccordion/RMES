@@ -2087,6 +2087,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <button id="rmes-export" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid #2c5c3c;border-radius:6px;background:transparent;color:#2c5c3c;cursor:pointer;font-weight:700">⬇ Export RMES CSV</button>
       </div>
       <div id="rmes-table-wrap" style="overflow-x:auto"></div>
+
+      <!-- SECTION 3: Audit log export -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:32px 0 8px 0">
+        <h3 style="margin:0;font-size:15px;color:#7a4f1c">🗂 Audit log</h3>
+        <button id="audit-export" onclick="_auditExportCSV()" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid #7a4f1c;border-radius:6px;background:transparent;color:#7a4f1c;cursor:pointer;font-weight:700">⬇ Export Audit Log CSV</button>
+      </div>
     </div>
   </section>
 
@@ -2633,6 +2639,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p style="font-size:12.5px"><b>⬇ Export RMES CSV</b> downloads every column (5 dev%, 5 weights, composite, LMF, event, suggested, applied, applied_source, applied_on, accepted_on) for the selected range. Use this for audit and for sharing the engine's decisions with anyone outside the dashboard.</p>
 
         <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12.5px"><b>The numbers in this tab match exactly what you see in Sell Strategy.</b> If you see different numbers for the same day, it's a bug — please flag it.</p>
+
+        <h4 style="margin:18px 0 6px 0;color:#5a3a14">🗂 Section 3 — Audit log</h4>
+        <p>An <b>append-only record of every pricing decision a person makes</b>: accepting an RMES suggestion (✓), overriding the Base Price (🖋), or resetting either (↺). Each entry is captured <b>at the moment of the action</b>, together with the full engine context, so decisions can be reviewed and learned from later. The goal is to build the dataset needed to improve the suggestions over time (what did the engine propose, what did the person choose, and how far apart were they).</p>
+        <p style="margin:6px 0;padding:8px 12px;background:#f5f0ea;border-left:3px solid #c4823b;font-size:12.5px"><b>Local per device — not synced.</b> Unlike the rest of the dashboard, the audit log lives only in <b>this browser</b> and is deliberately kept out of the shared Firebase state: an append-only log must never be overwritten by the "last write wins" sync. So each person's browser keeps its own log. To get the complete picture, export from each device and combine the CSVs. The log keeps the most recent ~8,000 entries.</p>
+        <p><b>What each entry records:</b> timestamp · author (Emanuele / Enis) · property · stay-date · day-of-week · action type · the price chosen · Base Price &amp; effective Base · Last update (the reference before the action) · RMES suggested · the composite multiplier · the five weighted factor dev% (A·Pickup, B·Pace, C·Online, D·Demand, E·AirDNA) · whether D was switched off by an event · LMF% · event name &amp; factor · and two deltas: <b>chosen vs RMES suggested</b> and <b>chosen vs Base</b>. Three outcome columns (did the day book, at what ADR, when reconciled) are written but <b>left empty for now</b> — they will be filled in a later phase that matches decisions against actual bookings.</p>
+        <p style="font-size:12.5px"><b>⬇ Export Audit Log CSV</b> downloads the whole local log as <code>audit_log_AAAAMMGG.csv</code>. The <b>delta vs RMES</b> column is the most useful for spotting patterns: consistent positive or negative gaps on certain properties, days of week, or event dates tell you where your judgement is systematically diverging from the engine — which is exactly what a future calibration step would tune.</p>
       </div>
     </details>
 
