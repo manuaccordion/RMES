@@ -6605,15 +6605,33 @@ function assistantParseQuery(q){
   // Identify year
   const yearMatch = lower.match(/\b(20\d{2})\b/);
   const year = yearMatch ? parseInt(yearMatch[1]) : null;
+  // Identify a specific day-of-month (for single-day calculation questions)
+  let day = null;
+  const dmMatch = lower.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-]20\d{2})?\b/); // DD/MM[/YYYY]
+  if (dmMatch){
+    const d = parseInt(dmMatch[1]), mo = parseInt(dmMatch[2]);
+    if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12){ day = d; if (!month) month = mo; }
+  }
+  if (day == null && month){
+    // "10 settembre" / "settembre 10" → grab a 1-2 digit number near the month word
+    const dNear = lower.match(/\b(\d{1,2})\b/);
+    if (dNear){ const d = parseInt(dNear[1]); if (d >= 1 && d <= 31) day = d; }
+  }
   // Identify next/last
   const isNext = /\b(next|prossimo|prossima)\b/.test(lower);
   const isLast = /\b(last|scorso|scorsa|previous|past)\b/.test(lower);
   const isToday = /\b(today|oggi)\b/.test(lower);
+  const isTomorrow = /\b(tomorrow|domani)\b/.test(lower);
   const isYtd = /\b(ytd|year[- ]to[- ]date)\b/.test(lower);
+  const hasSpecificDay = (day != null) || isToday || isTomorrow;
   // Identify intent type
   let intent = 'unknown';
-  if (/\b(expedia.*(alert|change|variazion|cambi)|price.*(change|alert|variazion)|competitor.*(change|alert|variazion)|price.*shift|sbalz|salt)/.test(lower)) intent = 'expedia_alerts';
+  // day_calc has priority when a single day is referenced together with a price/calculation cue
+  if (hasSpecificDay && /\b(rmes|price|prezzo|calcol|breakdown|dettagli|detail|perch[eé]|why|come.*calcol|how.*comput|spiega.*prezzo|explain.*price|composite|fattori|factors|base price|suggerit|suggested)/.test(lower)) intent = 'day_calc';
+  else if (/\b(forecast|prevision|proiezion|projection|ytd.*forecast|pickup.*forecast|come va|andamento|on the books|otb)/.test(lower)) intent = 'forecast';
+  else if (/\b(expedia.*(alert|change|variazion|cambi)|price.*(change|alert|variazion)|competitor.*(change|alert|variazion)|price.*shift|sbalz|salt)/.test(lower)) intent = 'expedia_alerts';
   else if (/\b(anomal|incongru|problem|issue|check|controll)/.test(lower)) intent = 'anomalies';
+  else if (/\b(quante camere|how many rooms|numero camere|base rt|basert|anchor price|floor rate|capacit|capacity|dettagli strutt|struttura|property detail|info strutt)/.test(lower)) intent = 'struct_info';
   else if (/\b(adr|tariff|prezzo medio|average price|average rate|prezzi medi)/.test(lower)) intent = 'stat_adr';
   else if (/\b(occ|occupanc|occupazion|fill)/.test(lower)) intent = 'stat_occ';
   else if (/\b(rn|room.?night|notti vendute|nights sold|stay night)/.test(lower)) intent = 'stat_rn';
@@ -6622,7 +6640,7 @@ function assistantParseQuery(q){
   else if (/\b(floor|anchor|cap|markup|playbook|how does|come funziona|spiega|explain|cosa è|what is|cosa significa|qual è)/.test(lower)) intent = 'playbook';
   else if (/\b(hello|hi|ciao|salve|hey)/.test(lower)) intent = 'greet';
   else if (/\b(help|aiuto|che cosa puoi|what can you)/.test(lower)) intent = 'help';
-  return { intent, property, month, year, isNext, isLast, isToday, isYtd, raw: q };
+  return { intent, property, month, year, day, isNext, isLast, isToday, isTomorrow, isYtd, raw: q };
 }
 
 function _assistantResolveMonthYear(parsed){
@@ -6916,14 +6934,119 @@ function assistantHandleStrategy(parsed){
   return h;
 }
 
+/* ---- Resolve a single stay-date from the parsed query ---- */
+function _assistantResolveDate(parsed){
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const toYmd = d => d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+  const fmt = d => d.getDate()+' '+ASSISTANT_MONTH_NAMES[d.getMonth()]+' '+d.getFullYear();
+  if (parsed.isToday) return { ymd: toYmd(today), label: 'today ('+fmt(today)+')' };
+  if (parsed.isTomorrow){ const d=new Date(today); d.setDate(d.getDate()+1); return { ymd: toYmd(d), label: 'tomorrow ('+fmt(d)+')' }; }
+  if (parsed.day){
+    let mo = parsed.month || (today.getMonth()+1);
+    let yr = parsed.year;
+    if (!yr){ const cand = new Date(today.getFullYear(), mo-1, parsed.day); yr = (cand < today) ? today.getFullYear()+1 : today.getFullYear(); }
+    const d = new Date(yr, mo-1, parsed.day);
+    if (isNaN(d.getTime())) return null;
+    return { ymd: toYmd(d), label: fmt(d) };
+  }
+  return null;
+}
+/* ---- Single-day calculation breakdown (reuses the audit snapshot extractor) ---- */
+function _assistantDayBreakdown(sk, ymd, dateLabel){
+  const lbl = ASSISTANT_PROPS[sk] ? ASSISTANT_PROPS[sk].label : sk;
+  const _td = new Date(TODAY); _td.setHours(0,0,0,0);
+  const _tdN = _td.getFullYear()*10000+(_td.getMonth()+1)*100+_td.getDate();
+  if (ymd < _tdN) return `<p><b>${lbl}</b> · ${dateLabel}: RMES only applies to today and future dates — I can't break down a past day.</p>`;
+  const s = (typeof _auditCaptureSnapshot === 'function') ? _auditCaptureSnapshot(sk, ymd) : null;
+  if (!s || (s.rmes_suggested == null && s.base_price == null)) return `<p>I couldn't compute the breakdown for <b>${lbl}</b> on ${dateLabel} (no data for that day yet).</p>`;
+  const eur = n => (n==null||!isFinite(n)) ? '—' : '€'+Math.round(n);
+  const pct = n => (n==null||!isFinite(n)) ? '—' : (n>=0?'+':'')+n.toFixed(1)+'%';
+  const frow = (code,name,val,extra)=>{
+    if (val==null) return `<li><b>${code} · ${name}</b>: n/a${extra||''}</li>`;
+    const col = val>=0?'#1e6b4a':'#a83b3b';
+    return `<li><b>${code} · ${name}</b>: <span style="color:${col}">${pct(val)}</span>${extra||''}</li>`;
+  };
+  const overridden = (s.effective_base!=null && s.base_price!=null && Math.round(s.effective_base)!==Math.round(s.base_price));
+  let h = `<h4>${lbl} · ${dateLabel}</h4>`;
+  h += `<p>Base Price <b>${eur(s.effective_base)}</b>${overridden?` (frozen ${eur(s.base_price)}, overridden)`:''} → RMES suggested <b>${eur(s.rmes_suggested)}</b></p>`;
+  h += `<p class="small">Active reference (Last update): ${eur(s.last_update_ref)}</p>`;
+  h += `<p><b>The 5 factors</b> (weighted contribution to the composite):</p><ul>`;
+  h += frow('A','Daily Pickup', s.dev_pickup_pct);
+  h += frow('B','Pace Trend', s.dev_pace_pct);
+  h += frow('C','Online Pricing', s.dev_online_pct);
+  h += frow('D','Demand (Expedia)', s.dev_demand_pct, s.d_demand_off_event ? ' <i>(off — event date)</i>' : '');
+  h += frow('E','AirDNA Market', s.dev_airdna_pct);
+  h += `</ul>`;
+  h += `<p>Composite multiplier: <b>×${s.composite!=null?s.composite.toFixed(3):'—'}</b>`;
+  if (s.lmf_pct) h += ` · LMF ${pct(s.lmf_pct)}`;
+  if (s.event_name) h += ` · Event "${s.event_name}" ×${s.event_factor!=null?s.event_factor.toFixed(3):'—'}`;
+  h += `</p>`;
+  h += `<p class="small">Formula: Base × Composite × (1 + LMF%) × Event, then floored. Same numbers as the RMES cell in Sell Strategy.</p>`;
+  return h;
+}
+function assistantHandleDayCalc(parsed){
+  const dt = _assistantResolveDate(parsed);
+  if (!dt) return `<p>Which day? Try e.g. <i>"RMES Firenze tomorrow"</i> or <i>"price Alfani 10/09"</i>.</p>`;
+  const props = _assistantPropList(parsed);
+  let h = '';
+  for (const sk of props){ h += _assistantDayBreakdown(sk, dt.ymd, dt.label); if (props.length>1) h += '<div style="height:10px"></div>'; }
+  return h;
+}
+/* ---- Forecast summary for a month ---- */
+function assistantHandleForecast(parsed){
+  const { year, month, label } = _assistantResolveMonthYear(parsed);
+  const props = _assistantPropList(parsed);
+  const ymKey = year*100 + month;
+  let h = `<h4>Forecast · ${label}</h4>`;
+  for (const sk of props){
+    const lbl = ASSISTANT_PROPS[sk].label;
+    let A=null; try { A = aggForecast(sk); } catch(e){}
+    const m = (A && A.monthly) ? A.monthly[ymKey] : null;
+    if (!m){ h += `<p><b>${lbl}</b>: no forecast data for ${label}.</p>`; continue; }
+    const otbAdr = m.otbRn>0 ? m.otbRev/m.otbRn : 0;
+    const fcstAdr = m.fcstRn>0 ? m.fcstRev/m.fcstRn : 0;
+    h += `<p><b>${lbl}</b><br>`;
+    h += `On the books: €${Math.round(m.otbRev)} · ${m.otbRn} RN${m.otbOcc!=null?` · OCC ${(m.otbOcc*100).toFixed(0)}%`:''}${otbAdr>0?` · ADR €${Math.round(otbAdr)}`:''}<br>`;
+    h += `Forecast (OTB + projection): <b>€${Math.round(m.fcstRev)}</b> · ${m.fcstRn} RN${fcstAdr>0?` · ADR €${Math.round(fcstAdr)}`:''}</p>`;
+  }
+  return h;
+}
+/* ---- Structure facts ---- */
+function assistantHandleStructInfo(parsed){
+  const props = _assistantPropList(parsed);
+  let h = '';
+  for (const sk of props){
+    const lbl = ASSISTANT_PROPS[sk].label;
+    let rooms={}; try { rooms = structRoomsFor(sk) || {}; } catch(e){}
+    const rtNames = Object.keys(rooms);
+    const totalRooms = rtNames.reduce((a,k)=>a+(rooms[k]||0),0);
+    const baseRT = (typeof CFG!=='undefined' && CFG.structures[sk]) ? CFG.structures[sk].baseRT : '—';
+    let floor=null, cap=null, anchor=null;
+    try { floor = (typeof fp_getFloor==='function') ? fp_getFloor(sk) : null; } catch(e){}
+    try { cap = (typeof getRmesCap==='function') ? getRmesCap(sk) : null; } catch(e){}
+    try { anchor = (typeof fp_getBasePrice==='function') ? fp_getBasePrice(sk) : null; } catch(e){}
+    h += `<h4>${lbl}</h4><ul>`;
+    h += `<li><b>${totalRooms} rooms</b>${rtNames.length?': '+rtNames.map(rt=>`${rooms[rt]}× ${rt}`).join(', '):''}</li>`;
+    h += `<li>Base room type: <b>${baseRT}</b></li>`;
+    if (anchor!=null && isFinite(anchor)) h += `<li>Anchor Price: <b>€${Math.round(anchor)}</b></li>`;
+    if (floor!=null && isFinite(floor)) h += `<li>Floor Rate: <b>€${Math.round(floor)}</b></li>`;
+    if (cap!=null && isFinite(cap)) h += `<li>RMES cap: <b>±${Math.round(cap*100)}%</b></li>`;
+    h += `</ul>`;
+  }
+  return h;
+}
+
 function assistantHandle(query){
   const parsed = assistantParseQuery(query);
   if (parsed.intent === 'greet'){
-    return `<p>Hi! I can help with stats (OCC/ADR/RN), anomaly checks, Playbook lookups and pricing strategy. Try: <i>"any anomalies?"</i> · <i>"OCC August Firenze"</i> · <i>"strategy next month"</i></p>`;
+    return `<p>Hi! I can break down a specific day's price, summarise the forecast, give structure info, stats, anomaly checks, Playbook lookups and strategy. Try: <i>"why is Firenze priced like this tomorrow?"</i> · <i>"forecast August"</i> · <i>"how many rooms in Condotta?"</i></p>`;
   }
   if (parsed.intent === 'help'){
     return `<h4>What I can do</h4>
       <ul>
+        <li><b>Day calculation</b> — e.g. <i>"why is Firenze priced like this tomorrow?"</i>, <i>"breakdown Alfani 10/09"</i>, <i>"RMES Condotta today"</i></li>
+        <li><b>Forecast</b> — e.g. <i>"forecast August Firenze"</i>, <i>"how is next month looking?"</i></li>
+        <li><b>Structure info</b> — e.g. <i>"how many rooms does Condotta have?"</i>, <i>"base RT Alfani"</i>, <i>"floor Davids"</i></li>
         <li><b>Stats</b> — e.g. <i>"ADR July Alfani"</i>, <i>"OCC next month"</i>, <i>"revenue Firenze August"</i></li>
         <li><b>Anomalies</b> — e.g. <i>"any anomalies?"</i>, <i>"check Condotta"</i></li>
         <li><b>Playbook</b> — e.g. <i>"what is the floor rate?"</i>, <i>"how does Pace Trend work?"</i></li>
@@ -6947,6 +7070,9 @@ function assistantHandle(query){
     const expAlerts = (typeof expedia_loadAlerts === 'function') ? expedia_loadAlerts() : [];
     return expedia_formatAlertsHtml(expAlerts);
   }
+  if (parsed.intent === 'day_calc') return assistantHandleDayCalc(parsed);
+  if (parsed.intent === 'forecast') return assistantHandleForecast(parsed);
+  if (parsed.intent === 'struct_info') return assistantHandleStructInfo(parsed);
   if (parsed.intent === 'stat_occ') return assistantHandleStats(parsed, 'stat_occ');
   if (parsed.intent === 'stat_adr') return assistantHandleStats(parsed, 'stat_adr');
   if (parsed.intent === 'stat_rn') return assistantHandleStats(parsed, 'stat_rn');
@@ -6955,12 +7081,13 @@ function assistantHandle(query){
   if (parsed.intent === 'playbook') return assistantHandlePlaybook(parsed);
   return `<p>I'm not sure what you're asking. Try one of:</p>
     <ul>
+      <li>🧮 <i>"why is Firenze priced like this tomorrow?"</i> · <i>"breakdown Alfani 10/09"</i></li>
+      <li>📈 <i>"forecast August Firenze"</i></li>
+      <li>🏠 <i>"how many rooms in Condotta?"</i></li>
       <li>📊 <i>"OCC July Firenze"</i> · <i>"ADR next month"</i></li>
-      <li>⚠ <i>"any anomalies?"</i></li>
-      <li>📖 <i>"what is the floor rate?"</i></li>
-      <li>💡 <i>"strategy August"</i></li>
+      <li>⚠ <i>"any anomalies?"</i> · 📖 <i>"what is the floor rate?"</i></li>
     </ul>
-    <p class="small">Type "help" for the full list of commands.</p>`;
+    <p class="small">Type "help" for the full list.</p>`;
 }
 
 function assistantAppendMessage(role, html){
