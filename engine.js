@@ -7052,12 +7052,14 @@ function assistantHasApiKey(){ return !!assistantGetApiKey(); }
 function _assistantShouldUseLLM(parsed){
   if (!assistantHasApiKey()) return false;
   const lower = (parsed.raw || '').toLowerCase();
-  // Keep these instant + free even with a key set.
+  // Always instant + free (trivial greetings/help or side-effecting alert checks):
   if (['greet','help','anomalies','expedia_alerts'].indexOf(parsed.intent) >= 0) return false;
-  // Reasoning / open-ended cues → let the LLM reason over the packed facts.
-  const reasoning = /\b(perch[eé]|why|conviene|convien|dovrei|should|rischi|risk|confront|compare|paragon|meglio|better|consigli|advice|come mai|valuta|pro e contro|cosa ne pensi|what do you think|riassum|summar|differenz|difference|spiegami|in sintesi|overview)\b/.test(lower);
-  if (parsed.intent === 'unknown') return true;
-  return reasoning;
+  // Interpretive by nature → always reason with the LLM when a key is set:
+  if (parsed.intent === 'forecast' || parsed.intent === 'strategy' || parsed.intent === 'unknown') return true;
+  // Otherwise (struct_info, day_calc, stat_*, playbook): only escalate to the LLM
+  // when the question asks for interpretation / comparison rather than a plain value.
+  const reasoning = /(perch[eé]|why|come va|come sta|come stanno|come stiamo|andament|situazione| vs |contro|rispetto|cosa va|bene o male|male o bene|conviene|convien|dovrei|should|rischi|risk|confront|compare|paragon|meglio|peggio|better|worse|consigl|advice|come mai|valuta|pro e contro|cosa ne pensi|what do you think|riassum|summar|in sintesi|overview|differenz|difference|spiegami|trend|arriv|raggiung|ce la fac|chiud|finir|finiam|sotto l|sopra l|behind|ahead|reach|on track|how is|how are| doing| going)/;
+  return reasoning.test(lower);
 }
 
 function _assistantFmtDev(v){ return (v==null||!isFinite(v)) ? 'n/a' : (v>=0?'+':'')+v.toFixed(1)+'%'; }
