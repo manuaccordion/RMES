@@ -7093,25 +7093,28 @@ function _assistantBuildContext(parsed){
       } catch(e){}
     }
   }
-  // Forecast + month stats if a month/next/last is referenced
+  // Forecast + year-over-year if a month/next/last is referenced
   if (parsed.month || parsed.isNext || parsed.isLast || parsed.intent==='forecast'){
     let my=null; try { my = _assistantResolveMonthYear(parsed); } catch(e){}
     if (my){
       const ymKey = my.year*100 + my.month;
+      const daysIn = new Date(my.year, my.month, 0).getDate();
       L.push('');
-      L.push('FORECAST & STATS ('+my.label+'):');
+      L.push('FORECAST & YEAR-OVER-YEAR ('+my.label+') — authoritative figures from the dashboard:');
       for (const sk of props){
         try {
           const A = (typeof aggForecast==='function') ? aggForecast(sk) : null;
           const m = (A && A.monthly) ? A.monthly[ymKey] : null;
-          const st = (typeof _assistantComputeMonthStats==='function') ? _assistantComputeMonthStats(sk, my.year, my.month) : null;
-          let line = `- ${ASSISTANT_PROPS[sk].label}:`;
-          if (m){
-            const otbAdr=m.otbRn>0?m.otbRev/m.otbRn:0, fAdr=m.fcstRn>0?m.fcstRev/m.fcstRn:0;
-            line += ` OTB €${Math.round(m.otbRev)} (${m.otbRn} RN, OCC ${m.otbOcc!=null?Math.round(m.otbOcc*100):'?'}%, ADR €${Math.round(otbAdr)}); Forecast €${Math.round(m.fcstRev)} (${m.fcstRn} RN, ADR €${Math.round(fAdr)}).`;
-          }
-          if (st) line += ` Realized-so-far: OCC ${Math.round(st.occ*100)}%, ADR €${Math.round(st.adr)}, ${st.rn} RN, Revenue €${Math.round(st.revenue)}.`;
-          L.push(line);
+          if (!m){ L.push(`- ${ASSISTANT_PROPS[sk].label}: no forecast data for this month.`); continue; }
+          let cap = 0;
+          try { const r = structRoomsFor(sk)||{}; cap = Object.keys(r).reduce((a,k)=>a+(r[k]||0),0) * daysIn; } catch(e){}
+          const occ = rn => cap>0 ? Math.round(100*rn/cap)+'%' : '?';
+          const adr = (rev,rn) => rn>0 ? '€'+Math.round(rev/rn) : '—';
+          L.push(`- ${ASSISTANT_PROPS[sk].label}:`);
+          L.push(`    Current OTB (booked so far): €${Math.round(m.otbRev)} · ${m.otbRn} RN · OCC ${occ(m.otbRn)} · ADR ${adr(m.otbRev,m.otbRn)}`);
+          L.push(`    STLY (same point last year, pace-aligned): €${Math.round(m.stlyRev)} · ${m.stlyRn} RN`);
+          L.push(`    Final LY (full last-year actual result): €${Math.round(m.finalLyRev)} · ${m.finalLyRn} RN · ADR ${adr(m.finalLyRev,m.finalLyRn)}`);
+          L.push(`    Forecast (projected final): €${Math.round(m.fcstRev)} · ${m.fcstRn} RN · OCC ${occ(m.fcstRn)} · ADR ${adr(m.fcstRev,m.fcstRn)}`);
         } catch(e){}
       }
     }
@@ -7146,7 +7149,10 @@ async function _assistantCallLLM(query, parsed, priorHistory){
 How RMES works: the suggested daily price = Base Price × Composite × (1 + LMF%) × Event, then floored at the property's Floor Rate. The Composite is the weighted sum of 5 factors — A·Daily Pickup, B·Pace Trend (2-week blend), C·Online Pricing (vs Expedia compset), D·Demand (Expedia searches), E·AirDNA Market — each individually capped, with the composite capped at ±30% by default vs the Base Price. D·Demand is automatically muted on dates that have an Event weight set (to avoid double-counting). RMES outputs a single flexible, room-only rate; non-refundable is derived downstream.
 
 Rules:
-- Answer ONLY from the CONTEXT facts below plus sound revenue-management reasoning. If a number you need is not in the context, say you don't have it rather than inventing one.
+- The CONTEXT below contains the AUTHORITATIVE figures already computed by the dashboard (OTB, STLY, Final LY, forecast). TREAT THEM AS COMPLETE AND CORRECT. Never ask the user to provide data that is already in the context, and never tell them to share OTA detail or last-year data — you already have OTB, STLY and Final LY.
+- Answer ONLY from the CONTEXT facts plus sound revenue-management reasoning. If a specific number you need is genuinely absent from the context, say so briefly — do not invent one.
+- For "why is this month below/above last year", compare Current OTB and Forecast against STLY (same point last year) and Final LY (full last-year result). For "how will it finish", use the Forecast figure as the basis and reason around it.
+- OCC is an occupancy percentage between 0 and ~100% (it cannot be 131%). ADR and Revenue are in euros. Sanity-check that your numbers match the context; if something looks off, trust the context values verbatim.
 - Be concise, concrete and practical. Prefer short paragraphs and small bullet lists.
 - Reply in the user's language (Italian if they wrote in Italian).
 - Output light HTML only (<b>, <ul>, <li>, <p>, <br>). No markdown, no code fences.

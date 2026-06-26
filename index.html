@@ -1126,8 +1126,8 @@ table.sell-table thead th:first-child{
 @keyframes fabPulse{ 0%,100%{opacity:1} 50%{opacity:.55} }
 .chat-panel{
   position:fixed;right:22px;bottom:88px;z-index:150;
-  width:380px;max-width:calc(100vw - 32px);
-  height:540px;max-height:calc(100vh - 120px);
+  width:440px;max-width:calc(100vw - 32px);
+  height:640px;max-height:calc(100vh - 110px);
   background:#fff;border-radius:var(--radius);
   box-shadow:0 12px 40px rgba(40,30,15,.22);
   border:1px solid var(--line);
@@ -2759,7 +2759,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <button id="chat-close" aria-label="Chiudi">×</button>
     </div>
   </div>
-  <div id="chat-settings" style="display:none;padding:12px 14px;border-bottom:1px solid var(--line);background:#faf8f3;font-size:12px">
+  <div id="chat-settings" style="display:none;position:absolute;top:56px;left:0;right:0;z-index:5;padding:12px 14px;border-bottom:1px solid var(--line);background:#faf8f3;font-size:12px;box-shadow:0 8px 20px rgba(40,30,15,.15)">
     <div style="font-weight:700;color:#5a3a14;margin-bottom:6px">🔌 AI backend (optional)</div>
     <div style="color:var(--ink-3);margin-bottom:8px;line-height:1.45">Paste an <b>Anthropic API key</b> to let the assistant answer free-form / reasoning questions (e.g. <i>"why is Alfani weaker in August?"</i>). Without a key it still answers structured questions for free. The key is stored <b>only in this browser</b> (never synced) and used to call Claude directly.</div>
     <input type="password" id="chat-apikey-input" placeholder="sk-ant-..." autocomplete="off" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;box-sizing:border-box">
