@@ -7066,6 +7066,44 @@ function _assistantFmtDev(v){ return (v==null||!isFinite(v)) ? 'n/a' : (v>=0?'+'
 
 /* Pack only the RELEVANT facts (based on what the question references) into a
    compact text block. Keeps token cost low and grounds the model in real data. */
+function _assistantResolveMonthYearFor(monthNum, parsed){
+  const today = new Date(TODAY);
+  let y = parsed.year;
+  if (!y){ const currM = today.getMonth()+1, currY = today.getFullYear(); y = monthNum < currM ? currY+1 : currY; }
+  return { year:y, month:monthNum, label: ASSISTANT_MONTH_NAMES[monthNum-1]+' '+y };
+}
+/* All distinct months referenced in the query (handles "June and July"). */
+function _assistantMonthsInQuery(parsed){
+  const raw = (parsed.raw||'').toLowerCase();
+  const out = [], seen = {};
+  for (const mName in ASSISTANT_MONTHS_IT_EN){
+    if (new RegExp('\\b'+mName+'\\b').test(raw)){
+      const mo = ASSISTANT_MONTHS_IT_EN[mName];
+      if (!seen[mo]){ seen[mo]=1; out.push(_assistantResolveMonthYearFor(mo, parsed)); }
+    }
+  }
+  out.sort((a,b)=> (a.year*100+a.month) - (b.year*100+b.month));
+  if (out.length) return out;
+  try { const my = _assistantResolveMonthYear(parsed); if (my) return [my]; } catch(e){}
+  return [];
+}
+/* Revenue & room-nights by channel for a property/month (on the books). */
+function _assistantChannelMix(sk, year, month){
+  const acc = {};
+  for (const b of BOOKINGS){
+    if (b.structKey !== sk || b.cancelled || !b.dIn) continue;
+    const notti = b.notti || 1;
+    for (let i=0;i<notti;i++){
+      const sd = new Date(b.dIn); sd.setDate(b.dIn.getDate()+i);
+      if (sd.getFullYear()!==year || sd.getMonth()+1!==month) continue;
+      const ch = b.canale || '?';
+      if (!acc[ch]) acc[ch] = { rn:0, rev:0 };
+      acc[ch].rn += 1; acc[ch].rev += (isFinite(b.revPerNight)?b.revPerNight:0);
+    }
+  }
+  return Object.keys(acc).map(ch=>({ canale:ch, rn:acc[ch].rn, rev:acc[ch].rev })).sort((a,b)=>b.rev-a.rev);
+}
+
 function _assistantBuildContext(parsed){
   const L = [];
   const props = parsed.property ? [parsed.property] : ['firenze','condotta','alfani','davids'];
@@ -7095,30 +7133,44 @@ function _assistantBuildContext(parsed){
       } catch(e){}
     }
   }
-  // Forecast + year-over-year if a month/next/last is referenced
-  if (parsed.month || parsed.isNext || parsed.isLast || parsed.intent==='forecast'){
-    let my=null; try { my = _assistantResolveMonthYear(parsed); } catch(e){}
-    if (my){
-      const ymKey = my.year*100 + my.month;
-      const daysIn = new Date(my.year, my.month, 0).getDate();
-      L.push('');
-      L.push('FORECAST & YEAR-OVER-YEAR ('+my.label+') — authoritative figures from the dashboard:');
-      for (const sk of props){
-        try {
-          const A = (typeof aggForecast==='function') ? aggForecast(sk) : null;
-          const m = (A && A.monthly) ? A.monthly[ymKey] : null;
-          if (!m){ L.push(`- ${ASSISTANT_PROPS[sk].label}: no forecast data for this month.`); continue; }
-          let cap = 0;
-          try { const r = structRoomsFor(sk)||{}; cap = Object.keys(r).reduce((a,k)=>a+(r[k]||0),0) * daysIn; } catch(e){}
-          const occ = rn => cap>0 ? Math.round(100*rn/cap)+'%' : '?';
-          const adr = (rev,rn) => rn>0 ? '€'+Math.round(rev/rn) : '—';
-          L.push(`- ${ASSISTANT_PROPS[sk].label}:`);
-          L.push(`    Current OTB (booked so far): €${Math.round(m.otbRev)} · ${m.otbRn} RN · OCC ${occ(m.otbRn)} · ADR ${adr(m.otbRev,m.otbRn)}`);
-          L.push(`    STLY (same point last year, pace-aligned): €${Math.round(m.stlyRev)} · ${m.stlyRn} RN`);
-          L.push(`    Final LY (full last-year actual result): €${Math.round(m.finalLyRev)} · ${m.finalLyRn} RN · ADR ${adr(m.finalLyRev,m.finalLyRn)}`);
-          L.push(`    Forecast (projected final): €${Math.round(m.fcstRev)} · ${m.fcstRn} RN · OCC ${occ(m.fcstRn)} · ADR ${adr(m.fcstRev,m.fcstRn)}`);
-        } catch(e){}
-      }
+  // Forecast + year-over-year for EACH referenced month (handles "June and July")
+  const monthsQ = (parsed.month || parsed.isNext || parsed.isLast || parsed.intent==='forecast' || parsed.intent==='strategy')
+                  ? _assistantMonthsInQuery(parsed) : [];
+  for (const my of monthsQ){
+    const ymKey = my.year*100 + my.month;
+    const daysIn = new Date(my.year, my.month, 0).getDate();
+    L.push('');
+    L.push('FORECAST & YEAR-OVER-YEAR ('+my.label+') — authoritative dashboard figures:');
+    for (const sk of props){
+      try {
+        const A = (typeof aggForecast==='function') ? aggForecast(sk) : null;
+        const m = (A && A.monthly) ? A.monthly[ymKey] : null;
+        if (!m){ L.push(`- ${ASSISTANT_PROPS[sk].label}: no forecast data for this month.`); continue; }
+        let cap = 0;
+        try { const r = structRoomsFor(sk)||{}; cap = Object.keys(r).reduce((a,k)=>a+(r[k]||0),0) * daysIn; } catch(e){}
+        const occ = rn => cap>0 ? Math.round(100*rn/cap)+'%' : '?';
+        const adr = (rev,rn) => rn>0 ? '€'+Math.round(rev/rn) : '—';
+        L.push(`- ${ASSISTANT_PROPS[sk].label}:`);
+        L.push(`    Current OTB (booked so far, this year): €${Math.round(m.otbRev)} · ${m.otbRn} RN · OCC ${occ(m.otbRn)} · ADR ${adr(m.otbRev,m.otbRn)}`);
+        L.push(`    STLY (same booking point last year): €${Math.round(m.stlyRev)} · ${m.stlyRn} RN`);
+        L.push(`    Final LY (full last-year actual result): €${Math.round(m.finalLyRev)} · ${m.finalLyRn} RN · ADR ${adr(m.finalLyRev,m.finalLyRn)}`);
+        L.push(`    Forecast (projected final this year): €${Math.round(m.fcstRev)} · ${m.fcstRn} RN · OCC ${occ(m.fcstRn)} · ADR ${adr(m.fcstRev,m.fcstRn)}`);
+      } catch(e){}
+    }
+  }
+  // Channel mix for the primary referenced month — answers "which channel/account does best/worst"
+  if (monthsQ.length){
+    const pm = monthsQ[0];
+    L.push('');
+    L.push('CHANNEL MIX ('+pm.label+', on the books — revenue share by booking channel/account):');
+    for (const sk of props){
+      try {
+        const mix = _assistantChannelMix(sk, pm.year, pm.month);
+        if (!mix.length) continue;
+        const tot = mix.reduce((a,x)=>a+x.rev,0);
+        const top = mix.slice(0,5).map(x=>`${x.canale} €${Math.round(x.rev)} (${tot>0?Math.round(100*x.rev/tot):0}%, ${x.rn} RN)`).join(' · ');
+        L.push(`- ${ASSISTANT_PROPS[sk].label}: ${top}`);
+      } catch(e){}
     }
   }
   return L.join('\n');
@@ -7153,7 +7205,9 @@ How RMES works: the suggested daily price = Base Price × Composite × (1 + LMF%
 Rules:
 - The CONTEXT below contains the AUTHORITATIVE figures already computed by the dashboard (OTB, STLY, Final LY, forecast). TREAT THEM AS COMPLETE AND CORRECT. Never ask the user to provide data that is already in the context, and never tell them to share OTA detail or last-year data — you already have OTB, STLY and Final LY.
 - Answer ONLY from the CONTEXT facts plus sound revenue-management reasoning. If a specific number you need is genuinely absent from the context, say so briefly — do not invent one.
-- For "why is this month below/above last year", compare Current OTB and Forecast against STLY (same point last year) and Final LY (full last-year result). For "how will it finish", use the Forecast figure as the basis and reason around it.
+- For "why is this month below/above last year", compare Current OTB and Forecast against STLY (same booking point last year) and Final LY (full last-year result). For "how will it finish", use the Forecast figure as the basis and reason around it.
+- There is NO "previous OTB" or "prior OTB" figure. The ONLY year-over-year references are STLY and Final LY. Never claim something is "above the previous OTB" — that figure does not exist. If you need a same-time-last-year comparison, use STLY.
+- For "which channel/account performs best/worst", use the CHANNEL MIX section (revenue share by channel). If it is present, never ask the user for a channel report — you already have it.
 - OCC is an occupancy percentage between 0 and ~100% (it cannot be 131%). ADR and Revenue are in euros. Sanity-check that your numbers match the context; if something looks off, trust the context values verbatim.
 - Be concise, concrete and practical. Prefer short paragraphs and small bullet lists.
 - Reply in the user's language (Italian if they wrote in Italian).
@@ -7304,16 +7358,8 @@ function assistantSubmit(query){
   }
 }
 
-// Suggested questions shown above the input
-const ASSISTANT_SUGGESTIONS = [
-  'Any anomalies?',
-  'Expedia price changes',
-  'ADR July Firenze',
-  'OCC next month',
-  'Strategy Condotta',
-  'What is the floor rate?',
-  'Help',
-];
+// Suggested questions shown above the input (disabled — visually distracting)
+const ASSISTANT_SUGGESTIONS = [];
 
 function assistantInit(){
   const fab = document.getElementById('chat-fab');
@@ -7324,14 +7370,20 @@ function assistantInit(){
   const messagesEl = document.getElementById('chat-body');
   const suggEl = document.getElementById('chat-suggestions');
   if (!fab || !panel) return;
-  // Populate suggestions
+  // Populate suggestions (hidden when the list is empty)
   if (suggEl){
-    suggEl.innerHTML = ASSISTANT_SUGGESTIONS.map(s =>
-      `<button class="chat-sugg" data-q="${s}" style="font-size:11.5px;background:#fff;border:1px solid var(--line);padding:5px 10px;border-radius:14px;cursor:pointer;color:var(--ink-2)">${s}</button>`
-    ).join('');
-    suggEl.querySelectorAll('.chat-sugg').forEach(b => {
-      b.addEventListener('click', () => assistantSubmit(b.dataset.q || b.textContent));
-    });
+    if (!ASSISTANT_SUGGESTIONS.length){
+      suggEl.style.display = 'none';
+      suggEl.innerHTML = '';
+    } else {
+      suggEl.style.display = '';
+      suggEl.innerHTML = ASSISTANT_SUGGESTIONS.map(s =>
+        `<button class="chat-sugg" data-q="${s}" style="font-size:11.5px;background:#fff;border:1px solid var(--line);padding:5px 10px;border-radius:14px;cursor:pointer;color:var(--ink-2)">${s}</button>`
+      ).join('');
+      suggEl.querySelectorAll('.chat-sugg').forEach(b => {
+        b.addEventListener('click', () => assistantSubmit(b.dataset.q || b.textContent));
+      });
+    }
   }
   // Update context label
   const ctxEl = document.getElementById('chat-ctx');
@@ -7411,7 +7463,7 @@ function assistantInit(){
     if (hist.length === 0){
       const welcome = document.createElement('div');
       welcome.style.cssText = 'align-self:flex-start;background:linear-gradient(135deg,#fff,#f5f9fc);color:var(--ink);padding:11px 14px;border-radius:12px;border-bottom-left-radius:4px;max-width:90%;font-size:13px;line-height:1.5;border:1px solid #bcdfe8';
-      welcome.innerHTML = `<div style="font-weight:700;color:#2a4d70;margin-bottom:5px">👋 Welcome</div><p style="margin:0">I'm your local data assistant. Ask about <b>OCC/ADR/RN</b>, run an <b>anomaly check</b>, look up the <b>Playbook</b>, or get <b>strategy advice</b>. Try a suggestion below or type your question.</p>${alertsBadge}`;
+      welcome.innerHTML = `<div style="font-weight:700;color:#2a4d70;margin-bottom:5px">👋 Welcome</div><p style="margin:0">Ask me anything about your numbers — a specific day's price, the forecast vs last year, how a month is going, channel mix, or strategy. With an API key set (⚙) I'll reason over your data; without one I still answer structured questions.</p>${alertsBadge}`;
       messagesEl.appendChild(welcome);
     } else {
       for (const m of hist){
