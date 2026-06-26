@@ -7036,6 +7036,158 @@ function assistantHandleStructInfo(parsed){
   return h;
 }
 
+/* ============================================================================
+   ASSISTANT — optional LLM backend (bring-your-own Anthropic API key).
+   The key is stored LOCALLY in this browser only (never synced to Firebase).
+   When a key is set, free-form / reasoning questions are answered by Claude,
+   grounded in a compact CONTEXT packed from the dashboard's own computations.
+   Structured lookups keep using the instant, free rule-based handlers.
+   ============================================================================ */
+const ASSISTANT_APIKEY_KEY = 'assistant_anthropic_key_v1';   // LOCAL ONLY — not in SYNC_KEYS
+const ASSISTANT_LLM_MODEL  = 'claude-haiku-4-5-20251001';    // Haiku 4.5 (cheapest current tier)
+function assistantGetApiKey(){ try { return (localStorage.getItem(ASSISTANT_APIKEY_KEY) || '').trim(); } catch(e){ return ''; } }
+function assistantSetApiKey(k){ try { if (k && k.trim()) localStorage.setItem(ASSISTANT_APIKEY_KEY, k.trim()); else localStorage.removeItem(ASSISTANT_APIKEY_KEY); } catch(e){} }
+function assistantHasApiKey(){ return !!assistantGetApiKey(); }
+
+function _assistantShouldUseLLM(parsed){
+  if (!assistantHasApiKey()) return false;
+  const lower = (parsed.raw || '').toLowerCase();
+  // Keep these instant + free even with a key set.
+  if (['greet','help','anomalies','expedia_alerts'].indexOf(parsed.intent) >= 0) return false;
+  // Reasoning / open-ended cues → let the LLM reason over the packed facts.
+  const reasoning = /\b(perch[eé]|why|conviene|convien|dovrei|should|rischi|risk|confront|compare|paragon|meglio|better|consigli|advice|come mai|valuta|pro e contro|cosa ne pensi|what do you think|riassum|summar|differenz|difference|spiegami|in sintesi|overview)\b/.test(lower);
+  if (parsed.intent === 'unknown') return true;
+  return reasoning;
+}
+
+function _assistantFmtDev(v){ return (v==null||!isFinite(v)) ? 'n/a' : (v>=0?'+':'')+v.toFixed(1)+'%'; }
+
+/* Pack only the RELEVANT facts (based on what the question references) into a
+   compact text block. Keeps token cost low and grounds the model in real data. */
+function _assistantBuildContext(parsed){
+  const L = [];
+  const props = parsed.property ? [parsed.property] : ['firenze','condotta','alfani','davids'];
+  L.push('STRUCTURES (config):');
+  for (const sk of ['firenze','condotta','alfani','davids']){
+    try {
+      const lbl = ASSISTANT_PROPS[sk].label;
+      const rooms = (typeof structRoomsFor==='function') ? (structRoomsFor(sk)||{}) : {};
+      const tot = Object.keys(rooms).reduce((a,k)=>a+(rooms[k]||0),0);
+      const baseRT = (typeof CFG!=='undefined' && CFG.structures[sk]) ? CFG.structures[sk].baseRT : '?';
+      let floor=null,cap=null,anchor=null;
+      try{floor=fp_getFloor(sk);}catch(e){} try{cap=getRmesCap(sk);}catch(e){} try{anchor=fp_getBasePrice(sk);}catch(e){}
+      L.push(`- ${lbl} [${sk}]: ${tot} rooms, baseRT "${baseRT}", anchor €${anchor!=null?Math.round(anchor):'?'}, floor €${floor!=null?Math.round(floor):'?'}, RMES cap ±${cap!=null?Math.round(cap*100):'?'}%`);
+    } catch(e){}
+  }
+  // Day calculation if a specific day is referenced
+  let dt=null; try { dt = _assistantResolveDate(parsed); } catch(e){}
+  if (dt){
+    L.push('');
+    L.push('DAY CALCULATION ('+dt.label+'):');
+    for (const sk of props){
+      try {
+        const s = (typeof _auditCaptureSnapshot==='function') ? _auditCaptureSnapshot(sk, dt.ymd) : null;
+        if (s){
+          L.push(`- ${ASSISTANT_PROPS[sk].label}: Base €${s.effective_base!=null?Math.round(s.effective_base):'?'} → RMES suggested €${s.rmes_suggested!=null?Math.round(s.rmes_suggested):'?'} (composite ×${s.composite!=null?s.composite.toFixed(3):'?'}). Factors: A·Pickup ${_assistantFmtDev(s.dev_pickup_pct)}, B·Pace ${_assistantFmtDev(s.dev_pace_pct)}, C·Online ${_assistantFmtDev(s.dev_online_pct)}, D·Demand ${_assistantFmtDev(s.dev_demand_pct)}${s.d_demand_off_event?' (off: event)':''}, E·AirDNA ${_assistantFmtDev(s.dev_airdna_pct)}. LMF ${s.lmf_pct!=null?s.lmf_pct.toFixed(1)+'%':'0%'}, event ${s.event_name||'none'}.`);
+        }
+      } catch(e){}
+    }
+  }
+  // Forecast + month stats if a month/next/last is referenced
+  if (parsed.month || parsed.isNext || parsed.isLast || parsed.intent==='forecast'){
+    let my=null; try { my = _assistantResolveMonthYear(parsed); } catch(e){}
+    if (my){
+      const ymKey = my.year*100 + my.month;
+      L.push('');
+      L.push('FORECAST & STATS ('+my.label+'):');
+      for (const sk of props){
+        try {
+          const A = (typeof aggForecast==='function') ? aggForecast(sk) : null;
+          const m = (A && A.monthly) ? A.monthly[ymKey] : null;
+          const st = (typeof _assistantComputeMonthStats==='function') ? _assistantComputeMonthStats(sk, my.year, my.month) : null;
+          let line = `- ${ASSISTANT_PROPS[sk].label}:`;
+          if (m){
+            const otbAdr=m.otbRn>0?m.otbRev/m.otbRn:0, fAdr=m.fcstRn>0?m.fcstRev/m.fcstRn:0;
+            line += ` OTB €${Math.round(m.otbRev)} (${m.otbRn} RN, OCC ${m.otbOcc!=null?Math.round(m.otbOcc*100):'?'}%, ADR €${Math.round(otbAdr)}); Forecast €${Math.round(m.fcstRev)} (${m.fcstRn} RN, ADR €${Math.round(fAdr)}).`;
+          }
+          if (st) line += ` Realized-so-far: OCC ${Math.round(st.occ*100)}%, ADR €${Math.round(st.adr)}, ${st.rn} RN, Revenue €${Math.round(st.revenue)}.`;
+          L.push(line);
+        } catch(e){}
+      }
+    }
+  }
+  return L.join('\n');
+}
+
+function _assistantHistoryToMessages(hist){
+  // Map recent chat history → Anthropic messages (strip HTML from bot turns).
+  const out = [];
+  const recent = (hist || []).slice(-8);
+  for (const m of recent){
+    if (m.role === 'user' && m.text) out.push({ role:'user', content: String(m.text).slice(0, 2000) });
+    else if (m.role === 'bot' && m.html){
+      const txt = String(m.html).replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+      if (txt) out.push({ role:'assistant', content: txt.slice(0, 2000) });
+    }
+  }
+  // Anthropic requires the first message to be 'user' and alternating-ish; collapse leading assistant.
+  while (out.length && out[0].role === 'assistant') out.shift();
+  return out;
+}
+
+async function _assistantCallLLM(query, parsed, priorHistory){
+  const key = assistantGetApiKey();
+  if (!key) throw new Error('No API key set');
+  const context = _assistantBuildContext(parsed);
+  const todayISO = (function(){ const d=new Date(TODAY); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+  const system =
+`You are the revenue-management assistant embedded in the "Revenue Intelligence Manu&Enis" dashboard for 4 properties in Florence: Firenze Suite, Condotta 16, Palazzo Alfani, Enis Guesthouse. Today is ${todayISO}.
+
+How RMES works: the suggested daily price = Base Price × Composite × (1 + LMF%) × Event, then floored at the property's Floor Rate. The Composite is the weighted sum of 5 factors — A·Daily Pickup, B·Pace Trend (2-week blend), C·Online Pricing (vs Expedia compset), D·Demand (Expedia searches), E·AirDNA Market — each individually capped, with the composite capped at ±30% by default vs the Base Price. D·Demand is automatically muted on dates that have an Event weight set (to avoid double-counting). RMES outputs a single flexible, room-only rate; non-refundable is derived downstream.
+
+Rules:
+- Answer ONLY from the CONTEXT facts below plus sound revenue-management reasoning. If a number you need is not in the context, say you don't have it rather than inventing one.
+- Be concise, concrete and practical. Prefer short paragraphs and small bullet lists.
+- Reply in the user's language (Italian if they wrote in Italian).
+- Output light HTML only (<b>, <ul>, <li>, <p>, <br>). No markdown, no code fences.
+
+CONTEXT:
+${context}`;
+  const messages = _assistantHistoryToMessages(priorHistory);
+  messages.push({ role:'user', content: query });
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model: ASSISTANT_LLM_MODEL, max_tokens: 1024, system: system, messages: messages })
+  });
+  if (!resp.ok){
+    let msg = 'HTTP ' + resp.status;
+    try { const j = await resp.json(); if (j && j.error && j.error.message) msg = j.error.message; } catch(e){}
+    const e = new Error(msg); e.status = resp.status; throw e;
+  }
+  const data = await resp.json();
+  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+  return text || '(the model returned an empty response)';
+}
+
+function _assistantLLMtoHtml(text){
+  // The model is asked for light HTML; if it returned plain text, paragraph-wrap it.
+  if (/<(p|ul|ol|li|b|i|br|strong|em|h[1-6])\b/i.test(text)) return text;
+  return text.split(/\n\n+/).map(p => '<p>' + p.replace(/\n/g,'<br>') + '</p>').join('');
+}
+function _assistantLLMErrorHtml(err){
+  const m = (err && err.message) ? err.message : String(err);
+  let hint = 'Check your internet connection and try again.';
+  if (/api key|x-api-key|authentication|401/i.test(m)) hint = 'Your API key seems invalid or missing — open the ⚙ key settings in the chat header to fix it.';
+  else if (/credit|quota|billing|429|rate/i.test(m)) hint = 'The API returned a quota / rate-limit error — check your Anthropic console billing.';
+  return `<p>I couldn't reach the AI backend.</p><p class="small">${m}</p><p class="small">${hint} You can still use the structured commands (type <i>"help"</i>).</p>`;
+}
+
 function assistantHandle(query){
   const parsed = assistantParseQuery(query);
   if (parsed.intent === 'greet'){
@@ -7112,6 +7264,7 @@ function assistantSubmit(query){
   if (!query) return;
   assistantAppendMessage('user', query);
   const hist = assistantLoadHistory();
+  const priorForLLM = hist.slice();           // history BEFORE this turn (for follow-ups)
   hist.push({ role: 'user', text: query, ts: Date.now() });
   // Typing indicator
   const messagesEl = document.getElementById('chat-body');
@@ -7121,15 +7274,26 @@ function assistantSubmit(query){
   typing.textContent = 'Thinking •••';
   messagesEl.appendChild(typing);
   messagesEl.scrollTop = messagesEl.scrollHeight;
-  setTimeout(() => {
+  const finish = (html) => {
     try { typing.remove(); } catch(e){}
-    let answerHtml;
-    try { answerHtml = assistantHandle(query); }
-    catch(e){ answerHtml = '<p>Sorry, I hit an error processing that question.</p><p class="small">' + (e.message || e) + '</p>'; }
-    assistantAppendMessage('bot', answerHtml);
-    hist.push({ role: 'bot', html: answerHtml, ts: Date.now() });
+    assistantAppendMessage('bot', html);
+    hist.push({ role: 'bot', html: html, ts: Date.now() });
     assistantSaveHistory(hist);
-  }, 280);
+  };
+  let parsed; try { parsed = assistantParseQuery(query); } catch(e){ parsed = { intent:'unknown', raw:query }; }
+  if (typeof _assistantShouldUseLLM === 'function' && _assistantShouldUseLLM(parsed)){
+    typing.textContent = 'Thinking (AI) •••';
+    _assistantCallLLM(query, parsed, priorForLLM)
+      .then(text => finish(_assistantLLMtoHtml(text)))
+      .catch(err => finish(_assistantLLMErrorHtml(err)));
+  } else {
+    setTimeout(() => {
+      let answerHtml;
+      try { answerHtml = assistantHandle(query); }
+      catch(e){ answerHtml = '<p>Sorry, I hit an error processing that question.</p><p class="small">' + (e.message || e) + '</p>'; }
+      finish(answerHtml);
+    }, 280);
+  }
 }
 
 // Suggested questions shown above the input
@@ -7187,6 +7351,43 @@ function assistantInit(){
     closeBtn._wired = true;
     closeBtn.addEventListener('click', () => panel.classList.remove('open'));
   }
+  // AI settings (API key) wiring
+  const settingsBtn = document.getElementById('chat-settings-btn');
+  const settingsBox = document.getElementById('chat-settings');
+  const keyInput = document.getElementById('chat-apikey-input');
+  const keySave = document.getElementById('chat-apikey-save');
+  const keyClear = document.getElementById('chat-apikey-clear');
+  const keyStatus = document.getElementById('chat-apikey-status');
+  function _refreshKeyStatus(){
+    if (!keyStatus) return;
+    const has = (typeof assistantHasApiKey==='function') && assistantHasApiKey();
+    keyStatus.textContent = has ? '✓ key saved (AI on)' : 'no key (structured answers only)';
+    keyStatus.style.color = has ? '#3d7a4b' : 'var(--ink-3)';
+    if (settingsBtn) settingsBtn.style.color = has ? '#3d7a4b' : '';
+  }
+  if (settingsBtn && !settingsBtn._wired){
+    settingsBtn._wired = true;
+    settingsBtn.addEventListener('click', () => {
+      if (!settingsBox) return;
+      const showing = settingsBox.style.display !== 'none';
+      settingsBox.style.display = showing ? 'none' : 'block';
+      if (!showing){ if (keyInput) keyInput.value = ''; _refreshKeyStatus(); setTimeout(()=>{ try{keyInput.focus();}catch(e){} },40); }
+    });
+  }
+  if (keySave && !keySave._wired){
+    keySave._wired = true;
+    keySave.addEventListener('click', () => {
+      const v = keyInput ? keyInput.value.trim() : '';
+      if (v){ assistantSetApiKey(v); if (keyInput) keyInput.value=''; }
+      _refreshKeyStatus();
+      if (settingsBox) settingsBox.style.display = 'none';
+    });
+  }
+  if (keyClear && !keyClear._wired){
+    keyClear._wired = true;
+    keyClear.addEventListener('click', () => { assistantSetApiKey(''); if (keyInput) keyInput.value=''; _refreshKeyStatus(); });
+  }
+  _refreshKeyStatus();
   // Restore history on first init
   if (messagesEl && messagesEl.children.length === 0){
     const hist = assistantLoadHistory();

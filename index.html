@@ -2754,7 +2754,21 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <h4>Revenue AI</h4>
       <div class="chat-ctx" id="chat-ctx">Context: Firenze Suite</div>
     </div>
-    <button id="chat-close" aria-label="Chiudi">×</button>
+    <div style="display:flex;align-items:center;gap:2px">
+      <button id="chat-settings-btn" aria-label="AI settings" title="AI settings (API key)">⚙</button>
+      <button id="chat-close" aria-label="Chiudi">×</button>
+    </div>
+  </div>
+  <div id="chat-settings" style="display:none;padding:12px 14px;border-bottom:1px solid var(--line);background:#faf8f3;font-size:12px">
+    <div style="font-weight:700;color:#5a3a14;margin-bottom:6px">🔌 AI backend (optional)</div>
+    <div style="color:var(--ink-3);margin-bottom:8px;line-height:1.45">Paste an <b>Anthropic API key</b> to let the assistant answer free-form / reasoning questions (e.g. <i>"why is Alfani weaker in August?"</i>). Without a key it still answers structured questions for free. The key is stored <b>only in this browser</b> (never synced) and used to call Claude directly.</div>
+    <input type="password" id="chat-apikey-input" placeholder="sk-ant-..." autocomplete="off" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:12px;box-sizing:border-box">
+    <div style="display:flex;gap:6px;margin-top:8px;align-items:center">
+      <button id="chat-apikey-save" style="font-size:12px;padding:6px 12px;border:none;border-radius:6px;background:#5a3a14;color:#fff;cursor:pointer;font-weight:600">Save</button>
+      <button id="chat-apikey-clear" style="font-size:12px;padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:transparent;color:var(--ink-2);cursor:pointer">Remove</button>
+      <span id="chat-apikey-status" style="font-size:11px;color:var(--ink-3)"></span>
+    </div>
+    <div style="color:var(--ink-3);margin-top:8px;font-size:10.5px;line-height:1.4">Model: Claude Haiku 4.5 · pay-as-you-go (~half a cent/question). Get a key at console.anthropic.com and set a spend cap there.</div>
   </div>
   <div class="chat-body" id="chat-body"></div>
   <div class="chat-suggestions" id="chat-suggestions"></div>
