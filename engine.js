@@ -7155,21 +7155,42 @@ function _assistantBuildContext(parsed){
         L.push(`    STLY (same booking point last year): €${Math.round(m.stlyRev)} · ${m.stlyRn} RN`);
         L.push(`    Final LY (full last-year actual result): €${Math.round(m.finalLyRev)} · ${m.finalLyRn} RN · ADR ${adr(m.finalLyRev,m.finalLyRn)}`);
         L.push(`    Forecast (projected final this year): €${Math.round(m.fcstRev)} · ${m.fcstRn} RN · OCC ${occ(m.fcstRn)} · ADR ${adr(m.fcstRev,m.fcstRn)}`);
+        // Pre-computed deltas so the model never mischaracterises them
+        const pct = (a,b)=> (b>0) ? Math.round(100*(a-b)/b) : null;
+        const sgn = n => (n>0?'+':'');
+        const dStly = m.otbRev - m.stlyRev, pStly = pct(m.otbRev, m.stlyRev);
+        const dFin  = m.fcstRev - m.finalLyRev, pFin = pct(m.fcstRev, m.finalLyRev);
+        const gap   = m.fcstRev - m.otbRev;
+        L.push(`    → OTB vs STLY: ${sgn(dStly)}€${Math.round(dStly)}${pStly!=null?` (${sgn(pStly)}${pStly}%)`:''}`);
+        L.push(`    → Forecast vs Final LY: ${sgn(dFin)}€${Math.round(dFin)}${pFin!=null?` (${sgn(pFin)}${pFin}%)`:''}`);
+        L.push(`    → Still to book to hit forecast: €${Math.round(gap)} (${m.fcstRn - m.otbRn} RN)`);
       } catch(e){}
     }
   }
-  // Channel mix for the primary referenced month — answers "which channel/account does best/worst"
+  // Channel mix THIS YEAR vs LAST YEAR for the primary referenced month
+  // — answers "which channels/accounts are improving or declining"
   if (monthsQ.length){
     const pm = monthsQ[0];
     L.push('');
-    L.push('CHANNEL MIX ('+pm.label+', on the books — revenue share by booking channel/account):');
+    L.push('CHANNEL MIX & YoY ('+pm.label+') — current on the books (partial if month not over) vs last year same month (full result). Compare SHARES and trajectory, not just absolute €:');
     for (const sk of props){
       try {
-        const mix = _assistantChannelMix(sk, pm.year, pm.month);
-        if (!mix.length) continue;
-        const tot = mix.reduce((a,x)=>a+x.rev,0);
-        const top = mix.slice(0,5).map(x=>`${x.canale} €${Math.round(x.rev)} (${tot>0?Math.round(100*x.rev/tot):0}%, ${x.rn} RN)`).join(' · ');
-        L.push(`- ${ASSISTANT_PROPS[sk].label}: ${top}`);
+        const cy = _assistantChannelMix(sk, pm.year, pm.month);
+        const ly = _assistantChannelMix(sk, pm.year-1, pm.month);
+        if (!cy.length && !ly.length) continue;
+        const cyTot = cy.reduce((a,x)=>a+x.rev,0), lyTot = ly.reduce((a,x)=>a+x.rev,0);
+        const cyMap = {}; cy.forEach(x=>cyMap[x.canale]=x);
+        const lyMap = {}; ly.forEach(x=>lyMap[x.canale]=x);
+        const chans = Array.from(new Set(cy.concat(ly).map(x=>x.canale)));
+        chans.sort((a,b)=>((cyMap[b]?cyMap[b].rev:0))-((cyMap[a]?cyMap[a].rev:0)));
+        const parts = chans.slice(0,6).map(ch=>{
+          const c = cyMap[ch], l = lyMap[ch];
+          const cShare = (c&&cyTot>0)?Math.round(100*c.rev/cyTot):0;
+          const lShare = (l&&lyTot>0)?Math.round(100*l.rev/lyTot):0;
+          const cRev = c?Math.round(c.rev):0, lRev = l?Math.round(l.rev):0;
+          return `${ch}: now €${cRev} (${cShare}%) vs LY €${lRev} (${lShare}%)`;
+        });
+        L.push(`- ${ASSISTANT_PROPS[sk].label}: ${parts.join(' · ')}`);
       } catch(e){}
     }
   }
@@ -7208,6 +7229,9 @@ Rules:
 - For "why is this month below/above last year", compare Current OTB and Forecast against STLY (same booking point last year) and Final LY (full last-year result). For "how will it finish", use the Forecast figure as the basis and reason around it.
 - There is NO "previous OTB" or "prior OTB" figure. The ONLY year-over-year references are STLY and Final LY. Never claim something is "above the previous OTB" — that figure does not exist. If you need a same-time-last-year comparison, use STLY.
 - For "which channel/account performs best/worst", use the CHANNEL MIX section (revenue share by channel). If it is present, never ask the user for a channel report — you already have it.
+- The CHANNEL MIX & YoY section gives this-year vs last-year share per channel. To answer "which channels are improving/declining", compare each channel's current SHARE to its last-year share (rising share = gaining, falling share = losing). Never ask the user for last-year channel data — it is in the context.
+- The context already contains the exact € and % deltas (OTB vs STLY, Forecast vs Final LY, gap to forecast). USE THOSE NUMBERS VERBATIM. Characterise them honestly: +21% is "well above last year", not "in line" or "slightly above". Do not downplay a double-digit % difference.
+- Do NOT invent pickup figures or claims about "the last N days" or "typical pickup" — you have no pickup-pace data. You may state how much is left to book (the gap) and that it depends on remaining bookings, but never assert it will "easily" close. If the month hasn't started yet, say so rather than referencing recent daily pickup.
 - OCC is an occupancy percentage between 0 and ~100% (it cannot be 131%). ADR and Revenue are in euros. Sanity-check that your numbers match the context; if something looks off, trust the context values verbatim.
 - Be concise, concrete and practical. Prefer short paragraphs and small bullet lists.
 - Reply in the user's language (Italian if they wrote in Italian).
