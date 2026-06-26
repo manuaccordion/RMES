@@ -43,6 +43,7 @@ const RMES_CLOUD = (function(){
     'rmes_elasticity_v1',
     'rmes_lastminute_factor_v1',
     'rmes_foundation_overrides_v1',
+    'rmes_audit_log_v1',
     'notes_journal_v2',
     'rmes_dow_premium_v1',
     'rmes_promos_v1',
@@ -61,6 +62,7 @@ const RMES_CLOUD = (function(){
   let available = false;
   let pushTimer = null;
   let applyingRemote = false;   // true mentre applichiamo dati dal cloud (per non ri-pushare)
+  let _pendingAuditPush = false; // true se il merge del log ha aggiunto righe locali assenti dal cloud
   let lastRemoteJSON = null;    // ultimo stato remoto applicato (per dedup)
   const statusListeners = [];
 
@@ -294,6 +296,13 @@ const RMES_CLOUD = (function(){
           try {
             for (const k of SYNC_KEYS){
               if (payload[k] !== undefined && payload[k] !== null){
+                if (k === AUDIT_SYNC_KEY){
+                  let cur = null; try { cur = localStorage.getItem(k); } catch(e){}
+                  const merged = _mergeAuditRaw(cur, payload[k]);
+                  try { localStorage.setItem(k, merged); appliedCount++; } catch(e){}
+                  if (merged !== payload[k]) _pendingAuditPush = true;
+                  continue;
+                }
                 try { localStorage.setItem(k, payload[k]); appliedCount++; } catch(e){}
               }
             }
@@ -397,6 +406,35 @@ const RMES_CLOUD = (function(){
     return obj;
   }
 
+  // ---- Append-only audit log: merge instead of overwrite ----
+  // The decision log is shared but APPENDED independently by each person. A plain
+  // last-write-wins replace would drop the other person's entries, so on every
+  // apply we UNION local + remote, deduped by a stable per-entry id, capped for size.
+  const AUDIT_SYNC_KEY = 'rmes_audit_log_v1';
+  const AUDIT_SYNC_CAP = 1500;   // keep the shared doc comfortably under Firestore's 1MB limit
+  function _auditEntryId(e){
+    return [e && e.ts, e && e.author, e && e.struct, e && e.ymd, e && e.action].join('|');
+  }
+  function _mergeAuditRaw(localRaw, remoteRaw){
+    let a = [], b = [];
+    try { a = localRaw ? JSON.parse(localRaw) : []; } catch(e){ a = []; }
+    try { b = remoteRaw ? JSON.parse(remoteRaw) : []; } catch(e){ b = []; }
+    if (!Array.isArray(a)) a = [];
+    if (!Array.isArray(b)) b = [];
+    const seen = {}, out = [];
+    const all = a.concat(b);
+    for (let i = 0; i < all.length; i++){
+      const e = all[i];
+      if (!e) continue;
+      const id = _auditEntryId(e);
+      if (seen[id]) continue;
+      seen[id] = 1; out.push(e);
+    }
+    out.sort(function(x,y){ return (x.ts||0) - (y.ts||0); });
+    if (out.length > AUDIT_SYNC_CAP) out.splice(0, out.length - AUDIT_SYNC_CAP);
+    return JSON.stringify(out);
+  }
+
   // Applica uno stato remoto in localStorage; ritorna true se qualcosa è cambiato
   function _applyToLocal(remote){
     if (!remote || typeof remote !== 'object') return false;
@@ -407,6 +445,17 @@ const RMES_CLOUD = (function(){
         const incoming = (remote[k] != null) ? remote[k] : null;
         let current = null;
         try { current = localStorage.getItem(k); } catch(e){}
+        if (k === AUDIT_SYNC_KEY){
+          // append-only log → MERGE (never overwrite, or we lose the other person's entries)
+          if (incoming != null){
+            const merged = _mergeAuditRaw(current, incoming);
+            if (merged !== current){ try { localStorage.setItem(k, merged); changed = true; } catch(e){} }
+            if (merged !== incoming) _pendingAuditPush = true;   // local has entries the cloud lacks → push back
+          } else if (current != null){
+            _pendingAuditPush = true;   // cloud has no log yet but we do → push ours up
+          }
+          continue;
+        }
         if (incoming != null && incoming !== current){
           try { localStorage.setItem(k, incoming); changed = true; } catch(e){}
         }
@@ -448,6 +497,7 @@ const RMES_CLOUD = (function(){
     } finally {
       applyingRemote = false;
     }
+    if (_pendingAuditPush){ _pendingAuditPush = false; try { _schedulePush(); } catch(e){} }
     return changed;
   }
 
@@ -543,6 +593,8 @@ const RMES_CLOUD = (function(){
     isAvailable: function(){ return available; },
     onStatus: function(fn){ statusListeners.push(fn); },
     _collectLocal: _collectLocal,
+    _mergeAuditRaw: _mergeAuditRaw,
+    _applyToLocal: _applyToLocal,
     showDiagnostics: _showDiagnostics,
     forcePullFromCloud: _forcePullFromCloud,
     forcePushToCloud: _forcePushToCloud,
