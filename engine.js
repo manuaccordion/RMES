@@ -613,6 +613,7 @@ function rmesCloudOnRemoteUpdate(){
       if (CURRENT_TAB === 'sell' && typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
       else if (CURRENT_TAB === 'baseprice' && typeof renderBasePriceBreakdown === 'function') { renderBasePriceBreakdown(); if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown(); }
       else if (CURRENT_TAB === 'pri' && typeof renderRMESTab === 'function') renderRMESTab();
+      else if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function') renderCheckUpdates();
     }
     // Refresh notes UI (badge + panel se aperto) when notes change remotely
     if (typeof updateNotesBadge === 'function') updateNotesBadge();
@@ -5932,6 +5933,22 @@ function renderBasePriceBreakdown(){
     exportBtn.dataset.wired = '1';
     exportBtn.addEventListener('click', () => _bpExportCSV());
   }
+  const refreezeBtn = document.getElementById('bp-refreeze');
+  if (refreezeBtn && !refreezeBtn.dataset.wired){
+    refreezeBtn.dataset.wired = '1';
+    refreezeBtn.addEventListener('click', () => {
+      const structs = (BP_BREAKDOWN_STATE.struct === 'all') ? ['firenze','condotta','alfani','davids'] : [BP_BREAKDOWN_STATE.struct];
+      const fI = document.getElementById('bp-date-from'), tI = document.getElementById('bp-date-to');
+      const f = fI ? fI.value : '', t = tI ? tI.value : '';
+      if (!f || !t) return;
+      const scope = (BP_BREAKDOWN_STATE.struct === 'all') ? 'all 4 properties' : BP_BREAKDOWN_STATE.struct;
+      if (!confirm('Recompute and overwrite the frozen Base Price for ' + scope + ' from ' + f + ' to ' + t + '?\n\nThis refreshes the structural base to the current data + config (fixes stale values like 220 vs 268). Your manual overrides and accepted RMES are kept.')) return;
+      const n = (typeof newrmesRefreezeRange === 'function') ? newrmesRefreezeRange(structs, f, t) : 0;
+      renderBasePriceBreakdown();
+      if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown();
+      try { alert('Refreshed the frozen Base Price for ' + n + ' day(s). RMES "Last update" now matches the breakdown for days with no override/accept.'); } catch(e){}
+    });
+  }
   const fromISO = fromInp ? fromInp.value : today.toISOString().slice(0,10);
   const toISO = toInp ? toInp.value : new Date(today.getTime()+120*86400000).toISOString().slice(0,10);
   const dFrom = new Date(fromISO + 'T00:00:00');
@@ -8025,6 +8042,34 @@ function newrmesFreezeBasePriceHorizon(structKey, horizonDays){
   }
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_KEY, existing);
   return added;
+}
+
+/* Recompute & OVERWRITE the frozen Base Price for the given structures over a date
+   range, using the CURRENT data + config. Use when the stored frozen base is stale
+   vs the live Export-Pricing computation. Overrides 🖋 and accepted RMES ✓ are NOT
+   touched (separate keys). Returns the number of days re-frozen. */
+function newrmesRefreezeRange(structKeys, isoFrom, isoTo){
+  if (!Array.isArray(structKeys)) structKeys = [structKeys];
+  const dFrom = new Date(isoFrom + 'T00:00:00');
+  const dTo = new Date(isoTo + 'T00:00:00');
+  if (isNaN(dFrom.getTime()) || isNaN(dTo.getTime()) || dTo < dFrom) return 0;
+  let count = 0;
+  for (const sk of structKeys){
+    if (!CFG.structures[sk]) continue;
+    for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
+      const iso = dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0');
+      const ymd = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
+      try {
+        const live = newrmesCalculateBasePrice(sk, iso);
+        if (live != null && isFinite(live) && live > 0){
+          newrmesSetFrozenBase(sk, ymd, live);   // overwrites the stale frozen value
+          count++;
+        }
+      } catch(e){}
+    }
+  }
+  if (count > 0 && typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+  return count;
 }
 
 /* Boot: freeze Base Price for all 4 structures at first access of NewRMES system.
