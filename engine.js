@@ -5329,6 +5329,7 @@ const FP_BASE_RATE_OVERRIDES_KEY = 'rmes_base_rate_overrides_v1';  // [LEGACY, w
      storage: { struct: { ymd: { delta, date } } }
 */
 const NEWRMES_FROZEN_BASE_KEY = 'rmes_frozen_base_v1';
+const BASE_FREEZE_WINDOW_DAYS = 90;   // freeze only the reliable-Expedia window; beyond → live/updatable
 const NEWRMES_FROZEN_BASE_OVR_KEY = 'rmes_frozen_base_override_v1';
 const NEWRMES_ACCEPTED_KEY = 'rmes_accepted_v1';
 
@@ -5429,7 +5430,18 @@ function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
 function newrmesGetEffectiveBase(structKey, ymd){
   const ovr = newrmesGetFrozenBaseOverride(structKey, ymd);
   if (ovr != null) return ovr;
-  return newrmesGetFrozenBase(structKey, ymd);
+  const frozen = newrmesGetFrozenBase(structKey, ymd);
+  if (frozen != null) return frozen;
+  // Beyond the frozen 90-day window (or not yet frozen) → compute LIVE, so far-future
+  // days stay updatable until they roll into the reliable window and get frozen.
+  try {
+    const d = fp_ymdNumToDate(ymd);
+    if (d){
+      const live = newrmesCalculateBasePrice(structKey, fp_isoDate(d));
+      if (live != null && isFinite(live) && live > 0) return live;
+    }
+  } catch(e){}
+  return frozen; // null
 }
 
 /* ============================================================================
@@ -8023,6 +8035,39 @@ function _rmesExportCSV(){
   URL.revokeObjectURL(url);
 }
 
+/* Rolling frozen-base window maintenance:
+   - days in [today, today+90] (BASE_FREEZE_WINDOW_DAYS): FROZEN. Any not-yet-frozen
+     day in the window is frozen now with current (reliable-Expedia) data; already
+     frozen days are kept stable.
+   - days beyond today+90: frozen entries are DELETED → they recompute live each time
+     (updatable) until they roll into the 90-day window.
+   Past frozen days are left as history. Returns days newly frozen. */
+function newrmesMaintainFrozenWindow(structKey){
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const wEnd = new Date(today.getTime() + BASE_FREEZE_WINDOW_DAYS*86400000);
+  const ymdWindowEnd = wEnd.getFullYear()*10000 + (wEnd.getMonth()+1)*100 + wEnd.getDate();
+  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_KEY);
+  if (!all[structKey]) all[structKey] = {};
+  const store = all[structKey];
+  let added = 0, removed = 0;
+  for (let off = 0; off <= BASE_FREEZE_WINDOW_DAYS; off++){
+    const d = new Date(today.getTime() + off*86400000);
+    const ymd = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+    if (store[ymd] != null) continue;            // already frozen → keep stable
+    const iso = d.toISOString().slice(0,10);
+    let price = null; try { price = newrmesCalculateBasePrice(structKey, iso); } catch(e){}
+    if (price != null && isFinite(price) && price > 0){
+      store[ymd] = { price: Math.round(price), frozenAt: today.toISOString().slice(0,10) };
+      added++;
+    }
+  }
+  for (const k in store){             // drop future days beyond the window → live/updatable
+    if (+k > ymdWindowEnd){ delete store[k]; removed++; }
+  }
+  if (added > 0 || removed > 0) _newrmesSaveObj(NEWRMES_FROZEN_BASE_KEY, all);
+  return added;
+}
+
 function newrmesFreezeBasePriceHorizon(structKey, horizonDays){
   horizonDays = horizonDays || 365;
   const today = new Date(TODAY); today.setHours(0,0,0,0);
@@ -8080,9 +8125,9 @@ function newrmesBootFreezeAll(){
   let totalAdded = 0;
   for (const s of structs){
     try {
-      const n = newrmesFreezeBasePriceHorizon(s, 365);
+      const n = newrmesMaintainFrozenWindow(s);
       if (n > 0) totalAdded += n;
-      if (n > 0) console.log('[NewRMES] Frozen Base Price for ' + s + ': +' + n + ' days');
+      if (n > 0) console.log('[NewRMES] Frozen Base window [today..+' + BASE_FREEZE_WINDOW_DAYS + 'd] for ' + s + ': +' + n + ' days');
     } catch(e){ console.error('[NewRMES] freeze failed for ' + s, e); }
   }
   if (totalAdded > 0) console.log('[NewRMES] Total Base Price days frozen: ' + totalAdded);
