@@ -17928,6 +17928,17 @@ function _renderTrendChart(containerId, metric /* 'adr' | 'occ' */, sel, yms){
     return path;
   }
   let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block">`;
+  // Per-lead-time data for the hover tooltip (curves are aligned, same length/order)
+  const hoverData = [];
+  for (let i = 0; i < curveOtb.length; i++){
+    hoverData.push({
+      x: curveOtb[i].x,
+      px: xPx(curveOtb[i].x),
+      otb: pickVal(curveOtb[i]),
+      fc: pickVal(curveForecast[i]),
+      stly: pickVal(curveStly[i])
+    });
+  }
   // Grid orizzontale + label Y (5 tick)
   svg += '<g font-family="DM Mono,monospace" font-size="10" fill="#999">';
   for (let i = 0; i <= 5; i++){
@@ -17974,8 +17985,58 @@ function _renderTrendChart(containerId, metric /* 'adr' | 'occ' */, sel, yms){
   endLabel(pickVal(finalOtb), '#3b6b9a', 'OTB');
   endLabel(pickVal(finalFc), '#c4823b', 'FCST');
   endLabel(pickVal(finalStly), '#888', 'STLY');
+  // Hover layer: vertical guide + 3 dots + transparent overlay (wired after insert)
+  const cid = containerId;
+  svg += `<line id="${cid}-guide" x1="0" y1="${PAD_T}" x2="0" y2="${(H-PAD_B).toFixed(1)}" stroke="#bbb" stroke-width="1" opacity="0"/>`;
+  svg += `<circle id="${cid}-dot-stly" r="3.5" fill="#888" stroke="#fff" stroke-width="1" opacity="0"/>`;
+  svg += `<circle id="${cid}-dot-fc" r="3.5" fill="#c4823b" stroke="#fff" stroke-width="1" opacity="0"/>`;
+  svg += `<circle id="${cid}-dot-otb" r="4" fill="#3b6b9a" stroke="#fff" stroke-width="1" opacity="0"/>`;
+  svg += `<rect id="${cid}-overlay" x="${PAD_L}" y="${PAD_T}" width="${plotW.toFixed(1)}" height="${plotH.toFixed(1)}" fill="transparent" style="cursor:crosshair"/>`;
   svg += '</svg>';
   cont.innerHTML = svg;
+  // ---- Wire hover tooltip ----
+  try {
+    const svgEl = cont.querySelector('svg');
+    cont.style.position = 'relative';
+    let tip = document.createElement('div');
+    tip.className = 'trend-tip';
+    tip.style.cssText = 'position:absolute;pointer-events:none;background:#fff;border:1px solid #e2ded4;border-radius:6px;padding:6px 9px;font-size:11px;font-family:DM Mono,monospace;box-shadow:0 4px 14px rgba(40,30,15,.14);display:none;z-index:30;white-space:nowrap;line-height:1.5';
+    cont.appendChild(tip);
+    const guide = document.getElementById(cid+'-guide');
+    const dotO = document.getElementById(cid+'-dot-otb');
+    const dotF = document.getElementById(cid+'-dot-fc');
+    const dotS = document.getElementById(cid+'-dot-stly');
+    const hide = () => { tip.style.display='none'; [guide,dotO,dotF,dotS].forEach(el=>{ if(el) el.setAttribute('opacity','0'); }); };
+    const setDot = (dot,val) => { if(!dot) return; if(val!=null&&isFinite(val)){ dot.setAttribute('cy', yPx(val).toFixed(1)); dot.setAttribute('opacity','1'); } else dot.setAttribute('opacity','0'); };
+    const onMove = (e) => {
+      const r = svgEl.getBoundingClientRect();
+      if (r.width <= 0) return;
+      const vbX = (e.clientX - r.left) / r.width * W;
+      if (vbX < PAD_L - 4 || vbX > W - PAD_R + 4){ hide(); return; }
+      let best=null, bd=1e9;
+      for (const h of hoverData){ const d=Math.abs(h.px - vbX); if (d<bd){ bd=d; best=h; } }
+      if (!best){ hide(); return; }
+      if (guide){ guide.setAttribute('x1', best.px.toFixed(1)); guide.setAttribute('x2', best.px.toFixed(1)); guide.setAttribute('opacity','1'); }
+      if (dotO){ dotO.setAttribute('cx', best.px.toFixed(1)); } setDot(dotO, best.otb);
+      if (dotF){ dotF.setAttribute('cx', best.px.toFixed(1)); } setDot(dotF, best.fc);
+      if (dotS){ dotS.setAttribute('cx', best.px.toFixed(1)); } setDot(dotS, best.stly);
+      const head = best.x === 0 ? 'At check-in (0d)' : (-best.x) + 'd before check-in';
+      tip.innerHTML = '<div style="font-weight:700;color:#5a3a14;margin-bottom:2px">'+head+'</div>'
+        + '<div style="color:#3b6b9a">● OTB: '+fmtVal(best.otb)+'</div>'
+        + '<div style="color:#c4823b">● Forecast: '+fmtVal(best.fc)+'</div>'
+        + '<div style="color:#888">● STLY: '+fmtVal(best.stly)+'</div>';
+      tip.style.display = 'block';
+      const contPx = best.px / W * r.width;
+      const tipW = tip.offsetWidth || 110;
+      let left = contPx + 14;
+      if (left + tipW > r.width) left = contPx - tipW - 14;
+      tip.style.left = Math.max(2, left).toFixed(0) + 'px';
+      tip.style.top = '4px';
+    };
+    svgEl.addEventListener('mousemove', onMove);
+    svgEl.addEventListener('mouseleave', hide);
+  } catch(e){ /* hover is optional */ }
+  return;
 }
 
 function renderAdrTrend(sel){
