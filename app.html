@@ -304,6 +304,8 @@ main{flex:1;padding:8px 16px 24px}
 .bp-chtrack{height:8px;background:var(--org-tint);border-radius:5px;overflow:hidden}
 .bp-chfill{height:100%;border-radius:5px}
 .bp-note{font-size:10px;color:var(--muted);margin-top:9px;text-align:center}
+.bp-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 10px}
+.bp-chip{display:inline-flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:11px;font-weight:700;border-radius:14px;padding:4px 11px;border:1.5px solid}
 .bp-empty{color:var(--muted);font-style:italic;padding:14px;text-align:center;font-size:12px}
 .bp-pkbar{cursor:pointer;transition:transform .1s}
 .bp-pkbar:active{transform:scale(.94)}
@@ -347,7 +349,7 @@ main{flex:1;padding:8px 16px 24px}
   </div>
   <div class="panel" id="panel-month">
     <main>
-      <div class="section-label">Monthly · year total + month by month</div>
+      <div class="section-label">Monthly Overview · year total + month by month</div>
       <div id="month-list"><div class="spinner"></div></div>
     </main>
   </div>
@@ -367,9 +369,9 @@ main{flex:1;padding:8px 16px 24px}
 </div>
 <div class="tabbar"><div class="tabbar-inner">
   <button class="tabbtn active" data-tab="days"><span class="ico">📅</span>Daily Price</button>
-  <button class="tabbtn" data-tab="month"><span class="ico">📊</span>Monthly</button>
   <button class="tabbtn" data-tab="rate"><span class="ico">📈</span>Rate Shopper</button>
   <button class="tabbtn" data-tab="big"><span class="ico">🔭</span>Big Picture</button>
+  <button class="tabbtn" data-tab="month"><span class="ico">📊</span>Monthly Overview</button>
 </div></div>
 <div class="sheet-bg" id="sheet-bg"></div>
 <div class="sheet" id="sheet"><div class="sheet-grip"></div><div id="sheet-body"></div></div>
@@ -995,7 +997,17 @@ function mobRenderBigPicture(){
   }
   html+='</div>';
   html+='<div class="bp-title">Booking curve · cumulative revenue</div>';
-  try{ const bc=bookingCurveData(sel); html+=mobBigCurveSVG(bc); html+='<div class="bp-legend"><span class="bp-li"><i class="ln sea"></i>OTB 2026</span><span class="bp-li"><i class="ln sea-d"></i>Forecast</span><span class="bp-li"><i class="ln gray-d"></i>LY final</span></div>'; }
+  try{ const bc=bookingCurveData(sel);
+    const otbT=bc.otb[bc.todayDoy];
+    const stlyT=(bc.stlyTodayDoy && bc.stly[bc.stlyTodayDoy]!=null)?bc.stly[bc.stlyTodayDoy]:null;
+    const achP=(bc.forecastTotal>0)?(otbT/bc.forecastTotal*100):null;
+    const achS=(bc.lyTotal>0 && stlyT!=null)?(stlyT/bc.lyTotal*100):null;
+    let chips='';
+    if(achP!=null){ const g=achP>=75?['#2c5c3c','#e8f1ea','#b8d4be']:(achP>=40?['#b86b1f','#fdf3e7','#e5c699']:['#a83b3b','#fbe9e9','#d9b3b3']); chips+=`<span class="bp-chip" style="color:${g[0]};background:${g[1]};border-color:${g[2]}">🎯 ${Math.round(achP)}% of yearly forecast</span>`; }
+    if(achS!=null){ chips+=`<span class="bp-chip" style="color:var(--muted);background:#f3f1ec;border-color:#e0dcd2">⏳ LY was at ${Math.round(achS)}%</span>`; }
+    if(chips) html+=`<div class="bp-chips">${chips}</div>`;
+    html+=mobBigCurveSVG(bc);
+    html+='<div class="bp-legend"><span class="bp-li"><i class="ln sea"></i>OTB 2026</span><span class="bp-li"><i class="ln sea-d"></i>Forecast</span><span class="bp-li"><i class="ln gray-d"></i>LY final</span></div>'; }
   catch(e){ html+='<div class="bp-empty">No booking-curve data.</div>'; }
   html+='<div class="bp-title">Pickup · last 7 days (RN booked / day)</div>';
   try{ const days=_bigPickupByDay(sel,7); const mx=Math.max(1,...days.map(d=>d.rn));
