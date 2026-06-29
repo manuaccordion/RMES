@@ -305,6 +305,20 @@ main{flex:1;padding:8px 16px 24px}
 .bp-chfill{height:100%;border-radius:5px}
 .bp-note{font-size:10px;color:var(--muted);margin-top:9px;text-align:center}
 .bp-empty{color:var(--muted);font-style:italic;padding:14px;text-align:center;font-size:12px}
+.bp-pkbar{cursor:pointer;transition:transform .1s}
+.bp-pkbar:active{transform:scale(.94)}
+/* Pickup detail (sheet) */
+.pkd-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:12px}
+.pkd-date{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--org-deep)}
+.pkd-tot{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:var(--ink)}
+.pkd-sec{margin-bottom:16px}
+.pkd-sec-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px}
+.pkd-row{margin-bottom:8px}
+.pkd-rowtop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.pkd-k{font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pkd-v{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;margin-left:8px}
+.pkd-track{height:7px;background:var(--org-tint);border-radius:5px;overflow:hidden}
+.pkd-fill{height:100%;border-radius:5px}
 </style>
 </head>
 <body>
@@ -985,7 +999,7 @@ function mobRenderBigPicture(){
   catch(e){ html+='<div class="bp-empty">No booking-curve data.</div>'; }
   html+='<div class="bp-title">Pickup · last 7 days (RN booked / day)</div>';
   try{ const days=_bigPickupByDay(sel,7); const mx=Math.max(1,...days.map(d=>d.rn));
-    html+='<div class="bp-pkbars">'+days.map(d=>`<div class="bp-pkbar"><div class="bp-pkv">${d.rn}</div><div class="bp-pktrack"><div class="bp-pkfill" style="height:${Math.round(d.rn/mx*100)}%"></div></div><div class="bp-pklab">${d.label}</div></div>`).join('')+'</div>'; }
+    html+='<div class="bp-pkbars">'+days.map(d=>`<div class="bp-pkbar" data-pkday="${d.ymdNum}"><div class="bp-pkv">${d.rn}</div><div class="bp-pktrack"><div class="bp-pkfill" style="height:${Math.round(d.rn/mx*100)}%"></div></div><div class="bp-pklab">${d.label}</div></div>`).join('')+'</div><div class="bp-note">Tap a day for the booking detail</div>'; }
   catch(e){ html+='<div class="bp-empty">No pickup data.</div>'; }
   html+='<div class="bp-title">Channel share · by revenue (year)</div>';
   try{ const A=aggOTBYearly(sel);
@@ -1004,6 +1018,27 @@ function mobRenderBigPicture(){
     } else html+='<div class="bp-empty">No channel data.</div>';
   } catch(e){ html+='<div class="bp-empty">No channel data.</div>'; }
   host.innerHTML=html;
+  host.querySelectorAll('.bp-pkbar[data-pkday]').forEach(el=> el.addEventListener('click', ()=> mobOpenPickupDay(+el.dataset.pkday)));
+}
+function mobPickupDetailHTML(ymdNum){
+  const sel=MOB.struct;
+  let t; try{ t=_bigPickupTreeForDay(sel, ymdNum); }catch(e){ return '<div class="bp-empty">No data.</div>'; }
+  const s=String(ymdNum), dlab=`${s.slice(6,8)}/${s.slice(4,6)}/${s.slice(0,4)}`;
+  const barList=(title, arr, color)=>{
+    if(!arr || !arr.length) return '';
+    const mx=Math.max(1,...arr.map(x=>x.rn));
+    return `<div class="pkd-sec"><div class="pkd-sec-t">${title}</div>`+arr.slice(0,6).map(x=>`<div class="pkd-row"><div class="pkd-rowtop"><span class="pkd-k">${escapeHtml(x.label)}</span><span class="pkd-v">${x.rn} RN</span></div><div class="pkd-track"><div class="pkd-fill" style="width:${Math.round(x.rn/mx*100)}%;background:${color}"></div></div></div>`).join('')+'</div>';
+  };
+  let html=`<div class="pkd-head"><div class="pkd-date">Pickup · ${dlab}</div><div class="pkd-tot">${t.totRn} RN · ${fmtEUR(t.totRev)}</div></div>`;
+  if(t.totRn===0){ html+='<div class="bp-empty">No bookings entered on this day.</div>'; return html; }
+  html+=barList('Stay dates booked', t.stayDays, 'var(--org)');
+  html+=barList('By channel', t.channels, 'var(--org-deep)');
+  html+=barList('By room type', t.rooms, 'var(--org-soft)');
+  return html;
+}
+function mobOpenPickupDay(ymdNum){
+  document.getElementById('sheet-body').innerHTML=mobPickupDetailHTML(ymdNum);
+  mobOpenSheet();
 }
 function mobRenderAll(){ if(MOB.tab==='days'){ mobRenderCalendar(); mobRenderDays(); } else if(MOB.tab==='month'){ mobRenderMonth(); } else if(MOB.tab==='rate'){ mobRenderRateShopper(); } else if(MOB.tab==='big'){ mobRenderBigPicture(); } }
 document.addEventListener('DOMContentLoaded', ()=>{
