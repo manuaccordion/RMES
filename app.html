@@ -3,17 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#d2691e">
+<meta name="theme-color" content="#0E9FC2">
 <title>RMES Mobile — Revenue Intelligence</title>
+<!-- PWA: installable web app -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="RMES">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --org:#d2691e; --org-deep:#a8521a; --org-soft:#f3a259; --org-tint:#fbe9d8; --org-tint2:#f7d9bf;
-  --bg:#fdf6ef; --card:#fffdfa; --ink:#2a1d12; --muted:#9a8470; --line:#f0e2d3;
-  --up:#3d7a4b; --down:#c0492f; --flat:#9a8470;
-  --shadow:0 1px 3px rgba(120,70,20,.07),0 6px 20px rgba(120,70,20,.07);
+  /* Celeste mare (Iberostar-inspired). Variable names kept as --org* so all existing
+     rules cascade; values are now sea-turquoise. Tweak --org to shift the whole theme. */
+  --org:#0E9FC2; --org-deep:#0A7A97; --org-soft:#5BC4DC; --org-tint:#E4F5FA; --org-tint2:#C2E6F0;
+  --bg:#F1F8FB; --card:#FFFFFF; --ink:#13303A; --muted:#5E8693; --line:#E1EEF3;
+  --up:#3d7a4b; --down:#c0492f; --flat:#5E8693;
+  --shadow:0 1px 3px rgba(11,90,115,.08),0 6px 20px rgba(11,90,115,.08);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
@@ -27,7 +43,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 .app-head{position:sticky;top:0;z-index:30;
   background:linear-gradient(135deg,var(--org) 0%,var(--org-deep) 100%);
-  padding:16px 18px 14px;color:#fff;box-shadow:0 2px 12px rgba(168,82,26,.25)}
+  padding:16px 18px 14px;color:#fff;box-shadow:0 2px 12px rgba(11,122,151,.25)}
 .app-title{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;display:flex;align-items:center;gap:9px}
 .app-title .dot{width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25)}
 .app-title .lite{font-weight:400;opacity:.85;font-size:14px}
@@ -37,7 +53,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .struct-row::-webkit-scrollbar{display:none}
 .spill{flex:0 0 auto;padding:8px 15px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);
   font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;transition:all .15s;box-shadow:var(--shadow)}
-.spill.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--org),var(--org-deep));box-shadow:0 3px 10px rgba(168,82,26,.3)}
+.spill.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--org),var(--org-deep));box-shadow:0 3px 10px rgba(11,122,151,.3)}
 
 .cal-wrap{padding:8px 16px 2px}
 .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
@@ -126,7 +142,7 @@ main{flex:1;padding:8px 16px 24px}
 .badge-ovr{position:absolute;top:8px;right:14px;font-size:8.5px;font-weight:700;text-transform:uppercase;background:var(--org);color:#fff;padding:2px 6px;border-radius:5px;letter-spacing:.04em}
 
 .mo-card{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px;margin-bottom:11px;box-shadow:var(--shadow);position:relative;overflow:hidden}
-.mo-card.is-cur{border-color:var(--org);box-shadow:0 3px 14px rgba(210,105,30,.18)}
+.mo-card.is-cur{border-color:var(--org);box-shadow:0 3px 14px rgba(14,159,194,.18)}
 /* revenue vs comparison tint */
 .mo-card.mo-better{background:#eef7ee;border-color:#cfe6cf}
 .mo-card.mo-worse{background:#fbeded;border-color:#f0d2d2}
@@ -146,7 +162,7 @@ main{flex:1;padding:8px 16px 24px}
 .mv-toggle{display:flex;gap:6px;margin-bottom:12px}
 .mv-btn{flex:1;padding:10px 8px;border-radius:12px;background:var(--card);border:1.5px solid var(--line);font-size:14px;font-weight:700;color:var(--muted);box-shadow:var(--shadow);line-height:1.1}
 .mv-btn span{display:block;font-size:9.5px;font-weight:600;opacity:.8;margin-top:2px;text-transform:none;letter-spacing:0}
-.mv-btn.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--org),var(--org-deep));box-shadow:0 3px 10px rgba(168,82,26,.3)}
+.mv-btn.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--org),var(--org-deep));box-shadow:0 3px 10px rgba(11,122,151,.3)}
 /* stacked metric: label, big value, comparison underneath */
 .mm{padding:9px 0;border-bottom:1px solid var(--line)}
 .mm:last-child{border-bottom:none}
@@ -196,7 +212,7 @@ main{flex:1;padding:8px 16px 24px}
 .rt-chip.is-base{background:linear-gradient(135deg,var(--org-soft),var(--org));border-color:transparent}
 .rt-chip.is-base .rtc-name,.rt-chip.is-base .rtc-price{color:#fff}
 
-.btn-expand{width:100%;margin-top:8px;padding:13px;border-radius:13px;background:linear-gradient(135deg,var(--org),var(--org-deep));color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(168,82,26,.3)}
+.btn-expand{width:100%;margin-top:8px;padding:13px;border-radius:13px;background:linear-gradient(135deg,var(--org),var(--org-deep));color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 12px rgba(11,122,151,.3)}
 .btn-expand:active{transform:scale(.98)}
 .btn-expand .be-ico{font-size:16px}
 
@@ -313,11 +329,11 @@ const MO_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','N
 const MO_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MOB_TARGET_CASE = { target_superato:'target exceeded', vicino_target:'near target', sotto_target:'below target' };
 const MOB_FACTORS = [
-  {key:'occ_mult',   naKey:'occ',   code:'A', name:'Demand (occupancy)', desc:'Current-day OCC vs STLY (-364d)',            color:'#d2691e'},
-  {key:'price_mult', naKey:'price', code:'B', name:'Demand (price)',      desc:'Current-day ADR vs STLY',                   color:'#c4823b'},
-  {key:'pace_mult',  naKey:'pace',  code:'C', name:'Pace trend',          desc:'4-week pickup vs STLY (recent weeks weighted)', color:'#a8521a'},
-  {key:'comp_mult',  naKey:'comp',  code:'D', name:'Online pricing',      desc:'My Expedia vs compset average (inverted)',  color:'#b5651d'},
-  {key:'air_mult',   naKey:'air',   code:'E', name:'Demand (Expedia)',    desc:'Expedia searches vs month median',          color:'#cd853f'},
+  {key:'occ_mult',   naKey:'occ',   code:'A', name:'Demand (occupancy)', desc:'Current-day OCC vs STLY (-364d)',            color:'#0E9FC2'},
+  {key:'price_mult', naKey:'price', code:'B', name:'Demand (price)',      desc:'Current-day ADR vs STLY',                   color:'#2BB3C9'},
+  {key:'pace_mult',  naKey:'pace',  code:'C', name:'Pace trend',          desc:'4-week pickup vs STLY (recent weeks weighted)', color:'#0A7A97'},
+  {key:'comp_mult',  naKey:'comp',  code:'D', name:'Online pricing',      desc:'My Expedia vs compset average (inverted)',  color:'#1689AE'},
+  {key:'air_mult',   naKey:'air',   code:'E', name:'Demand (Expedia)',    desc:'Expedia searches vs month median',          color:'#5BC4DC'},
 ];
 function mobLabel(sk){ return (CFG.structures[sk] && CFG.structures[sk].label) || sk; }
 function mobBaseRT(sk){ return (CFG.structures[sk] && CFG.structures[sk].baseRT) || null; }
@@ -875,11 +891,11 @@ function mobRenderRateShopper(){
   const n=pts.length;
   const xs=i=> M.l + (n<=1?iw/2:(i/(n-1))*iw);
   const ys=v=> M.t + ih - ((v-yMin)/(yMax-yMin))*ih;
-  const org='#d2691e'; /* primary orange (matches --org) */
+  const org='#0E9FC2'; /* primary orange (matches --org) */
   let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:'DM Mono',monospace;font-size:9px">`;
   // y grid + labels
   for(let t=0;t<=4;t++){ const v=yMin+(yMax-yMin)*t/4; const y=ys(v);
-    svg+=`<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${W-M.r}" y2="${y.toFixed(1)}" stroke="#f0e2d3" stroke-width="1"/>`;
+    svg+=`<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${W-M.r}" y2="${y.toFixed(1)}" stroke="#E1EEF3" stroke-width="1"/>`;
     svg+=`<text x="${M.l-5}" y="${(y+3).toFixed(1)}" text-anchor="end" fill="#9a8470">${Math.round(v)}</text>`; }
   // competitor area (min..max) — orange band, same logic as the dashboard pyramid
   const top=[], bot=[];
