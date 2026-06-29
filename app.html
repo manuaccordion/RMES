@@ -275,6 +275,36 @@ main{flex:1;padding:8px 16px 24px}
 .ovr-sim-row .osr-lab{color:var(--ink)}
 .ovr-sim-row .osr-val{font-family:'DM Mono',monospace;font-weight:500}
 .ovr-active-badge{display:inline-block;font-size:9px;font-weight:700;text-transform:uppercase;background:var(--org);color:#fff;padding:2px 7px;border-radius:5px;margin-left:6px}
+/* ===== Big Picture (mobile) ===== */
+.bp-kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.bp-kpi{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow)}
+.bp-klab{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.bp-kval{font-family:'DM Mono',monospace;font-size:20px;font-weight:600;color:var(--org-deep);margin-top:2px;line-height:1}
+.bp-ksub{font-size:11px;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace}
+.bp-kdelta{font-weight:700}.bp-kdelta.up{color:var(--up)}.bp-kdelta.down{color:var(--down)}
+.bp-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep);margin:18px 2px 8px}
+#big-mob>svg,.bp-pkbars,.bp-chans{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:11px 12px;box-shadow:var(--shadow)}
+.bp-legend{display:flex;gap:14px;flex-wrap:wrap;margin:7px 2px 0;font-size:11px;color:var(--muted)}
+.bp-li{display:flex;align-items:center;gap:5px}
+.bp-li .ln{width:16px;height:0;border-top:2.6px solid var(--org)}
+.bp-li .ln.sea-d{border-top:2px dashed var(--org)}
+.bp-li .ln.gray-d{border-top:2px dashed #9aa6ab}
+.bp-pkbars{display:flex;align-items:flex-end;justify-content:space-between;gap:6px;height:140px}
+.bp-pkbar{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.bp-pkv{font-family:'DM Mono',monospace;font-size:11px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.bp-pktrack{width:62%;flex:1;display:flex;align-items:flex-end;background:var(--org-tint);border-radius:5px;overflow:hidden;min-height:4px}
+.bp-pkfill{width:100%;background:linear-gradient(180deg,var(--org-soft),var(--org));border-radius:5px;min-height:3px}
+.bp-pklab{font-size:9px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace}
+.bp-chans{display:flex;flex-direction:column;gap:10px}
+.bp-chrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.bp-chname{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink);font-weight:500;min-width:0}
+.bp-chname i{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+.bp-chpct{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap}
+.bp-cdelta{margin-left:5px;font-weight:700}.bp-cdelta.up{color:var(--up)}.bp-cdelta.down{color:var(--down)}
+.bp-chtrack{height:8px;background:var(--org-tint);border-radius:5px;overflow:hidden}
+.bp-chfill{height:100%;border-radius:5px}
+.bp-note{font-size:10px;color:var(--muted);margin-top:9px;text-align:center}
+.bp-empty{color:var(--muted);font-style:italic;padding:14px;text-align:center;font-size:12px}
 </style>
 </head>
 <body>
@@ -314,11 +344,18 @@ main{flex:1;padding:8px 16px 24px}
       <div id="rate-legend"></div>
     </main>
   </div>
+  <div class="panel" id="panel-big">
+    <main>
+      <div class="section-label">Big Picture · the year at a glance</div>
+      <div id="big-mob"><div class="spinner"></div></div>
+    </main>
+  </div>
 </div>
 <div class="tabbar"><div class="tabbar-inner">
   <button class="tabbtn active" data-tab="days"><span class="ico">📅</span>Daily Price</button>
   <button class="tabbtn" data-tab="month"><span class="ico">📊</span>Monthly</button>
   <button class="tabbtn" data-tab="rate"><span class="ico">📈</span>Rate Shopper</button>
+  <button class="tabbtn" data-tab="big"><span class="ico">🔭</span>Big Picture</button>
 </div></div>
 <div class="sheet-bg" id="sheet-bg"></div>
 <div class="sheet" id="sheet"><div class="sheet-grip"></div><div id="sheet-body"></div></div>
@@ -908,7 +945,67 @@ function mobRenderRateShopper(){
 function mobOpenSheet(){ document.getElementById('sheet-bg').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
 function mobCloseSheet(){ document.getElementById('sheet-bg').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); MOB_DETAIL_OPEN=false; }
 function mobSetTab(t){ MOB.tab=t; document.querySelectorAll('.tabbtn').forEach(b=>b.classList.toggle('active',b.dataset.tab===t)); document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+t)); mobRenderAll(); }
-function mobRenderAll(){ if(MOB.tab==='days'){ mobRenderCalendar(); mobRenderDays(); } else if(MOB.tab==='month'){ mobRenderMonth(); } else if(MOB.tab==='rate'){ mobRenderRateShopper(); } }
+function mobBigCurveSVG(bc){
+  const W=344,H=180,M={l:46,r:10,t:10,b:22};
+  const iw=W-M.l-M.r, ih=H-M.t-M.b, N=365;
+  let yMax=0; for(let i=1;i<=N;i++){ yMax=Math.max(yMax, bc.otb[i]||0, bc.ly[i]||0, bc.forecast[i]||0); }
+  yMax=(yMax*1.05)||1;
+  const xs=i=>M.l+((i-1)/(N-1))*iw;
+  const ys=v=>M.t+ih-(v/yMax)*ih;
+  const org='#0E9FC2';
+  let svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:'DM Mono',monospace;font-size:9px">`;
+  for(let t=0;t<=4;t++){ const v=yMax*t/4, y=ys(v); svg+=`<line x1="${M.l}" y1="${y.toFixed(1)}" x2="${W-M.r}" y2="${y.toFixed(1)}" stroke="#E1EEF3"/><text x="${M.l-4}" y="${(y+3).toFixed(1)}" text-anchor="end" fill="#9aa6ab">${v>=1000?(v/1000).toFixed(0)+'k':Math.round(v)}</text>`; }
+  const mdoy=[1,32,60,91,121,152,182,213,244,274,305,335], mlab=['J','F','M','A','M','J','J','A','S','O','N','D'];
+  mdoy.forEach((dy,i)=>{ svg+=`<text x="${xs(dy).toFixed(1)}" y="${H-M.b+13}" text-anchor="middle" fill="#9aa6ab">${mlab[i]}</text>`; });
+  const path=(arr,from,to)=>{ let p='',st=false; for(let i=from;i<=to;i++){ const v=arr[i]; if(v==null)continue; p+=(st?'L':'M')+xs(i).toFixed(1)+','+ys(v).toFixed(1)+' '; st=true; } return p; };
+  svg+=`<path d="${path(bc.ly,1,N)}" fill="none" stroke="#9aa6ab" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.8"/>`;
+  svg+=`<path d="${path(bc.otb,1,bc.todayDoy)}" fill="none" stroke="${org}" stroke-width="2.6" stroke-linejoin="round"/>`;
+  svg+=`<path d="${path(bc.forecast,bc.todayDoy,N)}" fill="none" stroke="${org}" stroke-width="2" stroke-dasharray="3 2" opacity="0.85"/>`;
+  if(bc.otb[bc.todayDoy]!=null) svg+=`<circle cx="${xs(bc.todayDoy).toFixed(1)}" cy="${ys(bc.otb[bc.todayDoy]).toFixed(1)}" r="3.2" fill="${org}" stroke="#fff" stroke-width="1.2"/>`;
+  svg+='</svg>';
+  return svg;
+}
+function mobRenderBigPicture(){
+  const host=document.getElementById('big-mob'); if(!host) return;
+  const sel=MOB.struct; let html='';
+  let tot=null; try{ const A=aggOTBYearly(sel); if(A&&A.tot) tot=A.tot; }catch(e){}
+  let pk=null; try{ pk=_bigPickupVsLY(sel,7); }catch(e){}
+  const chip=(cur,prev)=>{ if(prev==null||!isFinite(prev)||prev===0) return ''; const p=(cur-prev)/prev*100, up=p>=0; return `<span class="bp-kdelta ${up?'up':'down'}">${up?'▲':'▼'}${Math.abs(p).toFixed(0)}%</span>`; };
+  const kpi=(lab,val,sub)=>`<div class="bp-kpi"><div class="bp-klab">${lab}</div><div class="bp-kval">${val}</div>${sub?`<div class="bp-ksub">${sub}</div>`:''}</div>`;
+  html+='<div class="bp-kpis">';
+  if(pk){ const dc=(pk.deltaPct!=null)?`<span class="bp-kdelta ${pk.deltaPct>=0?'up':'down'}">${pk.deltaPct>=0?'▲':'▼'}${Math.abs(pk.deltaPct).toFixed(0)}%</span>`:''; html+=kpi('Pickup 7d','+'+pk.cur+' RN', `${dc} vs ${pk.ly} LY`); }
+  if(tot){
+    html+=kpi('Revenue OTB', fmtEUR(tot.revC), chip(tot.revC,tot.revP));
+    html+=kpi('OCC', (tot.occC*100).toFixed(0)+'%', chip(tot.occC,tot.occP));
+    if(isFinite(tot.adrC)) html+=kpi('ADR', fmtEUR(tot.adrC), chip(tot.adrC,tot.adrP));
+  }
+  html+='</div>';
+  html+='<div class="bp-title">Booking curve · cumulative revenue</div>';
+  try{ const bc=bookingCurveData(sel); html+=mobBigCurveSVG(bc); html+='<div class="bp-legend"><span class="bp-li"><i class="ln sea"></i>OTB 2026</span><span class="bp-li"><i class="ln sea-d"></i>Forecast</span><span class="bp-li"><i class="ln gray-d"></i>LY final</span></div>'; }
+  catch(e){ html+='<div class="bp-empty">No booking-curve data.</div>'; }
+  html+='<div class="bp-title">Pickup · last 7 days (RN booked / day)</div>';
+  try{ const days=_bigPickupByDay(sel,7); const mx=Math.max(1,...days.map(d=>d.rn));
+    html+='<div class="bp-pkbars">'+days.map(d=>`<div class="bp-pkbar"><div class="bp-pkv">${d.rn}</div><div class="bp-pktrack"><div class="bp-pkfill" style="height:${Math.round(d.rn/mx*100)}%"></div></div><div class="bp-pklab">${d.label}</div></div>`).join('')+'</div>'; }
+  catch(e){ html+='<div class="bp-empty">No pickup data.</div>'; }
+  html+='<div class="bp-title">Channel share · by revenue (year)</div>';
+  try{ const A=aggOTBYearly(sel);
+    const palette=['#0E9FC2','#0A7A97','#2BB3C9','#1689AE','#5BC4DC','#3d7a4b','#c9a227','#8e5fa8'];
+    const toArr=(obj)=>Object.keys(obj||{}).map(k=>({name:(k&&k.trim())?k:'Direct',rev:(obj[k]&&obj[k].rev)||0})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
+    const cur=toArr(A&&A.canCur), prev=toArr(A&&A.canPrev);
+    const totC=cur.reduce((s,x)=>s+x.rev,0)||1, totP=prev.reduce((s,x)=>s+x.rev,0)||1;
+    const prevShare={}; prev.forEach(x=>prevShare[x.name]=x.rev/totP*100);
+    if(cur.length){
+      html+='<div class="bp-chans">'+cur.slice(0,7).map((x,i)=>{
+        const cs=x.rev/totC*100, ps=prevShare[x.name], dd=(ps!=null)?(cs-ps):null;
+        const dchip=(dd==null)?'':`<span class="bp-cdelta ${dd>=0?'up':'down'}">${dd>=0?'▲':'▼'}${Math.abs(dd).toFixed(0)}</span>`;
+        const col=palette[i%palette.length];
+        return `<div class="bp-chan"><div class="bp-chrow"><span class="bp-chname"><i style="background:${col}"></i>${escapeHtml(x.name)}</span><span class="bp-chpct">${cs.toFixed(0)}%${dchip}</span></div><div class="bp-chtrack"><div class="bp-chfill" style="width:${Math.max(2,cs).toFixed(0)}%;background:${col}"></div></div></div>`;
+      }).join('')+'</div><div class="bp-note">▲▼ = points vs last year (STLY)</div>';
+    } else html+='<div class="bp-empty">No channel data.</div>';
+  } catch(e){ html+='<div class="bp-empty">No channel data.</div>'; }
+  host.innerHTML=html;
+}
+function mobRenderAll(){ if(MOB.tab==='days'){ mobRenderCalendar(); mobRenderDays(); } else if(MOB.tab==='month'){ mobRenderMonth(); } else if(MOB.tab==='rate'){ mobRenderRateShopper(); } else if(MOB.tab==='big'){ mobRenderBigPicture(); } }
 document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cal-prev').addEventListener('click', ()=>{ MOB.winStart=addDaysYmd(MOB.winStart||todayYmdNum(),-7); mobRenderAll(); });
   document.getElementById('cal-next').addEventListener('click', ()=>{ const cap=addDaysYmd(todayYmdNum(),365); const nx=addDaysYmd(MOB.winStart||todayYmdNum(),7); MOB.winStart=(nx>cap)?cap:nx; mobRenderAll(); });
