@@ -103,30 +103,30 @@ button{font-family:inherit;cursor:pointer}
 /* ============ NAV TABS ============ */
 .nav{
   max-width:1400px;margin:0 auto;
-  padding:18px 24px 0;
-  display:flex;gap:4px;border-bottom:1px solid var(--line);
-  overflow-x:auto;
+  padding:14px 24px 0;
+  display:flex;gap:2px;flex-wrap:nowrap;overflow-x:auto;
+  border-bottom:1px solid var(--line);
+  scrollbar-width:none;
 }
+.nav::-webkit-scrollbar{display:none}
 .tab{
   border:none;background:transparent;
-  padding:12px 18px;
-  font-size:14px;font-weight:500;color:var(--ink-3);
-  border-bottom:2px solid transparent;
-  white-space:nowrap;
-  display:inline-flex;align-items:center;gap:8px;
-  margin-bottom:-1px;
-  transition:color .15s ease, border-color .15s ease;
+  padding:10px 16px 13px;
+  font-size:13.5px;font-weight:600;color:var(--ink-3);
+  border-radius:9px 9px 0 0;
+  white-space:nowrap;cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;flex:0 0 auto;
+  position:relative;transition:color .15s ease,background .15s ease;
+  border-bottom:3px solid transparent;margin-bottom:-1px;
 }
-.tab .num{
-  font-family:'DM Mono',monospace;font-size:11px;
-  color:var(--ink-3);
-  width:18px;height:18px;border-radius:50%;
-  background:var(--line);
-  display:inline-flex;align-items:center;justify-content:center;
+.tab .ico{
+  font-size:17px;line-height:1;filter:grayscale(.2);
+  transition:filter .15s ease,transform .15s ease;
 }
-.tab:hover{color:var(--ink-2)}
-.tab.active{color:var(--ink);border-bottom-color:var(--ink)}
-.tab.active .num{background:var(--ink);color:#fff}
+.tab:hover{color:var(--ink);background:rgba(107,91,63,.05)}
+.tab:hover .ico{filter:grayscale(0);transform:translateY(-1px)}
+.tab.active{color:var(--accent);font-weight:700;background:rgba(107,91,63,.06);border-bottom-color:var(--accent)}
+.tab.active .ico{filter:none;transform:none}
 
 /* ============ MAIN ============ */
 main{max-width:1400px;margin:0 auto;padding:24px;min-height:60vh}
@@ -1188,7 +1188,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   .nav{padding:8px 12px 0;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
   .nav::-webkit-scrollbar{display:none}
   .tab{padding:9px 11px;font-size:12px;white-space:nowrap;flex-shrink:0}
-  .tab .num{margin-right:4px;font-size:9px}
+  .tab .ico{margin-right:1px;font-size:13px}
   .brand h1{font-size:16px}
   .brand .tagline{font-size:11px}
   .topbar-info{flex-wrap:wrap;gap:6px}
@@ -1409,20 +1409,20 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
   <!-- ============ NAV ============ -->
   <nav class="nav" role="tablist">
-    <button class="tab active" data-tab="big"><span class="num">★</span>Big Picture</button>
-    <button class="tab" data-tab="sell"><span class="num">1</span>Sell Strategy</button>
-    <button class="tab" data-tab="otb" style="display:none"><span class="num">2</span>Overview (alt)</button>
-    <button class="tab" data-tab="fcst"><span class="num">2</span>Overview</button>
-    <button class="tab" data-tab="hist" style="display:none"><span class="num">5</span>Historical Data</button>
-    <button class="tab" data-tab="pk"><span class="num">3</span>Pickup &amp; CXL</button>
-    <button class="tab" data-tab="cancel" style="display:none"><span class="num">4</span>CXLTrend</button>
-    <button class="tab" data-tab="rt"><span class="num">4</span>OCC by Room Type</button>
-    <button class="tab" data-tab="rate"><span class="num">5</span>Rate Shopper</button>
+    <button class="tab active" data-tab="big"><span class="ico">🔭</span>Big Picture</button>
+    <button class="tab" data-tab="sell"><span class="ico">🏷️</span>Sell Strategy</button>
+    <button class="tab" data-tab="otb" style="display:none"><span class="ico">📊</span>Overview (alt)</button>
+    <button class="tab" data-tab="fcst"><span class="ico">📊</span>Overview</button>
+    <button class="tab" data-tab="hist" style="display:none"><span class="ico">🗄️</span>Historical Data</button>
+    <button class="tab" data-tab="pk"><span class="ico">🛎️</span>Pickup &amp; CXL</button>
+    <button class="tab" data-tab="cancel" style="display:none"><span class="ico">✖️</span>CXLTrend</button>
+    <button class="tab" data-tab="rt"><span class="ico">🛏️</span>OCC by Room Type</button>
+    <button class="tab" data-tab="rate"><span class="ico">🔍</span>Rate Shopper</button>
     
-    <button class="tab" data-tab="pri"><span class="num">6</span>RMES</button>
-    <button class="tab" data-tab="baseprice"><span class="num">7</span>Export Pricing</button>
-    <button class="tab" data-tab="checks"><span class="num">📋</span>Check Updates</button>
-    <button class="tab" data-tab="instr"><span class="num">📖</span>Playbook</button>
+    <button class="tab" data-tab="pri"><span class="ico">⚙️</span>RMES</button>
+    <button class="tab" data-tab="baseprice"><span class="ico">📤</span>Export Pricing</button>
+    <button class="tab" data-tab="checks"><span class="ico">📋</span>Check Updates</button>
+    <button class="tab" data-tab="instr"><span class="ico">📖</span>Playbook</button>
   </nav>
 </header>
 
