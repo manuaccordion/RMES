@@ -97,6 +97,16 @@ main{flex:1;padding:8px 16px 24px}
 .day-card .date-blk .dc-rank{font-size:10px;color:var(--ink);font-family:'DM Mono',monospace;font-weight:700;margin-top:4px}
 .day-card .price-blk{flex:1;text-align:right;min-width:0}
 .day-card .price-blk .pc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;margin-bottom:4px}
+/* Simplified daily card: Last update (secondary) + RMES (hero) + delta pill */
+.pp-last{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:3px}
+.pp-last b{color:var(--ink);font-weight:600}
+.pp-rmes-row{display:flex;align-items:baseline;justify-content:flex-end;gap:9px}
+.pp-rmes{font-family:'DM Mono',monospace;font-size:29px;font-weight:600;line-height:1;color:var(--org-deep)}
+.pp-delta{font-family:'DM Mono',monospace;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.pp-delta.up{color:#fff;background:var(--org)}
+.pp-delta.down{color:#fff;background:var(--down)}
+.pp-delta.flat{color:var(--muted);background:var(--org-tint)}
+.pp-rmeslab{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-top:3px}
 /* occupancy line above the price */
 .pc-occrow{margin-bottom:6px}
 .pc-occrow .pcc-occval{font-family:'DM Mono',monospace;font-size:21px;font-weight:500;line-height:1.05;color:var(--ink)}
@@ -428,64 +438,23 @@ function mobRenderDays(){
   list.innerHTML=keys.map(yn=>{
     const r=map[yn]; const d=ymdNumToDate(yn); const isT=(yn===today);
     const anyOvr=r.overrideUsedByRT && Object.values(r.overrideUsedByRT).some(v=>v);
-    const iso=ymdNumToISO(yn);
-    const expPrice=mobToExpedia(r.price, MOB.struct);
-    const comp=mobCompsetAvg(MOB.struct, iso);
-    const rk=mobCompRank(MOB.struct, iso, expPrice);
-    const occ=occByDay[yn]||{cur:null,stly:null,adrCur:null,adrStly:null};
-    // OCC delta vs STLY (percentage points), green = filling better
-    let occVal='—', occcls='occ-flat';
-    if(occ.cur!=null && occ.stly!=null){
-      const od=Math.round((occ.cur-occ.stly)*100); occcls=od>0?'occ-good':(od<0?'occ-bad':'occ-flat'); const oar=od>0?'▲':(od<0?'▼':'•');
-      occVal=`${oar}${od>0?'+':''}${od}pp`;
+    const baseRT=mobBaseRT(MOB.struct);
+    let lastUpd=null; try{ lastUpd=(typeof newrmesGetCurrentReference==='function')?newrmesGetCurrentReference(MOB.struct,yn):null; }catch(e){}
+    const rmesP=(r.rmesSuggestedByRT && baseRT!=null && r.rmesSuggestedByRT[baseRT]!=null)?r.rmesSuggestedByRT[baseRT]:r.price;
+    let deltaHtml='';
+    if(lastUpd!=null && rmesP!=null && isFinite(lastUpd) && isFinite(rmesP)){
+      const dd=Math.round(rmesP-lastUpd);
+      if(dd===0){ deltaHtml='<span class="pp-delta flat">= same</span>'; }
+      else { const cls=dd>0?'up':'down'; const ar=dd>0?'▲':'▼'; deltaHtml=`<span class="pp-delta ${cls}">${ar} ${fmtEUR(Math.abs(dd))}</span>`; }
     }
-    // pickup last 7 days delta vs STLY
-    const pk=pkByDay[yn]||{cur:null,stly:null};
-    const pkc=(pk.cur!=null?pk.cur:0), pks=(pk.stly!=null?pk.stly:0);
-    const pkd=pkc-pks; const pkcls=pkd>0?'occ-good':(pkd<0?'occ-bad':'occ-flat'); const pkar=pkd>0?'▲':(pkd<0?'▼':'•');
-    const pkVal=`${pkar}${pkd>0?'+':''}${pkd}`;
-    // price rank (1 = cheapest)
-    const rkVal = rk ? `${rk.rank}/${rk.total}` : '—';
-    // Delta ADR booked vs STLY (absolute €), green = higher ADR this year
-    const adrC=occ.adrCur, adrS=occ.adrStly;
-    let adrVal='—', adrcls='occ-flat';
-    if(adrC!=null && adrS!=null){
-      const ad=adrC-adrS; adrcls=ad>0.5?'occ-good':(ad<-0.5?'occ-bad':'occ-flat'); const adar=ad>0.5?'▲':(ad<-0.5?'▼':'•');
-      adrVal=`${adar}${fmtEUR(Math.abs(ad))}`;
-    }
-    // price row (big): Mine | Comp
-    let compareHtml='';
-    if(comp!=null && expPrice!=null){
-      const diff=expPrice-comp;
-      const cls = (Math.abs(diff)<0.5) ? 'cmp-flat' : (diff<0 ? 'cmp-good' : 'cmp-bad');
-      const ar  = (Math.abs(diff)<0.5) ? '•' : (diff<0 ? '▼' : '▲');
-      compareHtml=`<div class="pc-compare">
-        <div class="pcc-col"><div class="pcc-lab">Mine</div><div class="pcc-val">${fmtEUR(expPrice)}</div></div>
-        <div class="pcc-arrow ${cls}">${ar}</div>
-        <div class="pcc-col"><div class="pcc-lab">Comp</div><div class="pcc-val pcc-comp">${fmtEUR(comp)}</div></div>
-      </div>`;
-    } else {
-      compareHtml=`<div class="pc-compare">
-        <div class="pcc-col"><div class="pcc-lab">Mine</div><div class="pcc-val">${expPrice!=null?fmtEUR(expPrice):'—'}</div></div>
-        <div class="pcc-arrow cmp-flat">•</div>
-        <div class="pcc-col"><div class="pcc-lab">Comp</div><div class="pcc-val pcc-comp">n/d</div></div>
-      </div>`;
-    }
-    // two small delta rows under the prices: (OCCΔ, p/u) under Mine · (ADRΔ, rank) under Comp
-    const metaHtml=`<div class="pc-compare pc-meta">
-        <div class="pcc-col"><div class="pcm-lab">OCC Δ</div><div class="pcm-val ${occcls}">${occVal}</div></div>
-        <div class="pcc-arrow"></div>
-        <div class="pcc-col"><div class="pcm-lab">ADR Δ</div><div class="pcm-val ${adrcls}">${adrVal}</div></div>
-      </div>
-      <div class="pc-compare pc-meta">
-        <div class="pcc-col"><div class="pcm-lab">p/u 7d</div><div class="pcm-val ${pkcls}">${pkVal}</div></div>
-        <div class="pcc-arrow"></div>
-        <div class="pcc-col"><div class="pcm-lab">€ rank</div><div class="pcm-val">${rkVal}</div></div>
-      </div>`;
+    const priceBlk=`
+      <div class="pp-last">Last update <b>${lastUpd!=null?fmtEUR(lastUpd):'—'}</b></div>
+      <div class="pp-rmes-row"><span class="pp-rmes">${rmesP!=null?fmtEUR(rmesP):'—'}</span>${deltaHtml}</div>
+      <div class="pp-rmeslab">RMES suggested</div>`;
     return `<div class="day-card ${isWeekendYmd(yn)?'wknd':''}" data-day="${yn}"><div class="edge"></div>
       ${anyOvr?'<div class="badge-ovr">override</div>':''}
       <div class="date-blk"><div class="dc-dow">${DOW_SHORT[d.getDay()]}${isT?' ·':''}</div><div class="dc-day">${d.getDate()}</div><div class="dc-mo">${MO_SHORT[d.getMonth()]}</div></div>
-      <div class="price-blk">${compareHtml}${metaHtml}</div>
+      <div class="price-blk">${priceBlk}</div>
       <button class="pc-edit ${anyOvr?'has-ovr':''}" data-edit="${yn}" title="Override price" aria-label="Override price">✏️</button>
       <div class="chev">›</div></div>`;
   }).join('');
@@ -871,10 +840,14 @@ function mobRenderRateShopper(){
   // build the 7-day series
   let map; try{ map=computeRMESPriceMap(MOB.struct,start,7); }catch(e){ console.error(e); wrap.innerHTML=mobEmpty('⚠️','Could not compute prices.'); legend.innerHTML=''; return; }
   const keys=Object.keys(map).map(Number).sort((a,b)=>a-b);
+  const baseRT=mobBaseRT(MOB.struct);
   const pts=keys.map(yn=>{
     const iso=ymdNumToISO(yn); const d=ymdNumToDate(yn);
+    let ref=null; try{ ref=(typeof newrmesGetCurrentReference==='function')?newrmesGetCurrentReference(MOB.struct,yn):null; }catch(e){}
+    const sugg=(map[yn].rmesSuggestedByRT && baseRT!=null && map[yn].rmesSuggestedByRT[baseRT]!=null)?map[yn].rmesSuggestedByRT[baseRT]:map[yn].price;
     return { yn, d, iso,
-      mine: mobToExpedia(map[yn].price, MOB.struct),
+      lastExp: mobToExpedia(ref, MOB.struct),
+      rmesExp: mobToExpedia(sugg, MOB.struct),
       comp: mobCompsetAvg(MOB.struct, iso),
       band: mobCompBand(MOB.struct, iso) };
   });
@@ -882,7 +855,7 @@ function mobRenderRateShopper(){
   if(!hasAny){ wrap.innerHTML=mobEmpty('📭','No Expedia compset data for '+escapeHtml(mobLabel(MOB.struct))+' in this window.'); legend.innerHTML=''; return; }
   // y-range from all values present
   let yMin=Infinity,yMax=-Infinity;
-  for(const p of pts){ for(const v of [p.mine, p.comp, p.band&&p.band.min, p.band&&p.band.max]){ if(v!=null&&isFinite(v)){ if(v<yMin)yMin=v; if(v>yMax)yMax=v; } } }
+  for(const p of pts){ for(const v of [p.lastExp, p.rmesExp, p.comp, p.band&&p.band.min, p.band&&p.band.max]){ if(v!=null&&isFinite(v)){ if(v<yMin)yMin=v; if(v>yMax)yMax=v; } } }
   if(!isFinite(yMin)){ wrap.innerHTML=mobEmpty('📭','No data.'); legend.innerHTML=''; return; }
   const rng=Math.max(1,yMax-yMin); yMin=Math.max(0,yMin-rng*0.12); yMax=yMax+rng*0.12;
   // SVG geometry (mobile: fits ~360px wide; let it scale)
@@ -910,10 +883,14 @@ function mobRenderRateShopper(){
   const compSeg=pts.map((p,i)=>p.comp!=null?[xs(i),ys(p.comp)]:null).filter(Boolean);
   if(compSeg.length>1){ svg+=`<polyline points="${compSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="#9a8470" stroke-width="1.5" stroke-dasharray="4 3"/>`; }
   pts.forEach((p,i)=>{ if(p.comp!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.comp).toFixed(1)}" r="2.5" fill="#9a8470"/>`; });
-  // my Expedia price line (solid orange, thick)
-  const mineSeg=pts.map((p,i)=>p.mine!=null?[xs(i),ys(p.mine)]:null).filter(Boolean);
-  if(mineSeg.length>1){ svg+=`<polyline points="${mineSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${org}" stroke-width="2.5"/>`; }
-  pts.forEach((p,i)=>{ if(p.mine!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.mine).toFixed(1)}" r="3" fill="${org}" stroke="#fff" stroke-width="1"/>`; });
+  // Last update line (thin celeste, dashed, hollow dots)
+  const lastSeg=pts.map((p,i)=>p.lastExp!=null?[xs(i),ys(p.lastExp)]:null).filter(Boolean);
+  if(lastSeg.length>1){ svg+=`<polyline points="${lastSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${org}" stroke-opacity="0.5" stroke-width="1.6" stroke-dasharray="3 2"/>`; }
+  pts.forEach((p,i)=>{ if(p.lastExp!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.lastExp).toFixed(1)}" r="2.3" fill="#fff" stroke="${org}" stroke-width="1.2" stroke-opacity="0.7"/>`; });
+  // RMES price line (thick solid celeste — the prominent one)
+  const rmesSeg=pts.map((p,i)=>p.rmesExp!=null?[xs(i),ys(p.rmesExp)]:null).filter(Boolean);
+  if(rmesSeg.length>1){ svg+=`<polyline points="${rmesSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${org}" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>`; }
+  pts.forEach((p,i)=>{ if(p.rmesExp!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.rmesExp).toFixed(1)}" r="3.4" fill="${org}" stroke="#fff" stroke-width="1.3"/>`; });
   // x labels (day numbers)
   pts.forEach((p,i)=>{ svg+=`<text x="${xs(i).toFixed(1)}" y="${H-M.b+14}" text-anchor="middle" fill="#9a8470">${DOW_SHORT[p.d.getDay()].slice(0,2)}</text>`;
     svg+=`<text x="${xs(i).toFixed(1)}" y="${H-M.b+24}" text-anchor="middle" fill="#2a1d12" font-weight="500">${p.d.getDate()}</text>`; });
@@ -921,11 +898,12 @@ function mobRenderRateShopper(){
   wrap.innerHTML=svg;
   // legend
   legend.innerHTML=`<div class="rate-legend">
-    <span class="rl-item"><span class="rl-line" style="background:${org}"></span>Your Expedia price</span>
+    <span class="rl-item"><span class="rl-line" style="background:${org};height:3px"></span>RMES price (on Expedia)</span>
+    <span class="rl-item"><span class="rl-line" style="background:${org};opacity:.5;height:2px"></span>Last update (on Expedia)</span>
     <span class="rl-item"><span class="rl-line rl-dash"></span>Compset average</span>
     <span class="rl-item"><span class="rl-area" style="background:${org}"></span>Competitor range (min–max)</span>
   </div>
-  <div class="rate-note">Your price comes from the same RMES engine as the dashboard, converted to Expedia space (×${(mobExpDivisor(MOB.struct)).toFixed(3)}). Days without Expedia data are left blank.</div>`;
+  <div class="rate-note">Both lines are your prices converted to Expedia space (×${(mobExpDivisor(MOB.struct)).toFixed(3)}): the thick line is what would show on Expedia at the RMES price, the thin line at the current Last update. Days without Expedia data are blank.</div>`;
 }
 function mobOpenSheet(){ document.getElementById('sheet-bg').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
 function mobCloseSheet(){ document.getElementById('sheet-bg').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); MOB_DETAIL_OPEN=false; }
