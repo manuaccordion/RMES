@@ -571,11 +571,20 @@ function mobOpenDay(yn, rmesRow){
   const expPrice=mobToExpedia(rmesRow?rmesRow.price:null, MOB.struct);
   const compAvg=mobCompsetAvg(MOB.struct, iso);
   const band=mobCompBand(MOB.struct, iso);
+  let lastUpd=null; try{ lastUpd=(typeof newrmesGetCurrentReference==='function')?newrmesGetCurrentReference(MOB.struct, yn):null; }catch(e){}
+  let luSrc='Base price · not yet adjusted';
+  try{
+    const ovr=(typeof newrmesGetFrozenBaseOverride==='function')?newrmesGetFrozenBaseOverride(MOB.struct, yn):null;
+    const acc=(typeof newrmesGetAcceptedMeta==='function')?newrmesGetAcceptedMeta(MOB.struct, yn):null;
+    const fmtD=(ts)=>{ if(!ts) return ''; const dd=new Date(ts); if(isNaN(dd.getTime())) return ''; return ('0'+dd.getDate()).slice(-2)+'/'+('0'+(dd.getMonth()+1)).slice(-2)+'/'+dd.getFullYear(); };
+    if(ovr!=null){ luSrc='Manual override'; }
+    else if(acc!=null){ const w=fmtD(acc.ts); luSrc='Accepted RMES'+(w?(' on '+w):''); }
+  }catch(e){}
   let html=`<h2>${DOW_SHORT[d.getDay()]} ${d.getDate()} ${MO_FULL[d.getMonth()]} ${d.getFullYear()}</h2>
     <div class="sh-sub">${escapeHtml(mobLabel(MOB.struct))} · base ${escapeHtml(baseRT||'—')}</div>
-    <div class="sh-hero"><div class="shh-lab">Expedia price</div>
-      <div class="shh-price">${expPrice!=null?fmtEUR(expPrice):'—'}</div>
-      <div class="shh-src">your RMES price ${fmtEUR(rmesRow?rmesRow.price:NaN)} (Beddy) · source: ${escapeHtml(rmesRow&&rmesRow.source?rmesRow.source:'—')}</div></div>`;
+    <div class="sh-hero"><div class="shh-lab">Last update</div>
+      <div class="shh-price">${lastUpd!=null?fmtEUR(lastUpd):'—'}</div>
+      <div class="shh-src">${escapeHtml(luSrc)}${expPrice!=null?` · ≈ ${fmtEUR(expPrice)} on Expedia`:''}</div></div>`;
   /* price override — placed high, right after the hero, so it reads as the action before its effects */
   html+=mobOverrideHTML(yn, rmesRow, baseRT);
   /* Expedia vs compset block */
