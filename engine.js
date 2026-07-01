@@ -63,6 +63,8 @@ const RMES_CLOUD = (function(){
   let pushTimer = null;
   let applyingRemote = false;   // true mentre applichiamo dati dal cloud (per non ri-pushare)
   let _pendingAuditPush = false; // true se il merge del log ha aggiunto righe locali assenti dal cloud
+  let _pendingCellPush = false;  // true se il merge per-cella (override/accept) ha righe locali assenti dal cloud
+  let _visibilityHooked = false; // per registrare il re-pull su focus una sola volta
   let lastRemoteJSON = null;    // ultimo stato remoto applicato (per dedup)
   const statusListeners = [];
 
@@ -435,6 +437,38 @@ const RMES_CLOUD = (function(){
     return JSON.stringify(out);
   }
 
+  // ---- Per-cell merge for override/accept keys (structured {struct:{ymd:value}}) ----
+  // These are edited independently per day by each person. A whole-object last-write-wins
+  // replace lets one push clobber the other's edits on different days, so we UNION per
+  // (struct, ymd) cell and resolve same-cell conflicts by the newer timestamp.
+  const CELL_MERGE_KEYS = ['rmes_frozen_base_override_v1', 'rmes_accepted_v1'];
+  function _cellTs(v){ return (v && typeof v === 'object' && v.ts) ? (Date.parse(v.ts) || 0) : 0; }
+  function _mergeCellRaw(localRaw, remoteRaw){
+    let a = {}, b = {};
+    try { a = localRaw ? JSON.parse(localRaw) : {}; } catch(e){ a = {}; }
+    try { b = remoteRaw ? JSON.parse(remoteRaw) : {}; } catch(e){ b = {}; }
+    if (!a || typeof a !== 'object') a = {};
+    if (!b || typeof b !== 'object') b = {};
+    const out = {}, structs = {};
+    for (const s in a) structs[s] = 1;
+    for (const s in b) structs[s] = 1;
+    for (const s in structs){
+      const as = (a[s] && typeof a[s] === 'object') ? a[s] : {};
+      const bs = (b[s] && typeof b[s] === 'object') ? b[s] : {};
+      const o = {}, cells = {};
+      for (const c in as) cells[c] = 1;
+      for (const c in bs) cells[c] = 1;
+      for (const c in cells){
+        const av = as[c], bv = bs[c];
+        if (av === undefined) o[c] = bv;
+        else if (bv === undefined) o[c] = av;
+        else o[c] = (_cellTs(av) >= _cellTs(bv)) ? av : bv;   // newer ts wins; tie → local
+      }
+      out[s] = o;
+    }
+    return JSON.stringify(out);
+  }
+
   // Applica uno stato remoto in localStorage; ritorna true se qualcosa è cambiato
   function _applyToLocal(remote){
     if (!remote || typeof remote !== 'object') return false;
@@ -453,6 +487,17 @@ const RMES_CLOUD = (function(){
             if (merged !== incoming) _pendingAuditPush = true;   // local has entries the cloud lacks → push back
           } else if (current != null){
             _pendingAuditPush = true;   // cloud has no log yet but we do → push ours up
+          }
+          continue;
+        }
+        if (CELL_MERGE_KEYS.indexOf(k) !== -1){
+          // per-cell union merge (never clobber the other person's edits on other days)
+          if (incoming != null){
+            const merged = _mergeCellRaw(current, incoming);
+            if (merged !== current){ try { localStorage.setItem(k, merged); changed = true; } catch(e){} }
+            if (merged !== incoming) _pendingCellPush = true;   // local has cells the cloud lacks → push back
+          } else if (current != null){
+            _pendingCellPush = true;   // cloud has none yet but we do → push ours up
           }
           continue;
         }
@@ -497,7 +542,7 @@ const RMES_CLOUD = (function(){
     } finally {
       applyingRemote = false;
     }
-    if (_pendingAuditPush){ _pendingAuditPush = false; try { _schedulePush(); } catch(e){} }
+    if (_pendingAuditPush || _pendingCellPush){ _pendingAuditPush = false; _pendingCellPush = false; try { _schedulePush(); } catch(e){} }
     return changed;
   }
 
@@ -576,6 +621,30 @@ const RMES_CLOUD = (function(){
               try { if (typeof rmesCloudOnRemoteUpdate === 'function') rmesCloudOnRemoteUpdate(); } catch(e){}
             }
           }, function(err){ console.warn('[rmesCloud] snapshot error', err); _setStatus('offline'); });
+          // Re-pull quando la scheda torna in primo piano / riprende il focus.
+          // Recupera aggiornamenti persi mentre la tab era in background o se il
+          // listener realtime si è silenziosamente disconnesso (rete instabile).
+          if (!_visibilityHooked){
+            _visibilityHooked = true;
+            const _repull = function(){
+              if (document.hidden || !available || !db) return;
+              ref.get().then(function(snap){
+                if (!snap.exists) return;
+                const remote = snap.data();
+                const j = JSON.stringify(remote);
+                if (j === lastRemoteJSON) return;   // già allineati
+                const changed = _applyToLocal(remote);
+                lastRemoteJSON = j;
+                if (changed){
+                  console.log('[rmesCloud] re-pull on focus applied → refreshing');
+                  _logSync('pull'); _setStatus('synced');
+                  try { if (typeof rmesCloudOnRemoteUpdate === 'function') rmesCloudOnRemoteUpdate(); } catch(e){}
+                }
+              }).catch(function(){});
+            };
+            try { document.addEventListener('visibilitychange', _repull); } catch(e){}
+            try { window.addEventListener('focus', _repull); } catch(e){}
+          }
         }).catch(function(e){
           console.warn('[rmesCloud] initial get failed → local only', e);
           available = false; _setStatus('offline'); clearTimeout(safety); finish();
@@ -5388,7 +5457,9 @@ function newrmesSetFrozenBase(structKey, ymd, price){
 }
 function newrmesGetFrozenBaseOverride(structKey, ymd){
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
-  return (all[structKey] && all[structKey][ymd] != null) ? all[structKey][ymd] : null;
+  const v = (all[structKey] && all[structKey][ymd] != null) ? all[structKey][ymd] : null;
+  if (v == null) return null;
+  return (typeof v === 'object') ? (v.price != null ? v.price : null) : v;
 }
 function _invalidateRmesMapCache(){
   // Svuota la cache _RMESMAP_TICK quando dati cambiano (override, accept, foundation override).
@@ -5400,7 +5471,7 @@ function newrmesSetFrozenBaseOverride(structKey, ymd, price){
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
   if (!all[structKey]) all[structKey] = {};
   if (price == null) delete all[structKey][ymd];
-  else all[structKey][ymd] = Math.round(price);
+  else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(), author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
   _invalidateRmesMapCache();
 }
@@ -5420,7 +5491,7 @@ function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
   for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
     const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
     try { logDecision(structKey, y, 'override_range', price); } catch(e){}
-    all[structKey][y] = Math.round(price);
+    all[structKey][y] = { price: Math.round(price), ts: new Date().toISOString(), author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
   }
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
   _invalidateRmesMapCache();
