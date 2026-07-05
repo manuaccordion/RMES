@@ -24,6 +24,7 @@ const RMES_CLOUD = (function(){
     // --- decisioni operative ---
     'rmes_frozen_base_v1',
     'rmes_frozen_base_override_v1',
+    'rmes_base_rate_overrides_v1',   // manual final-price override 🖋 (Last update cell) — MUST sync
     'rmes_accepted_v1',
     'rmes_last_suggestion_v1',
     'rmes_last_suggestion_date_v1',
@@ -441,8 +442,24 @@ const RMES_CLOUD = (function(){
   // These are edited independently per day by each person. A whole-object last-write-wins
   // replace lets one push clobber the other's edits on different days, so we UNION per
   // (struct, ymd) cell and resolve same-cell conflicts by the newer timestamp.
-  const CELL_MERGE_KEYS = ['rmes_frozen_base_override_v1', 'rmes_accepted_v1'];
-  function _cellTs(v){ return (v && typeof v === 'object' && v.ts) ? (Date.parse(v.ts) || 0) : 0; }
+  const CELL_MERGE_KEYS = ['rmes_frozen_base_override_v1', 'rmes_accepted_v1', 'rmes_base_rate_overrides_v1'];
+  function _cellTs(v){
+    // Ritorna il timestamp più recente di una "cella" per risolvere conflitti same-cell.
+    // Schemi supportati: {ts} (accepted/frozen override), {savedAt} (final override leaf),
+    // oppure un oggetto {rt: {savedAt|ts}} (final override per (iso → rt)) → prende il max.
+    if (!v || typeof v !== 'object') return 0;
+    if (v.ts)      return Date.parse(v.ts) || 0;
+    if (v.savedAt) return Date.parse(v.savedAt) || 0;
+    let mx = 0;
+    for (const k in v){
+      const inner = v[k];
+      if (inner && typeof inner === 'object'){
+        const t = Date.parse(inner.savedAt || inner.ts || '') || 0;
+        if (t > mx) mx = t;
+      }
+    }
+    return mx;
+  }
   function _mergeCellRaw(localRaw, remoteRaw){
     let a = {}, b = {};
     try { a = localRaw ? JSON.parse(localRaw) : {}; } catch(e){ a = {}; }
@@ -1224,8 +1241,10 @@ function fp_postLoadHook(){
     const MIGRATION_FLAG = 'rmes_newrmes_migration_v1';
     if (!localStorage.getItem(MIGRATION_FLAG)){
       console.log('[NewRMES] First boot in NewRMES system → wiping legacy overrides…');
+      // NB: 'rmes_base_rate_overrides_v1' NON va wipato: è la chiave viva dell'override 🖋
+      // finale (Last update cell), ora sincronizzata via Firebase. Un browser nuovo scarica
+      // gli override dal cloud e questa migrazione NON deve cancellarli.
       const keysToWipe = [
-        'rmes_base_rate_overrides_v1',     // legacy day-by-day base rate overrides
         'rmes_period_overrides_v1',
         'rmes_period_overrides',
         'sell_rmes_period_overrides',
@@ -5383,7 +5402,7 @@ const FP_TARGET_GROWTH_KEY = 'rmes_target_growth_v1';
 const FP_FLOOR_KEY = 'rmes_floor_v1';
 const FP_COMPSET_OFFSETS_KEY = 'rmes_compset_offsets_v1';  // SOLO offset (pesi vengono da rmes_compset_weights_v1 = box ③ esistente)
 const FP_BASE_PRICE_KEY = 'rmes_base_price_v1';  // Base price annuale per struttura (= Anchor Price nel nuovo sistema)
-const FP_BASE_RATE_OVERRIDES_KEY = 'rmes_base_rate_overrides_v1';  // [LEGACY, wiped at migration]
+const FP_BASE_RATE_OVERRIDES_KEY = 'rmes_base_rate_overrides_v1';  // manual final-price override 🖋 (Last update cell). Synced via Firebase (in SYNC_KEYS + CELL_MERGE_KEYS).
 
 /* ============================================================
    NEW RMES SYSTEM — Frozen Base Price + Acceptance
@@ -11308,25 +11327,43 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
   outer.appendChild(scrollWrap);
   orig.parentNode.replaceChild(outer, orig);
 
-  // Dopo l'inserimento, calcolo la width della tabella per il topInner e sincronizzo gli scroll
-  setTimeout(function(){
+  // Dopo l'inserimento, calcolo la width della tabella per il topInner e sincronizzo gli scroll.
+  // ROBUSTEZZA: la scrollWidth va misurata QUANDO il layout è assestato (font, colonne sticky),
+  // altrimenti risulta troppo piccola e il top scrollbar non mostra il cursore. Quindi:
+  //  - misuro dopo un doppio requestAnimationFrame (layout completo),
+  //  - ri-misuro dopo un piccolo timeout (fallback font/rendering lento),
+  //  - resto agganciato con un ResizeObserver così la width si aggiorna a ogni resize
+  //    (finestra, pannello, filtri RT) e la barra riappare/scompare correttamente.
+  function _syncTopWidth(){
     if (newTbl && newTbl.scrollWidth){
-      topInner.style.width = newTbl.scrollWidth + 'px';
+      const w = newTbl.scrollWidth + 'px';
+      if (topInner.style.width !== w) topInner.style.width = w;
     }
-    let syncing = false;
-    topScroll.addEventListener('scroll', function(){
-      if (syncing) return;
-      syncing = true;
-      scrollWrap.scrollLeft = topScroll.scrollLeft;
-      syncing = false;
-    });
-    scrollWrap.addEventListener('scroll', function(){
-      if (syncing) return;
-      syncing = true;
-      topScroll.scrollLeft = scrollWrap.scrollLeft;
-      syncing = false;
-    });
-  }, 0);
+  }
+  const _raf = (typeof requestAnimationFrame === 'function') ? requestAnimationFrame : function(fn){ return setTimeout(fn, 16); };
+  _raf(function(){ _raf(_syncTopWidth); });
+  setTimeout(_syncTopWidth, 120);
+  setTimeout(_syncTopWidth, 400);
+  try {
+    if (typeof ResizeObserver === 'function'){
+      const _ro = new ResizeObserver(function(){ _syncTopWidth(); });
+      _ro.observe(newTbl);
+      _ro.observe(scrollWrap);
+    }
+  } catch(e){}
+  let syncing = false;
+  topScroll.addEventListener('scroll', function(){
+    if (syncing) return;
+    syncing = true;
+    scrollWrap.scrollLeft = topScroll.scrollLeft;
+    syncing = false;
+  });
+  scrollWrap.addEventListener('scroll', function(){
+    if (syncing) return;
+    syncing = true;
+    topScroll.scrollLeft = scrollWrap.scrollLeft;
+    syncing = false;
+  });
 }
 
 function renderSellStrategy(sel){
@@ -12793,16 +12830,22 @@ function renderSellStrategy(sel){
     const btnPeriodFinal = document.getElementById('fp-period-final');
     if (btnPeriodFinal){
       btnPeriodFinal.onclick = function(){
-        const priceInp = document.getElementById('fp-period-price');
-        const price = priceInp ? parseFloat(priceInp.value) : NaN;
         const r = _fpPeriodDays(); if (!r) return;
-        if (!isFinite(price) || price <= 0){ r.setMsg('Enter a valid price (>0).', true); return; }
-        if (!confirm('ACCEPT RMES of €' + price.toFixed(0) + ' on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?\n\nThis becomes the current reference for those dates. Tomorrow\'s RMES will start from this price.')) return;
-        for (const d of r.days){
+        // Accept each day's OWN suggested RMES (not a flat price). This is the "accept many
+        // dates at once" action: every day in the range is accepted at its own suggestion.
+        // Days without a computable RMES (e.g. past dates) are skipped.
+        const applicable = r.days.filter(d => isFinite(d.calc) && d.calc > 0);
+        if (!applicable.length){ r.setMsg('No RMES to accept in this range (RMES is computed from today onward).', true); return; }
+        if (!confirm('ACCEPT the RMES suggestion on ' + applicable.length + ' day(s) (baseRT: ' + baseRT + ')?\n\nEach day is accepted at its OWN suggested price — this becomes the current reference for those dates.')) return;
+        for (const d of applicable){
           const ymdN = +(d.iso.replaceAll('-',''));
-          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, price);
+          // A manual final-price override 🖋 wins over accepted in newrmesGetCurrentReference:
+          // clear it first so the accept actually takes effect (same as the single-cell ✓).
+          if (typeof fp_setOverride === 'function') fp_setOverride(sel, d.iso, baseRT, null);
+          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, Math.round(d.calc));
         }
-        r.setMsg('✓ Accepted €' + price.toFixed(0) + ' on ' + r.days.length + ' days.');
+        const skipped = r.days.length - applicable.length;
+        r.setMsg('✓ Accepted RMES on ' + applicable.length + ' day(s)' + (skipped ? ' · ' + skipped + ' skipped (no RMES)' : '') + '.');
         _refreshSell();
       };
     }
