@@ -5489,8 +5489,11 @@ function newrmesSetFrozenBaseOverride(structKey, ymd, price){
   try { logDecision(structKey, ymd, price == null ? 'reset_override' : 'override', price); } catch(e){}
   const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
   if (!all[structKey]) all[structKey] = {};
-  if (price == null) delete all[structKey][ymd];
-  else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(), author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
+  if (price == null){
+    // TOMBSTONE (vedi fp_setOverride): la cancellazione deve propagarsi via Firebase.
+    const _now = new Date().toISOString();
+    all[structKey][ymd] = { price: null, __deleted: true, ts: _now, savedAt: _now, author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
+  } else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(), author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
   _invalidateRmesMapCache();
 }
@@ -5696,8 +5699,11 @@ function newrmesSetAccepted(structKey, ymd, price){
   try { logDecision(structKey, ymd, price == null ? 'reset_accept' : 'accept', price); } catch(e){}
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
   if (!all[structKey]) all[structKey] = {};
-  if (price == null) delete all[structKey][ymd];
-  else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(), author: getUserProfile() || null };
+  if (price == null){
+    // TOMBSTONE (vedi fp_setOverride): la cancellazione deve propagarsi via Firebase.
+    const _now = new Date().toISOString();
+    all[structKey][ymd] = { price: null, __deleted: true, ts: _now, savedAt: _now, author: getUserProfile() || null };
+  } else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(), author: getUserProfile() || null };
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
   _invalidateRmesMapCache();
 }
@@ -8593,8 +8599,17 @@ function fp_setOverride(structKey, dateISO, rt, price, snapshot){
   if (!all[structKey]) all[structKey] = {};
   if (!all[structKey][dateISO]) all[structKey][dateISO] = {};
   if (price == null || price === '' || !isFinite(price)){
-    delete all[structKey][dateISO][rt];
-    if (Object.keys(all[structKey][dateISO]).length === 0) delete all[structKey][dateISO];
+    // TOMBSTONE invece di delete: la cancellazione DEVE propagarsi via Firebase.
+    // Il merge cella-per-cella (_mergeCellRaw) fa l'unione col cloud e non sa distinguere
+    // "cancellato qui" da "mai esistito", quindi un delete secco verrebbe resuscitato dal
+    // cloud che ha ancora il vecchio valore. Scrivendo {price:null, ts} la cancellazione ha
+    // un timestamp e vince per recency; tutti i reader guardano .price != null → è "assente".
+    if (!all[structKey][dateISO]) all[structKey][dateISO] = {};
+    const _now = new Date().toISOString();
+    all[structKey][dateISO][rt] = {
+      price: null, __deleted: true, savedAt: _now, ts: _now,
+      author: (typeof getUserProfile === 'function') ? (getUserProfile() || null) : null,
+    };
   } else {
     all[structKey][dateISO][rt] = {
       price: +price,
@@ -8612,6 +8627,8 @@ function fp_getOverride(structKey, dateISO, rt){
     if (all[structKey] && all[structKey][dateISO] && all[structKey][dateISO][rt] != null){
       const v = all[structKey][dateISO][rt];
       if (typeof v === 'number') return { price: v, snapshot: null, savedAt: null };
+      // Tombstone (cancellazione propagata via sync): trattalo come assente.
+      if (v && typeof v === 'object' && (v.__deleted === true || v.price == null)) return null;
       return v;
     }
   } catch(e){}
