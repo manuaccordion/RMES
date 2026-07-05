@@ -12816,14 +12816,18 @@ function renderSellStrategy(sel){
       const days = [];
       for (let d = new Date(d0); d <= d1; d.setDate(d.getDate()+1)){
         const iso = d.getFullYear() + '-' + pad2(d.getMonth()+1) + '-' + pad2(d.getDate());
+        const ymdN = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+        // calc = ESATTAMENTE il numero mostrato nella cella RMES e accettato dal ✓ singolo.
+        // Prima si usava fp_computePrice() che dava un valore diverso (di fatto il prezzo
+        // attivo), quindi l'accept di range salvava il prezzo sbagliato. Ora coerente.
         let calc = null;
         try {
-          if (typeof fp_computePrice === 'function'){
-            const r = fp_computePrice(sel, baseRT, iso);
-            if (r && r.detail && isFinite(r.detail.priceFinal)) calc = r.detail.priceFinal;
+          if (typeof _rmesSuggestedForDay === 'function'){
+            const s = _rmesSuggestedForDay(sel, ymdN, baseRT);
+            if (s != null && isFinite(s)) calc = Math.round(s);
           }
         } catch(e){}
-        days.push({ iso, calc });
+        days.push({ iso, ymdN, calc });
       }
       return { days, setMsg };
     }
@@ -12838,11 +12842,11 @@ function renderSellStrategy(sel){
         if (!applicable.length){ r.setMsg('No RMES to accept in this range (RMES is computed from today onward).', true); return; }
         if (!confirm('ACCEPT the RMES suggestion on ' + applicable.length + ' day(s) (baseRT: ' + baseRT + ')?\n\nEach day is accepted at its OWN suggested price — this becomes the current reference for those dates.')) return;
         for (const d of applicable){
-          const ymdN = +(d.iso.replaceAll('-',''));
+          const ymdN = d.ymdN;
           // A manual final-price override 🖋 wins over accepted in newrmesGetCurrentReference:
           // clear it first so the accept actually takes effect (same as the single-cell ✓).
           if (typeof fp_setOverride === 'function') fp_setOverride(sel, d.iso, baseRT, null);
-          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, Math.round(d.calc));
+          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, d.calc);
         }
         const skipped = r.days.length - applicable.length;
         r.setMsg('✓ Accepted RMES on ' + applicable.length + ' day(s)' + (skipped ? ' · ' + skipped + ' skipped (no RMES)' : '') + '.');
