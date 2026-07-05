@@ -5761,13 +5761,14 @@ function _rmesSuggestedForDay(structKey, ymdN, rt){
   return null;
 }
 
-/* Current reference = if accepted exists, use it; otherwise effective base (override or frozen). */
+/* Current reference = the MOST RECENT explicit decision for the day (override 🖋 vs accept ✓),
+   resolved by timestamp; otherwise the effective Base Price. */
 function newrmesGetCurrentReference(structKey, ymd){
-  // Priorità: 1) manual final-price override 🖋 (set via the RMES modal),
-  //            2) accepted RMES ✓,
-  //            3) effective Base Price (frozen + foundation override).
-  // The manual override wins because once the user has explicitly forced a price for that
-  // day, that IS the active reference (and the next RMES delta is computed against it).
+  // MOST-RECENT-WINS: confrontiamo il timestamp dell'override 🖋 e dell'accept ✓ e vince il più
+  // recente. NON si cancella più l'uno quando si setta l'altro (evita tombstone che si scontrano
+  // sullo stato condiviso Firebase e "resuscitano"/"cancellano" decisioni). Se solo uno esiste,
+  // vince quello; a parità di timestamp vince l'override (decisione manuale esplicita).
+  let ovrPrice = null, ovrTs = 0;
   if (typeof fp_getOverride === 'function'){
     try {
       const baseRT = (CFG.structures[structKey] && CFG.structures[structKey].baseRT) || null;
@@ -5775,16 +5776,24 @@ function newrmesGetCurrentReference(structKey, ymd){
         const d = fp_ymdNumToDate(ymd);
         if (d){
           const iso = fp_isoDate(d);
-          const ovr = fp_getOverride(structKey, iso, baseRT);
+          const ovr = fp_getOverride(structKey, iso, baseRT);   // ritorna null sui tombstone
           if (ovr && ovr.price != null && isFinite(ovr.price) && ovr.price > 0){
-            return +ovr.price;
+            ovrPrice = +ovr.price;
+            ovrTs = ovr.savedAt ? (Date.parse(ovr.savedAt) || 0) : 0;
           }
         }
       }
     } catch(e){}
   }
-  const acc = newrmesGetAccepted(structKey, ymd);
-  if (acc != null) return acc;
+  let accPrice = null, accTs = 0;
+  const accMeta = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(structKey, ymd) : null;
+  if (accMeta && accMeta.price != null && isFinite(accMeta.price)){
+    accPrice = +accMeta.price;
+    accTs = accMeta.ts ? (Date.parse(accMeta.ts) || 0) : 0;
+  }
+  if (ovrPrice != null && accPrice != null) return (accTs > ovrTs) ? accPrice : ovrPrice;
+  if (ovrPrice != null) return ovrPrice;
+  if (accPrice != null) return accPrice;
   return newrmesGetEffectiveBase(structKey, ymd);
 }
 
@@ -6490,7 +6499,19 @@ function _checksCollectAll(){
       }
     }
   } catch(e){ console.warn('checks: accepts collection failed', e); }
-  return out;
+  // DEDUP per (struttura, data): override 🖋 e accept ✓ possono ora coesistere in storage
+  // (non ci sono piu cross-clear). Teniamo solo la decisione ATTIVA = quella con modAt piu
+  // recente, coerente con cio che mostra la Sell Strategy (most-recent-wins).
+  const _byCell = {};
+  for (const row of out){
+    const key = row.structKey + '|' + row.stayDate;
+    const prev = _byCell[key];
+    if (!prev){ _byCell[key] = row; continue; }
+    const tNew = row.modAt ? (Date.parse(row.modAt) || 0) : 0;
+    const tOld = prev.modAt ? (Date.parse(prev.modAt) || 0) : 0;
+    if (tNew >= tOld) _byCell[key] = row;
+  }
+  return Object.keys(_byCell).map(function(k){ return _byCell[k]; });
 }
 function _checksApplyFilters(rows){
   const f = _CHECKS_FILTERS;
@@ -12356,12 +12377,21 @@ function renderSellStrategy(sel){
     const _luTdHtml = (function(){
         const baseRTKey = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
         if (!baseRTKey) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
-        // Check manual override 🖋 first (highest priority)
+        // Check manual override 🖋 + accept ✓ e scegli il piu RECENTE (coerente con
+        // newrmesGetCurrentReference). Niente cross-clear: entrambi possono coesistere in storage.
         const _isoOvr = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
         const ovr = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, _isoOvr, baseRTKey) : null;
-        const hasManualOvr = !!(ovr && ovr.price != null && isFinite(ovr.price) && ovr.price > 0);
+        const ovrValid = !!(ovr && ovr.price != null && isFinite(ovr.price) && ovr.price > 0);
         const meta = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(sel, r.ymd) : null;
-        const accepted = meta ? meta.price : null;
+        const accValid = !!(meta && meta.price != null && isFinite(meta.price));
+        const ovrTs = (ovrValid && ovr.savedAt) ? (Date.parse(ovr.savedAt) || 0) : 0;
+        const accTs = (accValid && meta.ts) ? (Date.parse(meta.ts) || 0) : 0;
+        let _activeSrc = 'base';
+        if (ovrValid && accValid) _activeSrc = (accTs > ovrTs) ? 'accept' : 'override';
+        else if (ovrValid) _activeSrc = 'override';
+        else if (accValid) _activeSrc = 'accept';
+        const hasManualOvr = (_activeSrc === 'override');
+        const accepted = (_activeSrc === 'accept') ? meta.price : null;
         const activePrice = hasManualOvr
           ? +ovr.price
           : ((accepted != null)
@@ -12632,20 +12662,8 @@ function renderSellStrategy(sel){
       const ymdStr = String(ymdN);
       const dateLbl = ymdStr.slice(6,8) + '/' + ymdStr.slice(4,6) + '/' + ymdStr.slice(0,4);
       if (!confirm('Accept RMES suggestion of €' + newPrice + ' for ' + dateLbl + '?')) return;
-      // BUG FIX: se per quel giorno esiste un manual override modale (fp_setOverride),
-      // questo ha priorità sull'accepted in newrmesGetCurrentReference → il LAST UPDATE
-      // non si aggiornerebbe. Cancello l'override per rendere l'accept effettivo.
-      try {
-        if (typeof fp_setOverride === 'function' && typeof fp_ymdNumToDate === 'function' && typeof fp_isoDate === 'function'){
-          const baseRT = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
-          const d = fp_ymdNumToDate(ymdN);
-          if (baseRT && d){
-            const iso = fp_isoDate(d);
-            // Imposta override a null per quel giorno + baseRT (rimuove il 🖋)
-            fp_setOverride(sk, iso, baseRT, null);
-          }
-        }
-      } catch(e){ console.warn('clear override failed', e); }
+      // Niente clear dell'override: l'accept ha timestamp piu recente e vince nel reader
+      // (newrmesGetCurrentReference / cella) via most-recent-wins. Evita tombstone in conflitto.
       newrmesSetAccepted(sk, ymdN, newPrice);
       if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
     });
@@ -12860,9 +12878,7 @@ function renderSellStrategy(sel){
         if (!confirm('ACCEPT the RMES suggestion on ' + applicable.length + ' day(s) (baseRT: ' + baseRT + ')?\n\nEach day is accepted at its OWN suggested price — this becomes the current reference for those dates.')) return;
         for (const d of applicable){
           const ymdN = d.ymdN;
-          // A manual final-price override 🖋 wins over accepted in newrmesGetCurrentReference:
-          // clear it first so the accept actually takes effect (same as the single-cell ✓).
-          if (typeof fp_setOverride === 'function') fp_setOverride(sel, d.iso, baseRT, null);
+          // Niente clear override: l'accept (ts piu recente) vince nel reader via most-recent-wins.
           if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, d.calc);
         }
         const skipped = r.days.length - applicable.length;
@@ -12881,9 +12897,7 @@ function renderSellStrategy(sel){
         for (const d of r.days){
           const snapshot = { rmesSuggested: d.calc, source: 'period' };
           if (typeof fp_setOverride === 'function') fp_setOverride(sel, d.iso, baseRT, price, snapshot);
-          // Un override finale annulla anche l'accept (sono mutualmente esclusivi)
-          const ymdN = +(d.iso.replaceAll('-',''));
-          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, null);
+          // Niente clear accept: l'override (ts piu recente) vince nel reader via most-recent-wins.
         }
         r.setMsg('🖋 Override €' + price.toFixed(0) + ' applied to ' + r.days.length + ' days.');
         _refreshSell();

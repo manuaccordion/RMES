@@ -2210,8 +2210,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Accept / Override by range — the panel above the table</h4>
         <p>Set the <b>Range</b> (From / To dates), then use one of the actions:</p>
         <ul style="margin:6px 0 6px 18px;font-size:13px">
-          <li><b>✓ Accept RMES</b> (green) — accepts <b>each day's own suggested RMES</b> for the whole range in one click. Every day's Last update becomes that day's suggestion in green with ✓. No price field needed. Days with no RMES (e.g. past dates) are skipped, and any existing manual override 🖋 on those days is cleared first so the accept takes effect.</li>
-          <li><b>🖋 Override</b> (orange) — type a price in €, then click to force that <b>single fixed price</b> on every day in the range as a manual override. Last update becomes this price in orange with 🖋 on every day. Any previously accepted RMES on those dates is cleared.</li>
+          <li><b>✓ Accept RMES</b> (green) — accepts <b>each day's own suggested RMES</b> for the whole range in one click. Every day's Last update becomes that day's suggestion in green with ✓. No price field needed. Days with no RMES (e.g. past dates) are skipped. The accept becomes the active price because it is the most recent decision, even if a manual override 🖋 existed on that day.</li>
+          <li><b>🖋 Override</b> (orange) — type a price in €, then click to force that <b>single fixed price</b> on every day in the range as a manual override. Last update becomes this price in orange with 🖋 on every day, because the override is now the most recent decision.</li>
           <li><b>↺ Reset</b> — wipes Base override, manual override 🖋 and accepted ✓ on every day in the range. Last update goes back to the Base Price (black, no icon).</li>
         </ul>
         <p style="margin:6px 0;font-size:12.5px;color:#555">For a single day you can also click a <b>Last update</b> cell directly (override one day), or the <b>✓</b> button in the RMES cell (accept one day). Right-click or Shift+click two Last update cells to override a range inline.</p>
@@ -2240,7 +2240,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <p style="margin:0"><b>Why this design</b>: the target depends only on the market and the structural Base Price — never on your past decisions. This avoids the "loop" risk (if RMES suggested based on your last override, after a few iterations it could drift very far). The Monthly Anchor ±50% band and the Floor Rate make sure the target stays in a sane range whatever the market does.</p>
         </div>
 
-        <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12px"><b>How to read a row at a glance.</b> Look first at the <b>Last update</b> column to know the price active right now (Base Price by default, accepted ✓, or override 🖋). Then look at the <b>RMES</b> column for the engine's verdict: either a target to consider (↓/↑) or "✓ in line" if your decision is already in tune.</p>
+        <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12px"><b>How to read a row at a glance.</b> Look first at the <b>Last update</b> column to know the price active right now (Base Price by default, accepted ✓, or override 🖋). When both an accept and an override exist for the same day, the <b>most recent decision wins</b> (whichever you did last). Then look at the <b>RMES</b> column for the engine's verdict: either a target to consider (↓/↑) or "✓ in line" if your decision is already in tune.</p>
       </div>
     </details>
 
