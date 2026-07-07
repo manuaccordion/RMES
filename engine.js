@@ -16420,12 +16420,9 @@ function renderRMESConfigTab(){
   const sel = RMES_TAB_STRUCT;
   const pillsEl = document.getElementById('rmes-tab-struct-pills');
   if (pillsEl){
-    const opts = [
-      { v: 'firenze',  label: 'Firenze Suite',   color: '#3b6b9a' },
-      { v: 'condotta', label: 'Condotta 16',     color: '#3d7a4b' },
-      { v: 'alfani',   label: 'Palazzo Alfani',  color: '#8e5fa8' },
-      { v: 'davids',   label: "Enis Guesthouse", color: '#c0392b' },
-    ];
+    const opts = Object.keys(CFG.structures).map(k => ({
+      v: k, label: CFG.structures[k].label, color: CFG.structures[k].color
+    }));
     pillsEl.innerHTML = opts.map(o => {
       const on = (sel === o.v);
       const style = on
