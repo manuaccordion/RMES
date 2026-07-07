@@ -1425,11 +1425,10 @@ function structKeysFor(sel){
   return Object.values(CFG.structures).map(s => s.key);
 }
 function structRoomsFor(sel){
-  if (sel==='firenze')  return CFG.structures.firenze.rooms;
-  if (sel==='condotta') return CFG.structures.condotta.rooms;
-  if (sel==='alfani')   return CFG.structures.alfani.rooms;
-  if (sel==='davids')   return CFG.structures.davids.rooms;
-  return {...CFG.structures.firenze.rooms, ...CFG.structures.condotta.rooms, ...CFG.structures.alfani.rooms, ...CFG.structures.davids.rooms, ...CFG.structures.nazionale.rooms, ...CFG.structures.portenuove.rooms};
+  if (sel && sel !== 'both' && CFG.structures[sel]) return CFG.structures[sel].rooms;
+  const out = {};
+  for (const _sk in CFG.structures){ Object.assign(out, CFG.structures[_sk].rooms); }
+  return out;
 }
 /* Inventario time-aware per Palazzo Alfani:
    - Fino al 31/01/2025: 4 Classic, 4 Superior, 0 Junior Suite, 1 Deluxe (9 camere, JS faceva parte della Classic)
@@ -1446,11 +1445,10 @@ function structRoomsForAt(sel, ymdNum){
   return CFG.structures.alfani.rooms;  // post-split (current)
 }
 function structRoomsTotal(sel){
-  if (sel==='firenze')  return CFG.structures.firenze.roomsTotal;
-  if (sel==='condotta') return CFG.structures.condotta.roomsTotal;
-  if (sel==='alfani')   return CFG.structures.alfani.roomsTotal;
-  if (sel==='davids')   return CFG.structures.davids.roomsTotal;
-  return CFG.structures.firenze.roomsTotal + CFG.structures.condotta.roomsTotal + CFG.structures.alfani.roomsTotal + CFG.structures.davids.roomsTotal + CFG.structures.nazionale.roomsTotal + CFG.structures.portenuove.roomsTotal;
+  if (sel && sel !== 'both' && CFG.structures[sel]) return CFG.structures[sel].roomsTotal;
+  let tot = 0;
+  for (const _sk in CFG.structures){ tot += (CFG.structures[_sk].roomsTotal || 0); }
+  return tot;
 }
 /* Budget helpers — fiscal year May 2026 -> Apr 2027.
    ym is YYYYMM (e.g. 202605). 'metric' is 'rev', 'occ', or 'adr'.
@@ -13346,7 +13344,7 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
     const structLbl = (sel === 'both') ? 'All properties (aggregato)'
                     : (sel === 'firenze') ? 'Firenze Suite'
                     : (sel === 'condotta') ? 'Condotta 16'
-                    : (sel === 'alfani') ? 'Palazzo Alfani' : (sel === 'davids') ? "Enis Guesthouse" : sel;
+                    : (sel === 'alfani') ? 'Palazzo Alfani' : (sel === 'davids') ? "Enis Guesthouse" : ((CFG.structures[sel] && CFG.structures[sel].label) || sel);
     legendEl.innerHTML = `
       <span style="display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink);margin-right:8px">${structLbl}</span>
       <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:14px;height:12px;background:${barColorCur};border-radius:2px"></span>Pickup OTB · RN</span>
