@@ -1050,6 +1050,10 @@ function loadData(csvText){
       _structRoomsCache[sk] = new Set(Object.keys(structRoomsFor(sk) || {}));
     }
   }
+  // Reverse map: PMS "Struttura" (CFG.structures[x].key) → chiave breve. Dinamico su CFG:
+  // qualsiasi struttura registrata (incl. nazionale/portenuove) viene accettata.
+  const _keyToShort = {};
+  for (const _sk in CFG.structures){ _keyToShort[CFG.structures[_sk].key] = _sk; }
   function _markupForCanaleFast(canale){
     const c = (canale || '').toLowerCase();
     if (c === 'beddy' || c === 'diretto' || c === '—' || c === '' || c.indexOf('diret') !== -1 ||
@@ -1064,10 +1068,8 @@ function loadData(csvText){
     const stato = r['Stato'];
     if (stato !== 'Confermate' && stato !== 'Cancellate') continue;
     const struct = r['Struttura'];
-    if (struct !== CFG.structures.firenze.key &&
-        struct !== CFG.structures.condotta.key &&
-        struct !== CFG.structures.alfani.key &&
-        struct !== CFG.structures.davids.key) continue;
+    const _structKeyForRooms = _keyToShort[struct] || null;
+    if (!_structKeyForRooms) continue;   // struttura non registrata in CFG → scarta
     const dBook = parseDateIT(r['Data/ora prenotazione']);
     const dIn   = parseDateIT(r['Data inizio soggiorno']);
     const dOut  = parseDateIT(r['Data partenza']);
@@ -1079,10 +1081,6 @@ function loadData(csvText){
     if (!isFinite(tot)) continue;
     const tax = parseFloat((r['Tassa di soggiorno']||'0').toString().replace(',', '.')) || 0;
     const totNet = tot - tax;
-    const _structKeyForRooms = (struct === CFG.structures.firenze.key) ? 'firenze'
-                             : (struct === CFG.structures.condotta.key) ? 'condotta'
-                             : (struct === CFG.structures.alfani.key) ? 'alfani'
-                             : (struct === CFG.structures.davids.key) ? 'davids' : null;
     const _validRoomsSet = _structKeyForRooms ? _structRoomsCache[_structKeyForRooms] : null;
     let alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
     if (_validRoomsSet && _validRoomsSet.size){
@@ -1423,11 +1421,8 @@ function fp_postLoadHook(){
 /* -------- FILTER HELPERS -------- */
 let CURRENT_STRUCT = 'firenze';   // 'firenze' | 'condotta' | 'alfani' | 'both'
 function structKeysFor(sel){
-  if (sel==='firenze')  return [CFG.structures.firenze.key];
-  if (sel==='condotta') return [CFG.structures.condotta.key];
-  if (sel==='alfani')   return [CFG.structures.alfani.key];
-  if (sel==='davids')   return [CFG.structures.davids.key];
-  return [CFG.structures.firenze.key, CFG.structures.condotta.key, CFG.structures.alfani.key, CFG.structures.davids.key, CFG.structures.nazionale.key, CFG.structures.portenuove.key];
+  if (sel && sel !== 'both' && CFG.structures[sel]) return [CFG.structures[sel].key];
+  return Object.values(CFG.structures).map(s => s.key);
 }
 function structRoomsFor(sel){
   if (sel==='firenze')  return CFG.structures.firenze.rooms;
@@ -3238,10 +3233,7 @@ function aggHistorico(sel){
     }
   }
   const keyToSel = {};
-  keyToSel[CFG.structures.firenze.key]  = 'firenze';
-  keyToSel[CFG.structures.condotta.key] = 'condotta';
-  keyToSel[CFG.structures.alfani.key]   = 'alfani';
-  keyToSel[CFG.structures.davids.key]   = 'davids';
+  for (const _sk in CFG.structures){ keyToSel[CFG.structures[_sk].key] = _sk; }
   function daysInMonth(y, m){ return new Date(y, m, 0).getDate(); }
   const summary = []; // rows for the summary table
   for (const y of years){
