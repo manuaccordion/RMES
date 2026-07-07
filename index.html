@@ -29,7 +29,7 @@
   --blue-bg:#e3ebf3;
   --c-fs:#8b6f47;         /* Firenze Suite */
   --c-c16:#3b6b6b;        /* Condotta 16 */
-  --c-both:#6b5b3f;--c-alf:#8e5fa8;--c-dav:#c0392b
+  --c-both:#6b5b3f;--c-alf:#8e5fa8;--c-dav:#c0392b;--c-naz:#d18b2c;--c-por:#3f7d78
   --shadow:0 1px 2px rgba(40,30,15,.04), 0 4px 12px rgba(40,30,15,.04);
   --radius:14px;
 }
@@ -95,6 +95,8 @@ button{font-family:inherit;cursor:pointer}
 .struct-pill[data-s="condotta"] .pdot{background:var(--c-c16)}
 .struct-pill[data-s="alfani"] .pdot{background:var(--c-alf)}
 .struct-pill[data-s="davids"] .pdot{background:var(--c-dav)}
+.struct-pill[data-s="nazionale"] .pdot{background:var(--c-naz)}
+.struct-pill[data-s="portenuove"] .pdot{background:var(--c-por)}
 .struct-pill[data-s="both"] .pdot{background:linear-gradient(90deg,var(--c-fs),var(--c-c16))}
 .struct-pill:hover{color:var(--ink)}
 .struct-pill.active{background:var(--ink);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18)}
@@ -1403,6 +1405,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <button class="struct-pill" data-s="condotta" role="tab"><span class="pdot"></span>Condotta 16</button>
       <button class="struct-pill" data-s="alfani" role="tab"><span class="pdot"></span>Palazzo Alfani</button>
       <button class="struct-pill" data-s="davids" role="tab"><span class="pdot"></span>Enis Guesthouse</button>
+      <button class="struct-pill" data-s="nazionale" role="tab"><span class="pdot"></span>Nazionale 35</button>
+      <button class="struct-pill" data-s="portenuove" role="tab"><span class="pdot"></span>Porte Nuove</button>
       <button class="struct-pill" data-s="both" role="tab"><span class="pdot"></span>All</button>
     </div>
   </div>

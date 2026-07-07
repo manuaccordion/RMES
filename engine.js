@@ -532,7 +532,7 @@ const RMES_CLOUD = (function(){
           const parsed = JSON.parse(raw);
           const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
           let needsForce = false;
-          for (const s of ['firenze','condotta','alfani','davids']){
+          for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
             const p = parsed[s];
             if (!p) continue;
             // Criteri: price > 0 (B·ADR ancora attivo) OPPURE occ != 0.25 (somma vecchia ~20%)
@@ -541,13 +541,13 @@ const RMES_CLOUD = (function(){
             }
           }
           if (needsForce){
-            for (const s of ['firenze','condotta','alfani','davids']){
+            for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
               parsed[s] = Object.assign({}, defaults);
             }
             localStorage.setItem('rmes_weights_per_struct_v4', JSON.stringify(parsed));
             // Aggiorna anche la variabile in memoria (usata dalla UI senza re-fetch localStorage)
             if (typeof SELL_RMES_W_ALL !== 'undefined'){
-              for (const s of ['firenze','condotta','alfani','davids']){
+              for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
                 SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
               }
             }
@@ -803,6 +803,20 @@ const CFG = {
                 budgetIsForecast:true,
                 budgetTotal:0,
                 budgetByMonth:{} },
+    nazionale:{ key:"Nazionale 35 Apartments", label:"Nazionale 35 Apartments", color:'#d18b2c',
+                rooms:{'Cupola':1,'Uffizi':1},
+                baseRT:'Cupola',
+                roomsTotal:2, rnYear:730,
+                budgetIsForecast:true,
+                budgetTotal:0,
+                budgetByMonth:{} },
+    portenuove:{ key:"Porte Nuove Apartments", label:"Porte Nuove Apartments", color:'#3f7d78',
+                rooms:{'Palazzo Pitti':1,'Ponte Vecchio':1,'Palazzo Vecchio':1},
+                baseRT:'Palazzo Pitti',
+                roomsTotal:3, rnYear:1095,
+                budgetIsForecast:true,
+                budgetTotal:0,
+                budgetByMonth:{} },
   },
   monthsIT: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
   monthsITLong: ['January','February','March','April','May','June','July','August','September','October','November','December'],
@@ -1031,7 +1045,7 @@ function loadData(csvText){
   // === Cache pre-loop: evito 26k+ chiamate ripetute a fp_getChannelMarkups() / structRoomsFor() ===
   const _markups = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups() : {expedia:17,booking:13,airbnb:10};
   const _structRoomsCache = {};
-  for (const sk of ['firenze','condotta','alfani','davids']){
+  for (const sk of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
     if (typeof structRoomsFor === 'function'){
       _structRoomsCache[sk] = new Set(Object.keys(structRoomsFor(sk) || {}));
     }
@@ -1112,7 +1126,7 @@ function loadData(csvText){
   BOOKINGS.sort((a,b)=> b.bookYmd - a.bookYmd);
   // === OPTIMIZATION: indici precalcolati per struttura e struct|room ===
   // Evita iterazioni full BOOKINGS in funzioni che già conoscono la struttura.
-  _BOOKINGS_BY_STRUCT = { firenze:[], condotta:[], alfani:[], davids:[] };
+  _BOOKINGS_BY_STRUCT = { firenze:[], condotta:[], alfani:[], davids:[], nazionale:[], portenuove:[] };
   _BOOKINGS_BY_SR = {};
   for (const b of BOOKINGS){
     const sk = b.structKey;
@@ -1360,7 +1374,7 @@ function fp_postLoadHook(){
       try {
         const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
         const w = {};
-        for (const sk of ['firenze','condotta','alfani','davids']){
+        for (const sk of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
           w[sk] = Object.assign({}, defaults);
         }
         localStorage.setItem('rmes_weights_per_struct_v4', JSON.stringify(w));
@@ -1413,14 +1427,14 @@ function structKeysFor(sel){
   if (sel==='condotta') return [CFG.structures.condotta.key];
   if (sel==='alfani')   return [CFG.structures.alfani.key];
   if (sel==='davids')   return [CFG.structures.davids.key];
-  return [CFG.structures.firenze.key, CFG.structures.condotta.key, CFG.structures.alfani.key, CFG.structures.davids.key];
+  return [CFG.structures.firenze.key, CFG.structures.condotta.key, CFG.structures.alfani.key, CFG.structures.davids.key, CFG.structures.nazionale.key, CFG.structures.portenuove.key];
 }
 function structRoomsFor(sel){
   if (sel==='firenze')  return CFG.structures.firenze.rooms;
   if (sel==='condotta') return CFG.structures.condotta.rooms;
   if (sel==='alfani')   return CFG.structures.alfani.rooms;
   if (sel==='davids')   return CFG.structures.davids.rooms;
-  return {...CFG.structures.firenze.rooms, ...CFG.structures.condotta.rooms, ...CFG.structures.alfani.rooms, ...CFG.structures.davids.rooms};
+  return {...CFG.structures.firenze.rooms, ...CFG.structures.condotta.rooms, ...CFG.structures.alfani.rooms, ...CFG.structures.davids.rooms, ...CFG.structures.nazionale.rooms, ...CFG.structures.portenuove.rooms};
 }
 /* Inventario time-aware per Palazzo Alfani:
    - Fino al 31/01/2025: 4 Classic, 4 Superior, 0 Junior Suite, 1 Deluxe (9 camere, JS faceva parte della Classic)
@@ -1441,7 +1455,7 @@ function structRoomsTotal(sel){
   if (sel==='condotta') return CFG.structures.condotta.roomsTotal;
   if (sel==='alfani')   return CFG.structures.alfani.roomsTotal;
   if (sel==='davids')   return CFG.structures.davids.roomsTotal;
-  return CFG.structures.firenze.roomsTotal + CFG.structures.condotta.roomsTotal + CFG.structures.alfani.roomsTotal + CFG.structures.davids.roomsTotal;
+  return CFG.structures.firenze.roomsTotal + CFG.structures.condotta.roomsTotal + CFG.structures.alfani.roomsTotal + CFG.structures.davids.roomsTotal + CFG.structures.nazionale.roomsTotal + CFG.structures.portenuove.roomsTotal;
 }
 /* Budget helpers — fiscal year May 2026 -> Apr 2027.
    ym is YYYYMM (e.g. 202605). 'metric' is 'rev', 'occ', or 'adr'.
@@ -1747,7 +1761,7 @@ function _bookingCurveDataImpl(sel){
   }
   let forecastTotal = 0;
   if (sel === 'both'){
-    for (const sk of ['firenze','condotta','alfani','davids']){
+    for (const sk of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
       forecastTotal += _structForecastTotal(sk);
     }
   } else {
@@ -3185,7 +3199,7 @@ function aggHistorico(sel){
   for (const y of years){
     byYear[y] = { _monthly: {} };
     for (let m=1;m<=12;m++) byYear[y]._monthly[m] = {rn:0, rev:0};
-    for (const sk of [CFG.structures.firenze.key, CFG.structures.condotta.key, CFG.structures.alfani.key, CFG.structures.davids.key]){
+    for (const sk of [CFG.structures.firenze.key, CFG.structures.condotta.key, CFG.structures.alfani.key, CFG.structures.davids.key, CFG.structures.nazionale.key, CFG.structures.portenuove.key]){
       byYear[y][sk] = { rn:0, rev:0, bkSet:new Set(), _prov:{}, _can:{}, _monthly:{} };
       for (let m=1;m<=12;m++) byYear[y][sk]._monthly[m] = {rn:0, rev:0};
     }
@@ -3840,11 +3854,13 @@ function expContext(ymdNum, structSel){
     compAvg = EXPEDIA_DATA.compset_avg_davids ? EXPEDIA_DATA.compset_avg_davids[k] : null;
     searchCur = EXPEDIA_DATA.search_current_davids ? EXPEDIA_DATA.search_current_davids[k] : null;
     searchPrev = EXPEDIA_DATA.search_previous_davids ? EXPEDIA_DATA.search_previous_davids[k] : null;
-  } else { // firenze
+  } else if (structSel === 'firenze'){
     myPrice = EXPEDIA_DATA.firenze ? EXPEDIA_DATA.firenze[k] : null;
     compAvg = EXPEDIA_DATA.compset_avg_firenze ? EXPEDIA_DATA.compset_avg_firenze[k] : null;
     searchCur = EXPEDIA_DATA.search_current[k];
     searchPrev = EXPEDIA_DATA.search_previous[k];
+  } else { // nazionale / portenuove: no Expedia data → factors D·Online & E·Search go n/a
+    myPrice = null; compAvg = null; searchCur = null; searchPrev = null;
   }
   myPrice = _sanePrice(myPrice);
   compAvg = _sanePrice(compAvg);
@@ -4030,7 +4046,7 @@ let SELL_RMES_W_ALL = (function(){
       const out = {};
       const migKey = 'rmes_weights_migration_v5';
       const needsMig = !localStorage.getItem(migKey);
-      for (const s of ['firenze','condotta','alfani','davids']){
+      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         const p = parsed[s] || {};
         if (needsMig && p.budget != null && p.budget > 0){
           const budgetW = p.budget;
@@ -4063,7 +4079,7 @@ let SELL_RMES_W_ALL = (function(){
     if (oldRawV3){
       const parsed = JSON.parse(oldRawV3);
       const out = {};
-      for (const s of ['firenze','condotta','alfani','davids']){
+      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         out[s] = Object.assign({}, SELL_RMES_W_DEFAULT, parsed[s] || {});
       }
       return out;
@@ -4072,7 +4088,7 @@ let SELL_RMES_W_ALL = (function(){
     if (oldRawV2){
       const parsed = JSON.parse(oldRawV2);
       const out = {};
-      for (const s of ['firenze','condotta','alfani','davids']){
+      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         const old = parsed[s] || {};
         const sumOld = (old.occ||0)+(old.price||0)+(old.pace||0)+(old.comp||0)+(old.airdna||0);
         if (sumOld > 0){
@@ -4095,7 +4111,7 @@ let SELL_RMES_W_ALL = (function(){
     if (oldRaw){
       const oldW = JSON.parse(oldRaw);
       const seed = Object.assign({}, SELL_RMES_W_DEFAULT, oldW);
-      return { firenze: Object.assign({}, seed), condotta: Object.assign({}, seed), alfani: Object.assign({}, seed), davids: Object.assign({}, seed) };
+      return { firenze: Object.assign({}, seed), condotta: Object.assign({}, seed), alfani: Object.assign({}, seed), davids: Object.assign({}, seed), nazionale: Object.assign({}, seed), portenuove: Object.assign({}, seed) };
     }
   } catch(e){}
   return {
@@ -4116,7 +4132,7 @@ let SELL_RMES_W_ALL = (function(){
     // (price > 0 o occ ≠ 0.25) li forzo ai nuovi default. Questo gestisce il caso Firebase Cloud
     // che ripristina pesi vecchi sovrascrivendo la migrazione locale.
     let needsForce = false;
-    for (const s of ['firenze','condotta','alfani','davids']){
+    for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
       const p = SELL_RMES_W_ALL[s];
       if (!p) continue;
       if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
@@ -4125,7 +4141,7 @@ let SELL_RMES_W_ALL = (function(){
     }
     const hadFlag = !!localStorage.getItem(flagKey);
     if (!hadFlag || needsForce){
-      for (const s of ['firenze','condotta','alfani','davids']){
+      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
       }
       localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL));
@@ -4215,7 +4231,7 @@ let RMES_TH_ALL = (function(){
     if (raw){
       const parsed = JSON.parse(raw);
       const out = emptyAll();
-      for (const s of ['firenze','condotta','alfani','davids']){
+      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         if (parsed[s]){
           for (const k of ['occ','price','pace','budget','comp','airdna']){
             if (parsed[s][k]) out[s][k] = Object.assign({}, RMES_TH_DEFAULT[k], parsed[s][k]);
@@ -4228,7 +4244,7 @@ let RMES_TH_ALL = (function(){
     if (oldRawV2){
       const parsed = JSON.parse(oldRawV2);
       const out = emptyAll();
-      for (const s of ['firenze','condotta','alfani','davids']){
+      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         if (parsed[s]){
           for (const k of ['occ','price','pace','comp','airdna']){
             if (parsed[s][k]) out[s][k] = Object.assign({}, RMES_TH_DEFAULT[k], parsed[s][k]);
@@ -4653,7 +4669,7 @@ function _rmesPickupGetAll(){
     if (raw){
       const parsed = JSON.parse(raw);
       const out = {};
-      for (const s of ['firenze','condotta','alfani','davids']){
+      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         const arr = parsed[s];
         if (Array.isArray(arr) && arr.length === 5) out[s] = arr.map(t => ({ upTo:+t.upTo, dev:+t.dev }));
         else out[s] = RMES_PICKUP_THR_DEFAULT.map(t => ({...t}));
@@ -6011,6 +6027,8 @@ function renderBasePriceBreakdown(){
     { v:'condotta', label:'Condotta 16', color:'#3d7a4b' },
     { v:'alfani', label:'Palazzo Alfani', color:'#8e5fa8' },
     { v:'davids', label:'Enis Guesthouse', color:'#c0392b' },
+    { v:'nazionale', label:'Nazionale 35', color:'#d18b2c' },
+    { v:'portenuove', label:'Porte Nuove', color:'#3f7d78' },
   ];
   if (pillsEl && !pillsEl.dataset.wired){
     pillsEl.dataset.wired = '1';
@@ -6054,7 +6072,7 @@ function renderBasePriceBreakdown(){
   if (refreezeBtn && !refreezeBtn.dataset.wired){
     refreezeBtn.dataset.wired = '1';
     refreezeBtn.addEventListener('click', () => {
-      const structs = (BP_BREAKDOWN_STATE.struct === 'all') ? ['firenze','condotta','alfani','davids'] : [BP_BREAKDOWN_STATE.struct];
+      const structs = (BP_BREAKDOWN_STATE.struct === 'all') ? ['firenze','condotta','alfani','davids','nazionale','portenuove'] : [BP_BREAKDOWN_STATE.struct];
       const fI = document.getElementById('bp-date-from'), tI = document.getElementById('bp-date-to');
       const f = fI ? fI.value : '', t = tI ? tI.value : '';
       if (!f || !t) return;
@@ -6075,9 +6093,9 @@ function renderBasePriceBreakdown(){
     return;
   }
   const structsToShow = (BP_BREAKDOWN_STATE.struct === 'all')
-    ? ['firenze','condotta','alfani','davids']
+    ? ['firenze','condotta','alfani','davids','nazionale','portenuove']
     : [BP_BREAKDOWN_STATE.struct];
-  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
+  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', nazionale:'Nazionale 35 Apartments', portenuove:'Porte Nuove Apartments' };
 
   const rows = [];
   for (const sk of structsToShow){
@@ -6290,7 +6308,7 @@ function _bpExportCSV(){
 let _RMES_LAST_ROWS = [];
 function _rmesCollectRows(structsToShow, dFrom, dTo){
   const out = [];
-  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
+  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', nazionale:'Nazionale 35 Apartments', portenuove:'Porte Nuove Apartments' };
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const todayN = today.getFullYear()*10000 + (today.getMonth()+1)*100 + today.getDate();
   // Clamp: RMES ha senso solo da oggi in avanti
@@ -6586,8 +6604,8 @@ function _expBuildSnapshot(){
   today.setDate(today.getDate() - 7);
   const minYmd = today.toISOString().slice(0,10);
   const snap = {};
-  const structs = ['firenze','condotta','alfani','davids'];
-  const myField = { firenze:'firenze', condotta:'condotta', alfani:'alfani', davids:'davids' };
+  const structs = ['firenze','condotta','alfani','davids','nazionale','portenuove'];
+  const myField = { firenze:'firenze', condotta:'condotta', alfani:'alfani', davids:'davids', nazionale:'nazionale', portenuove:'portenuove' };
   const compField = {
     firenze:  'competitors_firenze',
     condotta: 'competitors',
@@ -6713,7 +6731,7 @@ function expedia_formatAlertsHtml(alerts){
   if (!alerts || alerts.length === 0){
     return `<h4>Expedia price changes (vs previous load)</h4><p><span class="pill-sev success">OK</span>No significant variations ≥ ±${(EXP_ALERT_THRESHOLD*100).toFixed(0)}%.</p>`;
   }
-  const propLabel = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
+  const propLabel = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', nazionale:'Nazionale 35 Apartments', portenuove:'Porte Nuove Apartments' };
   // Count up / down
   let up = 0, down = 0;
   for (const a of alerts){ if (a.dev > 0) up++; else down++; }
@@ -6760,6 +6778,8 @@ const ASSISTANT_PROPS = {
   condotta: { label: 'Condotta 16',       keys: ['condotta','condotta 16','condotta16'] },
   alfani:   { label: 'Palazzo Alfani',    keys: ['alfani','palazzo','palazzo alfani'] },
   davids:   { label: 'Enis Guesthouse',   keys: ['davids','david\'s','david','enis','guesthouse'] },
+  nazionale:{ label: 'Nazionale 35 Apartments', keys: ['nazionale','nazionale 35','naz'] },
+  portenuove:{ label: 'Porte Nuove Apartments', keys: ['portenuove','porte nuove','porta nuova','porte'] },
 };
 
 const ASSISTANT_MONTHS_IT_EN = {
@@ -6871,7 +6891,7 @@ const ASSISTANT_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','
 function _assistantPropList(parsed){
   // If property specified, only that one; otherwise all 4.
   if (parsed.property) return [parsed.property];
-  return ['firenze','condotta','alfani','davids'];
+  return ['firenze','condotta','alfani','davids','nazionale','portenuove'];
 }
 
 function _assistantPropCapacity(sk){
@@ -6938,7 +6958,7 @@ function assistantHandleAnomalies(parsed){
   // Compact inline anomaly scan: limited to 90 days forward, all properties.
   const TODAY = new Date(); TODAY.setHours(0,0,0,0);
   const TODAY_N = TODAY.getFullYear()*10000 + (TODAY.getMonth()+1)*100 + TODAY.getDate();
-  const props = parsed.property ? [parsed.property] : ['firenze','condotta','alfani','davids'];
+  const props = parsed.property ? [parsed.property] : ['firenze','condotta','alfani','davids','nazionale','portenuove'];
   const anomalies = [];
   for (const sk of props){
     const baseRTKey = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
@@ -7304,9 +7324,9 @@ function _assistantChannelMix(sk, year, month){
 
 function _assistantBuildContext(parsed){
   const L = [];
-  const props = parsed.property ? [parsed.property] : ['firenze','condotta','alfani','davids'];
+  const props = parsed.property ? [parsed.property] : ['firenze','condotta','alfani','davids','nazionale','portenuove'];
   L.push('STRUCTURES (config):');
-  for (const sk of ['firenze','condotta','alfani','davids']){
+  for (const sk of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
     try {
       const lbl = ASSISTANT_PROPS[sk].label;
       const rooms = (typeof structRoomsFor==='function') ? (structRoomsFor(sk)||{}) : {};
@@ -7610,7 +7630,7 @@ function assistantInit(){
   // Update context label
   const ctxEl = document.getElementById('chat-ctx');
   if (ctxEl){
-    const propMap = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', both:'All properties' };
+    const propMap = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', nazionale:'Nazionale 35 Apartments', portenuove:'Porte Nuove Apartments', both:'All properties' };
     const ctx = propMap[CURRENT_STRUCT] || CURRENT_STRUCT;
     ctxEl.textContent = 'Context: ' + ctx;
   }
@@ -7622,7 +7642,7 @@ function assistantInit(){
       if (panel.classList.contains('open')){
         // Refresh context on each open
         if (ctxEl){
-          const propMap = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', both:'All properties' };
+          const propMap = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', nazionale:'Nazionale 35 Apartments', portenuove:'Porte Nuove Apartments', both:'All properties' };
           ctxEl.textContent = 'Context: ' + (propMap[CURRENT_STRUCT] || CURRENT_STRUCT);
         }
         setTimeout(() => { try { input.focus(); } catch(e){} }, 50);
@@ -7768,7 +7788,7 @@ function renderCheckUpdates(){
   // Property filter
   h += '<div style="display:flex;flex-direction:column;gap:4px"><label style="font-size:10.5px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Property</label>';
   h += '<select id="chk-flt-struct" style="padding:5px 8px;border:1px solid #c9b896;border-radius:4px;font-size:12px;background:#fff;min-width:150px">';
-  for (const p of [['all','All properties'],['firenze','Firenze Suite'],['condotta','Condotta 16'],['alfani','Palazzo Alfani'],['davids','Enis Guesthouse']]){
+  for (const p of [['all','All properties'],['firenze','Firenze Suite'],['condotta','Condotta 16'],['alfani','Palazzo Alfani'],['davids','Enis Guesthouse'],['nazionale','Nazionale 35'],['portenuove','Porte Nuove']]){
     h += `<option value="${p[0]}"${f.structKey===p[0]?' selected':''}>${p[1]}</option>`;
   }
   h += '</select></div>';
@@ -7968,7 +7988,7 @@ function renderRmesBreakdown(){
   }
   const structsToShow = (typeof BP_BREAKDOWN_STATE !== 'undefined' && BP_BREAKDOWN_STATE.struct && BP_BREAKDOWN_STATE.struct !== 'all')
     ? [BP_BREAKDOWN_STATE.struct]
-    : ['firenze','condotta','alfani','davids'];
+    : ['firenze','condotta','alfani','davids','nazionale','portenuove'];
   const rows = _rmesCollectRows(structsToShow, dFrom, dTo);
   _RMES_LAST_ROWS = rows;
   if (!rows.length){
@@ -8506,7 +8526,7 @@ function fp_estimateElasticity(structKey){
     method: 'pickup-window v2',
   };
 }
-const FP_OTA_MARKUP_DEFAULTS = { firenze: 12, condotta: 12, alfani: 12, davids: 12 };
+const FP_OTA_MARKUP_DEFAULTS = { firenze: 12, condotta: 12, alfani: 12, davids: 12, nazionale: 12, portenuove: 12 };
 const FP_CHANNEL_MARKUP_KEY = 'rmes_channel_markup_v1';
 const FP_LMF_KEY = 'rmes_lastminute_factor_v1';
 const FP_LMF_OCC_BANDS = [10,20,30,40,50,60,70,80,100];
@@ -8912,7 +8932,7 @@ function fp_auditAggregate(records){
   }
   return { nTot, nWinRmes, nWinOvr, nPari, nNd, deltaTot };
 }
-const FP_BASE_PRICE_DEFAULTS = { firenze: 220, condotta: 280, alfani: 270, davids: 145 };
+const FP_BASE_PRICE_DEFAULTS = { firenze: 220, condotta: 280, alfani: 270, davids: 145, nazionale: 130, portenuove: 120 };
 function fp_getBasePrice(structKey){
   try {
     const raw = localStorage.getItem(FP_BASE_PRICE_KEY);
@@ -8948,7 +8968,7 @@ function fp_setTargetGrowth(structKey, month, pct){
   localStorage.setItem(FP_TARGET_GROWTH_KEY, JSON.stringify(obj));
 }
 function fp_getFloor(structKey){
-  const FLOOR_DEFAULTS = { condotta: 200, alfani: 200, firenze: 150, davids: 100 };
+  const FLOOR_DEFAULTS = { condotta: 200, alfani: 200, firenze: 150, davids: 100, nazionale: 85, portenuove: 80 };
   try {
     const raw = localStorage.getItem(FP_FLOOR_KEY);
     if (raw){
@@ -9032,13 +9052,15 @@ function fp_getCompetitorsForStruct(structKey){
   const compMap = (structKey === 'alfani') ? EXPEDIA_DATA.competitors_alfani
                  : (structKey === 'firenze') ? EXPEDIA_DATA.competitors_firenze
                  : (structKey === 'davids') ? EXPEDIA_DATA.competitors_davids
-                 : EXPEDIA_DATA.competitors;
+                 : (structKey === 'condotta') ? EXPEDIA_DATA.competitors : null;
   return compMap ? Object.keys(compMap) : [];
 }
 function fp_structName(structKey){
   return (structKey === 'condotta') ? 'Condotta 16'
        : (structKey === 'alfani')   ? 'Palazzo Alfani'
        : (structKey === 'davids')   ? "Florence David's Apartament"
+       : (structKey === 'nazionale') ? 'Nazionale 35 Apartments'
+       : (structKey === 'portenuove')? 'Porte Nuove Apartments'
        : 'Firenze Suite';
 }
 function fp_ratioForStruct(structKey){
@@ -9464,7 +9486,7 @@ function fp_computeMarketCap(structKey, targetDateISO, daysToArrival){
   const compMap = (structKey === 'alfani') ? EXPEDIA_DATA.competitors_alfani
                 : (structKey === 'firenze') ? EXPEDIA_DATA.competitors_firenze
                 : (structKey === 'davids') ? EXPEDIA_DATA.competitors_davids
-                : EXPEDIA_DATA.competitors;
+                : (structKey === 'condotta') ? EXPEDIA_DATA.competitors : null;
   if (!compMap) return null;
   const divisor = fp_expToBeddyDivisor(structKey);
   let weightedSum = 0, weightSum = 0;
@@ -9713,7 +9735,7 @@ function fp_isStructComputed(sk){
 }
 function fp_ensureStruct(sk){
   if (sk === 'both'){
-    for (const k of ['firenze','condotta','alfani','davids']) if (!fp_isStructComputed(k)) fp_computeStruct(k);
+    for (const k of ['firenze','condotta','alfani','davids','nazionale','portenuove']) if (!fp_isStructComputed(k)) fp_computeStruct(k);
     return;
   }
   if (!fp_isStructComputed(sk)) fp_computeStruct(sk);
@@ -11130,7 +11152,7 @@ function _sellCompRank(structKey, iso, myExpedia){
   const compMap = (structKey === 'alfani') ? EXPEDIA_DATA.competitors_alfani
                 : (structKey === 'firenze') ? EXPEDIA_DATA.competitors_firenze
                 : (structKey === 'davids') ? EXPEDIA_DATA.competitors_davids
-                : EXPEDIA_DATA.competitors;
+                : (structKey === 'condotta') ? EXPEDIA_DATA.competitors : null;
   if (!compMap) return null;
   const prices = [];
   for (const cn in compMap){ const v = compMap[cn] ? compMap[cn][iso] : null; if (v != null && isFinite(v) && v >= 10) prices.push(v); }
@@ -11420,7 +11442,7 @@ function renderSellStrategy(sel){
   const _cfBtn = document.getElementById('sell-compute-foundation');
   if (_cfBtn){
     const _isComp = (sel === 'both')
-      ? ['firenze','condotta','alfani','davids'].every(function(k){ return fp_isStructComputed(k); })
+      ? ['firenze','condotta','alfani','davids','nazionale','portenuove'].every(function(k){ return fp_isStructComputed(k); })
       : fp_isStructComputed(sel);
     if (_isComp){
       _cfBtn.textContent = '✓ Base Price ready';
@@ -12590,7 +12612,7 @@ function renderSellStrategy(sel){
     const all = fp_getOverrides();
     const today = new Date(TODAY); today.setHours(0,0,0,0);
     const todayYmd = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-    const structKeysCheck = sel === 'both' ? ['firenze','condotta','alfani','davids'] : [sel];
+    const structKeysCheck = sel === 'both' ? ['firenze','condotta','alfani','davids','nazionale','portenuove'] : [sel];
     let totDelta = 0, nValid = 0, nVintoOvr = 0, nVintoRMES = 0;
     for (const sk of structKeysCheck){
       const o = all[sk]; if (!o) continue;
@@ -13142,6 +13164,8 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
   _structFullToShort[CFG.structures.condotta.key] = 'condotta';
   _structFullToShort[CFG.structures.alfani.key]   = 'alfani';
   _structFullToShort[CFG.structures.davids.key]   = 'davids';
+  _structFullToShort[CFG.structures.nazionale.key]  = 'nazionale';
+  _structFullToShort[CFG.structures.portenuove.key] = 'portenuove';
   function bumpByStruct(map, mk, structFullKey, rn, rev){
     const sk = _structFullToShort[structFullKey];
     if (!sk) return;
@@ -13309,9 +13333,9 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
     })() : '—';
     const tip = `${d.label}\n─────────────────\nPickup OTB:  ${d.curRn} RN · ${fmtEUR(d.curRev)}\n  top day: ${curPeakStr}\nPickup STLY: ${d.styRn} RN · ${fmtEUR(d.styRev)}\n  top day: ${styPeakOrigStr}\nΔ RN:        ${deltaSign}${d.deltaRn}\nΔ Revenue:   ${d.deltaRev >= 0 ? '+' : ''}${fmtEUR(d.deltaRev)}${(function(){
       if (!d.curByStruct && !d.styByStruct) return '';
-      const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
+      const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse", nazionale: "Nazionale 35 Apartments", portenuove: "Porte Nuove Apartments" };
       let s = '\n─────────────────\nBreakdown by property:';
-      for (const sk of ['firenze','condotta','alfani','davids']){
+      for (const sk of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         const cs = (d.curByStruct && d.curByStruct[sk]) || {rn:0,rev:0};
         const ss = (d.styByStruct && d.styByStruct[sk]) || {rn:0,rev:0};
         if (cs.rn === 0 && ss.rn === 0) continue;
@@ -16430,11 +16454,11 @@ function renderRMESConfigTab(){
   }
   const chipEl = document.getElementById('rmes-struct-chip');
   if (chipEl){
-    const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
+    const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse", nazionale: "Nazionale 35 Apartments", portenuove: "Porte Nuove Apartments" };
     chipEl.textContent = labels[sel] || sel;
   }
-  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
-  const colors = { firenze: '#3b6b9a', condotta: '#3d7a4b', alfani: '#8e5fa8', davids: '#c0392b' };
+  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse", nazionale: "Nazionale 35 Apartments", portenuove: "Porte Nuove Apartments" };
+  const colors = { firenze: '#3b6b9a', condotta: '#3d7a4b', alfani: '#8e5fa8', davids: '#c0392b', nazionale: '#d18b2c', portenuove: '#3f7d78' };
   const lblName = labels[sel] || sel;
   const lblCol = colors[sel] || '#5a5a5a';
   const sublabel = '✏️ editing: ' + lblName;
@@ -16516,7 +16540,7 @@ function _renderRmesWeightsBox(sel){
     resetBtnAll._wired = true;
     resetBtnAll.onclick = () => {
       if (!confirm("Reset weights to 20% × 5 factors for ALL properties?")) return;
-      for (const s of ['firenze','condotta','alfani','davids']){
+      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
         SELL_RMES_W_ALL[s] = Object.assign({}, SELL_RMES_W_DEFAULT);
       }
       saveRmesWeights();
@@ -16588,7 +16612,7 @@ function _rmesTabApplyWeights(sel){
 function _renderRmesPickupThresholdsBox(sel){
   const wrap = document.getElementById('rmes-tab-pkthr-bar');
   if (!wrap) return;
-  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse" };
+  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse", nazionale: "Nazionale 35 Apartments", portenuove: "Porte Nuove Apartments" };
   const subEl = document.getElementById('rmes-tab-pkthr-sub');
   if (subEl) subEl.textContent = 'property: ' + (labels[sel] || sel);
   const thr = _rmesPickupGet(sel);
@@ -16954,7 +16978,7 @@ function _renderRmesEventsBox(){
 function _renderRmesPromosBox(sel){
   const wrap = document.getElementById('rmes-promos-wrap');
   if (!wrap) return;
-  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse' };
+  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', nazionale:'Nazionale 35 Apartments', portenuove:'Porte Nuove Apartments' };
   const lbl = structLabels[sel] || sel;
   const list = _getPromosForStruct(sel);
   const _todayN = (typeof TODAY_YMD !== 'undefined') ? TODAY_YMD : 0;
@@ -17211,7 +17235,7 @@ const NOTES_STRUCT_LABELS = {
   firenze: 'Firenze Suite',
   condotta: 'Condotta 16',
   alfani: 'Palazzo Alfani',
-  davids: "Enis Guesthouse",
+  davids: "Enis Guesthouse", nazionale: "Nazionale 35 Apartments", portenuove: "Porte Nuove Apartments",
   both: 'All properties',
 };
 /* Format timestamp italiano */
@@ -19116,7 +19140,7 @@ function _bigCompsetRankOne(sk, horizonDays){
 }
 function _bigCompsetRank(sel, horizonDays){
   if (sel !== 'both') return _bigCompsetRankOne(sel, horizonDays);
-  const keys = ['firenze','condotta','alfani','davids'];
+  const keys = ['firenze','condotta','alfani','davids','nazionale','portenuove'];
   let rankSum=0, totSum=0, gapSum=0, n=0, gn=0;
   for (const k of keys){
     const r = _bigCompsetRankOne(k, horizonDays);

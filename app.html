@@ -386,7 +386,7 @@ main{flex:1;padding:8px 16px 24px}
    + 5 RMES factors; room categories ordered by price; monthly overview with OTB big
    + STLY / LY / Forecast small for Revenue, ADR and Occupancy. */
 const MOB = { struct:'firenze', winStart:null, tab:'days', lastDay:null, lastRow:null, monthView:'otb', monthPast:false };
-const MOB_STRUCTS = ['firenze','condotta','alfani','davids'];
+const MOB_STRUCTS = ['firenze','condotta','alfani','davids','nazionale','portenuove'];
 const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MO_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MO_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -409,7 +409,8 @@ function mobCompsetAvg(sk, iso){
   if(sk==='condotta') m=EXPEDIA_DATA.compset_avg;
   else if(sk==='alfani') m=EXPEDIA_DATA.compset_avg_alfani;
   else if(sk==='davids') m=EXPEDIA_DATA.compset_avg_davids;
-  else m=EXPEDIA_DATA.compset_avg_firenze;
+  else if(sk==='firenze') m=EXPEDIA_DATA.compset_avg_firenze;
+  else return null;  // nazionale/portenuove: no Expedia compset
   const v=m?m[iso]:null; return (v!=null&&isFinite(v)&&v>0)?v:null;
 }
 function mobCompetitors(sk){
@@ -417,7 +418,8 @@ function mobCompetitors(sk){
   if(sk==='condotta') return EXPEDIA_DATA.competitors;
   if(sk==='alfani') return EXPEDIA_DATA.competitors_alfani;
   if(sk==='davids') return EXPEDIA_DATA.competitors_davids;
-  return EXPEDIA_DATA.competitors_firenze;
+  if(sk==='firenze') return EXPEDIA_DATA.competitors_firenze;
+  return null;  // nazionale/portenuove
 }
 function mobCompBand(sk, iso){
   const cm=mobCompetitors(sk); if(!cm) return null;
