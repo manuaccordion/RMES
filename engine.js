@@ -800,21 +800,21 @@ const CFG = {
                 rooms:{'Verde':1,'Senape':1,'Blu':1},
                 baseRT:'Senape',
                 roomsTotal:3, rnYear:1095,
-                budgetIsForecast:true,
+                budgetIsForecast:true, forecastGrowth:1.08,
                 budgetTotal:0,
                 budgetByMonth:{} },
     nazionale:{ key:"Nazionale 35 Apartments", label:"Nazionale 35 Apartments", color:'#d18b2c',
                 rooms:{'Cupola':1,'Uffizi':1},
                 baseRT:'Cupola',
                 roomsTotal:2, rnYear:730,
-                budgetIsForecast:true,
+                budgetIsForecast:true, forecastGrowth:1.05,
                 budgetTotal:0,
                 budgetByMonth:{} },
     portenuove:{ key:"Porte Nuove Apartments", label:"Porte Nuove Apartments", color:'#3f7d78',
                 rooms:{'Palazzo Pitti':1,'Ponte Vecchio':1,'Palazzo Vecchio':1},
                 baseRT:'Palazzo Pitti',
                 roomsTotal:3, rnYear:1095,
-                budgetIsForecast:true,
+                budgetIsForecast:true, forecastGrowth:1.05,
                 budgetTotal:0,
                 budgetByMonth:{} },
   },
@@ -1455,15 +1455,18 @@ function structRoomsTotal(sel){
    For 'both', revenues sum, OCC and ADR are weighted by rooms × days_in_month. */
 /* David's budget = FORECAST: revenue confermato LY (stesso mese, anno precedente) × growth.
    Calcolato on-the-fly dai BOOKINGS storici. metric: 'rev' | 'occ' | 'adr'. */
-function _davidsBudgetForecast(ym, metric){
+function _forecastBudget(sel, ym, metric){
   metric = metric || 'rev';
+  const st = CFG.structures[sel];
+  if (!st) return 0;
+  const growth = (st.forecastGrowth != null && isFinite(st.forecastGrowth)) ? st.forecastGrowth : 1.08;
   const y = Math.floor(ym/100), m = ym%100;
   const lyY = y - 1;
   const dim = new Date(y, m, 0).getDate();
-  const cap = CFG.structures.davids.roomsTotal * dim;  // room-nights disponibili nel mese
+  const cap = st.roomsTotal * dim;  // room-nights disponibili nel mese
   let revLY = 0, rnLY = 0;
   for (const b of BOOKINGS){
-    if (b.structKey !== 'davids') continue;
+    if (b.structKey !== sel) continue;
     if (b.cancelled) continue;
     const din = b.dIn, nights = b.notti;
     if (!din || !nights) continue;
@@ -1476,10 +1479,10 @@ function _davidsBudgetForecast(ym, metric){
       }
     }
   }
-  const revFc = revLY * _DAVIDS_BUDGET_GROWTH;
+  const revFc = revLY * growth;
   if (metric==='rev') return revFc;
-  if (metric==='occ') return cap>0 ? Math.min(1, (rnLY*_DAVIDS_BUDGET_GROWTH)/cap) : 0;
-  if (metric==='adr') return rnLY>0 ? revFc/(rnLY*_DAVIDS_BUDGET_GROWTH) : 0;
+  if (metric==='occ') return cap>0 ? Math.min(1, (rnLY*growth)/cap) : 0;
+  if (metric==='adr') return rnLY>0 ? revFc/(rnLY*growth) : 0;
   return 0;
 }
 function budgetMonthlyFor(sel, ym, metric){
@@ -1509,7 +1512,7 @@ function budgetMonthlyFor(sel, ym, metric){
     return 0;
   }
   if (sel==='davids' || (CFG.structures[sel] && CFG.structures[sel].budgetIsForecast)){
-    return _davidsBudgetForecast(ym, metric);
+    return _forecastBudget(sel, ym, metric);
   }
   const f = CFG.structures[sel].budgetByMonth[ym];
   if (!f) return 0;
@@ -1521,7 +1524,7 @@ function budgetTotalFor(sel){
     let tot = 0;
     let ym = CFG.fiscal.startYM;
     for (let i=0;i<16;i++){
-      tot += _davidsBudgetForecast(ym, 'rev');
+      tot += _forecastBudget(sel, ym, 'rev');
       const y=Math.floor(ym/100), m=ym%100;
       ym = (m===12) ? (y+1)*100+1 : ym+1;
     }
