@@ -5845,10 +5845,13 @@ function newrmesCalculateBasePrice(structKey, isoDate){
     } catch(e){}
   }
   // Anchor Mensile guard-rail: ±50% dall'Anchor Mensile (non più annuale)
+  const _easterDay = !!(anchor && anchor.easterAligned);
   const minAnchor = monthlyAnchor * 0.5;
   const maxAnchor = monthlyAnchor * 1.5;
   if (price < minAnchor) price = minAnchor;
-  if (price > maxAnchor) price = maxAnchor;
+  // Giorni pasquali (settimana santa): l'anchor storico è legittimamente alto (premio Pasqua),
+  // quindi NON cappo l'upside col guard-rail mensile normale. Restano Floor e Goal Value cap.
+  if (!_easterDay && price > maxAnchor) price = maxAnchor;
   // Step 5: Floor (hard minimum)
   if (price < floor) price = floor;
   return Math.round(price);
@@ -5893,17 +5896,19 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
     else if (goalValue < floor) goalUnreliableReason = 'Goal Value (€'+Math.round(goalValue)+') below Floor Rate (€'+floor+')';
   }
   if (goalReliable && price > goalValue){ price = goalValue; cappedByGoal = true; }
-  // Anchor Mensile guard-rail ±50%
+  // Anchor Mensile guard-rail ±50% (upside NON applicato nei giorni pasquali)
+  const _easterDay = !!(anchor && anchor.easterAligned);
   const minAnchor = monthlyAnchor * 0.5;
   const maxAnchor = monthlyAnchor * 1.5;
   let guardRail = null;
   if (price < minAnchor){ price = minAnchor; guardRail = 'min'; }
-  else if (price > maxAnchor){ price = maxAnchor; guardRail = 'max'; }
+  else if (!_easterDay && price > maxAnchor){ price = maxAnchor; guardRail = 'max'; }
   // Floor
   let flooredBy = false;
   if (price < floor){ price = floor; flooredBy = true; }
   return {
     isoDate,
+    easterAligned: _easterDay,
     lyMedianADR: adrLY > 0 ? Math.round(adrLY) : null,
     lyObs: anchor ? anchor.nObs : 0,
     lyFallback: anchor ? anchor.fallbackUsed : 'none',
@@ -6152,7 +6157,9 @@ function renderBasePriceBreakdown(){
     }
     // --- Tooltip obs ---
     let obsTip;
-    if (r.lyFallback === 'dayMatch'){
+    if (r.lyFallback === 'easter'){
+      obsTip = 'Easter alignment (Holy Week). ' + (r.lySetDesc || 'Compared to the equivalent Easter days of the two previous years') + '. Bookings (room-stays): ' + r.lyObs + '. The calendar-date/weekday method would compare against non-Easter days and miss the Easter premium.';
+    } else if (r.lyFallback === 'dayMatch'){
       obsTip = 'Same-day-LY method won. Considered: ' + (r.lySetDesc||'same day & month, 2024+2025') + '. Bookings (room-stays, not days): ' + r.lyObs + '.';
     } else if (r.lyFallback === 'monthWide'){
       obsTip = 'Weekday/month method won, but widened to ALL days of the month (fewer than 3 bookings on the exact weekday). Considered: ' + (r.lySetDesc||'whole month') + '. Bookings: ' + r.lyObs + '.';
@@ -6205,7 +6212,8 @@ function renderBasePriceBreakdown(){
     const adrUsedTxt = '€'+r.adrUsed + (r.adrUsedFromAnchor ? ' (anchor)' : '');
     h += '<tr style="border-bottom:1px solid #f0eee9">';
     h += `<td style="padding:6px 9px;text-align:left;white-space:nowrap;color:#666;border-bottom:1px solid #f0eee9">${r.structLabel}</td>`;
-    h += `<td style="padding:6px 9px;text-align:left;white-space:nowrap;font-family:'DM Mono',monospace;border-bottom:1px solid #f0eee9">${dmy}</td>`;
+    const _eBadge = r.easterAligned ? ` <span title="Holy Week — Easter-aligned reference.&#10;This day is compared to the equivalent Easter days of the two previous years (moved to match Easter, not the calendar date), and Easter days are excluded from the reference of the surrounding normal days.&#10;The monthly guard-rail upside is lifted so the Easter premium comes through." style="cursor:help;font-size:11px">🐣</span>` : '';
+    h += `<td style="padding:6px 9px;text-align:left;white-space:nowrap;font-family:'DM Mono',monospace;border-bottom:1px solid #f0eee9">${dmy}${_eBadge}</td>`;
     h += `<td style="padding:6px 9px;text-align:right;color:#999;border-bottom:1px solid #f0eee9">${dow}</td>`;
     h += `<td title="${escapeHtml(lyTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;cursor:help;border-bottom:1px solid #f0eee9">${lyTxt}</td>`;
     h += `<td title="${escapeHtml(obsTip)}" style="padding:6px 9px;text-align:right;color:#999;cursor:help;border-bottom:1px solid #f0eee9">${r.lyObs}${r.lyFallback==='monthWide'?'*':''}</td>`;
@@ -9113,13 +9121,47 @@ function _globalSupplementForRT(structKey, rt, month){
 }
 /* 3.1 + 3.2: Ancora storica (mediana ADR/RN, fallback mese intero) */
 let _ANCHOR_LY_CACHE = {};  // cache di fp_computeAnchorLY, keyed su struct|rt|mese|dow (invalidata al reload dati)
+/* ============================================================
+   PASQUA (feste mobili) — allineamento anno-su-anno
+   Easter shift: Pasqua si sposta ogni anno, quindi il confronto "stesso mese + stesso
+   giorno-settimana" disallinea la settimana santa. Questi helper permettono di mappare
+   i giorni della settimana santa (Giovedì Santo → Domenica di Pasqua) tra anni diversi.
+   ============================================================ */
+function _easterSunday(year){
+  // Anonymous Gregorian algorithm (computus). Ritorna {y,m,d}.
+  const a=year%19, b=Math.floor(year/100), c=year%100, d=Math.floor(b/4), e=b%4,
+        f=Math.floor((b+8)/25), g=Math.floor((b-f+1)/3), h=(19*a+b-d-g+15)%30,
+        i=Math.floor(c/4), k=c%4, l=(32+2*e+2*i-h-k)%7, m=Math.floor((a+11*h+22*l)/451),
+        month=Math.floor((h+l-7*m+114)/31), day=((h+l-7*m+114)%31)+1;
+  return { y: year, m: month, d: day };
+}
+// Offset dalla Domenica di Pasqua se la data è nella finestra Gio-Dom (-3..0), altrimenti null.
+function _easterOffset(dateObj){
+  const es=_easterSunday(dateObj.getFullYear());
+  const sun=new Date(es.y, es.m-1, es.d);
+  const diff=Math.round((dateObj.getTime() - sun.getTime())/86400000);
+  return (diff>=-3 && diff<=0) ? diff : null;
+}
+// ymd della finestra pasquale (Gio..Dom) di un anno.
+function _easterWindowYmds(year){
+  const es=_easterSunday(year); const sun=new Date(es.y, es.m-1, es.d);
+  const out=[];
+  for(let o=-3;o<=0;o++){ const dd=new Date(sun.getFullYear(),sun.getMonth(),sun.getDate()+o); out.push(ymd(dd)); }
+  return out;
+}
+// Data equivalente (stesso offset dalla Domenica di Pasqua) in un altro anno.
+function _easterEquivYmd(year, offset){
+  const es=_easterSunday(year); const sun=new Date(es.y, es.m-1, es.d);
+  const dd=new Date(sun.getFullYear(),sun.getMonth(),sun.getDate()+offset);
+  return ymd(dd);
+}
 function fp_computeAnchorLY(structKey, rt, targetDateISO){
   if (!targetDateISO) return null;
   const _td = new Date(targetDateISO + 'T00:00:00');
   if (isNaN(_td.getTime())) return _fp_computeAnchorLY_impl(structKey, rt, targetDateISO);
   // Cache key: struct|rt|mese|giorno|dow. Il giorno-del-mese è necessario perché
   // ora il calcolo considera anche le osservazioni same-day-LY (stesso giorno+mese).
-  const _ak = structKey + '|' + rt + '|' + (_td.getMonth()+1) + '|' + _td.getDate() + '|' + _td.getDay();
+  const _ak = structKey + '|' + rt + '|' + _td.getFullYear() + '|' + (_td.getMonth()+1) + '|' + _td.getDate() + '|' + _td.getDay();
   if (_ANCHOR_LY_CACHE[_ak] !== undefined) return _ANCHOR_LY_CACHE[_ak];
   const _r = _fp_computeAnchorLY_impl(structKey, rt, targetDateISO);
   _ANCHOR_LY_CACHE[_ak] = _r;
@@ -9133,7 +9175,17 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   const targetDay = td.getDate();
   const targetDow = td.getDay();
   const structName = fp_structName(structKey);
-  const yearsToCheck = [2024, 2025];
+  // Anni di riferimento: i 2 anni precedenti alla data di soggiorno (rollforward).
+  // Per il 2026 → [2024,2025] (invariato vs prima); per il 2027 → [2025,2026] (usa i dati recenti).
+  const targetYear = td.getFullYear();
+  const yearsToCheck = [targetYear - 2, targetYear - 1];
+  const yearsLabel = yearsToCheck.join('+');
+  // Pasqua: se la data è nella settimana santa (Gio→Dom), userò le date pasquali equivalenti
+  // degli anni di riferimento; e in ogni caso escludo le date pasquali degli anni di riferimento
+  // dai pool "stesso giorno/settimana+mese" (così i giorni normali non vengono gonfiati da Pasqua).
+  const _tEasterOff = _easterOffset(td);
+  const _priorEasterYmds = new Set();
+  for (const y of yearsToCheck){ for (const kk of _easterWindowYmds(y)) _priorEasterYmds.add(kk); }
 
   // Helper: raccoglie ADR osservati su un set di giorni permessi
   function _gather(allowedDays){
@@ -9186,12 +9238,39 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
     return { adrObs: adrObs, rnByDay: rnByDay };
   }
 
+  // === Method 0: Easter-aligned (settimana santa) ===
+  // Se la data è Gio–Dom di Pasqua, confronta con le date pasquali EQUIVALENTI degli anni
+  // di riferimento (stesso offset dalla Domenica di Pasqua), non con lo stesso giorno di calendario.
+  if (_tEasterOff != null){
+    const easterDays = new Set();
+    for (const y of yearsToCheck){ easterDays.add(_easterEquivYmd(y, _tEasterOff)); }
+    const eRes = _gather(easterDays);
+    if (eRes.adrObs.length >= 2){
+      const arr = eRes.adrObs.slice().sort(function(a,b){return a-b;});
+      const medEaster = arr[Math.floor(arr.length/2)];
+      const rnVals = Object.values(eRes.rnByDay).sort(function(a,b){return a-b;});
+      const medRN = rnVals.length ? rnVals[Math.floor(rnVals.length/2)] : 0;
+      const _dowN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const _offN = { '-3':'Maundy Thursday','-2':'Good Friday','-1':'Holy Saturday','0':'Easter Sunday' };
+      return {
+        medianADR: medEaster, medianRN: medRN, nObs: eRes.adrObs.length, fallbackUsed: 'easter',
+        easterAligned: true,
+        adrMin: Math.round(arr[0]), adrMax: Math.round(arr[arr.length-1]),
+        setDesc: (_offN[String(_tEasterOff)] || 'Holy Week') + ' — Easter-aligned vs ' + yearsLabel + ' (moved to match Easter week, not the calendar date)',
+        dowName: _dowN[targetDow], monthName: '',
+        _medianSameDay: null, _nObsSameDay: 0, _medianDow: null, _nObsDow: 0, _dowFallback: 'easter'
+      };
+    }
+    // se pochi dati pasquali, prosegue coi metodi normali (sotto)
+  }
+
   // === Method 1: Same-day-LY (stesso giorno+mese, anni LY) ===
   // Es. 31/12/2026 → guarda 31/12/2024 + 31/12/2025.
   // Cattura il premium dei giorni fissi speciali (NYE, Ferragosto, festività).
   const sameDayDays = new Set();
   for (const y of yearsToCheck){
-    sameDayDays.add(ymd(new Date(y, targetMonth-1, targetDay)));
+    const _k = ymd(new Date(y, targetMonth-1, targetDay));
+    if (!_priorEasterYmds.has(_k)) sameDayDays.add(_k);
   }
   const sameDayRes = _gather(sameDayDays);
   let medianSameDay = null;
@@ -9207,7 +9286,7 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   for (const y of yearsToCheck){
     const monthEnd = new Date(y, targetMonth, 0);
     for (let d = new Date(y, targetMonth-1, 1); d <= monthEnd; d.setDate(d.getDate()+1)){
-      if (d.getDay() === targetDow) targetDays.add(ymd(d));
+      if (d.getDay() === targetDow){ const _k=ymd(d); if(!_priorEasterYmds.has(_k)) targetDays.add(_k); }
     }
   }
   if (targetDays.size === 0){
@@ -9220,7 +9299,7 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
     for (const y of yearsToCheck){
       const me = new Date(y, targetMonth, 0);
       for (let d = new Date(y, targetMonth-1, 1); d <= me; d.setDate(d.getDate()+1)){
-        wideDays.add(ymd(d));
+        const _k=ymd(d); if(!_priorEasterYmds.has(_k)) wideDays.add(_k);
       }
     }
     dowRes = _gather(wideDays);
@@ -9258,9 +9337,9 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   const _dowNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const _monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
   let setDesc;
-  if (methodUsed === 'dayMatch') setDesc = (targetDay + ' ' + _monthNames[targetMonth] + ' 2024+2025 (same-day match)');
-  else if (methodUsed === 'monthWide') setDesc = ('all days of ' + _monthNames[targetMonth] + ' 2024+2025');
-  else setDesc = ('every ' + _dowNames[targetDow] + ' of ' + _monthNames[targetMonth] + ' 2024+2025');
+  if (methodUsed === 'dayMatch') setDesc = (targetDay + ' ' + _monthNames[targetMonth] + ' ' + yearsLabel + ' (same-day match)');
+  else if (methodUsed === 'monthWide') setDesc = ('all days of ' + _monthNames[targetMonth] + ' ' + yearsLabel);
+  else setDesc = ('every ' + _dowNames[targetDow] + ' of ' + _monthNames[targetMonth] + ' ' + yearsLabel);
 
   return {
     medianADR: finalMedian, medianRN: medianRN, nObs: winningObs.length, fallbackUsed: methodUsed,
