@@ -1479,6 +1479,35 @@ function _forecastBudget(sel, ym, metric){
       }
     }
   }
+  // Correzione Pasqua (coerente con la colonna Final LY dell'Overview).
+  // Pasqua 2027 = 28/3 (marzo); nel 2026 era il 5/4 (aprile). Sposto la settimana pasquale
+  // (1-5 aprile) tra i mesi LY, così mar/apr 2027 usano il periodo di riferimento giusto.
+  if (y === 2027 && (m === 3 || m === 4)){
+    const _sumRange = (yy, dLo, dHi) => {
+      const lo = yy*10000 + 4*100 + dLo, hi = yy*10000 + 4*100 + dHi;
+      let rv=0, rc=0;
+      for (const b of BOOKINGS){
+        if (b.structKey !== sel || b.cancelled) continue;
+        const din=b.dIn, nights=b.notti; if (!din || !nights) continue;
+        const rpn=(b.revPerNight!=null&&isFinite(b.revPerNight))?b.revPerNight:0;
+        for (let i=0;i<nights;i++){
+          const d=new Date(din.getFullYear(),din.getMonth(),din.getDate()+i);
+          const k=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+          if (k>=lo && k<=hi){ rv+=rpn; rc+=1; }
+        }
+      }
+      return {rev:rv, rn:rc};
+    };
+    const apr26 = _sumRange(2026, 1, 5);   // 1-5 aprile 2026 (settimana pasquale 2026)
+    if (m === 3){                          // Mar 2027 = Mar 2026 + settimana pasquale (aprile 2026)
+      revLY += apr26.rev; rnLY += apr26.rn;
+    } else {                               // Apr 2027 = Apr 2026 − pasqua 2026 + filler non-pasquale (aprile 2025)
+      const apr25 = _sumRange(2025, 1, 5);
+      revLY += (apr25.rev - apr26.rev); rnLY += (apr25.rn - apr26.rn);
+    }
+    if (revLY < 0) revLY = 0;
+    if (rnLY < 0) rnLY = 0;
+  }
   const revFc = revLY * growth;
   if (metric==='rev') return revFc;
   if (metric==='occ') return cap>0 ? Math.min(1, (rnLY*growth)/cap) : 0;
