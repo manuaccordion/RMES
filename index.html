@@ -34,7 +34,7 @@
   --radius:14px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html,body{margin:0;padding:0;background:radial-gradient(1400px 820px at 50% -8%, #f4f9fe 0%, #e6f0f9 52%, #dae7f3 100%) fixed;color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;font-weight:600;letter-spacing:-.01em;margin:0}
 .mono{font-family:'DM Mono',monospace}
 button{font-family:inherit;cursor:pointer}
@@ -42,7 +42,7 @@ button{font-family:inherit;cursor:pointer}
 /* ============ TOPBAR ============ */
 .topbar{
   position:sticky;top:0;z-index:50;
-  background:rgba(244,242,238,.92);
+  background:rgba(233,242,251,.78);
   backdrop-filter:saturate(140%) blur(10px);
   -webkit-backdrop-filter:saturate(140%) blur(10px);
   border-bottom:1px solid var(--line);
@@ -1389,10 +1389,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand">
-      <span class="brand-mark">F</span>
       <div>
         <h1>Revenue Intelligence Manu&amp;Enis</h1>
-        <div class="sub" id="topbar-sub">Loading data…</div>
       </div>
     </div>
     <div class="topbar-spacer"></div>
