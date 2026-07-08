@@ -32293,6 +32293,12 @@ const EVENTS_CSV = `Date,Event
 2027-01-04,Holiday Season
 2027-01-05,Holiday Season
 2027-01-06,Epifania
+2027-03-25,vacanze di Pasqua
+2027-03-26,vacanze di Pasqua
+2027-03-27,vacanze di Pasqua
+2027-03-28,Pasqua
+2027-03-29,Pasquetta
+2027-03-30,vacanze di Pasqua
 `;
 
 /* ─────────── AIRDNA DATA (Florence market, Booked Listings + Daily Rate, ~180gg) ───────────
