@@ -103,18 +103,21 @@ button{font-family:inherit;cursor:pointer}
 .struct-pill.active .pdot{box-shadow:0 0 0 2px rgba(255,255,255,.25)}
 
 /* ============ NAV TABS ============ */
+.shell{display:flex;max-width:1760px;margin:0 auto;align-items:flex-start}
 .nav{
-  max-width:1760px;margin:0 auto;
-  padding:14px 24px;
-  display:flex;gap:5px;
-  overflow-x:auto;
+  display:flex;flex-direction:column;gap:3px;
+  width:208px;flex-shrink:0;
+  padding:18px 12px;
+  border-right:1px solid var(--line);
+  position:sticky;top:0;align-self:flex-start;
+  max-height:100vh;overflow-y:auto;
 }
 .tab{
   border:none;background:transparent;
-  padding:9px 15px;border-radius:11px;
+  padding:10px 14px;border-radius:10px;
   font-size:13.5px;font-weight:500;color:var(--ink-3);
-  white-space:nowrap;cursor:pointer;
-  display:inline-flex;align-items:center;gap:8px;
+  white-space:nowrap;cursor:pointer;width:100%;
+  display:flex;align-items:center;gap:10px;justify-content:flex-start;
   transition:background .16s ease, color .16s ease, box-shadow .16s ease;
 }
 .tab .num{
@@ -133,7 +136,7 @@ button{font-family:inherit;cursor:pointer}
 .tab.active .num{background:rgba(255,255,255,.22);color:#fff}
 
 /* ============ MAIN ============ */
-main{max-width:1760px;margin:0 auto;padding:24px;min-height:60vh}
+main{flex:1;min-width:0;max-width:none;margin:0;padding:24px 28px;min-height:60vh}
 .tab-panel{display:none;animation:fadein .25s ease}
 .tab-panel.active{display:block}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -1414,6 +1417,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   </div>
 
   <!-- ============ NAV ============ -->
+</header>
+<div class="shell">
   <nav class="nav" role="tablist">
     <button class="tab active" data-tab="big"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>Big Picture</button>
     <button class="tab" data-tab="sell"><span class="ico"><svg viewBox="0 0 24 24"><path d="M11 2H4a2 2 0 0 0-2 2v7l9.29 9.29a2 2 0 0 0 2.83 0l6.58-6.58a2 2 0 0 0 0-2.83L11 2Z"/><circle cx="7" cy="7" r="1.3"/></svg></span>Sell Strategy</button>
@@ -1429,9 +1434,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="checks"><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>Check Updates</button>
     <button class="tab" data-tab="instr"><span class="ico"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Playbook</button>
   </nav>
-</header>
-
-<main>
+  <main>
   <!-- ============ SECTION 1: OTB ============ -->
   <section class="tab-panel" id="panel-otb">
     <div class="section-head">
@@ -2724,6 +2727,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
   <div class="foot-note mono">Revenue Intelligence Manu&amp;Enis · data as of <span id="foot-today">—</span> · STLY = today −364d</div>
 </main>
+</div>
 
 <!-- ============ MODAL DRILLDOWN ============ -->
 <div class="modal-backdrop" id="modal">

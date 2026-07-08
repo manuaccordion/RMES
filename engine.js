@@ -19459,7 +19459,7 @@ function _bigRenderBookingCurve(sel){
   // Update title with achievement chips
   if (titleEl){
     const baseT = 'Booking Curve — cumulative revenue by booking date';
-    const _chipColor = (pct) => pct >= 75 ? '#2c5c3c' : (pct >= 40 ? '#b86b1f' : '#a83b3b');
+    const _chipColor = (pct) => pct >= 75 ? '#2c5c3c' : (pct >= 40 ? '#2f7fb5' : '#a83b3b');
     const _chipBg    = (pct) => pct >= 75 ? '#e8f1ea' : (pct >= 40 ? '#fdf3e7' : '#fbe9e9');
     const _chipBdr   = (pct) => pct >= 75 ? '#b8d4be' : (pct >= 40 ? '#e5c699' : '#d9b3b3');
     const achChip = (achievementPct != null)
@@ -19489,16 +19489,16 @@ function _bigRenderBookingCurve(sel){
   // Gradients & shadow
   let defs = `<defs>
     <linearGradient id="bcOtbArea" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#d99a4e" stop-opacity="0.42"/>
-      <stop offset="100%" stop-color="#d99a4e" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#6bb6e8" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#6bb6e8" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="bcFcstArea" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#d99a4e" stop-opacity="0.18"/>
-      <stop offset="100%" stop-color="#d99a4e" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#6bb6e8" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#6bb6e8" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="bcOtbLine" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#b86b1f"/>
-      <stop offset="100%" stop-color="#d99a4e"/>
+      <stop offset="0%" stop-color="#2f7fb5"/>
+      <stop offset="100%" stop-color="#6bb6e8"/>
     </linearGradient>
     <linearGradient id="bcLyLine" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#7a4d96"/>
@@ -19534,8 +19534,8 @@ function _bigRenderBookingCurve(sel){
   }
   // Today vertical line
   const todayX = xAt(todayDoy);
-  grid += `<line x1="${todayX}" y1="${padTop}" x2="${todayX}" y2="${padTop+plotH}" stroke="#c4823b" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.7"/>`;
-  grid += `<text x="${todayX+5}" y="${padTop+13}" font-size="10" fill="#b86b1f" font-weight="700" font-family="'DM Mono',monospace">today</text>`;
+  grid += `<line x1="${todayX}" y1="${padTop}" x2="${todayX}" y2="${padTop+plotH}" stroke="#3a8bc2" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.7"/>`;
+  grid += `<text x="${todayX+5}" y="${padTop+13}" font-size="10" fill="#2f7fb5" font-weight="700" font-family="'DM Mono',monospace">today</text>`;
   // Path builders
   function pathLine(arr, startDoy, endDoy){
     let d = '', first = true;
@@ -19574,7 +19574,7 @@ function _bigRenderBookingCurve(sel){
     <path d="${otbArea}" fill="url(#bcOtbArea)"/>
     <path d="${fcstArea}" fill="url(#bcFcstArea)"/>
     <path d="${stlyPath}" fill="none" stroke="#7a4d96" stroke-width="2.4" stroke-dasharray="6,5" opacity="0.9" stroke-linecap="round"/>
-    <path d="${fcstPath}" fill="none" stroke="#d99a4e" stroke-width="2.2" stroke-dasharray="7,5" stroke-linecap="round" opacity="0.85"/>
+    <path d="${fcstPath}" fill="none" stroke="#6bb6e8" stroke-width="2.2" stroke-dasharray="7,5" stroke-linecap="round" opacity="0.85"/>
     <path d="${otbPath}" fill="none" stroke="url(#bcOtbLine)" stroke-width="3.2" stroke-linecap="round" filter="url(#bcShadow)"/>
   `;
   // STLY marker: ONE point on the LY curve at stlyTodayDoy → shows "where we were last year at this point of the cycle"
@@ -19588,21 +19588,21 @@ function _bigRenderBookingCurve(sel){
   </g>`;
   // Endpoint dots
   const todayY = yAt(otb[todayDoy]);
-  const todayDot = `<circle cx="${todayX}" cy="${todayY}" r="5" fill="#b86b1f" stroke="#fff" stroke-width="2" filter="url(#bcShadow)"/>`;
+  const todayDot = `<circle cx="${todayX}" cy="${todayY}" r="5" fill="#2f7fb5" stroke="#fff" stroke-width="2" filter="url(#bcShadow)"/>`;
   const fcstEndY = yAt(forecast[365]);
-  const fcstEndDot = `<g><circle cx="${xAt(365)}" cy="${fcstEndY}" r="4" fill="#d99a4e" stroke="#fff" stroke-width="1.5" opacity="0.9"/></g>`;
+  const fcstEndDot = `<g><circle cx="${xAt(365)}" cy="${fcstEndY}" r="4" fill="#6bb6e8" stroke="#fff" stroke-width="1.5" opacity="0.9"/></g>`;
   const lyEndY = yAt(ly[365]);
   const lyEndDot = `<g><circle cx="${xAt(365)}" cy="${lyEndY}" r="3.5" fill="#8e5fa8" stroke="#fff" stroke-width="1.5" opacity="0.75"/></g>`;
   // Hover overlay
   const hoverRect = `<rect id="bc-hover-rect" x="${padL}" y="${padTop}" width="${plotW}" height="${plotH}" fill="transparent" style="cursor:crosshair"/>`;
   const hoverLine = `<line id="bc-hover-line" x1="0" y1="${padTop}" x2="0" y2="${padTop+plotH}" stroke="#5a3a14" stroke-width="1" opacity="0" style="pointer-events:none"/>`;
-  const hoverDotOtb  = `<circle id="bc-hover-dot-otb"  cx="0" cy="0" r="5" fill="#b86b1f" stroke="#fff" stroke-width="2" opacity="0" style="pointer-events:none"/>`;
+  const hoverDotOtb  = `<circle id="bc-hover-dot-otb"  cx="0" cy="0" r="5" fill="#2f7fb5" stroke="#fff" stroke-width="2" opacity="0" style="pointer-events:none"/>`;
   const hoverDotLy   = `<circle id="bc-hover-dot-ly"   cx="0" cy="0" r="4" fill="#7a4d96" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
-  const hoverDotFcst = `<circle id="bc-hover-dot-fcst" cx="0" cy="0" r="4" fill="#d99a4e" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
+  const hoverDotFcst = `<circle id="bc-hover-dot-fcst" cx="0" cy="0" r="4" fill="#6bb6e8" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
   // Legend (3 curve: OTB, Forecast, STLY full year)
   const legend = `<div style="display:flex;flex-wrap:wrap;gap:18px;justify-content:center;font-size:11.5px;color:#5a5a5a;padding:12px 14px 4px;font-family:'DM Mono',monospace">
-    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:3px;background:linear-gradient(to right,#b86b1f,#d99a4e);border-radius:2px"></span><b style="color:#5a3a14">OTB 2026</b> · ${fmtK(otb[todayDoy])}</span>
-    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:repeating-linear-gradient(to right,#d99a4e 0,#d99a4e 5px,transparent 5px,transparent 10px);border-radius:2px"></span><b style="color:#b86b1f">Forecast</b> · ${fmtK(forecastTotal)}</span>
+    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:3px;background:linear-gradient(to right,#2f7fb5,#6bb6e8);border-radius:2px"></span><b style="color:#5a3a14">OTB 2026</b> · ${fmtK(otb[todayDoy])}</span>
+    <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:2.5px;background:repeating-linear-gradient(to right,#6bb6e8 0,#6bb6e8 5px,transparent 5px,transparent 10px);border-radius:2px"></span><b style="color:#2f7fb5">Forecast</b> · ${fmtK(forecastTotal)}</span>
     <span style="display:inline-flex;align-items:center;gap:7px"><span style="display:inline-block;width:22px;height:3px;background:repeating-linear-gradient(to right,#7a4d96 0,#7a4d96 6px,transparent 6px,transparent 11px);border-radius:2px"></span><b style="color:#7a4d96">STLY</b> · ${fmtK(lyTotal)}</span>
   </div>`;
   host.innerHTML = `<div style="position:relative">
@@ -19658,7 +19658,7 @@ function _bigRenderBookingCurve(sel){
       // CUR (OTB se passato, Forecast se futuro)
       const curV = (doy <= todayDoy) ? otbV : fcstV;
       const curLbl = (doy <= todayDoy) ? 'OTB 2026' : 'Forecast 2026';
-      const curColor = (doy <= todayDoy) ? '#b86b1f' : '#d99a4e';
+      const curColor = (doy <= todayDoy) ? '#2f7fb5' : '#6bb6e8';
       const curBg = (doy <= todayDoy) ? '#fff8ed' : '#fdf3e7';
       const curIcon = (doy <= todayDoy) ? '\u25CF' : '\u2934';
       if (curV != null && forecastTotal > 0){
