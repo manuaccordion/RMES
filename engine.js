@@ -11231,13 +11231,14 @@ function fp_renderFoundationConfigBox(structKey){
       try { if (typeof _ANCHOR_LY_CACHE !== 'undefined'){ for (var _ck in _ANCHOR_LY_CACHE) delete _ANCHOR_LY_CACHE[_ck]; } } catch(e){}
       // RICONGELA il NewRMES Base (rmes_frozen_base_v1) con la nuova config (floor/anchor/markup/…):
       // i giorni già congelati vanno ricalcolati, altrimenti il Base mostrato non cambia.
+      // Ricongela SOLO la struttura in modifica (veloce); tutte e 6 solo se è cambiato il markup (globale).
       try {
         if (typeof newrmesRefreezeRange === 'function'){
-          const _allSk = Object.keys(CFG.structures);
+          const _refSk = _mkChanged ? Object.keys(CFG.structures) : [structKey];
           const _t0 = new Date(TODAY); _t0.setHours(0,0,0,0);
           const _t1 = new Date(_t0.getTime() + 365*86400000);
           const _isoOf = function(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
-          newrmesRefreezeRange(_allSk, _isoOf(_t0), _isoOf(_t1));
+          newrmesRefreezeRange(_refSk, _isoOf(_t0), _isoOf(_t1));
         }
       } catch(e){ console.warn('[Recompute] refreeze NewRMES base failed', e); }
       fp_computeAll(function(done, total){
