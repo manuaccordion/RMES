@@ -812,7 +812,7 @@ const CFG = {
                 budgetByMonth:{} },
     portenuove:{ key:"Porte Nuove Apartments", label:"Porte Nuove Apartments", color:'#3f7d78',
                 rooms:{'Palazzo Pitti':1,'Ponte Vecchio':1,'Palazzo Vecchio':1},
-                baseRT:'Palazzo Pitti',
+                baseRT:'Palazzo Vecchio',
                 roomsTotal:3, rnYear:1095,
                 budgetIsForecast:true, forecastGrowth:1.05,
                 budgetTotal:0,
@@ -16548,7 +16548,7 @@ function _rmesTabMarkDirty(){
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.style.cursor = 'pointer';
-    btn.textContent = '⚠ Apply changes (' + (RMES_TAB_STRUCT === 'condotta' ? 'Condotta 16' : RMES_TAB_STRUCT === 'firenze' ? 'Firenze Suite' : RMES_TAB_STRUCT === 'davids' ? "Enis Guesthouse" : 'Palazzo Alfani') + ')';
+    btn.textContent = '⚠ Apply changes (' + ((CFG.structures[RMES_TAB_STRUCT] && CFG.structures[RMES_TAB_STRUCT].label) || RMES_TAB_STRUCT) + ')';
   }
 }
 function _rmesTabClearDirty(){
@@ -16558,7 +16558,7 @@ function _rmesTabClearDirty(){
     btn.disabled = true;
     btn.style.opacity = '0.55';
     btn.style.cursor = 'not-allowed';
-    btn.textContent = 'Apply changes (' + (RMES_TAB_STRUCT === 'condotta' ? 'Condotta 16' : RMES_TAB_STRUCT === 'firenze' ? 'Firenze Suite' : RMES_TAB_STRUCT === 'davids' ? "Enis Guesthouse" : 'Palazzo Alfani') + ')';
+    btn.textContent = 'Apply changes (' + ((CFG.structures[RMES_TAB_STRUCT] && CFG.structures[RMES_TAB_STRUCT].label) || RMES_TAB_STRUCT) + ')';
   }
 }
 function _wcard(f, W){
