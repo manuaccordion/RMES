@@ -16333,21 +16333,17 @@ function compsetWeightedAvg(struct, isoKey, applyOffset, opts){
 function renderRateShopper(){
   const wrap = document.getElementById('rate-tables-wrap');
   if (!wrap) return;
-  const structDefs = [
-    { key: 'alfani',   label: 'Palazzo Alfani',  compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_alfani)  || null, color: '#8e5fa8' },
-    { key: 'condotta', label: 'Condotta 16',     compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors)         || null, color: '#3d7a4b' },
-    { key: 'firenze',  label: 'Firenze Suite',   compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_firenze) || null, color: '#3b6b9a' },
-    { key: 'davids',   label: "Enis Guesthouse", compMap: (EXPEDIA_DATA && EXPEDIA_DATA.competitors_davids) || null, color: '#c0392b' },
-  ];
+  const _rsCompField = { firenze:'competitors_firenze', condotta:'competitors', alfani:'competitors_alfani', davids:'competitors_davids', nazionale:'competitors_nazionale', portenuove:'competitors_portenuove' };
+  const structDefs = Object.keys(CFG.structures).map(function(k){
+    return { key:k, label: CFG.structures[k].label, compMap: (EXPEDIA_DATA && EXPEDIA_DATA[_rsCompField[k]]) || null, color: CFG.structures[k].color };
+  });
   const pillsEl = document.getElementById('rate-struct-pills');
   if (pillsEl){
-    const opts = [
-      { v: 'all',      label: 'All',            color: '#6b5b3f' },
-      { v: 'alfani',   label: 'Palazzo Alfani',   color: '#8e5fa8' },
-      { v: 'condotta', label: 'Condotta 16',      color: '#3d7a4b' },
-      { v: 'firenze',  label: 'Firenze Suite',    color: '#3b6b9a' },
-      { v: 'davids',   label: "Enis Guesthouse", color: '#c0392b' },
-    ];
+    const opts = [{ v: 'all', label: 'All', color: '#6b5b3f' }].concat(
+      Object.keys(CFG.structures).map(function(k){
+        return { v: k, label: CFG.structures[k].label, color: CFG.structures[k].color };
+      })
+    );
     pillsEl.innerHTML = opts.map(o => {
       const on = (RATE_STRUCT_FILTER === o.v);
       return `<button class="rt-pill ${on?'':'off'}" data-rfilter="${o.v}" style="${on?'border-color:'+o.color+';color:'+o.color+';font-weight:600':''}">${o.label}</button>`;
@@ -19024,12 +19020,9 @@ function _bigPickupAgg(sel, nDays){
     rooms: top(byRoom),
   };
 }
-const BIG_STRUCTS = [
-  {k:'firenze',  name:'Firenze Suite',    color:'#3b6b9a'},
-  {k:'condotta', name:'Condotta 16',      color:'#3d7a4b'},
-  {k:'alfani',   name:'Palazzo Alfani',   color:'#8e5fa8'},
-  {k:'davids',   name:"Enis Guesthouse", color:'#c0392b'}
-];
+const BIG_STRUCTS = Object.keys(CFG.structures).map(function(k){
+  return { k:k, name: CFG.structures[k].label, color: CFG.structures[k].color };
+});
 function _bigStructKey(slug){ return CFG.structures[slug] ? CFG.structures[slug].key : slug; }
 function _bigBreakdownData(kind, nDays, forceWindow){
   const today = new Date(TODAY); today.setHours(0,0,0,0);
@@ -19760,13 +19753,10 @@ function _bigRenderPie(sel){
   }
 
   if (sel === 'both'){
-    // 4 mini-donuts, one per property
-    const structs = [
-      {k:'firenze',  label:'Firenze Suite',  color:'#3b6b9a'},
-      {k:'condotta', label:'Condotta 16',    color:'#3d7a4b'},
-      {k:'alfani',   label:'Palazzo Alfani', color:'#8e5fa8'},
-      {k:'davids',   label:'Enis Guesthouse',color:'#c0392b'}
-    ];
+    // one mini-donut per property (dynamic from CFG)
+    const structs = Object.keys(CFG.structures).map(function(k){
+      return { k:k, label: CFG.structures[k].label, color: CFG.structures[k].color };
+    });
     const cards = structs.map(s => buildOneDonut(s.k, s.label, s.color)).join('');
     host.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;padding:6px 4px">${cards}</div>
       <div style="text-align:center;font-size:10px;color:var(--ink-3);margin-top:6px">outer = current year · inner = STLY</div>`;
