@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4f2ee;
+  --bg:#eaf3fb;
   --surface:#ffffff;
   --surface-2:#faf8f4;
   --ink:#1a1a1a;
@@ -2843,7 +2843,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // legge subito le decisioni/config condivise. Se il cloud non risponde entro il timeout,
   // _boot parte comunque in modalità local-only (fallback).
   if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.init){
-    RMES_CLOUD.init().then(_boot).catch(_boot);
+    // Boot veloce: mostra la dashboard subito (dal locale) entro ~700ms, senza aspettare
+    // l'intero round-trip di Firestore. Se il cloud arriva prima → _boot con i dati cloud
+    // (nessun flash). Se arriva dopo → si riallinea con un ridisegno appena disponibile.
+    let _booted = false;
+    const _bootOnce = function(){ if (!_booted){ _booted = true; _boot(); } };
+    const _fast = setTimeout(_bootOnce, 700);
+    RMES_CLOUD.init().then(function(){
+      clearTimeout(_fast);
+      if (_booted){ try { if (typeof rmesCloudOnRemoteUpdate === 'function') rmesCloudOnRemoteUpdate(); } catch(e){} }
+      else { _bootOnce(); }
+    }).catch(function(){ clearTimeout(_fast); _bootOnce(); });
   } else {
     _boot();
   }
