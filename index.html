@@ -127,12 +127,12 @@ button{font-family:inherit;cursor:pointer}
   background:var(--line);
   display:inline-flex;align-items:center;justify-content:center;
 }
-.tab .ico{width:16px;height:16px;flex-shrink:0;display:inline-flex;opacity:.66}
+.tab .ico{width:17px;height:17px;flex-shrink:0;display:inline-flex;opacity:1}
 .tab .ico svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .tab:hover{background:var(--surface-2);color:var(--ink-2)}
 .tab:hover .ico{opacity:1}
 .tab.active{background:var(--accent);color:#fff;font-weight:600;box-shadow:0 2px 9px rgba(107,91,63,.28)}
-.tab.active .ico{opacity:1}
+.tab.active .ico{opacity:1;color:#fff!important}
 .tab.active .num{background:rgba(255,255,255,.22);color:#fff}
 
 /* ============ MAIN ============ */
@@ -1420,19 +1420,19 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 </header>
 <div class="shell">
   <nav class="nav" role="tablist">
-    <button class="tab active" data-tab="big"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>Big Picture</button>
-    <button class="tab" data-tab="sell"><span class="ico"><svg viewBox="0 0 24 24"><path d="M11 2H4a2 2 0 0 0-2 2v7l9.29 9.29a2 2 0 0 0 2.83 0l6.58-6.58a2 2 0 0 0 0-2.83L11 2Z"/><circle cx="7" cy="7" r="1.3"/></svg></span>Sell Strategy</button>
+    <button class="tab active" data-tab="big"><span class="ico" style="color:#c08838"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>Big Picture</button>
+    <button class="tab" data-tab="sell"><span class="ico" style="color:#4a7c59"><svg viewBox="0 0 24 24"><path d="M11 2H4a2 2 0 0 0-2 2v7l9.29 9.29a2 2 0 0 0 2.83 0l6.58-6.58a2 2 0 0 0 0-2.83L11 2Z"/><circle cx="7" cy="7" r="1.3"/></svg></span>Sell Strategy</button>
     <button class="tab" data-tab="otb" style="display:none"><span class="num">2</span>Overview (alt)</button>
-    <button class="tab" data-tab="fcst"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx="0.5"/><rect x="12" y="7" width="3" height="11" rx="0.5"/><rect x="17" y="14" width="3" height="4" rx="0.5"/></svg></span>Overview</button>
+    <button class="tab" data-tab="fcst"><span class="ico" style="color:#3b5a78"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx="0.5"/><rect x="12" y="7" width="3" height="11" rx="0.5"/><rect x="17" y="14" width="3" height="4" rx="0.5"/></svg></span>Overview</button>
     <button class="tab" data-tab="hist" style="display:none"><span class="num">5</span>Historical Data</button>
-    <button class="tab" data-tab="pk"><span class="ico"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Pickup &amp; CXL</button>
+    <button class="tab" data-tab="pk"><span class="ico" style="color:#3f7d78"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Pickup &amp; CXL</button>
     <button class="tab" data-tab="cancel" style="display:none"><span class="num">4</span>CXLTrend</button>
-    <button class="tab" data-tab="rt"><span class="ico"><svg viewBox="0 0 24 24"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg></span>OCC by Room Type</button>
-    <button class="tab" data-tab="rate"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>Rate Shopper</button>
-    <button class="tab" data-tab="pri"><span class="ico"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>RMES</button>
-    <button class="tab" data-tab="baseprice"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.6a4 4 0 1 0 0 6.8"/><line x1="6.5" y1="10.6" x2="13" y2="10.6"/><line x1="6.5" y1="13.4" x2="13" y2="13.4"/></svg></span>Export Pricing</button>
-    <button class="tab" data-tab="checks"><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>Check Updates</button>
-    <button class="tab" data-tab="instr"><span class="ico"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Playbook</button>
+    <button class="tab" data-tab="rt"><span class="ico" style="color:#8e5fa8"><svg viewBox="0 0 24 24"><path d="M2 4v16"/><path d="M2 8h18a2 2 0 0 1 2 2v10"/><path d="M2 17h20"/><path d="M6 8v9"/></svg></span>OCC by Room Type</button>
+    <button class="tab" data-tab="rate"><span class="ico" style="color:#d18b2c"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>Rate Shopper</button>
+    <button class="tab" data-tab="pri"><span class="ico" style="color:#b1432f"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>RMES</button>
+    <button class="tab" data-tab="baseprice"><span class="ico" style="color:#2e7d6b"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.6a4 4 0 1 0 0 6.8"/><line x1="6.5" y1="10.6" x2="13" y2="10.6"/><line x1="6.5" y1="13.4" x2="13" y2="13.4"/></svg></span>Export Pricing</button>
+    <button class="tab" data-tab="checks"><span class="ico" style="color:#b06fa0"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>Check Updates</button>
+    <button class="tab" data-tab="instr"><span class="ico" style="color:#8b6f47"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Playbook</button>
   </nav>
   <main>
   <!-- ============ SECTION 1: OTB ============ -->
