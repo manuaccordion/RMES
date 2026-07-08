@@ -811,7 +811,7 @@ const CFG = {
                 budgetTotal:0,
                 budgetByMonth:{} },
     portenuove:{ key:"Porte Nuove Apartments", label:"Porte Nuove Apartments", color:'#3f7d78',
-                rooms:{'Palazzo Pitti':1,'Ponte Vecchio':1,'Palazzo Vecchio':1},
+                rooms:{'Palazzo Vecchio':1,'Palazzo Pitti':1,'Ponte Vecchio':1},
                 baseRT:'Palazzo Vecchio',
                 roomsTotal:3, rnYear:1095,
                 budgetIsForecast:true, forecastGrowth:1.05,
