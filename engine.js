@@ -19727,7 +19727,15 @@ function _bigRenderPie(sel){
     function arcs(arr, tot, ri, ro){
       let ang=-Math.PI/2, out='';
       arr.forEach(x=>{
-        const frac=x.rev/tot, a2=ang+frac*2*Math.PI;
+        const frac=x.rev/tot;
+        if (frac >= 0.9999){
+          // Segmento unico al 100%: un arco di 360° ha punto iniziale = finale e non viene
+          // disegnato. Disegno invece un anello pieno (cerchio esterno − cerchio interno, evenodd).
+          out+=`<path d="M${cx-ro} ${cy} a${ro} ${ro} 0 1 0 ${2*ro} 0 a${ro} ${ro} 0 1 0 ${-2*ro} 0 M${cx-ri} ${cy} a${ri} ${ri} 0 1 0 ${2*ri} 0 a${ri} ${ri} 0 1 0 ${-2*ri} 0 Z" fill-rule="evenodd" fill="${colorOf[x.name]}" stroke="var(--surface)" stroke-width="1.5"><title>${x.name}: ${fmtEUR(x.rev)} (100%)</title></path>`;
+          ang+=2*Math.PI;
+          return;
+        }
+        const a2=ang+frac*2*Math.PI;
         const x1=cx+ro*Math.cos(ang), y1=cy+ro*Math.sin(ang), x2=cx+ro*Math.cos(a2), y2=cy+ro*Math.sin(a2);
         const x3=cx+ri*Math.cos(a2), y3=cy+ri*Math.sin(a2), x4=cx+ri*Math.cos(ang), y4=cy+ri*Math.sin(ang);
         const large=frac>0.5?1:0;
