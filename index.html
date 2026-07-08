@@ -34,7 +34,7 @@
   --radius:14px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;background:radial-gradient(1400px 820px at 50% -8%, #f4f9fe 0%, #e6f0f9 52%, #dae7f3 100%) fixed;color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+html,body{margin:0;padding:0;background:radial-gradient(1700px 1050px at 50% -14%, #fcfeff 0%, #f4f9fe 46%, #ecf4fc 100%) fixed;color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4{font-family:'Playfair Display',serif;font-weight:600;letter-spacing:-.01em;margin:0}
 .mono{font-family:'DM Mono',monospace}
 button{font-family:inherit;cursor:pointer}
@@ -48,11 +48,12 @@ button{font-family:inherit;cursor:pointer}
   border-bottom:1px solid var(--line);
 }
 .topbar-inner{
-  max-width:1760px;margin:0 auto;
+  max-width:none;margin:0;
   padding:14px 24px;
   display:flex;align-items:center;gap:18px;flex-wrap:wrap;
 }
-.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-logo{width:40px;height:40px;border-radius:10px;flex-shrink:0;box-shadow:var(--shadow)}
 .brand-mark{
   width:30px;height:30px;border-radius:8px;
   background:linear-gradient(135deg,#8b6f47,#3b6b6b);
@@ -103,14 +104,15 @@ button{font-family:inherit;cursor:pointer}
 .struct-pill.active .pdot{box-shadow:0 0 0 2px rgba(255,255,255,.25)}
 
 /* ============ NAV TABS ============ */
-.shell{display:flex;max-width:1760px;margin:0 auto;align-items:flex-start}
+.shell{display:block}
 .nav{
   display:flex;flex-direction:column;gap:3px;
-  width:208px;flex-shrink:0;
+  width:212px;
   padding:18px 12px;
   border-right:1px solid var(--line);
-  position:sticky;top:0;align-self:flex-start;
-  max-height:100vh;overflow-y:auto;
+  position:fixed;left:0;top:116px;
+  height:calc(100vh - 116px);overflow-y:auto;
+  z-index:20;
 }
 .tab{
   border:none;background:transparent;
@@ -136,7 +138,7 @@ button{font-family:inherit;cursor:pointer}
 .tab.active .num{background:rgba(255,255,255,.22);color:#fff}
 
 /* ============ MAIN ============ */
-main{flex:1;min-width:0;max-width:none;margin:0;padding:24px 28px;min-height:60vh}
+main{margin-left:212px;max-width:none;padding:24px 30px;min-height:60vh}
 .tab-panel{display:none;animation:fadein .25s ease}
 .tab-panel.active{display:block}
 @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -1389,6 +1391,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 <header class="topbar">
   <div class="topbar-inner">
     <div class="brand">
+      <img src="icon192.png" alt="Manu&amp;Enis" class="brand-logo">
       <div>
         <h1>Revenue Intelligence Manu&amp;Enis</h1>
       </div>
@@ -2857,5 +2860,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
 });
 </script>
+<script>(function(){function s(){var t=document.querySelector(".topbar"),n=document.querySelector(".nav");if(t&&n){var h=t.offsetHeight;n.style.top=h+"px";n.style.height="calc(100vh - "+h+"px)";}}window.addEventListener("load",s);window.addEventListener("resize",s);setTimeout(s,200);setTimeout(s,800);})();</script>
 </body>
 </html>
