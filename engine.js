@@ -19518,7 +19518,6 @@ function _bigRenderBookingCurve(sel){
   let grid = '';
   for (let i=0; i<12; i++){
     const x = xAt(monthStarts[i]);
-    grid += `<line x1="${x}" y1="${padTop}" x2="${x}" y2="${padTop+plotH}" stroke="#ece9e2" stroke-width="1"/>`;
     grid += `<text x="${x+3}" y="${H-16}" font-size="10" text-anchor="start" fill="#9a9a9a" font-family="'DM Mono',monospace" font-weight="600">${monthLabels[i]}</text>`;
   }
   function fmtK(v){
@@ -19530,7 +19529,6 @@ function _bigRenderBookingCurve(sel){
   for (let i=0; i<=4; i++){
     const val = yMax * i / 4;
     const y = yAt(val);
-    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#f5f3ee" stroke-width="1"/>`;
     grid += `<text x="${padL-10}" y="${y+3}" font-size="10" text-anchor="end" fill="#9a9a9a" font-family="'DM Mono',monospace" font-weight="600">${fmtK(val)}</text>`;
   }
   // Today vertical line
@@ -19721,7 +19719,6 @@ function _bigRenderChart(sel){
   </defs>`;
   for (let g=0; g<=2; g++){
     const val=Math.round(maxRn*(g/2)); const y=padTop+plotH-(plotH*(g/2));
-    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
     grid += `<text x="${padL-6}" y="${y+3}" font-size="10" text-anchor="end" fill="var(--ink-3)" font-family="'DM Mono',monospace">${val}</text>`;
   }
   days.forEach((d,i)=>{
