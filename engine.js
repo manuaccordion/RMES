@@ -16188,6 +16188,38 @@ function renderForecast(sel){
     '<div class="mkpi-sticky-wrap" id="mkpi-mainwrap" style="max-height:calc(100vh - 200px);min-height:340px;overflow:auto;position:relative">' +
       '<table class="data mkpi-sticky-table" id="mkpi-table">' + head + '<tbody>' + body + '</tbody></table>' +
     '</div>';
+  // === Grafico barre raggruppate per mese: Current OTB · STLY · Final LY · Month-1st snapshot ===
+  (function(){
+    const host = document.getElementById('fcst-chart-monthly');
+    if (!host) return;
+    const series = [
+      { label:'Current OTB', color:'#4a7c59', get:m=>m.otbRev||0 },
+      { label:'STLY',        color:'#8e5fa8', get:m=>m.stlyRev||0 },
+      { label:'Final LY',    color:'#9aa7b3', get:m=>m.finalLyRev||0 },
+      { label:'Month-1st',   color:'#3b5a78', get:m=>(m.snapshot&&m.snapshot.fcstRev>0)?m.snapshot.fcstRev:0 },
+    ];
+    const months = ymOrder.map(ym=>M[ym]).filter(Boolean);
+    if (!months.length){ host.innerHTML=''; return; }
+    let maxV=0; for (const m of months) for (const s of series) maxV=Math.max(maxV,s.get(m));
+    if (maxV<=0) maxV=1;
+    const W=Math.max(720, months.length*82), H=300, padL=54, padR=12, padT=14, padB=44;
+    const plotW=W-padL-padR, plotH=H-padT-padB, gW=plotW/months.length;
+    const bW=Math.min(13,(gW-10)/series.length);
+    let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+    for (let g=0; g<=4; g++){ const v=maxV*g/4, y=padT+plotH-(v/maxV)*plotH;
+      svg+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--line)" stroke-width="1"/>`;
+      svg+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">€${Math.round(v/1000)}k</text>`; }
+    months.forEach((m,i)=>{ const gx=padL+i*gW;
+      series.forEach((s,j)=>{ const v=s.get(m), h=(v/maxV)*plotH, x=gx+(gW-bW*series.length)/2+j*bW, y=padT+plotH-h;
+        svg+=`<rect x="${x}" y="${y}" width="${Math.max(1,bW-1.5)}" height="${Math.max(0,h)}" fill="${s.color}" rx="1"><title>${s.label} ${CFG.monthsIT[m.mo-1]} '${String(m.y).slice(2)}: €${Math.round(v).toLocaleString('en-GB')}</title></rect>`; });
+      svg+=`<text x="${gx+gW/2}" y="${H-26}" text-anchor="middle" font-size="9" fill="var(--ink-2)">${CFG.monthsIT[m.mo-1]}</text>`;
+      svg+=`<text x="${gx+gW/2}" y="${H-15}" text-anchor="middle" font-size="8" fill="var(--ink-3)">'${String(m.y).slice(2)}</text>`; });
+    svg+=`</svg>`;
+    let leg=`<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:6px;font-family:'DM Mono',monospace">`;
+    for (const s of series) leg+=`<span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:2px;background:${s.color};display:inline-block"></span>${s.label}</span>`;
+    leg+=`</div>`;
+    host.innerHTML=`<div style="overflow-x:auto">${svg}</div>${leg}`;
+  })();
   // === Sync delle 2 scrollbar (top fittizia + main) ===
   setTimeout(() => {
     const top = document.getElementById('mkpi-topscroll');
