@@ -16028,7 +16028,7 @@ function renderForecast(sel){
         <th colspan="3" class="g-26" style="background:rgba(195,131,59,.10);text-align:center" title="Past months: actuals. Current month: actuals up to yesterday + forecast from today to month-end. Future months: forecast.">YTD + Forecast (live)</th>
         <th colspan="2" class="g-26" style="background:rgba(59,107,154,.08);text-align:center" title="Forecast saved (frozen) on the 1st day of the month. The Δ% compares the initial snapshot with the actual OTB: for past months = actual close, for the current month = OTB accumulating. Measures how well the initial forecast matches the actual close. Only for months still futuri il confronto è col forecast live.">Month-1st snapshot</th>
         <th colspan="3" class="g-25" style="background:rgba(60,124,90,.08);text-align:center">Budget</th>
-        <th colspan="1" class="g-kpi" style="background:rgba(91,138,118,.10);text-align:center;border-left:2.5px solid #5b8a76">Budget %</th>
+        <th colspan="1" class="g-kpi" style="background:rgba(91,138,118,.10);text-align:center;border-left:2.5px solid #5b8a76">Achievement</th>
       </tr>
       <tr>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
@@ -16206,7 +16206,7 @@ function renderForecast(sel){
       { label:'Current OTB', color:'#4a7c59', get:m=>m.otbRev||0 },
       { label:'STLY',        color:'#8e5fa8', get:m=>m.stlyRev||0 },
       { label:'Final LY',    color:'#9aa7b3', get:m=>m.finalLyRev||0 },
-      { label:'Month-1st',   color:'#3b5a78', get:m=>(m.snapshot&&m.snapshot.fcstRev>0)?m.snapshot.fcstRev:0 },
+      { label:'Month-1st',   color:'#3b5a78', get:m=>(m.snapshot&&m.snapshot.fcstRev>0)?m.snapshot.fcstRev:(m.fcstRev||0) },
     ];
     const months = ymOrder.map(ym=>M[ym]).filter(Boolean);
     if (!months.length){ host.innerHTML=''; return; }
@@ -19599,6 +19599,11 @@ function _bigRenderPickup4w(sel){
   svg+=`<text x="${W-padR+5}" y="${ey1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${cur[N-1]||0} RN</text>`;
   svg+=`<text x="${W-padR+5}" y="${ey2+3}" font-size="10" font-weight="700" fill="#7a4d96">${stly[N-1]||0} LY</text>`;
   const fmtD=y=>{const s=String(y);return s.slice(6,8)+'/'+s.slice(4,6);};
+  // bande invisibili per giorno con tooltip (dettaglio all'hover)
+  const bw = plotW/(N-1);
+  for (let i=0;i<N;i++){
+    svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent"><title>${fmtD(curDays[i])} · This year: ${cur[i]} RN · STLY (LY): ${stly[i]} RN</title></rect>`;
+  }
   svg+=`<text x="${padL}" y="${H-8}" text-anchor="start" font-size="9" fill="var(--ink-3)">${fmtD(curDays[0])}</text>`;
   svg+=`<text x="${padL+plotW}" y="${H-8}" text-anchor="end" font-size="9" fill="var(--ink-3)">today</text>`;
   svg+=`</svg>`;
