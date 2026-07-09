@@ -1070,6 +1070,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cal-today').addEventListener('click', ()=>{ MOB.winStart=null; mobRenderAll(); });
   document.querySelectorAll('.tabbtn').forEach(b=> b.addEventListener('click', ()=> mobSetTab(b.dataset.tab)));
   document.getElementById('sheet-bg').addEventListener('click', mobCloseSheet);
+  // Mobile: quando arriva un aggiornamento remoto da Firebase (es. accept RMES o override
+  // fatto dal PC), ridisegna la vista corrente — così il mobile resta allineato al desktop.
+  window.rmesCloudOnRemoteUpdate = function(){
+    try { if (typeof mobRenderStructPills === 'function') mobRenderStructPills(); } catch(e){}
+    try { if (typeof mobRenderAll === 'function') mobRenderAll(); } catch(e){}
+  };
   const _mobBoot = function(){
     try {
       loadData(EMBEDDED_CSV);
