@@ -18347,15 +18347,27 @@ function _renderTrendChart(containerId, metric /* 'adr' | 'occ' */, sel, yms){
     svg += `<circle cx="${xPx(0).toFixed(1)}" cy="${yPx(pickVal(finalStly)).toFixed(1)}" r="3" fill="#888" opacity="0.6"/>`;
   }
   // Final value labels on right
-  let labelY = 0;
-  function endLabel(val, color, lbl){
-    if (val == null || !isFinite(val)) return;
-    const py = yPx(val);
-    svg += `<text x="${(W - PAD_R - 4).toFixed(1)}" y="${py.toFixed(1)}" text-anchor="end" font-size="10" font-weight="700" fill="${color}" font-family="DM Mono,monospace">${fmtVal(val)} ${lbl}</text>`;
-  }
-  endLabel(pickVal(finalOtb), '#3b6b9a', 'OTB');
-  endLabel(pickVal(finalFc), '#c4823b', 'FCST');
-  endLabel(pickVal(finalStly), '#888', 'STLY');
+  // Etichette di fine linea (OTB/FCST/STLY) con ANTI-SOVRAPPOSIZIONE: le ordino per y
+  // e forzo una distanza minima verticale, così i numeri non si accavallano.
+  (function(){
+    const items = [
+      { val: pickVal(finalOtb),  color:'#3b6b9a', lbl:'OTB'  },
+      { val: pickVal(finalFc),   color:'#c4823b', lbl:'FCST' },
+      { val: pickVal(finalStly), color:'#888',    lbl:'STLY' },
+    ].filter(it => it.val != null && isFinite(it.val))
+     .map(it => ({ val:it.val, color:it.color, lbl:it.lbl, y: yPx(it.val) }))
+     .sort((a,b)=> a.y - b.y);
+    const GAP = 12, maxY = H - PAD_B - 2, minY = 10;
+    for (let i=1; i<items.length; i++){ if (items[i].y - items[i-1].y < GAP) items[i].y = items[i-1].y + GAP; }
+    if (items.length && items[items.length-1].y > maxY){
+      items[items.length-1].y = maxY;
+      for (let i=items.length-2; i>=0; i--){ if (items[i].y > items[i+1].y - GAP) items[i].y = items[i+1].y - GAP; }
+    }
+    if (items.length && items[0].y < minY){ items[0].y = minY; for (let i=1;i<items.length;i++){ if (items[i].y < items[i-1].y + GAP) items[i].y = items[i-1].y + GAP; } }
+    for (const it of items){
+      svg += `<text x="${(W - PAD_R - 4).toFixed(1)}" y="${it.y.toFixed(1)}" text-anchor="end" font-size="10" font-weight="700" fill="${it.color}" font-family="DM Mono,monospace">${fmtVal(it.val)} ${it.lbl}</text>`;
+    }
+  })();
   // Hover layer: vertical guide + 3 dots + transparent overlay (wired after insert)
   const cid = containerId;
   svg += `<line id="${cid}-guide" x1="0" y1="${PAD_T}" x2="0" y2="${(H-PAD_B).toFixed(1)}" stroke="#bbb" stroke-width="1" opacity="0"/>`;
