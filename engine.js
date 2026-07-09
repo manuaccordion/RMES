@@ -1080,7 +1080,7 @@ function loadData(csvText){
     const tot = parseFloat((r['Totale']||'0').toString().replace(',', '.'));
     if (!isFinite(tot)) continue;
     const tax = parseFloat((r['Tassa di soggiorno']||'0').toString().replace(',', '.')) || 0;
-    const extraCleaning = parseFloat((r['Extra']||'0').toString().replace(',', '.')) || 0;
+    const extraCleaning = parseFloat((r['cleaning']||r['Extra']||'0').toString().replace(',', '.')) || 0;
     const totNet = tot - tax;
     const _validRoomsSet = _structKeyForRooms ? _structRoomsCache[_structKeyForRooms] : null;
     let alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
