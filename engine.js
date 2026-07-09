@@ -11315,7 +11315,7 @@ function _preserveSellHorizontalScroll(fn){
   });
 }
 
-function _sellTransposeTable(wrap, showBeddy, showExp){
+function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   if (!wrap) return;
   const orig = wrap.querySelector('table.sell-table');
   if (!orig) return;
@@ -11331,6 +11331,7 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
   const allMetrics = [
     { key:'lu',        show:true,  label:'LAST UPDATE',  sub:'active price',   cssClass:'sell-tr-lu',    origIdx:0 },
     { key:'rmes',      show:true,  label:'RMES',         sub:'price · Δ€ · ✓', cssClass:'sell-tr-rmes',  origIdx:1 },
+    { key:'mlos',      show:true, label:'Min stay', sub:'nights', cssClass:'sell-tr-mlos', origIdx:null },
     { key:'date',      show:false, origIdx:2 },                                // duplicato dell'header → SKIP
     { key:'event',     show:true,  label:'Event',        sub:'',               cssClass:'sell-tr-event', origIdx:3 },
     { key:'dow',       show:false, origIdx:4 },                                // duplicato dell'header → SKIP
@@ -11435,6 +11436,7 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
 
   // TBODY: una riga per metric (escludendo show:false)
   const tbody = document.createElement('tbody');
+  mlosByDay = mlosByDay || [];
   for (let mIdx = 0; mIdx < allMetrics.length; mIdx++){
     const m = allMetrics[mIdx];
     if (!m.show) continue;
@@ -11460,6 +11462,14 @@ function _sellTransposeTable(wrap, showBeddy, showExp){
     tr.appendChild(labelTh);
     // Celle per ogni data (= per ogni dataRow originale, prendo la cella in posizione m.origIdx)
     for (let dIdx = 0; dIdx < dataRows.length; dIdx++){
+      if (m.key === 'mlos'){
+        const td = document.createElement('td');
+        td.className='cell-mono'; td.style.textAlign='center'; td.style.background='rgba(107,91,63,.05)';
+        const v = mlosByDay[dIdx] || 1;
+        if (v >= 2){ td.innerHTML='<b style="color:var(--accent)">'+v+'</b>'; td.title='Minimum stay '+v+' notti'; }
+        tr.appendChild(td);
+        continue;
+      }
       const origCell = (m.origIdx != null) ? dataRows[dIdx].children[m.origIdx] : dataRows[dIdx].children[mIdx];
       if (origCell){
         const cloned = origCell.cloneNode(true);
@@ -12719,7 +12729,28 @@ function renderSellStrategy(sel){
   html += '</tbody></table>';
   document.getElementById('sell-table-wrap').innerHTML = html;
   // === Trasposizione tabella (date in COLONNE, metriche in RIGHE) — richiesta utente ===
-  try { _sellTransposeTable(document.getElementById('sell-table-wrap'), showBeddy, showExp); }
+  // MLOS per-giorno (solo Porte Nuove/Nazionale) — calcolato qui dove ci sono A e sel
+  const _isApt = (sel==='nazionale'||sel==='portenuove');   // solo questi hanno la regola floor→2
+  const _mlosByDay = (A && A.rows ? A.rows : []).map((r,i)=>{
+    if(!r || !r.date) return 1;
+    try{
+      const _t0=new Date(TODAY); _t0.setHours(0,0,0,0);
+      const _dd=new Date(r.date.getFullYear(),r.date.getMonth(),r.date.getDate());
+      if(Math.round((_dd-_t0)/86400000)<7) return 1;                 // 7 giorni prima → 1
+      const nx=A.rows[i+1];
+      if(nx && nx.curOcc>=0.999) return 1;                            // giorno dopo al 100% → 1
+      let atFloor=false;
+      if(_isApt){                                                     // floor→2 solo per gli appartamenti
+        const iso=r.date.getFullYear()+'-'+String(r.date.getMonth()+1).padStart(2,'0')+'-'+String(r.date.getDate()).padStart(2,'0');
+        const floor=(typeof fp_getFloor==='function')?fp_getFloor(sel):0;
+        const bp=(typeof newrmesCalculateBasePrice==='function')?newrmesCalculateBasePrice(sel,iso):0;
+        atFloor=floor>0 && bp>0 && bp<=floor+1;
+      }
+      if(atFloor || (r.curOcc||0)>=0.9 || (r.stlyOcc||0)>=0.9) return 2;  // 90% attuale o storica (tutte le strutture)
+    }catch(e){}
+    return 1;
+  });
+  try { _sellTransposeTable(document.getElementById('sell-table-wrap'), showBeddy, showExp, sel, _mlosByDay); }
   catch(e){ console.error('[sell] transpose failed', e); }
   // Ripristina lo scroll orizzontale (vedi save all'inizio della funzione) — così l'utente
   // resta sulla data che stava modificando invece di tornare a oggi dopo un accept/override.
