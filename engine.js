@@ -19492,6 +19492,7 @@ function renderBigPicture(){
       <div class="big-hero-val">${h.val}</div>${h.sub?`<div class="big-hero-sub">${h.sub}</div>`:''}</div>
     </div>`).join('');
   try { _bigRenderBookingCurve(sel); } catch(e){ const c=document.getElementById('big-bcurve'); if(c)c.innerHTML=''; }
+  try { _bigRenderPickup4w(sel); } catch(e){ const c=document.getElementById('big-pk4w'); if(c)c.innerHTML=''; }
   try { _bigRenderChart(sel); } catch(e){ const c=document.getElementById('big-chart'); if(c)c.innerHTML=''; }
   try { _bigRenderPie(sel); } catch(e){ const c=document.getElementById('big-pie'); if(c)c.innerHTML=''; }
   const allDays = _bigPickupByDay(sel, 7);
@@ -19555,6 +19556,44 @@ function renderBigPicture(){
     el.addEventListener('click', (ev)=>{ ev.stopPropagation(); _bigShowBreakdown(el.dataset.bigbreakdown, n); });
   });
   _bigRenderWindowPills();
+}
+function _bigRenderPickup4w(sel){
+  const host = document.getElementById('big-pk4w');
+  if (!host) return;
+  const keys = new Set(structKeysFor(sel));
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  const N = 28;
+  const curDays=[], stlyDays=[];
+  for (let i=0;i<N;i++){
+    const d = new Date(today.getTime() - (N-1-i)*86400000);
+    curDays.push(ymd(d));
+    stlyDays.push(ymd(new Date(d.getTime() - 364*86400000)));
+  }
+  const byYmd = {};
+  for (const b of BOOKINGS){ if (b.cancelled || !keys.has(b.structKey)) continue; byYmd[b.bookYmd]=(byYmd[b.bookYmd]||0)+(b.notti||0); }
+  const cur=[], stly=[]; let cc=0, sc=0;
+  for (let i=0;i<N;i++){ cc+=(byYmd[curDays[i]]||0); sc+=(byYmd[stlyDays[i]]||0); cur.push(cc); stly.push(sc); }
+  const maxV = Math.max(1, cur[N-1]||0, stly[N-1]||0);
+  const W=760, H=210, padL=44, padR=72, padT=12, padB=26;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xAt=i=> padL + (i/(N-1))*plotW;
+  const yAt=v=> padT+plotH - (v/maxV)*plotH;
+  const pathOf=arr=> arr.map((v,i)=>`${i?'L':'M'}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+  for (let g=0;g<=3;g++){ const v=maxV*g/3, y=yAt(v); svg+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">${Math.round(v)}</text>`; }
+  svg+=`<path d="${pathOf(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="5 4" opacity=".85"/>`;
+  svg+=`<path d="${pathOf(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>`;
+  // etichette fine linea con anti-sovrapposizione
+  let ey1=yAt(cur[N-1]||0), ey2=yAt(stly[N-1]||0);
+  if (Math.abs(ey1-ey2)<12){ if(ey1<=ey2){ey1-=6;ey2+=6;} else {ey1+=6;ey2-=6;} }
+  svg+=`<text x="${W-padR+5}" y="${ey1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${cur[N-1]||0} RN</text>`;
+  svg+=`<text x="${W-padR+5}" y="${ey2+3}" font-size="10" font-weight="700" fill="#7a4d96">${stly[N-1]||0} LY</text>`;
+  const fmtD=y=>{const s=String(y);return s.slice(6,8)+'/'+s.slice(4,6);};
+  svg+=`<text x="${padL}" y="${H-8}" text-anchor="start" font-size="9" fill="var(--ink-3)">${fmtD(curDays[0])}</text>`;
+  svg+=`<text x="${padL+plotW}" y="${H-8}" text-anchor="end" font-size="9" fill="var(--ink-3)">today</text>`;
+  svg+=`</svg>`;
+  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (−364d)</span></div>`;
+  host.innerHTML = svg + leg;
 }
 function _bigRenderBookingCurve(sel){
   const host = document.getElementById('big-bcurve');
