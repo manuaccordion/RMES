@@ -19093,7 +19093,7 @@ const BIG_CARD_THEMES = {
   rate:   {accent:'#8e5fa8', bg:'linear-gradient(135deg,#f6f0fa,#e9dcf2)', ink:'#5a3a7a', icon:'🏷️'},
   occpk:  {accent:'#1f8a8a', bg:'linear-gradient(135deg,#ebf7f7,#d4eded)', ink:'#155e5e', icon:'🛏️'}
 };
-const BIG_HERO_ICONS = ['⚡','💶','📊','🏷️','🏆'];
+const BIG_HERO_ICONS = ['⚡','💶','🎯','📊','🏷️','🏆'];
 function _bigProvLabel(p){ return (p==='Non Specificato' ? 'Sito web' : p); }
 let BIG_SELECTED_DAY = null;   // ymd (number) del giorno cliccato nel grafico; null = ultimo giorno
 function _bigPickupTreeForDay(sel, dayYmd){
@@ -19465,9 +19465,22 @@ function renderBigPicture(){
     const pctTxt = (pct==null) ? '' : ` ${arrow}${Math.abs(pct).toFixed(0)}%`;
     return `STLY ${fmt(prev)}<span style="color:${col}">${pctTxt}</span>`;
   };
+  // % achievement del mese in corso: OTB / Month-1st snapshot forecast
+  let _achPct = null, _achTip = '';
+  try {
+    const _ymNow = TODAY.getFullYear()*100 + (TODAY.getMonth()+1);
+    const _Af = (typeof aggForecast==='function') ? aggForecast(sel) : null;
+    const _mNow = (_Af && _Af.monthly) ? _Af.monthly[_ymNow] : null;
+    if (_mNow){
+      const _snap = (typeof fp_getFcstSnapshot==='function') ? fp_getFcstSnapshot(sel, _ymNow) : null;
+      const _den = (_snap && _snap.fcstRev>0) ? _snap.fcstRev : (_mNow.fcstRev||0);
+      if (_den>0){ _achPct = (_mNow.otbRev||0)/_den; _achTip = `OTB ${fmtEUR(_mNow.otbRev||0)} / ${(_snap&&_snap.fcstRev>0)?'Month-1st snapshot':'live forecast (no snapshot)'} ${fmtEUR(_den)} = ${(_achPct*100).toFixed(1)}%`; }
+    }
+  } catch(e){}
   const heroItems = [
     {label:`Pickup (${winLbl})`, val:`+${agg.totRn} RN`, sub: _stly(pkVs.cur, pkVs.ly, (x)=>`${x} RN`), byProp: isBoth?'pickup':null, tip: _pkTip},
     revOtb!=null ? {label:'Revenue 2026 (OTB)', val: fmtEUR(revOtb), sub:_stly(revOtb, revP, fmtEUR), byProp: isBoth?'revenue':null} : null,
+    _achPct!=null ? {label:'Achievement (curr. mo.)', val: fmtPct(_achPct,0), sub:'OTB vs Fcst snapshot', tip:_achTip} : null,
     occYear!=null ? {label:'OCC 2026', val: fmtPct(occYear,1), sub:_stly(occYear, occP, (x)=>fmtPct(x,1)), byProp: isBoth?'occ':null} : null,
     (adrYear!=null && isFinite(adrYear)) ? {label:'ADR 2026', val: fmtEUR(adrYear), sub:_stly(adrYear, (isFinite(adrP)?adrP:null), fmtEUR), byProp: isBoth?'adr':null} : null,
     rank ? {label:'Compset rank (7d)', val:`${rank.rank}\u00b0 / ${rank.total}`, byProp: isBoth?'rate':null} : null
@@ -19518,25 +19531,22 @@ function renderBigPicture(){
                       : '<div class="big-tree-row"><span class="k" style="font-size:12px;color:var(--ink-3)">—</span></div>';
   };
   const byPropBadge = isBoth ? ` <span class="big-byprop" data-bigbreakdown="pickup" style="font-size:9px;font-weight:700;color:#fff;background:var(--accent);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>` : '';
+  const _cardColors = ['#c08838','#4a7c59','#3b5a78'];
+  const _bpCard = (rank, label, rn, color)=> `<div style="flex:1;min-width:130px;background:var(--surface);border:1px solid var(--line);border-top:3px solid ${color};border-radius:10px;padding:12px 14px;box-shadow:var(--shadow)"><div style="font-size:10px;color:var(--ink-3)">${rank}</div><div style="font-size:15px;font-weight:700;margin:3px 0;font-family:'JetBrains Mono',monospace">${label}</div><div style="font-size:13px;color:${color};font-weight:700">${rn} RN</div></div>`;
+  const _bpCardRow = (arr)=>{
+    const top=(arr||[]).slice(0,3);
+    if(!top.length) return '<div style="color:var(--ink-3);font-size:12px;padding:8px 0">—</div>';
+    return `<div style="display:flex;gap:12px;flex-wrap:wrap">${top.map((x,i)=>_bpCard('#'+(i+1), x.label, x.rn, _cardColors[i])).join('')}</div>`;
+  };
   const treeHtml = `
-    <div class="big-tree">
-      <div class="big-tree-main">
-        <div class="big-tree-main-head">🏨 Top stay dates booked on <span style="color:var(--accent)">${selLbl}</span> — ${tree.totRn} RN total${(!isAll && BIG_SELECTED_DAY==null)?' <span style="font-weight:400;color:var(--ink-3);font-size:11px">(latest day — click a bar above, or “all 7 days”)</span>':''}${byPropBadge}</div>
-        <div class="big-tree-main-rows">${mainRows}</div>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div>
+        <div class="big-tree-main-head" style="margin-bottom:10px">🏨 Top stay dates booked on <span style="color:var(--accent)">${selLbl}</span> — ${tree.totRn} RN total${(!isAll && BIG_SELECTED_DAY==null)?' <span style="font-weight:400;color:var(--ink-3);font-size:11px">(latest day — click a bar above, or “all 7 days”)</span>':''}${byPropBadge}</div>
+        ${_bpCardRow(tree.stayDays)}
       </div>
-      <div class="big-tree-branches">
-        <div class="big-tree-branch" style="border-top:3px solid #3b6b9a">
-          <div class="big-tree-branch-head"><span style="color:#3b6b9a">🗓️</span> Stay month</div>
-          <div class="big-tree-branch-rows">${branchHtml(tree.months,'#3b6b9a')}</div>
-        </div>
-        <div class="big-tree-branch" style="border-top:3px solid #1f8a8a">
-          <div class="big-tree-branch-head"><span style="color:#1f8a8a">🛏️</span> Room sold</div>
-          <div class="big-tree-branch-rows">${branchHtml(tree.rooms,'#1f8a8a')}</div>
-        </div>
-        <div class="big-tree-branch" style="border-top:3px solid #c4823b">
-          <div class="big-tree-branch-head"><span style="color:#c4823b">🔗</span> Channel sold</div>
-          <div class="big-tree-branch-rows">${branchHtml(tree.channels,'#c4823b')}</div>
-        </div>
+      <div>
+        <div class="big-tree-main-head" style="margin-bottom:10px"><span style="color:#3b6b9a">🗓️</span> Stay month</div>
+        ${_bpCardRow(tree.months)}
       </div>
     </div>`;
   const treeEl = document.getElementById('big-tree');
