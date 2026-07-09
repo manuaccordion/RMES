@@ -1080,6 +1080,7 @@ function loadData(csvText){
     const tot = parseFloat((r['Totale']||'0').toString().replace(',', '.'));
     if (!isFinite(tot)) continue;
     const tax = parseFloat((r['Tassa di soggiorno']||'0').toString().replace(',', '.')) || 0;
+    const extraCleaning = parseFloat((r['Extra']||'0').toString().replace(',', '.')) || 0;
     const totNet = tot - tax;
     const _validRoomsSet = _structKeyForRooms ? _structRoomsCache[_structKeyForRooms] : null;
     let alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
@@ -1114,6 +1115,7 @@ function loadData(csvText){
         channelMarkup,
         isNonRefundable,
         revTotal: revPerRoomNight * notti,
+        cleaning: extraCleaning / numRooms,
         bookYmd: ymd(dBook),
         cancelled: stato === 'Cancellate',
         cancelYmd: dCancel ? ymd(dCancel) : null,
@@ -11687,12 +11689,27 @@ function renderSellStrategy(sel){
   const rngLbl = document.getElementById('sell-range-label');
   if (rngLbl) rngLbl.textContent = rangeLbl;
   const T = A.totals;
+  // Cleaning revenue (voce separata): somma il canone pulizia (colonna Extra) delle prenotazioni
+  // OTB nel range, attribuito alla data di check-in. NON entra nell'ADR/Base (solo revenue totale).
+  let curCleaning = 0;
+  try {
+    const _sd = startD ? ymd(startD) : 0, _ed = endD ? ymd(endD) : 99999999;
+    for (const b of BOOKINGS){
+      if (b.cancelled || !b.cleaning) continue;
+      if (sel !== 'both' && b.structKey !== sel) continue;
+      if (!b.dIn) continue;
+      const _din = ymd(b.dIn);
+      if (_din >= _sd && _din <= _ed) curCleaning += b.cleaning;
+    }
+  } catch(e){}
+  const _revWithClean = T.curRev + curCleaning;
   const stlyDelta = isFinite(T.curRev) && T.stlyRev>0 ? (T.curRev - T.stlyRev) / T.stlyRev : NaN;
   document.getElementById('sell-kpis').innerHTML = `
     <div class="kpi" style="border-left-color:#6b5b3f">
       <div class="kpi-label">OTB Revenue</div>
-      <div class="kpi-val">${fmtEUR(T.curRev)}</div>
+      <div class="kpi-val">${fmtEUR(_revWithClean)}</div>
       <div class="kpi-sub mono">${T.curRn} RN · OCC ${fmtPct(T.curOcc,1)} · ADR ${isFinite(T.curAdr)?fmtEUR(T.curAdr):'—'}</div>
+      ${curCleaning>0?`<div class="kpi-sub mono" style="font-size:11px;color:var(--ink-3)">Room ${fmtEUR(T.curRev)} · Cleaning ${fmtEUR(curCleaning)}</div>`:''}
     </div>
     <div class="kpi" style="border-left-color:#3b6b6b">
       <div class="kpi-label">Pickup ${A.pickupDaysAgo}d</div>
