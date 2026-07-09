@@ -15979,7 +15979,7 @@ function renderForecast(sel){
         <th title="Revenue forecast saved on the 1st of the month">Rev snap</th>
         <th title="Δ% live vs initial snapshot (positive = doing better than forecast at the start of the month)">Δ% vs snap</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
-        <th title="YTD+Forecast Revenue / Budget Revenue — % del budget che si prevede di raggiungere">% Budget</th>
+        <th title="OTB / Month-1st snapshot forecast (= forecast salvato il 1° del mese). Se il mese non ha snapshot, fallback su forecast live.">% Achievement</th>
       </tr>
     </thead>`;
   let body = '';
@@ -16055,12 +16055,7 @@ function renderForecast(sel){
                 <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${budAdr > 0 ? fmtEUR(budAdr) : '—'}</td>
                 <td class="cell-mono ${revCls}" style="background:rgba(60,124,90,.04)" title="${revTip}"><b>${budRev > 0 ? fmtEUR(budRev) : '—'}</b></td>`;
       })()}
-      ${(() => {
-        const _bud = (typeof budgetMonthlyFor === 'function') ? budgetMonthlyFor(sel, m.y*100+m.mo, 'rev') : 0;
-        const _pct = _bud > 0 ? m.fcstRev / _bud : 0;
-        const _cls = !_bud ? 'cell-flat' : (_pct >= 0.98 ? 'cell-pos' : (_pct >= 0.85 ? '' : 'cell-neg'));
-        return `<td class="cell-mono ${_cls}" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76" title="YTD+Forecast ${fmtEUR(m.fcstRev)} / Budget ${fmtEUR(_bud)} = ${(_pct*100).toFixed(1)}%"><b>${_bud>0?Math.round(_pct*100)+'%':'—'}</b></td>`;
-      })()}
+      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76" title="OTB ${fmtEUR(m.otbRev)} / ${m.achievementDenSource === 'snapshot' ? 'Month-1st snapshot' : 'live forecast (no snapshot)'} ${fmtEUR(m.achievementDen)} = ${(m.achievement*100).toFixed(2)}% (≥95% verde, 70-95% neutro, <70% rosso)"><b>${Math.round((m.achievement||0)*100)}%</b></td>
     </tr>`;
   }
   const totDiff = totFcstRev - totOtbRev;
