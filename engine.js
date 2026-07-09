@@ -11329,8 +11329,7 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   // - "origIdx" = posizione FISSA della cella nella TABELLA SORGENTE (non in questo array)
   //              così possiamo riordinare le righe display senza rompere la lettura.
   const allMetrics = [
-    { key:'lu',        show:true,  label:'LAST UPDATE',  sub:'active price',   cssClass:'sell-tr-lu',    origIdx:0 },
-    { key:'rmes',      show:true,  label:'RMES',         sub:'price · Δ€ · ✓', cssClass:'sell-tr-rmes',  origIdx:1 },
+    { key:'luRmes',    show:true,  label:'LAST UPDATE',  sub:'active · RMES ✓', cssClass:'sell-tr-lu',   origIdx:null },
     { key:'mlos',      show:true, label:'Min stay', sub:'nights', cssClass:'sell-tr-mlos', origIdx:null },
     { key:'date',      show:false, origIdx:2 },                                // duplicato dell'header → SKIP
     { key:'event',     show:true,  label:'Event',        sub:'',               cssClass:'sell-tr-event', origIdx:3 },
@@ -11462,6 +11461,25 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
     tr.appendChild(labelTh);
     // Celle per ogni data (= per ogni dataRow originale, prendo la cella in posizione m.origIdx)
     for (let dIdx = 0; dIdx < dataRows.length; dIdx++){
+      if (m.key === 'luRmes'){
+        const td = document.createElement('td');
+        td.className='sell-lurmes-td'; td.style.textAlign='center'; td.style.padding='3px 4px';
+        const _mk=(cell,cls,big)=>{
+          const div=document.createElement('div');
+          if(cell){ for(const a of cell.attributes){ if(a.name!=='class') div.setAttribute(a.name,a.value); } if(cell.className) div.className=cell.className; div.innerHTML=cell.innerHTML; }
+          div.classList.add(cls);
+          div.style.background='transparent'; div.style.backgroundColor='transparent'; div.style.border='none';
+          div.style.display='block'; div.style.padding='0';
+          if(big){ div.style.fontWeight='700'; div.style.fontSize='15px'; }
+          else { div.style.fontSize='12px'; div.style.marginTop='1px'; div.style.opacity='.92'; }
+          if(cell && /cursor:pointer/.test(cell.getAttribute('style')||'')) div.style.cursor='pointer';
+          return div;
+        };
+        td.appendChild(_mk(dataRows[dIdx].children[0],'sell-lu-inner',true));   // Last update (attivo)
+        td.appendChild(_mk(dataRows[dIdx].children[1],'sell-rmes-inner',false)); // RMES suggerito + ✓
+        tr.appendChild(td);
+        continue;
+      }
       if (m.key === 'mlos'){
         const td = document.createElement('td');
         td.className='cell-mono'; td.style.textAlign='center'; td.style.background='rgba(107,91,63,.05)';
@@ -12996,7 +13014,7 @@ function renderSellStrategy(sel){
   });
   // NewRMES: il vecchio popup Foundation (fp-price-click) è stato sostituito dai bottoni inline
   // 🖋/↺ nella cella Base Price + il pannello "Override by period". Niente listener qui.
-  document.getElementById('sell-table-wrap').querySelectorAll('td[data-rmes-struct]').forEach(el=>{
+  document.getElementById('sell-table-wrap').querySelectorAll('[data-rmes-struct]').forEach(el=>{
     el.addEventListener('click', (ev)=>{
       ev.stopPropagation();
       const struct = el.dataset.rmesStruct;
