@@ -15969,7 +15969,7 @@ function renderForecast(sel){
         <th colspan="3" class="g-26" style="background:rgba(195,131,59,.10);text-align:center" title="Past months: actuals. Current month: actuals up to yesterday + forecast from today to month-end. Future months: forecast.">YTD + Forecast (live)</th>
         <th colspan="2" class="g-26" style="background:rgba(59,107,154,.08);text-align:center" title="Forecast saved (frozen) on the 1st day of the month. The Δ% compares the initial snapshot with the actual OTB: for past months = actual close, for the current month = OTB accumulating. Measures how well the initial forecast matches the actual close. Only for months still futuri il confronto è col forecast live.">Month-1st snapshot</th>
         <th colspan="3" class="g-25" style="background:rgba(60,124,90,.08);text-align:center">Budget</th>
-        <th colspan="5" class="g-kpi" style="background:rgba(91,138,118,.10);text-align:center;border-left:2.5px solid #5b8a76">KPIs for Forecast achievement</th>
+        <th colspan="1" class="g-kpi" style="background:rgba(91,138,118,.10);text-align:center;border-left:2.5px solid #5b8a76">Budget %</th>
       </tr>
       <tr>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
@@ -15979,11 +15979,7 @@ function renderForecast(sel){
         <th title="Revenue forecast saved on the 1st of the month">Rev snap</th>
         <th title="Δ% live vs initial snapshot (positive = doing better than forecast at the start of the month)">Δ% vs snap</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
-        <th title="YTD+Forecast Revenue − OTB Revenue">Diff € (Fct−OTB)</th>
-        <th title="Exact time-aware daily pickup target for TODAY. Uses RN expected per stay-date (monthly fcstRn spread with the STLY pattern, minus OTB). Today's target = residual revenue × today's sellable volume / total volume across all future booking-days. Higher with lead time, lower near month-end. Fallback to linear-weights formula if LY data is thin.">€/day to close</th>
-        <th title="Revenue acquired in the last 7 days / 7. Green if ≥ the (time-aware) €/day target (on track), red if below.">€/day pickup 7d</th>
-        <th title="STLY revenue acquired in the STLY 7-day window (−364d) / 7">€/day pickup STLY 7d</th>
-        <th title="OTB / Month-1st snapshot forecast (= forecast salvato il 1° del mese). Misura quanto del forecast iniziale è già stato onorato. Se il mese non ha snapshot, fallback su forecast live.">% Achievement</th>
+        <th title="YTD+Forecast Revenue / Budget Revenue — % del budget che si prevede di raggiungere">% Budget</th>
       </tr>
     </thead>`;
   let body = '';
@@ -16059,11 +16055,12 @@ function renderForecast(sel){
                 <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${budAdr > 0 ? fmtEUR(budAdr) : '—'}</td>
                 <td class="cell-mono ${revCls}" style="background:rgba(60,124,90,.04)" title="${revTip}"><b>${budRev > 0 ? fmtEUR(budRev) : '—'}</b></td>`;
       })()}
-      <td class="cell-mono" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76"><b>${fmtEUR(m.diffOtbFct)}</b></td>
-      <td class="cell-mono" style="background:rgba(91,138,118,.06)" title="${m.targetExactMode ? 'EXACT time-aware target for TODAY: residual RN per stay-date (fcstRn spread via the STLY pattern, minus OTB), summed from each future booking-day to month-end. Today gets the full month volume; near month-end only a few dates remain. D=' + m.daysRemaining + ' days left.' : 'Linear-weights fallback (no LY pattern available). Daily target = (Fct−OTB) × 2/(D+1), D=' + m.daysRemaining + '.'}">${m.daysRemaining > 0 ? fmtEUR(m.eurPerDayToClose) : '—'}</td>
-      <td class="cell-mono ${pkCmpCls}" style="background:rgba(91,138,118,.06);cursor:help" title="${pkCmpTip}">${fmtEUR(m.eurPerDayPickup7)}</td>
-      <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(m.eurPerDayPickupStly7)}</td>
-      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06)" title="OTB ${fmtEUR(m.otbRev)} / ${m.achievementDenSource === 'snapshot' ? 'Month-1st snapshot' : 'live forecast (no snapshot)'} ${fmtEUR(m.achievementDen)} = ${(m.achievement*100).toFixed(2)}% (rounded · ≥95% green, 70-95% neutral, <70% red)"><b>${Math.round((m.achievement||0)*100)}%</b></td>
+      ${(() => {
+        const _bud = (typeof budgetMonthlyFor === 'function') ? budgetMonthlyFor(sel, m.y*100+m.mo, 'rev') : 0;
+        const _pct = _bud > 0 ? m.fcstRev / _bud : 0;
+        const _cls = !_bud ? 'cell-flat' : (_pct >= 0.98 ? 'cell-pos' : (_pct >= 0.85 ? '' : 'cell-neg'));
+        return `<td class="cell-mono ${_cls}" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76" title="YTD+Forecast ${fmtEUR(m.fcstRev)} / Budget ${fmtEUR(_bud)} = ${(_pct*100).toFixed(1)}%"><b>${_bud>0?Math.round(_pct*100)+'%':'—'}</b></td>`;
+      })()}
     </tr>`;
   }
   const totDiff = totFcstRev - totOtbRev;
@@ -16211,7 +16208,7 @@ function renderForecast(sel){
     else if (!showPast && !hideFuture) label = 'May 2026 → Apr 2027 (12 months)';
     else if (showPast && hideFuture)   label = 'Jan → Dec 2026 (12 months)';
     else                                label = 'May → Dec 2026 (8 months)';
-    subEl.textContent = `${label} · Mix OTA ${(A.mix.mixOTA*100).toFixed(0)}% · Mix Non rimb ${(A.mix.mixNR*100).toFixed(0)}% · Markup factor ×${A.mix.markupFactor.toFixed(3)} · Pace ${A.pace.ratio?A.pace.ratio.toFixed(2):'—'} (${A.pace.curRn}/${A.pace.stlyRn} RN)`;
+    subEl.textContent = '';
   }
   const cbPast = document.getElementById('fcst-show-past-cb');
   if (cbPast){
