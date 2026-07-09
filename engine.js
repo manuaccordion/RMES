@@ -15985,11 +15985,20 @@ function renderForecast(sel){
   const flAdr   = totFLRn>0 ? totFLRev/totFLRn : 0;
   const dRev = (totFLRev > 0) ? (totFcstRev - totFLRev)/totFLRev : NaN;
   const dRn  = totFcstRn - totFLRn;
+  // Cleaning revenue (voce separata): pulizia OTB del periodo forecast. NON entra nell'ADR (resta camera).
+  let _ovClean = 0;
+  try {
+    const _tk = new Set(structKeysFor(sel));
+    const _tyN = ymd(new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()));
+    for (const b of BOOKINGS){ if (b.cancelled || !b.cleaning || !_tk.has(b.struct)) continue; const _yr=b.dIn?b.dIn.getFullYear():0; if (b.bookYmd <= _tyN && _yr>=2026) _ovClean += b.cleaning; }
+  } catch(e){}
+  const _clnLine = (base)=> _ovClean>0 ? `<div class="kpi-sub mono" style="font-size:11px;color:var(--ink-3)">Room ${fmtEUR(base)} · Cleaning ${fmtEUR(_ovClean)}</div>` : '';
   const kpis = `
     <div class="kpi" style="border-left:3px solid #c4823b">
       <div class="kpi-label">YTD + Forecast Revenue</div>
-      <div class="kpi-value">${fmtEUR(totFcstRev)}</div>
+      <div class="kpi-value">${fmtEUR(totFcstRev + _ovClean)}</div>
       <div class="kpi-sub mono">${totFcstRn} RN · OCC ${fmtPct(fcstOcc,1)} · ADR ${fmtEUR(fcstAdr)}</div>
+      ${_clnLine(totFcstRev)}
     </div>
     <div class="kpi" style="border-left:3px solid #8e5fa8">
       <div class="kpi-label">Final LY 2025 (reference)</div>
@@ -16003,8 +16012,9 @@ function renderForecast(sel){
     </div>
     <div class="kpi" style="border-left:3px solid #6b5b3f">
       <div class="kpi-label">OTB already acquired</div>
-      <div class="kpi-value">${fmtEUR(totOtbRev)}</div>
+      <div class="kpi-value">${fmtEUR(totOtbRev + _ovClean)}</div>
       <div class="kpi-sub mono">${totOtbRn} RN · ${totFcstRev>0?fmtPct(totOtbRev/totFcstRev,0):'—'} of forecast</div>
+      ${_clnLine(totOtbRev)}
     </div>
   `;
   document.getElementById('fcst-kpis').innerHTML = kpis;
@@ -19570,7 +19580,7 @@ function _bigRenderPickup4w(sel){
     stlyDays.push(ymd(new Date(d.getTime() - 364*86400000)));
   }
   const byYmd = {};
-  for (const b of BOOKINGS){ if (b.cancelled || !keys.has(b.structKey)) continue; byYmd[b.bookYmd]=(byYmd[b.bookYmd]||0)+(b.notti||0); }
+  for (const b of BOOKINGS){ if (b.cancelled || !keys.has(b.struct)) continue; byYmd[b.bookYmd]=(byYmd[b.bookYmd]||0)+(b.notti||0); }
   const cur=[], stly=[]; let cc=0, sc=0;
   for (let i=0;i<N;i++){ cc+=(byYmd[curDays[i]]||0); sc+=(byYmd[stlyDays[i]]||0); cur.push(cc); stly.push(sc); }
   const maxV = Math.max(1, cur[N-1]||0, stly[N-1]||0);
