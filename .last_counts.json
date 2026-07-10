@@ -1,0 +1,19 @@
+{
+  "date": "__DATE__",
+  "firenze": 794,
+  "condotta": 699,
+  "alfani": 813,
+  "davids": 415,
+  "nazionale": 235,
+  "portenuove": 143,
+  "davidsRpn": 126.48,
+  "totale": 8775,
+  "pickup": {
+    "firenze": 112,
+    "condotta": 136,
+    "alfani": 296,
+    "davids": 59,
+    "nazionale": 68,
+    "portenuove": 48
+  }
+}
