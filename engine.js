@@ -20015,6 +20015,98 @@ function _bigRenderPie(sel){
   </div>`;
 }
 function _bigRenderWindowPills(){ /* toggle 1/7 rimosso: default 1 giorno, selezione dal grafico */ }
+// ===================== PRICE TREE TAB =====================
+const PTREE_KEY = 'rmes_pricetree_v1';
+function ptreeGetConfig(){
+  let c = {};
+  try { c = JSON.parse(localStorage.getItem(PTREE_KEY) || '{}'); } catch(e){}
+  return Object.assign({
+    mkBooking:57, mkExpedia:62, mkCtrip:62, mkAirbnb:10,
+    member:10, promo:20, pkg:10, nr:10, airbnb15:15, airbnb30:20,
+    spEnabled:false, spPct:30, spFrom:'', spTo:'', days:90
+  }, c);
+}
+function ptreeSaveConfig(c){ try { localStorage.setItem(PTREE_KEY, JSON.stringify(c)); } catch(e){} }
+function ptreeConfigHtml(cfg){
+  const n=(id,lbl,val,w)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="number" value="${val}" style="width:${w||58}px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
+  const d=(id,lbl,val)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="date" value="${val||''}" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
+  return `
+    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Markup % (base canale)</span>
+        <div style="display:flex;gap:8px">${n('mkBooking','Booking',cfg.mkBooking)}${n('mkExpedia','Expedia',cfg.mkExpedia)}${n('mkCtrip','Ctrip',cfg.mkCtrip)}${n('mkAirbnb','Airbnb',cfg.mkAirbnb)}</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Offerte % (si sommano)</span>
+        <div style="display:flex;gap:8px">${n('member','Member',cfg.member)}${n('promo','Promo',cfg.promo)}${n('pkg','Package (Exp)',cfg.pkg,74)}${n('nr','Non-ref',cfg.nr)}</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Airbnb LOS %</span>
+        <div style="display:flex;gap:8px">${n('airbnb15','>15gg',cfg.airbnb15)}${n('airbnb30','≥1 mese',cfg.airbnb30)}${n('days','Giorni',cfg.days)}</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px;padding:6px 10px;background:rgba(195,131,59,.06);border-radius:8px">
+        <label style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px"><input id="pt-spEnabled" type="checkbox" ${cfg.spEnabled?'checked':''}> Promo speciale (Booking/Expedia)</label>
+        <div style="display:flex;gap:8px">${n('spPct','Promo %',cfg.spPct)}${d('spFrom','Travel da',cfg.spFrom)}${d('spTo','Travel a',cfg.spTo)}</div></div>
+      <button id="pt-apply" style="padding:8px 18px;background:var(--sel);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;align-self:flex-end">Apply</button>
+    </div>`;
+}
+function ptreeWireConfig(){
+  const btn=document.getElementById('pt-apply'); if(!btn) return;
+  btn.addEventListener('click', ()=>{
+    const g=id=>{const el=document.getElementById('pt-'+id);return el?el.value:'';};
+    const c=ptreeGetConfig();
+    ['mkBooking','mkExpedia','mkCtrip','mkAirbnb','member','promo','pkg','nr','airbnb15','airbnb30','spPct','days'].forEach(k=>{const v=parseFloat(g(k));if(isFinite(v))c[k]=v;});
+    c.spFrom=g('spFrom'); c.spTo=g('spTo');
+    const cb=document.getElementById('pt-spEnabled'); c.spEnabled=cb?cb.checked:false;
+    ptreeSaveConfig(c);
+    const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built;
+    renderPriceTree(CURRENT_STRUCT);
+  });
+}
+function renderPriceTree(sel){
+  const tHost=document.getElementById('ptree-table'), cHost=document.getElementById('ptree-config');
+  if(!tHost) return;
+  const cfg=ptreeGetConfig();
+  if(cHost && !cHost.dataset.built){ cHost.innerHTML=ptreeConfigHtml(cfg); cHost.dataset.built='1'; ptreeWireConfig(); }
+  const f=x=>(x||0)/100;
+  const m=f(cfg.member), pk=f(cfg.pkg), nr=f(cfg.nr);
+  const mk={booking:1+f(cfg.mkBooking),expedia:1+f(cfg.mkExpedia),ctrip:1+f(cfg.mkCtrip),airbnb:1+f(cfg.mkAirbnb)};
+  const spN=(s)=>s?+String(s).replace(/-/g,''):0;
+  const promoFor=(ch,dn)=>{ if(cfg.spEnabled&&(ch==='booking'||ch==='expedia')&&cfg.spFrom&&cfg.spTo){ if(dn>=spN(cfg.spFrom)&&dn<=spN(cfg.spTo)) return f(cfg.spPct); } return f(cfg.promo); };
+  const N=Math.max(7,Math.min(180,cfg.days||90));
+  const today=new Date(TODAY);today.setHours(0,0,0,0);
+  const days=[]; for(let i=0;i<N;i++){ days.push(new Date(today.getTime()+i*86400000)); }
+  const L=days.map(d=>{ let v=null; try{ v=newrmesGetCurrentReference(sel, ymd(d)); }catch(e){} return (v&&isFinite(v)&&v>0)?v:null; });
+  const grpColor={Beddy:'#2f7fb5',Booking:'#003580',Expedia:'#00355f',Ctrip:'#2577e3',Airbnb:'#e0565b','':'#6b5b3f'};
+  const lines=[
+    {g:'',lbl:'Last Update (L)',c:(L)=>L,bold:true},
+    {g:'Beddy',lbl:'Flexible',c:(L)=>L},
+    {g:'Beddy',lbl:'Non-ref (−10%)',c:(L)=>L*(1-nr)},
+    {g:'Booking',lbl:'Flexible',c:(L)=>L*mk.booking},
+    {g:'Booking',lbl:'Flex −member −promo',c:(L,dn)=>L*mk.booking*(1-m-promoFor('booking',dn))},
+    {g:'Booking',lbl:'Non-ref',c:(L)=>L*mk.booking*(1-nr)},
+    {g:'Booking',lbl:'NR −member −promo',c:(L,dn)=>L*mk.booking*(1-nr)*(1-m-promoFor('booking',dn))},
+    {g:'Expedia',lbl:'Flexible',c:(L)=>L*mk.expedia},
+    {g:'Expedia',lbl:'Flex −mem −promo −pkg',c:(L,dn)=>L*mk.expedia*(1-m-pk-promoFor('expedia',dn))},
+    {g:'Expedia',lbl:'Non-ref',c:(L)=>L*mk.expedia*(1-nr)},
+    {g:'Expedia',lbl:'NR −mem −promo −pkg',c:(L,dn)=>L*mk.expedia*(1-nr)*(1-m-pk-promoFor('expedia',dn))},
+    {g:'Ctrip',lbl:'Flexible',c:(L)=>L*mk.ctrip},
+    {g:'Ctrip',lbl:'Flex −member −promo',c:(L,dn)=>L*mk.ctrip*(1-m-promoFor('ctrip',dn))},
+    {g:'Ctrip',lbl:'Non-ref',c:(L)=>L*mk.ctrip*(1-nr)},
+    {g:'Ctrip',lbl:'NR −member −promo',c:(L,dn)=>L*mk.ctrip*(1-nr)*(1-m-promoFor('ctrip',dn))},
+    {g:'Airbnb',lbl:'Base',c:(L)=>L*mk.airbnb},
+    {g:'Airbnb',lbl:'−15% (>15gg)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb15))},
+    {g:'Airbnb',lbl:'−20% (≥1 mese)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb30))},
+  ];
+  const fmtP=v=>(v==null||!isFinite(v))?'—':'€'+Math.round(v);
+  const dow=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let head='<tr><th style="position:sticky;left:0;background:var(--surface);z-index:2;text-align:left;min-width:170px">Channel / rate</th>';
+  days.forEach(d=>{ const wk=(d.getDay()===0||d.getDay()===6); head+=`<th style="min-width:52px;text-align:center;${wk?'background:rgba(195,131,59,.06)':''}"><div style="font-size:9px;color:var(--ink-3)">${dow[d.getDay()]}</div>${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}</th>`; });
+  head+='</tr>';
+  let body=''; let lastG=null;
+  lines.forEach(ln=>{
+    if(ln.g!==lastG && ln.g!==''){ body+=`<tr><td colspan="${N+1}" style="background:${grpColor[ln.g]}12;color:${grpColor[ln.g]};font-weight:700;font-size:11px;padding:4px 8px;position:sticky;left:0">${ln.g}</td></tr>`; lastG=ln.g; }
+    const lblStyle = ln.bold?'font-weight:700;color:var(--ink)':'color:var(--ink-2)';
+    body+=`<tr><td style="position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;${lblStyle};border-left:2px solid ${grpColor[ln.g]||'transparent'}">${ln.lbl}</td>`;
+    days.forEach((d,i)=>{ const l=L[i]; const v=(l==null)?null:ln.c(l, ymd(d)); const wk=(d.getDay()===0||d.getDay()===6); body+=`<td style="text-align:center;font-family:'DM Mono',monospace;${ln.bold?'font-weight:700':''};${wk?'background:rgba(195,131,59,.04)':''}">${fmtP(v)}</td>`; });
+    body+='</tr>';
+  });
+  tHost.innerHTML=`<div style="overflow-x:auto"><table class="data" style="font-size:12px;border-collapse:collapse">${head}${body}</table></div>`;
+}
 function setTab(name){
   CURRENT_TAB = name;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
@@ -20030,6 +20122,9 @@ function setTab(name){
   }
   if (name === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
+  }
+  if (name === 'ptree' && typeof renderPriceTree === 'function'){
+    try { renderPriceTree(CURRENT_STRUCT); } catch(e){ console.error('renderPriceTree', e); }
   }
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }

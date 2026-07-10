@@ -1434,6 +1434,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="pri"><span class="ico" style="color:#b1432f"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>RMES</button>
     <button class="tab" data-tab="baseprice"><span class="ico" style="color:#2e7d6b"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.6a4 4 0 1 0 0 6.8"/><line x1="6.5" y1="10.6" x2="13" y2="10.6"/><line x1="6.5" y1="13.4" x2="13" y2="13.4"/></svg></span>Export Pricing</button>
     <button class="tab" data-tab="checks"><span class="ico" style="color:#b06fa0"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>Check Updates</button>
+    <button class="tab" data-tab="ptree"><span class="ico" style="color:#7a4d96"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="4" r="2.2"/><circle cx="18" cy="12" r="2.2"/><circle cx="18" cy="20" r="2.2"/><path d="M8.2 6H12M12 4v16M12 12h3.6M12 4h3.6M12 20h3.6"/></svg></span>Price Tree</button>
     <button class="tab" data-tab="instr"><span class="ico" style="color:#8b6f47"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Playbook</button>
   </nav>
   <main>
@@ -2129,6 +2130,13 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <button id="audit-export" onclick="_auditExportCSV()" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid #7a4f1c;border-radius:6px;background:transparent;color:#7a4f1c;cursor:pointer;font-weight:700">⬇ Export Audit Log CSV</button>
       </div>
     </div>
+  </section>
+
+  <!-- ============ SECTION PRICE TREE ============ -->
+  <section class="tab-panel" id="panel-ptree">
+    <div class="section-head"><h2>Price Tree</h2></div>
+    <div class="panel"><div class="panel-body"><div id="ptree-config"></div></div></div>
+    <div class="panel"><div class="panel-body flush" style="padding:0"><div id="ptree-table"></div></div></div>
   </section>
 
   <!-- ============ SECTION CHECKS — Activity Log ============ -->
