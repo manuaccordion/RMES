@@ -1,36 +1,152 @@
 const EMBEDDED_CSV = `numero di riferimento,Data/ora prenotazione,Data/ora ultima modifica,Canale,prenotante,Alloggi,Piani tariffari,Data inizio soggiorno,Data partenza,Num. notti,Totale,Struttura,Stato,Tassa di soggiorno,Provenienza,cleaning
+B976CA0CB1,07/07/2026 16:39,,Booking,Jeffrey Robbins,"Bilocale, Bilocale","Standard rate, Standard rate",29/09/2026,01/10/2026,2,1205.5,Condotta 16,Confermate,,,0
+84FAB16F78,06/07/2026 20:58,,Expedia,Ziqing Zhang,Suite,Flessibile,24/07/2026,25/07/2026,1,203.22,Firenze Suite,Confermate,0,OTA,0
+9C9DEFD50A,06/07/2026 16:27,,Booking,Svetlana Lyba,Trilocale,Standard rate,04/08/2026,11/08/2026,7,1485.35,Condotta 16,Confermate,,,0
+3FE0080B8E,31/05/2026 18:18,06/07/2026 11:02,Expedia,shan Jiang,Camera Matrimoniale Deluxe,Flessibile,12/07/2026,14/07/2026,2,282.96,Firenze Suite,Cancellate,0,OTA,0
+4962966ED2,06/07/2026 11:02,,Expedia,shan Jiang,Camera Matrimoniale Deluxe,Flessibile,12/07/2026,14/07/2026,2,279.39,Firenze Suite,Confermate,0,OTA,0
+DDA38A7EAF,06/07/2026 08:23,06/07/2026 09:48,Booking,Robert Kim,Trilocale,Non rimborsabile,24/07/2026,26/07/2026,2,470.5,Condotta 16,Cancellate,,,0
+9A9773BD62,05/07/2026 16:37,06/07/2026 09:25,Booking,Edward Sherriff,Trilocale,Standard rate,25/07/2026,27/07/2026,2,561.16,Condotta 16,Confermate,,,0
+AC1AB579C4,06/07/2026 07:24,,Booking,Meng Lulu,Bilocale,Non rimborsabile,23/07/2026,25/07/2026,2,399.28,Condotta 16,Confermate,,,0
+4EB754B720,06/07/2026 04:32,,Expedia,YI WU,Camera Matrimoniale Deluxe,Non rimborsabile,23/09/2026,24/09/2026,1,207.13,Firenze Suite,Confermate,0,OTA,0
+7CD17A6D1D,06/07/2026 03:14,,Booking,April Sikaffy,Trilocale,Non rimborsabile,29/07/2026,01/08/2026,3,705.75,Condotta 16,Confermate,,,0
+8AB7C2E4D8,05/07/2026 22:07,,Expedia,Michael Mainardi,Camera Matrimoniale Deluxe,Flessibile,22/09/2026,26/09/2026,4,957.5,Firenze Suite,Confermate,0,OTA,0
+B684ADB9DE,31/05/2026 18:43,05/07/2026 15:05,Booking,Sinem Elevli,Suite con Terrazza,Non rimborsabile,05/07/2026,08/07/2026,3,466.72,Firenze Suite,Confermate,,,0
+DD6A16368F,06/04/2026 15:40,05/07/2026 15:04,Booking,MA TENGFEI CAO MENGYI,Camera Matrimoniale Deluxe,Non rimborsabile,05/07/2026,08/07/2026,3,608.97,Firenze Suite,Confermate,,,0
+707CFF368E,22/06/2026 16:49,05/07/2026 14:56,Beddy,Bethany Rowe,Camera Matrimoniale Deluxe,Non rimborsabile,08/07/2026,09/07/2026,1,148.5,Firenze Suite,Confermate,0,Sito web,0
+0BBC01AC85,27/06/2026 17:01,05/07/2026 14:56,Beddy,Bethany Rowe,Camera Matrimoniale Deluxe,Non rimborsabile,09/07/2026,10/07/2026,1,148.5,Firenze Suite,Confermate,0,Non Specificato,0
+9CFF161803,07/04/2026 22:55,05/07/2026 14:56,Booking,Teresa Beierle,Camera Matrimoniale Deluxe,Flessibile,08/07/2026,15/07/2026,7,1420.93,Firenze Suite,Confermate,,,0
+26540577C0,08/06/2026 14:59,05/07/2026 14:56,Booking,Yeung Hiu tung,Camera Matrimoniale Deluxe,Non rimborsabile,05/07/2026,08/07/2026,3,511.73,Firenze Suite,Confermate,,,0
+666B7C4351,05/07/2026 14:48,,Beddy,Simone Scataglini,Bilocale,Standard rate,28/11/2026,29/11/2026,1,150,Condotta 16,Confermate,,,0
+B28823298D,05/07/2026 05:02,05/07/2026 06:37,Booking,Liu Kang,Bilocale,Standard rate,14/07/2026,18/07/2026,4,802.58,Condotta 16,Cancellate,,,0
+868B4ADEAA,05/07/2026 05:28,,Booking,Shane Urch,Trilocale,Standard rate,01/01/2027,06/01/2027,5,1941.23,Condotta 16,Confermate,,,0
+CFB6241CA0,04/07/2026 23:27,,Booking,Yi-Hsin Liu,Trilocale,Standard rate,03/08/2026,10/08/2026,7,1475.17,Condotta 16,Confermate,,,0
+C1216FE5CC,04/07/2026 16:12,,Beddy,Jennifer Duguay,Suite,Non rimborsabile,30/07/2026,03/08/2026,4,616.5,Firenze Suite,Confermate,0,Sito web,0
+1913A57ACA,04/07/2026 14:47,,Beddy,Vasile Codreanu,Trilocale,Non rimborsabile,22/12/2026,27/12/2026,5,1460,Condotta 16,Confermate,0,Non Specificato,0
+F0646F653D,04/07/2026 14:28,04/07/2026 14:43,Beddy,Vasile Codreanu,Trilocale,Non rimborsabile,22/12/2026,27/12/2026,5,1310,Condotta 16,Cancellate,0,Non Specificato,0
+7B1882A182,04/07/2026 08:43,04/07/2026 08:49,Booking,BAK JIYONG,Bilocale,Non rimborsabile,14/07/2026,16/07/2026,2,389.1,Condotta 16,Cancellate,,,0
+D2CFC78D2B,04/07/2026 07:13,,Booking,Vittorio Ghiglino,Trilocale,Standard rate,05/10/2026,07/10/2026,2,1069.74,Condotta 16,Confermate,,,0
+8201F3208B,04/07/2026 05:07,,Booking,Monica Oliveros,Trilocale,Non rimborsabile,15/08/2026,16/08/2026,1,288.62,Condotta 16,Confermate,,,0
+BD72295A24,03/07/2026 22:10,,Booking,TIMOTHY Stadler,Bilocale,Non rimborsabile,09/09/2026,12/09/2026,3,905.46,Condotta 16,Confermate,,,0
+C4DD8623A8,03/07/2026 17:30,,Booking,Agustina Cettour,Trilocale,Standard rate,14/08/2026,17/08/2026,3,811.99,Condotta 16,Confermate,,,0
+E74DB5459B,03/07/2026 12:28,,Booking,West Jim,Trilocale,Standard rate,12/07/2026,14/07/2026,2,585.79,Condotta 16,Confermate,,,0
+8F858625F5,28/05/2026 03:56,03/07/2026 10:08,Expedia,Kim Bryceson,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,07/07/2026,10/07/2026,3,604.48,Firenze Suite,Confermate,0,OTA,0
+C929DCB976,06/06/2026 16:57,03/07/2026 10:07,Booking,Chen Ying,Camera Matrimoniale Deluxe,Non rimborsabile,06/07/2026,07/07/2026,1,172.95,Firenze Suite,Confermate,,,0
+DCB557FAE9,01/06/2026 07:11,03/07/2026 09:51,Booking,Harriet Alexander-Bates,Trilocale,Non rimborsabile,05/07/2026,08/07/2026,3,549.09,Condotta 16,Confermate,,,0
+DC4D89E3EE,02/06/2026 00:22,03/07/2026 09:50,Booking,Amanda Farmer,Trilocale,Standard rate,04/07/2026,07/07/2026,3,1037.55,Condotta 16,Confermate,,,0
+40F5041A3F,03/07/2026 03:07,03/07/2026 03:52,Expedia,Chris Phan,Suite con Terrazza,Non rimborsabile,22/08/2026,24/08/2026,2,362.26,Firenze Suite,Confermate,0,OTA,0
+016CB8249E,27/06/2026 13:40,02/07/2026 19:31,Booking,Khatia mestvirishvili,Bilocale,Non rimborsabile,06/07/2026,07/07/2026,1,214.9,Condotta 16,Confermate,,,0
+FE3E7F025C,02/07/2026 18:02,,Booking,Keith Jones,Attico,Non rimborsabile,02/10/2026,06/10/2026,4,2099.23,Condotta 16,Confermate,,,0
+ED756C1E35,02/07/2026 15:50,,Booking,Carolina Russ,Trilocale,Non rimborsabile,09/09/2026,10/09/2026,1,470.73,Condotta 16,Confermate,,,0
+38B2A0C2E2,02/07/2026 12:56,,Expedia,Claus Campeotto,Attico,Non rimborsabile,15/07/2026,19/07/2026,4,1365.11,Condotta 16,Confermate,0,OTA,0
+354693D7D8,18/04/2026 04:12,02/07/2026 11:34,Booking,Kristina irijani;zidan waleed theyab;wiwik supriyanti;lisa nur apipi,Trilocale,Standard rate,24/12/2026,27/12/2026,3,732.99,Condotta 16,Confermate,,,0
+51D5E3A8A8,02/07/2026 01:44,,Booking,Kathryn Davidson,Bilocale,Standard rate,12/08/2026,13/08/2026,1,202.46,Condotta 16,Confermate,,,0
+BE5038ECDD,01/07/2026 23:53,02/07/2026 00:03,Expedia,PINGYANG WANG,Suite con Terrazza,Non rimborsabile,10/07/2026,11/07/2026,1,212.26,Firenze Suite,Confermate,0,OTA,0
+A21355D036,22/06/2026 18:37,01/07/2026 22:46,Expedia,SHUANG XIAO,Suite con Terrazza,Non rimborsabile,13/07/2026,18/07/2026,5,1189.18,Firenze Suite,Confermate,0,OTA,0
+B11B69CCCF,31/05/2026 21:03,01/07/2026 22:46,Booking,Kasper Smit,Suite con Terrazza,Flessibile,17/07/2026,18/07/2026,1,236.68,Firenze Suite,Confermate,,,0
+896294EE86,18/06/2026 15:03,01/07/2026 22:45,Expedia,XIN TAN,Suite con Terrazza,Non rimborsabile,11/07/2026,15/07/2026,4,751.81,Firenze Suite,Confermate,0,OTA,0
+39DA4E66CE,28/06/2026 12:32,01/07/2026 21:03,Booking,Melinda Plescan,Trilocale,Standard rate,02/07/2026,03/07/2026,1,226.08,Condotta 16,Confermate,,,0
+5E5817D96E,07/06/2026 05:47,01/07/2026 21:03,Expedia,Jeanne Hannah,Trilocale,Standard rate,02/07/2026,04/07/2026,2,476.29,Condotta 16,Confermate,0,OTA,0
+B22D0219E6,01/06/2026 07:14,01/07/2026 21:02,Booking,PATRICIA CORRAL ALEXANDER,Trilocale,Standard rate,06/07/2026,08/07/2026,2,612.12,Condotta 16,Confermate,,,0
+83195DE7F6,30/05/2026 17:53,01/07/2026 21:00,Beddy,Rohit Singh Negi/ Gazal Bisht/ Prisha Negi,Bilocale,Non rimborsabile,02/07/2026,06/07/2026,4,792,Condotta 16,Confermate,,,0
+3A360DA097,30/05/2026 16:49,01/07/2026 20:45,Expedia,Michelle Sjorlund Bonnett,Attico,Non rimborsabile,01/07/2026,05/07/2026,4,771.36,Condotta 16,Confermate,0,OTA,0
+53A4410552,01/07/2026 08:08,01/07/2026 18:03,Expedia,Saeid Hosseini,Camera Matrimoniale Deluxe,Flessibile,22/07/2026,26/07/2026,4,775.02,Firenze Suite,Cancellate,0,OTA,0
+6F9EDC8EEF,17/06/2026 23:22,01/07/2026 15:07,Expedia,Yaqoub Saadeh,Suite con Terrazza,Non rimborsabile,07/07/2026,09/07/2026,2,388.69,Firenze Suite,Confermate,0,OTA,0
+076D47290D,08/06/2026 20:04,01/07/2026 15:07,Booking,Azad Khan,Suite con Terrazza,Non rimborsabile,08/07/2026,12/07/2026,4,913.58,Firenze Suite,Confermate,,,0
+43FDBF5D23,20/06/2026 11:51,01/07/2026 15:07,Expedia,YAN WANG,Suite con Terrazza,Flessibile,04/07/2026,07/07/2026,3,684.76,Firenze Suite,Confermate,0,OTA,0
+D37F471D92,20/06/2026 15:26,01/07/2026 15:06,Expedia,YIFEI WU,Suite con Terrazza,Non rimborsabile,01/07/2026,04/07/2026,3,535.31,Firenze Suite,Confermate,0,OTA,0
+7585466EB3,16/06/2026 12:10,01/07/2026 15:06,Beddy,KENTARO TAKAHASHI,Suite con Terrazza,Non rimborsabile,03/07/2026,05/07/2026,2,473.1,Firenze Suite,Confermate,,,0
+8405427932,23/06/2026 19:57,01/07/2026 15:05,Booking,Julian Pancholi,"Suite con Terrazza, Suite","Non rimborsabile, Non rimborsabile",01/07/2026,03/07/2026,2,651.1,Firenze Suite,Confermate,,,0
+018BD29FCC,01/07/2026 05:30,,Booking,DING SHU HANG,Bilocale,Standard rate,03/09/2026,05/09/2026,2,700.85,Condotta 16,Confermate,,,0
+6CD2E9B03B,30/06/2026 22:36,,Booking,christelle RE VALLET,Trilocale,Standard rate,08/08/2026,13/08/2026,5,1544.82,Condotta 16,Confermate,,,0
+1B9BF96D91,26/05/2026 06:47,30/06/2026 18:30,Booking,Michael Giering,Trilocale,Standard rate,11/07/2026,14/07/2026,3,1359.54,Condotta 16,Cancellate,,,0
 52ED78A650,23/01/2025 11:28,30/06/2026 13:31,Beddy,Fabio Bettella,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",23/01/2025,24/01/2025,1,160,Firenze Suite,Cancellate,0,Non Specificato,0
 220CE81648,01/01/2025 11:57,30/06/2026 13:28,Beddy,Simona Russo,Suite,Non rimborsabile,02/01/2025,05/01/2025,3,402.3,Firenze Suite,Cancellate,0,Sito web,0
 9718ECE784,10/01/2025 10:26,30/06/2026 13:27,Beddy,Ines Rust,Suite,Non rimborsabile,14/01/2025,16/01/2025,2,207.2,Firenze Suite,Cancellate,0,Sito web,0
 B895C72306,03/01/2025 17:43,30/06/2026 13:26,Beddy,William Martz,Suite con Terrazza,Non rimborsabile,21/01/2025,25/01/2025,4,392,Firenze Suite,Cancellate,0,Non Specificato,0
+55E0C82D81,29/06/2026 16:20,30/06/2026 13:18,Beddy,Karl Lofthouse,Trilocale,Non rimborsabile,13/07/2026,15/07/2026,2,474,Condotta 16,Confermate,0,Sito web,0
+2DA4F4E1E3,29/04/2026 16:56,30/06/2026 13:18,Beddy,Benjamin Goh,Trilocale,Standard rate,16/07/2026,19/07/2026,3,1481.1,Condotta 16,Confermate,0,Sito web,0
+F375CD4A46,31/05/2026 23:49,30/06/2026 13:18,Booking,Margrie Wallace,Trilocale,Standard rate,18/07/2026,19/07/2026,1,311.32,Condotta 16,Confermate,,,0
+BDC6BF9DB1,06/06/2026 20:22,30/06/2026 13:18,Booking,Robert Goldy,Trilocale,Standard rate,14/07/2026,17/07/2026,3,1107,Condotta 16,Confermate,,,0
+1B63986527,07/06/2026 21:43,30/06/2026 13:17,Expedia,Alessandro Spreafico,Trilocale,Non rimborsabile,15/07/2026,16/07/2026,1,213.05,Condotta 16,Confermate,0,OTA,0
 B60F7F9A6C,27/12/2024 11:35,30/06/2026 13:15,Beddy,Luca Micheletta,Suite con Terrazza,Non rimborsabile,07/01/2025,09/01/2025,2,260,Firenze Suite,Cancellate,0,Non Specificato,0
+9497B3C1CA,23/06/2026 11:30,30/06/2026 12:40,Expedia,Mona Bjornstad,Bilocale,Standard rate,18/07/2026,20/07/2026,2,430.49,Condotta 16,Confermate,0,OTA,0
+59AF253075,20/06/2026 17:34,30/06/2026 12:39,Booking,Tasbulatova Dana,Bilocale,Non rimborsabile,13/07/2026,14/07/2026,1,245.42,Condotta 16,Confermate,,,0
+CAFB355F22,25/06/2026 22:02,30/06/2026 12:39,Booking,Hamad Sharif,Bilocale,Non rimborsabile,10/07/2026,13/07/2026,3,643.68,Condotta 16,Confermate,,,0
+E8461DC0BA,27/06/2026 12:21,30/06/2026 12:38,Expedia,BIANCA MARIA DE LAZZERO,Bilocale,Standard rate,02/07/2026,08/07/2026,6,1050.37,Condotta 16,Confermate,0,OTA,0
+CF646D1894,21/04/2026 20:39,29/06/2026 22:52,Booking,Colleen Berding,Bilocale,Standard rate,15/11/2026,21/11/2026,6,824.16,Condotta 16,Confermate,,,0
+B44379E000,01/06/2026 07:27,29/06/2026 17:12,Expedia,FNU NARENHUA,Trilocale,Standard rate,04/07/2026,06/07/2026,2,488.92,Condotta 16,Cancellate,0,OTA,0
+1C899166FE,29/06/2026 15:33,,Beddy,Lucy Hutton,Bilocale,Standard rate,09/10/2026,12/10/2026,3,891,Condotta 16,Confermate,,,0
+E697675192,21/06/2026 15:46,29/06/2026 14:50,Booking,Sarah O'Reilly,Camera Matrimoniale Deluxe,Non rimborsabile,02/07/2026,04/07/2026,2,309.58,Firenze Suite,Confermate,,,0
 5ADC0CAAAF,13/06/2026 08:58,29/06/2026 14:50,Expedia,SHUYUAN XU,Camera Matrimoniale Deluxe,Non rimborsabile,29/06/2026,02/07/2026,3,432.17,Firenze Suite,Confermate,0,OTA,0
+32BB9F8D03,25/06/2026 12:02,29/06/2026 14:48,Expedia,JINSHUAI CHENG,Suite,Non rimborsabile,11/07/2026,14/07/2026,3,519.3,Firenze Suite,Confermate,0,OTA,0
 B10ADB3C74,28/06/2026 19:46,29/06/2026 14:42,Beddy,Or Yosef Babitzky,Suite con Terrazza,Non rimborsabile,29/06/2026,01/07/2026,2,280,Firenze Suite,Confermate,0,Non Specificato,0
+C8E11BF12A,28/06/2026 23:38,,Booking,Andrei-Gabriel Gradinaru,Camera Matrimoniale Deluxe,Non rimborsabile,14/07/2026,17/07/2026,3,493.42,Firenze Suite,Confermate,,,0
+2006A14FEA,28/06/2026 13:21,,Beddy,Mayis Garoian,Suite con Terrazza,Non rimborsabile,27/08/2026,28/08/2026,1,189,Firenze Suite,Confermate,0,Sito web,0
+8D7D30822E,28/06/2026 12:56,,Expedia,Khushbu Aggarwal,Trilocale,Non rimborsabile,05/08/2026,06/08/2026,1,213.84,Condotta 16,Confermate,0,OTA,0
+2599B54704,28/06/2026 12:52,,Booking,Heidi Guerra,Camera Matrimoniale Deluxe,Non rimborsabile,24/07/2026,26/07/2026,2,361.16,Firenze Suite,Confermate,,,0
+A5C46B0AC9,28/06/2026 08:34,,Expedia,SOU EHARA,Suite con Terrazza,Non rimborsabile,09/08/2026,12/08/2026,3,537,Firenze Suite,Confermate,0,OTA,0
+4767A4DB36,26/06/2026 09:23,27/06/2026 21:50,Booking,Emrullah Tokmak Zeynep Merve Kocar Tokmak Elif Lina Tokmak,Camera Matrimoniale Deluxe,Flessibile,12/07/2026,14/07/2026,2,341.38,Firenze Suite,Cancellate,,,0
 568B96785F,21/06/2026 04:03,27/06/2026 20:25,Expedia,Jasmine Romano,Attico,Standard rate,27/06/2026,30/06/2026,3,914.77,Firenze Suite,Cancellate,0,OTA,0
 94C81F3780,25/06/2026 09:45,27/06/2026 19:56,Booking,Or Yosef Babitzky,Suite con Terrazza,Flessibile,28/06/2026,29/06/2026,1,169.56,Firenze Suite,Confermate,,,0
+F3D9B8B9DB,27/06/2026 19:21,,Expedia,lizbet caba,Camera Matrimoniale Deluxe,Non rimborsabile,13/08/2026,15/08/2026,2,267.66,Firenze Suite,Confermate,0,OTA,0
+513435A2E4,27/06/2026 19:14,,Booking,Chariton Palaiologk,Camera Matrimoniale Deluxe,Non rimborsabile,16/08/2026,17/08/2026,1,142.43,Firenze Suite,Confermate,,,0
+4986D028C5,10/06/2026 09:21,27/06/2026 12:25,Expedia,BIANCA MARIA DE LAZZERO,Bilocale,Standard rate,02/07/2026,08/07/2026,6,1274.98,Condotta 16,Cancellate,0,OTA,0
+D346BF5A2A,14/06/2026 23:31,27/06/2026 12:24,Booking,Hasan Randa,Trilocale,Non rimborsabile,01/07/2026,05/07/2026,4,1376.34,Condotta 16,Confermate,,,0
+C968613E00,26/06/2026 04:46,,Booking,Connor Shaw,Camera Matrimoniale Deluxe,Non rimborsabile,28/08/2026,30/08/2026,2,305.2,Firenze Suite,Confermate,,,0
+5CAD91983B,10/06/2026 06:53,26/06/2026 03:17,Booking,Vera MA,Bilocale,Standard rate,29/09/2026,01/10/2026,2,761,Condotta 16,Confermate,,,0
+DB7A729A6F,25/06/2026 22:08,,Booking,Hamad Sharif,Attico,Non rimborsabile,13/07/2026,15/07/2026,2,796.05,Condotta 16,Confermate,,,0
 F63CD687B6,10/06/2026 14:16,25/06/2026 15:56,Booking,Emma Satisky,Suite,Non rimborsabile,25/06/2026,26/06/2026,1,206.86,Firenze Suite,Confermate,,,0
+5895C825D1,25/06/2026 15:35,,Expedia,LING YU,Suite,Non rimborsabile,04/08/2026,06/08/2026,2,326.88,Firenze Suite,Confermate,0,OTA,0
 0EFEA777E5,09/06/2026 15:54,25/06/2026 13:41,Booking,Alix Tricot,Suite,Non rimborsabile,26/06/2026,28/06/2026,2,476.13,Firenze Suite,Confermate,,,0
 33273062F9,01/04/2026 13:18,25/06/2026 13:41,Booking,Julien Wurtz,Suite con Terrazza,Non rimborsabile,25/06/2026,28/06/2026,3,933.27,Firenze Suite,Confermate,,,0
+04F3A285ED,16/06/2026 07:13,25/06/2026 08:20,Booking,Xibin Liu,Bilocale,Standard rate,10/08/2026,11/08/2026,1,213.77,Condotta 16,Cancellate,,,0
+C3CFE94838,25/06/2026 07:55,,Booking,Mariel Medina Herrera,Bilocale,Standard rate,11/07/2026,14/07/2026,3,741.91,Condotta 16,Confermate,,,0
+27AB0B8B34,25/06/2026 03:31,,Booking,Joe Schiessl,Trilocale,Non rimborsabile,24/09/2026,27/09/2026,3,1294.79,Condotta 16,Confermate,,,0
+B7207B24D6,25/06/2026 00:39,,Booking,Ali ALSUDAYS,Trilocale,Non rimborsabile,10/07/2026,12/07/2026,2,626.07,Condotta 16,Confermate,,,0
 53A1A2550B,24/06/2026 14:32,24/06/2026 23:32,Booking,Geanina Moraru,Bilocale,Standard rate,28/06/2026,01/07/2026,3,610.42,Condotta 16,Confermate,,,0
 202667404D,24/06/2026 23:31,,Booking,Andrew Arvesen,Bilocale,Standard rate,25/06/2026,30/06/2026,5,1396.66,Condotta 16,Confermate,,,0
+7997D5BB64,24/06/2026 20:06,,Booking,Rhonda Steger,Suite,Flessibile,15/09/2026,22/09/2026,7,2732.62,Firenze Suite,Confermate,,,0
 461C9B1E1E,15/06/2026 11:55,24/06/2026 14:38,Booking,Niki Kalavrezou,Bilocale,Non rimborsabile,25/06/2026,29/06/2026,4,1066.2,Condotta 16,Confermate,,,0
+FD069FFB5C,24/06/2026 06:15,,Booking,STEPHANIE Zuzack,Trilocale,Standard rate,13/07/2026,15/07/2026,2,628.99,Condotta 16,Confermate,,,0
+D6541CCEC8,24/06/2026 06:05,,Booking,Yonghee Lee,Trilocale,Non rimborsabile,18/08/2026,20/08/2026,2,470.5,Condotta 16,Confermate,,,0
 E7BDD0C8C5,13/04/2026 17:18,23/06/2026 21:58,Beddy,Hannah Yi,Camera Matrimoniale Deluxe,Flessibile,24/06/2026,28/06/2026,4,996,Firenze Suite,Confermate,0,Sito web,0
 CEAF3D8D16,07/06/2026 16:13,23/06/2026 21:58,Booking,Sara Melly,Camera Matrimoniale Deluxe,Flessibile,23/06/2026,30/06/2026,7,1592.18,Firenze Suite,Confermate,,,0
+8E2B673810,23/06/2026 21:03,,Booking,Karina Sabac,Camera Matrimoniale Deluxe,Non rimborsabile,14/07/2026,16/07/2026,2,313.35,Firenze Suite,Confermate,,,0
+6CEAC8A849,19/04/2026 20:31,23/06/2026 20:01,Beddy,Dorna Alvandi-Peirs,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",04/07/2026,05/07/2026,1,322.2,Firenze Suite,Confermate,0,Sito web,0
+5FA4FCA555,13/06/2026 07:39,23/06/2026 20:01,Booking,Teresa Villagomez Zavala,"Suite, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",03/07/2026,05/07/2026,2,771.17,Firenze Suite,Confermate,,,0
+9D0B085665,30/05/2026 14:10,23/06/2026 20:01,Booking,Lynn de Lange,Suite,Non rimborsabile,02/07/2026,05/07/2026,3,564.63,Firenze Suite,Confermate,,,0
+095495F33D,23/06/2026 19:26,,Expedia,XIAOSHU LIN,Camera Matrimoniale Deluxe,Flessibile,15/07/2026,17/07/2026,2,294.55,Firenze Suite,Confermate,0,OTA,0
 E5DF35CC1F,23/06/2026 18:42,,Booking,Scherbakova Ekaterina,Trilocale,Standard rate,24/06/2026,25/06/2026,1,280.58,Condotta 16,Confermate,,,0
+06E687C0BA,23/06/2026 17:52,,Beddy,Ma Amabella Catubay,Bilocale,Standard rate,24/10/2026,30/10/2026,6,1434,Condotta 16,Confermate,0,Sito web,0
+B43296D718,23/06/2026 10:42,,Expedia,Ann Richardson,Suite,Flessibile,25/09/2026,29/09/2026,4,1409.27,Firenze Suite,Confermate,0,OTA,0
 4B795EE67C,01/06/2026 10:20,23/06/2026 08:41,Booking,Costa Kazistov,Camera Matrimoniale Deluxe,Non rimborsabile,26/06/2026,29/06/2026,3,644.71,Firenze Suite,Confermate,,,0
+1C50720013,23/06/2026 01:05,,Beddy,Joanna Kopicki,Trilocale,Standard rate,31/07/2026,03/08/2026,3,980,Condotta 16,Confermate,0,Sito web,0
+56CBFBD79D,22/06/2026 19:26,,Booking,Catherine Chabanis,Camera Matrimoniale Deluxe,Non rimborsabile,19/08/2026,21/08/2026,2,265.08,Firenze Suite,Confermate,,,0
+5E49A5E164,22/06/2026 18:01,,Booking,Michal Sela,Bilocale,Standard rate,01/10/2026,03/10/2026,2,796.6,Condotta 16,Confermate,,,0
+9536387E6C,22/06/2026 16:02,,Booking,Liu Zheng,Trilocale,Standard rate,16/08/2026,20/08/2026,4,1078.65,Condotta 16,Confermate,,,0
 B7C8204F58,11/06/2026 09:58,22/06/2026 15:34,Booking,Stefan Spiric,Camera Matrimoniale Deluxe,Non rimborsabile,22/06/2026,23/06/2026,1,193.3,Firenze Suite,Confermate,,,0
 68D0E9386A,09/06/2026 23:06,22/06/2026 14:20,Expedia,George Williams,Suite,Non rimborsabile,22/06/2026,25/06/2026,3,575.38,Firenze Suite,Confermate,0,OTA,0
+5C53ED8881,14/06/2026 19:37,22/06/2026 13:07,Booking,Roberta Chapman,Bilocale,Standard rate,08/08/2026,15/08/2026,7,1249.3,Condotta 16,Confermate,,,0
+FDAA5B979F,21/06/2026 22:58,,Booking,OHASHI YUJI,Suite,Non rimborsabile,05/07/2026,07/07/2026,2,406.15,Firenze Suite,Confermate,,,0
+FC3AE73BC9,21/06/2026 16:35,,Booking,Stefano Faita,Trilocale,Standard rate,22/07/2026,25/07/2026,3,1049.76,Condotta 16,Confermate,,,0
 6E7109AC18,14/06/2026 17:00,21/06/2026 11:20,Booking,Jiafeng Shen,Bilocale,Standard rate,23/06/2026,25/06/2026,2,474.76,Condotta 16,Confermate,,,0
 027AD045B6,03/06/2026 16:28,21/06/2026 11:19,Booking,Naomi Shavit,Bilocale,Non rimborsabile,24/06/2026,28/06/2026,4,1108.92,Condotta 16,Confermate,,,0
 14C9D6E2E7,21/06/2026 11:15,21/06/2026 11:18,Booking,Molly McDonald,Bilocale,Standard rate,22/06/2026,24/06/2026,2,368.16,Condotta 16,Confermate,,,0
 2B47386BBC,13/06/2026 10:38,21/06/2026 09:09,Booking,Claudia Zhao,Camera Matrimoniale Deluxe,Non rimborsabile,21/06/2026,22/06/2026,1,152.6,Firenze Suite,Confermate,,,0
+20AA5D4258,26/05/2026 06:04,21/06/2026 04:07,Booking,Chugh Sumit,Trilocale,Standard rate,30/07/2026,01/08/2026,2,895.18,Condotta 16,Cancellate,,,0
+7B4D5F0EBD,20/06/2026 21:23,,Booking,Simon Simonsen,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",06/08/2026,07/08/2026,1,305.2,Firenze Suite,Confermate,,,0
 9F469B4CC8,08/06/2026 05:06,20/06/2026 14:18,Booking,Bridgette Agostino,Trilocale,Standard rate,26/06/2026,27/06/2026,1,424.98,Condotta 16,Confermate,,,0
 7AE7813CBE,14/06/2026 00:00,20/06/2026 14:18,Booking,Emmanuel Rossio,Trilocale,Non rimborsabile,27/06/2026,01/07/2026,4,1370.23,Condotta 16,Confermate,,,0
 4ECE6B5236,18/05/2026 00:56,20/06/2026 14:18,Booking,Joanne Lawless,Trilocale,Non rimborsabile,26/06/2026,01/07/2026,5,2379.45,Condotta 16,Confermate,,,0
 F3B17DE3F2,16/06/2026 09:10,20/06/2026 13:09,Expedia,PRAAV VAGAL,Bilocale,Standard rate,20/06/2026,23/06/2026,3,520.79,Condotta 16,Confermate,0,OTA,0
+BE71B7B2C5,20/06/2026 11:46,,Booking,Jennifer Cisullo,Suite,Flessibile,27/08/2026,28/08/2026,1,192.17,Firenze Suite,Confermate,,,0
 FB561825EB,17/05/2026 23:18,19/06/2026 22:51,Expedia,Cynthia Guillermo,Suite con Terrazza,Flessibile,26/06/2026,30/06/2026,4,1578.72,Firenze Suite,Cancellate,0,OTA,0
+91E4BD268C,19/06/2026 19:50,,Expedia,SUK YING CHOW,Suite con Terrazza,Flessibile,19/07/2026,22/07/2026,3,665.81,Firenze Suite,Confermate,0,OTA,0
 96AC0FD4E9,18/06/2026 07:43,,Booking,Camilo Arevalo,Camera Matrimoniale Deluxe,Flessibile,21/06/2026,22/06/2026,1,169.56,Firenze Suite,Confermate,,,0
+CD07FB3DCA,18/06/2026 06:34,,Expedia,Paula Kviman,Camera Matrimoniale Deluxe,Non rimborsabile,02/08/2026,03/08/2026,1,127.85,Firenze Suite,Confermate,0,OTA,0
+6981194FCF,18/06/2026 03:47,,Booking,Jivitesh Shah,Trilocale,Non rimborsabile,16/07/2026,19/07/2026,3,1005.23,Condotta 16,Confermate,,,0
 03B5A16D16,12/04/2026 03:52,17/06/2026 17:54,Booking,Kiran Sattiraju,Trilocale,Standard rate,15/06/2026,20/06/2026,5,2779.11,Condotta 16,Cancellate,,,0
+A95B15D014,17/06/2026 16:55,,Booking,James Walker,Trilocale,Standard rate,21/08/2026,27/08/2026,6,1772.82,Condotta 16,Confermate,,,0
 C78D3D2E22,17/06/2026 11:47,17/06/2026 11:49,Booking,Iulia-Giorgiana Nicolescu-Rad,Bilocale,Standard rate,18/06/2026,21/06/2026,3,641.3,Condotta 16,Confermate,,,0
 28246A6712,16/06/2026 19:14,17/06/2026 10:37,Booking,Surinder Kukreja,Bilocale,Standard rate,17/06/2026,18/06/2026,1,254.34,Condotta 16,Confermate,,,0
 BF410D1BFF,10/06/2026 10:36,17/06/2026 10:37,Booking,Marcelina Milczarek,Bilocale,Non rimborsabile,17/06/2026,18/06/2026,1,272.97,Condotta 16,Confermate,,,0
@@ -40,33 +156,51 @@ C6F1021DCD,12/06/2026 01:57,17/06/2026 09:31,Expedia,Shun Kobayashi,Suite con Te
 7B96D3852C,02/06/2026 18:43,16/06/2026 17:08,Expedia,Enrique Anaya Mendez,Trilocale,Non rimborsabile,16/06/2026,21/06/2026,5,1522.03,Condotta 16,Confermate,0,OTA,0
 003B97191A,16/06/2026 12:57,16/06/2026 12:58,Beddy,Efrat Busani,Camera Matrimoniale Deluxe,Non rimborsabile,17/06/2026,09/07/2026,22,3400,Firenze Suite,Confermate,0,Non Specificato,0
 0609F5426B,15/06/2026 21:24,,Booking,Alisha Patel,Bilocale,Non rimborsabile,22/06/2026,25/06/2026,3,592.11,Condotta 16,Confermate,,,0
+3735B44839,15/06/2026 16:46,,Booking,Luis Marcelo Teixeira,Trilocale,Standard rate,22/07/2026,25/07/2026,3,1130.37,Condotta 16,Confermate,,,0
+29AAC39A71,12/06/2026 19:54,15/06/2026 08:55,Booking,Negar Oromi,Camera Matrimoniale Deluxe,Non rimborsabile,09/07/2026,11/07/2026,2,356.08,Firenze Suite,Confermate,,,0
+0CEE5ED6B7,22/05/2026 07:30,15/06/2026 02:53,Expedia,YI LIU,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,30/07/2026,01/08/2026,2,340.5,Firenze Suite,Cancellate,0,OTA,0
+A77030A6DA,22/05/2026 07:29,15/06/2026 02:51,Expedia,YI LIU,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,29/07/2026,30/07/2026,1,170.25,Firenze Suite,Cancellate,0,OTA,0
 4538F58A39,14/06/2026 17:20,,Beddy,Ada Garibaldi,Camera Matrimoniale Deluxe,Flessibile,16/06/2026,17/06/2026,1,200,Firenze Suite,Confermate,0,Non Specificato,0
 203B370184,07/06/2026 04:58,14/06/2026 11:09,Booking,Arturo Vazquez reyes,Camera Matrimoniale Deluxe,Non rimborsabile,15/06/2026,18/06/2026,3,910.55,Firenze Suite,Confermate,,,0
 388F23A4CA,20/05/2026 23:40,14/06/2026 11:09,Beddy,Claude BODENES,Camera Matrimoniale Deluxe,Flessibile,18/06/2026,20/06/2026,2,477,Firenze Suite,Confermate,0,Sito web,0
 7E1224392E,30/05/2026 20:42,14/06/2026 11:09,Booking,Danan Dhami,Camera Matrimoniale Deluxe,Non rimborsabile,15/06/2026,21/06/2026,6,1660.35,Firenze Suite,Confermate,,,0
+13D3F1FE41,14/06/2026 10:53,,Booking,סגל אלדר,Trilocale,Standard rate,03/08/2026,04/08/2026,1,327.05,Condotta 16,Confermate,,,0
+FE1368BA27,08/06/2026 10:23,14/06/2026 09:13,Booking,Emilie Simoes Marques,Camera Matrimoniale Deluxe,Non rimborsabile,16/07/2026,20/07/2026,4,660.25,Firenze Suite,Confermate,,,0
+54752E7A69,13/06/2026 22:50,,Booking,Harold Reyes Barrios,Bilocale,Non rimborsabile,23/08/2026,24/08/2026,1,204.72,Condotta 16,Confermate,,,0
+8994CD0939,13/06/2026 16:51,,Booking,Ren Feng,Camera Matrimoniale Deluxe,Non rimborsabile,23/07/2026,26/07/2026,3,613.47,Firenze Suite,Confermate,,,0
 708C28D183,12/06/2026 00:01,13/06/2026 15:14,Booking,Llamas Bueno Mario,"Suite, Suite con Terrazza","Non rimborsabile, Non rimborsabile",19/06/2026,22/06/2026,3,1102.8,Firenze Suite,Confermate,,,0
 A01D3493C6,10/06/2026 19:32,13/06/2026 15:12,Booking,Joachim Mortensen,Suite,Non rimborsabile,17/06/2026,19/06/2026,2,370.32,Firenze Suite,Confermate,,,0
 612A0C4DC2,12/06/2026 13:16,13/06/2026 14:31,Expedia,KONATSU YAMANAKA,Camera Matrimoniale Deluxe,Flessibile,17/06/2026,18/06/2026,1,189.42,Firenze Suite,Confermate,0,OTA,0
+EDEE9513A3,01/04/2026 16:34,13/06/2026 13:41,Booking,Wendy Dean,Camera Matrimoniale Deluxe,Flessibile,28/11/2026,29/11/2026,1,145.92,Firenze Suite,Cancellate,,,0
 2B59551634,10/06/2026 23:30,13/06/2026 12:18,Booking,Efrat Busani,Camera Matrimoniale Deluxe,Flessibile,12/06/2026,17/06/2026,5,1102.19,Firenze Suite,Confermate,,,0
 DF350793FA,13/06/2026 11:49,,Booking,Cristina Garcia Gomez,Trilocale,Standard rate,13/06/2026,15/06/2026,2,640.29,Condotta 16,Confermate,,,0
 8609C99E50,13/06/2026 11:35,13/06/2026 11:48,Booking,TERRY BATTAGLIA,Trilocale,Standard rate,13/06/2026,14/06/2026,1,326.81,Condotta 16,Confermate,,,0
 E54F7A24D7,11/06/2026 16:20,13/06/2026 11:34,Expedia,Marco Nardelli,Trilocale,Standard rate,15/06/2026,16/06/2026,1,231.46,Condotta 16,Confermate,0,OTA,0
 A4AACED6BF,11/06/2026 16:20,13/06/2026 11:33,Expedia,Francesco Granieri,Trilocale,Standard rate,15/06/2026,16/06/2026,1,231.46,Condotta 16,Confermate,0,OTA,0
+A341C69896,13/06/2026 11:12,,Beddy,Isabelle Lahyani,Camera Matrimoniale Deluxe,Non rimborsabile,23/07/2026,24/07/2026,1,201.1,Firenze Suite,Confermate,0,Sito web,0
+A4DC3FB647,13/06/2026 08:51,,Booking,Andrew Small,Trilocale,Non rimborsabile,09/07/2026,10/07/2026,1,345.59,Condotta 16,Confermate,,,0
+9BF4AECFA6,13/06/2026 04:55,13/06/2026 07:55,Booking,Jiang shan,Trilocale,Standard rate,09/08/2026,13/08/2026,4,1212.76,Condotta 16,Cancellate,,,0
 F71C4D1644,12/06/2026 12:51,,Booking,Norman Izaguirre,Attico,Non rimborsabile,26/06/2026,27/06/2026,1,461.1,Condotta 16,Confermate,,,0
 08CE6205A8,11/06/2026 23:44,12/06/2026 00:56,Expedia,Giuseppe Grandinetti,Bilocale,Standard rate,17/06/2026,18/06/2026,1,212.17,Condotta 16,Cancellate,0,OTA,0
+17F181FD9E,11/06/2026 22:12,,Beddy,rami polatsek,Camera Matrimoniale Deluxe,Non rimborsabile,06/08/2026,08/08/2026,2,335.5,Firenze Suite,Confermate,0,Sito web,0
 D8CEFF91D6,29/05/2026 17:34,11/06/2026 10:21,Booking,CHERIE FUINO,Camera Matrimoniale Deluxe,Non rimborsabile,11/06/2026,14/06/2026,3,685.7,Firenze Suite,Confermate,,,0
 0B058F3D81,04/06/2026 13:54,11/06/2026 10:21,Booking,Yoram itzhak maimon,Camera Matrimoniale Deluxe,Flessibile,12/06/2026,15/06/2026,3,1037.71,Firenze Suite,Confermate,,,0
+648A28DE19,11/06/2026 09:43,,Beddy,Susan Craig,Camera Matrimoniale Deluxe,Non rimborsabile,27/09/2026,07/10/2026,10,2788,Firenze Suite,Confermate,0,Non Specificato,0
+11870260A3,11/06/2026 09:16,11/06/2026 09:24,Booking,Tracie Munoz,Trilocale,Standard rate,03/07/2026,04/07/2026,1,375.66,Condotta 16,Cancellate,,,0
 1C39E9D1C4,11/06/2026 03:11,,Booking,Qiao Siyang,Suite,Non rimborsabile,27/06/2026,02/07/2026,5,1046.86,Firenze Suite,Confermate,,,0
 E80BA09D50,10/06/2026 19:17,,Booking,Zainab Fadahunsi,Suite con Terrazza,Flessibile,18/06/2026,21/06/2026,3,851.19,Firenze Suite,Confermate,,,0
 E92DF64556,10/06/2026 17:28,,Booking,Steven Hewer,Bilocale,Standard rate,12/06/2026,15/06/2026,3,655.63,Condotta 16,Confermate,,,0
+11742C662C,10/06/2026 17:07,,Booking,McAuliffe Billee,Trilocale,Standard rate,05/09/2026,06/09/2026,1,434.07,Condotta 16,Confermate,,,0
 BCF918F5C1,10/06/2026 14:18,10/06/2026 16:22,Beddy,Clara Blanc,Suite,Flessibile,15/06/2026,16/06/2026,1,158,Firenze Suite,Confermate,0,Sito web,0
 8C2B55E3C7,10/06/2026 15:32,,Booking,Estelle Yarrow,Suite,Flessibile,10/06/2026,15/06/2026,5,1140.57,Firenze Suite,Confermate,,,0
 E330BE88C8,10/06/2026 11:46,10/06/2026 11:56,Beddy,Boris Ber,Bilocale,Non rimborsabile,12/06/2026,15/06/2026,3,580,Condotta 16,Confermate,0,Non Specificato,0
 8574D178D4,02/06/2026 21:53,10/06/2026 09:21,Booking,Eulalia Juan Ruiz,Trilocale,Standard rate,27/06/2026,29/06/2026,2,947.12,Condotta 16,Cancellate,,,0
+A25B6F5C83,05/06/2026 05:38,10/06/2026 06:55,Booking,Vera MA,Bilocale,Standard rate,29/09/2026,01/10/2026,2,695.2,Condotta 16,Cancellate,,,0
 B73DFB9407,21/01/2026 19:27,10/06/2026 06:21,Beddy,Jessica Tyndall,Camera Matrimoniale Deluxe,Flessibile,19/06/2026,23/06/2026,4,996,Firenze Suite,Cancellate,0,Sito web,0
 27D86E8037,19/05/2026 08:41,10/06/2026 00:39,Booking,paula Bonny,Suite,Flessibile,19/06/2026,24/06/2026,5,1421.56,Firenze Suite,Cancellate,,,0
 9ABCDF8973,10/06/2026 00:35,,Booking,Casandra Mota,Bilocale,Standard rate,11/06/2026,16/06/2026,5,1190.31,Condotta 16,Confermate,,,0
 7B43440548,09/06/2026 22:30,,Booking,svetlana beshentseva,"Bilocale, Bilocale","Standard rate, Standard rate",09/06/2026,10/06/2026,1,361.72,Condotta 16,Confermate,,,0
+E205B02EA7,04/06/2026 08:39,09/06/2026 17:11,Booking,Sanda Rezgui,Bilocale,Standard rate,17/07/2026,25/07/2026,8,1541.35,Condotta 16,Cancellate,,,0
 739FB60B04,30/05/2026 03:45,08/06/2026 15:23,Booking,Taylar Graziano,Suite,Non rimborsabile,13/06/2026,15/06/2026,2,557.52,Firenze Suite,Confermate,,,0
 997773E52A,26/03/2026 21:19,08/06/2026 09:57,Booking,Kevin Mallon,Trilocale,Standard rate,08/06/2026,11/06/2026,3,1469.25,Condotta 16,Confermate,,,0
 BFF0880691,04/06/2026 22:09,08/06/2026 09:57,Expedia,Shawn Hoopes,Trilocale,Non rimborsabile,11/06/2026,14/06/2026,3,1185.88,Condotta 16,Confermate,0,OTA,0
@@ -74,25 +208,41 @@ BFF0880691,04/06/2026 22:09,08/06/2026 09:57,Expedia,Shawn Hoopes,Trilocale,Non 
 00B2087CC1,10/05/2026 06:30,08/06/2026 09:26,Booking,Sanat Shah,"Suite con Terrazza, Suite con Terrazza","Flessibile, Flessibile",13/06/2026,17/06/2026,4,3536.68,Firenze Suite,Confermate,,,0
 8C0209CAE4,28/05/2026 21:31,08/06/2026 09:24,Booking,Camille Yabut,Camera Matrimoniale Deluxe,Flessibile,08/06/2026,16/06/2026,8,2032.69,Firenze Suite,Confermate,,,0
 3E3ADBE61A,14/05/2026 10:22,08/06/2026 09:23,Booking,Bethany Garnett,Bilocale,Non rimborsabile,05/06/2026,08/06/2026,3,722.66,Condotta 16,Confermate,,,0
+70C86CE01F,08/06/2026 03:50,,Booking,Zena Borg,Trilocale,Standard rate,08/07/2026,10/07/2026,2,691.19,Condotta 16,Confermate,,,0
+F767E0D337,07/06/2026 21:14,,Booking,Bernhard Hohenegger,Trilocale,Standard rate,12/07/2026,13/07/2026,1,355.44,Condotta 16,Confermate,,,0
+799E7FF528,07/06/2026 15:53,,Expedia,LU XI,Suite,Non rimborsabile,14/07/2026,16/07/2026,2,291.25,Firenze Suite,Confermate,0,OTA,0
 3B147CABF8,15/05/2026 09:24,07/06/2026 09:25,Booking,Robert Mieczyslaw Wyslocki,"Suite, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",05/06/2026,07/06/2026,2,1157.08,Firenze Suite,Confermate,,,0
 EA54A17AE7,27/04/2026 07:03,06/06/2026 13:51,Beddy,ANIRUDH PAREKH,Trilocale,Non rimborsabile,09/06/2026,12/06/2026,3,888.69,Condotta 16,Confermate,0,Sito web,0
 6AEC8F8D2C,13/05/2026 09:42,06/06/2026 13:51,Booking,Abdulaziz Albaqami,Trilocale,Non rimborsabile,06/06/2026,09/06/2026,3,1176.15,Condotta 16,Confermate,,,0
+97E2386ED8,06/06/2026 01:54,,Booking,Donna Roy,Trilocale,Standard rate,19/09/2026,22/09/2026,3,1425.43,Condotta 16,Confermate,,,0
 03DBA38677,25/02/2026 07:38,06/06/2026 00:02,Booking,Zi Yuan Ong,Suite,Flessibile,12/06/2026,15/06/2026,3,1319.22,Firenze Suite,Cancellate,,,0
 EC1046969C,05/06/2026 16:42,05/06/2026 19:24,Booking,Sura Majed,Trilocale,Standard rate,26/06/2026,27/06/2026,1,453.78,Condotta 16,Cancellate,,,0
 A3EF2E31C9,29/04/2026 21:26,05/06/2026 16:02,Booking,Merle Reinmoller,Bilocale,Standard rate,05/06/2026,10/06/2026,5,1226.4,Condotta 16,Confermate,,,0
 B6CEC63A9D,05/06/2026 10:23,05/06/2026 10:25,Beddy,MAITHRI ARISHANAPALLY,"Trilocale, Trilocale","Non rimborsabile, Non rimborsabile",22/06/2026,26/06/2026,4,3070,Condotta 16,Confermate,0,Sito web,0
 7EE5EDCE20,29/05/2026 09:15,05/06/2026 10:25,Beddy,Nikhil Kohli,Trilocale,Non rimborsabile,21/06/2026,23/06/2026,2,673,Condotta 16,Confermate,0,Non Specificato,0
 DC15F44DFA,01/06/2026 11:34,04/06/2026 11:28,Booking,Kevin Shirley,Suite,Flessibile,04/06/2026,05/06/2026,1,178.82,Firenze Suite,Confermate,,,0
+96FB4CCC95,26/05/2026 23:48,04/06/2026 09:33,Booking,Onali Shabbir Petiwala,Bilocale,Standard rate,21/07/2026,25/07/2026,4,1357.63,Condotta 16,Confermate,,,0
+22F0811D01,03/06/2026 22:44,,Booking,Per Wagner Kristensen,Trilocale,Standard rate,11/07/2026,13/07/2026,2,660.06,Condotta 16,Confermate,,,0
+74408DCAB8,02/01/2026 07:33,03/06/2026 17:04,Expedia,Laura Mayo,Trilocale,Standard rate,24/07/2026,25/07/2026,1,663.47,Condotta 16,Cancellate,0,OTA,0
 70DDA9CA31,05/05/2026 08:43,03/06/2026 16:59,Booking,Sahajveer Anand,Bilocale,Standard rate,09/06/2026,12/06/2026,3,827.82,Condotta 16,Cancellate,,,0
 DDAB75B8ED,27/05/2026 10:04,03/06/2026 13:07,Booking,Fran Sorin,Bilocale,Standard rate,21/06/2026,25/06/2026,4,1252.49,Condotta 16,Cancellate,,,0
 0A27B020CE,13/05/2026 03:28,03/06/2026 12:37,Beddy,Stephen Scott Berlin,Suite,Non rimborsabile,07/06/2026,13/06/2026,6,1542.6,Firenze Suite,Confermate,0,Sito web,0
+99CA0617BC,03/06/2026 03:43,,Expedia,Guillaume Blondin,Attico,Non rimborsabile,09/07/2026,12/07/2026,3,784.87,Condotta 16,Confermate,0,OTA,0
+63CEA93E8C,02/06/2026 18:54,,Beddy,Maksim Shashlov,"Trilocale, Trilocale","Non rimborsabile, Non rimborsabile",19/07/2026,21/07/2026,2,1246,Condotta 16,Confermate,0,Sito web,0
+AAAFC69458,02/06/2026 11:27,,Booking,Leah Harry,Trilocale,Non rimborsabile,21/07/2026,24/07/2026,3,717.24,Condotta 16,Confermate,,,0
+924E4CE0C2,02/06/2026 03:45,,Expedia,Vicente Brocchetto,Trilocale,Standard rate,08/07/2026,11/07/2026,3,907.7,Condotta 16,Confermate,0,OTA,0
+DA1F666B29,01/06/2026 00:09,01/06/2026 22:55,Booking,Alejandro Fernandez Vazquez,Bilocale,Standard rate,11/07/2026,18/07/2026,7,1240.18,Condotta 16,Cancellate,,,0
 1B1D5F739C,01/06/2026 22:04,,Booking,George Pasca,Bilocale,Non rimborsabile,16/06/2026,17/06/2026,1,309.59,Condotta 16,Confermate,,,0
 1C89B116AD,03/05/2026 01:44,01/06/2026 13:12,Booking,Adrian Lembong,Trilocale,Standard rate,19/06/2026,22/06/2026,3,1524.42,Condotta 16,Cancellate,,,0
 DC4E5C6F3B,01/06/2026 12:54,,Booking,Gloria Coppola,Attico,Standard rate,01/06/2026,03/06/2026,2,889.25,Condotta 16,Confermate,,,0
 2F30CB97FD,11/05/2026 03:05,01/06/2026 07:26,Booking,Yifei Tong; Chuyi Ye; Zetong Jia; Yuru Fu,Trilocale,Standard rate,23/06/2026,25/06/2026,2,1141.76,Condotta 16,Cancellate,,,0
+2401D38EAA,01/06/2026 06:43,,Booking,Elisabeth Levine,Bilocale,Standard rate,15/07/2026,18/07/2026,3,594.32,Condotta 16,Confermate,,,0
 9918A800C9,31/05/2026 23:13,,Expedia,Antonio Calisto,Attico,Non rimborsabile,30/06/2026,01/07/2026,1,392.78,Condotta 16,Confermate,0,OTA,0
+E2024EBDF1,31/05/2026 19:14,,Expedia,Felipe Sutton,Suite,Non rimborsabile,20/07/2026,24/07/2026,4,599.2,Firenze Suite,Confermate,0,OTA,0
 1A72A3B661,31/05/2026 19:06,,Beddy,Griselda Lici,Bilocale,Standard rate,31/05/2026,02/06/2026,2,417,Condotta 16,Confermate,0,Non Specificato,0
 3E0A613A04,31/05/2026 17:48,31/05/2026 19:03,Booking,Griselda Lici,Bilocale,Standard rate,31/05/2026,02/06/2026,2,438.65,Condotta 16,Cancellate,,,0
+6911FE4302,31/05/2026 18:59,,Booking,YUXIA XU,Suite,Flessibile,14/07/2026,17/07/2026,3,552.24,Firenze Suite,Confermate,,,0
+57A823A418,31/05/2026 18:59,,Beddy,Quentin Guillemot,Suite,Flessibile,07/07/2026,11/07/2026,4,801,Firenze Suite,Confermate,0,Sito web,0
 44E3519B57,29/05/2026 22:15,31/05/2026 08:56,Booking,Karim Riccardi,Bilocale,Standard rate,31/05/2026,02/06/2026,2,540.28,Condotta 16,Confermate,,,0
 3517F85AA1,16/04/2026 18:20,31/05/2026 08:23,Booking,Janak Vaswani,Trilocale,Standard rate,02/06/2026,03/06/2026,1,388.15,Condotta 16,Confermate,,,0
 FB4BC9DE59,31/05/2026 01:12,,Booking,JENISSA KRISTINE BREGANTE,Camera Matrimoniale Deluxe,Flessibile,31/05/2026,03/06/2026,3,879.2,Firenze Suite,Confermate,,,0
@@ -102,6 +252,7 @@ D53AC2F904,29/03/2026 08:34,30/05/2026 16:24,Booking,Yu fen Fang,Trilocale,Stand
 BA60283EE0,30/05/2026 13:43,,Booking,Adrian Daniel Limeweaver,Bilocale,Standard rate,01/06/2026,05/06/2026,4,1146.73,Condotta 16,Confermate,,,0
 ED54D79C69,22/04/2026 20:58,30/05/2026 13:01,Booking,CHUNMEI ZHANG,Camera Matrimoniale Deluxe,Flessibile,29/05/2026,30/05/2026,1,280.53,Firenze Suite,Cancellate,,,0
 5DE9DB8A90,29/05/2026 16:05,,Beddy,MARIANNE MCPHERSON,Bilocale,Non rimborsabile,29/05/2026,31/05/2026,2,490,Condotta 16,Confermate,0,Non Specificato,0
+62CBA1DB3A,28/05/2026 18:51,,Booking,Matthew Ramstrom,Suite,Non rimborsabile,03/09/2026,04/09/2026,1,343.86,Firenze Suite,Confermate,,,0
 DE65909B66,28/05/2026 17:27,,Booking,Gil Or,Suite,Flessibile,23/06/2026,27/06/2026,4,1250.22,Firenze Suite,Confermate,,,0
 1F9B289DBE,26/05/2026 00:26,28/05/2026 10:44,Beddy,Leha Edwards-Brownson,Suite con Terrazza,Non rimborsabile,10/06/2026,13/06/2026,3,999.9,Firenze Suite,Confermate,0,Sito web,0
 220E5961DA,25/05/2026 17:59,28/05/2026 09:28,Booking,Karol Wieczorek,Suite con Terrazza,Non rimborsabile,30/05/2026,01/06/2026,2,692.82,Firenze Suite,Confermate,,,0
@@ -110,11 +261,18 @@ ADAD617A1D,27/05/2026 21:14,28/05/2026 09:17,Booking,Seeser Anne,Camera Matrimon
 42588870FB,22/04/2026 18:40,28/05/2026 09:08,Booking,Ayse Gulperi Atesoglu,Camera Matrimoniale Deluxe,Non rimborsabile,28/05/2026,30/05/2026,2,485.36,Firenze Suite,Confermate,,,0
 A2908FA9A8,19/05/2026 06:21,28/05/2026 08:39,Beddy,Isabelle Baird,Camera Matrimoniale Deluxe,Non rimborsabile,30/05/2026,02/06/2026,3,889.2,Firenze Suite,Confermate,0,Sito web,0
 7557DE5455,25/05/2026 20:59,28/05/2026 08:39,Booking,Jenna Wilen,Camera Matrimoniale Deluxe,Non rimborsabile,29/05/2026,31/05/2026,2,547.11,Firenze Suite,Confermate,,,0
+D9DB596E7E,27/05/2026 23:06,,Beddy,Pierre Gilbert,Suite con Terrazza,Flessibile,12/11/2026,25/11/2026,13,3135,Firenze Suite,Confermate,0,Sito web,0
 B0AAA210D8,22/04/2026 18:09,27/05/2026 10:19,Booking,Katherine Wright,Camera Matrimoniale Deluxe,Non rimborsabile,27/05/2026,29/05/2026,2,438.44,Firenze Suite,Confermate,,,0
+77327BEE9F,13/01/2026 21:14,25/05/2026 22:40,Booking,Ashley Lerner,Bilocale,Standard rate,24/11/2026,26/11/2026,2,287.28,Condotta 16,Cancellate,,,0
 E42DC64B0D,25/05/2026 18:37,,Booking,Nitzan Rimon Dahari,Trilocale,Standard rate,25/06/2026,28/06/2026,3,1557.54,Condotta 16,Confermate,,,0
+B34112379D,25/05/2026 16:16,,Expedia,KECHENG YE,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,24/07/2026,26/07/2026,2,384.49,Firenze Suite,Confermate,0,OTA,0
+4DFDFD6BE9,25/05/2026 16:12,,Expedia,XIAOYUE HE,Suite con Terrazza,Miglior tariffa garantita PKG,24/07/2026,26/07/2026,2,480.14,Firenze Suite,Confermate,0,OTA,0
+DB638D2B46,25/05/2026 16:12,,Expedia,XICHUN LI,Suite con Terrazza,Miglior tariffa garantita PKG,24/07/2026,26/07/2026,2,480.14,Firenze Suite,Confermate,0,OTA,0
 423021688C,09/04/2026 17:19,25/05/2026 10:57,Booking,Marie Fox,Trilocale,Standard rate,04/06/2026,06/06/2026,2,988.54,Condotta 16,Confermate,,,0
 B35FE44EC4,29/04/2026 07:00,25/05/2026 10:57,Booking,Reed Lawton Klauer,Trilocale,Standard rate,01/06/2026,04/06/2026,3,1384.95,Condotta 16,Confermate,,,0
+2D8875BE66,24/05/2026 17:18,,Booking,Samuel Pitonyak,Camera Matrimoniale Deluxe,Flessibile,30/08/2026,03/09/2026,4,1062.58,Firenze Suite,Confermate,,,0
 EF48104951,24/05/2026 16:22,,Booking,Rebekah Lintz,Attico,Standard rate,23/06/2026,26/06/2026,3,1697.22,Condotta 16,Confermate,,,0
+B913B4CF15,18/01/2026 23:15,23/05/2026 21:18,Booking,Izabella Annunziata,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Flessibile, Flessibile, Flessibile",24/08/2026,27/08/2026,3,1795.23,Firenze Suite,Cancellate,,,0
 D8C8868242,25/04/2026 07:41,23/05/2026 20:30,Booking,ren xiongwei,Suite,Flessibile,06/06/2026,10/06/2026,4,1231.12,Firenze Suite,Cancellate,,,0
 F24A4CDFF2,26/04/2026 21:52,23/05/2026 13:15,Booking,Novati Federico,Camera Matrimoniale Deluxe,Non rimborsabile,22/05/2026,24/05/2026,2,627.52,Firenze Suite,Confermate,,,0
 7E8C985622,22/05/2026 20:20,23/05/2026 13:15,Booking,Carlos Manuel Afonso Romero,"Camera Matrimoniale Deluxe, Suite con Terrazza","Non rimborsabile, Non rimborsabile",23/05/2026,25/05/2026,2,552.43,Firenze Suite,Confermate,,,0
@@ -123,6 +281,7 @@ B2CA56E513,27/02/2026 02:14,23/05/2026 12:40,Booking,Michael John Slade,Camera M
 41338D1260,12/03/2026 03:09,23/05/2026 12:40,Beddy,Brent Vaziri,"Camera Matrimoniale Deluxe, Suite con Terrazza","Flessibile, Flessibile",25/05/2026,27/05/2026,2,1170.3,Firenze Suite,Confermate,0,Sito web,0
 4B7DFA1123,22/04/2026 20:12,23/05/2026 08:38,Booking,Orit Dagan-Nuchy,Bilocale,Standard rate,23/05/2026,25/05/2026,2,616.42,Condotta 16,Confermate,,,0
 B6F6DDEAF7,24/03/2026 20:16,23/05/2026 08:38,Beddy,Matthew Kistner,Bilocale,Non rimborsabile,23/05/2026,26/05/2026,3,699.3,Condotta 16,Confermate,0,Sito web,0
+29C9F265BA,20/05/2026 07:25,22/05/2026 17:03,Expedia,Viktoria Van Leeuwen,Suite con Terrazza,Flessibile,12/07/2026,16/07/2026,4,1043.4,Firenze Suite,Cancellate,0,OTA,0
 37B09C036E,19/05/2026 20:01,22/05/2026 12:31,Booking,saleh alkayyal,Suite,Non rimborsabile,30/05/2026,02/06/2026,3,1086.57,Firenze Suite,Confermate,,,0
 99D885F4E7,01/05/2026 02:12,22/05/2026 12:31,Booking,Brian Shilling,Suite,Non rimborsabile,26/05/2026,30/05/2026,4,1156.15,Firenze Suite,Confermate,,,0
 97AD06EF65,19/05/2026 12:44,22/05/2026 12:31,Beddy,Tommaso Cristalli,Suite,Non rimborsabile,25/05/2026,26/05/2026,1,260,Firenze Suite,Confermate,0,Non Specificato,0
@@ -130,8 +289,10 @@ F697BFE86D,28/04/2026 18:38,22/05/2026 12:31,Booking,Tierney Dayle,Suite,Flessib
 45AD079DDD,29/03/2026 19:07,22/05/2026 12:30,Booking,Fabien Depoyant,Suite,Flessibile,22/05/2026,25/05/2026,3,870.41,Firenze Suite,Confermate,,,0
 5F3F0ACE77,20/04/2026 00:29,22/05/2026 12:30,Booking,Julian Melchor,Camera Matrimoniale Deluxe,Flessibile,22/05/2026,24/05/2026,2,768.26,Firenze Suite,Confermate,,,0
 448A06B9E6,01/05/2026 10:32,22/05/2026 12:30,Booking,Georgios Annousis,Suite,Non rimborsabile,24/05/2026,27/05/2026,3,742.77,Firenze Suite,Confermate,,,0
+875E2EB77F,19/05/2026 18:58,22/05/2026 08:57,Beddy,Kari Likovuori,Suite,Flessibile,21/07/2026,25/07/2026,4,848,Firenze Suite,Confermate,0,Sito web,0
 46F17AA6B5,09/05/2026 18:48,21/05/2026 22:21,Booking,Mike Dube,Suite,Non rimborsabile,21/05/2026,24/05/2026,3,1182.14,Firenze Suite,Confermate,,,0
 81B55A61A2,21/04/2026 19:29,21/05/2026 22:21,Beddy,Amanda Knapp,"Camera Matrimoniale Deluxe, Suite","Flessibile, Flessibile",21/05/2026,22/05/2026,1,547.8,Firenze Suite,Confermate,0,Sito web,0
+57AE76CCBE,21/05/2026 17:19,,Booking,Donald Roberts,Trilocale,Standard rate,08/07/2026,09/07/2026,1,506.88,Condotta 16,Confermate,,,0
 954846919D,21/05/2026 16:06,,Booking,Peter Wohlgemuth,Trilocale,Non rimborsabile,22/05/2026,24/05/2026,2,821.15,Condotta 16,Confermate,,,0
 EA4AADAECA,20/05/2026 12:52,,Expedia,Ksenia Falko,Suite con Terrazza,Miglior tariffa garantita PKG,07/06/2026,10/06/2026,3,943,Firenze Suite,Confermate,0,OTA,0
 EF75180651,19/02/2026 05:07,20/05/2026 08:44,Beddy,Shelby Anne Holmgren,Camera Matrimoniale Deluxe,Non rimborsabile,21/05/2026,23/05/2026,2,466.2,Firenze Suite,Confermate,0,Sito web,0
@@ -145,16 +306,21 @@ F7630334A9,20/05/2026 00:23,,Expedia,Tom Marasheski,Bilocale,Non rimborsabile,15
 8F945408CD,05/04/2026 00:32,18/05/2026 12:31,Booking,Jonathan Pemberton,Suite con Terrazza,Flessibile,21/05/2026,24/05/2026,3,1044.51,Firenze Suite,Confermate,,,0
 04D28BD742,16/04/2026 02:53,18/05/2026 12:31,Beddy,April Ames,Suite con Terrazza,Non rimborsabile,20/05/2026,24/05/2026,4,1256.72,Firenze Suite,Confermate,0,Sito web,0
 E48C746820,04/02/2026 01:37,18/05/2026 10:45,Booking,Don R Fischer,"Camera Matrimoniale Deluxe, Suite, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile, Non rimborsabile",18/05/2026,20/05/2026,2,1960.44,Firenze Suite,Confermate,,,0
+86ABD46237,18/05/2026 10:37,,Beddy,Mauro Camporini,Suite,Flessibile,19/09/2026,20/09/2026,1,309,Firenze Suite,Confermate,0,Sito web,0
 C1C2369098,17/05/2026 22:49,,Booking,Michael Darren Rothe,Attico,Non rimborsabile,26/05/2026,27/05/2026,1,523.12,Condotta 16,Confermate,,,0
 FAFBD90F64,17/05/2026 21:42,,Booking,Sarah Davidson,Bilocale,Non rimborsabile,18/05/2026,20/05/2026,2,497.66,Condotta 16,Confermate,,,0
+8138889BD8,08/04/2026 21:06,17/05/2026 18:29,Booking,George Aslanidis,Camera Matrimoniale Deluxe,Flessibile,05/07/2026,06/07/2026,1,200.48,Firenze Suite,Cancellate,,,0
 97E46683CB,03/05/2026 15:25,17/05/2026 10:53,Booking,Evelina Gheorghe,Trilocale,Standard rate,23/05/2026,24/05/2026,1,428.31,Condotta 16,Confermate,,,0
 6D9252D41A,05/04/2026 21:12,17/05/2026 10:47,Booking,Danilo Tartarini Sanches,Trilocale,Standard rate,18/05/2026,22/05/2026,4,1929.12,Condotta 16,Confermate,,,0
 1AE5D2A817,10/03/2026 22:09,17/05/2026 10:47,Booking,David Anthony Ferrari,Trilocale,Standard rate,18/05/2026,23/05/2026,5,2712.8,Condotta 16,Confermate,,,0
 FB755B21BA,20/04/2026 01:21,17/05/2026 10:20,Beddy,Raymond Albert Higginbotham,Camera Matrimoniale Deluxe,Non rimborsabile,25/05/2026,27/05/2026,2,448.2,Firenze Suite,Confermate,0,Sito web,0
 4AE4B2C3A8,13/04/2026 08:59,17/05/2026 10:20,Beddy,Raphael Furlan Grivol,Camera Matrimoniale Deluxe,Non rimborsabile,24/05/2026,28/05/2026,4,806,Firenze Suite,Confermate,0,Non Specificato,0
 C3CA493D5A,12/05/2026 17:33,17/05/2026 00:03,Booking,Avalekar Utkarsh,Camera Matrimoniale Deluxe,Flessibile,23/05/2026,25/05/2026,2,819,Firenze Suite,Cancellate,,,0
+F8873C26D0,16/05/2026 23:54,,Beddy,Lia Yoo,Camera Matrimoniale Deluxe,Flessibile,23/10/2026,24/10/2026,1,249,Firenze Suite,Confermate,0,Sito web,0
 EBA5DD4F50,12/04/2026 12:27,16/05/2026 17:57,Booking,Omer Yuksel,Attico,Standard rate,26/05/2026,27/05/2026,1,544.31,Condotta 16,Cancellate,,,0
 24C2A0B209,27/04/2026 15:46,16/05/2026 08:37,Booking,Luciana Maia,Camera Matrimoniale Deluxe,Flessibile,27/05/2026,30/05/2026,3,702.24,Firenze Suite,Cancellate,,,0
+3B80FA1348,03/05/2026 04:45,16/05/2026 07:18,Booking,stefan coombs,Trilocale,Standard rate,07/09/2026,10/09/2026,3,1601.22,Condotta 16,Cancellate,,,0
+2F4E0B2783,16/05/2026 07:16,,Beddy,Stefan Coombs,Trilocale,Non rimborsabile,07/09/2026,10/09/2026,3,1372.8,Condotta 16,Confermate,0,Sito web,0
 7BFEA277F3,15/05/2026 20:12,,Booking,Sirma Pinar Sahin,Attico,Non rimborsabile,18/05/2026,21/05/2026,3,1412.47,Condotta 16,Confermate,,,0
 A8013DD9D4,29/04/2026 11:17,15/05/2026 16:54,Booking,Ophir Baer,Camera Matrimoniale Deluxe,Non rimborsabile,15/05/2026,17/05/2026,2,592.66,Firenze Suite,Confermate,,,0
 C4EC9AAB51,14/05/2026 21:57,15/05/2026 16:54,Beddy,Seyed Hamed Ahmadi Abhari,Camera Matrimoniale Deluxe,Flessibile,15/05/2026,19/05/2026,4,1240,Firenze Suite,Confermate,0,Sito web,0
@@ -201,6 +367,7 @@ EE98833D44,26/03/2026 16:52,07/05/2026 14:39,Booking,Jonathan Creasy,Suite con T
 1D73C30589,06/05/2026 14:15,,Booking,Anne Douglas,Attico,Standard rate,07/06/2026,14/06/2026,7,3023.71,Condotta 16,Confermate,,,0
 E76B8910C7,22/04/2026 17:02,06/05/2026 12:44,Booking,ahmad al sukhon,Attico,Standard rate,07/05/2026,08/05/2026,1,353.19,Condotta 16,Cancellate,,,0
 EE4A99A2BC,23/04/2026 06:42,06/05/2026 09:28,Booking,ALIME ABIIEVA,Camera Matrimoniale Deluxe,Non rimborsabile,06/05/2026,07/05/2026,1,208.79,Firenze Suite,Confermate,,,0
+DFF48E0097,15/01/2026 14:30,06/05/2026 09:18,Booking,BENJAMIN Castano Cota,Camera Matrimoniale Deluxe,Flessibile,06/11/2026,09/11/2026,3,412.02,Firenze Suite,Cancellate,,,0
 628A286E71,21/03/2026 19:07,06/05/2026 08:42,Booking,Vivian Flores Dutra,Trilocale,Standard rate,07/05/2026,09/05/2026,2,988.54,Condotta 16,Confermate,,,0
 2414528401,26/04/2026 18:33,06/05/2026 08:42,Beddy,SIMON MATHYS,Trilocale,Non rimborsabile,08/05/2026,12/05/2026,4,1415.12,Condotta 16,Confermate,0,Sito web,0
 50BB52B7A3,26/04/2026 09:24,06/05/2026 08:41,Booking,Noy Berger,Attico,Standard rate,06/05/2026,07/05/2026,1,222.88,Condotta 16,Confermate,,,0
@@ -215,17 +382,23 @@ E5B47BA998,13/03/2026 02:40,04/05/2026 09:33,Beddy,Jennifer Holberg,Camera Matri
 A54CA71F20,03/05/2026 23:22,04/05/2026 09:31,Booking,Zilofo Jordan,Bilocale,Non rimborsabile,08/05/2026,11/05/2026,3,753.75,Condotta 16,Confermate,,,0
 5CDCFA99C4,26/04/2026 09:31,04/05/2026 09:31,Booking,Radmila Kosanic,Bilocale,Standard rate,04/05/2026,11/05/2026,7,1631.14,Condotta 16,Confermate,,,0
 02226A32A7,03/05/2026 20:39,,Booking,Caroline Growney,Camera Matrimoniale Deluxe,Non rimborsabile,08/05/2026,09/05/2026,1,258.16,Firenze Suite,Confermate,,,0
+FCE7A73E85,28/04/2026 00:21,03/05/2026 17:56,Booking,Roberta Severo Viana,Trilocale,Standard rate,19/12/2026,22/12/2026,3,646.59,Condotta 16,Cancellate,,,0
 C5327F5D22,03/05/2026 17:26,,Expedia,SIMON LINUS VICTOR SUPERTI,Trilocale,Non rimborsabile,03/05/2026,04/05/2026,1,231.15,Condotta 16,Confermate,0,OTA,0
 25337CA05E,15/03/2026 18:58,03/05/2026 10:06,Booking,Osmanov Rafael,Bilocale,Standard rate,25/05/2026,28/05/2026,3,870.24,Condotta 16,Cancellate,,,0
+D4462045FD,03/05/2026 07:51,,Beddy,Carlo Borzillo,Suite con Terrazza,Non rimborsabile,06/08/2026,20/08/2026,14,2534.42,Firenze Suite,Confermate,0,Sito web,0
+DF1EAAE0EC,03/05/2026 00:29,03/05/2026 03:33,Beddy,Stefan Coombs,Trilocale,Standard rate,07/09/2026,10/09/2026,3,1481.1,Condotta 16,Cancellate,0,Sito web,0
 03D2930254,02/05/2026 19:19,,Beddy,Tommaso Cristalli,Suite,Non rimborsabile,03/05/2026,04/05/2026,1,160.92,Firenze Suite,Confermate,0,Non Specificato,0
 1926F12694,02/05/2026 19:12,,Beddy,Edoardo Bianchini,Suite,Non rimborsabile,02/05/2026,03/05/2026,1,246.24,Firenze Suite,Confermate,,,0
 A7DE4FEC16,02/05/2026 17:30,,Booking,Xinnian Li,Bilocale,Standard rate,15/06/2026,17/06/2026,2,811.59,Condotta 16,Confermate,,,0
+B9CC1EB5C8,02/05/2026 15:12,,Booking,Elena Arguelles,Trilocale,Standard rate,05/12/2026,12/12/2026,7,1249.99,Condotta 16,Confermate,,,0
+7554D05A9F,02/05/2026 12:45,,Booking,Bernardo DINIZ,Attico,Standard rate,08/11/2026,11/11/2026,3,656.19,Condotta 16,Confermate,,,0
 5863AC3B1A,01/05/2026 17:46,,Booking,Stefan ZURCHER,Bilocale,Non rimborsabile,02/06/2026,07/06/2026,5,1206.25,Condotta 16,Confermate,,,0
 2CD99B6614,13/03/2026 19:24,01/05/2026 15:45,Booking,STACY LEE WHITE,Suite con Terrazza,Non rimborsabile,05/05/2026,09/05/2026,4,1394.04,Firenze Suite,Confermate,,,0
 E34BDA087E,30/04/2026 20:24,01/05/2026 15:45,Booking,CODRIN JULIAN BLOSIU,Suite con Terrazza,Non rimborsabile,01/05/2026,05/05/2026,4,1475.27,Firenze Suite,Confermate,,,0
 95B976A6E8,22/03/2026 09:30,01/05/2026 15:45,Beddy,TJ DAVITT,Suite con Terrazza,Flessibile,08/05/2026,10/05/2026,2,672.3,Firenze Suite,Confermate,0,Sito web,0
 AD4229F5DD,09/04/2026 18:30,01/05/2026 15:44,Booking,ROBERT JOSEF STADLER,Suite con Terrazza,Non rimborsabile,02/05/2026,06/05/2026,4,1555.52,Firenze Suite,Confermate,,,0
 C9216FC28C,22/04/2026 12:18,01/05/2026 15:44,Beddy,Enrica Fascietti,Suite con Terrazza,Non rimborsabile,01/05/2026,02/05/2026,1,188,Firenze Suite,Confermate,0,Non Specificato,0
+B4D5FB3BD0,01/05/2026 03:49,,Booking,Qian Jin,Attico,Standard rate,22/12/2026,26/12/2026,4,1155.28,Condotta 16,Confermate,,,0
 DE6464860C,01/05/2026 00:54,01/05/2026 01:46,Booking,Luciana Lima,Bilocale,Standard rate,09/05/2026,12/05/2026,3,769.44,Condotta 16,Cancellate,,,0
 66EA0C64DE,30/04/2026 21:16,,Booking,Xueting Chen,Camera Matrimoniale Deluxe,Non rimborsabile,01/05/2026,05/05/2026,4,1229.39,Firenze Suite,Confermate,,,0
 C3147E8E72,27/04/2026 12:17,30/04/2026 18:44,Booking,SHIR HABER,Bilocale,Standard rate,08/05/2026,11/05/2026,3,814.24,Condotta 16,Cancellate,,,0
@@ -245,10 +418,12 @@ B603967BA7,29/04/2026 19:11,29/04/2026 19:30,Booking,Jie Nyon,Trilocale,Standard
 89C923B70C,28/04/2026 21:44,,Booking,Christophe de Neckere,Trilocale,Non rimborsabile,04/05/2026,09/05/2026,5,1664.49,Condotta 16,Confermate,,,0
 8AFAFB0D32,28/04/2026 20:32,,Booking,Ada Lorena Oliva-Guillen,Attico,Non rimborsabile,29/04/2026,30/04/2026,1,285.83,Condotta 16,Confermate,,,0
 D96F64935D,28/04/2026 17:19,,Booking,Nicole Shane Briones,Bilocale,Non rimborsabile,10/06/2026,12/06/2026,2,482.5,Condotta 16,Confermate,,,0
+016430EE06,28/04/2026 10:06,,Booking,Nikola Hoskova,Camera Matrimoniale Deluxe,Flessibile,27/11/2026,30/11/2026,3,412.02,Firenze Suite,Confermate,,,0
 EB918083F0,27/04/2026 20:27,,Booking,Claudia Esteves Saizar,Trilocale,Standard rate,27/04/2026,29/04/2026,2,543.34,Condotta 16,Confermate,,,0
 F26800896C,27/04/2026 19:06,,Booking,Ivan Mathys,Camera Matrimoniale Deluxe,Non rimborsabile,01/05/2026,05/05/2026,4,1117.02,Firenze Suite,Confermate,,,0
 687DC81A0B,27/04/2026 17:54,,Booking,Jannicke Herland Tonning,Attico,Non rimborsabile,03/06/2026,06/06/2026,3,1131.06,Condotta 16,Confermate,,,0
 421448E752,27/04/2026 13:45,,Booking,Susanna Mukhlynina,Bilocale,Non rimborsabile,02/05/2026,04/05/2026,2,516.32,Condotta 16,Confermate,,,0
+3D6B6F3D24,09/04/2026 13:32,27/04/2026 12:50,Booking,Ugo Cozzupoli,Bilocale,Standard rate,05/12/2026,07/12/2026,2,258.56,Condotta 16,Cancellate,,,0
 88179B839A,18/03/2026 21:06,27/04/2026 12:24,Beddy,Richard Terence Hill,Bilocale,Non rimborsabile,16/05/2026,19/05/2026,3,699.3,Condotta 16,Confermate,0,Sito web,0
 F9E0FD1C02,30/03/2026 22:06,27/04/2026 12:23,Beddy,Dr. Yanfei Jiang,Bilocale,Non rimborsabile,14/05/2026,17/05/2026,3,699.3,Condotta 16,Confermate,0,Sito web,0
 C10F2A6067,01/03/2026 12:20,27/04/2026 12:23,Booking,ROBIN CHRISTOPHER HOHL,Bilocale,Non rimborsabile,11/05/2026,14/05/2026,3,779.07,Condotta 16,Confermate,,,0
@@ -270,6 +445,8 @@ EB773DCC32,25/04/2026 19:09,,Booking,Aygul Novikova,Bilocale,Non rimborsabile,25
 8D0EFC458A,25/04/2026 12:17,25/04/2026 14:14,Beddy,GAUTAM BAKHRU,Bilocale,Non rimborsabile,09/05/2026,12/05/2026,3,738.3,Condotta 16,Cancellate,0,Sito web,0
 1B52943E8D,25/04/2026 13:47,,Booking,SOPHIE AUDE CHRISTINE PONS,Suite,Non rimborsabile,05/05/2026,09/05/2026,4,1039.05,Firenze Suite,Confermate,,,0
 464FDD21B5,25/04/2026 07:46,25/04/2026 12:46,Beddy,GAUTAM BAKHRU,Bilocale,Non rimborsabile,09/05/2026,12/05/2026,3,738.3,Condotta 16,Cancellate,0,Sito web,0
+24CD34C8EC,25/04/2026 09:35,,Beddy,Stephen Dye,Suite,Flessibile,07/12/2026,11/12/2026,4,523.2,Firenze Suite,Confermate,0,Sito web,0
+1EAB934C2C,25/04/2026 04:54,,Beddy,Jack Castles,Bilocale,Non rimborsabile,08/11/2026,11/11/2026,3,307.8,Condotta 16,Confermate,0,Sito web,0
 412B0D6514,25/04/2026 00:20,,Booking,Andrei Harazhanka,Bilocale,Non rimborsabile,25/04/2026,27/04/2026,2,391.91,Condotta 16,Confermate,,,0
 325970B944,24/04/2026 22:24,,Beddy,Erika De Villa Concepcion,Trilocale,Non rimborsabile,25/04/2026,26/04/2026,1,382,Condotta 16,Confermate,0,Non Specificato,0
 9349819A29,22/04/2026 22:25,24/04/2026 08:39,Booking,Kayleigh Maria Newby-Gallagher,Trilocale,Non rimborsabile,27/04/2026,29/04/2026,2,484.04,Condotta 16,Confermate,,,0
@@ -296,7 +473,12 @@ E9E2F451EC,25/02/2026 20:59,22/04/2026 08:54,Booking,Andrew McAviney,Camera Matr
 642E657AFF,06/04/2026 08:56,21/04/2026 12:11,Booking,Dmitri Kemenev,Camera Matrimoniale Deluxe,Non rimborsabile,25/04/2026,26/04/2026,1,231.49,Firenze Suite,Confermate,,,0
 9F39266E0B,25/03/2026 11:53,21/04/2026 12:11,Booking,Miguel Bataller Lamata,Camera Matrimoniale Deluxe,Non rimborsabile,24/04/2026,26/04/2026,2,448.44,Firenze Suite,Confermate,,,0
 8953571352,02/03/2026 12:36,21/04/2026 11:33,Booking,Jason Jensen,Bilocale,Non rimborsabile,16/04/2026,19/04/2026,3,677.01,Condotta 16,Cancellate,,,0
+D9E63C814F,16/04/2026 22:21,21/04/2026 03:33,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite con Terrazza,Flessibile,05/12/2026,07/12/2026,2,370.82,Firenze Suite,Cancellate,,,0
+CF7DCD2B9A,21/04/2026 03:30,,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite con Terrazza,Flessibile,05/12/2026,07/12/2026,2,360.52,Firenze Suite,Confermate,,,0
 33B319C737,20/04/2026 11:31,20/04/2026 14:33,Booking,Rigy Sonbol,"Camera Matrimoniale Deluxe, Suite con Terrazza, Suite","Non rimborsabile, Non rimborsabile, Non rimborsabile",20/04/2026,22/04/2026,2,979.98,Firenze Suite,Confermate,,,0
+15AFF85320,19/04/2026 23:24,,Booking,Sudeep Kothari,Trilocale,Standard rate,25/12/2026,26/12/2026,1,259.6,Condotta 16,Confermate,,,0
+975677AC8B,19/04/2026 17:56,19/04/2026 19:16,Booking,Lyudmila Aukhert,Trilocale,Standard rate,29/11/2026,06/12/2026,7,1323.49,Condotta 16,Cancellate,,,0
+92BF1CD795,19/04/2026 19:12,,Booking,Lyudmila Aukhert,Trilocale,Standard rate,30/11/2026,07/12/2026,7,1323.49,Condotta 16,Confermate,,,0
 103B9FC0BF,11/04/2026 20:35,19/04/2026 16:55,Booking,Liza Prendergast,Attico,Standard rate,09/05/2026,12/05/2026,3,1497.72,Condotta 16,Cancellate,,,0
 96F0222EEB,20/01/2026 02:37,19/04/2026 15:33,Booking,Samuil Khaytin,Camera Matrimoniale Deluxe,Flessibile,20/04/2026,24/04/2026,4,1065.64,Firenze Suite,Confermate,,,0
 8DDE138B8E,22/02/2026 22:42,19/04/2026 15:22,Beddy,Vieillard Thomas,Camera Matrimoniale Deluxe,Non rimborsabile,20/04/2026,24/04/2026,4,716.4,Firenze Suite,Confermate,0,Sito web,0
@@ -306,14 +488,19 @@ E9E2F451EC,25/02/2026 20:59,22/04/2026 08:54,Booking,Andrew McAviney,Camera Matr
 E84DB91E4E,14/04/2026 09:02,19/04/2026 14:30,Beddy,Frances Phillips Taft,Trilocale,Non rimborsabile,21/04/2026,23/04/2026,2,500.76,Condotta 16,Confermate,0,Sito web,0
 D0DA1F6DC7,14/03/2026 22:36,19/04/2026 14:30,Booking,Eric Kramer,Trilocale,Non rimborsabile,23/04/2026,26/04/2026,3,1017.04,Condotta 16,Confermate,,,0
 1F2848FC4D,12/04/2026 14:44,19/04/2026 14:30,Beddy,Jasmine Stephenson,Trilocale,Non rimborsabile,21/04/2026,24/04/2026,3,853.59,Condotta 16,Confermate,0,Sito web,0
+22F94BD2F8,19/04/2026 10:44,,Beddy,Jonathan Dowling,Trilocale,Standard rate,15/10/2026,21/10/2026,6,2572.2,Condotta 16,Confermate,0,Sito web,0
 BC77896527,09/04/2026 17:03,18/04/2026 22:08,Booking,Akaki Gubelidze,"Trilocale, Bilocale","Standard rate, Standard rate",06/05/2026,13/05/2026,7,4702.63,Condotta 16,Cancellate,,,0
+EBF895A6F7,18/04/2026 17:29,,Booking,Aseem Gupta,Attico,Standard rate,12/10/2026,15/10/2026,3,1777.14,Condotta 16,Confermate,,,0
 8DEE29083D,08/04/2026 10:55,18/04/2026 13:00,Booking,Erell Dana,Trilocale,Standard rate,22/05/2026,23/05/2026,1,482.28,Condotta 16,Cancellate,,,0
+D6E6E80AF3,18/04/2026 04:09,,Booking,susanto sjamsuddin;ana mariyani;darrell rafael,Bilocale,Standard rate,24/12/2026,27/12/2026,3,517.32,Condotta 16,Confermate,,,0
 5AD5615F05,17/04/2026 17:20,,Booking,matteo cosentino,Trilocale,Non rimborsabile,18/04/2026,19/04/2026,1,335.61,Condotta 16,Confermate,,,0
 5D9B4EA175,15/03/2026 10:36,17/04/2026 15:37,Booking,Erly Novita,Trilocale,Standard rate,18/04/2026,20/04/2026,2,839.93,Condotta 16,Confermate,,,0
 7F0CDB86C6,22/03/2026 10:21,17/04/2026 13:49,Booking,Claus Myllerup,Suite con Terrazza,Flessibile,19/04/2026,23/04/2026,4,865.36,Firenze Suite,Confermate,,,0
 882D8F92E4,05/03/2026 04:07,17/04/2026 09:21,Booking,Glenn Marcey,Suite,Non rimborsabile,17/04/2026,19/04/2026,2,587.84,Firenze Suite,Confermate,,,0
 A7149BD61A,16/04/2026 18:02,17/04/2026 09:20,Booking,Milton Lackman,Suite,Non rimborsabile,17/04/2026,21/04/2026,4,1083.88,Firenze Suite,Confermate,,,0
 898D9C7103,17/04/2026 03:00,,Beddy,TIMOTHY DAVID MAHON,Suite con Terrazza,Flessibile,10/05/2026,14/05/2026,4,1344.6,Firenze Suite,Confermate,0,Sito web,0
+BC852F8D68,09/03/2026 00:48,16/04/2026 22:20,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite,Flessibile,04/12/2026,06/12/2026,2,329.62,Firenze Suite,Cancellate,,,0
+3B4611BFCF,16/04/2026 21:38,16/04/2026 22:20,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite con Terrazza,Flessibile,05/12/2026,07/12/2026,2,370.82,Firenze Suite,Cancellate,,,0
 D920DE5933,14/03/2026 02:41,16/04/2026 18:25,Beddy,zhixuan zhu,Suite,Flessibile,20/04/2026,21/04/2026,1,215,Firenze Suite,Cancellate,0,Sito web,0
 8F3158BA85,03/04/2026 19:53,16/04/2026 18:12,Booking,Lis Brovina,Camera Matrimoniale Deluxe,Flessibile,17/04/2026,20/04/2026,3,670.04,Firenze Suite,Confermate,,,0
 DF18CE8CF9,15/02/2026 12:28,16/04/2026 18:11,Beddy,émilie grangiens,Camera Matrimoniale Deluxe,Flessibile,17/04/2026,20/04/2026,3,627,Firenze Suite,Confermate,0,Sito web,0
@@ -324,7 +511,9 @@ DF18CE8CF9,15/02/2026 12:28,16/04/2026 18:11,Beddy,émilie grangiens,Camera Matr
 F8676B1674,24/03/2026 21:23,16/04/2026 09:00,Booking,Wayne Taylor,Trilocale,Standard rate,16/04/2026,17/04/2026,1,389.46,Condotta 16,Confermate,,,0
 CB2835FA10,17/03/2026 14:30,15/04/2026 13:28,Booking,GUANGYU QI,Camera Matrimoniale Deluxe,Flessibile,15/04/2026,17/04/2026,2,476.28,Firenze Suite,Confermate,,,0
 401352D962,19/03/2026 12:23,15/04/2026 13:28,Booking,Barbara Kracher,Camera Matrimoniale Deluxe,Flessibile,15/04/2026,17/04/2026,2,423.36,Firenze Suite,Confermate,,,0
+4837EB84A6,15/04/2026 00:33,,Booking,Liu Pauline,Bilocale,Standard rate,07/11/2026,12/11/2026,5,698.25,Condotta 16,Confermate,,,0
 BD15126AD4,14/04/2026 21:55,,Booking,Nico Kising,Bilocale,Non rimborsabile,18/04/2026,20/04/2026,2,508.04,Condotta 16,Confermate,,,0
+05132E2E47,14/04/2026 21:20,,Beddy,Maurice den Boer,Bilocale,Standard rate,15/11/2026,19/11/2026,4,456,Condotta 16,Confermate,0,Sito web,0
 A3F6B1E706,14/04/2026 11:35,14/04/2026 11:42,Booking,Srijan Chugh,Camera Matrimoniale Deluxe,Flessibile,24/04/2026,27/04/2026,3,713.44,Firenze Suite,Cancellate,,,0
 EE4713A885,13/04/2026 19:20,13/04/2026 21:11,Beddy,JOURDAN ELLIOT CHINN,Suite con Terrazza,Non rimborsabile,11/04/2026,13/04/2026,2,459.26,Firenze Suite,Confermate,0,Sito web,0
 C79E88CBB6,13/04/2026 17:14,13/04/2026 17:15,Beddy,Hannah Yi,Camera Matrimoniale Deluxe,Flessibile,24/06/2026,27/06/2026,3,747,Firenze Suite,Cancellate,0,Sito web,0
@@ -356,11 +545,13 @@ B4C7D3F5A4,08/04/2026 11:08,08/04/2026 11:18,Booking,maya ratnasingham,Trilocale
 6B33B666F9,16/03/2026 18:25,07/04/2026 10:53,Beddy,Thomas Cadier,Camera Matrimoniale Deluxe,Flessibile,16/04/2026,19/04/2026,3,617,Firenze Suite,Confermate,0,Sito web,0
 0F4A6B5E52,28/03/2026 21:35,07/04/2026 10:53,Booking,Dominique Delabre,Camera Matrimoniale Deluxe,Flessibile,12/04/2026,16/04/2026,4,846.72,Firenze Suite,Confermate,,,0
 80E2F1ADE0,06/04/2026 16:54,,Booking,Emilie Lebleu,Attico,Non rimborsabile,11/04/2026,14/04/2026,3,1196.65,Condotta 16,Confermate,,,0
+58584626D8,02/04/2026 15:33,06/04/2026 15:37,Booking,MA TENGFEI CAO MENGYI,Camera Matrimoniale Deluxe,Flessibile,05/07/2026,08/07/2026,3,666.6,Firenze Suite,Cancellate,,,0
 A8645F0EA9,09/02/2026 20:46,06/04/2026 12:25,Booking,Ksenia Gervokyan,Bilocale,Standard rate,07/04/2026,09/04/2026,2,452.72,Condotta 16,Confermate,,,0
 BF6BC050FA,16/03/2026 07:00,06/04/2026 12:25,Booking,ZHIBIN Yan,Bilocale,Standard rate,10/04/2026,12/04/2026,2,622.08,Condotta 16,Confermate,,,0
 2DF20AAE9F,17/03/2026 02:37,06/04/2026 12:25,Booking,Leena Flood,Bilocale,Standard rate,08/04/2026,12/04/2026,4,1006.74,Condotta 16,Confermate,,,0
 4201D89001,22/02/2026 21:14,06/04/2026 12:25,Beddy,Bryn Gornick,Bilocale,Standard rate,06/04/2026,08/04/2026,2,398,Condotta 16,Confermate,0,Sito web,0
 1113C153E7,05/04/2026 23:39,,Booking,Paul Tickner,Suite,Non rimborsabile,07/04/2026,10/04/2026,3,739.68,Firenze Suite,Confermate,,,0
+F31D0ED21C,05/04/2026 22:15,,Booking,Luca Pigola,Suite,Flessibile,07/11/2026,08/11/2026,1,175.11,Firenze Suite,Confermate,,,0
 02E8629C67,05/04/2026 18:25,,Booking,Yibing Ye,Trilocale,Non rimborsabile,05/04/2026,06/04/2026,1,339.38,Condotta 16,Confermate,,,0
 5B7E2A7858,05/04/2026 16:27,,Beddy,Emma Perrone,Suite,Non rimborsabile,16/04/2026,17/04/2026,1,204,Firenze Suite,Confermate,0,Non Specificato,0
 4400A37464,30/03/2026 10:23,05/04/2026 16:22,Beddy,Lina Gissberg,Trilocale,Standard rate,14/05/2026,16/05/2026,2,720,Condotta 16,Cancellate,0,Non Specificato,0
@@ -408,6 +599,8 @@ BF30391504,30/03/2026 19:30,31/03/2026 21:11,Booking,Juhasz Andrea,Trilocale,Sta
 F45BB3F48D,15/02/2026 17:57,30/03/2026 21:57,Beddy,Yanfei Jiang,Bilocale,Standard rate,14/05/2026,18/05/2026,4,916,Condotta 16,Cancellate,0,Sito web,0
 462C1B37DE,30/03/2026 21:38,,Beddy,Cheryl Halliday Shaw,Attico,Standard rate,24/05/2026,26/05/2026,2,751.1,Condotta 16,Confermate,0,Sito web,0
 ECC3ADF744,30/03/2026 21:03,,Beddy,Elea Flemming,Camera Matrimoniale Deluxe,Non rimborsabile,13/04/2026,15/04/2026,2,420.2,Firenze Suite,Confermate,0,Sito web,0
+57852FF1FC,30/03/2026 19:23,,Booking,jimena palleiro,Bilocale,Standard rate,01/11/2026,04/11/2026,3,418.95,Condotta 16,Confermate,,,0
+52A99D734B,28/02/2026 05:47,30/03/2026 19:05,Beddy,jayne young,Attico,Standard rate,27/09/2026,02/10/2026,5,2657.75,Condotta 16,Cancellate,0,Sito web,0
 B5A541BE51,30/03/2026 11:30,30/03/2026 15:40,Booking,Linda Catacalos,Bilocale,Standard rate,09/05/2026,12/05/2026,3,948.43,Condotta 16,Cancellate,,,0
 AA854896AB,18/02/2026 13:19,30/03/2026 10:58,Booking,Ramzi Kurd,Trilocale,Standard rate,07/04/2026,12/04/2026,5,2124.72,Condotta 16,Cancellate,,,0
 71C8666669,30/03/2026 10:21,30/03/2026 10:37,Booking,qin zhining,Bilocale,Standard rate,03/05/2026,06/05/2026,3,888.93,Condotta 16,Cancellate,,,0
@@ -417,6 +610,7 @@ DE55865549,30/03/2026 00:40,,Booking,Mariana Ramos,Trilocale,Standard rate,14/05
 95D39C4B37,29/03/2026 22:32,,Booking,Anne Willoughby-Richards,Trilocale,Standard rate,12/04/2026,16/04/2026,4,1340.24,Condotta 16,Confermate,,,0
 F40BC0BF1A,29/03/2026 22:15,,Booking,richard kulhanek,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Flessibile, Flessibile",30/05/2026,04/06/2026,5,3456.72,Firenze Suite,Confermate,,,0
 9FBD31A419,26/03/2026 11:46,29/03/2026 21:21,Booking,Luana Boregio,"Trilocale, Trilocale","Standard rate, Standard rate",09/05/2026,10/05/2026,1,999.22,Condotta 16,Cancellate,,,0
+1AA6963D48,29/03/2026 21:10,,Booking,Romuald Schostak,Camera Matrimoniale Deluxe,Non rimborsabile,20/07/2026,22/07/2026,2,341.68,Firenze Suite,Confermate,,,0
 6A9DA0D9B3,01/03/2026 20:14,29/03/2026 09:05,Booking,Jodi O'Brien,Trilocale,Non rimborsabile,31/03/2026,02/04/2026,2,625.02,Condotta 16,Confermate,,,0
 5606AE9910,01/01/2026 23:37,29/03/2026 09:05,Booking,Catarina Chagas,Trilocale,Non rimborsabile,02/04/2026,05/04/2026,3,1786.02,Condotta 16,Confermate,,,0
 E82125D8EF,15/03/2026 16:23,29/03/2026 09:04,Booking,Atixheni Dulaj,Trilocale,Standard rate,03/04/2026,05/04/2026,2,832.81,Condotta 16,Confermate,,,0
@@ -431,22 +625,28 @@ B4006202F6,20/02/2026 10:27,27/03/2026 09:13,Beddy,Exbrayat Hélène,Suite con T
 D6EB19FABA,25/03/2026 22:28,27/03/2026 09:13,Booking,Tetiana Despretz,Suite con Terrazza,Non rimborsabile,11/04/2026,14/04/2026,3,800.02,Firenze Suite,Confermate,,,0
 3F51DAD247,17/03/2026 06:46,27/03/2026 09:12,Beddy,Jens Jorn Hansen,Suite con Terrazza,Flessibile,04/04/2026,11/04/2026,7,1960,Firenze Suite,Confermate,0,Non Specificato,0
 1F50BF3AD3,20/03/2026 17:43,27/03/2026 08:38,Beddy,Deanna Dietrick Evju,Camera Matrimoniale Deluxe,Non rimborsabile,26/03/2026,27/03/2026,1,134.1,Firenze Suite,Confermate,0,Sito web,0
+730DAEC39F,27/03/2026 02:55,,Beddy,Malia Pina,Attico,Standard rate,25/11/2026,29/11/2026,4,661.2,Condotta 16,Confermate,0,Sito web,0
 C48CAF60F7,26/03/2026 23:33,,Booking,Andrew Taper,Suite con Terrazza,Flessibile,22/06/2026,25/06/2026,3,1247.1,Firenze Suite,Confermate,,,0
 4154A6D8BD,26/03/2026 22:50,,Booking,KUMAMOTO MIA,Bilocale,Non rimborsabile,29/03/2026,31/03/2026,2,404.7,Condotta 16,Confermate,,,0
 93799569D1,26/03/2026 22:25,,Booking,Jorge Augusto Gioara,Trilocale,Non rimborsabile,06/04/2026,09/04/2026,3,1270.57,Condotta 16,Confermate,,,0
 1573C20B5E,20/02/2026 20:22,26/03/2026 15:29,Booking,Sigridur Hulda Jonsdottir,Trilocale,Standard rate,14/05/2026,18/05/2026,4,1846.04,Condotta 16,Cancellate,,,0
 9FE081404A,26/03/2026 15:16,,Beddy,Svanhildur Þorsteinsdottir,Attico,Standard rate,14/05/2026,18/05/2026,4,1662.2,Condotta 16,Confermate,0,Sito web,0
 ED453DA3CA,25/03/2026 21:49,,Booking,John Murray,Attico,Non rimborsabile,15/04/2026,17/04/2026,2,635.72,Condotta 16,Confermate,,,0
+04A3B47D0C,24/03/2026 10:53,25/03/2026 18:34,Booking,le roch rachel,Suite,Flessibile,31/07/2026,02/08/2026,2,443.42,Firenze Suite,Cancellate,,,0
+D029C9C819,24/03/2026 10:46,25/03/2026 18:33,Booking,le roch rachel,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Flessibile, Flessibile",31/07/2026,02/08/2026,2,739.04,Firenze Suite,Cancellate,,,0
 C520F46E69,02/03/2026 23:59,25/03/2026 15:01,Booking,Aliya Amin,Trilocale,Standard rate,07/04/2026,09/04/2026,2,801.82,Condotta 16,Cancellate,,,0
 92B2C70078,24/03/2026 23:36,,Booking,Liana Cheaga,Trilocale,Non rimborsabile,05/04/2026,07/04/2026,2,776.12,Condotta 16,Confermate,,,0
+F6F538B081,24/03/2026 21:34,,Booking,Peggy Steinhardt,Suite con Terrazza,Flessibile,20/08/2026,26/08/2026,6,1374.24,Firenze Suite,Confermate,,,0
 77EDFC13CD,24/03/2026 18:41,,Beddy,Amici Lapo,Suite con Terrazza,Non rimborsabile,03/04/2026,04/04/2026,1,180,Firenze Suite,Confermate,0,Non Specificato,0
 50DC94C445,24/03/2026 18:40,,Beddy,Amici Lapo,Suite,Non rimborsabile,02/04/2026,03/04/2026,1,180,Firenze Suite,Confermate,0,Non Specificato,0
 30117B3A90,19/03/2026 21:48,24/03/2026 18:37,Booking,Peter Frost,Trilocale,Standard rate,16/04/2026,17/04/2026,1,335.06,Condotta 16,Cancellate,,,0
 3DF2BF89A5,24/03/2026 16:38,,Beddy,Tommaso Cristalli,Suite con Terrazza,Non rimborsabile,28/03/2026,29/03/2026,1,181.03,Firenze Suite,Confermate,0,Non Specificato,0
 A92428158F,24/03/2026 11:20,,Booking,Birte Ziegelmann,Suite con Terrazza,Non rimborsabile,25/03/2026,29/03/2026,4,818.52,Firenze Suite,Confermate,,,0
+F11EB8AFD6,24/03/2026 00:00,,Booking,Nathan Kline,Trilocale,Standard rate,23/08/2026,25/08/2026,2,1188.6,Condotta 16,Confermate,,,0
 1017B4E537,23/03/2026 18:05,,Booking,Anjum Breja Chandrima Khunteta,Suite,Flessibile,24/04/2026,27/04/2026,3,841.86,Firenze Suite,Confermate,,,0
 329ED83EED,27/01/2026 18:16,23/03/2026 10:15,Booking,Jean-Pierre TOMAT,Suite,Non rimborsabile,25/03/2026,27/03/2026,2,262.18,Firenze Suite,Confermate,,,0
 7D18F1D830,01/02/2026 12:47,23/03/2026 06:30,Booking,Cristina Theus Sigismondi,Trilocale,Standard rate,23/04/2026,26/04/2026,3,1283.96,Condotta 16,Cancellate,,,0
+68A05EB985,22/03/2026 23:14,,Booking,Andrea Ghezzi,Trilocale,Standard rate,28/11/2026,29/11/2026,1,259.6,Condotta 16,Confermate,,,0
 29A50B227D,22/03/2026 19:35,,Booking,Oak Richardson,Camera Matrimoniale Deluxe,Non rimborsabile,23/03/2026,25/03/2026,2,253.55,Firenze Suite,Confermate,,,0
 421EA4FB74,22/03/2026 18:03,,Beddy,Deanna Dietrick Evju,Suite con Terrazza,Non rimborsabile,29/03/2026,30/03/2026,1,181.03,Firenze Suite,Confermate,0,Sito web,0
 435468F2DC,22/03/2026 15:17,22/03/2026 15:39,Booking,Martin Kriwanek,Bilocale,Standard rate,30/04/2026,04/05/2026,4,1389.24,Condotta 16,Cancellate,,,0
@@ -461,6 +661,7 @@ B86C4BE6AB,22/03/2026 10:24,,Booking,Kyla McGovern,Trilocale,Standard rate,26/03
 77145C40D0,10/03/2026 00:05,22/03/2026 00:04,Booking,Ivan Kirov,Suite con Terrazza,Flessibile,28/03/2026,29/03/2026,1,211.21,Firenze Suite,Cancellate,,,0
 4E09C8CC10,21/03/2026 22:00,,Booking,Leann Katz,Trilocale,Non rimborsabile,23/03/2026,26/03/2026,3,764.7,Condotta 16,Confermate,,,0
 3CD9922982,26/02/2026 10:27,21/03/2026 12:58,Booking,Pierce Bradley,Trilocale,Standard rate,20/04/2026,22/04/2026,2,753.88,Condotta 16,Cancellate,,,0
+A9E1B2E88E,21/03/2026 09:03,,Booking,Eva Martinelli,Camera Matrimoniale Deluxe,Flessibile,27/11/2026,28/11/2026,1,145.92,Firenze Suite,Confermate,,,0
 E06AB39D92,21/01/2026 17:40,21/03/2026 00:02,Booking,CHZHEN IRINA; CHZHEN OLEG; CHZHEN SOFIIA; CHZHEN POLINA,Trilocale,Standard rate,27/03/2026,31/03/2026,4,1077.76,Condotta 16,Cancellate,,,0
 D31AA366BC,20/03/2026 18:31,,Booking,Connie Fitler,Trilocale,Standard rate,18/05/2026,24/05/2026,6,2718.3,Condotta 16,Confermate,,,0
 F34DD88347,20/03/2026 13:49,,Beddy,Amici Lina,Trilocale,Non rimborsabile,17/04/2026,21/04/2026,4,1480,Condotta 16,Confermate,0,Non Specificato,0
@@ -507,6 +708,8 @@ D291C946E3,11/03/2026 18:38,14/03/2026 13:40,Booking,Moacir Rabin,Bilocale,Stand
 B7E45DFB1E,14/03/2026 10:39,,Booking,Fil Kucera,Attico,Non rimborsabile,17/04/2026,20/04/2026,3,1033.45,Condotta 16,Confermate,,,0
 01FF76EB0F,11/03/2026 18:37,14/03/2026 09:29,Booking,Martina Antonelli,Bilocale,Non rimborsabile,14/03/2026,15/03/2026,1,142.11,Condotta 16,Confermate,,,0
 5406E739F5,28/12/2025 15:27,14/03/2026 09:02,Booking,Armand Vokshi,Attico,Non rimborsabile,14/03/2026,16/03/2026,2,365.16,Condotta 16,Confermate,,,0
+1FD8743E54,14/03/2026 06:52,,Booking,Peta Humphreys,Trilocale,Standard rate,19/11/2026,22/11/2026,3,687,Condotta 16,Confermate,,,0
+D15EB886F3,14/03/2026 06:12,14/03/2026 06:52,Booking,Peta Humphreys,Trilocale,Standard rate,19/11/2026,22/11/2026,3,595.2,Condotta 16,Cancellate,,,0
 6A388ECAD6,27/02/2026 20:24,13/03/2026 20:59,Booking,Sascha Kampf,Bilocale,Standard rate,14/04/2026,16/04/2026,2,532.82,Condotta 16,Cancellate,,,0
 AA9C27B509,13/03/2026 19:49,,Beddy,Rene Zadori,Trilocale,Non rimborsabile,23/03/2026,25/03/2026,2,470,Condotta 16,Confermate,0,Non Specificato,0
 6F24EB5E8A,24/02/2026 15:19,13/03/2026 19:30,Booking,teresa pontoriero,Trilocale,Standard rate,20/03/2026,23/03/2026,3,901.14,Condotta 16,Confermate,,,0
@@ -519,6 +722,7 @@ A6AF044729,13/03/2026 18:45,,Booking,claire perdereau,Camera Matrimoniale Deluxe
 B6A7398728,02/02/2026 19:44,12/03/2026 11:36,Booking,Sara Hofer,Camera Matrimoniale Deluxe,Non rimborsabile,20/03/2026,22/03/2026,2,291.84,Firenze Suite,Confermate,,,0
 73461516F2,27/01/2026 12:22,12/03/2026 11:35,Booking,Hyder Sally,Camera Matrimoniale Deluxe,Non rimborsabile,16/03/2026,19/03/2026,3,417.84,Firenze Suite,Confermate,,,0
 CE68C9A903,09/01/2026 09:01,12/03/2026 11:35,Booking,Lyliane CAZES,Camera Matrimoniale Deluxe,Flessibile,17/03/2026,24/03/2026,7,1038.87,Firenze Suite,Confermate,,,0
+C651A635C6,11/03/2026 18:13,,Booking,Oldrich Hrabanek,"Suite con Terrazza, Suite con Terrazza","Flessibile, Flessibile",27/07/2026,30/07/2026,3,1860.54,Firenze Suite,Confermate,,,0
 5B734FC2AD,11/03/2026 17:00,,Booking,CHEN LI-HSUAN,Bilocale,Non rimborsabile,13/03/2026,14/03/2026,1,142.11,Condotta 16,Confermate,,,0
 4E7459CFAC,11/03/2026 16:36,,Booking,Andrea Carattoni,Trilocale,Non rimborsabile,13/03/2026,15/03/2026,2,532.68,Condotta 16,Confermate,,,0
 021156AE36,01/03/2026 15:04,11/03/2026 13:55,Beddy,Barbara Biancucci,Bilocale,Standard rate,27/03/2026,29/03/2026,2,318,Condotta 16,Confermate,0,Sito web,0
@@ -539,6 +743,8 @@ FFA38BE4E7,31/01/2026 21:23,09/03/2026 12:15,Booking,Bonnie Reinitzer,Trilocale,
 96A6E93356,08/03/2026 16:00,09/03/2026 09:14,Booking,Kangna SEPANY,Bilocale,Standard rate,21/03/2026,28/03/2026,7,1192.03,Condotta 16,Confermate,,,0
 BEF379DF22,27/01/2026 23:39,09/03/2026 09:13,Booking,Karla Saguil,Bilocale,Non rimborsabile,18/03/2026,20/03/2026,2,328.32,Condotta 16,Confermate,,,0
 1126F7B831,08/02/2026 08:16,09/03/2026 09:13,Booking,Liza Landauer,Bilocale,Non rimborsabile,19/03/2026,23/03/2026,4,669.72,Condotta 16,Confermate,,,0
+F7332A95AD,08/03/2026 07:34,09/03/2026 00:51,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite,Flessibile,04/12/2026,05/12/2026,1,164.81,Firenze Suite,Cancellate,,,0
+2B6E8805E3,09/03/2026 00:36,09/03/2026 00:43,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite,Flessibile,04/12/2026,06/12/2026,2,329.62,Firenze Suite,Cancellate,,,0
 E224F815E9,08/03/2026 21:19,,Beddy,Theo Alessandri,Suite,Non rimborsabile,12/03/2026,15/03/2026,3,552.36,Firenze Suite,Confermate,0,Sito web,0
 8216D7E1D6,01/03/2026 20:42,08/03/2026 09:29,Booking,Brent Bryer,Bilocale,Non rimborsabile,15/04/2026,17/04/2026,2,451.34,Condotta 16,Confermate,,,0
 7B2E3B4AC2,07/03/2026 19:11,08/03/2026 09:28,Booking,MARIA CECILIA ARROYO,Bilocale,Standard rate,15/04/2026,17/04/2026,2,532.82,Condotta 16,Confermate,,,0
@@ -549,6 +755,7 @@ ED6FE3CEDB,08/03/2026 00:02,08/03/2026 09:09,Booking,Julie Deschepper,Bilocale,N
 F4F99556E4,23/01/2026 21:39,07/03/2026 13:44,Booking,Alex Pecilunas,"Camera Matrimoniale Deluxe, Suite, Camera Matrimoniale Deluxe","Flessibile, Flessibile, Flessibile",16/03/2026,19/03/2026,3,1376.46,Firenze Suite,Confermate,,,0
 F79C3FD13C,06/03/2026 14:27,07/03/2026 09:15,Beddy,Giovani Sassone,Suite con Terrazza,Non rimborsabile,07/03/2026,08/03/2026,1,119,Firenze Suite,Confermate,0,Non Specificato,0
 1468273409,06/03/2026 21:05,07/03/2026 09:14,Booking,Ana Debogovic,Camera Matrimoniale Deluxe,Non rimborsabile,06/03/2026,08/03/2026,2,235.91,Firenze Suite,Confermate,,,0
+A683D0184E,07/03/2026 00:43,,Beddy,Lisa Little,Trilocale,Standard rate,05/11/2026,10/11/2026,5,741,Condotta 16,Confermate,0,Sito web,0
 F0E66F6F16,06/03/2026 23:22,,Booking,Jacopo Sordi,Trilocale,Standard rate,07/03/2026,08/03/2026,1,250.22,Condotta 16,Confermate,,,0
 C6652605EC,06/03/2026 21:52,,Booking,Federica Gaetani,Bilocale,Non rimborsabile,07/03/2026,08/03/2026,1,120.07,Condotta 16,Confermate,,,0
 9A8284CDE3,03/03/2026 21:08,06/03/2026 17:26,Beddy,Amélie DAMBRUN Amélie DAMBRUN,Camera Matrimoniale Deluxe,Non rimborsabile,06/04/2026,10/04/2026,4,789.4,Firenze Suite,Confermate,0,Sito web,0
@@ -586,11 +793,13 @@ BD4C345C2F,09/02/2026 11:44,01/03/2026 17:02,Booking,michele talarico,Trilocale,
 E9756D7D0F,11/02/2026 09:03,01/03/2026 10:47,Beddy,Pompeani Robert,Camera Matrimoniale Deluxe,Flessibile,02/03/2026,05/03/2026,3,387,Firenze Suite,Confermate,0,Non Specificato,0
 E198F5C083,12/01/2026 17:10,01/03/2026 10:46,Beddy,Robert Pompeani,"Suite, Camera Matrimoniale Deluxe","Flessibile, Flessibile",26/02/2026,02/03/2026,4,471,Firenze Suite,Confermate,0,Sito web,0
 F83CE1272C,07/02/2026 20:51,01/03/2026 08:58,Booking,Lisa Wegner,Trilocale,Standard rate,04/03/2026,12/03/2026,8,1334.31,Condotta 16,Confermate,,,0
+38F1DA705E,28/02/2026 21:32,,Beddy,Carl Shelton,Suite,Flessibile,25/11/2026,26/11/2026,1,130.8,Firenze Suite,Confermate,0,Sito web,0
 7D7A5F0B8E,23/12/2025 19:14,28/02/2026 21:21,Beddy,Carl Shelton,Suite,Flessibile,17/03/2026,18/03/2026,1,142.8,Firenze Suite,Cancellate,0,Sito web,0
 749C42D0DA,28/02/2026 18:41,,Beddy,Caroline Taylor,Trilocale,Non rimborsabile,11/04/2026,18/04/2026,7,1688.31,Condotta 16,Confermate,0,Sito web,0
 79424803DA,28/02/2026 12:53,,Booking,Vanya Rusinova,Suite,Non rimborsabile,27/03/2026,29/03/2026,2,370.76,Firenze Suite,Confermate,,,0
 4041B54619,25/02/2026 15:24,28/02/2026 09:21,Beddy,Simona Polli,Suite,Non rimborsabile,28/02/2026,01/03/2026,1,119,Firenze Suite,Confermate,0,Non Specificato,0
 88D0328C1B,21/12/2025 23:19,27/02/2026 08:41,Booking,TIMOTHY WELSH,Camera Matrimoniale Deluxe,Non rimborsabile,08/03/2026,15/03/2026,7,1145.55,Firenze Suite,Confermate,,,0
+9704274041,26/02/2026 18:41,,Booking,Michael Braeschke,Camera Matrimoniale Deluxe,Non rimborsabile,31/08/2026,01/09/2026,1,217.24,Firenze Suite,Confermate,,,0
 245145FA7B,27/12/2025 21:28,25/02/2026 21:10,Booking,Silvia Maria Pasquale,Bilocale,Standard rate,27/03/2026,30/03/2026,3,496.23,Condotta 16,Cancellate,,,0
 FC9FC3934F,25/02/2026 17:31,25/02/2026 17:44,Booking,Magdalena Gemra,Camera Matrimoniale Deluxe,Non rimborsabile,13/03/2026,15/03/2026,2,299.38,Firenze Suite,Cancellate,,,0
 A311E5DB8F,25/02/2026 14:21,,Beddy,patrizia palmieri,Trilocale,Non rimborsabile,28/02/2026,03/03/2026,3,523,Condotta 16,Confermate,0,Non Specificato,0
@@ -693,6 +902,7 @@ D4F5FA6EF5,22/01/2026 02:20,10/02/2026 02:17,Booking,SU RONG ZHOU YI,Bilocale,St
 8252BDFE1D,09/02/2026 22:56,,Booking,Jordi Bernal Fuentes,Bilocale,Standard rate,24/04/2026,26/04/2026,2,509.6,Condotta 16,Confermate,,,0
 C4525FE68E,09/02/2026 22:23,,Booking,Giacomo Baschieri,Bilocale,Standard rate,04/04/2026,06/04/2026,2,555.1,Condotta 16,Confermate,,,0
 EFDD222D79,01/01/2026 20:18,09/02/2026 20:30,Booking,Vladimir Soukup,Suite,Flessibile,11/03/2026,16/03/2026,5,720.11,Firenze Suite,Confermate,,,0
+3949CBF93A,18/01/2026 01:57,09/02/2026 20:22,Beddy,Lauren Putnam,"Camera Matrimoniale Deluxe, Suite con Terrazza","Flessibile, Flessibile",10/07/2026,12/07/2026,2,1153.3,Firenze Suite,Cancellate,0,Sito web,0
 68DAF2D059,06/02/2026 13:44,09/02/2026 18:37,Booking,Antonia Exposito Trabalon,Bilocale,Standard rate,19/04/2026,26/04/2026,7,1636.39,Condotta 16,Cancellate,,,0
 14B321F0A5,04/02/2026 02:45,09/02/2026 17:28,Beddy,Aashna Moorjani,Camera Matrimoniale Deluxe,Flessibile,04/05/2026,10/05/2026,6,1494,Firenze Suite,Cancellate,0,Sito web,0
 94504A9D8B,07/01/2026 20:15,09/02/2026 14:51,Booking,Alexander Podkopayev,Suite con Terrazza,Non rimborsabile,13/02/2026,16/02/2026,3,456.34,Firenze Suite,Confermate,,,0
@@ -717,6 +927,7 @@ EACB5F9904,08/01/2026 11:12,08/02/2026 10:14,Booking,Robert Bumbac,Bilocale,Non 
 739B530196,08/02/2026 09:29,,Beddy,Milena Pocci,Attico,Non rimborsabile,16/02/2026,18/02/2026,2,400,Condotta 16,Confermate,0,Non Specificato,0
 50DC9EF0F4,19/01/2026 22:23,08/02/2026 08:39,Beddy,Adrian Holle,Camera Matrimoniale Deluxe,Non rimborsabile,17/02/2026,18/02/2026,1,84.6,Firenze Suite,Confermate,0,Sito web,0
 E63A1C4A82,08/02/2026 07:41,,Booking,Vasily Stukalov,Trilocale,Standard rate,27/03/2026,30/03/2026,3,861.36,Condotta 16,Confermate,,,0
+B8C8BF036D,07/02/2026 20:07,,Booking,Aurora Battisti,Camera Matrimoniale Deluxe,Non rimborsabile,15/07/2026,16/07/2026,1,234.88,Firenze Suite,Confermate,,,0
 ECF667B8FD,12/01/2026 22:51,07/02/2026 12:12,Beddy,Andrea Graziani,Camera Matrimoniale Deluxe,Non rimborsabile,08/02/2026,11/02/2026,3,253.8,Firenze Suite,Confermate,0,Sito web,0
 AB5A5A389E,04/01/2026 18:22,07/02/2026 10:28,Beddy,Michele Fazari,"Suite con Terrazza, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",07/02/2026,09/02/2026,2,486.4,Firenze Suite,Confermate,0,Sito web,0
 4848C5CC20,04/01/2026 20:26,07/02/2026 08:47,Beddy,Morgan Law,Camera Matrimoniale Deluxe,Flessibile,08/02/2026,10/02/2026,2,188,Firenze Suite,Confermate,0,Sito web,0
@@ -735,6 +946,7 @@ F988CE2FFB,06/02/2026 14:58,06/02/2026 18:27,Booking,LI WENXIAO,Camera Matrimoni
 B01B2B9995,30/01/2026 07:52,04/02/2026 16:08,Beddy,Chiara Nicotri,Bilocale,Non rimborsabile,06/02/2026,08/02/2026,2,187.2,Condotta 16,Confermate,0,Sito web,0
 FA3ADFD0DC,29/01/2026 20:50,04/02/2026 16:08,Booking,Katrina Smolska,Bilocale,Non rimborsabile,04/02/2026,07/02/2026,3,310.05,Condotta 16,Confermate,,,0
 891EC7A087,04/02/2026 12:13,,Beddy,Alissa Josph,Camera Matrimoniale Deluxe,Non rimborsabile,06/02/2026,08/02/2026,2,176,Firenze Suite,Confermate,0,Non Specificato,0
+09663B390E,04/02/2026 10:15,,Booking,dominique chagnon,Camera Matrimoniale Deluxe,Non rimborsabile,31/08/2026,01/09/2026,1,205.17,Firenze Suite,Confermate,,,0
 3E42AE886F,03/02/2026 18:21,04/02/2026 09:12,Booking,ivan LOUCACHEVSKY,Suite,Flessibile,24/03/2026,27/03/2026,3,595.47,Firenze Suite,Cancellate,,,0
 0845284463,04/02/2026 07:26,,Booking,Reid Langston,"Trilocale, Bilocale, Attico","Standard rate, Non rimborsabile, Non rimborsabile",27/05/2026,31/05/2026,4,5634.83,Condotta 16,Confermate,,,0
 7A096A8D3C,19/01/2026 10:58,03/02/2026 21:35,Booking,Andrea Zambardi,Trilocale,Standard rate,06/02/2026,08/02/2026,2,244.43,Condotta 16,Confermate,,,0
@@ -746,11 +958,15 @@ A2BC94A358,23/01/2026 02:12,03/02/2026 11:36,Booking,Guido De Vito,Trilocale,Non
 351967A953,18/01/2026 00:49,02/02/2026 19:19,Booking,Margaret Wheeler,Suite,Flessibile,21/03/2026,28/03/2026,7,1246.63,Firenze Suite,Cancellate,,,0
 6570E7B4AB,15/01/2026 17:43,02/02/2026 15:15,Booking,HAIZHEN WU,Suite,Non rimborsabile,02/02/2026,05/02/2026,3,388.32,Firenze Suite,Confermate,,,0
 B9CB6B3FA1,18/01/2026 19:59,02/02/2026 10:54,Booking,Michael McCrory,Suite,Flessibile,18/03/2026,21/03/2026,3,572,Firenze Suite,Cancellate,,,0
+DD04BEE0A7,01/02/2026 22:56,,Booking,Claudio Valiente,Bilocale,Standard rate,27/11/2026,01/12/2026,4,574.56,Condotta 16,Confermate,,,0
 E2627CCF28,01/02/2026 21:51,01/02/2026 22:49,Booking,Angela Juan Linan,Trilocale,Standard rate,15/04/2026,18/04/2026,3,1206.18,Condotta 16,Cancellate,,,0
+B4934F9D5A,01/02/2026 20:03,01/02/2026 20:18,Booking,gal aspis,Trilocale,Standard rate,17/09/2026,18/09/2026,1,740.32,Condotta 16,Confermate,,,0
 FCE601A469,18/01/2026 19:45,01/02/2026 19:11,Booking,Chirilov Maria,Bilocale,Standard rate,14/02/2026,16/02/2026,2,300.92,Condotta 16,Cancellate,,,0
 79C8A07511,27/12/2025 18:23,01/02/2026 17:59,Booking,Fiona Drew,Suite,Flessibile,02/03/2026,05/03/2026,3,516.18,Firenze Suite,Cancellate,,,0
+DFD10B350B,23/01/2026 03:14,01/02/2026 10:39,Booking,Michael Brett,Trilocale,Standard rate,01/10/2026,04/10/2026,3,1642.08,Condotta 16,Cancellate,,,0
 24F1432999,01/02/2026 10:23,,Booking,Dournow Jacques,Suite,Non rimborsabile,07/05/2026,09/05/2026,2,822.9,Firenze Suite,Confermate,,,0
 7A4C7A28DB,01/02/2026 08:31,,Booking,Anton Oleinik,Attico,Non rimborsabile,13/02/2026,15/02/2026,2,351.66,Condotta 16,Confermate,,,0
+2E16AD19A7,01/02/2026 07:22,,Beddy,CAILLAUD SIMON,Suite con Terrazza,Flessibile,13/08/2026,15/08/2026,2,522.3,Firenze Suite,Confermate,0,Sito web,0
 64C220A9FB,16/01/2026 11:08,31/01/2026 16:21,Booking,Andrei IANCU,Suite con Terrazza,Non rimborsabile,29/01/2026,02/02/2026,4,428.38,Firenze Suite,Confermate,,,0
 2DD1E3D3C3,10/01/2026 03:07,31/01/2026 16:21,Booking,Paul Voll,Suite con Terrazza,Non rimborsabile,01/02/2026,02/02/2026,1,148.53,Firenze Suite,Confermate,,,0
 789EE4B0CE,27/01/2026 10:44,31/01/2026 16:21,Beddy,Alfonso Giordano,Suite con Terrazza,Non rimborsabile,31/01/2026,01/02/2026,1,180.29,Firenze Suite,Confermate,0,Non Specificato,0
@@ -778,9 +994,11 @@ B2284E4EB4,27/01/2026 20:20,28/01/2026 11:50,Booking,Batman Bogan,Camera Matrimo
 ECC5E8FC8B,27/01/2026 22:21,,Booking,elisabeth crot,Camera Matrimoniale Deluxe,Non rimborsabile,31/01/2026,02/02/2026,2,196.09,Firenze Suite,Confermate,,,0
 3F542E595B,27/01/2026 10:31,,Beddy,Brittany Levett,Attico,Non rimborsabile,21/05/2026,24/05/2026,3,896.55,Condotta 16,Confermate,,,0
 942C69F1DB,26/01/2026 21:39,27/01/2026 07:20,Booking,Fiona Drew,Trilocale,Standard rate,02/03/2026,05/03/2026,3,704.46,Condotta 16,Cancellate,,,0
+8973DE194A,26/01/2026 22:21,,Booking,Pandit Adhilaga Dres,Bilocale,Standard rate,27/11/2026,02/12/2026,5,718.2,Condotta 16,Confermate,,,0
 D2E6D712D5,26/01/2026 21:52,,Beddy,Natasha Tomkin,Attico,Standard rate,07/03/2026,10/03/2026,3,546.65,Condotta 16,Confermate,,,0
 4E9DDA9B92,26/01/2026 17:43,26/01/2026 19:42,Booking,Sandra Nunez Duran,Bilocale,Standard rate,06/02/2026,10/02/2026,4,621.69,Condotta 16,Cancellate,,,0
 6823A2ECDD,26/01/2026 16:19,,Beddy,Uarda Haveriku,Bilocale,Non rimborsabile,30/01/2026,31/01/2026,1,93.6,Condotta 16,Confermate,0,Sito web,0
+F860162980,26/01/2026 14:36,,Beddy,NEIL HAFFNER,Camera Matrimoniale Deluxe,Flessibile,11/08/2026,13/08/2026,2,298,Firenze Suite,Confermate,0,Sito web,0
 6B50B4CD1A,02/01/2026 22:03,26/01/2026 08:38,Booking,Yevtushenko Tetyana,Camera Matrimoniale Deluxe,Flessibile,23/01/2026,26/01/2026,3,400.73,Firenze Suite,Confermate,,,0
 4D348294B9,25/01/2026 21:23,,Booking,Bradley Prewitt,Suite con Terrazza,Non rimborsabile,26/01/2026,28/01/2026,2,279.9,Firenze Suite,Confermate,,,0
 1720129EBB,25/01/2026 17:45,,Booking,Sheila Morten,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",27/01/2026,28/01/2026,1,174.06,Firenze Suite,Confermate,,,0
@@ -802,6 +1020,7 @@ FD7E0FAA80,09/01/2026 19:07,25/01/2026 09:30,Booking,Kara Welborn,Trilocale,Stan
 75627CCDDB,21/01/2026 00:05,22/01/2026 22:05,Booking,Hans Jakob Auga,Suite con Terrazza,Flessibile,11/02/2026,13/02/2026,2,377.52,Firenze Suite,Cancellate,,,0
 1816FFB263,22/01/2026 11:19,22/01/2026 11:23,Booking,James Slade,Camera Matrimoniale Deluxe,Non rimborsabile,22/01/2026,24/01/2026,2,185.06,Firenze Suite,Confermate,,,0
 2A87582CCA,17/01/2026 17:36,22/01/2026 11:23,Booking,Anatoli Kaminov,Camera Matrimoniale Deluxe,Non rimborsabile,24/01/2026,27/01/2026,3,367.66,Firenze Suite,Confermate,,,0
+C4B5C80EF7,21/01/2026 18:40,,Booking,Virginia Lewis,Trilocale,Standard rate,02/11/2026,04/11/2026,2,610.84,Condotta 16,Confermate,,,0
 F46EF15380,19/01/2026 09:50,21/01/2026 16:26,Beddy,Massimiliano Lombardo,Suite,Non rimborsabile,21/01/2026,22/01/2026,1,75.6,Firenze Suite,Confermate,0,Sito web,0
 934D47DE86,06/01/2026 22:51,21/01/2026 16:25,Beddy,Tammy Gowland,Suite,Non rimborsabile,21/01/2026,23/01/2026,2,205,Firenze Suite,Confermate,0,Sito web,0
 C816F5ACE8,04/01/2026 19:25,21/01/2026 13:24,Booking,Hind Al Ali,Bilocale,Non rimborsabile,22/01/2026,24/01/2026,2,301.26,Condotta 16,Confermate,,,0
@@ -836,9 +1055,12 @@ FD29FC1D1B,30/12/2025 16:49,17/01/2026 14:42,Booking,lilach Gutstein,"Trilocale,
 8563A18F8B,15/01/2026 17:39,17/01/2026 12:07,Booking,Arron Latimer,Camera Matrimoniale Deluxe,Non rimborsabile,17/01/2026,18/01/2026,1,122.69,Firenze Suite,Confermate,,,0
 2B106263C0,15/01/2026 15:41,17/01/2026 11:14,Beddy,Giuseppe Cassetti,Trilocale,Non rimborsabile,17/01/2026,18/01/2026,1,200,Condotta 16,Confermate,0,Non Specificato,0
 02EE35DABF,17/01/2026 01:18,,Booking,claudio musto,Suite con Terrazza,Non rimborsabile,17/01/2026,18/01/2026,1,147.23,Firenze Suite,Confermate,,,0
+8DC95CD5BA,16/01/2026 20:46,,Beddy,Michael Bergamini,Suite,Non rimborsabile,05/07/2026,10/07/2026,5,966.6,Firenze Suite,Confermate,0,Sito web,0
 49A8029761,16/01/2026 12:09,16/01/2026 16:33,Booking,Elisa Viluppi,Suite con Terrazza,Flessibile,29/03/2026,30/03/2026,1,203.12,Firenze Suite,Confermate,,,0
 2CEE574EEF,10/01/2026 21:27,16/01/2026 16:33,Beddy,Linde Baars,Suite con Terrazza,Flessibile,23/03/2026,28/03/2026,5,830.25,Firenze Suite,Confermate,0,Sito web,0
+AAA65244EE,16/01/2026 13:21,,Booking,Emmanuelle Sauvan,Bilocale,Standard rate,03/11/2026,08/11/2026,5,718.2,Condotta 16,Confermate,,,0
 BC5F3F763E,09/01/2026 22:44,16/01/2026 11:14,Booking,Giulia Palestini,Trilocale,Standard rate,23/01/2026,25/01/2026,2,430.58,Condotta 16,Confermate,,,0
+A0C29E594B,16/01/2026 09:24,,Booking,Lydie Perlin,Trilocale,Standard rate,27/11/2026,30/11/2026,3,732.99,Condotta 16,Confermate,,,0
 0E35D17F53,04/01/2026 20:23,16/01/2026 09:07,Booking,Jose Manuel Marin Garcia,Camera Matrimoniale Deluxe,Non rimborsabile,16/01/2026,19/01/2026,3,367.66,Firenze Suite,Confermate,,,0
 A8BE5D99E1,08/01/2026 19:18,15/01/2026 09:50,Booking,Antonio Perez Blasco,Camera Matrimoniale Deluxe,Non rimborsabile,14/01/2026,17/01/2026,3,294.12,Firenze Suite,Confermate,,,0
 A29ED857E6,05/01/2026 12:51,15/01/2026 08:37,Booking,Yiannis Niarros,Suite con Terrazza,Non rimborsabile,17/01/2026,19/01/2026,2,289.17,Firenze Suite,Confermate,,,0
@@ -2474,6 +2696,7 @@ DE679BCC78,07/03/2025 21:34,17/03/2025 12:37,Booking,Mohammed Alotaibi,Bilocale,
 F41FBE1D8C,23/02/2025 00:14,16/03/2025 10:18,Booking,Travis Ring,Camera Matrimoniale Deluxe,Non rimborsabile,18/03/2025,19/03/2025,1,167.76,Firenze Suite,Confermate,,,0
 D51A99612B,21/02/2025 15:14,16/03/2025 10:18,Beddy,Stefaan Verhulst,Camera Matrimoniale Deluxe,Flessibile,16/03/2025,18/03/2025,2,288,Firenze Suite,Confermate,0,Sito web,0
 6EA6073F39,15/03/2025 12:28,,Booking,Patrick Brady,Attico,Non rimborsabile,02/04/2025,04/04/2025,2,503.18,Condotta 16,Confermate,,,0
+DF14FBB4D6,15/03/2025 10:56,,Beddy,Colm Devine,Trilocale,Standard rate,12/08/2028,13/08/2028,1,330,Condotta 16,Confermate,0,Non Specificato,0
 9181D21B7D,04/03/2025 12:26,15/03/2025 09:58,Beddy,Nicola Marras,Suite con Terrazza,Flessibile,15/03/2025,17/03/2025,2,348,Firenze Suite,Confermate,0,Non Specificato,0
 06EB8FF08F,14/03/2025 13:56,,Booking,William Bowring,Trilocale,Non rimborsabile,14/03/2025,15/03/2025,1,311.15,Condotta 16,Confermate,,,0
 B922069B50,11/03/2025 10:45,13/03/2025 08:58,Beddy,Gabriele Maggi,Camera Matrimoniale Deluxe,Non rimborsabile,13/03/2025,14/03/2025,1,115,Firenze Suite,Confermate,0,Non Specificato,0
@@ -4050,78 +4273,269 @@ D6053578B6,22/04/2024 13:10,22/04/2024 13:15,Beddy,Peter Dullehan,Camera Matrimo
 FB4B30EA41,22/04/2024 12:29,,Beddy,Deja Elder,Camera Matrimoniale Deluxe,Flessibile,21/04/2024,24/04/2024,3,685.95,Firenze Suite,Confermate,0,Sito web,0
 609FD96DEA,21/04/2024 10:17,,Booking,Negar Mokhtarihaj,Suite,Non rimborsabile,21/05/2024,24/05/2024,3,1093.5,Firenze Suite,Confermate,0,OTA,0
 15BDE09165,11/04/2024 10:17,,Booking,Michael Brourman,Suite con Terrazza,Flessibile,12/05/2024,15/05/2024,3,1630.8,Firenze Suite,Confermate,0,OTA,0
+97F686C344,12/11/2025 11:32,07/07/2026 16:49,Booking,BRIAN COYNE,Superior,Tariffa Non Rimborsabile - Pernottamento,08/07/2026,09/07/2026,1,247,Palazzo Alfani,Confermate,0,OTA,0
+D0FA14FBB7,27/06/2026 16:09,07/07/2026 16:48,Ctrip,YUJIA LI,Classic,Tariffa Rimborsabile - Pernottamento,08/07/2026,09/07/2026,1,208.28,Palazzo Alfani,Confermate,14,OTA,0
+68CE3360D0,01/06/2026 15:41,07/07/2026 13:15,Ctrip,TIANYU HUANG,Classic,Tariffa Rimborsabile - Pernottamento,06/07/2026,08/07/2026,2,661.79,Palazzo Alfani,Confermate,28,OTA,0
+EE88A0EEEB,09/06/2026 14:52,07/07/2026 11:51,Ctrip,WEI LI,Classic,Tariffa Rimborsabile - Pernottamento,09/07/2026,10/07/2026,1,291.02,Palazzo Alfani,Confermate,0,OTA,0
+D71EE7F673,07/07/2026 02:46,07/07/2026 11:51,Expedia,YONGBO XUN,Classic,Tariffa Esclusiva,13/07/2026,15/07/2026,2,332.22,Palazzo Alfani,Confermate,0,OTA,0
+C39ADBDCAA,06/07/2026 23:04,07/07/2026 11:51,Ctrip,JUNJIE WANG,Classic,Tariffa Esclusiva,11/07/2026,13/07/2026,2,367.47,Palazzo Alfani,Confermate,0,OTA,0
+F4C6FDD558,14/02/2026 17:36,07/07/2026 11:50,Ctrip,Maria Tuerk,Superior,Tariffa Non Rimborsabile - Pernottamento,09/07/2026,12/07/2026,3,704.25,Palazzo Alfani,Confermate,63,OTA,0
+285D513A32,01/06/2026 14:42,07/07/2026 11:49,Beddy,Darren Moran Sheils,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,567,Palazzo Alfani,Confermate,0,Non Specificato,0
+B6EF187357,12/06/2026 16:55,07/07/2026 11:49,Ctrip,JUNBIN JIANG,Superior,Tariffa Non Rimborsabile - Pernottamento,14/07/2026,15/07/2026,1,197.83,Palazzo Alfani,Confermate,0,OTA,0
+4627E24A6E,26/01/2026 03:39,07/07/2026 11:48,Booking,Harish Vasudevan,Junior suite,Tariffa Rimborsabile - Pernottamento,07/07/2026,08/07/2026,1,249.93,Palazzo Alfani,Cancellate,0,OTA,0
+2933703B21,03/06/2026 19:42,07/07/2026 11:47,Booking,Julie Sipkens,Deluxe,Tariffa Non Rimborsabile - Pernottamento,12/07/2026,13/07/2026,1,362.19,Palazzo Alfani,Confermate,0,OTA,0
+3F1BD1C0AC,10/06/2026 14:37,07/07/2026 02:42,Ctrip,YINUO XUN,Superior,Tariffa Rimborsabile - Pernottamento,13/07/2026,14/07/2026,1,257.61,Palazzo Alfani,Cancellate,0,OTA,0
+E3D43084A9,17/06/2026 01:42,07/07/2026 02:42,Ctrip,YINUO XUN,Superior,Tariffa Rimborsabile - Pernottamento,14/07/2026,15/07/2026,1,268.56,Palazzo Alfani,Cancellate,0,OTA,0
+2782B56529,07/07/2026 02:24,,Booking,EHSAN KHAKBAZ HESHMATI,Classic,Tariffa Esclusiva,16/07/2026,19/07/2026,3,766.76,Palazzo Alfani,Confermate,0,OTA,0
+61D2BAAD65,07/07/2026 00:24,,Beddy,Jessica Young,Superior,Tariffa Rimborsabile - Pernottamento,22/08/2026,26/08/2026,4,1000,Palazzo Alfani,Confermate,0,Sito web,0
+E05577A89C,19/06/2026 10:44,06/07/2026 14:59,Expedia,Rebecca Barmore,Classic,Tariffa Rimborsabile - Pernottamento,23/09/2026,27/09/2026,4,1431.99,Palazzo Alfani,Cancellate,0,OTA,0
+BC294BD4FB,06/07/2026 14:59,,Expedia,Rebecca Barmore,Classic,Tariffa Rimborsabile - Pernottamento,23/09/2026,27/09/2026,4,1320.42,Palazzo Alfani,Confermate,0,OTA,0
+D02D217E59,06/07/2026 13:38,,Booking,Timothy Tam,Junior suite,Tariffa Non Rimborsabile - Pernottamento,14/09/2026,17/09/2026,3,1053.99,Palazzo Alfani,Confermate,0,OTA,0
+4D08790967,22/06/2026 15:03,05/07/2026 15:52,Ctrip,QILIN LAN,Deluxe,Tariffa Rimborsabile - Pernottamento,03/08/2026,04/08/2026,1,209.4,Palazzo Alfani,Cancellate,0,OTA,0
+E5B954523E,05/07/2026 08:08,,Beddy,Obolensky Guillemine,Superior,Tariffa Non Rimborsabile - Pernottamento,30/08/2026,02/09/2026,3,594,Palazzo Alfani,Confermate,0,Sito web,0
+D6730A7D25,30/06/2026 18:12,04/07/2026 15:33,Booking,YANG XUEMIN; WU SIHUI WU JIAYUE WU JIALU,Classic,Tariffa Non Rimborsabile - Pernottamento,26/07/2026,27/07/2026,1,278.76,Palazzo Alfani,Confermate,0,OTA,0
+D9F226ED9C,30/06/2026 18:04,04/07/2026 15:32,Booking,YANG XUEMIN WU SIHUI WU JIAYUE WU JIALU,Classic,Tariffa Non Rimborsabile - Pernottamento,24/07/2026,26/07/2026,2,489.36,Palazzo Alfani,Confermate,0,OTA,0
+381FC7A311,02/07/2026 05:55,04/07/2026 14:18,Ctrip,YUN ZHENG,Superior,Tariffa Rimborsabile - Pernottamento,08/08/2026,10/08/2026,2,440.39,Palazzo Alfani,Cancellate,0,OTA,0
+AF63B5D7CE,02/07/2026 05:59,04/07/2026 14:14,Ctrip,YUN ZHENG,Deluxe,Tariffa Rimborsabile - Pernottamento,08/08/2026,10/08/2026,2,581.12,Palazzo Alfani,Cancellate,0,OTA,0
+469AFDEF3A,04/07/2026 14:13,,Ctrip,YUN ZHENG,Superior,Tariffa Rimborsabile - Pernottamento,10/08/2026,12/08/2026,2,423.12,Palazzo Alfani,Confermate,0,OTA,0
+64EB85FA1D,02/07/2026 05:54,04/07/2026 14:06,Ctrip,JINGYI LIANG,Superior,Tariffa Rimborsabile - Pernottamento,08/08/2026,10/08/2026,2,440.39,Palazzo Alfani,Cancellate,0,OTA,0
+8EC8C29DB5,04/07/2026 14:06,,Ctrip,JINGYI LIANG,Superior,Tariffa Rimborsabile - Pernottamento,10/08/2026,12/08/2026,2,423.12,Palazzo Alfani,Confermate,0,OTA,0
+A4536E6A09,22/03/2026 18:44,04/07/2026 13:39,Beddy,Renee Tassone,Classic,Tariffa Non Rimborsabile con Colazione inclusa,07/07/2026,09/07/2026,2,744.8,Palazzo Alfani,Confermate,56,Sito web,0
+106BF09E65,20/06/2026 04:30,04/07/2026 13:38,Ctrip,WENYUAN JIN,Classic,Tariffa Non Rimborsabile - Pernottamento,06/07/2026,07/07/2026,1,214.16,Palazzo Alfani,Confermate,21,OTA,0
+03032DC55D,29/11/2025 15:45,04/07/2026 13:38,Beddy,Mei hsuan Wu,Classic,Tariffa Rimborsabile - Pernottamento,04/07/2026,06/07/2026,2,477.36,Palazzo Alfani,Confermate,28,Non Specificato,0
+E50353E38A,04/07/2026 02:54,04/07/2026 13:25,Expedia,amy donabedian,Superior,Tariffa Rimborsabile - Pernottamento,16/10/2026,23/10/2026,7,2905.31,Palazzo Alfani,Confermate,0,OTA,0
+BFD26940E4,23/06/2026 03:23,04/07/2026 13:23,Ctrip,JIANWEN CHEN,Classic,Vantaggio Soggiorno Prolungato,10/09/2026,15/09/2026,5,1462.66,Palazzo Alfani,Confermate,0,OTA,0
+189A39522F,29/06/2026 11:58,04/07/2026 13:22,Ctrip,JIANING YI,Classic,Tariffa Rimborsabile - Pernottamento,30/08/2026,02/09/2026,3,509.41,Palazzo Alfani,Confermate,0,OTA,0
+DAFE905CBB,04/07/2026 10:32,04/07/2026 13:22,Ctrip,Zhaojie Zeng,Classic,Tariffa Rimborsabile - Pernottamento,14/08/2026,17/08/2026,3,617.02,Palazzo Alfani,Confermate,0,OTA,0
+7353D9E179,01/04/2026 11:32,04/07/2026 13:21,Ctrip,YILONG GUO,Junior suite,Tariffa Non Rimborsabile - Pernottamento,15/08/2026,18/08/2026,3,497.34,Palazzo Alfani,Confermate,0,OTA,0
+032B36ECC8,03/07/2026 08:52,04/07/2026 13:21,Beddy,chuda wang,Classic,Tariffa Rimborsabile - Pernottamento,09/08/2026,11/08/2026,2,548,Palazzo Alfani,Confermate,0,Sito web,0
+2B2BF86508,28/06/2026 07:15,04/07/2026 13:16,Ctrip,RUOHAN JIANG,Superior,Tariffa Rimborsabile - Pernottamento,26/07/2026,28/07/2026,2,379.92,Palazzo Alfani,Confermate,0,OTA,0
+0CAFF35F50,28/06/2026 17:49,04/07/2026 13:14,Ctrip,PUI FAN KAM,Superior,Tariffa Rimborsabile - Pernottamento,31/07/2026,04/08/2026,4,969.93,Palazzo Alfani,Confermate,0,OTA,0
+712710E20B,15/06/2026 14:26,04/07/2026 13:14,Ctrip,JIACHEN XI,Superior,Tariffa Rimborsabile - Pernottamento,03/08/2026,05/08/2026,2,446.37,Palazzo Alfani,Confermate,0,OTA,0
+A9CD3CDE4E,12/04/2026 08:10,04/07/2026 13:13,Ctrip,XIAOXIA CHEN,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,505.68,Palazzo Alfani,Confermate,0,OTA,0
+C78BDA773D,09/06/2026 12:12,04/07/2026 13:13,Ctrip,XIN YANG,Superior,Tariffa Non Rimborsabile - Pernottamento,14/07/2026,17/07/2026,3,526.88,Palazzo Alfani,Confermate,0,OTA,0
+2058DB0A79,01/07/2026 20:25,04/07/2026 13:13,Ctrip,LIZHANG DING,Superior,Tariffa Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,253.02,Palazzo Alfani,Confermate,0,OTA,0
+64A0162D4A,15/06/2026 17:18,04/07/2026 13:12,Ctrip,XIANG LU,Superior,Tariffa Non Rimborsabile - Pernottamento,18/07/2026,20/07/2026,2,444.18,Palazzo Alfani,Confermate,0,OTA,0
+A1C4DF4F7D,22/01/2026 08:49,04/07/2026 12:23,Beddy,Dr David Joyce Joyce,Deluxe,Tariffa Rimborsabile - Pernottamento,11/07/2026,12/07/2026,1,275,Palazzo Alfani,Confermate,0,Sito web,0
+B64CF6936D,02/06/2026 12:30,04/07/2026 12:16,Ctrip,YUN LIU,Superior,Tariffa Rimborsabile - Pernottamento,14/07/2026,17/07/2026,3,783.66,Palazzo Alfani,Cancellate,0,OTA,0
+DCDA5BD461,02/07/2026 17:40,03/07/2026 16:14,Beddy,Jeffrey Barba,"Junior suite, Classic, Classic, Classic, Superior, Superior, Superior, Deluxe","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile - Pernottamento",23/11/2026,26/11/2026,3,6489.45,Palazzo Alfani,Confermate,0,Non Specificato,0
+FBBDA9FBC4,03/07/2026 03:08,,Ctrip,YAWEN ZHU,Junior suite,Tariffa Rimborsabile - Pernottamento,13/10/2026,15/10/2026,2,626.02,Palazzo Alfani,Confermate,0,OTA,0
+180DCD0ACD,11/05/2026 04:30,02/07/2026 17:34,Ctrip,TIANYI SHEN,Classic,Tariffa Rimborsabile - Pernottamento,27/09/2026,30/09/2026,3,1053.9,Palazzo Alfani,Confermate,0,OTA,0
+D9DF11A87D,02/06/2026 18:49,02/07/2026 17:33,Ctrip,HONGGE CAI,"Classic, Classic","Tariffa Non Rimborsabile - Pernottamento, Tariffa Non Rimborsabile - Pernottamento",29/09/2026,02/10/2026,3,1939.9,Palazzo Alfani,Confermate,0,OTA,0
+37A9BFEBF9,30/06/2026 17:20,02/07/2026 17:31,Ctrip,YIQING JIANG,Classic,Tariffa Rimborsabile - Pernottamento,27/09/2026,29/09/2026,2,638.96,Palazzo Alfani,Confermate,0,OTA,0
+F2B4008636,03/03/2026 15:25,02/07/2026 17:31,Booking,Xiangzhen Kong,Superior,Tariffa Rimborsabile - Pernottamento,30/09/2026,03/10/2026,3,1159.48,Palazzo Alfani,Confermate,0,OTA,0
+7376AA5D17,06/05/2026 19:14,02/07/2026 17:30,Beddy,Alan Stratton,"Classic, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",15/09/2026,25/09/2026,7,1767.61,Palazzo Alfani,Confermate,0,Non Specificato,0
+E961213CAD,17/02/2026 04:41,02/07/2026 17:30,Booking,Hossein Najari,Classic,Tariffa Rimborsabile - Pernottamento,25/09/2026,28/09/2026,3,1211.64,Palazzo Alfani,Confermate,0,OTA,0
+390700E173,28/06/2026 15:33,02/07/2026 17:27,Ctrip,ZHAOQI LI,Superior,Tariffa Rimborsabile - Pernottamento,22/08/2026,26/08/2026,4,775.49,Palazzo Alfani,Confermate,0,OTA,0
+59E25EA154,26/05/2026 08:57,02/07/2026 17:27,Ctrip,YAN ZHU,Classic,Tariffa Rimborsabile - Pernottamento,13/08/2026,17/08/2026,4,931.79,Palazzo Alfani,Confermate,0,OTA,0
+79C177AB9F,10/06/2026 15:19,02/07/2026 17:25,Ctrip,JIUYI ZHAO,Superior,Tariffa Rimborsabile - Pernottamento,11/08/2026,13/08/2026,2,348.86,Palazzo Alfani,Confermate,0,OTA,0
+81E25176B4,02/07/2026 10:52,02/07/2026 17:25,Ctrip,YING SONG,Classic,Tariffa Rimborsabile - Pernottamento,11/08/2026,13/08/2026,2,465.94,Palazzo Alfani,Confermate,0,OTA,0
+BD5AAB6DB1,01/07/2026 16:53,02/07/2026 12:07,Ctrip,YUCHUN ZHU,Classic,Tariffa Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,224.09,Palazzo Alfani,Confermate,0,OTA,0
+B64E5D58C3,24/06/2026 15:53,02/07/2026 12:06,Beddy,Jennifer Cutchin,Deluxe,Tariffa Non Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,280.8,Palazzo Alfani,Confermate,0,Sito web,0
+8B037AD976,01/07/2026 10:53,02/07/2026 10:43,Ctrip,YING SONG,Classic,Tariffa Rimborsabile - Pernottamento,10/08/2026,12/08/2026,2,490.11,Palazzo Alfani,Cancellate,0,OTA,0
+73E3E7A5F4,13/06/2026 15:44,30/06/2026 16:59,Ctrip,LILI XU,Classic,Tariffa Rimborsabile - Pernottamento,09/07/2026,12/07/2026,3,686.06,Palazzo Alfani,Cancellate,0,OTA,0
+E53F4F2A48,13/06/2026 03:21,30/06/2026 14:31,Ctrip,XIAOHONG GU,Superior,Tariffa Rimborsabile - Pernottamento,11/07/2026,14/07/2026,3,812.12,Palazzo Alfani,Cancellate,0,OTA,0
+D06CAFD372,16/06/2026 18:19,30/06/2026 03:28,Ctrip,JIUYI ZHAO,Classic,Tariffa Rimborsabile - Pernottamento,13/08/2026,16/08/2026,3,528.45,Palazzo Alfani,Cancellate,0,OTA,0
+6ED6B1CC07,29/06/2026 14:46,,Ctrip,YAN ZHANG,Superior,Tariffa Non Rimborsabile - Pernottamento,27/09/2026,30/09/2026,3,885.12,Palazzo Alfani,Confermate,0,OTA,0
+7B96430707,29/06/2026 09:01,,Ctrip,WENSHU ZHU,Deluxe,Tariffa Rimborsabile - Pernottamento,16/07/2026,17/07/2026,1,342.78,Palazzo Alfani,Confermate,0,OTA,0
+304855BA01,29/06/2026 09:01,,Ctrip,WENSHU ZHU,Junior suite,Tariffa Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,206.66,Palazzo Alfani,Confermate,0,OTA,0
+354350F200,29/06/2026 04:54,,Booking,YOHEI SASAKI,Superior,Tariffa Rimborsabile - Pernottamento,13/10/2026,15/10/2026,2,867.56,Palazzo Alfani,Confermate,0,OTA,0
+CEB29292FD,28/06/2026 15:18,,Ctrip,HENG LU,Classic,Tariffa Esclusiva,06/07/2026,07/07/2026,1,203.5,Palazzo Alfani,Confermate,21,OTA,0
+C998775B91,28/06/2026 15:08,,Ctrip,SHENG L,Junior suite,Tariffa Esclusiva,06/07/2026,07/07/2026,1,191.19,Palazzo Alfani,Confermate,21,OTA,0
+F4321EAE6F,15/06/2026 10:27,28/06/2026 07:14,Ctrip,RUOHAN JIANG,Superior,Tariffa Rimborsabile - Pernottamento,26/07/2026,28/07/2026,2,425.68,Palazzo Alfani,Cancellate,0,OTA,0
+E0EBB949BF,25/06/2026 11:15,28/06/2026 01:06,Expedia,XINYU Z,Classic,Tariffa Esclusiva,02/07/2026,04/07/2026,2,342.42,Palazzo Alfani,Confermate,28,OTA,0
+43CC634A58,07/05/2026 05:12,27/06/2026 17:06,Ctrip,LIYING ZHENG,Superior,Tariffa Rimborsabile - Pernottamento,05/08/2026,08/08/2026,3,726.28,Palazzo Alfani,Cancellate,0,OTA,0
+11B9F2F8D3,27/06/2026 00:17,27/06/2026 14:50,Ctrip,LILI HUANG,Superior,Tariffa Rimborsabile - Pernottamento,18/07/2026,21/07/2026,3,740.46,Palazzo Alfani,Cancellate,0,OTA,0
+E01DC2CEE0,25/06/2026 05:09,27/06/2026 13:52,Ctrip,YUAN YAN,Junior suite,Tariffa Rimborsabile - Pernottamento,17/08/2026,20/08/2026,3,488.37,Palazzo Alfani,Cancellate,0,OTA,0
 D4B379572F,09/06/2026 20:19,27/06/2026 08:37,Ctrip,HAOJIA HUANG,Superior,Tariffa Non Rimborsabile - Pernottamento,29/06/2026,01/07/2026,2,387.81,Palazzo Alfani,Confermate,28,OTA,0
 A232A42E72,26/06/2026 16:39,27/06/2026 08:37,Booking,Margaretha Faber,Superior,Tariffa Esclusiva,28/06/2026,29/06/2026,1,161.08,Palazzo Alfani,Confermate,0,OTA,0
 E50B800AB8,29/05/2026 04:03,27/06/2026 08:36,Booking,Andrea Messina,"Junior suite, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",26/06/2026,30/06/2026,4,1346.38,Palazzo Alfani,Confermate,56,OTA,0
+EF99B1AC17,27/06/2026 08:08,,Expedia,YANAN ZHAO,Classic,Tariffa Esclusiva,09/07/2026,11/07/2026,2,352.94,Palazzo Alfani,Confermate,0,OTA,0
 1BD6AB1418,04/06/2026 09:58,27/06/2026 08:04,Ctrip,HAOMING LIU,Classic,Tariffa Rimborsabile - Pernottamento,27/06/2026,29/06/2026,2,611.91,Palazzo Alfani,Confermate,42,OTA,0
+7212953A0B,11/06/2026 15:01,27/06/2026 04:39,Ctrip,GUOGANG YING,Superior,Tariffa Rimborsabile - Pernottamento,30/07/2026,01/08/2026,2,591.55,Palazzo Alfani,Cancellate,0,OTA,0
+5652BACD26,29/04/2026 07:24,27/06/2026 03:56,Booking,Wang Huan Zhuang Tengfei ZhuangYueqi,Classic,Tariffa Rimborsabile - Pernottamento,20/08/2026,22/08/2026,2,626.56,Palazzo Alfani,Cancellate,0,OTA,0
+72362C7201,27/06/2026 03:42,,Ctrip,YUEQI ZHUANG,Junior suite,Tariffa Rimborsabile - Pernottamento,20/08/2026,23/08/2026,3,472.38,Palazzo Alfani,Confermate,0,OTA,0
+5DE20664ED,31/05/2026 15:06,26/06/2026 07:07,Ctrip,JUNYIN ZHENG,Deluxe,Tariffa Rimborsabile - Pernottamento,09/08/2026,13/08/2026,4,1108.7,Palazzo Alfani,Cancellate,0,OTA,0
+9C8EA27779,04/03/2026 10:28,25/06/2026 23:24,Booking,Mei Lee,Superior,Tariffa Rimborsabile - Pernottamento,02/10/2026,05/10/2026,3,1247.49,Palazzo Alfani,Cancellate,0,OTA,0
+F41ECBA7BE,25/06/2026 19:54,25/06/2026 20:07,Ctrip,MEIYI ZHONG,Classic,Tariffa Rimborsabile - Pernottamento,03/07/2026,05/07/2026,2,415.36,Palazzo Alfani,Cancellate,0,OTA,0
 946260E738,05/06/2026 07:40,25/06/2026 17:15,Ctrip,JIA XU,Classic,Tariffa Rimborsabile - Pernottamento,30/06/2026,02/07/2026,2,513.25,Palazzo Alfani,Confermate,28,OTA,0
+820EF843C1,16/06/2026 14:21,25/06/2026 17:14,Ctrip,ZHE LI,Classic,Tariffa Non Rimborsabile - Pernottamento,01/07/2026,04/07/2026,3,676.82,Palazzo Alfani,Confermate,63,OTA,0
+2E525FB870,20/06/2026 15:04,25/06/2026 16:54,Ctrip,YUQI ZHANG,Superior,Tariffa Rimborsabile - Pernottamento,14/08/2026,16/08/2026,2,440.7,Palazzo Alfani,Cancellate,0,OTA,0
+6C2670E296,29/04/2026 18:33,25/06/2026 12:30,Ctrip,XINYUE LIN,Classic,Tariffa Non Rimborsabile - Pernottamento,08/07/2026,10/07/2026,2,529.3,Palazzo Alfani,Cancellate,0,OTA,0
 E5D8ADAA61,22/06/2026 13:34,25/06/2026 12:14,Booking,MIHAEL PAUN,Classic,Tariffa Non Rimborsabile - Pernottamento,26/06/2026,27/06/2026,1,287.24,Palazzo Alfani,Confermate,21,OTA,0
 ACC757A39E,21/06/2026 14:45,25/06/2026 12:14,Booking,Matija Gabrovšek,Classic,Tariffa Rimborsabile - Pernottamento,26/06/2026,27/06/2026,1,287.49,Palazzo Alfani,Confermate,14,OTA,0
+CDA70B6BFB,23/06/2026 02:28,25/06/2026 05:09,Ctrip,YUAN YAN,Classic,Tariffa Rimborsabile - Pernottamento,16/08/2026,19/08/2026,3,488.37,Palazzo Alfani,Cancellate,0,OTA,0
+DE6176EEE9,24/06/2026 16:53,,Ctrip,RUYA ZHANG,Junior suite,Tariffa Rimborsabile - Pernottamento,31/08/2026,03/09/2026,3,565.37,Palazzo Alfani,Confermate,0,OTA,0
 DC03F73B3A,23/06/2026 23:26,24/06/2026 09:51,Booking,Almuhannad Alsaif,Superior,Tariffa Esclusiva,24/06/2026,25/06/2026,1,269.52,Palazzo Alfani,Confermate,14,OTA,0
+D9FF2D372D,10/02/2026 22:38,24/06/2026 00:19,Expedia,Illah Raleigh,Superior,Flessibile pacchetto,18/07/2026,21/07/2026,3,699.05,Palazzo Alfani,Cancellate,0,OTA,0
+6320BF9255,23/06/2026 16:53,,Ctrip,XINYAN LIU,Junior suite,Tariffa Rimborsabile - Pernottamento,28/09/2026,01/10/2026,3,987.41,Palazzo Alfani,Confermate,0,OTA,0
+45FB9C153E,23/06/2026 16:06,,Booking,Lu Li,Superior,Tariffa Rimborsabile - Pernottamento,09/07/2026,11/07/2026,2,708.65,Palazzo Alfani,Confermate,0,OTA,0
+67B579ABD2,04/12/2025 12:27,23/06/2026 11:57,Beddy,Allison Halloran,"Superior, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",28/07/2026,29/07/2026,1,570,Palazzo Alfani,Confermate,0,Non Specificato,0
+77C5DB79A0,21/06/2026 23:21,23/06/2026 11:56,Beddy,Kelly Kaspersion,"Classic, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",25/08/2026,28/08/2026,3,1524,Palazzo Alfani,Confermate,0,Sito web,0
+EDB64E9555,20/06/2026 05:34,23/06/2026 11:55,Ctrip,JIANG WANG,Classic,Tariffa Rimborsabile - Pernottamento,19/08/2026,20/08/2026,1,208.94,Palazzo Alfani,Confermate,0,OTA,0
+920E7DA869,20/06/2026 04:50,23/06/2026 11:54,Ctrip,ZHI ZHOU,Classic,Tariffa Rimborsabile - Pernottamento,07/08/2026,09/08/2026,2,453.39,Palazzo Alfani,Confermate,0,OTA,0
+51C752A591,22/06/2026 14:21,23/06/2026 11:53,Ctrip,LIANGZHI WU,Superior,Tariffa Rimborsabile - Pernottamento,01/08/2026,05/08/2026,4,824.66,Palazzo Alfani,Confermate,0,OTA,0
+EA3950A142,01/04/2026 09:30,23/06/2026 11:52,Ctrip,DANHUA CHEN,"Classic, Superior","Vantaggio Soggiorno Prolungato, Vantaggio Soggiorno Prolungato",24/07/2026,29/07/2026,5,917.97,Palazzo Alfani,Confermate,0,OTA,0
+D5EE017C2B,20/06/2026 19:55,23/06/2026 11:52,Beddy,Vacharasiritham Noppadol,"Classic, Superior","Tariffa Non Rimborsabile - Pernottamento, Tariffa Non Rimborsabile - Pernottamento",26/07/2026,28/07/2026,2,843.02,Palazzo Alfani,Confermate,0,Non Specificato,0
+836217BB78,18/06/2026 11:10,23/06/2026 11:51,Ctrip,XIAOYAN SUN,Classic,Tariffa Rimborsabile - Pernottamento,28/07/2026,30/07/2026,2,446.38,Palazzo Alfani,Confermate,0,OTA,0
+845C8AD0D4,31/05/2026 16:44,23/06/2026 11:51,Ctrip,YUNQI CHEN,Classic,Tariffa Rimborsabile - Pernottamento,29/07/2026,31/07/2026,2,377.36,Palazzo Alfani,Confermate,0,OTA,0
+2C1C3370F6,08/06/2026 09:55,23/06/2026 08:38,Ctrip,YIPING GU,Superior,Tariffa Rimborsabile - Pernottamento,10/07/2026,13/07/2026,3,826.81,Palazzo Alfani,Cancellate,0,OTA,0
+26780ABC94,23/06/2026 07:47,,Ctrip,OKSANA MORDOVSKAIA,Junior suite,Tariffa Non Rimborsabile - Pernottamento,14/07/2026,17/07/2026,3,623.49,Palazzo Alfani,Confermate,63,OTA,0
+17981836E6,11/06/2026 14:04,23/06/2026 06:12,Ctrip,YANG GAO,Classic,Tariffa Rimborsabile - Pernottamento,03/07/2026,05/07/2026,2,533.17,Palazzo Alfani,Cancellate,0,OTA,0
 243753A103,27/12/2025 14:59,22/06/2026 18:13,Beddy,GIOVANNI LORUSSO,Junior suite,Tariffa Rimborsabile - Pernottamento,15/06/2026,19/06/2026,4,1918,Palazzo Alfani,Confermate,98,Non Specificato,0
+7B0387FBEF,22/06/2026 17:58,,Ctrip,PEISHAN XU,Superior,Tariffa Rimborsabile - Pernottamento,09/08/2026,12/08/2026,3,579,Palazzo Alfani,Confermate,0,OTA,0
+5C5A3AADFB,07/06/2026 14:04,22/06/2026 05:04,Ctrip,LINGLING GONG,Junior suite,Tariffa Rimborsabile - Pernottamento,14/07/2026,18/07/2026,4,729.64,Palazzo Alfani,Cancellate,0,OTA,0
+5E1CFAE896,21/06/2026 21:59,,Booking,Alek Andreev,Superior,Tariffa Non Rimborsabile - Pernottamento,15/07/2026,16/07/2026,1,276.73,Palazzo Alfani,Confermate,0,OTA,0
+26075455D4,18/06/2026 15:21,21/06/2026 17:50,Ctrip,YUE HU,Classic,Tariffa Rimborsabile - Pernottamento,24/07/2026,25/07/2026,1,283.66,Palazzo Alfani,Cancellate,0,OTA,0
 85E7750E73,17/06/2026 04:23,21/06/2026 15:42,Expedia,HAU PAK KEN Ng,Classic,Tariffa Esclusiva,23/06/2026,24/06/2026,1,360.03,Palazzo Alfani,Confermate,21,OTA,0
+ADF5444BCF,21/06/2026 15:13,,Ctrip,HAONAN ZENG,Junior suite,Tariffa Rimborsabile - Pernottamento,23/07/2026,24/07/2026,1,228.83,Palazzo Alfani,Confermate,0,OTA,0
+4E655B6BB5,13/06/2026 15:17,21/06/2026 14:18,Ctrip,WENBIN WU,Superior,Tariffa Rimborsabile - Pernottamento,08/07/2026,09/07/2026,1,245.97,Palazzo Alfani,Cancellate,0,OTA,0
 31F33FFC8F,09/06/2026 15:37,21/06/2026 11:46,Ctrip,SAWU WANG,Superior,Tariffa Esclusiva,22/06/2026,26/06/2026,4,1207.83,Palazzo Alfani,Confermate,112,OTA,0
 66072E1FC7,14/05/2026 09:16,21/06/2026 11:46,Booking,KAITLIN GIANNA MILLER,Superior,Tariffa Rimborsabile - Pernottamento,21/06/2026,26/06/2026,5,2085.75,Palazzo Alfani,Confermate,105,OTA,0
 8B6D9E13C2,15/06/2026 05:46,20/06/2026 23:49,Ctrip,MAN KWAN TSUI,Classic,Tariffa Esclusiva,19/06/2026,21/06/2026,2,461.05,Palazzo Alfani,Confermate,14,OTA,0
+0C9D14A2D0,24/05/2026 08:52,20/06/2026 11:37,Ctrip,YAN WANG,Junior suite,Tariffa Rimborsabile - Pernottamento,04/07/2026,07/07/2026,3,790.56,Palazzo Alfani,Cancellate,0,OTA,0
+0E5DB8BA5A,20/06/2026 03:06,,Ctrip,ZIRU HE,Classic,Tariffa Rimborsabile - Pernottamento,23/07/2026,24/07/2026,1,257.75,Palazzo Alfani,Confermate,0,OTA,0
+CE31785948,11/06/2026 08:18,19/06/2026 10:44,Ctrip,Rebecca Barmore,Classic,Tariffa Rimborsabile - Pernottamento,23/09/2026,27/09/2026,4,1600.32,Palazzo Alfani,Cancellate,0,OTA,0
 4FFE14A460,29/01/2026 01:51,19/06/2026 10:34,Ctrip,SIJIA CHEN,Classic,Tariffa Rimborsabile - Pernottamento,18/06/2026,20/06/2026,2,1104.57,Palazzo Alfani,Confermate,42,OTA,0
+A1F3999CA4,15/06/2026 13:44,19/06/2026 08:13,Ctrip,TINGTING CHEN,Superior,Tariffa Rimborsabile - Pernottamento,30/07/2026,05/08/2026,6,1364.34,Palazzo Alfani,Cancellate,0,OTA,0
+25AE7D3E99,18/06/2026 21:31,,Ctrip,YANXUAN TONG,Classic,Tariffa Rimborsabile - Pernottamento,20/07/2026,22/07/2026,2,532.8,Palazzo Alfani,Confermate,0,OTA,0
+3F44C6BC97,11/06/2026 08:45,18/06/2026 07:59,Ctrip,HUI QIAO,Superior,Tariffa Rimborsabile - Pernottamento,25/07/2026,28/07/2026,3,754.64,Palazzo Alfani,Cancellate,0,OTA,0
+B0B12286A7,13/01/2026 19:32,17/06/2026 14:59,Booking,Michael Braun,Superior,Tariffa Rimborsabile - Pernottamento,20/07/2026,26/07/2026,6,1557.12,Palazzo Alfani,Confermate,0,OTA,0
+EDEDA1F6BA,08/03/2026 10:01,17/06/2026 14:59,Beddy,Roberto Faccari,Superior,Tariffa Rimborsabile - Pernottamento,24/07/2026,31/07/2026,7,1700.98,Palazzo Alfani,Confermate,0,Sito web,0
+F955213B3D,04/11/2025 16:23,17/06/2026 14:59,Expedia,BRENT THOMAS LONG,Superior,Tariffa Rimborsabile - Pernottamento,22/07/2026,24/07/2026,2,549.56,Palazzo Alfani,Confermate,0,OTA,0
+F06893E026,15/03/2026 02:42,17/06/2026 14:59,Expedia,Cristopher Pere,Superior,Flessibile pacchetto,19/07/2026,22/07/2026,3,829.68,Palazzo Alfani,Confermate,0,OTA,0
+A8A8538472,04/06/2026 18:18,17/06/2026 14:54,Ctrip,CHANGPING LI,Classic,Tariffa Rimborsabile - Pernottamento,24/07/2026,28/07/2026,4,891.18,Palazzo Alfani,Confermate,0,OTA,0
+02B18C9BCC,17/06/2026 12:33,,Beddy,Nicole Tsang,Deluxe,Tariffa Rimborsabile con Colazione inclusa,23/03/2027,26/03/2027,3,1395,Palazzo Alfani,Confermate,0,Sito web,0
 FAD5C63F72,17/06/2026 08:38,,Ctrip,YIXUE ZHAO,Superior,Tariffa Rimborsabile - Pernottamento,17/06/2026,18/06/2026,1,255.76,Palazzo Alfani,Confermate,14,OTA,0
 79114817B4,08/06/2026 14:51,17/06/2026 07:10,Ctrip,CHUN KEE BEH,Classic,Tariffa Rimborsabile - Pernottamento,23/06/2026,25/06/2026,2,482.7,Palazzo Alfani,Cancellate,0,OTA,0
+DC34A27895,28/05/2026 17:18,16/06/2026 16:31,Beddy,Jacqueline De Mesy,Junior suite,Tariffa Rimborsabile - Pernottamento,11/10/2026,14/10/2026,3,1032,Palazzo Alfani,Cancellate,0,Sito web,0
+12D7DB86C2,23/05/2026 16:17,16/06/2026 14:54,Expedia,FANGFANG ZHANG,Classic,Flessibile pacchetto,03/08/2026,05/08/2026,2,346.47,Palazzo Alfani,Confermate,0,OTA,0
+013F0BCD45,27/01/2026 21:59,16/06/2026 14:53,Booking,Paul Weinberg,Classic,Tariffa Rimborsabile - Pernottamento,31/07/2026,05/08/2026,5,1303.05,Palazzo Alfani,Confermate,0,OTA,0
+9892D95D42,16/06/2026 14:25,,Ctrip,yanli liu,Junior suite,Tariffa Non Rimborsabile - Pernottamento,01/07/2026,04/07/2026,3,613.7,Palazzo Alfani,Confermate,42,OTA,0
+F87F98C07D,22/05/2026 17:24,16/06/2026 14:22,Ctrip,MIN HU,Deluxe,Tariffa Rimborsabile - Pernottamento,31/07/2026,02/08/2026,2,656.23,Palazzo Alfani,Cancellate,0,OTA,0
+ABA9597957,16/06/2026 14:22,,Ctrip,MIN HU,Deluxe,Tariffa Rimborsabile - Pernottamento,01/08/2026,03/08/2026,2,632.05,Palazzo Alfani,Confermate,0,OTA,0
+5CD2D65CB8,27/04/2026 05:43,16/06/2026 13:57,Ctrip,XUEJING BAI,Deluxe,Tariffa Rimborsabile - Pernottamento,30/07/2026,31/07/2026,1,229.59,Palazzo Alfani,Confermate,0,OTA,0
+F65E6ABCD8,03/06/2026 17:25,16/06/2026 13:55,Ctrip,BEIJING Zhang,Superior,Tariffa Non Rimborsabile - Pernottamento,29/07/2026,01/08/2026,3,557.14,Palazzo Alfani,Confermate,0,OTA,0
+5E2E87DC22,16/06/2026 13:46,,Booking,Eduardo Diaz Rivera,Superior,Tariffa Rimborsabile - Pernottamento,25/03/2027,28/03/2027,3,1223.42,Palazzo Alfani,Confermate,0,OTA,0
+46A7B2E8B8,16/06/2026 02:47,16/06/2026 06:13,Booking,SIYUAN HOU LUSI HUANG,Classic,Tariffa Rimborsabile - Pernottamento,17/08/2026,19/08/2026,2,446.5,Palazzo Alfani,Cancellate,0,OTA,0
+2E09CDB75E,15/06/2026 16:26,,Booking,Abadi Tisnadisastra,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,08/07/2026,3,1192.06,Palazzo Alfani,Confermate,84,OTA,0
+46DC75103E,11/06/2026 05:12,15/06/2026 09:28,Ctrip,XIAOJING ZHANG,Superior,Tariffa Rimborsabile - Pernottamento,04/08/2026,06/08/2026,2,379.9,Palazzo Alfani,Cancellate,0,OTA,0
+9169AD4167,11/06/2026 05:11,15/06/2026 09:28,Ctrip,XIAOJING ZHANG,Classic,Tariffa Rimborsabile - Pernottamento,04/08/2026,06/08/2026,2,377.36,Palazzo Alfani,Cancellate,0,OTA,0
+8A017D134C,15/06/2026 08:09,,Ctrip,QiJi Wang,Deluxe,Tariffa Non Rimborsabile - Pernottamento,09/07/2026,11/07/2026,2,651.33,Palazzo Alfani,Confermate,0,OTA,0
 1BD72D2CB5,14/06/2026 22:17,,Ctrip,HO YIN 福,Superior,Tariffa Esclusiva,19/06/2026,21/06/2026,2,507.85,Palazzo Alfani,Confermate,28,OTA,0
+39A1BD01E3,14/06/2026 20:12,,Booking,Alek Andreev,Superior,Tariffa Non Rimborsabile - Pernottamento,16/07/2026,18/07/2026,2,652.63,Palazzo Alfani,Confermate,0,OTA,0
+AEF932487F,14/06/2026 16:39,,Ctrip,Huanhuan Peng,Deluxe,Tariffa Non Rimborsabile - Pernottamento,04/08/2026,06/08/2026,2,529.32,Palazzo Alfani,Confermate,0,OTA,0
+AF65B4DC9C,07/06/2026 17:51,14/06/2026 11:29,Ctrip,CHEN WANG,Classic,Tariffa Rimborsabile - Pernottamento,11/10/2026,14/10/2026,3,929.94,Palazzo Alfani,Cancellate,0,OTA,0
+210BF0EA7C,02/06/2026 09:48,14/06/2026 04:42,Ctrip,MEI LU,Classic,Tariffa Rimborsabile - Pernottamento,08/08/2026,13/08/2026,5,960.7,Palazzo Alfani,Cancellate,0,OTA,0
+6F47C4D466,28/01/2026 13:55,13/06/2026 22:10,Booking,Elizavet SYMEONIDOU,Deluxe,Tariffa Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,368.32,Palazzo Alfani,Cancellate,0,OTA,0
+A89B17DF66,13/06/2026 11:19,,Ctrip,LEI CHEN,Classic,Tariffa Non Rimborsabile - Pernottamento,07/07/2026,09/07/2026,2,369.92,Palazzo Alfani,Confermate,28,OTA,0
+3374EB4548,11/04/2026 00:57,13/06/2026 10:41,Ctrip,WEI XIA,Classic,Tariffa Rimborsabile - Pernottamento,20/07/2026,22/07/2026,2,449.92,Palazzo Alfani,Cancellate,0,OTA,0
 AC8332D773,11/06/2026 01:38,13/06/2026 01:59,Beddy,JOHN WILLIAM BEEMAN,Superior,Tariffa Esclusiva,19/06/2026,21/06/2026,2,564.75,Palazzo Alfani,Confermate,28,Sito web,0
 0B67F48DE0,07/06/2026 17:30,13/06/2026 01:56,Ctrip,DONGXU HAN,Junior suite,Tariffa Rimborsabile - Pernottamento,23/06/2026,25/06/2026,2,472.68,Palazzo Alfani,Confermate,28,OTA,0
 E5EA9395F7,11/06/2026 14:26,13/06/2026 01:56,Ctrip,JIAAO WANG,Classic,Tariffa Esclusiva,22/06/2026,25/06/2026,3,617.03,Palazzo Alfani,Confermate,42,OTA,0
+AE3DDEE1C3,07/06/2026 07:18,13/06/2026 01:54,Booking,AINA YU,Superior,Tariffa Rimborsabile - Pernottamento,06/07/2026,09/07/2026,3,960.84,Palazzo Alfani,Confermate,63,OTA,0
 AE4DB2C19C,07/06/2026 23:57,12/06/2026 19:39,Beddy,L Fernando Arteaga Ros,Superior,Tariffa Esclusiva,12/06/2026,15/06/2026,3,950.35,Palazzo Alfani,Confermate,49,Sito web,0
 AF44CB140B,07/06/2026 23:46,12/06/2026 19:21,Beddy,ARTRI INVERSIONES Sl,Superior,Tariffa Esclusiva,12/06/2026,14/06/2026,2,601.35,Palazzo Alfani,Cancellate,0,Sito web,0
+34722E15EB,11/06/2026 17:01,11/06/2026 17:33,Booking,Daniel Wagner Costa Souza,Classic,Tariffa Rimborsabile - Pernottamento,24/08/2026,27/08/2026,3,776.4,Palazzo Alfani,Cancellate,0,OTA,0
 6F65CDBE66,13/05/2026 17:48,11/06/2026 16:24,Booking,RAMESH BANSAL,Classic,Tariffa Rimborsabile - Pernottamento,12/06/2026,14/06/2026,2,1323.32,Palazzo Alfani,Confermate,42,OTA,0
+C68FAD8B73,11/06/2026 12:54,,Ctrip,YE LI,Deluxe,Tariffa Rimborsabile - Pernottamento,07/07/2026,09/07/2026,2,710.51,Palazzo Alfani,Confermate,56,OTA,0
+C8F56A71D8,08/06/2026 06:30,11/06/2026 11:20,Ctrip,YANG GAO,Classic,Tariffa Rimborsabile - Pernottamento,10/07/2026,11/07/2026,1,254.45,Palazzo Alfani,Cancellate,0,OTA,0
 2B9BB0077A,11/06/2026 04:26,,Ctrip,PENG TANG,Junior suite,Tariffa Rimborsabile - Pernottamento,19/06/2026,21/06/2026,2,451.09,Palazzo Alfani,Confermate,28,OTA,0
 9713203D05,11/06/2026 04:19,,Ctrip,CHANGKUN FU,Classic,Tariffa Rimborsabile - Pernottamento,25/06/2026,26/06/2026,1,304.95,Palazzo Alfani,Confermate,21,OTA,0
+1A4A68CB04,10/06/2026 05:48,10/06/2026 06:59,Booking,GONG WENTING ZHOU KAIRAN,Junior suite,Tariffa Rimborsabile - Pernottamento,01/10/2026,02/10/2026,1,426.38,Palazzo Alfani,Cancellate,0,OTA,0
 798D5EBD2D,09/06/2026 18:01,,Ctrip,ZHIYU Ye,Superior,Tariffa Rimborsabile - Pernottamento,16/06/2026,17/06/2026,1,368.87,Palazzo Alfani,Confermate,14,OTA,0
 ECAFE5F8FE,09/06/2026 18:00,,Ctrip,YUHAN PENG,Superior,Tariffa Rimborsabile - Pernottamento,15/06/2026,16/06/2026,1,273.04,Palazzo Alfani,Confermate,14,OTA,0
 DEC4AD9385,09/04/2026 14:49,09/06/2026 14:40,Ctrip,JIE YI,Superior,Tariffa Rimborsabile - Pernottamento,16/06/2026,18/06/2026,2,761.32,Palazzo Alfani,Cancellate,0,OTA,0
 E3CBC55DE0,07/06/2026 14:41,09/06/2026 08:52,Beddy,RONY NAKOUZI,Junior suite,Tariffa Esclusiva con Colazione inclusa,08/06/2026,13/06/2026,5,1150,Palazzo Alfani,Confermate,35,Sito web,0
+04CD03B50E,23/11/2025 05:49,09/06/2026 03:56,Expedia,Lindsay Raynes,Deluxe,Tariffa Rimborsabile - Pernottamento,08/07/2026,12/07/2026,4,1964.02,Palazzo Alfani,Cancellate,0,OTA,0
+922FE919CD,07/06/2026 00:57,09/06/2026 01:40,Expedia,Sameer Sheth,Deluxe,Tariffa Rimborsabile - Pernottamento,16/07/2026,17/07/2026,1,362.66,Palazzo Alfani,Cancellate,0,OTA,0
 6F800D3F1D,08/06/2026 21:47,,Booking,GIANLUCA PETTI,Classic,Tariffa Non Rimborsabile - Pernottamento,13/06/2026,15/06/2026,2,620.74,Palazzo Alfani,Confermate,28,OTA,0
 DDB344A4A5,08/06/2026 19:00,,Beddy,William Bergin,Classic,Tariffa Esclusiva con Colazione inclusa,12/06/2026,13/06/2026,1,282.5,Palazzo Alfani,Confermate,7,Sito web,0
 39AC81DA2E,05/02/2026 20:09,08/06/2026 18:51,Expedia,Diana Bone,Classic,Flessibile pacchetto,21/06/2026,24/06/2026,3,921.06,Palazzo Alfani,Cancellate,0,OTA,0
 CC494D09AC,17/05/2026 16:59,08/06/2026 18:12,Booking,Kristina Iutkina Nikita Iutkin; Polina Iutkina; Sofiia Iutkina,Classic,Tariffa Rimborsabile - Pernottamento,25/06/2026,28/06/2026,3,1289.87,Palazzo Alfani,Cancellate,0,OTA,0
 B18F9631BE,17/05/2026 22:19,08/06/2026 14:45,Beddy,ERIKA LIFTENEGGER,Superior,Tariffa Rimborsabile con Colazione inclusa,12/06/2026,15/06/2026,3,1561,Palazzo Alfani,Confermate,63,Sito web,0
+8C1D539AF8,03/06/2026 21:50,08/06/2026 13:34,Booking,Farah Abboud,Superior,Tariffa Rimborsabile - Pernottamento,02/09/2026,04/09/2026,2,720.47,Palazzo Alfani,Confermate,0,OTA,0
+15A421D68D,08/02/2026 06:12,08/06/2026 13:29,Expedia,EUNSOL KIM,Classic,Non rimborsabile pacchetto,15/07/2026,17/07/2026,2,329.36,Palazzo Alfani,Confermate,0,OTA,0
+319F201F5E,03/06/2026 04:12,08/06/2026 13:26,Ctrip,LAN JIANG,Classic,Tariffa Non Rimborsabile - Pernottamento,18/07/2026,20/07/2026,2,397.22,Palazzo Alfani,Confermate,0,OTA,0
+194048D030,18/02/2026 01:11,08/06/2026 13:26,Booking,Jobel Virgens Filho,Superior,Tariffa Rimborsabile - Pernottamento,16/07/2026,19/07/2026,3,806.85,Palazzo Alfani,Confermate,0,OTA,0
+F98A466505,06/05/2026 12:04,08/06/2026 13:26,Ctrip,BINQI FENG,Superior,Tariffa Rimborsabile - Pernottamento,16/07/2026,18/07/2026,2,516.95,Palazzo Alfani,Confermate,0,OTA,0
+66BEBF5AEB,05/06/2026 23:37,08/06/2026 13:14,Booking,Zoi Tzikou,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,15/07/2026,3,986.15,Palazzo Alfani,Confermate,0,OTA,0
 D36D39B276,20/05/2026 10:12,08/06/2026 12:40,Ctrip,ZIWEI LI,Classic,Tariffa Rimborsabile - Pernottamento,14/06/2026,15/06/2026,1,324.85,Palazzo Alfani,Confermate,14,OTA,0
 E1B406132B,27/12/2025 14:57,08/06/2026 12:32,Beddy,ruggiero dipaola,Superior,Tariffa Rimborsabile - Pernottamento,15/06/2026,19/06/2026,4,0,Palazzo Alfani,Confermate,0,Non Specificato,0
 2C048EF119,30/03/2026 17:21,08/06/2026 12:26,Booking,GERARDO ORFANELLI,Deluxe,Tariffa Non Rimborsabile - Pernottamento,09/06/2026,10/06/2026,1,373.15,Palazzo Alfani,Confermate,14,OTA,0
+A1C9C6550D,18/04/2026 09:04,08/06/2026 12:19,Ctrip,Rui Su,Classic,Tariffa Rimborsabile - Pernottamento,22/08/2026,24/08/2026,2,458.32,Palazzo Alfani,Confermate,0,OTA,0
+D51634141F,24/05/2026 15:43,08/06/2026 12:19,Ctrip,LIXIN WEI,Classic,Tariffa Rimborsabile - Pernottamento,19/08/2026,23/08/2026,4,916.92,Palazzo Alfani,Confermate,0,OTA,0
+DCB30F101C,09/05/2026 12:07,08/06/2026 12:18,Ctrip,YUNZENG LI,Superior,Vantaggio Soggiorno Prolungato,06/08/2026,11/08/2026,5,965.32,Palazzo Alfani,Confermate,0,OTA,0
+FDC76A7D04,21/02/2026 22:19,08/06/2026 12:17,Booking,Angela Vitale,Classic,Tariffa Rimborsabile - Pernottamento,05/08/2026,10/08/2026,5,1141,Palazzo Alfani,Confermate,0,OTA,0
+99C1616986,06/06/2026 15:57,08/06/2026 12:16,Expedia,CONG ZENG,Classic,Tariffa Non Rimborsabile - Pernottamento,10/08/2026,14/08/2026,4,664.63,Palazzo Alfani,Confermate,0,OTA,0
+59DA301D6F,04/06/2026 18:19,08/06/2026 12:12,Expedia,GEN LI,Junior suite,Tariffa Rimborsabile - Pernottamento,24/07/2026,28/07/2026,4,845.28,Palazzo Alfani,Confermate,0,OTA,0
+3171239DA1,08/06/2026 10:38,,Beddy,Nancy Schulman Soiefer,Superior,Tariffa Rimborsabile con Colazione inclusa,25/09/2026,26/09/2026,1,362.9,Palazzo Alfani,Confermate,0,Non Specificato,0
+B0284163B4,11/05/2026 04:21,08/06/2026 10:33,Ctrip,JIA ZHOU,Superior,Tariffa Rimborsabile - Pernottamento,27/09/2026,30/09/2026,3,1092.76,Palazzo Alfani,Confermate,0,OTA,0
+958A83BBEA,26/05/2026 16:53,08/06/2026 10:31,Ctrip,YUXUAN LIN,Superior,Tariffa Rimborsabile - Pernottamento,25/09/2026,26/09/2026,1,325.1,Palazzo Alfani,Confermate,0,OTA,0
+29D4F923FA,28/05/2026 21:43,08/06/2026 08:10,Booking,Nguyen Van Hung & Tran Thi My Dung,Junior suite,Tariffa Rimborsabile - Pernottamento,17/09/2026,20/09/2026,3,1302.35,Palazzo Alfani,Cancellate,0,OTA,0
 2EB236A3E9,01/04/2026 14:59,07/06/2026 17:44,Ctrip,LIJUN MENG,Classic,Tariffa Non Rimborsabile - Pernottamento,20/06/2026,21/06/2026,1,331.45,Palazzo Alfani,Confermate,21,OTA,0
+D50B1FED3C,07/06/2026 16:34,,Expedia,Andre Luis Agoncillo,Junior suite,Tariffa Rimborsabile - Pernottamento,19/07/2026,22/07/2026,3,706.81,Palazzo Alfani,Confermate,0,OTA,0
 79D75BCB9B,07/06/2026 14:15,,Ctrip,DIAN FANG,Classic,Tariffa Rimborsabile - Pernottamento,07/06/2026,10/06/2026,3,596.93,Palazzo Alfani,Confermate,21,OTA,0
 3916C6BF25,07/06/2026 04:43,07/06/2026 05:00,Booking,Domenico De Luca,Superior,Tariffa Non Rimborsabile - Pernottamento,07/06/2026,08/06/2026,1,246.14,Palazzo Alfani,Cancellate,0,OTA,0
 7B6D834E9E,10/02/2026 00:31,06/06/2026 07:55,Booking,jose ready,Junior suite,Tariffa Rimborsabile - Pernottamento,10/06/2026,15/06/2026,5,2063.59,Palazzo Alfani,Cancellate,0,OTA,0
+F0A04AB58E,06/06/2026 03:26,,Expedia,Carolyn Ross,Deluxe,Tariffa Rimborsabile - Pernottamento,13/08/2026,17/08/2026,4,1267,Palazzo Alfani,Confermate,0,OTA,0
+9E23B43EC1,05/06/2026 17:23,,Beddy,Marijana Starcevic,Junior suite,Tariffa Rimborsabile - Pernottamento,27/11/2026,30/11/2026,3,753,Palazzo Alfani,Confermate,0,Sito web,0
 9A9574F421,18/05/2026 11:06,05/06/2026 12:18,Ctrip,XILU CHEN,Superior,Tariffa Non Rimborsabile - Pernottamento,07/06/2026,08/06/2026,1,293.44,Palazzo Alfani,Confermate,21,OTA,0
 8E451B9295,05/06/2026 11:13,05/06/2026 11:13,Ctrip,JIA XU,Classic,Tariffa Rimborsabile - Pernottamento,30/06/2026,02/07/2026,2,485.25,Palazzo Alfani,Cancellate,0,OTA,0
 B5C27154F0,04/06/2026 22:57,,Expedia,GIL YAAKOVI,Superior,Tariffa Esclusiva,18/06/2026,21/06/2026,3,990.34,Palazzo Alfani,Confermate,84,OTA,0
 38084D79D4,03/06/2026 10:07,04/06/2026 15:30,Ctrip,SHIYA YOU,Classic,Tariffa Rimborsabile - Pernottamento,26/06/2026,27/06/2026,1,297.02,Palazzo Alfani,Cancellate,0,OTA,0
 AAB6590CEE,07/01/2026 22:55,04/06/2026 11:56,Booking,Karen Nelson,"Classic, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",09/06/2026,11/06/2026,2,1374.48,Palazzo Alfani,Confermate,56,OTA,0
+ED3E0FA4B8,04/06/2026 05:28,,Ctrip,SHI WU,Superior,Tariffa Non Rimborsabile - Pernottamento,18/07/2026,21/07/2026,3,716.72,Palazzo Alfani,Confermate,0,OTA,0
+1BA97FDFBC,03/06/2026 14:36,,Ctrip,RICARDO DOS SANTOS,Deluxe,Tariffa Rimborsabile - Pernottamento,09/10/2026,12/10/2026,3,1631.1,Palazzo Alfani,Confermate,0,OTA,0
+F6753ADCDF,19/05/2026 04:17,03/06/2026 13:53,Ctrip,yanyan cao,Superior,Tariffa Rimborsabile - Pernottamento,31/07/2026,01/08/2026,1,268.41,Palazzo Alfani,Cancellate,0,OTA,0
 B12AA2FC8A,23/03/2026 12:40,03/06/2026 10:56,Ctrip,XILU CHEN,Superior,Tariffa Rimborsabile - Pernottamento,05/06/2026,07/06/2026,2,742.6,Palazzo Alfani,Confermate,42,OTA,0
 C5E7BD82DC,21/04/2026 01:22,03/06/2026 10:55,Ctrip,CHENG HU,Superior,Tariffa Rimborsabile - Pernottamento,05/06/2026,07/06/2026,2,721.56,Palazzo Alfani,Confermate,42,OTA,0
+58D8A88CFA,03/06/2026 10:01,,Ctrip,XIAOYUAN LIU,Superior,Tariffa Rimborsabile - Pernottamento,06/08/2026,09/08/2026,3,676.6,Palazzo Alfani,Confermate,0,OTA,0
+73BB11AAC2,03/06/2026 09:49,,Beddy,Melinda Manley,Superior,Tariffa Rimborsabile - Pernottamento,03/10/2026,07/10/2026,4,1815,Palazzo Alfani,Confermate,0,Sito web,0
+43AB3A0C80,20/05/2026 15:38,03/06/2026 07:55,Ctrip,ZHE LI,Junior suite,Tariffa Rimborsabile - Pernottamento,14/07/2026,17/07/2026,3,656.67,Palazzo Alfani,Cancellate,0,OTA,0
 B196C4F899,02/06/2026 23:55,,Ctrip,YUHAN XIA,Classic,Tariffa Rimborsabile - Pernottamento,24/06/2026,26/06/2026,2,626.59,Palazzo Alfani,Confermate,42,OTA,0
+7CF8275E9D,20/05/2026 15:43,02/06/2026 23:14,Ctrip,DASONG LI,Superior,Tariffa Non Rimborsabile - Pernottamento,08/07/2026,10/07/2026,2,628.78,Palazzo Alfani,Confermate,42,OTA,0
+ED9CE1D263,29/05/2026 17:01,02/06/2026 23:13,Ctrip,YUANYUAN ZHOU,Superior,Tariffa Rimborsabile - Pernottamento,07/07/2026,08/07/2026,1,214.59,Palazzo Alfani,Confermate,0,OTA,0
 116BFC97A8,15/05/2026 20:51,02/06/2026 23:13,Booking,Letitia Lo,Superior,Tariffa Rimborsabile - Pernottamento,08/06/2026,12/06/2026,4,1583.04,Palazzo Alfani,Cancellate,0,OTA,0
+82A84504B6,23/11/2025 05:57,02/06/2026 23:08,Expedia,Carly Barry,Classic,Tariffa Rimborsabile - Pernottamento,08/07/2026,12/07/2026,4,1341.92,Palazzo Alfani,Cancellate,0,OTA,0
+D6803DE47B,23/11/2025 05:54,02/06/2026 23:08,Expedia,Jen McCool,Superior,Tariffa Rimborsabile - Pernottamento,08/07/2026,12/07/2026,4,1464.86,Palazzo Alfani,Cancellate,0,OTA,0
+5C43273155,31/12/2025 23:55,02/06/2026 23:07,Expedia,Kathleen Barry,Superior,Tariffa Rimborsabile - Pernottamento,08/07/2026,12/07/2026,4,1280.34,Palazzo Alfani,Cancellate,0,OTA,0
 F1695F4C7F,23/11/2025 05:42,02/06/2026 23:06,Expedia,Carly Barry,Superior,Tariffa Rimborsabile - Pernottamento,30/06/2026,03/07/2026,3,1187.88,Palazzo Alfani,Cancellate,0,OTA,0
 102534CF56,23/11/2025 05:44,02/06/2026 23:05,Expedia,Kathleen Barry,Classic,Tariffa Rimborsabile - Pernottamento,30/06/2026,03/07/2026,3,1125.68,Palazzo Alfani,Cancellate,0,OTA,0
 39DC627116,23/11/2025 05:38,02/06/2026 23:04,Expedia,Jen McCool,Junior suite,Tariffa Rimborsabile - Pernottamento,30/06/2026,03/07/2026,3,1093.48,Palazzo Alfani,Cancellate,0,OTA,0
 22DE44E6E8,26/05/2026 16:53,02/06/2026 21:49,Booking,zheng jiayi,Classic,Tariffa Rimborsabile - Pernottamento,21/06/2026,23/06/2026,2,662.6,Palazzo Alfani,Cancellate,0,OTA,0
 B1E54D59E3,21/03/2026 05:00,02/06/2026 17:11,Ctrip,WEIWEI TANG,Deluxe,Tariffa Rimborsabile - Pernottamento,02/06/2026,05/06/2026,3,1334.82,Palazzo Alfani,Confermate,105,OTA,0
+6BCCA41EC0,12/05/2026 05:09,02/06/2026 13:33,Ctrip,XIAOMENG WANG,Superior,Tariffa Rimborsabile - Pernottamento,07/08/2026,10/08/2026,3,760.8,Palazzo Alfani,Cancellate,0,OTA,0
+4F26A2E974,24/04/2026 13:37,02/06/2026 09:53,Expedia,YEJIANG ZHOU,Classic,Flessibile pacchetto,01/07/2026,05/07/2026,4,1238.6,Palazzo Alfani,Cancellate,0,OTA,0
 AC0847C98A,29/05/2026 14:46,02/06/2026 06:18,Ctrip,ZIXIN MA,Superior,Tariffa Rimborsabile - Pernottamento,15/06/2026,16/06/2026,1,324.25,Palazzo Alfani,Cancellate,0,OTA,0
 1AFF230323,29/05/2026 14:46,02/06/2026 06:18,Ctrip,ZIXIN MA,Classic,Tariffa Rimborsabile - Pernottamento,13/06/2026,15/06/2026,2,660.58,Palazzo Alfani,Cancellate,0,OTA,0
+E57A847A2E,02/06/2026 03:56,,Ctrip,YEJIANG ZHOU,Superior,Tariffa Non Rimborsabile - Pernottamento,01/07/2026,05/07/2026,4,1111.32,Palazzo Alfani,Confermate,56,OTA,0
+50BF209C9A,02/06/2026 02:05,,Ctrip,WANG YUNJIA WANG YUNJIA,Deluxe,Tariffa Non Rimborsabile - Pernottamento,01/07/2026,04/07/2026,3,1063.94,Palazzo Alfani,Confermate,84,OTA,0
 CC50E35D4F,23/11/2025 05:34,01/06/2026 18:35,Expedia,Lindsay Raynes,Deluxe,Tariffa Rimborsabile - Pernottamento,30/06/2026,03/07/2026,3,1540.4,Palazzo Alfani,Cancellate,0,OTA,0
+B8ACDFFEA6,21/05/2026 05:26,01/06/2026 03:48,Expedia,SHAOHAN QI,Superior,Flessibile pacchetto,13/07/2026,17/07/2026,4,970.76,Palazzo Alfani,Cancellate,0,OTA,0
+E76D399A9B,21/05/2026 05:26,01/06/2026 03:47,Expedia,CHUNMEI SONG,Superior,Flessibile pacchetto,13/07/2026,17/07/2026,4,970.76,Palazzo Alfani,Cancellate,0,OTA,0
+C35DAA79DA,31/05/2026 21:24,01/06/2026 03:22,Ctrip,HAN HU,Superior,Tariffa Rimborsabile - Pernottamento,10/07/2026,12/07/2026,2,588.64,Palazzo Alfani,Cancellate,0,OTA,0
 6D9B230DB7,21/02/2026 15:00,31/05/2026 18:19,Ctrip,XIANGQUN LI,Junior suite,Tariffa Rimborsabile - Pernottamento,31/05/2026,02/06/2026,2,626.7,Palazzo Alfani,Confermate,28,OTA,0
 05EB2E5B91,30/05/2026 22:36,31/05/2026 17:37,Booking,mariona calvo,Classic,Tariffa Rimborsabile - Pernottamento,21/06/2026,24/06/2026,3,1128.86,Palazzo Alfani,Cancellate,0,OTA,0
 BC8A8294BC,30/12/2025 18:02,30/05/2026 18:35,Booking,Annie Liebenberg,Superior,Tariffa Rimborsabile - Pernottamento,29/06/2026,05/07/2026,6,1772.2,Palazzo Alfani,Cancellate,0,OTA,0
 90A14E2B3C,30/05/2026 11:42,,Booking,Paula Puente,Superior,Tariffa Non Rimborsabile - Pernottamento,30/05/2026,31/05/2026,1,331.95,Palazzo Alfani,Confermate,0,OTA,0
 6C8981E5A0,29/05/2026 18:02,29/05/2026 20:30,Ctrip,XIANGXU LI,Superior,Tariffa Esclusiva,04/06/2026,06/06/2026,2,535.65,Palazzo Alfani,Cancellate,0,OTA,0
+5B4AE188BC,17/04/2026 07:25,29/05/2026 17:09,Ctrip,XIAODONG GUO,Classic,Tariffa Rimborsabile - Pernottamento,20/08/2026,22/08/2026,2,517.54,Palazzo Alfani,Cancellate,0,OTA,0
+DF32DED494,15/04/2026 18:43,29/05/2026 13:34,Expedia,Caroline Wetherilt,Deluxe,Flessibile pacchetto,14/08/2026,17/08/2026,3,971.34,Palazzo Alfani,Cancellate,0,OTA,0
 3669DF7FFA,14/05/2026 06:55,29/05/2026 11:43,Ctrip,XIAOHUI ZHANG,Classic,Tariffa Rimborsabile - Pernottamento,31/05/2026,03/06/2026,3,905.34,Palazzo Alfani,Confermate,63,OTA,0
 9C208BCFA6,08/03/2026 05:14,29/05/2026 11:43,Booking,CECINIO CASTILLO RONQUILLO,Superior,Tariffa Rimborsabile - Pernottamento,01/06/2026,03/06/2026,2,876.02,Palazzo Alfani,Confermate,42,OTA,0
 4FA1DCB862,28/05/2026 20:14,29/05/2026 11:42,Booking,filippo maria pantini,Superior,Tariffa Esclusiva,30/05/2026,01/06/2026,2,630.13,Palazzo Alfani,Confermate,42,OTA,0
 D48CA4E31C,26/04/2026 05:10,29/05/2026 11:42,Ctrip,XIAOYAN LI,Superior,Tariffa Non Rimborsabile - Pernottamento,31/05/2026,02/06/2026,2,637.88,Palazzo Alfani,Confermate,28,OTA,0
 6064E12707,29/05/2026 03:18,29/05/2026 03:33,Expedia,ANDREA MESSINA,Classic,Flessibile pacchetto,26/06/2026,30/06/2026,4,1042.77,Palazzo Alfani,Cancellate,0,OTA,0
+60C6D52029,29/05/2026 00:31,,Ctrip,QI HUANG,Junior suite,Tariffa Rimborsabile - Pernottamento,07/10/2026,11/10/2026,4,1253.7,Palazzo Alfani,Confermate,0,OTA,0
+96D2C876CC,26/05/2026 22:25,28/05/2026 16:01,Beddy,Deborah Voronoff,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,09/07/2026,4,1204,Palazzo Alfani,Confermate,56,Sito web,0
+8435DDB566,27/05/2026 22:24,28/05/2026 05:38,Beddy,Jacquelyn Wieland,Deluxe,Tariffa Rimborsabile - Pernottamento,21/12/2026,26/12/2026,5,2588.52,Palazzo Alfani,Cancellate,0,Sito web,0
 D39B2D09B1,12/03/2026 16:06,27/05/2026 12:12,Ctrip,MINGSHAN ZHANG,Classic,Tariffa Non Rimborsabile - Pernottamento,31/05/2026,03/06/2026,3,844.96,Palazzo Alfani,Confermate,42,OTA,0
 9804BA11A1,16/04/2026 13:05,27/05/2026 12:09,Ctrip,SHIYING HE,Superior,Tariffa Non Rimborsabile - Pernottamento,18/06/2026,19/06/2026,1,355.6,Palazzo Alfani,Confermate,21,OTA,0
 E0A2011DBD,14/04/2026 14:16,27/05/2026 10:56,Beddy,Louise Hublitz,"Classic, Superior, Classic","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",27/05/2026,30/05/2026,3,3922.2,Palazzo Alfani,Confermate,126,Non Specificato,0
 6A42753774,09/02/2026 03:52,27/05/2026 10:52,Booking,SHAN PING ZHENG,Superior,Tariffa Rimborsabile - Pernottamento,28/05/2026,30/05/2026,2,765.36,Palazzo Alfani,Confermate,42,OTA,0
+005C71BFCD,27/05/2026 07:31,,Ctrip,ZIHE LI,Deluxe,Tariffa Rimborsabile - Pernottamento,19/08/2026,21/08/2026,2,568.16,Palazzo Alfani,Confermate,0,OTA,0
+5A7C554448,26/02/2026 13:54,26/05/2026 14:41,Booking,Qing Shen; Jiaqi Shen; Wenjing Du; Jiachen Du,Superior,Tariffa Rimborsabile - Pernottamento,11/07/2026,13/07/2026,2,563.87,Palazzo Alfani,Cancellate,0,OTA,0
 5D1D5FBD67,24/05/2026 09:06,26/05/2026 11:48,Booking,FULVIO FELLETTI,"Classic, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",12/06/2026,13/06/2026,1,856.78,Palazzo Alfani,Cancellate,0,OTA,0
 E24A4DEAE1,26/05/2026 11:43,,Beddy,FULVIO FELLETTI,Deluxe,Tariffa Rimborsabile - Pernottamento,13/06/2026,14/06/2026,1,592,Palazzo Alfani,Confermate,28,Non Specificato,0
 687015042F,23/03/2026 08:17,25/05/2026 11:27,Ctrip,CHUNYAN PENG,Classic,Tariffa Non Rimborsabile - Pernottamento,24/05/2026,26/05/2026,2,813.94,Palazzo Alfani,Confermate,28,OTA,0
@@ -4130,17 +4544,29 @@ E519A3D32B,23/05/2026 07:31,23/05/2026 10:50,Beddy,Antonio Malvasi,Deluxe,Tariff
 AE25293D2C,10/03/2026 09:27,23/05/2026 04:40,Ctrip,PING JIANG,Superior,Tariffa Rimborsabile - Pernottamento,03/06/2026,06/06/2026,3,847.1,Palazzo Alfani,Cancellate,0,OTA,0
 B630E96855,22/03/2026 13:13,22/05/2026 16:13,Ctrip,jeonghyeon yu,Superior,Tariffa Non Rimborsabile - Pernottamento,23/05/2026,24/05/2026,1,329.04,Palazzo Alfani,Confermate,14,OTA,0
 8D92B7E7E5,13/03/2026 15:06,22/05/2026 16:13,Expedia,DEVKUMAR DIPAKKUMAR VIRAMGAMA,Superior,Flessibile pacchetto,23/05/2026,25/05/2026,2,632.6,Palazzo Alfani,Confermate,28,OTA,0
+9ED1D0E39F,09/02/2026 00:16,22/05/2026 14:54,Booking,Kelly THAM,Superior,Tariffa Rimborsabile - Pernottamento,25/08/2026,31/08/2026,6,1691.76,Palazzo Alfani,Cancellate,0,OTA,0
+433B44A2E9,22/05/2026 14:51,,Booking,Kelly THAM,Deluxe,Tariffa Rimborsabile - Pernottamento,25/08/2026,31/08/2026,6,2264.16,Palazzo Alfani,Confermate,0,OTA,0
 6D0EBF71B4,22/05/2026 12:42,,Ctrip,HAINING FU,Superior,Vantaggio Soggiorno Prolungato,10/06/2026,15/06/2026,5,1490.16,Palazzo Alfani,Confermate,70,OTA,0
+C3BBC10EAE,21/05/2026 06:37,21/05/2026 14:07,Ctrip,CHUNMEI SONG,Superior,Tariffa Rimborsabile - Pernottamento,13/07/2026,16/07/2026,3,743.52,Palazzo Alfani,Confermate,0,OTA,0
 52CD939BF9,05/05/2026 13:24,21/05/2026 13:46,Beddy,DINA ALEXANDRA KOGAN,Superior,Tariffa Rimborsabile con Colazione inclusa,08/06/2026,12/06/2026,4,1960.7,Palazzo Alfani,Confermate,112,Non Specificato,0
 75C2BAF424,13/03/2026 15:04,21/05/2026 10:03,Expedia,RUSHI KAMLESH VIRAMGAMA,Superior,Flessibile pacchetto,23/05/2026,25/05/2026,2,632.6,Palazzo Alfani,Confermate,28,OTA,0
 37FE7B6662,20/05/2026 20:14,,Booking,HADI KAREM,Deluxe,Tariffa Rimborsabile - Pernottamento,26/05/2026,28/05/2026,2,1059.43,Palazzo Alfani,Confermate,28,OTA,0
+CBC25FE54C,04/05/2026 06:18,20/05/2026 17:39,Booking,Weng kai,Superior,Tariffa Rimborsabile - Pernottamento,09/07/2026,11/07/2026,2,709.75,Palazzo Alfani,Confermate,0,OTA,0
+EE9B846459,14/02/2026 12:22,20/05/2026 14:15,Booking,Emilie Oteri,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,466.54,Palazzo Alfani,Cancellate,0,OTA,0
+1C2B2710C0,20/05/2026 12:17,20/05/2026 13:33,Booking,Erlangga Muljadi,Deluxe,Tariffa Rimborsabile - Pernottamento,12/10/2026,14/10/2026,2,1157.1,Palazzo Alfani,Cancellate,0,OTA,0
 85D44FA6CD,29/11/2025 13:41,20/05/2026 09:44,Beddy,CHRISTINA ALLEN LEONARDO,Superior,Tariffa Rimborsabile - Pernottamento,20/05/2026,23/05/2026,3,1244.49,Palazzo Alfani,Confermate,42,Non Specificato,0
 E9CBBA8295,02/04/2026 12:01,20/05/2026 09:44,Expedia,HIRVA TULSIDAS PANARA,Superior,Flessibile pacchetto,22/05/2026,23/05/2026,1,370.46,Palazzo Alfani,Confermate,14,OTA,0
 70DBAF1D83,22/03/2026 06:33,20/05/2026 09:43,Ctrip,YAWEN YE,Superior,Tariffa Non Rimborsabile - Pernottamento,21/05/2026,22/05/2026,1,285.13,Palazzo Alfani,Confermate,14,OTA,0
 C0E049A713,08/02/2026 18:53,20/05/2026 09:43,Booking,Roberto Hun,Superior,Tariffa Rimborsabile - Pernottamento,20/05/2026,21/05/2026,1,358.83,Palazzo Alfani,Confermate,14,OTA,0
 E7D13C4843,11/05/2026 10:03,19/05/2026 12:00,Booking,Andrea Redondi,"Superior, Classic, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",30/05/2026,31/05/2026,1,1052.3,Palazzo Alfani,Cancellate,0,OTA,0
 B8DF3D375D,09/05/2026 04:39,19/05/2026 04:38,Ctrip,MEIYAN HE,Deluxe,Tariffa Rimborsabile - Pernottamento,09/06/2026,12/06/2026,3,1286.53,Palazzo Alfani,Cancellate,0,OTA,0
+03480AC10F,08/05/2026 15:18,19/05/2026 04:18,Ctrip,yanyan cao,Superior,Tariffa Rimborsabile - Pernottamento,31/07/2026,01/08/2026,1,268.41,Palazzo Alfani,Cancellate,0,OTA,0
 2983D1D9C6,08/02/2026 18:51,18/05/2026 21:12,Booking,Roberto Hun,Deluxe,Tariffa Rimborsabile - Pernottamento,18/05/2026,20/05/2026,2,1017.7,Palazzo Alfani,Confermate,56,OTA,0
+9356504499,24/03/2026 23:03,18/05/2026 18:27,Beddy,Liz Elder,"Classic, Superior, Deluxe","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",22/10/2026,28/10/2026,6,7317,Palazzo Alfani,Confermate,0,Sito web,0
+546954111C,13/01/2026 18:39,18/05/2026 18:26,Expedia,SCOTT REID,Superior,Tariffa Non Rimborsabile - Pernottamento,26/09/2026,29/09/2026,3,747.21,Palazzo Alfani,Confermate,0,OTA,0
+512EAD0D50,23/03/2026 09:56,18/05/2026 18:24,Beddy,Jennifer Star Chadwell,"Superior, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",10/09/2026,13/09/2026,3,2245.8,Palazzo Alfani,Confermate,0,Sito web,0
+684A6E43E8,29/04/2026 03:01,18/05/2026 18:24,Booking,Kara Meyer,Classic,Tariffa Non Rimborsabile - Pernottamento,05/09/2026,09/09/2026,4,1745.64,Palazzo Alfani,Confermate,0,OTA,0
+A38A06C1F2,29/04/2026 02:52,18/05/2026 18:24,Booking,Randy Davison,Superior,Tariffa Non Rimborsabile - Pernottamento,05/09/2026,09/09/2026,4,1685.36,Palazzo Alfani,Confermate,0,OTA,0
 8417133F5E,18/02/2026 14:52,18/05/2026 18:21,Booking,JANE TRAN,Superior,Tariffa Rimborsabile - Pernottamento,31/05/2026,03/06/2026,3,1170.86,Palazzo Alfani,Confermate,63,OTA,0
 E8DE18415E,18/05/2026 14:07,,Booking,KRISTINA PRANCKŪNAITĖ,Deluxe,Tariffa Non Rimborsabile - Pernottamento,29/05/2026,30/05/2026,1,488.23,Palazzo Alfani,Confermate,28,OTA,0
 8C79472427,07/04/2026 14:18,18/05/2026 13:39,Ctrip,YANLING LUO,Superior,Tariffa Rimborsabile - Pernottamento,18/06/2026,21/06/2026,3,1100.66,Palazzo Alfani,Cancellate,0,OTA,0
@@ -4179,10 +4605,15 @@ B7CFAE2DEE,11/04/2026 06:37,12/05/2026 17:03,Ctrip,HUI LIN LIU,Superior,Tariffa 
 9BB2715529,02/02/2026 22:16,12/05/2026 14:18,Booking,Elizabeth Crimmins,Superior,Tariffa Rimborsabile - Pernottamento,11/06/2026,14/06/2026,3,1240.33,Palazzo Alfani,Cancellate,0,OTA,0
 AA74E5044F,10/05/2026 01:35,12/05/2026 08:26,Booking,Sara Martin,Superior,Tariffa Rimborsabile - Pernottamento,14/05/2026,17/05/2026,3,1193.34,Palazzo Alfani,Confermate,42,OTA,0
 F02A559150,21/12/2025 18:10,12/05/2026 08:26,Beddy,Sharifa Giraldo,Superior,Tariffa Rimborsabile - Pernottamento,14/05/2026,17/05/2026,3,1207,Palazzo Alfani,Cancellate,42,Sito web,0
+C2B7E55468,13/01/2026 18:34,11/05/2026 19:32,Booking,Steve Kozlowski,Junior suite,Tariffa Rimborsabile - Pernottamento,19/07/2026,26/07/2026,7,1465.58,Palazzo Alfani,Cancellate,0,OTA,0
+91BD90B637,08/05/2026 18:22,11/05/2026 18:34,Booking,Steve Kozlowski,Junior suite,Tariffa Rimborsabile - Pernottamento,18/07/2026,19/07/2026,1,277.44,Palazzo Alfani,Cancellate,0,OTA,0
 4194CBCEE4,11/05/2026 12:33,,Booking,Sandra Remeikiene,Deluxe,Tariffa Non Rimborsabile - Pernottamento,16/05/2026,18/05/2026,2,1005.83,Palazzo Alfani,Confermate,56,OTA,0
 4E2197BDFF,14/03/2026 20:23,11/05/2026 10:50,Booking,miriam manassero,Deluxe,Tariffa Rimborsabile - Pernottamento,16/05/2026,17/05/2026,1,552.74,Palazzo Alfani,Cancellate,0,OTA,0
 BC47C54BA4,11/05/2026 06:25,,Ctrip,XUWEI CHEN,Junior suite,Tariffa Rimborsabile - Pernottamento,11/05/2026,13/05/2026,2,382.02,Palazzo Alfani,Confermate,28,OTA,0
+4E2536CCBC,10/04/2026 15:56,11/05/2026 01:23,Ctrip,JINGYAN SUN,Classic,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,483.12,Palazzo Alfani,Cancellate,0,OTA,0
+359FDC77B8,10/04/2026 16:11,11/05/2026 01:23,Ctrip,JINGYAN SUN,Classic,Tariffa Rimborsabile - Pernottamento,15/07/2026,16/07/2026,1,241.56,Palazzo Alfani,Cancellate,0,OTA,0
 B7A40F9061,29/01/2026 10:50,10/05/2026 18:53,Beddy,lucrezia bruno,Superior,Tariffa Rimborsabile - Pernottamento,09/05/2026,10/05/2026,1,300,Palazzo Alfani,Cancellate,0,Non Specificato,0
+DDFAB3E859,07/04/2026 12:48,10/05/2026 16:34,Ctrip,JIAYI SHEN,Superior,Tariffa Rimborsabile - Pernottamento,08/07/2026,10/07/2026,2,547.33,Palazzo Alfani,Cancellate,0,OTA,0
 C37455D602,10/05/2026 12:37,,Ctrip,Kai YANG,Classic,Tariffa Esclusiva,21/05/2026,23/05/2026,2,524.97,Palazzo Alfani,Confermate,0,OTA,0
 E8CF8BFA27,11/03/2026 06:43,10/05/2026 08:52,Expedia,SICHEN ZHU,Junior suite,Non rimborsabile pacchetto,13/05/2026,15/05/2026,2,553.57,Palazzo Alfani,Confermate,28,OTA,0
 60A733CC7C,27/01/2026 11:40,10/05/2026 08:51,Expedia,ANAND DILIP TANNA,Classic,Flessibile pacchetto,11/05/2026,15/05/2026,4,1260.38,Palazzo Alfani,Confermate,105,OTA,0
@@ -4190,12 +4621,15 @@ CA09CC9CA9,09/05/2026 22:44,10/05/2026 08:50,Booking,ANAND DILIP TANNA,Classic,T
 6165BB4C15,11/03/2026 21:22,09/05/2026 14:42,Expedia,Sue Ellen Harmeson,Deluxe,Tariffa Rimborsabile - Pernottamento,27/06/2026,28/06/2026,1,530.05,Palazzo Alfani,Cancellate,0,OTA,0
 EB10EEAA90,06/05/2026 17:45,09/05/2026 05:04,Ctrip,XIAOLI LIU,Classic,Tariffa Rimborsabile - Pernottamento,02/06/2026,04/06/2026,2,638.85,Palazzo Alfani,Cancellate,0,OTA,0
 398D499B08,08/05/2026 20:25,08/05/2026 23:31,Booking,Tina Borsana,Superior,Tariffa Rimborsabile - Pernottamento,24/05/2026,26/05/2026,2,759.66,Palazzo Alfani,Cancellate,0,OTA,0
+C277120736,08/05/2026 10:06,08/05/2026 16:59,Ctrip,MING ZHI,Classic,Tariffa Rimborsabile - Pernottamento,10/07/2026,11/07/2026,1,277.06,Palazzo Alfani,Cancellate,0,OTA,0
 03BCD80B5E,27/04/2026 10:33,08/05/2026 13:04,Ctrip,LAN CHEN,Junior suite,Tariffa Esclusiva,08/05/2026,10/05/2026,2,631.6,Palazzo Alfani,Confermate,0,OTA,0
 D65A72375D,08/05/2026 09:39,,Ctrip,YANZHE ZHAO,Deluxe,Tariffa Non Rimborsabile - Pernottamento,18/06/2026,19/06/2026,1,431.45,Palazzo Alfani,Confermate,42,OTA,0
 0480E03507,31/01/2026 17:20,07/05/2026 08:31,Booking,Daniel Lis,Classic,Tariffa Rimborsabile - Pernottamento,14/05/2026,17/05/2026,3,1099.63,Palazzo Alfani,Cancellate,0,OTA,0
 ADCF5B6196,05/05/2026 16:08,07/05/2026 05:52,Ctrip,JIAN CHEN,Classic,Tariffa Rimborsabile - Pernottamento,29/06/2026,01/07/2026,2,608.46,Palazzo Alfani,Cancellate,0,OTA,0
+9156EC24E2,07/05/2026 02:25,,Beddy,Monique Perna Perna,Deluxe,Tariffa Non Rimborsabile - Pernottamento,28/09/2026,01/10/2026,3,1566,Palazzo Alfani,Confermate,0,Sito web,0
 6D6D65A001,07/05/2026 02:06,07/05/2026 02:07,Ctrip,MAN KIT FONG,Junior suite,Tariffa Rimborsabile - Pernottamento,16/05/2026,18/05/2026,2,578.51,Palazzo Alfani,Cancellate,0,OTA,0
 256E8D4586,06/05/2026 13:17,,Beddy,Qian Qian,Deluxe,Tariffa Non Rimborsabile con Colazione inclusa,19/06/2026,22/06/2026,3,1505.7,Palazzo Alfani,Confermate,63,Sito web,0
+E47516E3C3,25/04/2026 10:58,06/05/2026 12:05,Ctrip,BINQI FENG,Superior,Tariffa Rimborsabile - Pernottamento,16/07/2026,18/07/2026,2,551.59,Palazzo Alfani,Cancellate,0,OTA,0
 37A146B174,18/09/2025 07:36,06/05/2026 01:09,Expedia,MARK SPITS,Deluxe,Tariffa Rimborsabile - Pernottamento,08/06/2026,11/06/2026,3,1275.93,Palazzo Alfani,Cancellate,0,OTA,0
 F4B8FE9FC3,10/02/2026 20:04,05/05/2026 16:16,Beddy,Karcenty Mickael,Superior,Tariffa Non Rimborsabile - Pernottamento,05/05/2026,06/05/2026,1,318.43,Palazzo Alfani,Confermate,28,Sito web,0
 492FCF8E08,30/04/2026 16:39,05/05/2026 13:44,Expedia,Ann Tsung,Superior,Tariffa Esclusiva,08/05/2026,11/05/2026,3,881.22,Palazzo Alfani,Confermate,42,OTA,0
@@ -4217,7 +4651,9 @@ B24EFA7B76,02/05/2026 10:58,02/05/2026 11:47,Booking,Jill Mayer,Superior,Tariffa
 08967D6D85,30/04/2026 07:23,,Ctrip,ZHENYU WANG,Junior suite,Tariffa Rimborsabile - Pernottamento,25/05/2026,28/05/2026,3,847.61,Palazzo Alfani,Confermate,42,OTA,0
 E5DB3E1275,30/04/2026 06:01,30/04/2026 07:22,Ctrip,ZHENYU WANG,Junior suite,Tariffa Rimborsabile - Pernottamento,25/05/2026,28/05/2026,3,805.61,Palazzo Alfani,Cancellate,0,OTA,0
 D6DE7B0556,21/02/2026 12:29,29/04/2026 12:09,Beddy,Carolina Garcia Martos,Superior,Tariffa Rimborsabile - Pernottamento,06/05/2026,08/05/2026,2,820,Palazzo Alfani,Cancellate,0,Sito web,0
+78513BEBF8,29/04/2026 02:43,,Booking,Randy Davison,Deluxe,Tariffa Non Rimborsabile - Pernottamento,05/09/2026,09/09/2026,4,2238.56,Palazzo Alfani,Confermate,0,OTA,0
 49A8D5FA33,28/04/2026 23:39,,Ctrip,Haoyu Gu,Junior suite,Tariffa Rimborsabile - Pernottamento,23/05/2026,25/05/2026,2,623.78,Palazzo Alfani,Confermate,28,OTA,0
+F97721A2CF,26/04/2026 14:17,28/04/2026 21:49,Expedia,ERIC FRITZ,Deluxe,Flessibile pacchetto,23/08/2026,25/08/2026,2,647.56,Palazzo Alfani,Cancellate,0,OTA,0
 1716CAF32F,27/04/2026 23:49,27/04/2026 23:53,Beddy,Antonio Jordan,Junior suite,Tariffa Esclusiva con Colazione inclusa,27/04/2026,30/04/2026,3,941.45,Palazzo Alfani,Cancellate,0,Sito web,0
 C3ABF5FE45,27/11/2025 19:15,27/04/2026 16:29,Beddy,XINGHUA YU,Superior,Tariffa Rimborsabile - Pernottamento,27/04/2026,30/04/2026,3,975.84,Palazzo Alfani,Confermate,63,Non Specificato,0
 B462C8CDF3,27/11/2025 19:17,27/04/2026 16:29,Beddy,SIJIE MAO,Superior,Tariffa Rimborsabile - Pernottamento,27/04/2026,30/04/2026,3,975.84,Palazzo Alfani,Confermate,63,Non Specificato,0
@@ -4227,34 +4663,49 @@ BC3DA1C44E,29/03/2026 14:56,27/04/2026 16:13,Expedia,CHEN BAI,Superior,Flessibil
 ED04712E5A,26/02/2026 18:09,27/04/2026 16:07,Beddy,Emily Vulgamore,"Superior, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",27/05/2026,30/05/2026,3,2543,Palazzo Alfani,Confermate,105,Sito web,0
 E87AC25D00,29/11/2025 13:34,27/04/2026 13:19,Beddy,Stephen Smith,Superior,Tariffa Rimborsabile - Pernottamento,27/04/2026,06/05/2026,9,2954,Palazzo Alfani,Confermate,98,Non Specificato,0
 E5A8B8464C,11/04/2026 03:23,27/04/2026 09:54,Ctrip,NAO ITO,Superior,Tariffa Non Rimborsabile - Pernottamento,03/05/2026,05/05/2026,2,619.08,Palazzo Alfani,Confermate,42,OTA,0
+A8F86DE511,22/02/2026 21:24,26/04/2026 06:05,Beddy,Konstantina Vlahos,Deluxe,Tariffa Rimborsabile - Pernottamento,15/09/2026,19/09/2026,4,1880,Palazzo Alfani,Cancellate,0,Sito web,0
 6981609465,11/04/2026 08:36,26/04/2026 05:10,Ctrip,XIAOYAN LI,Classic,Tariffa Rimborsabile - Pernottamento,31/05/2026,02/06/2026,2,617.91,Palazzo Alfani,Cancellate,0,OTA,0
+C7A7C7B9AF,18/01/2026 09:27,26/04/2026 03:30,Booking,John Charatsis,Superior,Tariffa Rimborsabile - Pernottamento,29/09/2026,02/10/2026,3,1121.25,Palazzo Alfani,Cancellate,0,OTA,0
 4DD93BE58D,24/04/2026 19:51,25/04/2026 20:49,Booking,LIMOR ZARBAILOV,Superior,Tariffa Rimborsabile - Pernottamento,19/05/2026,20/05/2026,1,435.2,Palazzo Alfani,Cancellate,0,OTA,0
+ABE29B300E,25/04/2026 10:53,25/04/2026 10:57,Ctrip,BINQI FENG,Classic,Tariffa Rimborsabile - Pernottamento,18/07/2026,20/07/2026,2,517.03,Palazzo Alfani,Cancellate,0,OTA,0
+0388E1FFA9,25/04/2026 08:22,,Ctrip,HETIAN HU,Superior,Tariffa Rimborsabile - Pernottamento,04/07/2026,07/07/2026,3,1018.68,Palazzo Alfani,Confermate,63,OTA,0
 45488297B7,19/12/2025 19:33,25/04/2026 04:58,Beddy,Alan Stratton,Superior,Tariffa Non Rimborsabile - Pernottamento,05/05/2026,07/05/2026,2,522,Palazzo Alfani,Cancellate,0,Sito web,0
 AB3FC2687E,19/12/2025 19:29,25/04/2026 04:58,Beddy,Alan Stratton,Classic,Vantaggio Soggiorno Prolungato,28/04/2026,03/05/2026,5,1168.75,Palazzo Alfani,Cancellate,0,Sito web,0
 B2DD595C2C,21/04/2026 11:46,24/04/2026 16:05,Beddy,Anna Facchini,Junior suite,Tariffa Rimborsabile - Pernottamento,24/04/2026,25/04/2026,1,200,Palazzo Alfani,Cancellate,0,Non Specificato,0
 63DDB8C1CC,15/04/2026 18:22,23/04/2026 15:27,Ctrip,Jiaqi Hu,Junior suite,Tariffa Rimborsabile - Pernottamento,03/06/2026,06/06/2026,3,985.67,Palazzo Alfani,Cancellate,0,OTA,0
 80847765EA,15/03/2026 07:29,23/04/2026 00:52,Ctrip,YUMEI LIU,Superior,Tariffa Rimborsabile - Pernottamento,03/05/2026,05/05/2026,2,644.18,Palazzo Alfani,Confermate,42,OTA,0
+719415F3D0,22/04/2026 10:37,22/04/2026 10:38,Beddy,Marian Williams,"Superior, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",01/10/2026,04/10/2026,3,2627.48,Palazzo Alfani,Confermate,0,Non Specificato,0
+B8C3CD0FEC,21/04/2026 14:46,,Ctrip,YE QIU,Junior suite,Tariffa Rimborsabile - Pernottamento,31/07/2026,10/08/2026,10,2208.7,Palazzo Alfani,Confermate,0,OTA,0
+90D748F67D,23/12/2025 23:53,21/04/2026 13:05,Booking,Rafael Jaen Garcia,Classic,Tariffa Rimborsabile - Pernottamento,25/08/2026,30/08/2026,5,1303.05,Palazzo Alfani,Confermate,0,OTA,0
 5412DA5A75,21/04/2026 11:45,,Beddy,Anna Facchini,Classic,Tariffa Rimborsabile - Pernottamento,23/04/2026,24/04/2026,1,407,Palazzo Alfani,Confermate,7,Non Specificato,0
 00D37CDFA2,04/04/2026 14:53,21/04/2026 11:11,Beddy,Erik alphonse adrianus De Baedts el karouni,Classic,Tariffa Rimborsabile - Pernottamento,22/05/2026,23/05/2026,1,757.63,Palazzo Alfani,Confermate,14,Non Specificato,0
 A605C02592,20/04/2026 10:51,21/04/2026 11:11,Beddy,ANAND MAHENDRA JHAVERI,Classic,Tariffa Rimborsabile - Pernottamento,17/05/2026,21/05/2026,4,1517.12,Palazzo Alfani,Confermate,56,Sito web,0
 965A81EFD2,02/03/2026 14:15,21/04/2026 11:11,Ctrip,TAO TIAN,Classic,Tariffa Rimborsabile - Pernottamento,18/05/2026,20/05/2026,2,694.21,Palazzo Alfani,Confermate,42,OTA,0
 7F025F8113,21/04/2026 07:47,,Ctrip,WANFUNG TSUI,Classic,Tariffa Non Rimborsabile - Pernottamento,23/05/2026,26/05/2026,3,1040.98,Palazzo Alfani,Confermate,84,OTA,0
+CDCF466092,18/01/2026 13:32,20/04/2026 19:05,Booking,"Meng Wang,Yan Liu Jinghua Wang Junyou Xiao Kaichia Hsiao Shuhua Tseng,Yichen Hsiao",Deluxe,Tariffa Rimborsabile - Pernottamento,03/07/2026,04/07/2026,1,401.59,Palazzo Alfani,Cancellate,0,OTA,0
 25C268181F,13/04/2026 14:53,19/04/2026 22:52,Ctrip,HAIYAN GU,Superior,Tariffa Esclusiva,18/04/2026,22/04/2026,4,1047.8,Palazzo Alfani,Confermate,84,OTA,0
 5F5A265D79,19/04/2026 14:44,19/04/2026 15:45,Ctrip,JING XU,Junior suite,Tariffa Rimborsabile - Pernottamento,21/06/2026,24/06/2026,3,941.17,Palazzo Alfani,Cancellate,0,OTA,0
 EB4B59B8F6,24/03/2026 00:39,19/04/2026 15:42,Beddy,SABRINA RANDHAWA,Superior,Tariffa Non Rimborsabile - Pernottamento,26/06/2026,28/06/2026,2,837,Palazzo Alfani,Confermate,56,Sito web,0
 F3A8BDAE31,08/03/2026 16:27,19/04/2026 15:41,Beddy,Sarah Hayashi,Superior,Tariffa Rimborsabile - Pernottamento,21/06/2026,28/06/2026,7,2921,Palazzo Alfani,Confermate,196,Sito web,0
 508CB725C2,14/04/2026 20:45,19/04/2026 15:15,Booking,Aliki Mentzelou,Superior,Tariffa Rimborsabile - Pernottamento,03/06/2026,07/06/2026,4,1863.6,Palazzo Alfani,Cancellate,0,OTA,0
+4412429096,19/04/2026 14:01,,Ctrip,YIKAI SHI,Deluxe,Tariffa Rimborsabile - Pernottamento,26/09/2026,27/09/2026,1,484.62,Palazzo Alfani,Confermate,0,OTA,0
 1571A09F20,17/04/2026 19:44,19/04/2026 06:22,Booking,Maria Kuraeva,Deluxe,Tariffa Rimborsabile - Pernottamento,20/06/2026,22/06/2026,2,1225.58,Palazzo Alfani,Cancellate,0,OTA,0
 18D82B202A,18/04/2026 18:24,,Ctrip,JIAHONG LUO,Deluxe,Tariffa Rimborsabile - Pernottamento,13/05/2026,14/05/2026,1,489.19,Palazzo Alfani,Confermate,35,OTA,0
 85EAFEDF09,02/12/2025 09:05,18/04/2026 11:16,Expedia,QIN SHEN,Classic,Flessibile pacchetto,28/04/2026,01/05/2026,3,734.55,Palazzo Alfani,Cancellate,0,OTA,0
 89E860E2DE,29/11/2025 13:22,18/04/2026 10:57,Beddy,Kim Cochrane,"Deluxe, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",09/04/2026,13/04/2026,4,2822,Palazzo Alfani,Confermate,140,Non Specificato,0
+682CE0C04A,01/02/2026 09:04,18/04/2026 07:49,Booking,Natalie Medina,Classic,Tariffa Rimborsabile - Pernottamento,05/07/2026,10/07/2026,5,1336.13,Palazzo Alfani,Cancellate,0,OTA,0
+5A07F4623D,16/03/2026 10:55,18/04/2026 05:23,Ctrip,YANG ZOU,Deluxe,Tariffa Rimborsabile - Pernottamento,05/08/2026,06/08/2026,1,310.89,Palazzo Alfani,Cancellate,0,OTA,0
 B2C0AE6324,13/04/2026 13:45,17/04/2026 12:50,Beddy,LEI SUN,Classic,Tariffa Rimborsabile - Pernottamento,16/04/2026,18/04/2026,2,749.85,Palazzo Alfani,Cancellate,0,Sito web,0
 F9963C8585,26/11/2025 11:32,17/04/2026 03:06,Booking,Myesha Morgan,Deluxe,Tariffa Rimborsabile - Pernottamento,19/06/2026,22/06/2026,3,1523.48,Palazzo Alfani,Cancellate,0,OTA,0
 D90F845594,17/04/2026 01:37,17/04/2026 02:07,Booking,MYKHAILO Dmytruk,Classic,Tariffa Non Rimborsabile - Pernottamento,18/04/2026,21/04/2026,3,906.12,Palazzo Alfani,Confermate,42,OTA,0
+106B9351C2,01/03/2026 20:11,16/04/2026 16:35,Beddy,Frans Lammersen,Classic,Tariffa Non Rimborsabile - Pernottamento,20/07/2026,23/07/2026,3,621,Palazzo Alfani,Confermate,0,Sito web,0
+10A41BC653,11/04/2026 07:59,16/04/2026 16:35,Ctrip,HIROYUKI TSUKUDA,Classic,Tariffa Non Rimborsabile - Pernottamento,22/07/2026,24/07/2026,2,497.44,Palazzo Alfani,Confermate,0,OTA,0
+ED8F89A3D7,09/03/2026 15:10,16/04/2026 16:34,Booking,Nathalie VALERY,Classic,Tariffa Rimborsabile - Pernottamento,13/07/2026,15/07/2026,2,538.54,Palazzo Alfani,Confermate,0,OTA,0
 462902B03D,08/03/2026 14:52,16/04/2026 16:27,Ctrip,LINA ZHU,Classic,Tariffa Rimborsabile - Pernottamento,07/05/2026,09/05/2026,2,627.26,Palazzo Alfani,Confermate,28,OTA,0
 AFEB60FBA7,16/04/2026 13:03,,Booking,SHIYING HE,Classic,Tariffa Non Rimborsabile - Pernottamento,15/06/2026,18/06/2026,3,1329.81,Palazzo Alfani,Confermate,63,OTA,0
 109F655C59,01/04/2026 07:21,16/04/2026 12:45,Booking,AJAYKUMAR MOKARIYA VIDHI MOKARIYA DHYAN MOKARIYA DHYANA M,Superior,Tariffa Rimborsabile - Pernottamento,07/05/2026,09/05/2026,2,924.54,Palazzo Alfani,Cancellate,0,OTA,0
 43C5492AC3,13/04/2026 13:03,16/04/2026 11:22,Beddy,Ja EMMONS,Classic,Tariffa Non Rimborsabile - Pernottamento,16/04/2026,18/04/2026,2,588.86,Palazzo Alfani,Confermate,28,Non Specificato,0
+B573461791,15/04/2026 16:37,15/04/2026 20:40,Expedia,JENNIFER CROSBY,Deluxe,Flessibile pacchetto,11/02/2027,14/02/2027,3,1484.7,Palazzo Alfani,Cancellate,0,OTA,0
 6A620DD6AF,24/12/2025 21:36,15/04/2026 13:15,Booking,Holger Schumacher,Deluxe,Vantaggio Soggiorno Prolungato,14/04/2026,19/04/2026,5,1959.64,Palazzo Alfani,Confermate,70,OTA,0
 72F58F8299,15/04/2026 11:23,,Booking,SERASTIANA JURADO ROJAS,Junior suite,Tariffa Rimborsabile - Pernottamento,21/04/2026,24/04/2026,3,1058.82,Palazzo Alfani,Confermate,42,OTA,0
 615DCB1782,13/04/2026 22:14,15/04/2026 11:21,Beddy,Deborah Nucci,Superior,Tariffa Rimborsabile - Pernottamento,10/05/2026,14/05/2026,4,1487.5,Palazzo Alfani,Cancellate,0,Sito web,0
@@ -4285,10 +4736,14 @@ DBA0F9599F,07/02/2026 10:37,12/04/2026 11:06,Booking,elliot samuel,Classic,Tarif
 5C45A04D31,20/01/2026 21:39,11/04/2026 11:04,Booking,Flint Hartwig,Classic,Tariffa Rimborsabile - Pernottamento,18/04/2026,20/04/2026,2,586.42,Palazzo Alfani,Confermate,28,OTA,0
 0A9A21040E,23/02/2026 17:48,11/04/2026 11:04,Beddy,Allison Heneghan,Classic,Tariffa Non Rimborsabile - Pernottamento,13/04/2026,16/04/2026,3,819,Palazzo Alfani,Confermate,63,Sito web,0
 B0613F6A46,21/03/2026 14:26,11/04/2026 11:04,Ctrip,YIWEN CHEN,Superior,Tariffa Non Rimborsabile - Pernottamento,15/04/2026,17/04/2026,2,464.83,Palazzo Alfani,Confermate,28,OTA,0
+DBCC4073D7,17/03/2026 14:49,11/04/2026 10:18,Ctrip,TING HUA,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,08/07/2026,3,759.06,Palazzo Alfani,Cancellate,0,OTA,0
 FE9CC14248,10/04/2026 10:17,,Booking,Vijaya Kumar Dhupati,"Superior, Classic","Tariffa Non Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",10/04/2026,11/04/2026,1,686.17,Palazzo Alfani,Confermate,28,OTA,0
 5B16B9A086,09/04/2026 21:31,,Beddy,Anna Facchini,Superior,Tariffa Esclusiva,10/04/2026,11/04/2026,1,200,Palazzo Alfani,Confermate,7,Telefonata,0
 6F66340355,09/04/2026 16:42,09/04/2026 19:32,Ctrip,YINGZHI ZHONG,Classic,Tariffa Rimborsabile - Pernottamento,22/05/2026,25/05/2026,3,1099.62,Palazzo Alfani,Confermate,63,OTA,0
 D89F49A04C,07/04/2026 23:47,,Booking,ADAM DOUGLAS GROMKO,Superior,Tariffa Non Rimborsabile - Pernottamento,09/05/2026,10/05/2026,1,469.53,Palazzo Alfani,Confermate,14,OTA,0
+388AF75920,07/04/2026 16:24,,Ctrip,XIAOBIN ZHAO,Superior,Tariffa Rimborsabile - Pernottamento,04/07/2026,06/07/2026,2,567.83,Palazzo Alfani,Confermate,28,OTA,0
+C3ED5DD28D,07/04/2026 16:16,,Ctrip,MANRU ZHAO,Classic,Tariffa Rimborsabile - Pernottamento,04/07/2026,06/07/2026,2,554.61,Palazzo Alfani,Confermate,28,OTA,0
+52158AE832,06/04/2026 18:18,07/04/2026 14:46,Ctrip,XIAOCHUN JIANG,Classic,Tariffa Rimborsabile - Pernottamento,06/07/2026,08/07/2026,2,531.04,Palazzo Alfani,Cancellate,0,OTA,0
 0BE562B33F,05/04/2026 15:29,,Ctrip,YUHAN LIU,Classic,Tariffa Non Rimborsabile - Pernottamento,10/05/2026,13/05/2026,3,918.24,Palazzo Alfani,Confermate,63,OTA,0
 2287ED0F72,04/04/2026 19:59,,Ctrip,WEIPENG LI,Classic,Tariffa Rimborsabile - Pernottamento,27/04/2026,28/04/2026,1,332.49,Palazzo Alfani,Confermate,21,OTA,0
 0143494133,24/02/2026 03:24,04/04/2026 11:36,Booking,Debbie Fruguglietti,Classic,Tariffa Non Rimborsabile - Pernottamento,19/05/2026,21/05/2026,2,612.2,Palazzo Alfani,Confermate,28,OTA,0
@@ -4300,6 +4755,7 @@ AABD1F7F9E,05/02/2026 10:33,04/04/2026 11:35,Beddy,WILLIAM ADAM FREEDMAN,Classic
 78E4086FCE,03/04/2026 09:25,,Ctrip,MUQING LIU,Classic,Tariffa Rimborsabile - Pernottamento,03/05/2026,05/05/2026,2,597.59,Palazzo Alfani,Confermate,42,OTA,0
 4397DA87B9,03/04/2026 08:06,,Ctrip,TING MEI,Classic,Tariffa Non Rimborsabile - Pernottamento,11/05/2026,14/05/2026,3,840.04,Palazzo Alfani,Confermate,42,OTA,0
 1B1056EDB9,30/03/2026 06:03,03/04/2026 07:25,Ctrip,PING TIAN,Classic,Tariffa Rimborsabile - Pernottamento,26/04/2026,28/04/2026,2,639.12,Palazzo Alfani,Cancellate,0,OTA,0
+F1FE9B1356,26/10/2025 11:32,03/04/2026 05:15,Booking,Maria Salazar,Deluxe,Tariffa Rimborsabile - Pernottamento,30/07/2026,03/08/2026,4,1887.75,Palazzo Alfani,Cancellate,0,OTA,0
 AA66C2DD7C,29/11/2025 13:18,02/04/2026 14:36,Beddy,DANIEL DAVID MARUNIAK,Superior,Tariffa Rimborsabile - Pernottamento,07/04/2026,10/04/2026,3,1213,Palazzo Alfani,Confermate,63,Non Specificato,0
 E6CD1BB501,11/02/2026 16:16,02/04/2026 14:36,Beddy,JENNIFER ANN RALEY,Superior,Tariffa Rimborsabile con Colazione inclusa,09/04/2026,12/04/2026,3,1012.9,Palazzo Alfani,Confermate,42,Sito web,0
 E79BC56508,28/03/2026 17:01,02/04/2026 14:36,Booking,Irene Giardina,Superior,Tariffa Esclusiva,03/04/2026,07/04/2026,4,1549.7,Palazzo Alfani,Confermate,112,OTA,0
@@ -4316,17 +4772,25 @@ EE48E306AE,25/03/2026 03:25,31/03/2026 21:32,Ctrip,Rodney Johnston,Superior,Tari
 5C7BF0E9EF,25/02/2026 10:55,31/03/2026 16:22,Booking,Melanie Ferreira,"Classic, Superior","Tariffa Non Rimborsabile - Pernottamento, Tariffa Non Rimborsabile - Pernottamento",03/04/2026,06/04/2026,3,1127.68,Palazzo Alfani,Confermate,42,OTA,0
 83DDB5144F,06/03/2026 19:53,31/03/2026 15:42,Booking,Massimo Colucciello,Classic,Tariffa Rimborsabile - Pernottamento,03/04/2026,06/04/2026,3,1399.8,Palazzo Alfani,Confermate,84,OTA,0
 3C2762F8A3,22/03/2026 13:19,31/03/2026 13:46,Expedia,HO YOUNG CHOI,Classic,Non rimborsabile pacchetto,31/05/2026,03/06/2026,3,1057.26,Palazzo Alfani,Confermate,84,OTA,0
+9DF720AA5B,30/03/2026 09:09,,Ctrip,LIJING YANG,Junior suite,Tariffa Non Rimborsabile - Pernottamento,09/07/2026,13/07/2026,4,836.34,Palazzo Alfani,Confermate,0,OTA,0
+02C8C31CD5,24/02/2026 16:02,30/03/2026 07:43,Booking,SHIH YingHsun,Junior suite,Tariffa Rimborsabile - Pernottamento,09/07/2026,13/07/2026,4,1042.43,Palazzo Alfani,Cancellate,0,OTA,0
 0934A2F3A2,09/02/2026 02:17,29/03/2026 23:40,Booking,GINA CATEDRILLA STRICKLAND,Classic,Tariffa Rimborsabile - Pernottamento,26/03/2026,29/03/2026,3,719.87,Palazzo Alfani,Confermate,42,OTA,0
 2880C03B63,26/02/2026 17:01,29/03/2026 16:42,Ctrip,YE YANG,Superior,Tariffa Rimborsabile - Pernottamento,02/05/2026,03/05/2026,1,355.62,Palazzo Alfani,Cancellate,0,OTA,0
+679982DB51,29/03/2026 16:19,,Ctrip,Feiyang Hou,Deluxe,Tariffa Rimborsabile - Pernottamento,01/10/2026,03/10/2026,2,917.75,Palazzo Alfani,Confermate,0,OTA,0
 93DA763850,31/01/2026 19:20,29/03/2026 10:23,Expedia,KETAN D PATEL,Superior,Flessibile pacchetto,30/03/2026,02/04/2026,3,736.38,Palazzo Alfani,Confermate,63,OTA,0
 3A407657B6,15/02/2026 17:49,29/03/2026 10:22,Beddy,Kimberly Waldbillig,Superior,Tariffa Rimborsabile con Colazione inclusa,01/04/2026,04/04/2026,3,1202,Palazzo Alfani,Confermate,42,Sito web,0
 687AAE0365,01/12/2025 10:06,29/03/2026 10:20,Beddy,Karen Webb,"Classic, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",06/04/2026,09/04/2026,3,1992.4,Palazzo Alfani,Confermate,126,Non Specificato,0
 43EC416EBE,26/03/2026 05:52,29/03/2026 10:20,Booking,Hsu Wei Chu,Superior,Tariffa Esclusiva,30/03/2026,01/04/2026,2,549.12,Palazzo Alfani,Confermate,42,OTA,0
 B01F5F860E,14/03/2026 09:23,29/03/2026 04:18,Ctrip,RUOXUE LI,Superior,Tariffa Rimborsabile - Pernottamento,01/05/2026,03/05/2026,2,695.2,Palazzo Alfani,Cancellate,0,OTA,0
 2D42FCC37F,28/03/2026 17:51,,Beddy,Anthony Smith,Junior suite,Vantaggio Soggiorno Prolungato,11/04/2026,16/04/2026,5,1400.25,Palazzo Alfani,Confermate,70,Sito web,0
+30058B5C95,27/03/2026 12:59,28/03/2026 08:28,Booking,HWANG JUNG MIN,Superior,Tariffa Rimborsabile - Pernottamento,02/10/2026,06/10/2026,4,2084.51,Palazzo Alfani,Cancellate,0,OTA,0
 2B7383BEF7,17/03/2026 20:37,26/03/2026 12:17,Booking,Gulnara Gurbanova,Superior,Tariffa Rimborsabile - Pernottamento,30/03/2026,04/04/2026,5,1877.75,Palazzo Alfani,Confermate,105,OTA,0
+812E6BD8C8,18/03/2026 02:26,26/03/2026 02:28,Ctrip,BENJAMIN SI CHEN,Classic,Tariffa Rimborsabile - Pernottamento,21/07/2026,25/07/2026,4,1025.41,Palazzo Alfani,Cancellate,0,OTA,0
 151197B789,30/01/2026 14:39,25/03/2026 11:16,Beddy,Mariana Victorino,"Junior suite, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",30/04/2026,03/05/2026,3,2065.5,Palazzo Alfani,Confermate,126,Sito web,0
 C4074EB321,25/03/2026 00:14,25/03/2026 11:07,Ctrip,RYAN WHEELER CARPENTER,Classic,Tariffa Rimborsabile - Pernottamento,26/04/2026,30/04/2026,4,1476.19,Palazzo Alfani,Confermate,56,OTA,0
+C7562DB0F2,22/03/2026 09:17,25/03/2026 07:34,Ctrip,RUI ZHANG,Junior suite,Tariffa Rimborsabile - Pernottamento,14/07/2026,18/07/2026,4,833.45,Palazzo Alfani,Cancellate,0,OTA,0
+914678B13E,12/03/2026 01:24,25/03/2026 01:23,Ctrip,DAN LI,Superior,Tariffa Rimborsabile - Pernottamento,27/07/2026,29/07/2026,2,485,Palazzo Alfani,Cancellate,0,OTA,0
+92804DDC3C,12/03/2026 01:24,25/03/2026 01:22,Ctrip,BAOFENG LIN,Superior,Tariffa Rimborsabile - Pernottamento,27/07/2026,29/07/2026,2,450.56,Palazzo Alfani,Cancellate,0,OTA,0
 05C2C06576,24/03/2026 22:22,,Beddy,Danae Duran,Classic,Tariffa Rimborsabile - Pernottamento,14/06/2026,19/06/2026,5,1060,Palazzo Alfani,Confermate,35,Sito web,0
 13565B2FC8,21/01/2026 11:41,24/03/2026 17:30,Beddy,KATIA GAROFALO,"Classic, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",25/06/2026,28/06/2026,3,2235,Palazzo Alfani,Confermate,147,Sito web,0
 FF4C009DC0,16/12/2025 02:34,24/03/2026 17:30,Booking,OLIVER STUART CAMERON SMITH,Classic,Tariffa Rimborsabile - Pernottamento,18/06/2026,22/06/2026,4,1323.18,Palazzo Alfani,Confermate,56,OTA,0
@@ -4338,6 +4802,7 @@ B12B435829,23/03/2026 22:21,,Ctrip,WENDI LIU,Junior suite,Tariffa Esclusiva,03/0
 3DDFE19FA2,16/02/2026 22:44,22/03/2026 19:58,Booking,PARTH KAMLESH DANDIWALA NIRALI MANOJ DAMANIA ISHVI DANDIWALA,Classic,Tariffa Rimborsabile - Pernottamento,28/06/2026,30/06/2026,2,679.53,Palazzo Alfani,Cancellate,0,OTA,0
 33211A8786,28/02/2026 19:28,22/03/2026 18:36,Ctrip,HUAN ZHANG,Classic,Tariffa Non Rimborsabile - Pernottamento,23/03/2026,25/03/2026,2,383.88,Palazzo Alfani,Confermate,42,OTA,0
 D8A9B254D0,22/03/2026 17:38,,Ctrip,JUNQI HAN,Junior suite,Tariffa Rimborsabile - Pernottamento,06/04/2026,07/04/2026,1,235.75,Palazzo Alfani,Confermate,14,OTA,0
+AA3D841744,19/03/2026 03:25,22/03/2026 17:02,Beddy,FRANCIS MANLEY,Classic,Tariffa Rimborsabile - Pernottamento,08/10/2026,12/10/2026,4,1400,Palazzo Alfani,Confermate,0,Sito web,0
 517D866764,10/03/2026 13:27,22/03/2026 16:58,Ctrip,YINGQI MAO,Classic,Tariffa Non Rimborsabile - Pernottamento,03/06/2026,05/06/2026,2,530.84,Palazzo Alfani,Confermate,28,OTA,0
 CBD8483BD2,15/02/2026 20:46,22/03/2026 16:58,Booking,OTO SERGIO SILVA DE ARAUJO JUNIOR,Classic,Tariffa Non Rimborsabile - Pernottamento,05/06/2026,08/06/2026,3,1149.03,Palazzo Alfani,Confermate,63,OTA,0
 9B56513DD5,22/03/2026 07:27,22/03/2026 15:03,Booking,Natasha Bezuidenhout,Superior,Tariffa Rimborsabile - Pernottamento,04/04/2026,08/04/2026,4,1523.88,Palazzo Alfani,Cancellate,0,OTA,0
@@ -4350,6 +4815,8 @@ E47FF6E052,21/03/2026 10:12,21/03/2026 13:58,Booking,WANG TING,Superior,Tariffa 
 75F55D9E29,20/03/2026 19:06,21/03/2026 02:17,Booking,Bruna Bessa,Superior,Tariffa Rimborsabile - Pernottamento,31/05/2026,05/06/2026,5,1911,Palazzo Alfani,Cancellate,0,OTA,0
 858A84E43C,14/03/2026 19:37,19/03/2026 18:37,Expedia,Emily Long,Superior,Non rimborsabile pacchetto,20/05/2026,22/05/2026,2,657.56,Palazzo Alfani,Confermate,42,OTA,0
 7264CB5CCE,14/03/2026 19:37,19/03/2026 17:36,Expedia,Candice Long,Classic,Non rimborsabile pacchetto,20/05/2026,22/05/2026,2,495.16,Palazzo Alfani,Confermate,28,OTA,0
+6AD60110ED,22/01/2026 01:56,19/03/2026 12:28,Booking,SIMONE DE ARAUJO FEITOZA ALEXANDRE RIBEIRO FEITOZA ALEXANDRE RIBEIRO FEITOZA JUNIOR BEATRIZ DE ARAUJO FEITO,Classic,Tariffa Non Rimborsabile - Pernottamento,21/07/2026,24/07/2026,3,801.06,Palazzo Alfani,Confermate,0,OTA,0
+A6265EBBE6,14/01/2026 02:36,19/03/2026 12:28,Expedia,TINGTING YE,Classic,Flessibile pacchetto,19/07/2026,21/07/2026,2,375.04,Palazzo Alfani,Confermate,0,OTA,0
 7DBBF073B4,07/03/2026 14:13,19/03/2026 12:17,Ctrip,GUANYU WU,Classic,Tariffa Rimborsabile - Pernottamento,09/06/2026,11/06/2026,2,658.56,Palazzo Alfani,Confermate,42,OTA,0
 A2F7FD3AEE,11/03/2026 18:55,19/03/2026 12:14,Expedia,Elizabeth Salas,Classic,Flessibile pacchetto,26/05/2026,29/05/2026,3,911.36,Palazzo Alfani,Confermate,63,OTA,0
 5737392AFB,14/01/2026 19:13,19/03/2026 12:12,Beddy,Samantha Omichinski,"Junior suite, Classic","Tariffa Non Rimborsabile con Colazione inclusa, Tariffa Non Rimborsabile con Colazione inclusa",29/05/2026,31/05/2026,2,1459,Palazzo Alfani,Confermate,56,Sito web,0
@@ -4364,13 +4831,16 @@ AC20CB8F55,18/03/2026 00:44,19/03/2026 11:49,Expedia,William CHENG,Classic,Non r
 7D81B670CA,15/01/2026 21:23,17/03/2026 12:22,Beddy,Marco Ramuschi,Classic,Tariffa Non Rimborsabile - Pernottamento,18/03/2026,20/03/2026,2,184,Palazzo Alfani,Cancellate,14,Non Specificato,0
 AE7854C00E,28/02/2026 16:06,17/03/2026 05:41,Expedia,Rui Xu,Superior,Flessibile pacchetto,29/03/2026,01/04/2026,3,650.58,Palazzo Alfani,Cancellate,0,OTA,0
 8674F9A24A,16/03/2026 23:30,,Booking,Joao Marques,Superior,Tariffa Non Rimborsabile - Pernottamento,21/03/2026,22/03/2026,1,206.17,Palazzo Alfani,Confermate,14,OTA,0
+048787A3E4,22/02/2026 13:51,16/03/2026 22:19,Booking,Nataliia Prelovskaia,Classic,Tariffa Rimborsabile - Pernottamento,21/07/2026,23/07/2026,2,572.7,Palazzo Alfani,Cancellate,0,OTA,0
 B521978602,16/09/2025 11:32,16/03/2026 19:38,Booking,Andres Nomaksteinsky,"Superior, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",10/04/2026,12/04/2026,2,1588.14,Palazzo Alfani,Cancellate,0,OTA,0
 DAC4C781AF,27/01/2026 11:53,16/03/2026 18:51,Beddy,STEFANO GIUSEPPE CARISSIMI,Classic,Tariffa Rimborsabile - Pernottamento,16/04/2026,30/04/2026,14,2590,Palazzo Alfani,Cancellate,0,Non Specificato,0
 69C0EC2367,08/03/2026 12:06,16/03/2026 18:36,Booking,Remo Rivelli,Classic,Tariffa Rimborsabile - Pernottamento,22/03/2026,24/03/2026,2,510.3,Palazzo Alfani,Cancellate,0,OTA,0
+ED8B6F5857,16/03/2026 15:55,,Ctrip,XINYI JIANG,Classic,Tariffa Rimborsabile - Pernottamento,11/07/2026,13/07/2026,2,453.5,Palazzo Alfani,Confermate,0,OTA,0
 6256C608BB,16/03/2026 11:07,,Beddy,GASPARE COPPOLA,Superior,Tariffa Non Rimborsabile - Pernottamento,20/03/2026,22/03/2026,2,338,Palazzo Alfani,Confermate,28,Sito web,0
 4DFAB08674,30/01/2026 10:55,15/03/2026 21:52,Booking,Anahita Tarrega Mehran,Junior suite,Tariffa Rimborsabile - Pernottamento,15/03/2026,17/03/2026,2,370.08,Palazzo Alfani,Confermate,14,OTA,0
 5E66CBF2F4,09/02/2026 21:48,14/03/2026 09:12,Booking,Astrid Segura,Superior,Tariffa Non Rimborsabile - Pernottamento,14/03/2026,17/03/2026,3,643.05,Palazzo Alfani,Confermate,63,OTA,0
 16C7945B98,09/02/2026 20:44,14/03/2026 09:11,Booking,Jorge Mantilla,Superior,Tariffa Rimborsabile - Pernottamento,14/03/2026,18/03/2026,4,879.08,Palazzo Alfani,Confermate,56,OTA,0
+4626AA9549,22/02/2026 11:08,14/03/2026 08:49,Ctrip,TING HUA,Classic,Tariffa Rimborsabile - Pernottamento,05/07/2026,07/07/2026,2,500.62,Palazzo Alfani,Cancellate,0,OTA,0
 9E839954CB,04/03/2026 21:21,13/03/2026 22:46,Booking,Domi Sosna,Junior suite,Tariffa Rimborsabile - Pernottamento,24/04/2026,26/04/2026,2,733.12,Palazzo Alfani,Cancellate,0,OTA,0
 C0C78BEC28,04/03/2026 21:41,13/03/2026 22:45,Booking,Domi Sosna,Superior,Tariffa Rimborsabile - Pernottamento,24/04/2026,26/04/2026,2,808.78,Palazzo Alfani,Cancellate,0,OTA,0
 A9139E12AC,12/03/2026 00:43,13/03/2026 21:30,Ctrip,XINYAN TANG,Junior suite,Tariffa Rimborsabile - Pernottamento,13/04/2026,17/04/2026,4,1018.33,Palazzo Alfani,Cancellate,0,OTA,0
@@ -4387,15 +4857,20 @@ A636CB29E9,29/11/2025 02:57,11/03/2026 07:23,Expedia,YIKE HE,Classic,Flessibile 
 D4CB2BF065,10/03/2026 09:31,10/03/2026 23:05,Expedia,SHUN YAN CAI,Superior,Last Minute non rimborsabile_PKG,13/03/2026,14/03/2026,1,134.84,Palazzo Alfani,Cancellate,0,OTA,0
 D1E5F1B083,09/03/2026 11:41,10/03/2026 17:26,Ctrip,SHUN YAN Cai,Classic,Tariffa Rimborsabile - Pernottamento,10/03/2026,14/03/2026,4,619.6,Palazzo Alfani,Confermate,56,OTA,0
 F22FAE53F2,15/02/2026 07:34,10/03/2026 13:14,Ctrip,GUANZONG YUAN,Superior,Tariffa Rimborsabile - Pernottamento,06/05/2026,08/05/2026,2,687.88,Palazzo Alfani,Cancellate,0,OTA,0
+E5772C12AA,09/03/2026 08:55,10/03/2026 11:46,Booking,Gennady Pavlov,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,07/07/2026,2,646.63,Palazzo Alfani,Cancellate,0,OTA,0
 4FF612F6B7,09/03/2026 03:20,10/03/2026 04:22,Booking,Mohammad Kassemi,Superior,Tariffa Rimborsabile - Pernottamento,24/05/2026,27/05/2026,3,1221.09,Palazzo Alfani,Cancellate,0,OTA,0
 4A3CCB8099,01/12/2025 11:32,09/03/2026 03:55,Booking,Morimune Diane,Deluxe,Tariffa Rimborsabile - Pernottamento,03/06/2026,06/06/2026,3,1460.76,Palazzo Alfani,Cancellate,0,OTA,0
 678127239A,09/03/2026 00:07,09/03/2026 00:58,Ctrip,ZIFAN LI,Classic,Tariffa Non Rimborsabile - Pernottamento,30/03/2026,02/04/2026,3,682.73,Palazzo Alfani,Confermate,42,OTA,0
 CFA641FEE1,07/02/2026 12:03,09/03/2026 00:58,Booking,Ratiba Talbi,Classic,Tariffa Rimborsabile - Pernottamento,30/03/2026,01/04/2026,2,553.96,Palazzo Alfani,Confermate,56,OTA,0
+B6AEE095B4,08/03/2026 17:35,08/03/2026 19:46,Expedia,YUFANG WANG,Classic,Flessibile pacchetto,29/09/2026,02/10/2026,3,941.62,Palazzo Alfani,Cancellate,0,OTA,0
+0A0EF74752,06/03/2026 13:15,08/03/2026 17:02,Expedia,JIAJIA LIU,Classic,Flessibile pacchetto,03/07/2026,05/07/2026,2,470.36,Palazzo Alfani,Cancellate,0,OTA,0
 00CEEE39BA,05/03/2026 01:58,08/03/2026 14:54,Ctrip,LINA ZHU,Superior,Tariffa Rimborsabile - Pernottamento,07/05/2026,09/05/2026,2,677.73,Palazzo Alfani,Cancellate,0,OTA,0
 83BE0AFAC4,19/01/2026 06:01,08/03/2026 02:29,Booking,Vivian Zurlo,Deluxe,Tariffa Rimborsabile - Pernottamento,12/05/2026,14/05/2026,2,902.66,Palazzo Alfani,Cancellate,0,OTA,0
 287E0A31F5,03/02/2026 12:39,07/03/2026 18:37,Booking,ling luo,Classic,Tariffa Rimborsabile - Pernottamento,28/06/2026,03/07/2026,5,1552.3,Palazzo Alfani,Cancellate,0,OTA,0
 F4D633BCAD,07/03/2026 13:20,07/03/2026 14:13,Ctrip,YUN SHEN,Classic,Tariffa Rimborsabile - Pernottamento,10/06/2026,12/06/2026,2,661.14,Palazzo Alfani,Cancellate,0,OTA,0
+DDC2263B0B,07/03/2026 06:04,,Expedia,DA LI,Deluxe,Non rimborsabile pacchetto,03/10/2026,05/10/2026,2,726.75,Palazzo Alfani,Confermate,0,OTA,0
 677E008050,07/03/2026 00:41,,Expedia,CHRISTOPHER GARY FREEMAN,Deluxe,Tariffa Non Rimborsabile - Pernottamento,24/03/2026,26/03/2026,2,592.89,Palazzo Alfani,Confermate,42,OTA,0
+B217CD50BE,01/03/2026 23:46,06/03/2026 23:05,Booking,Kelly THAM,Superior,Tariffa Rimborsabile - Pernottamento,25/08/2026,30/08/2026,5,1409.8,Palazzo Alfani,Cancellate,0,OTA,0
 534126A544,09/01/2026 17:51,06/03/2026 22:09,Booking,Barbora Wellens,Classic,Tariffa Rimborsabile - Pernottamento,30/03/2026,02/04/2026,3,781.83,Palazzo Alfani,Cancellate,0,OTA,0
 5CC3E6A39D,06/03/2026 17:43,06/03/2026 17:55,Booking,Shamah AlMheiri,Superior,Tariffa Rimborsabile - Pernottamento,29/05/2026,01/06/2026,3,1234.79,Palazzo Alfani,Cancellate,0,OTA,0
 8470534826,06/03/2026 09:47,,Beddy,CALOGERO DI LIBERTO,Superior,Tariffa Non Rimborsabile con Colazione inclusa,11/03/2026,12/03/2026,1,172,Palazzo Alfani,Confermate,7,Non Specificato,0
@@ -4428,13 +4903,19 @@ EEAD65A543,25/02/2026 18:56,01/03/2026 20:20,Booking,Pitsul Helen,Superior,Tarif
 4338EAFFCE,08/02/2026 19:22,01/03/2026 04:12,Expedia,Mary Beth Shreiner,Superior,Flessibile pacchetto,02/04/2026,04/04/2026,2,618.99,Palazzo Alfani,Cancellate,0,OTA,0
 CBB2AB5180,19/02/2026 18:46,28/02/2026 07:38,Beddy,Ofir Ohayon,Classic,Tariffa Rimborsabile - Pernottamento,03/03/2026,05/03/2026,2,348,Palazzo Alfani,Cancellate,28,Sito web,0
 1CF9AAB7E7,27/02/2026 14:40,27/02/2026 17:08,Ctrip,FANG HU,Deluxe,Tariffa Rimborsabile - Pernottamento,14/05/2026,16/05/2026,2,900.66,Palazzo Alfani,Cancellate,0,OTA,0
+674A0CA8E1,10/02/2026 19:07,27/02/2026 14:20,Booking,Ananya Shukla,Classic,Tariffa Rimborsabile - Pernottamento,16/09/2026,19/09/2026,3,1014.81,Palazzo Alfani,Cancellate,0,OTA,0
 665064229C,27/02/2026 04:43,27/02/2026 09:59,Ctrip,MENGNI MA,Junior suite,Tariffa Rimborsabile - Pernottamento,27/04/2026,29/04/2026,2,579.63,Palazzo Alfani,Cancellate,0,OTA,0
+5C7200AD80,27/02/2026 06:33,,Ctrip,JING YOU,Deluxe,Tariffa Rimborsabile - Pernottamento,06/08/2026,08/08/2026,2,615.32,Palazzo Alfani,Confermate,0,OTA,0
+D3E51DABC8,26/02/2026 08:35,27/02/2026 06:33,Ctrip,JING YOU,Deluxe,Tariffa Rimborsabile - Pernottamento,05/08/2026,07/08/2026,2,615.32,Palazzo Alfani,Cancellate,0,OTA,0
 B99650F3F9,07/01/2026 06:38,26/02/2026 23:43,Ctrip,HYUNTAE KIM,Classic,Tariffa Non Rimborsabile - Pernottamento,27/02/2026,28/02/2026,1,292.23,Palazzo Alfani,Confermate,14,OTA,0
 4FCF92CC2C,21/02/2026 19:34,26/02/2026 00:13,Booking,Liya Igamberdiyeva,Superior,Tariffa Esclusiva,28/02/2026,03/03/2026,3,544.05,Palazzo Alfani,Confermate,42,OTA,0
 024F80534F,29/01/2026 12:42,26/02/2026 00:13,Expedia,YUANJI LUO,Superior,Non rimborsabile pacchetto,26/02/2026,27/02/2026,1,165.71,Palazzo Alfani,Confermate,14,OTA,0
 686A548224,21/02/2026 15:20,24/02/2026 10:45,Beddy,Anna Facchini,Junior suite,Tariffa Rimborsabile - Pernottamento,27/02/2026,28/02/2026,1,150,Palazzo Alfani,Cancellate,0,Sito web,0
 44B2E49156,23/02/2026 10:05,24/02/2026 10:00,Booking,Grant Michelle,Superior,Tariffa Rimborsabile - Pernottamento,25/03/2026,27/03/2026,2,503.02,Palazzo Alfani,Cancellate,0,OTA,0
+06D3A6E4E3,23/02/2026 23:33,,Booking,DAVID ANDALUZ GARCIA,Superior,Tariffa Rimborsabile - Pernottamento,01/07/2026,05/07/2026,4,1517.66,Palazzo Alfani,Confermate,84,OTA,0
 7C207347F1,23/02/2026 16:05,,Booking,Alessandra Rodolfi,Deluxe,Tariffa Non Rimborsabile - Pernottamento,28/02/2026,01/03/2026,1,311.45,Palazzo Alfani,Confermate,28,OTA,0
+606AAC1F23,22/02/2026 23:21,23/02/2026 05:27,Booking,Vibhuti Nanda,Classic,Tariffa Rimborsabile - Pernottamento,06/08/2026,09/08/2026,3,724.86,Palazzo Alfani,Cancellate,0,OTA,0
+80FA58933F,23/02/2026 05:02,,Expedia,Nikita Ager,Deluxe,Flessibile pacchetto,24/07/2026,26/07/2026,2,564.86,Palazzo Alfani,Confermate,0,OTA,0
 C0DAB2A172,09/02/2026 22:15,22/02/2026 20:30,Expedia,Julie Vesely,Deluxe,Tariffa Rimborsabile - Pernottamento,27/06/2026,28/06/2026,1,443.2,Palazzo Alfani,Cancellate,0,OTA,0
 1B7F2CBD17,22/02/2026 20:20,,Ctrip,MINJIE XU,Junior suite,Tariffa Rimborsabile - Pernottamento,17/03/2026,19/03/2026,2,353.49,Palazzo Alfani,Confermate,28,OTA,0
 4E7BFCB1D2,29/11/2025 01:26,22/02/2026 16:55,Beddy,Leigh Hickey,Superior,Tariffa Non Rimborsabile - Pernottamento,12/12/2025,14/12/2025,2,307.2,Palazzo Alfani,Cancellate,0,Non Specificato,0
@@ -4457,12 +4938,18 @@ E6D4268C74,05/01/2026 10:21,19/02/2026 22:50,Booking,Verena Orlov,Superior,Tarif
 9D7B40F55B,11/02/2026 23:45,19/02/2026 14:34,Booking,Sabrina Haimovici,Classic,Tariffa Rimborsabile - Pernottamento,26/03/2026,30/03/2026,4,984.23,Palazzo Alfani,Cancellate,0,OTA,0
 189C109716,16/02/2026 21:35,19/02/2026 01:19,Expedia,Sharon Maguire,Superior,Flessibile pacchetto,06/04/2026,07/04/2026,1,324.4,Palazzo Alfani,Cancellate,0,OTA,0
 04C0349FBB,29/11/2025 13:36,18/02/2026 20:46,Beddy,Robin Lampman,Superior,Tariffa Rimborsabile - Pernottamento,09/05/2026,12/05/2026,3,1460,Palazzo Alfani,Cancellate,0,Non Specificato,0
+3ECBA351B9,18/02/2026 19:36,,Expedia,Casey Vaught,Superior,Non rimborsabile pacchetto,21/07/2026,25/07/2026,4,850.78,Palazzo Alfani,Confermate,0,OTA,0
+5DD4D3C2F8,18/02/2026 18:49,,Booking,Cohen Shira,Deluxe,Tariffa Rimborsabile - Pernottamento,21/08/2026,23/08/2026,2,779.98,Palazzo Alfani,Confermate,0,OTA,0
 90897C340E,01/12/2025 11:32,18/02/2026 15:24,Booking,Sarah Cheng,Superior,Tariffa Rimborsabile - Pernottamento,28/02/2026,04/03/2026,4,871.36,Palazzo Alfani,Cancellate,0,OTA,0
 3F3251E71C,16/02/2026 14:08,18/02/2026 13:13,Beddy,Kam Leung Tang,Superior,Tariffa Non Rimborsabile - Pernottamento,21/03/2026,23/03/2026,2,505.5,Palazzo Alfani,Confermate,42,Sito web,0
 A2596B45C2,08/02/2026 09:45,18/02/2026 13:13,Expedia,XUELAN WU,Classic,Flessibile pacchetto,18/03/2026,21/03/2026,3,431.83,Palazzo Alfani,Confermate,42,OTA,0
 2634B86386,30/01/2026 06:40,18/02/2026 13:12,Booking,Fay Alshawi,"Junior suite, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",20/03/2026,24/03/2026,4,1537.34,Palazzo Alfani,Cancellate,0,OTA,0
+71DFCCFD71,18/02/2026 01:02,18/02/2026 01:08,Booking,Jobel Virgens Filho,Classic,Tariffa Rimborsabile - Pernottamento,15/07/2026,19/07/2026,4,1072.42,Palazzo Alfani,Cancellate,0,OTA,0
+332C839EF5,18/02/2026 01:02,,Booking,Rodrigo Pereira,Classic,Tariffa Rimborsabile - Pernottamento,16/07/2026,19/07/2026,3,748.71,Palazzo Alfani,Confermate,0,OTA,0
 DF50F4933F,31/01/2026 23:19,18/02/2026 01:01,Expedia,Scott MacAusland,Superior,Tariffa Non Rimborsabile - Pernottamento,18/03/2026,21/03/2026,3,596.32,Palazzo Alfani,Confermate,63,OTA,0
+5A8F3D72E0,18/02/2026 00:40,18/02/2026 01:00,Booking,Rodrigo Pereira,Classic,Tariffa Rimborsabile - Pernottamento,15/07/2026,19/07/2026,4,994.9,Palazzo Alfani,Cancellate,0,OTA,0
 8A5D9D50D8,16/02/2026 17:49,18/02/2026 00:56,Booking,Gabriella Lattuca,Classic,Tariffa Rimborsabile - Pernottamento,13/03/2026,16/03/2026,3,655.87,Palazzo Alfani,Confermate,42,OTA,0
+B87B5CDDE9,25/01/2026 22:25,17/02/2026 22:05,Booking,Sonia BURREL,Deluxe,Tariffa Rimborsabile - Pernottamento,06/08/2026,08/08/2026,2,831.84,Palazzo Alfani,Cancellate,0,OTA,0
 ACD1581AA0,06/02/2026 22:25,17/02/2026 18:12,Expedia,Susan Nesrallah,Superior,Tariffa Rimborsabile - Pernottamento,13/05/2026,15/05/2026,2,809.21,Palazzo Alfani,Cancellate,0,OTA,0
 569E2D5CBE,06/02/2026 22:25,17/02/2026 18:12,Expedia,Cynthia Nesrallah,Superior,Tariffa Rimborsabile - Pernottamento,13/05/2026,15/05/2026,2,929.21,Palazzo Alfani,Cancellate,0,OTA,0
 59133BD252,06/02/2026 22:25,17/02/2026 18:12,Expedia,Julie Nesrallah,Superior,Tariffa Rimborsabile - Pernottamento,13/05/2026,15/05/2026,2,809.21,Palazzo Alfani,Cancellate,0,OTA,0
@@ -4472,20 +4959,26 @@ B665487499,15/02/2026 02:33,16/02/2026 22:39,Booking,PARTH KAMLESH DANDIWALA NIR
 FF37101233,05/02/2026 18:29,16/02/2026 17:54,Expedia,franco ferretti,Deluxe,Flessibile pacchetto,15/05/2026,18/05/2026,3,1129.69,Palazzo Alfani,Cancellate,0,OTA,0
 0D9A2B0C4E,16/02/2026 14:30,,Beddy,Sean Gillespie,Deluxe,Tariffa Rimborsabile - Pernottamento,10/05/2026,12/05/2026,2,961,Palazzo Alfani,Confermate,56,Sito web,0
 152CBB8157,04/11/2025 11:32,16/02/2026 11:17,Booking,christopher philip ruemmler,Classic,Tariffa Rimborsabile - Pernottamento,14/01/2026,24/01/2026,10,2135.88,Palazzo Alfani,Confermate,49,OTA,0
+BE804D5070,16/02/2026 06:47,16/02/2026 08:08,Booking,Vivirito Anthony,Deluxe,Tariffa Rimborsabile - Pernottamento,17/08/2026,20/08/2026,3,1166.01,Palazzo Alfani,Cancellate,0,OTA,0
 C5D8F311B6,21/01/2026 11:53,16/02/2026 00:10,Booking,Martina Tarallo,Deluxe,Tariffa Rimborsabile - Pernottamento,23/02/2026,24/02/2026,1,165.48,Palazzo Alfani,Cancellate,0,OTA,0
 E3084CF1FC,14/01/2026 21:16,15/02/2026 22:58,Booking,Milagros Evans Malaya,Deluxe,Tariffa Rimborsabile - Pernottamento,01/03/2026,04/03/2026,3,974.01,Palazzo Alfani,Cancellate,0,OTA,0
 E2EB6DA0DB,22/07/2025 21:38,15/02/2026 17:43,Expedia,JULIE RENEE BERRY YOUNG,Deluxe,Tariffa Rimborsabile - Pernottamento,15/02/2026,21/02/2026,6,1999.07,Palazzo Alfani,Confermate,77,OTA,0
+9B403FE17A,14/02/2026 21:18,15/02/2026 17:35,Booking,Susan Freeman,Deluxe,Tariffa Rimborsabile - Pernottamento,06/10/2026,08/10/2026,2,961.7,Palazzo Alfani,Cancellate,0,OTA,0
 088CF6364F,15/02/2026 15:07,15/02/2026 15:36,Expedia,HAOZE TONG,Superior,Non rimborsabile pacchetto,14/04/2026,15/04/2026,1,225.54,Palazzo Alfani,Cancellate,0,OTA,0
 FF74790E7A,15/02/2026 15:07,15/02/2026 15:35,Expedia,WEI ZHANG,Superior,Non rimborsabile pacchetto,14/04/2026,15/04/2026,1,225.54,Palazzo Alfani,Cancellate,0,OTA,0
 808712B88B,15/02/2026 07:04,15/02/2026 07:34,Ctrip,GUANZONG YUAN,Superior,Tariffa Rimborsabile - Pernottamento,07/05/2026,08/05/2026,1,352.86,Palazzo Alfani,Cancellate,0,OTA,0
 974854477E,08/10/2025 11:32,15/02/2026 07:12,Booking,Cara Laing,Deluxe,Tariffa Rimborsabile - Pernottamento,09/05/2026,12/05/2026,3,1526.52,Palazzo Alfani,Cancellate,0,OTA,0
+8B18E4C654,14/02/2026 20:43,14/02/2026 21:13,Booking,Susan Freeman,Deluxe,Tariffa Rimborsabile - Pernottamento,06/10/2026,08/10/2026,2,961.7,Palazzo Alfani,Cancellate,0,OTA,0
 2C124A2C09,06/01/2026 18:50,14/02/2026 14:17,Booking,Serge BASSO,Classic,Tariffa Rimborsabile - Pernottamento,09/03/2026,13/03/2026,4,696.56,Palazzo Alfani,Confermate,56,OTA,0
 BAA704E3E8,11/01/2026 19:15,13/02/2026 21:06,Beddy,Eva Mamma Anna,Superior,Tariffa Rimborsabile - Pernottamento,12/02/2026,17/02/2026,5,500,Palazzo Alfani,Cancellate,0,Non Specificato,0
 8844115ADB,13/02/2026 10:29,,Beddy,Patrizia Baccicalupi,Deluxe,Tariffa Rimborsabile - Pernottamento,13/04/2026,14/04/2026,1,368,Palazzo Alfani,Confermate,28,Non Specificato,0
 2A346F3DE2,02/02/2026 08:37,11/02/2026 18:40,Beddy,Sofya Nesterenko,Superior,Tariffa Rimborsabile - Pernottamento,11/02/2026,15/02/2026,4,700,Palazzo Alfani,Cancellate,0,Non Specificato,0
+451839EEEF,16/01/2026 07:54,11/02/2026 01:03,Ctrip,Kok Chuan Tee,Classic,Tariffa Rimborsabile - Pernottamento,02/10/2026,05/10/2026,3,963.33,Palazzo Alfani,Confermate,0,OTA,0
+1ED0BD622B,13/01/2026 18:39,11/02/2026 01:02,Expedia,WARREN SEAMAN,Superior,Tariffa Non Rimborsabile - Pernottamento,26/09/2026,29/09/2026,3,747.21,Palazzo Alfani,Confermate,0,OTA,0
 BB35C21C67,08/02/2026 11:40,11/02/2026 00:26,Beddy,Patrizia Liguti,Superior,Tariffa Non Rimborsabile - Pernottamento,20/03/2026,22/03/2026,2,379,Palazzo Alfani,Confermate,28,Sito web,0
 16F1E9AD70,10/02/2026 23:10,,Booking,Simone Ciocchetti,Deluxe,Tariffa Rimborsabile - Pernottamento,14/03/2026,15/03/2026,1,386.36,Palazzo Alfani,Confermate,35,OTA,0
 80E76D055E,08/02/2026 17:06,09/02/2026 13:39,Ctrip,CHAO JIANG,Classic,Tariffa Rimborsabile - Pernottamento,22/02/2026,23/02/2026,1,141.61,Palazzo Alfani,Cancellate,0,OTA,0
+0BDF8B0196,09/02/2026 13:32,,Expedia,Swi Chun Ho,Junior suite,Tariffa Rimborsabile - Pernottamento,02/10/2026,05/10/2026,3,986.37,Palazzo Alfani,Confermate,0,OTA,0
 507D81631E,09/02/2026 11:48,09/02/2026 11:56,Booking,Danqing Huang,Classic,Tariffa Rimborsabile - Pernottamento,24/03/2026,29/03/2026,5,1023.02,Palazzo Alfani,Cancellate,0,OTA,0
 DDB8EF69A1,09/02/2026 09:50,,Ctrip,PENG XU,Superior,Tariffa Esclusiva,22/02/2026,24/02/2026,2,358.46,Palazzo Alfani,Confermate,42,OTA,0
 03EA19C8F4,13/12/2025 11:32,08/02/2026 18:34,Booking,Annie Liebenberg,Superior,Tariffa Rimborsabile - Pernottamento,18/06/2026,25/06/2026,7,2810.89,Palazzo Alfani,Cancellate,0,OTA,0
@@ -4493,6 +4986,7 @@ DDB8EF69A1,09/02/2026 09:50,,Ctrip,PENG XU,Superior,Tariffa Esclusiva,22/02/2026
 F660D63ADF,27/11/2025 19:30,08/02/2026 09:17,Beddy,JIAJIA DU,Deluxe,Tariffa Rimborsabile - Pernottamento,28/04/2026,30/04/2026,2,663.74,Palazzo Alfani,Cancellate,0,Non Specificato,0
 4210F153CC,08/02/2026 05:00,,Booking,NICHOLAS FAIRBAIRN HUNTER,Deluxe,Tariffa Non Rimborsabile - Pernottamento,06/06/2026,08/06/2026,2,970.75,Palazzo Alfani,Confermate,70,OTA,0
 DDE8BE2B08,07/02/2026 17:19,,Booking,JOEL CLIFFORD WAYNE,Deluxe,Tariffa Rimborsabile - Pernottamento,12/06/2026,13/06/2026,1,592.94,Palazzo Alfani,Confermate,42,OTA,0
+B7B6E4400D,07/02/2026 13:12,,Beddy,Tanya DI LORENZO,Classic,Tariffa Rimborsabile con Colazione inclusa,02/10/2026,05/10/2026,3,1128.6,Palazzo Alfani,Confermate,0,Sito web,0
 88E15D2BDC,07/02/2026 13:08,07/02/2026 13:11,Beddy,ARTUR PJECI,Superior,Tariffa Rimborsabile - Pernottamento,27/03/2026,29/03/2026,2,228,Palazzo Alfani,Confermate,28,Non Specificato,0
 9BF1AB8626,28/01/2026 22:31,07/02/2026 11:02,Booking,Artur Pjeci,Classic,Tariffa Rimborsabile - Pernottamento,06/02/2026,08/02/2026,2,471.6,Palazzo Alfani,Cancellate,0,OTA,0
 BFEE2966CD,28/12/2025 14:03,06/02/2026 19:05,Ctrip,YUQING CHEN,Superior,Tariffa Non Rimborsabile - Pernottamento,06/02/2026,08/02/2026,2,434.34,Palazzo Alfani,Confermate,56,OTA,0
@@ -4510,6 +5004,7 @@ A588944777,15/01/2026 13:16,06/02/2026 11:17,Ctrip,FAN ZHAO,Superior,Tariffa Non
 1C41441452,08/11/2025 15:03,06/02/2026 10:58,Expedia,YINZHANG LIU,Deluxe,Flessibile pacchetto,10/02/2026,13/02/2026,3,704.46,Palazzo Alfani,Confermate,84,OTA,0
 C2B3F0A9A6,05/02/2026 05:00,06/02/2026 10:58,Ctrip,YANDI GAO,Junior suite,Tariffa Rimborsabile - Pernottamento,10/02/2026,12/02/2026,2,328.58,Palazzo Alfani,Confermate,42,OTA,0
 23F67E03D0,04/01/2026 06:16,06/02/2026 10:56,Ctrip,ZHIYUE ZHANG,Deluxe,Tariffa Non Rimborsabile - Pernottamento,08/02/2026,10/02/2026,2,276.27,Palazzo Alfani,Confermate,28,OTA,0
+6644F8FEF4,13/01/2026 07:24,06/02/2026 04:16,Booking,Andrew Attard,Deluxe,Tariffa Rimborsabile - Pernottamento,24/07/2026,27/07/2026,3,1141.55,Palazzo Alfani,Cancellate,0,OTA,0
 C73A9FF8F3,15/01/2026 00:10,05/02/2026 18:18,Booking,MARLOW ANDREW EARLE,Superior,Tariffa Non Rimborsabile - Pernottamento,20/06/2026,24/06/2026,4,1639.9,Palazzo Alfani,Confermate,56,OTA,0
 2F241BB84E,05/02/2026 18:10,,Beddy,Pamela buehner Rankin,Deluxe,Tariffa Rimborsabile - Pernottamento,05/05/2026,09/05/2026,4,1826.75,Palazzo Alfani,Confermate,112,Sito web,0
 7CF9EAA7EA,03/01/2026 20:48,05/02/2026 18:03,Beddy,Antonio Carotenuto,Classic,Tariffa Rimborsabile - Pernottamento,14/02/2026,15/02/2026,1,199,Palazzo Alfani,Confermate,14,Sito web,0
@@ -4530,6 +5025,7 @@ C57E42266A,02/02/2026 22:09,,Booking,Manuel rossello Sanchez,Junior suite,Tariff
 41C3181143,02/02/2026 18:10,,Booking,AIJUN zhou,Classic,Tariffa Esclusiva,05/02/2026,06/02/2026,1,173.13,Palazzo Alfani,Confermate,21,OTA,0
 90349203F4,30/01/2026 16:20,02/02/2026 14:40,Beddy,Anna Facchini,Superior,Tariffa Rimborsabile - Pernottamento,10/02/2026,11/02/2026,1,170,Palazzo Alfani,Cancellate,0,Sito web,0
 E5DA5D1C39,30/12/2025 09:03,02/02/2026 09:06,Ctrip,XINGHUA YU,Classic,Tariffa Rimborsabile - Pernottamento,27/04/2026,30/04/2026,3,1065.34,Palazzo Alfani,Cancellate,0,OTA,0
+67C175AD1D,23/01/2026 05:33,01/02/2026 23:58,Booking,Tanima Pal,Classic,Tariffa Rimborsabile - Pernottamento,21/08/2026,23/08/2026,2,548.42,Palazzo Alfani,Cancellate,0,OTA,0
 FABFE22CEB,01/02/2026 12:02,,Booking,Bianca Nessen,Junior suite,Tariffa Rimborsabile - Pernottamento,07/04/2026,11/04/2026,4,1284.76,Palazzo Alfani,Confermate,56,OTA,0
 769ECC6B6F,01/02/2026 06:44,,Expedia,Jian Chen,Classic,Flessibile pacchetto,01/02/2026,04/02/2026,3,396.04,Palazzo Alfani,Confermate,21,OTA,0
 463A98C144,31/01/2026 02:34,,Expedia,TIAN ZHENG,Junior suite,Non rimborsabile pacchetto,24/03/2026,27/03/2026,3,433.26,Palazzo Alfani,Confermate,42,OTA,0
@@ -4552,6 +5048,7 @@ BAD85B2D1C,14/12/2025 11:32,25/01/2026 22:01,Booking,rosangela uenohara,Superior
 D4676DE29A,25/01/2026 18:01,25/01/2026 18:37,Beddy,EVA-MARIA ANGELIKA DRESCHER,Junior suite,Vantaggio Soggiorno Prolungato,06/03/2026,15/03/2026,9,1279.5,Palazzo Alfani,Confermate,98,Sito web,0
 6DCE359771,12/01/2026 06:47,25/01/2026 10:30,Ctrip,FAN ZHANG,Deluxe,Tariffa Esclusiva,23/01/2026,26/01/2026,3,853.68,Palazzo Alfani,Confermate,63,OTA,0
 0A048857EF,12/12/2025 12:23,25/01/2026 10:16,Beddy,Mario Conti,Superior,Tariffa Rimborsabile - Pernottamento,19/01/2026,25/01/2026,6,1000,Palazzo Alfani,Confermate,84,Sito web,0
+AA078FB77D,21/01/2026 19:21,25/01/2026 03:46,Expedia,SILVIENE DE ARAUJO TREVISAN,Classic,Flessibile pacchetto,21/07/2026,24/07/2026,3,685.56,Palazzo Alfani,Cancellate,0,OTA,0
 30B4A1E314,24/01/2026 22:00,,Ctrip,XINRAN JING,Classic,Tariffa Non Rimborsabile - Pernottamento,17/02/2026,20/02/2026,3,597.15,Palazzo Alfani,Confermate,63,OTA,0
 1CB07F6324,18/01/2026 10:13,24/01/2026 18:27,Booking,Natthakanya Waipiti,Deluxe,Tariffa Rimborsabile - Pernottamento,05/04/2026,06/04/2026,1,508.93,Palazzo Alfani,Confermate,28,OTA,0
 DC947CC814,24/01/2026 18:09,,Expedia,Abigail Wyrick,Deluxe,Tariffa Rimborsabile - Pernottamento,30/01/2026,01/02/2026,2,769.22,Palazzo Alfani,Confermate,70,OTA,0
@@ -4575,6 +5072,8 @@ CFB353B27F,21/12/2025 00:30,19/01/2026 02:24,Expedia,ROBERTO CELANTE,Deluxe,Fles
 EAD07B5C7F,18/01/2026 23:32,18/01/2026 23:39,Booking,brahim boujrada,Superior,Tariffa Rimborsabile - Pernottamento,28/01/2026,30/01/2026,2,424.04,Palazzo Alfani,Confermate,28,OTA,0
 53DA95F6F6,15/01/2026 05:50,18/01/2026 23:38,Ctrip,DONG LI,Classic,Tariffa Non Rimborsabile - Pernottamento,29/01/2026,01/02/2026,3,555.2,Palazzo Alfani,Confermate,63,OTA,0
 9984FD45AF,17/01/2026 23:19,,Booking,Suzanne del Gizzo,Deluxe,Tariffa Non Rimborsabile - Pernottamento,02/04/2026,03/04/2026,1,393.1,Palazzo Alfani,Confermate,21,OTA,0
+D19E38253B,17/01/2026 23:06,,Beddy,Keren Kaplan Mintz,Superior,Tariffa Rimborsabile - Pernottamento,21/07/2026,25/07/2026,4,1085,Palazzo Alfani,Confermate,0,Sito web,0
+D28B8A76B5,17/01/2026 18:58,,Expedia,Richard Burke,Deluxe,Vantaggio Soggiorno Prolungato,18/07/2026,24/07/2026,6,1646.29,Palazzo Alfani,Confermate,0,OTA,0
 0540A3197E,02/10/2025 11:32,17/01/2026 04:11,Booking,Jo Pfafflin,Superior,Tariffa Rimborsabile - Pernottamento,11/05/2026,13/05/2026,2,811.56,Palazzo Alfani,Cancellate,0,OTA,0
 254DA79BBB,27/11/2025 19:04,16/01/2026 21:48,Beddy,YICEN HOU,Classic,Tariffa Rimborsabile - Pernottamento,18/02/2026,20/02/2026,2,390.06,Palazzo Alfani,Cancellate,0,Non Specificato,0
 082A82C19D,04/11/2025 13:08,16/01/2026 21:48,Expedia,zhang yu,Superior,Tariffa Rimborsabile - Pernottamento,19/02/2026,20/02/2026,1,186.44,Palazzo Alfani,Confermate,21,OTA,0
@@ -4586,8 +5085,11 @@ EAD07B5C7F,18/01/2026 23:32,18/01/2026 23:39,Booking,brahim boujrada,Superior,Ta
 1427D719A9,27/11/2025 19:01,15/01/2026 21:57,Beddy,JUN CAI,Classic,Tariffa Rimborsabile - Pernottamento,16/02/2026,19/02/2026,3,603.57,Palazzo Alfani,Confermate,63,Non Specificato,0
 B79A9ACAA4,15/01/2026 08:56,15/01/2026 14:43,Ctrip,JUN LIANG,Deluxe,Tariffa Rimborsabile - Pernottamento,15/01/2026,17/01/2026,2,337.15,Palazzo Alfani,Confermate,28,OTA,0
 F2DC9ADCE7,14/01/2026 16:39,15/01/2026 11:23,Expedia,TAO JIN,Superior,Flessibile pacchetto,31/05/2026,04/06/2026,4,1253.38,Palazzo Alfani,Cancellate,0,OTA,0
+2AE50A9AA3,14/01/2026 18:51,15/01/2026 03:08,Booking,Bree Kuenzle,Deluxe,Tariffa Rimborsabile - Pernottamento,14/09/2026,15/09/2026,1,459.18,Palazzo Alfani,Cancellate,0,OTA,0
+2E87D2542D,14/01/2026 21:47,14/01/2026 22:01,Booking,Conrad Santamaria,Classic,Tariffa Rimborsabile - Pernottamento,30/07/2026,05/08/2026,6,1599.12,Palazzo Alfani,Cancellate,0,OTA,0
 1697AD2A97,14/01/2026 15:34,,Expedia,JENNIFER FOWLER PAVLOVICH,Deluxe,Flessibile pacchetto,11/03/2026,14/03/2026,3,870.51,Palazzo Alfani,Confermate,84,OTA,0
 2E78FD3805,11/01/2026 22:41,14/01/2026 11:22,Ctrip,YAKUN LIU,Superior,Tariffa Esclusiva,16/01/2026,18/01/2026,2,335.26,Palazzo Alfani,Confermate,28,OTA,0
+1C6BF81570,14/01/2026 03:03,,Booking,Peter Thomson,Deluxe,Tariffa Rimborsabile - Pernottamento,16/10/2026,20/10/2026,4,1847.08,Palazzo Alfani,Confermate,0,OTA,0
 8F21F8E4B4,30/12/2025 23:27,13/01/2026 12:10,Booking,Stephen Campbell,Superior,Tariffa Non Rimborsabile - Pernottamento,13/01/2026,15/01/2026,2,421.96,Palazzo Alfani,Confermate,28,OTA,0
 796F62277F,13/01/2026 02:55,,Expedia,Lance Louis,Deluxe,Flessibile pacchetto,30/05/2026,02/06/2026,3,1338.04,Palazzo Alfani,Confermate,105,OTA,0
 126371DA21,23/12/2025 08:59,12/01/2026 23:51,Expedia,FENG LIU,Classic,Flessibile pacchetto,18/01/2026,23/01/2026,5,588.17,Palazzo Alfani,Cancellate,0,OTA,0
@@ -4606,13 +5108,16 @@ B698A01959,10/01/2026 08:22,,Ctrip,gang qin,Deluxe,Tariffa Non Rimborsabile - Pe
 4AE225AAB6,27/11/2025 15:06,08/01/2026 01:01,Beddy,yi xia,Superior,Tariffa Rimborsabile - Pernottamento,01/02/2026,04/02/2026,3,568.05,Palazzo Alfani,Confermate,42,Non Specificato,0
 F38BE102F4,07/01/2026 20:11,07/01/2026 22:25,Booking,Yaara Carmi Kalifi,Superior,Tariffa Rimborsabile - Pernottamento,28/03/2026,31/03/2026,3,955.12,Palazzo Alfani,Cancellate,0,OTA,0
 950E59A2A5,06/01/2026 14:57,07/01/2026 21:32,Booking,Rima Finzi Strauss,Superior,Tariffa Rimborsabile - Pernottamento,01/02/2026,06/02/2026,5,896.78,Palazzo Alfani,Cancellate,0,OTA,0
+14AD9A4654,03/01/2026 04:44,07/01/2026 16:37,Booking,Melanie Brunet,Deluxe,Tariffa Rimborsabile - Pernottamento,21/07/2026,22/07/2026,1,364.21,Palazzo Alfani,Cancellate,0,OTA,0
 E9FD68AACA,19/12/2025 11:23,06/01/2026 13:29,Expedia,YingChun Hung,Classic,Non rimborsabile pacchetto,26/01/2026,29/01/2026,3,627.6,Palazzo Alfani,Confermate,84,OTA,0
 4DB082D1B6,04/01/2026 14:36,,Booking,Markus Gustafsson,Superior,Tariffa Esclusiva,08/01/2026,13/01/2026,5,1187.02,Palazzo Alfani,Confermate,140,OTA,0
 F0A03B9592,21/12/2025 23:58,04/01/2026 06:19,Booking,Zhiyue Zhang,Classic,Tariffa Rimborsabile - Pernottamento,08/02/2026,10/02/2026,2,359.72,Palazzo Alfani,Cancellate,0,OTA,0
+E4CFE12C9B,04/01/2026 01:08,,Booking,Czerny Claudine,Deluxe,Tariffa Rimborsabile - Pernottamento,19/09/2026,24/09/2026,5,2362.55,Palazzo Alfani,Confermate,0,OTA,0
 134EC2A2B1,17/09/2025 11:32,03/01/2026 21:14,Booking,Rupali Mehta,Classic,Tariffa Rimborsabile - Pernottamento,16/02/2026,18/02/2026,2,407.94,Palazzo Alfani,Cancellate,0,OTA,0
 FF2A52A5C8,02/01/2026 21:08,,Booking,DMITRII Krivko,Junior suite,Tariffa Rimborsabile - Pernottamento,03/01/2026,04/01/2026,1,283.82,Palazzo Alfani,Confermate,14,OTA,0
 32588C7884,14/12/2025 11:32,02/01/2026 17:50,Booking,Kerry Goodleff,Classic,Tariffa Rimborsabile - Pernottamento,29/01/2026,01/02/2026,3,506.87,Palazzo Alfani,Cancellate,0,OTA,0
 7549B593CA,31/12/2025 18:00,02/01/2026 03:50,Booking,Giovanni Vaia,Superior,Tariffa Rimborsabile - Pernottamento,02/01/2026,04/01/2026,2,547.2,Palazzo Alfani,Confermate,42,OTA,0
+2F7A4B121F,27/12/2025 10:07,01/01/2026 22:19,Booking,Raymond Nogael,Deluxe,Tariffa Rimborsabile - Pernottamento,07/08/2026,08/08/2026,1,388.72,Palazzo Alfani,Cancellate,0,OTA,0
 0DA8F323F2,31/12/2025 19:39,01/01/2026 21:32,Booking,Maria antonietta Tartaglia,Superior,Tariffa Rimborsabile - Pernottamento,02/01/2026,04/01/2026,2,644.71,Palazzo Alfani,Confermate,56,OTA,0
 5FC37DD14E,01/01/2026 20:14,,Booking,HARUN TATLI,Deluxe,Tariffa Non Rimborsabile - Pernottamento,27/01/2026,28/01/2026,1,287.43,Palazzo Alfani,Confermate,28,OTA,0
 313CDC034C,31/12/2025 12:22,,Beddy,daniele campo,Deluxe,Tariffa Rimborsabile - Pernottamento,02/01/2026,03/01/2026,1,0,Palazzo Alfani,Confermate,0,Non Specificato,0
@@ -4639,6 +5144,7 @@ F820176EFF,15/12/2025 16:08,23/12/2025 00:45,Booking,Darren Yamabe,Superior,Tari
 2AD2EC2CE0,20/12/2025 16:15,21/12/2025 12:23,Beddy,Sebastian Veldman,Deluxe,Tariffa Rimborsabile - Pernottamento,28/05/2026,01/06/2026,4,1725,Palazzo Alfani,Cancellate,0,Sito web,0
 72351CEDCA,02/12/2025 08:48,21/12/2025 05:22,Expedia,JIAQI WANG,Superior,Tariffa Rimborsabile - Pernottamento,01/05/2026,04/05/2026,3,1127.24,Palazzo Alfani,Cancellate,0,OTA,0
 44398F7585,20/12/2025 15:59,21/12/2025 04:16,Ctrip,XIYUAN WANG,Deluxe,Tariffa Rimborsabile - Pernottamento,21/02/2026,25/02/2026,4,1003.54,Palazzo Alfani,Cancellate,0,OTA,0
+E52CD2318D,09/11/2025 11:32,20/12/2025 13:45,Booking,Stefan Schicke,Deluxe,Tariffa Rimborsabile - Pernottamento,01/10/2026,05/10/2026,4,2278.08,Palazzo Alfani,Cancellate,0,OTA,0
 01588C3FCE,15/12/2025 12:53,19/12/2025 20:24,Beddy,SIMONA FERRERI,Deluxe,Tariffa Rimborsabile - Pernottamento,22/12/2025,24/12/2025,2,588,Palazzo Alfani,Cancellate,0,Non Specificato,0
 277532E75E,27/11/2025 19:32,19/12/2025 20:07,Beddy,YIKE HE,Classic,Tariffa Rimborsabile - Pernottamento,01/05/2026,04/05/2026,3,1022.58,Palazzo Alfani,Cancellate,0,Non Specificato,0
 191974D419,17/12/2025 13:15,19/12/2025 18:50,Beddy,Ernest Bagdasaryan,Superior,Tariffa Non Rimborsabile - Pernottamento,18/12/2025,21/12/2025,3,372,Palazzo Alfani,Confermate,42,Non Specificato,0
@@ -4664,6 +5170,8 @@ C49FAADC5D,27/11/2025 14:26,15/12/2025 12:41,Beddy,Lorelai Carlet,Superior,Tarif
 93D2DF73DC,29/11/2025 01:10,05/12/2025 10:09,Beddy,Jose Antonio Perez,Superior,Tariffa Rimborsabile - Pernottamento,04/12/2025,17/12/2025,13,1702,Palazzo Alfani,Cancellate,0,Non Specificato,0
 9968B24819,02/12/2025 03:48,,Expedia,EMILY BRUNI MEIER,Deluxe,Tariffa Rimborsabile - Pernottamento,20/05/2026,23/05/2026,3,1916.09,Palazzo Alfani,Confermate,105,OTA,0
 0D196D8E7F,30/11/2025 04:47,,Expedia,WEILU HUANG,Junior suite,Flessibile pacchetto,21/02/2026,22/02/2026,1,206.28,Palazzo Alfani,Confermate,21,OTA,0
+E64A8C9A32,29/11/2025 15:47,,Beddy,Sheila Leete,Deluxe,Tariffa Rimborsabile - Pernottamento,11/09/2026,14/09/2026,3,1690.5,Palazzo Alfani,Confermate,0,Non Specificato,0
+B33C05C599,29/11/2025 15:42,,Beddy,Jenting Tan,Deluxe,Tariffa Rimborsabile - Pernottamento,04/07/2026,06/07/2026,2,591.76,Palazzo Alfani,Confermate,28,Non Specificato,0
 49991B6D86,29/11/2025 13:30,29/11/2025 13:31,Beddy,Marcella Lucenti,"Deluxe, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",21/04/2026,28/04/2026,7,5261,Palazzo Alfani,Confermate,245,Non Specificato,0
 2EF2515233,29/11/2025 12:48,,Beddy,Rachel Marie Tanner,Deluxe,Tariffa Rimborsabile - Pernottamento,10/01/2026,15/01/2026,5,1888.85,Palazzo Alfani,Confermate,140,Non Specificato,0
 A3FEE748B3,29/11/2025 12:45,,Beddy,Zygmunt Derewenda,Superior,Tariffa Rimborsabile - Pernottamento,28/12/2025,02/01/2026,5,1582,Palazzo Alfani,Confermate,70,Non Specificato,0
@@ -4683,12 +5191,14 @@ A39879CFD3,27/11/2025 14:24,,Beddy,TECK HIN NG,Deluxe,Tariffa Non Rimborsabile -
 3472D2C2D8,27/11/2025 14:08,,Beddy,Samantha McPherson,Deluxe,Tariffa Non Rimborsabile - Pernottamento,06/04/2026,09/04/2026,3,970.2,Palazzo Alfani,Confermate,63,Non Specificato,0
 9A0FBD5ED8,27/11/2025 13:43,,Beddy,YITING WANG,Superior,Tariffa Rimborsabile - Pernottamento,04/12/2025,05/12/2025,1,144.55,Palazzo Alfani,Confermate,0,OTA,0
 1ABA311B70,24/11/2025 11:32,,Booking,BHARATH GOUTHAM MEHTA,Deluxe,Tariffa Non Rimborsabile - Pernottamento,05/02/2026,07/02/2026,2,567,Palazzo Alfani,Confermate,70,OTA,0
+4DB4978EE9,21/11/2025 11:32,,Booking,Michael Khalife,Deluxe,Tariffa Rimborsabile - Pernottamento,27/07/2026,30/07/2026,3,1170.96,Palazzo Alfani,Confermate,0,OTA,0
 44E3BBBC3A,21/11/2025 11:32,,Booking,LACHLAN IAN WILLIAM BULL,Deluxe,Tariffa Non Rimborsabile - Pernottamento,02/02/2026,05/02/2026,3,756,Palazzo Alfani,Confermate,63,OTA,0
 E1A319206E,31/10/2025 20:01,,Expedia,Tushar Singhal,Junior suite,Flessibile pacchetto,17/12/2025,21/12/2025,4,536.36,Palazzo Alfani,Confermate,56,OTA,0
 5CA185BE54,21/10/2025 15:59,,Expedia,HONGQING CAI,Classic,Tariffa Rimborsabile - Pernottamento,18/02/2026,19/02/2026,1,186.44,Palazzo Alfani,Confermate,21,OTA,0
 7CC7698F22,20/10/2025 16:20,,Expedia,JIAMIN LU,Junior suite,Flessibile pacchetto,18/02/2026,21/02/2026,3,395.57,Palazzo Alfani,Confermate,42,OTA,0
 ECCEF8AA62,14/10/2025 11:32,,Booking,Jennifer Carey,Junior suite,Tariffa Rimborsabile - Pernottamento,26/12/2025,02/01/2026,7,2152.34,Palazzo Alfani,Confermate,98,OTA,0
 1507C717CA,12/10/2025 05:03,,Expedia,GREGORY JAMES JOY,Superior,Tariffa Non Rimborsabile - Pernottamento,16/12/2025,30/12/2025,14,2903,Palazzo Alfani,Confermate,147,OTA,0
+3BBDE17E1B,20/09/2025 22:18,,Expedia,KATHERINE STEELE,Deluxe,Flessibile pacchetto,13/07/2026,16/07/2026,3,1099.95,Palazzo Alfani,Confermate,0,OTA,0
 1BE66C9B39,01/09/2025 18:56,,Expedia,LOGAN ELWOOD WADE,Deluxe,Tariffa Rimborsabile - Pernottamento,25/05/2026,26/05/2026,1,549.45,Palazzo Alfani,Confermate,42,OTA,0
 724F323FFD,31/08/2025 11:32,,Booking,FRANK LEHMANN,Deluxe,Tariffa Rimborsabile - Pernottamento,03/04/2026,05/04/2026,2,1202.02,Palazzo Alfani,Confermate,70,OTA,0
 0941CEAABF,23/08/2025 11:32,,Booking,Patrick Retif,Deluxe,Tariffa Rimborsabile - Pernottamento,26/12/2025,28/12/2025,2,916.62,Palazzo Alfani,Confermate,42,OTA,0
@@ -7237,6 +7747,57 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1357,23/11/2024 20:04:57,,Booking,Chaput Edgar,Blu,Blu - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,352.03,Florence David's Apartament,Confermate,22,Booking,0
 1341,16/11/2024 16:55:52,,Booking,Melissa Revelli,Senape,Senape - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,436.56,Florence David's Apartament,Confermate,33,Booking,0
 1367,28/11/2024 18:50:10,29/11/2024,Booking,Fabrizio Golfi,Verde,Verde - Non Rimborsabile OTA,30/12/2024,01/01/2025,2,443.72,Florence David's Apartament,Cancellate,0,Booking,0
+2264,03/07/2026 06:55:00,,Expedia,Ronna Macarilay,Blu,Blu - Standard,29/10/2026,01/11/2026,3,320.8,Florence David's Apartament,Confermate,36,Expedia,0
+2013,16/01/2026 21:56:53,,Booking,Gonzalez Fran,Senape,Senape - Standard,27/10/2026,29/10/2026,2,301.16,Florence David's Apartament,Confermate,36,Booking,0
+2267,06/07/2026 14:20:00,,Expedia Affilia,YUANWEI TANG,Blu,Blu - Non Rimborsabile OTA,04/09/2026,06/09/2026,2,266.97,Florence David's Apartament,Confermate,24,Expedia Affilia,0
+2253,25/06/2026 14:44:38,,Booking Engine,Stefan Germaine,Verde,Verde - Standard,04/09/2026,07/09/2026,3,487,Florence David's Apartament,Confermate,36,Booking Engine,0
+2183,04/05/2026 00:09:00,,Expedia,Taylor Cathryn Byykkonen,Verde,Verde,31/08/2026,04/09/2026,4,449.79,Florence David's Apartament,Confermate,48,Expedia,0
+2249,22/06/2026 23:51:16,,Booking,contreras hernán,Blu,Blu - Non Rimborsabile OTA,26/08/2026,30/08/2026,4,319.98,Florence David's Apartament,Confermate,48,Booking,0
+2256,28/06/2026 23:34:38,,Booking Engine,Christian Mauricio Carpio Romero,Senape,Senape - Non Rimborsabile BE,22/08/2026,23/08/2026,1,83.7,Florence David's Apartament,Confermate,12,Booking Engine,0
+2254,28/06/2026 23:13:11,28/06/2026,Booking Engine,Christian Mauricio Carpio Romero,Senape,Senape - Non Rimborsabile BE,22/08/2026,23/08/2026,1,83.7,Florence David's Apartament,Cancellate,0,Booking Engine,0
+2237,21/06/2026 14:48:11,,Booking,Spyridon Dermentzoglou,Blu,Blu - Non Rimborsabile OTA,20/08/2026,23/08/2026,3,251.83,Florence David's Apartament,Confermate,36,Booking,0
+2193,10/05/2026 11:33:11,,Booking,Jansen Björn,Verde,Verde - Non Rimborsabile OTA,20/08/2026,23/08/2026,3,321.32,Florence David's Apartament,Confermate,36,Booking,0
+2244,22/06/2026 16:02:48,,Booking,Artico Dario Gino,Blu,Blu - Non Rimborsabile OTA,19/08/2026,20/08/2026,1,66.27,Florence David's Apartament,Confermate,12,Booking,0
+2261,01/07/2026 12:18:36,,Airbnb,Carolina Ortega Guttack,Verde,Verde - Standard,17/08/2026,18/08/2026,1,76.89,Florence David's Apartament,Confermate,0,Airbnb,0
+2239,21/06/2026 23:28:33,,Booking,Fournier Hugo,Blu,Blu - Non Rimborsabile OTA,15/08/2026,17/08/2026,2,187.45,Florence David's Apartament,Confermate,24,Booking,0
+2258,29/06/2026 05:30:37,,Booking Engine,Paulina Antoniou,Senape,Senape - Standard,13/08/2026,18/08/2026,5,495,Florence David's Apartament,Confermate,60,Booking Engine,0
+2247,22/06/2026 19:48:07,,Booking,BANTOUVAS GEORGIOS,Verde,Verde - Non Rimborsabile OTA,13/08/2026,17/08/2026,4,336.08,Florence David's Apartament,Confermate,48,Booking,0
+2240,22/06/2026 14:49:09,,Booking,Piñeiro Agustín,Blu,Blu - Non Rimborsabile OTA,12/08/2026,15/08/2026,3,214.91,Florence David's Apartament,Confermate,36,Booking,0
+2246,22/06/2026 19:46:18,,Booking,Cavazzi Ilaria,Blu,Blu - Non Rimborsabile OTA,10/08/2026,12/08/2026,2,134.44,Florence David's Apartament,Confermate,24,Booking,0
+2266,05/07/2026 19:48:02,,Booking,QUENOUILLERE Pierre,Verde,Verde - Non Rimborsabile OTA,09/08/2026,11/08/2026,2,178.04,Florence David's Apartament,Confermate,24,Booking,0
+2243,22/06/2026 15:48:24,,Booking,HIJAZI VEGA MARIAM,Verde,Verde - Standard,06/08/2026,09/08/2026,3,292.43,Florence David's Apartament,Confermate,36,Booking,0
+2222,01/06/2026 11:08:00,,Expedia Affilia,WOOSEOK IM,Blu,Blu - Non Rimborsabile OTA,06/08/2026,08/08/2026,2,199.19,Florence David's Apartament,Confermate,24,Expedia Affilia,0
+2229,11/06/2026 05:17:00,,Expedia,SOPHIE ET MICHEL KORHEL,Senape,Senape,04/08/2026,09/08/2026,5,465.96,Florence David's Apartament,Confermate,90,Expedia,0
+2245,22/06/2026 18:42:47,22/06/2026,Booking,Dołżyński Aleksander,Verde,Verde - Standard,03/08/2026,05/08/2026,2,175.66,Florence David's Apartament,Cancellate,0,Booking,0
+2216,31/05/2026 15:53:18,,Booking,Berthé Jehan,Blu,Blu - Non Rimborsabile OTA,03/08/2026,05/08/2026,2,167.16,Florence David's Apartament,Confermate,24,Booking,0
+2230,11/06/2026 15:59:58,,Airbnb,Pato Alanis Alanis Ortega,Verde,Verde - Standard,02/08/2026,03/08/2026,1,89.74,Florence David's Apartament,Confermate,0,Airbnb,0
+2169,27/04/2026 16:29:00,,Expedia Affilia,Hiu Yin Li,Blu,Blu,26/07/2026,29/07/2026,3,212.2,Florence David's Apartament,Confermate,36,Expedia Affilia,0
+2235,16/06/2026 08:35:22,,Airbnb,Heidi Vanneste,Verde,Verde - Standard,25/07/2026,28/07/2026,3,276.31,Florence David's Apartament,Confermate,0,Airbnb,0
+2220,31/05/2026 20:44:08,,Booking,Balbás Paula,Blu,Blu - Non Rimborsabile OTA,24/07/2026,26/07/2026,2,203.89,Florence David's Apartament,Confermate,24,Booking,0
+2250,23/06/2026 05:23:18,27/06/2026,Booking,Taylor Lara,Verde,Verde - Standard,22/07/2026,25/07/2026,3,356.07,Florence David's Apartament,Cancellate,0,Booking,0
+2218,31/05/2026 16:52:53,,Booking,SANSON Jasmine,Senape,Senape - Non Rimborsabile OTA,19/07/2026,22/07/2026,3,391.69,Florence David's Apartament,Confermate,54,Booking,0
+2173,30/04/2026 17:22:07,,Booking,de Oliveira Isaura Costa,Blu,Blu - Min Stay 5 notti,17/07/2026,24/07/2026,7,740.55,Florence David's Apartament,Confermate,84,Booking,0
+2106,24/03/2026 14:48:45,,Booking,Sanchez Castany Jana,Verde,Verde - Standard,17/07/2026,20/07/2026,3,431.58,Florence David's Apartament,Confermate,36,Booking,0
+2241,22/06/2026 14:51:29,,Booking,Zhang Lu,Senape,Senape - Non Rimborsabile OTA,15/07/2026,17/07/2026,2,256.8,Florence David's Apartament,Confermate,36,Booking,0
+2204,14/05/2026 11:28:47,,Booking,Knížek Michal,Verde,Verde - Non Rimborsabile OTA,14/07/2026,16/07/2026,2,238.38,Florence David's Apartament,Confermate,24,Booking,0
+2242,22/06/2026 14:54:07,06/07/2026,Booking,Iannaccone Marilena,Senape,Senape - Standard,13/07/2026,15/07/2026,2,286.62,Florence David's Apartament,Cancellate,0,Booking,0
+2175,03/05/2026 13:58:30,,Booking Engine,Yelyzaveta Arnautova,Blu,Blu - Standard,13/07/2026,17/07/2026,4,459.36,Florence David's Apartament,Confermate,48,Booking Engine,0
+2221,31/05/2026 23:00:10,,Booking,Kim HaeJin,Senape,Senape - Non Rimborsabile OTA,12/07/2026,13/07/2026,1,128.73,Florence David's Apartament,Confermate,18,Booking,0
+2260,29/06/2026 21:54:58,,Booking Engine,Camila Barros,Blu,Blu - Non Rimborsabile BE,11/07/2026,13/07/2026,2,159.3,Florence David's Apartament,Confermate,24,Booking Engine,0
+2259,29/06/2026 18:47:55,29/06/2026,Booking Engine,Camila Barros,Blu,Blu - Non Rimborsabile BE,11/07/2026,13/07/2026,2,159.3,Florence David's Apartament,Cancellate,0,Booking Engine,0
+2236,19/06/2026 22:59:00,,HOMEAWAY_IT,Cordelia Klammer,Verde,Verde - Standard,11/07/2026,12/07/2026,1,130.9,Florence David's Apartament,Confermate,12,HOMEAWAY_IT,0
+2263,01/07/2026 18:08:41,,Booking Engine,Marianna Grondona,Blu,Blu - Non Rimborsabile BE,10/07/2026,11/07/2026,1,81,Florence David's Apartament,Confermate,12,Booking Engine,0
+2255,28/06/2026 23:20:09,,Booking Engine,Anjali Anjali,Senape,Senape - Non Rimborsabile BE,10/07/2026,11/07/2026,1,111.6,Florence David's Apartament,Confermate,18,Booking Engine,0
+2265,05/07/2026 17:59:40,,Airbnb,Keval Ramanathan,Blu,Blu - Standard,09/07/2026,10/07/2026,1,62.36,Florence David's Apartament,Confermate,0,Airbnb,0
+2248,22/06/2026 22:45:46,,Booking,Thal Mikołaj,Blu,Blu - Non Rimborsabile OTA,06/07/2026,09/07/2026,3,319.04,Florence David's Apartament,Confermate,36,Booking,0
+2170,28/04/2026 18:18:00,,Expedia Affilia,Francesca Wilhelmina van Tartwijk,Verde,Verde,06/07/2026,10/07/2026,4,392.5,Florence David's Apartament,Confermate,48,Expedia Affilia,0
+2238,21/06/2026 21:19:57,,Booking,Giordano Arianna,Blu,Blu - Standard,05/07/2026,06/07/2026,1,111.5,Florence David's Apartament,Confermate,12,Booking,0
+2087,09/03/2026 08:16:00,15/06/2026,Expedia,Zhirong Zhang,Blu,Blu - Standard,05/07/2026,10/07/2026,5,594.37,Florence David's Apartament,Cancellate,30,Expedia,0
+2257,29/06/2026 01:28:17,,Booking,TAO HUI,Senape,Senape - Non Rimborsabile OTA,04/07/2026,07/07/2026,3,290.97,Florence David's Apartament,Confermate,36,Booking,0
+2155,19/04/2026 02:26:54,,Booking,Amourgis Ashley,Verde,Verde - Non Rimborsabile OTA,04/07/2026,05/07/2026,1,126.52,Florence David's Apartament,Confermate,12,Booking,0
+2262,01/07/2026 16:22:03,,Airbnb,Pawan Balasubramaniam,Verde,Verde - Standard,03/07/2026,04/07/2026,1,61.6,Florence David's Apartament,Confermate,0,Airbnb,0
+2233,13/06/2026 20:55:38,,Booking,Bukowska Alicja,Blu,Blu - Non Rimborsabile OTA,03/07/2026,05/07/2026,2,221.3,Florence David's Apartament,Confermate,24,Booking,0
+2188,04/05/2026 15:09:00,10/05/2026,Expedia,Ziyue Tian,Senape,Senape,03/07/2026,07/07/2026,4,445.51,Florence David's Apartament,Cancellate,24,Expedia,0
 2197,10/05/2026 19:42:58,,Booking,Ilic Adrian,Verde,Verde - Standard,30/06/2026,01/07/2026,1,132.13,Florence David's Apartament,Confermate,12,Booking,0
 2122,30/03/2026 09:44:47,,Booking,smales stacy,Blu,Blu - Standard,30/06/2026,02/07/2026,2,270.04,Florence David's Apartament,Confermate,24,Booking,0
 2226,06/06/2026 02:08:03,,Airbnb,Ligia Galicia,Senape,Senape - Standard,29/06/2026,30/06/2026,1,105.71,Florence David's Apartament,Confermate,0,Airbnb,0
@@ -7494,6 +8055,100 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1915,14/11/2025 23:04:04,,Booking,Cornejo Müller Antonio,Verde,Verde - Non Rimborsabile OTA,02/01/2026,06/01/2026,4,468.3,Florence David's Apartament,Confermate,48,Booking,0
 1967,25/12/2025 18:11:33,,Airbnb,Mario Satta,Blu,Blu - Standard,01/01/2026,02/01/2026,1,97.17,Florence David's Apartament,Confermate,0,Airbnb,0
 1937,26/11/2025 23:13:02,,Booking,Zafeiriou Eleni,Senape,Senape - Min Stay 5 notti,01/01/2026,06/01/2026,5,563.58,Florence David's Apartament,Confermate,60,Booking,0
+E713B8ADE5,07/07/2026 13:34,,Airbnb,Romane Gauthier,Ponte Vecchio,Tariffa base,08/09/2026,10/09/2026,2,228,Porte Nuove Apartments,Confermate,0,OTA,40
+F35CE4A554,07/07/2026 13:30,,Airbnb,楚楚 徐,Cupola,Tariffa base,28/09/2026,30/09/2026,2,342,Nazionale 35 Apartments,Confermate,0,OTA,40
+5A644EA963,07/07/2026 07:44,,Airbnb,MyTien Pham,Uffizi,Tariffa base,24/08/2026,26/08/2026,2,260.5,Nazionale 35 Apartments,Confermate,0,OTA,40
+324B492EF9,07/07/2026 01:28,,Airbnb,Karen Birch,Cupola,Tariffa base,19/10/2026,22/10/2026,3,484.5,Nazionale 35 Apartments,Confermate,0,OTA,40
+8BF6D50CC7,06/07/2026 09:32,,Airbnb,Jenny Wang,Ponte Vecchio,Tariffa base,20/09/2026,24/09/2026,4,475,Porte Nuove Apartments,Confermate,0,OTA,40
+C4166C7288,06/07/2026 04:05,,Airbnb,Maria Quintero,Uffizi,Tariffa base,07/09/2026,09/09/2026,2,365,Nazionale 35 Apartments,Confermate,0,OTA,40
+877F343F97,05/07/2026 22:50,,Airbnb,Tiang Ryals,Ponte Vecchio,Tariffa base,15/09/2026,19/09/2026,4,475,Porte Nuove Apartments,Confermate,0,OTA,40
+0A6CB4C660,04/07/2026 19:02,,Airbnb,Ulpiano Jr Almazan,Ponte Vecchio,Tariffa base,11/09/2026,14/09/2026,3,351.5,Porte Nuove Apartments,Confermate,0,OTA,40
+563FB7EA94,04/07/2026 13:35,,Airbnb,Cb Javier,Cupola,Tariffa base,26/09/2026,28/09/2026,2,342,Nazionale 35 Apartments,Confermate,0,OTA,40
+86A2F7A542,04/07/2026 08:40,,Airbnb,Drew Ableman,Uffizi,Tariffa base,20/10/2026,23/10/2026,3,548.5,Nazionale 35 Apartments,Confermate,0,OTA,40
+A300231B61,03/07/2026 20:52,,Airbnb,Dovid Bernstein,Uffizi,Tariffa base,06/08/2026,09/08/2026,3,406,Nazionale 35 Apartments,Confermate,0,OTA,40
+82775776F7,03/07/2026 20:19,,Airbnb,Lori Okun,Ponte Vecchio,Tariffa base,25/09/2026,30/09/2026,5,631.75,Porte Nuove Apartments,Confermate,0,OTA,40
+BD229E5669,02/07/2026 22:47,,Airbnb,Jordan Jackson,Ponte Vecchio,Tariffa base,10/07/2026,12/07/2026,2,160.2,Porte Nuove Apartments,Confermate,0,OTA,40
+182185C395,02/07/2026 04:33,,Airbnb,Mary Catherine Polatty,Cupola,Tariffa base,09/10/2026,11/10/2026,2,378.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+1E56CCF3BD,01/07/2026 16:32,,Airbnb,Yitong Zhou,Uffizi,Tariffa base,09/07/2026,11/07/2026,2,263,Nazionale 35 Apartments,Confermate,0,OTA,40
+95F3C8592F,01/07/2026 06:10,,Airbnb,Angeli Roig,Uffizi,Tariffa base,05/07/2026,09/07/2026,4,563,Nazionale 35 Apartments,Confermate,0,OTA,40
+09016E6A8C,29/06/2026 13:55,,Airbnb,Sue Barazzutti,Palazzo Vecchio,Tariffa base,06/10/2026,08/10/2026,2,262.2,Porte Nuove Apartments,Confermate,0,OTA,40
+A04A9411E4,24/06/2026 18:28,,Airbnb,Takashi Isshiki,Cupola,Tariffa base,26/08/2026,27/08/2026,1,112.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+211A9C4008,24/06/2026 15:43,,Airbnb,유민 안,Cupola,Tariffa base,29/08/2026,30/08/2026,1,112.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+82FB308D69,24/06/2026 13:59,,Airbnb,Elena Khazieva,Cupola,Tariffa base,15/07/2026,16/07/2026,1,159,Nazionale 35 Apartments,Confermate,0,OTA,40
+9BCFD4EBE0,23/06/2026 15:47,,Airbnb,昱 郝,Cupola,Tariffa base,08/08/2026,10/08/2026,2,224.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+66A155FB41,22/06/2026 21:37,,Airbnb,Ricardo Guimaraes,Cupola,Tariffa base,18/09/2026,22/09/2026,4,794.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+F44D4BD671,22/06/2026 15:44,,Airbnb,선미 강,Cupola,Tariffa base,16/10/2026,19/10/2026,3,567.15,Nazionale 35 Apartments,Confermate,0,OTA,40
+22F2F5E968,20/06/2026 14:00,,Airbnb,James French,Uffizi,Tariffa base,29/09/2026,02/10/2026,3,672,Nazionale 35 Apartments,Confermate,0,OTA,40
+ACA20FCCC4,20/06/2026 09:43,,Airbnb,승은 문,Cupola,Tariffa base,13/10/2026,14/10/2026,1,189.05,Nazionale 35 Apartments,Confermate,0,OTA,40
+D3088645BC,18/06/2026 03:25,,Airbnb,Kellene Kim,Cupola,Tariffa base,30/07/2026,02/08/2026,3,338.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+EDF981D3FA,16/06/2026 19:48,,Airbnb,Kiersten Nielson,Cupola,Tariffa base,22/07/2026,23/07/2026,1,151.05,Nazionale 35 Apartments,Confermate,0,OTA,40
+65FCBA2D88,11/06/2026 14:06,,Airbnb,睦美 鈴木,Ponte Vecchio,Tariffa base,23/11/2026,26/11/2026,3,230.85,Porte Nuove Apartments,Confermate,0,OTA,40
+A0D4F15668,11/06/2026 04:42,,Airbnb,Nikita Ashcherkin,Cupola,Tariffa base,16/08/2026,18/08/2026,2,224.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+23E9F7B380,10/06/2026 01:11,,Airbnb,Johanna Santiago,Cupola,Tariffa base,11/10/2026,13/10/2026,2,378.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+9708042EB8,08/06/2026 22:40,,Airbnb,Ignacio Casado Menéndez,Cupola,Tariffa base,05/10/2026,09/10/2026,4,756.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+13515C440B,05/06/2026 16:26,,Airbnb,明學 謝,Cupola,Tariffa base,30/09/2026,03/10/2026,3,576.65,Nazionale 35 Apartments,Confermate,0,OTA,40
+59330C892D,03/06/2026 07:49,,Airbnb,Christian Degel,Cupola,Tariffa base,04/09/2026,10/09/2026,6,1191.3,Nazionale 35 Apartments,Confermate,0,OTA,40
+929107D734,01/06/2026 08:50,,Airbnb,Evans Boateng,Ponte Vecchio,Tariffa base,24/07/2026,26/07/2026,2,198.36,Porte Nuove Apartments,Confermate,0,OTA,40
+06CA2E481F,01/06/2026 07:37,,Airbnb,Jill Malabanan,Cupola,Tariffa base,02/08/2026,04/08/2026,2,224.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+F7D1FC0A04,28/05/2026 23:20,,Airbnb,Nick Uttley,Cupola,Tariffa base,10/08/2026,14/08/2026,4,448.4,Nazionale 35 Apartments,Confermate,0,OTA,40
+20F9B2E213,27/05/2026 14:46,,Airbnb,Bonnie McCallion,Cupola,Tariffa base,30/08/2026,01/09/2026,2,224.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+3EBB9385EC,27/05/2026 00:09,,Airbnb,Amelie Köchling,Cupola,Tariffa base,14/08/2026,16/08/2026,2,224.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+FF72E0E97C,26/05/2026 09:09,,Airbnb,Caira Amado Caldentey,Palazzo Pitti,Tariffa base,09/10/2026,11/10/2026,2,207,Porte Nuove Apartments,Confermate,0,OTA,40
+CAB2ACE0D1,26/05/2026 02:12,,Airbnb,Cat Petrella,Cupola,Tariffa base,14/09/2026,17/09/2026,3,595.65,Nazionale 35 Apartments,Confermate,0,OTA,40
+B1130D01F0,24/05/2026 16:55,,Airbnb,Cynthia Vallen,Cupola,Tariffa base,11/09/2026,14/09/2026,3,595.65,Nazionale 35 Apartments,Confermate,0,OTA,40
+C934DCAA61,24/05/2026 08:51,,Airbnb,Cassandra Gill,Ponte Vecchio,Tariffa base,06/11/2026,09/11/2026,3,230.85,Porte Nuove Apartments,Confermate,0,OTA,40
+2319EA81DD,24/05/2026 08:45,,Airbnb,Ingrid Pienica,Palazzo Pitti,Tariffa base,02/10/2026,05/10/2026,3,310.65,Porte Nuove Apartments,Confermate,0,OTA,40
+5BDF34651B,24/05/2026 06:11,,Airbnb,Sagar Patel,Cupola,Tariffa base,17/07/2026,20/07/2026,3,339.15,Nazionale 35 Apartments,Confermate,0,OTA,40
+6BD7996667,23/05/2026 23:54,,Airbnb,Alexandra Morrissey,Cupola,Tariffa base,05/08/2026,07/08/2026,2,224.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+91932E8042,23/05/2026 19:49,,Airbnb,Liana Kirby,Cupola,Tariffa base,28/07/2026,30/07/2026,2,226.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+2B9D2B2563,23/05/2026 16:06,,Airbnb,Maja Løvold,Cupola,Tariffa base,27/08/2026,29/08/2026,2,224.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+2EF3FB0AA5,23/05/2026 08:38,,Airbnb,Kate Campbell,Cupola,Tariffa base,19/08/2026,22/08/2026,3,336.3,Nazionale 35 Apartments,Confermate,0,OTA,40
+886DA7ED12,23/05/2026 05:41,,Airbnb,Seth Gillespie,Cupola,Tariffa base,23/07/2026,28/07/2026,5,565.25,Nazionale 35 Apartments,Confermate,0,OTA,40
+B9BB8D8191,22/05/2026 20:09,,Airbnb,Lídia Andrioni,Cupola,Tariffa base,13/07/2026,15/07/2026,2,226.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+590055F359,22/05/2026 15:43,,Airbnb,Claudia Schoeneck,Cupola,Tariffa base,22/08/2026,26/08/2026,4,448.4,Nazionale 35 Apartments,Confermate,0,OTA,40
+E872450E08,22/05/2026 10:42,,Airbnb,Annette Reinert,Cupola,Tariffa base,07/07/2026,11/07/2026,4,452.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+0254AE84EA,21/05/2026 15:15,,Airbnb,Morten Bjerrum Kjær,Uffizi,Tariffa base,17/08/2026,22/08/2026,5,904.75,Nazionale 35 Apartments,Confermate,0,OTA,40
+9CCA03BF0D,21/05/2026 12:41,,Airbnb,Vanessa De Souza,Palazzo Pitti,Tariffa base,23/08/2026,26/08/2026,3,242.25,Porte Nuove Apartments,Confermate,0,OTA,40
+5F9B5430DB,21/05/2026 00:44,,Airbnb,Greg Coleman,Uffizi,Tariffa base,15/07/2026,16/07/2026,1,197.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+4DF49CEAED,20/05/2026 09:44,,Airbnb,Yating He,Uffizi,Tariffa base,18/07/2026,20/07/2026,2,365,Nazionale 35 Apartments,Confermate,0,OTA,40
+DAE5F33FCF,19/05/2026 12:57,,Airbnb,José Granados Nuñez,Palazzo Pitti,Tariffa base,20/08/2026,23/08/2026,3,242.25,Porte Nuove Apartments,Confermate,0,OTA,40
+F53D14C252,17/05/2026 12:27,,Airbnb,Alexa Beining,Cupola,Tariffa base,22/09/2026,26/09/2026,4,794.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+3E0BFD36C2,16/05/2026 18:28,,Airbnb,Marius Brandscheidt,Uffizi,Tariffa base,09/08/2026,13/08/2026,4,725.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+1BCFFC64A1,16/05/2026 15:55,,Airbnb,Rose Ewald,Uffizi,Tariffa base,13/10/2026,14/10/2026,1,215.85,Nazionale 35 Apartments,Confermate,0,OTA,40
+DE66F7A5F3,12/05/2026 15:54,,Airbnb,Guto Cappellini,Palazzo Pitti,Tariffa base,18/07/2026,20/07/2026,2,169.1,Porte Nuove Apartments,Confermate,0,OTA,40
+BA39699878,10/05/2026 02:37,,Airbnb,Camila Tenorio Usma,Palazzo Pitti,Tariffa base,20/07/2026,24/07/2026,4,338.2,Porte Nuove Apartments,Confermate,0,OTA,40
+A5F5AC9997,09/05/2026 22:18,,Airbnb,Thomas Moorin,Palazzo Pitti,Tariffa base,30/07/2026,03/08/2026,4,330.6,Porte Nuove Apartments,Confermate,0,OTA,40
+0787DFAC49,07/05/2026 13:48,,Airbnb,Mits Nieuwenhuijzen,Palazzo Pitti,Tariffa base,27/07/2026,30/07/2026,3,253.65,Porte Nuove Apartments,Confermate,0,OTA,40
+48F08F3A12,07/05/2026 09:07,,Airbnb,창희 유,Uffizi,Tariffa base,28/09/2026,29/09/2026,1,239.85,Nazionale 35 Apartments,Confermate,0,OTA,40
+76AD3E4AC0,04/05/2026 09:01,,Airbnb,Isabella Couto,Palazzo Pitti,Tariffa base,14/08/2026,19/08/2026,5,403.75,Porte Nuove Apartments,Confermate,0,OTA,40
+BFBBD3B9B2,03/05/2026 17:29,,Airbnb,Marco Ehlen,Palazzo Pitti,Tariffa base,17/10/2026,20/10/2026,3,310.65,Porte Nuove Apartments,Confermate,0,OTA,40
+314E5552E4,03/05/2026 08:55,,Airbnb,Patty 吳,Palazzo Pitti,Tariffa base,26/08/2026,29/08/2026,3,242.25,Porte Nuove Apartments,Confermate,0,OTA,40
+4F72AD594B,01/05/2026 19:44,,Airbnb,Akinyemi Temitope,Palazzo Pitti,Tariffa base,09/07/2026,11/07/2026,2,169.1,Porte Nuove Apartments,Confermate,0,OTA,40
+28338D2B29,26/04/2026 13:33,,Airbnb,Axelle Guyon,Palazzo Pitti,Tariffa base,03/08/2026,05/08/2026,2,161.5,Porte Nuove Apartments,Confermate,0,OTA,40
+5D8002A5DB,23/04/2026 19:15,,Airbnb,Manuel De La Torre,Palazzo Pitti,Tariffa base,12/08/2026,14/08/2026,2,161.5,Porte Nuove Apartments,Confermate,0,OTA,40
+16E1DD184C,23/04/2026 08:35,,Airbnb,Eric St-Amand,Uffizi,Tariffa base,12/09/2026,13/09/2026,1,221.55,Nazionale 35 Apartments,Confermate,0,OTA,40
+5097896BE6,14/04/2026 15:53,,Airbnb,Hui Jie Goh,Palazzo Vecchio,Tariffa base,13/09/2026,14/09/2026,1,132.05,Porte Nuove Apartments,Confermate,0,OTA,40
+723B3779D2,14/04/2026 08:46,,Airbnb,Yu Hsuan Tsai,Uffizi,Tariffa base,02/08/2026,04/08/2026,2,344.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+0C8379CC70,08/04/2026 09:59,,Airbnb,진영 김,Uffizi,Tariffa base,06/10/2026,11/10/2026,5,1161.25,Nazionale 35 Apartments,Confermate,0,OTA,40
+3754C15E0D,30/03/2026 08:42,,Airbnb,Tinja Rönneberg,Ponte Vecchio,Tariffa base,12/07/2026,17/07/2026,5,491.15,Porte Nuove Apartments,Confermate,0,OTA,40
+011DA0659A,30/03/2026 08:40,,Airbnb,筠雅 林,Palazzo Pitti,Tariffa base,06/08/2026,09/08/2026,3,242.25,Porte Nuove Apartments,Confermate,0,OTA,40
+C43AC18930,26/03/2026 16:03,,Airbnb,Anthony Caniglia,Ponte Vecchio,Tariffa base,19/07/2026,23/07/2026,4,440.8,Porte Nuove Apartments,Confermate,0,OTA,40
+38C1DE2FF6,25/03/2026 08:45,,Airbnb,Elisa Birchen,Ponte Vecchio,Tariffa base,07/07/2026,09/07/2026,2,180.5,Porte Nuove Apartments,Confermate,0,OTA,40
+602B29B9E8,25/03/2026 08:44,,Airbnb,Jake Denton,Palazzo Pitti,Tariffa base,07/07/2026,09/07/2026,2,161.5,Porte Nuove Apartments,Confermate,0,OTA,40
+041F8A7A6B,23/03/2026 17:55,,Airbnb,Bernard Senos,Palazzo Pitti,Tariffa base,11/07/2026,13/07/2026,2,161.5,Porte Nuove Apartments,Confermate,0,OTA,40
+7945054B8B,22/03/2026 17:55,,Airbnb,Дарья Соколова,Palazzo Vecchio,Tariffa base,18/07/2026,20/07/2026,2,169.1,Porte Nuove Apartments,Confermate,0,OTA,40
+8540667FF9,19/03/2026 18:05,,Airbnb,Aran Dhillon,Palazzo Pitti,Tariffa base,24/07/2026,27/07/2026,3,242.25,Porte Nuove Apartments,Confermate,0,OTA,40
+36701A63CC,19/03/2026 08:39,,Airbnb,Marie Eychenne,Palazzo Vecchio,Tariffa base,11/07/2026,17/07/2026,6,507.3,Porte Nuove Apartments,Confermate,0,OTA,40
+B61BCD162E,06/03/2026 21:14,,Airbnb,Tash Van Der Kraan,Uffizi,Tariffa base,02/09/2026,06/09/2026,4,877.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+AF15569814,27/02/2026 11:07,,Airbnb,Nelly Rask,Ponte Vecchio,Tariffa base,04/08/2026,08/08/2026,4,361,Porte Nuove Apartments,Confermate,0,OTA,40
+B836B916B2,11/02/2026 12:51,,Airbnb,Sue Cecere,Uffizi,Tariffa base,19/09/2026,24/09/2026,5,1094.75,Nazionale 35 Apartments,Confermate,0,OTA,40
+A10CC48CE4,03/02/2026 20:41,,Airbnb,Andrew Carrington,Ponte Vecchio,Tariffa base,27/08/2026,30/08/2026,3,271,Porte Nuove Apartments,Confermate,0,OTA,40
+7FCF16CAE6,03/02/2026 12:27,,Airbnb,Amy Halford,Uffizi,Tariffa base,10/09/2026,12/09/2026,2,458.1,Nazionale 35 Apartments,Confermate,0,OTA,40
+0481FDD68D,21/01/2026 10:59,,Airbnb,Peter Maclean,Uffizi,Tariffa base,28/07/2026,01/08/2026,4,699.55,Nazionale 35 Apartments,Confermate,0,OTA,40
+EA391F8242,21/01/2026 08:42,,Airbnb,Nick Vissichelli,Uffizi,Tariffa base,15/09/2026,19/09/2026,4,877.2,Nazionale 35 Apartments,Confermate,0,OTA,40
+A185845F0F,30/12/2025 16:51,,Airbnb,Fanni Söderström,Palazzo Pitti,Tariffa base,13/07/2026,17/07/2026,4,323,Porte Nuove Apartments,Confermate,0,OTA,40
+057B38CD6E,13/12/2025 11:09,,Airbnb,Craig Leak,Uffizi,Tariffa base,25/09/2026,28/09/2026,3,680.35,Nazionale 35 Apartments,Confermate,0,OTA,40
+09420958A7,06/12/2025 11:59,,Airbnb,Min Ji Lee,Cupola,Tariffa base,27/10/2026,29/10/2026,2,363.1,Nazionale 35 Apartments,Confermate,0,OTA,40
 HMSFDP4WTW,06/06/2025,,Airbnb,,Palazzo Pitti,,30/06/2025,03/07/2025,3,243.46,Porte Nuove Apartments,Confermate,0,Airbnb,40
 HMBQ289MTM,30/06/2025,,Airbnb,,Palazzo Vecchio,,30/06/2025,01/07/2025,1,64.63,Porte Nuove Apartments,Confermate,0,Airbnb,40
 HMBZ2DMWPN,12/03/2025,,Airbnb,,Uffizi,,29/06/2025,01/07/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40
@@ -7875,6 +8530,7 @@ HM8CJDYK8F,19/06/2025,,Airbnb,,Palazzo Vecchio,,03/07/2025,06/07/2025,3,223.48,P
 HMATFFBPKZ,28/03/2025,,Airbnb,,Uffizi,,03/07/2025,04/07/2025,1,196.85,Nazionale 35 Apartments,Confermate,0,Airbnb,40
 HMHTAWWFP3,07/03/2025,,Airbnb,,Uffizi,,01/07/2025,02/07/2025,1,174.45,Nazionale 35 Apartments,Confermate,0,Airbnb,40
 HMDSNZXYTD,06/05/2025,,Airbnb,,Cupola,,30/06/2025,08/07/2025,8,1428.51,Nazionale 35 Apartments,Confermate,0,Airbnb,40
+
 HMHDBYDRJE,30/04/2026,,Airbnb,,Uffizi,,04/05/2026,06/05/2026,2,351.66,Nazionale 35 Apartments,Confermate,0,Airbnb,40
 HMB3X8DWTP,10/04/2026,,Airbnb,,Palazzo Pitti,,02/05/2026,04/05/2026,2,218.67,Porte Nuove Apartments,Confermate,0,Airbnb,40
 HMSP98XHA5,25/04/2026,,Airbnb,,Uffizi,,01/05/2026,03/05/2026,2,439.24,Nazionale 35 Apartments,Confermate,0,Airbnb,40
@@ -8055,770 +8711,53 @@ HMMZP2W2AA,20/10/2025,,Airbnb,,Cupola,,17/02/2026,21/02/2026,4,397.57,Nazionale 
 HMWHKYA5YE,25/10/2025,,Airbnb,,Uffizi,,18/02/2026,20/02/2026,2,239,Nazionale 35 Apartments,Confermate,0,Airbnb,40
 HMPH328FXT,28/01/2026,,Airbnb,,Ponte Vecchio,,16/02/2026,19/02/2026,3,184.62,Porte Nuove Apartments,Confermate,0,Airbnb,40
 HM4X4JYRHR,20/10/2025,,Airbnb,,Uffizi,,13/02/2026,18/02/2026,5,526.95,Nazionale 35 Apartments,Confermate,0,Airbnb,40
-84FABD1C0C,10/07/2026 13:19,,Airbnb,Kacper Boniecki,Uffizi,Tariffa base,20/07/2026,23/07/2026,3,360.9,Nazionale 35 Apartments,Confermate,0,OTA,30
-38B0474684,10/07/2026 12:15,,Ctrip,JINZHU YANG,Suite con Terrazza,Non rimborsabile,30/09/2026,03/10/2026,3,1197.2,Firenze Suite,Confermate,0,OTA,0
-018BD29FCC,01/07/2026 05:30,10/07/2026 09:11,Booking,DING SHU HANG,Bilocale,Standard rate,03/09/2026,05/09/2026,2,700.85,Condotta 16,Cancellate,0,OTA,0
-C2BD7257A8,10/07/2026 08:09,,Ctrip,Trip.com Group Team,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Flessibile, Flessibile",20/07/2026,22/07/2026,2,577.26,Firenze Suite,Confermate,0,OTA,0
-4D3C90EF70,10/07/2026 04:23,,Airbnb,Madison Scott,Cupola,Tariffa base,22/10/2026,24/10/2026,2,330,Nazionale 35 Apartments,Confermate,0,OTA,30
-7F4599C7B5,10/07/2026 03:17,,Airbnb,Lesly Brochero,Palazzo Vecchio,Tariffa base,14/09/2026,16/09/2026,2,230,Porte Nuove Apartments,Confermate,0,OTA,30
-7B87243F28,10/07/2026 02:27,,Beddy,Christopher Myers,Camera Matrimoniale Deluxe,Non rimborsabile,21/07/2026,23/07/2026,2,278.1,Firenze Suite,Confermate,0,Sito web,0
-84BAAC3C4B,10/07/2026 00:59,,Airbnb,Mio Kawarada,Palazzo Vecchio,Tariffa base,22/09/2026,24/09/2026,2,230,Porte Nuove Apartments,Confermate,0,OTA,30
-7DD7BD5C27,09/07/2026 23:43,,Booking,Hiba Mousli,Bilocale,Standard rate,09/09/2026,13/09/2026,4,1319.68,Condotta 16,Confermate,0,OTA,0
-C3F27E7A39,09/07/2026 22:12,,Booking,Meaghan Fitzgerald,Trilocale,Non rimborsabile,27/07/2026,28/07/2026,1,268.82,Condotta 16,Confermate,0,OTA,0
-9A9773BD62,05/07/2026 16:37,09/07/2026 16:46,Booking,Edward Sherriff,Trilocale,Standard rate,25/07/2026,27/07/2026,2,561.16,Condotta 16,Cancellate,0,OTA,0
-F8FBAFAF7F,09/07/2026 13:09,09/07/2026 15:46,Airbnb,Nabil Ibrahim Issilamou,Uffizi,Tariffa base,15/08/2026,17/08/2026,2,227.7,Nazionale 35 Apartments,Confermate,0,OTA,30
-64C7365A1B,09/07/2026 15:07,,Expedia,James Hahn,Suite,Flessibile,10/07/2026,11/07/2026,1,197.54,Firenze Suite,Confermate,0,OTA,0
-0A225A26F4,09/07/2026 11:18,,Booking,YUTTANA KANCHANAPINPONG,Trilocale,Standard rate,24/09/2026,28/09/2026,4,2009.71,Condotta 16,Confermate,0,OTA,0
-D49F065B3B,09/07/2026 00:20,09/07/2026 10:42,Airbnb,Natalie O'Connor,Uffizi,Tariffa base,29/10/2026,05/11/2026,7,1047.85,Nazionale 35 Apartments,Confermate,0,OTA,30
-BDC6BF9DB1,06/06/2026 20:22,09/07/2026 09:15,Booking,Robert Goldy,Trilocale,Standard rate,14/07/2026,17/07/2026,3,1107,Condotta 16,Confermate,0,OTA,0
-F375CD4A46,31/05/2026 23:49,09/07/2026 09:15,Booking,Margrie Wallace,Trilocale,Standard rate,18/07/2026,19/07/2026,1,311.32,Condotta 16,Confermate,0,OTA,0
-2DA4F4E1E3,29/04/2026 16:56,09/07/2026 09:14,Beddy,Benjamin Goh,Trilocale,Standard rate,16/07/2026,19/07/2026,3,1481.1,Condotta 16,Confermate,0,Sito web,0
-E74DB5459B,03/07/2026 12:28,09/07/2026 09:14,Booking,West Jim,Trilocale,Standard rate,12/07/2026,14/07/2026,2,585.79,Condotta 16,Confermate,0,OTA,0
-55E0C82D81,29/06/2026 16:20,09/07/2026 09:14,Beddy,Karl Lofthouse,Trilocale,Non rimborsabile,13/07/2026,15/07/2026,2,474,Condotta 16,Confermate,0,Sito web,0
-22F0811D01,03/06/2026 22:44,09/07/2026 09:14,Booking,Per Wagner Kristensen,Trilocale,Standard rate,11/07/2026,13/07/2026,2,660.06,Condotta 16,Confermate,0,OTA,0
-98B22CE6FB,09/07/2026 08:51,,Booking,Talita Bega,"Bilocale, Trilocale","Non rimborsabile, Non rimborsabile",10/09/2026,12/09/2026,2,1430.26,Condotta 16,Confermate,0,OTA,0
-493CB11D93,08/07/2026 21:17,09/07/2026 08:49,Ctrip,HANQING LIU,Camera Matrimoniale Deluxe,Non rimborsabile,13/07/2026,15/07/2026,2,278.33,Firenze Suite,Confermate,0,OTA,0
-4962966ED2,06/07/2026 11:02,09/07/2026 08:49,Expedia,shan Jiang,Camera Matrimoniale Deluxe,Flessibile,12/07/2026,14/07/2026,2,279.39,Firenze Suite,Confermate,0,OTA,0
-4EEF6667F8,09/07/2026 07:29,,Airbnb,Hangjun Zhao,Palazzo Pitti,Tariffa base,30/09/2026,02/10/2026,2,228,Porte Nuove Apartments,Confermate,0,OTA,30
-D73B6A08D9,09/07/2026 04:24,,Airbnb,Poorva Rane,Cupola,Tariffa base,10/09/2026,11/09/2026,1,142,Nazionale 35 Apartments,Confermate,0,OTA,30
-6D82438A68,09/07/2026 04:11,,Airbnb,Celinda Humilde,Palazzo Vecchio,Tariffa base,21/08/2026,23/08/2026,2,115.8,Porte Nuove Apartments,Confermate,0,OTA,30
-4910C4AA95,09/07/2026 02:13,,Airbnb,Dario Exequiel Rodriguez,Palazzo Vecchio,Tariffa base,25/07/2026,28/07/2026,3,219.3,Porte Nuove Apartments,Confermate,0,OTA,30
-BF5BFE025A,09/07/2026 00:53,,Airbnb,Alejandra Diaz Mendoza,Palazzo Vecchio,Tariffa base,31/08/2026,03/09/2026,3,213,Porte Nuove Apartments,Confermate,0,OTA,30
-D608ED888B,09/07/2026 00:18,,Airbnb,Morgan B,Uffizi,Tariffa base,13/08/2026,15/08/2026,2,203.1,Nazionale 35 Apartments,Confermate,0,OTA,30
-FD7C031502,08/07/2026 23:11,,Booking,Joe Zhou,Trilocale,Non rimborsabile,24/07/2026,28/07/2026,4,1014.16,Condotta 16,Confermate,0,OTA,0
-32FC6E81A0,08/07/2026 22:19,,Airbnb,Federico Tozzi,Ponte Vecchio,Tariffa base,27/07/2026,28/07/2026,1,61.8,Porte Nuove Apartments,Confermate,0,OTA,30
-0B3FA354C1,08/07/2026 22:17,,Airbnb,Samantha Brick,Uffizi,Tariffa base,23/07/2026,24/07/2026,1,96.9,Nazionale 35 Apartments,Confermate,0,OTA,30
-795250572C,08/07/2026 21:46,,Beddy,Greyson Lohrey,Attico,Non rimborsabile,28/09/2026,01/10/2026,3,1188.9,Condotta 16,Confermate,0,Sito web,0
-8029D645C6,08/07/2026 21:17,,Ctrip,HANQING LIU,Suite con Terrazza,Non rimborsabile,15/07/2026,16/07/2026,1,197.92,Firenze Suite,Confermate,0,OTA,0
-85C84F7056,08/07/2026 21:11,,Expedia,xu cai,Suite,Non rimborsabile,25/07/2026,27/07/2026,2,326.88,Firenze Suite,Confermate,0,OTA,0
-7C5122F16A,08/07/2026 21:10,,Expedia,WEI ZANG,Suite,Non rimborsabile,25/07/2026,27/07/2026,2,326.88,Firenze Suite,Confermate,0,OTA,0
-F1465B13EA,08/07/2026 20:36,,Airbnb,Sanjay Koch,Palazzo Vecchio,Tariffa base,18/08/2026,20/08/2026,2,117.6,Porte Nuove Apartments,Confermate,0,OTA,30
-8559CC8C99,08/07/2026 20:30,,Airbnb,Marianne Alves,Palazzo Vecchio,Tariffa base,26/09/2026,29/09/2026,3,300,Porte Nuove Apartments,Confermate,0,OTA,30
-909ABA544E,08/07/2026 20:07,,Airbnb,Michael Jenkins,Cupola,Tariffa base,11/07/2026,13/07/2026,2,193,Nazionale 35 Apartments,Confermate,0,OTA,30
-D4BCD2745A,08/07/2026 17:12,,Booking,Nicole Kern,Bilocale,Non rimborsabile,17/09/2026,19/09/2026,2,576.84,Condotta 16,Confermate,0,OTA,0
-51DF44F551,08/07/2026 14:46,,Beddy,Diana Jones Walsh,Trilocale,Non rimborsabile,28/09/2026,01/10/2026,3,1018.8,Condotta 16,Confermate,0,Sito web,0
-6741FFE9DB,08/07/2026 14:20,,Airbnb,동근 김,Uffizi,Tariffa base,27/08/2026,30/08/2026,3,343,Nazionale 35 Apartments,Confermate,0,OTA,30
-258EF9D10E,08/07/2026 12:53,08/07/2026 12:58,Expedia,BERTA COTS,Trilocale,Standard rate,12/08/2026,16/08/2026,4,829.4,Condotta 16,Cancellate,0,OTA,0
-A9E1B2E88E,21/03/2026 09:03,08/07/2026 12:33,Booking,Eva Martinelli,Camera Matrimoniale Deluxe,Flessibile,27/11/2026,28/11/2026,1,145.92,Firenze Suite,Cancellate,0,OTA,0
-368F8766BC,08/07/2026 10:20,,Booking,Ondrej Havlicek,Trilocale,Standard rate,10/07/2026,11/07/2026,1,324.79,Condotta 16,Confermate,0,OTA,0
-DD8C4501B0,07/07/2026 21:19,08/07/2026 09:29,Booking,Aysha Nassar Cawley,"Trilocale, Bilocale","Non rimborsabile, Non rimborsabile",02/08/2026,05/08/2026,3,1197.81,Condotta 16,Confermate,0,OTA,0
-1C50720013,23/06/2026 01:05,08/07/2026 09:29,Beddy,Joanna Kopicki,Trilocale,Standard rate,31/07/2026,03/08/2026,3,980,Condotta 16,Confermate,0,Sito web,0
-13D3F1FE41,14/06/2026 10:53,08/07/2026 09:29,Booking,סגל אלדר,Trilocale,Standard rate,03/08/2026,04/08/2026,1,327.05,Condotta 16,Confermate,0,OTA,0
-F25E63B27A,08/07/2026 09:22,,Airbnb,翼 左,Uffizi,Tariffa base,26/07/2026,28/07/2026,2,292,Nazionale 35 Apartments,Confermate,0,OTA,30
-4EAB6A6560,08/07/2026 09:18,,Airbnb,萱 周,Uffizi,Tariffa base,30/08/2026,01/09/2026,2,238.2,Nazionale 35 Apartments,Confermate,0,OTA,30
-9275415A60,08/07/2026 00:33,,Booking,CALVIN DSOUZA,Trilocale,Standard rate,01/08/2026,03/08/2026,2,593.06,Condotta 16,Confermate,0,OTA,0
-A049D96B90,07/07/2026 23:13,,Airbnb,Kangheng Wang,Ponte Vecchio,Tariffa base,31/07/2026,03/08/2026,3,339.7,Porte Nuove Apartments,Confermate,0,OTA,40
-303AEDB995,07/07/2026 22:39,,Expedia,Suliman Almuqbel,Bilocale,Non rimborsabile,15/07/2026,16/07/2026,1,156.24,Condotta 16,Confermate,0,OTA,0
-7F3B1238CE,07/07/2026 21:52,,Booking,Minic Ana,Suite,Non rimborsabile,11/08/2026,14/08/2026,3,518.86,Firenze Suite,Confermate,0,OTA,0
-8DE5298565,07/07/2026 21:15,,Booking,NETA FRIDMAN ZOHAR,Trilocale,Standard rate,19/08/2026,20/08/2026,1,290.88,Condotta 16,Confermate,0,OTA,0
-6FE119704D,07/07/2026 20:53,,Booking,Nand Rosiers,Palazzo Vecchio,Non rimborsabile,02/08/2026,04/08/2026,2,145.34,Porte Nuove Apartments,Confermate,0,OTA,0
-B735C1CA2A,07/07/2026 18:50,,Expedia,Kenneth Mather,Camera Matrimoniale Deluxe,Flessibile,26/09/2026,29/09/2026,3,693.28,Firenze Suite,Confermate,0,OTA,0
-FDE1A70A2F,07/07/2026 18:46,,Expedia,LUBO LI,Camera Matrimoniale Deluxe,Non rimborsabile,16/07/2026,17/07/2026,1,144.06,Firenze Suite,Confermate,0,OTA,0
-B976CA0CB1,07/07/2026 16:39,,Booking,Jeffrey Robbins,"Bilocale, Bilocale","Standard rate, Standard rate",29/09/2026,01/10/2026,2,1205.5,Condotta 16,Confermate,0,OTA,0
-E713B8ADE5,07/07/2026 13:34,,Airbnb,Romane Gauthier,Ponte Vecchio,Tariffa base,08/09/2026,10/09/2026,2,268,Porte Nuove Apartments,Confermate,0,OTA,40
-F35CE4A554,07/07/2026 13:30,,Airbnb,楚楚 徐,Cupola,Tariffa base,28/09/2026,30/09/2026,2,382,Nazionale 35 Apartments,Confermate,0,OTA,40
-5A644EA963,07/07/2026 07:44,,Airbnb,MyTien Pham,Uffizi,Tariffa base,24/08/2026,26/08/2026,2,300.5,Nazionale 35 Apartments,Confermate,0,OTA,40
-324B492EF9,07/07/2026 01:28,,Airbnb,Karen Birch,Cupola,Tariffa base,19/10/2026,22/10/2026,3,524.5,Nazionale 35 Apartments,Confermate,0,OTA,40
-84FAB16F78,06/07/2026 20:58,,Expedia,Ziqing Zhang,Suite,Flessibile,24/07/2026,25/07/2026,1,203.22,Firenze Suite,Confermate,0,OTA,0
-9C9DEFD50A,06/07/2026 16:27,,Booking,Svetlana Lyba,Trilocale,Standard rate,04/08/2026,11/08/2026,7,1485.35,Condotta 16,Confermate,0,OTA,0
-3FE0080B8E,31/05/2026 18:18,06/07/2026 11:02,Expedia,shan Jiang,Camera Matrimoniale Deluxe,Flessibile,12/07/2026,14/07/2026,2,282.96,Firenze Suite,Cancellate,0,OTA,0
-DDA38A7EAF,06/07/2026 08:23,06/07/2026 09:48,Booking,Robert Kim,Trilocale,Non rimborsabile,24/07/2026,26/07/2026,2,470.5,Condotta 16,Cancellate,0,OTA,0
-8BF6D50CC7,06/07/2026 09:32,,Airbnb,Jenny Wang,Ponte Vecchio,Tariffa base,20/09/2026,24/09/2026,4,515,Porte Nuove Apartments,Confermate,0,OTA,40
-AC1AB579C4,06/07/2026 07:24,,Booking,Meng Lulu,Bilocale,Non rimborsabile,23/07/2026,25/07/2026,2,399.28,Condotta 16,Confermate,0,OTA,0
-4EB754B720,06/07/2026 04:32,,Expedia,YI WU,Camera Matrimoniale Deluxe,Non rimborsabile,23/09/2026,24/09/2026,1,207.13,Firenze Suite,Confermate,0,OTA,0
-C4166C7288,06/07/2026 04:05,,Airbnb,Maria Quintero,Uffizi,Tariffa base,07/09/2026,09/09/2026,2,405,Nazionale 35 Apartments,Confermate,0,OTA,40
-7CD17A6D1D,06/07/2026 03:14,,Booking,April Sikaffy,Trilocale,Non rimborsabile,29/07/2026,01/08/2026,3,705.75,Condotta 16,Confermate,0,OTA,0
-877F343F97,05/07/2026 22:50,,Airbnb,Tiang Ryals,Ponte Vecchio,Tariffa base,15/09/2026,19/09/2026,4,515,Porte Nuove Apartments,Confermate,0,OTA,40
-8AB7C2E4D8,05/07/2026 22:07,,Expedia,Michael Mainardi,Camera Matrimoniale Deluxe,Flessibile,22/09/2026,26/09/2026,4,957.5,Firenze Suite,Confermate,0,OTA,0
-B684ADB9DE,31/05/2026 18:43,05/07/2026 15:05,Booking,Sinem Elevli,Suite con Terrazza,Non rimborsabile,05/07/2026,08/07/2026,3,466.72,Firenze Suite,Confermate,0,OTA,0
-DD6A16368F,06/04/2026 15:40,05/07/2026 15:04,Booking,MA TENGFEI CAO MENGYI,Camera Matrimoniale Deluxe,Non rimborsabile,05/07/2026,08/07/2026,3,608.97,Firenze Suite,Confermate,0,OTA,0
-707CFF368E,22/06/2026 16:49,05/07/2026 14:56,Beddy,Bethany Rowe,Camera Matrimoniale Deluxe,Non rimborsabile,08/07/2026,09/07/2026,1,148.5,Firenze Suite,Confermate,0,Sito web,0
-0BBC01AC85,27/06/2026 17:01,05/07/2026 14:56,Beddy,Bethany Rowe,Camera Matrimoniale Deluxe,Non rimborsabile,09/07/2026,10/07/2026,1,148.5,Firenze Suite,Confermate,0,Non Specificato,0
-9CFF161803,07/04/2026 22:55,05/07/2026 14:56,Booking,Teresa Beierle,Camera Matrimoniale Deluxe,Flessibile,08/07/2026,15/07/2026,7,1420.93,Firenze Suite,Confermate,0,OTA,0
-26540577C0,08/06/2026 14:59,05/07/2026 14:56,Booking,Yeung Hiu tung,Camera Matrimoniale Deluxe,Non rimborsabile,05/07/2026,08/07/2026,3,511.73,Firenze Suite,Confermate,0,OTA,0
-666B7C4351,05/07/2026 14:48,,Beddy,Simone Scataglini,Bilocale,Standard rate,28/11/2026,29/11/2026,1,150,Condotta 16,Confermate,0,Sito web,0
-B28823298D,05/07/2026 05:02,05/07/2026 06:37,Booking,Liu Kang,Bilocale,Standard rate,14/07/2026,18/07/2026,4,802.58,Condotta 16,Cancellate,0,OTA,0
-868B4ADEAA,05/07/2026 05:28,,Booking,Shane Urch,Trilocale,Standard rate,01/01/2027,06/01/2027,5,1941.23,Condotta 16,Confermate,0,OTA,0
-CFB6241CA0,04/07/2026 23:27,,Booking,Yi-Hsin Liu,Trilocale,Standard rate,03/08/2026,10/08/2026,7,1475.17,Condotta 16,Confermate,0,OTA,0
-0A6CB4C660,04/07/2026 19:02,,Airbnb,Ulpiano Jr Almazan,Ponte Vecchio,Tariffa base,11/09/2026,14/09/2026,3,391.5,Porte Nuove Apartments,Confermate,0,OTA,40
-C1216FE5CC,04/07/2026 16:12,,Beddy,Jennifer Duguay,Suite,Non rimborsabile,30/07/2026,03/08/2026,4,616.5,Firenze Suite,Confermate,0,Sito web,0
-1913A57ACA,04/07/2026 14:47,,Beddy,Vasile Codreanu,Trilocale,Non rimborsabile,22/12/2026,27/12/2026,5,1460,Condotta 16,Confermate,0,Non Specificato,0
-F0646F653D,04/07/2026 14:28,04/07/2026 14:43,Beddy,Vasile Codreanu,Trilocale,Non rimborsabile,22/12/2026,27/12/2026,5,1310,Condotta 16,Cancellate,0,Non Specificato,0
-563FB7EA94,04/07/2026 13:35,,Airbnb,Cb Javier,Cupola,Tariffa base,26/09/2026,28/09/2026,2,382,Nazionale 35 Apartments,Confermate,0,OTA,40
-7B1882A182,04/07/2026 08:43,04/07/2026 08:49,Booking,BAK JIYONG,Bilocale,Non rimborsabile,14/07/2026,16/07/2026,2,389.1,Condotta 16,Cancellate,0,OTA,0
-86A2F7A542,04/07/2026 08:40,,Airbnb,Drew Ableman,Uffizi,Tariffa base,20/10/2026,23/10/2026,3,588.5,Nazionale 35 Apartments,Confermate,0,OTA,40
-D2CFC78D2B,04/07/2026 07:13,,Booking,Vittorio Ghiglino,Trilocale,Standard rate,05/10/2026,07/10/2026,2,1069.74,Condotta 16,Confermate,0,OTA,0
-8201F3208B,04/07/2026 05:07,,Booking,Monica Oliveros,Trilocale,Non rimborsabile,15/08/2026,16/08/2026,1,288.62,Condotta 16,Confermate,0,OTA,0
-BD72295A24,03/07/2026 22:10,,Booking,TIMOTHY Stadler,Bilocale,Non rimborsabile,09/09/2026,12/09/2026,3,905.46,Condotta 16,Confermate,0,OTA,0
-A300231B61,03/07/2026 20:52,,Airbnb,Dovid Bernstein,Uffizi,Tariffa base,06/08/2026,09/08/2026,3,446,Nazionale 35 Apartments,Confermate,0,OTA,40
-82775776F7,03/07/2026 20:19,,Airbnb,Lori Okun,Ponte Vecchio,Tariffa base,25/09/2026,30/09/2026,5,671.75,Porte Nuove Apartments,Confermate,0,OTA,40
-C4DD8623A8,03/07/2026 17:30,,Booking,Agustina Cettour,Trilocale,Standard rate,14/08/2026,17/08/2026,3,811.99,Condotta 16,Confermate,0,OTA,0
-8F858625F5,28/05/2026 03:56,03/07/2026 10:08,Expedia,Kim Bryceson,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,07/07/2026,10/07/2026,3,604.48,Firenze Suite,Confermate,0,OTA,0
-C929DCB976,06/06/2026 16:57,03/07/2026 10:07,Booking,Chen Ying,Camera Matrimoniale Deluxe,Non rimborsabile,06/07/2026,07/07/2026,1,172.95,Firenze Suite,Confermate,0,OTA,0
-DCB557FAE9,01/06/2026 07:11,03/07/2026 09:51,Booking,Harriet Alexander-Bates,Trilocale,Non rimborsabile,05/07/2026,08/07/2026,3,549.09,Condotta 16,Confermate,0,OTA,0
-DC4D89E3EE,02/06/2026 00:22,03/07/2026 09:50,Booking,Amanda Farmer,Trilocale,Standard rate,04/07/2026,07/07/2026,3,1037.55,Condotta 16,Confermate,0,OTA,0
-40F5041A3F,03/07/2026 03:07,03/07/2026 03:52,Expedia,Chris Phan,Suite con Terrazza,Non rimborsabile,22/08/2026,24/08/2026,2,362.26,Firenze Suite,Confermate,0,OTA,0
-BD229E5669,02/07/2026 22:47,,Airbnb,Jordan Jackson,Ponte Vecchio,Tariffa base,10/07/2026,12/07/2026,2,200.2,Porte Nuove Apartments,Confermate,0,OTA,40
-016CB8249E,27/06/2026 13:40,02/07/2026 19:31,Booking,Khatia mestvirishvili,Bilocale,Non rimborsabile,06/07/2026,07/07/2026,1,214.9,Condotta 16,Confermate,0,OTA,0
-FE3E7F025C,02/07/2026 18:02,,Booking,Keith Jones,Attico,Non rimborsabile,02/10/2026,06/10/2026,4,2099.23,Condotta 16,Confermate,0,OTA,0
-ED756C1E35,02/07/2026 15:50,,Booking,Carolina Russ,Trilocale,Non rimborsabile,09/09/2026,10/09/2026,1,470.73,Condotta 16,Confermate,0,OTA,0
-38B2A0C2E2,02/07/2026 12:56,,Expedia,Claus Campeotto,Attico,Non rimborsabile,15/07/2026,19/07/2026,4,1365.11,Condotta 16,Confermate,0,OTA,0
-354693D7D8,18/04/2026 04:12,02/07/2026 11:34,Booking,Kristina irijani;zidan waleed theyab;wiwik supriyanti;lisa nur apipi,Trilocale,Standard rate,24/12/2026,27/12/2026,3,732.99,Condotta 16,Confermate,0,OTA,0
-182185C395,02/07/2026 04:33,,Airbnb,Mary Catherine Polatty,Cupola,Tariffa base,09/10/2026,11/10/2026,2,418.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-51D5E3A8A8,02/07/2026 01:44,,Booking,Kathryn Davidson,Bilocale,Standard rate,12/08/2026,13/08/2026,1,202.46,Condotta 16,Confermate,0,OTA,0
-BE5038ECDD,01/07/2026 23:53,02/07/2026 00:03,Expedia,PINGYANG WANG,Suite con Terrazza,Non rimborsabile,10/07/2026,11/07/2026,1,212.26,Firenze Suite,Confermate,0,OTA,0
-A21355D036,22/06/2026 18:37,01/07/2026 22:46,Expedia,SHUANG XIAO,Suite con Terrazza,Non rimborsabile,13/07/2026,18/07/2026,5,1189.18,Firenze Suite,Confermate,0,OTA,0
-B11B69CCCF,31/05/2026 21:03,01/07/2026 22:46,Booking,Kasper Smit,Suite con Terrazza,Flessibile,17/07/2026,18/07/2026,1,236.68,Firenze Suite,Confermate,0,OTA,0
-896294EE86,18/06/2026 15:03,01/07/2026 22:45,Expedia,XIN TAN,Suite con Terrazza,Non rimborsabile,11/07/2026,15/07/2026,4,751.81,Firenze Suite,Confermate,0,OTA,0
-39DA4E66CE,28/06/2026 12:32,01/07/2026 21:03,Booking,Melinda Plescan,Trilocale,Standard rate,02/07/2026,03/07/2026,1,226.08,Condotta 16,Confermate,0,OTA,0
-5E5817D96E,07/06/2026 05:47,01/07/2026 21:03,Expedia,Jeanne Hannah,Trilocale,Standard rate,02/07/2026,04/07/2026,2,476.29,Condotta 16,Confermate,0,OTA,0
-B22D0219E6,01/06/2026 07:14,01/07/2026 21:02,Booking,PATRICIA CORRAL ALEXANDER,Trilocale,Standard rate,06/07/2026,08/07/2026,2,612.12,Condotta 16,Confermate,0,OTA,0
-83195DE7F6,30/05/2026 17:53,01/07/2026 21:00,Beddy,Rohit Singh Negi/ Gazal Bisht/ Prisha Negi,Bilocale,Non rimborsabile,02/07/2026,06/07/2026,4,792,Condotta 16,Confermate,0,Sito web,0
-3A360DA097,30/05/2026 16:49,01/07/2026 20:45,Expedia,Michelle Sjorlund Bonnett,Attico,Non rimborsabile,01/07/2026,05/07/2026,4,771.36,Condotta 16,Confermate,0,OTA,0
-53A4410552,01/07/2026 08:08,01/07/2026 18:03,Expedia,Saeid Hosseini,Camera Matrimoniale Deluxe,Flessibile,22/07/2026,26/07/2026,4,775.02,Firenze Suite,Cancellate,0,OTA,0
-1E56CCF3BD,01/07/2026 16:32,,Airbnb,Yitong Zhou,Uffizi,Tariffa base,09/07/2026,11/07/2026,2,303,Nazionale 35 Apartments,Confermate,0,OTA,40
-6F9EDC8EEF,17/06/2026 23:22,01/07/2026 15:07,Expedia,Yaqoub Saadeh,Suite con Terrazza,Non rimborsabile,07/07/2026,09/07/2026,2,388.69,Firenze Suite,Confermate,0,OTA,0
-076D47290D,08/06/2026 20:04,01/07/2026 15:07,Booking,Azad Khan,Suite con Terrazza,Non rimborsabile,08/07/2026,12/07/2026,4,913.58,Firenze Suite,Confermate,0,OTA,0
-43FDBF5D23,20/06/2026 11:51,01/07/2026 15:07,Expedia,YAN WANG,Suite con Terrazza,Flessibile,04/07/2026,07/07/2026,3,684.76,Firenze Suite,Confermate,0,OTA,0
-D37F471D92,20/06/2026 15:26,01/07/2026 15:06,Expedia,YIFEI WU,Suite con Terrazza,Non rimborsabile,01/07/2026,04/07/2026,3,535.31,Firenze Suite,Confermate,0,OTA,0
-7585466EB3,16/06/2026 12:10,01/07/2026 15:06,Beddy,KENTARO TAKAHASHI,Suite con Terrazza,Non rimborsabile,03/07/2026,05/07/2026,2,473.1,Firenze Suite,Confermate,0,Sito web,0
-8405427932,23/06/2026 19:57,01/07/2026 15:05,Booking,Julian Pancholi,"Suite con Terrazza, Suite","Non rimborsabile, Non rimborsabile",01/07/2026,03/07/2026,2,651.1,Firenze Suite,Confermate,0,OTA,0
-95F3C8592F,01/07/2026 06:10,,Airbnb,Angeli Roig,Uffizi,Tariffa base,05/07/2026,09/07/2026,4,603,Nazionale 35 Apartments,Confermate,0,OTA,40
-6CD2E9B03B,30/06/2026 22:36,,Booking,christelle RE VALLET,Trilocale,Standard rate,08/08/2026,13/08/2026,5,1544.82,Condotta 16,Confermate,0,OTA,0
-1B9BF96D91,26/05/2026 06:47,30/06/2026 18:30,Booking,Michael Giering,Trilocale,Standard rate,11/07/2026,14/07/2026,3,1359.54,Condotta 16,Cancellate,0,OTA,0
-1B63986527,07/06/2026 21:43,30/06/2026 13:17,Expedia,Alessandro Spreafico,Trilocale,Non rimborsabile,15/07/2026,16/07/2026,1,213.05,Condotta 16,Confermate,0,OTA,0
-9497B3C1CA,23/06/2026 11:30,30/06/2026 12:40,Expedia,Mona Bjornstad,Bilocale,Standard rate,18/07/2026,20/07/2026,2,430.49,Condotta 16,Confermate,0,OTA,0
-59AF253075,20/06/2026 17:34,30/06/2026 12:39,Booking,Tasbulatova Dana,Bilocale,Non rimborsabile,13/07/2026,14/07/2026,1,245.42,Condotta 16,Confermate,0,OTA,0
-CAFB355F22,25/06/2026 22:02,30/06/2026 12:39,Booking,Hamad Sharif,Bilocale,Non rimborsabile,10/07/2026,13/07/2026,3,643.68,Condotta 16,Confermate,0,OTA,0
-E8461DC0BA,27/06/2026 12:21,30/06/2026 12:38,Expedia,BIANCA MARIA DE LAZZERO,Bilocale,Standard rate,02/07/2026,08/07/2026,6,1050.37,Condotta 16,Confermate,0,OTA,0
-CF646D1894,21/04/2026 20:39,29/06/2026 22:52,Booking,Colleen Berding,Bilocale,Standard rate,15/11/2026,21/11/2026,6,824.16,Condotta 16,Confermate,0,OTA,0
-B44379E000,01/06/2026 07:27,29/06/2026 17:12,Expedia,FNU NARENHUA,Trilocale,Standard rate,04/07/2026,06/07/2026,2,488.92,Condotta 16,Cancellate,0,OTA,0
-1C899166FE,29/06/2026 15:33,,Beddy,Lucy Hutton,Bilocale,Standard rate,09/10/2026,12/10/2026,3,891,Condotta 16,Confermate,0,Sito web,0
-E697675192,21/06/2026 15:46,29/06/2026 14:50,Booking,Sarah O'Reilly,Camera Matrimoniale Deluxe,Non rimborsabile,02/07/2026,04/07/2026,2,309.58,Firenze Suite,Confermate,0,OTA,0
-32BB9F8D03,25/06/2026 12:02,29/06/2026 14:48,Expedia,JINSHUAI CHENG,Suite,Non rimborsabile,11/07/2026,14/07/2026,3,519.3,Firenze Suite,Confermate,0,OTA,0
-09016E6A8C,29/06/2026 13:55,,Airbnb,Sue Barazzutti,Palazzo Vecchio,Tariffa base,06/10/2026,08/10/2026,2,302.2,Porte Nuove Apartments,Confermate,0,OTA,40
-C8E11BF12A,28/06/2026 23:38,,Booking,Andrei-Gabriel Gradinaru,Camera Matrimoniale Deluxe,Non rimborsabile,14/07/2026,17/07/2026,3,493.42,Firenze Suite,Confermate,0,OTA,0
-2006A14FEA,28/06/2026 13:21,,Beddy,Mayis Garoian,Suite con Terrazza,Non rimborsabile,27/08/2026,28/08/2026,1,189,Firenze Suite,Confermate,0,Sito web,0
-8D7D30822E,28/06/2026 12:56,,Expedia,Khushbu Aggarwal,Trilocale,Non rimborsabile,05/08/2026,06/08/2026,1,213.84,Condotta 16,Confermate,0,OTA,0
-2599B54704,28/06/2026 12:52,,Booking,Heidi Guerra,Camera Matrimoniale Deluxe,Non rimborsabile,24/07/2026,26/07/2026,2,361.16,Firenze Suite,Confermate,0,OTA,0
-A5C46B0AC9,28/06/2026 08:34,,Expedia,SOU EHARA,Suite con Terrazza,Non rimborsabile,09/08/2026,12/08/2026,3,537,Firenze Suite,Confermate,0,OTA,0
-4767A4DB36,26/06/2026 09:23,27/06/2026 21:50,Booking,Emrullah Tokmak Zeynep Merve Kocar Tokmak Elif Lina Tokmak,Camera Matrimoniale Deluxe,Flessibile,12/07/2026,14/07/2026,2,341.38,Firenze Suite,Cancellate,0,OTA,0
-F3D9B8B9DB,27/06/2026 19:21,,Expedia,lizbet caba,Camera Matrimoniale Deluxe,Non rimborsabile,13/08/2026,15/08/2026,2,267.66,Firenze Suite,Confermate,0,OTA,0
-513435A2E4,27/06/2026 19:14,,Booking,Chariton Palaiologk,Camera Matrimoniale Deluxe,Non rimborsabile,16/08/2026,17/08/2026,1,142.43,Firenze Suite,Confermate,0,OTA,0
-4986D028C5,10/06/2026 09:21,27/06/2026 12:25,Expedia,BIANCA MARIA DE LAZZERO,Bilocale,Standard rate,02/07/2026,08/07/2026,6,1274.98,Condotta 16,Cancellate,0,OTA,0
-D346BF5A2A,14/06/2026 23:31,27/06/2026 12:24,Booking,Hasan Randa,Trilocale,Non rimborsabile,01/07/2026,05/07/2026,4,1376.34,Condotta 16,Confermate,0,OTA,0
-C968613E00,26/06/2026 04:46,,Booking,Connor Shaw,Camera Matrimoniale Deluxe,Non rimborsabile,28/08/2026,30/08/2026,2,305.2,Firenze Suite,Confermate,0,OTA,0
-5CAD91983B,10/06/2026 06:53,26/06/2026 03:17,Booking,Vera MA,Bilocale,Standard rate,29/09/2026,01/10/2026,2,761,Condotta 16,Confermate,0,OTA,0
-DB7A729A6F,25/06/2026 22:08,,Booking,Hamad Sharif,Attico,Non rimborsabile,13/07/2026,15/07/2026,2,796.05,Condotta 16,Confermate,0,OTA,0
-5895C825D1,25/06/2026 15:35,,Expedia,LING YU,Suite,Non rimborsabile,04/08/2026,06/08/2026,2,326.88,Firenze Suite,Confermate,0,OTA,0
-04F3A285ED,16/06/2026 07:13,25/06/2026 08:20,Booking,Xibin Liu,Bilocale,Standard rate,10/08/2026,11/08/2026,1,213.77,Condotta 16,Cancellate,0,OTA,0
-C3CFE94838,25/06/2026 07:55,,Booking,Mariel Medina Herrera,Bilocale,Standard rate,11/07/2026,14/07/2026,3,741.91,Condotta 16,Confermate,0,OTA,0
-27AB0B8B34,25/06/2026 03:31,,Booking,Joe Schiessl,Trilocale,Non rimborsabile,24/09/2026,27/09/2026,3,1294.79,Condotta 16,Confermate,0,OTA,0
-B7207B24D6,25/06/2026 00:39,,Booking,Ali ALSUDAYS,Trilocale,Non rimborsabile,10/07/2026,12/07/2026,2,626.07,Condotta 16,Confermate,0,OTA,0
-7997D5BB64,24/06/2026 20:06,,Booking,Rhonda Steger,Suite,Flessibile,15/09/2026,22/09/2026,7,2732.62,Firenze Suite,Confermate,0,OTA,0
-A04A9411E4,24/06/2026 18:28,,Airbnb,Takashi Isshiki,Cupola,Tariffa base,26/08/2026,27/08/2026,1,152.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-211A9C4008,24/06/2026 15:43,,Airbnb,유민 안,Cupola,Tariffa base,29/08/2026,30/08/2026,1,152.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-82FB308D69,24/06/2026 13:59,,Airbnb,Elena Khazieva,Cupola,Tariffa base,15/07/2026,16/07/2026,1,199,Nazionale 35 Apartments,Confermate,0,OTA,40
-FD069FFB5C,24/06/2026 06:15,,Booking,STEPHANIE Zuzack,Trilocale,Standard rate,13/07/2026,15/07/2026,2,628.99,Condotta 16,Confermate,0,OTA,0
-D6541CCEC8,24/06/2026 06:05,,Booking,Yonghee Lee,Trilocale,Non rimborsabile,18/08/2026,20/08/2026,2,470.5,Condotta 16,Confermate,0,OTA,0
-8E2B673810,23/06/2026 21:03,,Booking,Karina Sabac,Camera Matrimoniale Deluxe,Non rimborsabile,14/07/2026,16/07/2026,2,313.35,Firenze Suite,Confermate,0,OTA,0
-6CEAC8A849,19/04/2026 20:31,23/06/2026 20:01,Beddy,Dorna Alvandi-Peirs,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",04/07/2026,05/07/2026,1,322.2,Firenze Suite,Confermate,0,Sito web,0
-5FA4FCA555,13/06/2026 07:39,23/06/2026 20:01,Booking,Teresa Villagomez Zavala,"Suite, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",03/07/2026,05/07/2026,2,771.17,Firenze Suite,Confermate,0,OTA,0
-9D0B085665,30/05/2026 14:10,23/06/2026 20:01,Booking,Lynn de Lange,Suite,Non rimborsabile,02/07/2026,05/07/2026,3,564.63,Firenze Suite,Confermate,0,OTA,0
-095495F33D,23/06/2026 19:26,,Expedia,XIAOSHU LIN,Camera Matrimoniale Deluxe,Flessibile,15/07/2026,17/07/2026,2,294.55,Firenze Suite,Confermate,0,OTA,0
-06E687C0BA,23/06/2026 17:52,,Beddy,Ma Amabella Catubay,Bilocale,Standard rate,24/10/2026,30/10/2026,6,1434,Condotta 16,Confermate,0,Sito web,0
-9BCFD4EBE0,23/06/2026 15:47,,Airbnb,昱 郝,Cupola,Tariffa base,08/08/2026,10/08/2026,2,264.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-B43296D718,23/06/2026 10:42,,Expedia,Ann Richardson,Suite,Flessibile,25/09/2026,29/09/2026,4,1409.27,Firenze Suite,Confermate,0,OTA,0
-66A155FB41,22/06/2026 21:37,,Airbnb,Ricardo Guimaraes,Cupola,Tariffa base,18/09/2026,22/09/2026,4,834.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-56CBFBD79D,22/06/2026 19:26,,Booking,Catherine Chabanis,Camera Matrimoniale Deluxe,Non rimborsabile,19/08/2026,21/08/2026,2,265.08,Firenze Suite,Confermate,0,OTA,0
-5E49A5E164,22/06/2026 18:01,,Booking,Michal Sela,Bilocale,Standard rate,01/10/2026,03/10/2026,2,796.6,Condotta 16,Confermate,0,OTA,0
-9536387E6C,22/06/2026 16:02,,Booking,Liu Zheng,Trilocale,Standard rate,16/08/2026,20/08/2026,4,1078.65,Condotta 16,Confermate,0,OTA,0
-F44D4BD671,22/06/2026 15:44,,Airbnb,선미 강,Cupola,Tariffa base,16/10/2026,19/10/2026,3,607.15,Nazionale 35 Apartments,Confermate,0,OTA,40
-5C53ED8881,14/06/2026 19:37,22/06/2026 13:07,Booking,Roberta Chapman,Bilocale,Standard rate,08/08/2026,15/08/2026,7,1249.3,Condotta 16,Confermate,0,OTA,0
-FDAA5B979F,21/06/2026 22:58,,Booking,OHASHI YUJI,Suite,Non rimborsabile,05/07/2026,07/07/2026,2,406.15,Firenze Suite,Confermate,0,OTA,0
-FC3AE73BC9,21/06/2026 16:35,,Booking,Stefano Faita,Trilocale,Standard rate,22/07/2026,25/07/2026,3,1049.76,Condotta 16,Confermate,0,OTA,0
-20AA5D4258,26/05/2026 06:04,21/06/2026 04:07,Booking,Chugh Sumit,Trilocale,Standard rate,30/07/2026,01/08/2026,2,895.18,Condotta 16,Cancellate,0,OTA,0
-7B4D5F0EBD,20/06/2026 21:23,,Booking,Simon Simonsen,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",06/08/2026,07/08/2026,1,305.2,Firenze Suite,Confermate,0,OTA,0
-22F2F5E968,20/06/2026 14:00,,Airbnb,James French,Uffizi,Tariffa base,29/09/2026,02/10/2026,3,712,Nazionale 35 Apartments,Confermate,0,OTA,40
-BE71B7B2C5,20/06/2026 11:46,,Booking,Jennifer Cisullo,Suite,Flessibile,27/08/2026,28/08/2026,1,192.17,Firenze Suite,Confermate,0,OTA,0
-ACA20FCCC4,20/06/2026 09:43,,Airbnb,승은 문,Cupola,Tariffa base,13/10/2026,14/10/2026,1,229.05,Nazionale 35 Apartments,Confermate,0,OTA,40
-91E4BD268C,19/06/2026 19:50,,Expedia,SUK YING CHOW,Suite con Terrazza,Flessibile,19/07/2026,22/07/2026,3,665.81,Firenze Suite,Confermate,0,OTA,0
-CD07FB3DCA,18/06/2026 06:34,,Expedia,Paula Kviman,Camera Matrimoniale Deluxe,Non rimborsabile,02/08/2026,03/08/2026,1,127.85,Firenze Suite,Confermate,0,OTA,0
-6981194FCF,18/06/2026 03:47,,Booking,Jivitesh Shah,Trilocale,Non rimborsabile,16/07/2026,19/07/2026,3,1005.23,Condotta 16,Confermate,0,OTA,0
-D3088645BC,18/06/2026 03:25,,Airbnb,Kellene Kim,Cupola,Tariffa base,30/07/2026,02/08/2026,3,378.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-A95B15D014,17/06/2026 16:55,,Booking,James Walker,Trilocale,Standard rate,21/08/2026,27/08/2026,6,1772.82,Condotta 16,Confermate,0,OTA,0
-EDF981D3FA,16/06/2026 19:48,,Airbnb,Kiersten Nielson,Cupola,Tariffa base,22/07/2026,23/07/2026,1,191.05,Nazionale 35 Apartments,Confermate,0,OTA,40
-3735B44839,15/06/2026 16:46,,Booking,Luis Marcelo Teixeira,Trilocale,Standard rate,22/07/2026,25/07/2026,3,1130.37,Condotta 16,Confermate,0,OTA,0
-29AAC39A71,12/06/2026 19:54,15/06/2026 08:55,Booking,Negar Oromi,Camera Matrimoniale Deluxe,Non rimborsabile,09/07/2026,11/07/2026,2,356.08,Firenze Suite,Confermate,0,OTA,0
-0CEE5ED6B7,22/05/2026 07:30,15/06/2026 02:53,Expedia,YI LIU,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,30/07/2026,01/08/2026,2,340.5,Firenze Suite,Cancellate,0,OTA,0
-A77030A6DA,22/05/2026 07:29,15/06/2026 02:51,Expedia,YI LIU,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,29/07/2026,30/07/2026,1,170.25,Firenze Suite,Cancellate,0,OTA,0
-FE1368BA27,08/06/2026 10:23,14/06/2026 09:13,Booking,Emilie Simoes Marques,Camera Matrimoniale Deluxe,Non rimborsabile,16/07/2026,20/07/2026,4,660.25,Firenze Suite,Confermate,0,OTA,0
-54752E7A69,13/06/2026 22:50,,Booking,Harold Reyes Barrios,Bilocale,Non rimborsabile,23/08/2026,24/08/2026,1,204.72,Condotta 16,Confermate,0,OTA,0
-8994CD0939,13/06/2026 16:51,,Booking,Ren Feng,Camera Matrimoniale Deluxe,Non rimborsabile,23/07/2026,26/07/2026,3,613.47,Firenze Suite,Confermate,0,OTA,0
-EDEE9513A3,01/04/2026 16:34,13/06/2026 13:41,Booking,Wendy Dean,Camera Matrimoniale Deluxe,Flessibile,28/11/2026,29/11/2026,1,145.92,Firenze Suite,Cancellate,0,OTA,0
-A341C69896,13/06/2026 11:12,,Beddy,Isabelle Lahyani,Camera Matrimoniale Deluxe,Non rimborsabile,23/07/2026,24/07/2026,1,201.1,Firenze Suite,Confermate,0,Sito web,0
-A4DC3FB647,13/06/2026 08:51,,Booking,Andrew Small,Trilocale,Non rimborsabile,09/07/2026,10/07/2026,1,345.59,Condotta 16,Confermate,0,OTA,0
-9BF4AECFA6,13/06/2026 04:55,13/06/2026 07:55,Booking,Jiang shan,Trilocale,Standard rate,09/08/2026,13/08/2026,4,1212.76,Condotta 16,Cancellate,0,OTA,0
-17F181FD9E,11/06/2026 22:12,,Beddy,rami polatsek,Camera Matrimoniale Deluxe,Non rimborsabile,06/08/2026,08/08/2026,2,335.5,Firenze Suite,Confermate,0,Sito web,0
-65FCBA2D88,11/06/2026 14:06,,Airbnb,睦美 鈴木,Ponte Vecchio,Tariffa base,23/11/2026,26/11/2026,3,270.85,Porte Nuove Apartments,Confermate,0,OTA,40
-648A28DE19,11/06/2026 09:43,,Beddy,Susan Craig,Camera Matrimoniale Deluxe,Non rimborsabile,27/09/2026,07/10/2026,10,2788,Firenze Suite,Confermate,0,Non Specificato,0
-11870260A3,11/06/2026 09:16,11/06/2026 09:24,Booking,Tracie Munoz,Trilocale,Standard rate,03/07/2026,04/07/2026,1,375.66,Condotta 16,Cancellate,0,OTA,0
-A0D4F15668,11/06/2026 04:42,,Airbnb,Nikita Ashcherkin,Cupola,Tariffa base,16/08/2026,18/08/2026,2,264.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-11742C662C,10/06/2026 17:07,,Booking,McAuliffe Billee,Trilocale,Standard rate,05/09/2026,06/09/2026,1,434.07,Condotta 16,Confermate,0,OTA,0
-A25B6F5C83,05/06/2026 05:38,10/06/2026 06:55,Booking,Vera MA,Bilocale,Standard rate,29/09/2026,01/10/2026,2,695.2,Condotta 16,Cancellate,0,OTA,0
-23E9F7B380,10/06/2026 01:11,,Airbnb,Johanna Santiago,Cupola,Tariffa base,11/10/2026,13/10/2026,2,418.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-E205B02EA7,04/06/2026 08:39,09/06/2026 17:11,Booking,Sanda Rezgui,Bilocale,Standard rate,17/07/2026,25/07/2026,8,1541.35,Condotta 16,Cancellate,0,OTA,0
-9708042EB8,08/06/2026 22:40,,Airbnb,Ignacio Casado Menéndez,Cupola,Tariffa base,05/10/2026,09/10/2026,4,796.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-70C86CE01F,08/06/2026 03:50,,Booking,Zena Borg,Trilocale,Standard rate,08/07/2026,10/07/2026,2,691.19,Condotta 16,Confermate,0,OTA,0
-F767E0D337,07/06/2026 21:14,,Booking,Bernhard Hohenegger,Trilocale,Standard rate,12/07/2026,13/07/2026,1,355.44,Condotta 16,Confermate,0,OTA,0
-799E7FF528,07/06/2026 15:53,,Expedia,LU XI,Suite,Non rimborsabile,14/07/2026,16/07/2026,2,291.25,Firenze Suite,Confermate,0,OTA,0
-97E2386ED8,06/06/2026 01:54,,Booking,Donna Roy,Trilocale,Standard rate,19/09/2026,22/09/2026,3,1425.43,Condotta 16,Confermate,0,OTA,0
-13515C440B,05/06/2026 16:26,,Airbnb,明學 謝,Cupola,Tariffa base,30/09/2026,03/10/2026,3,616.65,Nazionale 35 Apartments,Confermate,0,OTA,40
-96FB4CCC95,26/05/2026 23:48,04/06/2026 09:33,Booking,Onali Shabbir Petiwala,Bilocale,Standard rate,21/07/2026,25/07/2026,4,1357.63,Condotta 16,Confermate,0,OTA,0
-74408DCAB8,02/01/2026 07:33,03/06/2026 17:04,Expedia,Laura Mayo,Trilocale,Standard rate,24/07/2026,25/07/2026,1,663.47,Condotta 16,Cancellate,0,OTA,0
-59330C892D,03/06/2026 07:49,,Airbnb,Christian Degel,Cupola,Tariffa base,04/09/2026,10/09/2026,6,1231.3,Nazionale 35 Apartments,Confermate,0,OTA,40
-99CA0617BC,03/06/2026 03:43,,Expedia,Guillaume Blondin,Attico,Non rimborsabile,09/07/2026,12/07/2026,3,784.87,Condotta 16,Confermate,0,OTA,0
-63CEA93E8C,02/06/2026 18:54,,Beddy,Maksim Shashlov,"Trilocale, Trilocale","Non rimborsabile, Non rimborsabile",19/07/2026,21/07/2026,2,1246,Condotta 16,Confermate,0,Sito web,0
-AAAFC69458,02/06/2026 11:27,,Booking,Leah Harry,Trilocale,Non rimborsabile,21/07/2026,24/07/2026,3,717.24,Condotta 16,Confermate,0,OTA,0
-924E4CE0C2,02/06/2026 03:45,,Expedia,Vicente Brocchetto,Trilocale,Standard rate,08/07/2026,11/07/2026,3,907.7,Condotta 16,Confermate,0,OTA,0
-DA1F666B29,01/06/2026 00:09,01/06/2026 22:55,Booking,Alejandro Fernandez Vazquez,Bilocale,Standard rate,11/07/2026,18/07/2026,7,1240.18,Condotta 16,Cancellate,0,OTA,0
-929107D734,01/06/2026 08:50,,Airbnb,Evans Boateng,Ponte Vecchio,Tariffa base,24/07/2026,26/07/2026,2,238.36,Porte Nuove Apartments,Confermate,0,OTA,40
-06CA2E481F,01/06/2026 07:37,,Airbnb,Jill Malabanan,Cupola,Tariffa base,02/08/2026,04/08/2026,2,264.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-2401D38EAA,01/06/2026 06:43,,Booking,Elisabeth Levine,Bilocale,Standard rate,15/07/2026,18/07/2026,3,594.32,Condotta 16,Confermate,0,OTA,0
-E2024EBDF1,31/05/2026 19:14,,Expedia,Felipe Sutton,Suite,Non rimborsabile,20/07/2026,24/07/2026,4,599.2,Firenze Suite,Confermate,0,OTA,0
-6911FE4302,31/05/2026 18:59,,Booking,YUXIA XU,Suite,Flessibile,14/07/2026,17/07/2026,3,552.24,Firenze Suite,Confermate,0,OTA,0
-57A823A418,31/05/2026 18:59,,Beddy,Quentin Guillemot,Suite,Flessibile,07/07/2026,11/07/2026,4,801,Firenze Suite,Confermate,0,Sito web,0
-F7D1FC0A04,28/05/2026 23:20,,Airbnb,Nick Uttley,Cupola,Tariffa base,10/08/2026,14/08/2026,4,488.4,Nazionale 35 Apartments,Confermate,0,OTA,40
-62CBA1DB3A,28/05/2026 18:51,,Booking,Matthew Ramstrom,Suite,Non rimborsabile,03/09/2026,04/09/2026,1,343.86,Firenze Suite,Confermate,0,OTA,0
-D9DB596E7E,27/05/2026 23:06,,Beddy,Pierre Gilbert,Suite con Terrazza,Flessibile,12/11/2026,25/11/2026,13,3135,Firenze Suite,Confermate,0,Sito web,0
-20F9B2E213,27/05/2026 14:46,,Airbnb,Bonnie McCallion,Cupola,Tariffa base,30/08/2026,01/09/2026,2,264.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-3EBB9385EC,27/05/2026 00:09,,Airbnb,Amelie Köchling,Cupola,Tariffa base,14/08/2026,16/08/2026,2,264.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-FF72E0E97C,26/05/2026 09:09,,Airbnb,Caira Amado Caldentey,Palazzo Pitti,Tariffa base,09/10/2026,11/10/2026,2,247,Porte Nuove Apartments,Confermate,0,OTA,40
-CAB2ACE0D1,26/05/2026 02:12,,Airbnb,Cat Petrella,Cupola,Tariffa base,14/09/2026,17/09/2026,3,635.65,Nazionale 35 Apartments,Confermate,0,OTA,40
-77327BEE9F,13/01/2026 21:14,25/05/2026 22:40,Booking,Ashley Lerner,Bilocale,Standard rate,24/11/2026,26/11/2026,2,287.28,Condotta 16,Cancellate,0,OTA,0
-B34112379D,25/05/2026 16:16,,Expedia,KECHENG YE,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,24/07/2026,26/07/2026,2,384.49,Firenze Suite,Confermate,0,OTA,0
-4DFDFD6BE9,25/05/2026 16:12,,Expedia,XIAOYUE HE,Suite con Terrazza,Miglior tariffa garantita PKG,24/07/2026,26/07/2026,2,480.14,Firenze Suite,Confermate,0,OTA,0
-DB638D2B46,25/05/2026 16:12,,Expedia,XICHUN LI,Suite con Terrazza,Miglior tariffa garantita PKG,24/07/2026,26/07/2026,2,480.14,Firenze Suite,Confermate,0,OTA,0
-2D8875BE66,24/05/2026 17:18,,Booking,Samuel Pitonyak,Camera Matrimoniale Deluxe,Flessibile,30/08/2026,03/09/2026,4,1062.58,Firenze Suite,Confermate,0,OTA,0
-B1130D01F0,24/05/2026 16:55,,Airbnb,Cynthia Vallen,Cupola,Tariffa base,11/09/2026,14/09/2026,3,635.65,Nazionale 35 Apartments,Confermate,0,OTA,40
-C934DCAA61,24/05/2026 08:51,,Airbnb,Cassandra Gill,Ponte Vecchio,Tariffa base,06/11/2026,09/11/2026,3,270.85,Porte Nuove Apartments,Confermate,0,OTA,40
-2319EA81DD,24/05/2026 08:45,,Airbnb,Ingrid Pienica,Palazzo Pitti,Tariffa base,02/10/2026,05/10/2026,3,350.65,Porte Nuove Apartments,Confermate,0,OTA,40
-5BDF34651B,24/05/2026 06:11,,Airbnb,Sagar Patel,Cupola,Tariffa base,17/07/2026,20/07/2026,3,379.15,Nazionale 35 Apartments,Confermate,0,OTA,40
-6BD7996667,23/05/2026 23:54,,Airbnb,Alexandra Morrissey,Cupola,Tariffa base,05/08/2026,07/08/2026,2,264.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-B913B4CF15,18/01/2026 23:15,23/05/2026 21:18,Booking,Izabella Annunziata,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Flessibile, Flessibile, Flessibile",24/08/2026,27/08/2026,3,1795.23,Firenze Suite,Cancellate,0,OTA,0
-91932E8042,23/05/2026 19:49,,Airbnb,Liana Kirby,Cupola,Tariffa base,28/07/2026,30/07/2026,2,266.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-2B9D2B2563,23/05/2026 16:06,,Airbnb,Maja Løvold,Cupola,Tariffa base,27/08/2026,29/08/2026,2,264.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-2EF3FB0AA5,23/05/2026 08:38,,Airbnb,Kate Campbell,Cupola,Tariffa base,19/08/2026,22/08/2026,3,376.3,Nazionale 35 Apartments,Confermate,0,OTA,40
-886DA7ED12,23/05/2026 05:41,,Airbnb,Seth Gillespie,Cupola,Tariffa base,23/07/2026,28/07/2026,5,605.25,Nazionale 35 Apartments,Confermate,0,OTA,40
-B9BB8D8191,22/05/2026 20:09,,Airbnb,Lídia Andrioni,Cupola,Tariffa base,13/07/2026,15/07/2026,2,266.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-29C9F265BA,20/05/2026 07:25,22/05/2026 17:03,Expedia,Viktoria Van Leeuwen,Suite con Terrazza,Flessibile,12/07/2026,16/07/2026,4,1043.4,Firenze Suite,Cancellate,0,OTA,0
-590055F359,22/05/2026 15:43,,Airbnb,Claudia Schoeneck,Cupola,Tariffa base,22/08/2026,26/08/2026,4,488.4,Nazionale 35 Apartments,Confermate,0,OTA,40
-E872450E08,22/05/2026 10:42,,Airbnb,Annette Reinert,Cupola,Tariffa base,07/07/2026,11/07/2026,4,492.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-875E2EB77F,19/05/2026 18:58,22/05/2026 08:57,Beddy,Kari Likovuori,Suite,Flessibile,21/07/2026,25/07/2026,4,848,Firenze Suite,Confermate,0,Sito web,0
-57AE76CCBE,21/05/2026 17:19,,Booking,Donald Roberts,Trilocale,Standard rate,08/07/2026,09/07/2026,1,506.88,Condotta 16,Confermate,0,OTA,0
-0254AE84EA,21/05/2026 15:15,,Airbnb,Morten Bjerrum Kjær,Uffizi,Tariffa base,17/08/2026,22/08/2026,5,944.75,Nazionale 35 Apartments,Confermate,0,OTA,40
-9CCA03BF0D,21/05/2026 12:41,,Airbnb,Vanessa De Souza,Palazzo Pitti,Tariffa base,23/08/2026,26/08/2026,3,282.25,Porte Nuove Apartments,Confermate,0,OTA,40
-5F9B5430DB,21/05/2026 00:44,,Airbnb,Greg Coleman,Uffizi,Tariffa base,15/07/2026,16/07/2026,1,237.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-4DF49CEAED,20/05/2026 09:44,,Airbnb,Yating He,Uffizi,Tariffa base,18/07/2026,20/07/2026,2,405,Nazionale 35 Apartments,Confermate,0,OTA,40
-DAE5F33FCF,19/05/2026 12:57,,Airbnb,José Granados Nuñez,Palazzo Pitti,Tariffa base,20/08/2026,23/08/2026,3,282.25,Porte Nuove Apartments,Confermate,0,OTA,40
-86ABD46237,18/05/2026 10:37,,Beddy,Mauro Camporini,Suite,Flessibile,19/09/2026,20/09/2026,1,309,Firenze Suite,Confermate,0,Sito web,0
-8138889BD8,08/04/2026 21:06,17/05/2026 18:29,Booking,George Aslanidis,Camera Matrimoniale Deluxe,Flessibile,05/07/2026,06/07/2026,1,200.48,Firenze Suite,Cancellate,0,OTA,0
-F53D14C252,17/05/2026 12:27,,Airbnb,Alexa Beining,Cupola,Tariffa base,22/09/2026,26/09/2026,4,834.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-F8873C26D0,16/05/2026 23:54,,Beddy,Lia Yoo,Camera Matrimoniale Deluxe,Flessibile,23/10/2026,24/10/2026,1,249,Firenze Suite,Confermate,0,Sito web,0
-3E0BFD36C2,16/05/2026 18:28,,Airbnb,Marius Brandscheidt,Uffizi,Tariffa base,09/08/2026,13/08/2026,4,765.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-1BCFFC64A1,16/05/2026 15:55,,Airbnb,Rose Ewald,Uffizi,Tariffa base,13/10/2026,14/10/2026,1,255.85,Nazionale 35 Apartments,Confermate,0,OTA,40
-3B80FA1348,03/05/2026 04:45,16/05/2026 07:18,Booking,stefan coombs,Trilocale,Standard rate,07/09/2026,10/09/2026,3,1601.22,Condotta 16,Cancellate,0,OTA,0
-2F4E0B2783,16/05/2026 07:16,,Beddy,Stefan Coombs,Trilocale,Non rimborsabile,07/09/2026,10/09/2026,3,1372.8,Condotta 16,Confermate,0,Sito web,0
-DE66F7A5F3,12/05/2026 15:54,,Airbnb,Guto Cappellini,Palazzo Pitti,Tariffa base,18/07/2026,20/07/2026,2,209.1,Porte Nuove Apartments,Confermate,0,OTA,40
-BA39699878,10/05/2026 02:37,,Airbnb,Camila Tenorio Usma,Palazzo Pitti,Tariffa base,20/07/2026,24/07/2026,4,378.2,Porte Nuove Apartments,Confermate,0,OTA,40
-A5F5AC9997,09/05/2026 22:18,,Airbnb,Thomas Moorin,Palazzo Pitti,Tariffa base,30/07/2026,03/08/2026,4,370.6,Porte Nuove Apartments,Confermate,0,OTA,40
-0787DFAC49,07/05/2026 13:48,,Airbnb,Mits Nieuwenhuijzen,Palazzo Pitti,Tariffa base,27/07/2026,30/07/2026,3,293.65,Porte Nuove Apartments,Confermate,0,OTA,40
-48F08F3A12,07/05/2026 09:07,,Airbnb,창희 유,Uffizi,Tariffa base,28/09/2026,29/09/2026,1,279.85,Nazionale 35 Apartments,Confermate,0,OTA,40
-DFF48E0097,15/01/2026 14:30,06/05/2026 09:18,Booking,BENJAMIN Castano Cota,Camera Matrimoniale Deluxe,Flessibile,06/11/2026,09/11/2026,3,412.02,Firenze Suite,Cancellate,0,OTA,0
-76AD3E4AC0,04/05/2026 09:01,,Airbnb,Isabella Couto,Palazzo Pitti,Tariffa base,14/08/2026,19/08/2026,5,443.75,Porte Nuove Apartments,Confermate,0,OTA,40
-FCE7A73E85,28/04/2026 00:21,03/05/2026 17:56,Booking,Roberta Severo Viana,Trilocale,Standard rate,19/12/2026,22/12/2026,3,646.59,Condotta 16,Cancellate,0,OTA,0
-BFBBD3B9B2,03/05/2026 17:29,,Airbnb,Marco Ehlen,Palazzo Pitti,Tariffa base,17/10/2026,20/10/2026,3,350.65,Porte Nuove Apartments,Confermate,0,OTA,40
-314E5552E4,03/05/2026 08:55,,Airbnb,Patty 吳,Palazzo Pitti,Tariffa base,26/08/2026,29/08/2026,3,282.25,Porte Nuove Apartments,Confermate,0,OTA,40
-D4462045FD,03/05/2026 07:51,,Beddy,Carlo Borzillo,Suite con Terrazza,Non rimborsabile,06/08/2026,20/08/2026,14,2534.42,Firenze Suite,Confermate,0,Sito web,0
-DF1EAAE0EC,03/05/2026 00:29,03/05/2026 03:33,Beddy,Stefan Coombs,Trilocale,Standard rate,07/09/2026,10/09/2026,3,1481.1,Condotta 16,Cancellate,0,Sito web,0
-B9CC1EB5C8,02/05/2026 15:12,,Booking,Elena Arguelles,Trilocale,Standard rate,05/12/2026,12/12/2026,7,1249.99,Condotta 16,Confermate,0,OTA,0
-7554D05A9F,02/05/2026 12:45,,Booking,Bernardo DINIZ,Attico,Standard rate,08/11/2026,11/11/2026,3,656.19,Condotta 16,Confermate,0,OTA,0
-4F72AD594B,01/05/2026 19:44,,Airbnb,Akinyemi Temitope,Palazzo Pitti,Tariffa base,09/07/2026,11/07/2026,2,209.1,Porte Nuove Apartments,Confermate,0,OTA,40
-B4D5FB3BD0,01/05/2026 03:49,,Booking,Qian Jin,Attico,Standard rate,22/12/2026,26/12/2026,4,1155.28,Condotta 16,Confermate,0,OTA,0
-016430EE06,28/04/2026 10:06,,Booking,Nikola Hoskova,Camera Matrimoniale Deluxe,Flessibile,27/11/2026,30/11/2026,3,412.02,Firenze Suite,Confermate,0,OTA,0
-3D6B6F3D24,09/04/2026 13:32,27/04/2026 12:50,Booking,Ugo Cozzupoli,Bilocale,Standard rate,05/12/2026,07/12/2026,2,258.56,Condotta 16,Cancellate,0,OTA,0
-28338D2B29,26/04/2026 13:33,,Airbnb,Axelle Guyon,Palazzo Pitti,Tariffa base,03/08/2026,05/08/2026,2,201.5,Porte Nuove Apartments,Confermate,0,OTA,40
-24CD34C8EC,25/04/2026 09:35,,Beddy,Stephen Dye,Suite,Flessibile,07/12/2026,11/12/2026,4,523.2,Firenze Suite,Confermate,0,Sito web,0
-1EAB934C2C,25/04/2026 04:54,,Beddy,Jack Castles,Bilocale,Non rimborsabile,08/11/2026,11/11/2026,3,307.8,Condotta 16,Confermate,0,Sito web,0
-5D8002A5DB,23/04/2026 19:15,,Airbnb,Manuel De La Torre,Palazzo Pitti,Tariffa base,12/08/2026,14/08/2026,2,201.5,Porte Nuove Apartments,Confermate,0,OTA,40
-16E1DD184C,23/04/2026 08:35,,Airbnb,Eric St-Amand,Uffizi,Tariffa base,12/09/2026,13/09/2026,1,261.55,Nazionale 35 Apartments,Confermate,0,OTA,40
-D9E63C814F,16/04/2026 22:21,21/04/2026 03:33,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite con Terrazza,Flessibile,05/12/2026,07/12/2026,2,370.82,Firenze Suite,Cancellate,0,OTA,0
-CF7DCD2B9A,21/04/2026 03:30,,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite con Terrazza,Flessibile,05/12/2026,07/12/2026,2,360.52,Firenze Suite,Confermate,0,OTA,0
-15AFF85320,19/04/2026 23:24,,Booking,Sudeep Kothari,Trilocale,Standard rate,25/12/2026,26/12/2026,1,259.6,Condotta 16,Confermate,0,OTA,0
-975677AC8B,19/04/2026 17:56,19/04/2026 19:16,Booking,Lyudmila Aukhert,Trilocale,Standard rate,29/11/2026,06/12/2026,7,1323.49,Condotta 16,Cancellate,0,OTA,0
-92BF1CD795,19/04/2026 19:12,,Booking,Lyudmila Aukhert,Trilocale,Standard rate,30/11/2026,07/12/2026,7,1323.49,Condotta 16,Confermate,0,OTA,0
-22F94BD2F8,19/04/2026 10:44,,Beddy,Jonathan Dowling,Trilocale,Standard rate,15/10/2026,21/10/2026,6,2572.2,Condotta 16,Confermate,0,Sito web,0
-EBF895A6F7,18/04/2026 17:29,,Booking,Aseem Gupta,Attico,Standard rate,12/10/2026,15/10/2026,3,1777.14,Condotta 16,Confermate,0,OTA,0
-D6E6E80AF3,18/04/2026 04:09,,Booking,susanto sjamsuddin;ana mariyani;darrell rafael,Bilocale,Standard rate,24/12/2026,27/12/2026,3,517.32,Condotta 16,Confermate,0,OTA,0
-BC852F8D68,09/03/2026 00:48,16/04/2026 22:20,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite,Flessibile,04/12/2026,06/12/2026,2,329.62,Firenze Suite,Cancellate,0,OTA,0
-3B4611BFCF,16/04/2026 21:38,16/04/2026 22:20,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite con Terrazza,Flessibile,05/12/2026,07/12/2026,2,370.82,Firenze Suite,Cancellate,0,OTA,0
-4837EB84A6,15/04/2026 00:33,,Booking,Liu Pauline,Bilocale,Standard rate,07/11/2026,12/11/2026,5,698.25,Condotta 16,Confermate,0,OTA,0
-05132E2E47,14/04/2026 21:20,,Beddy,Maurice den Boer,Bilocale,Standard rate,15/11/2026,19/11/2026,4,456,Condotta 16,Confermate,0,Sito web,0
-5097896BE6,14/04/2026 15:53,,Airbnb,Hui Jie Goh,Palazzo Vecchio,Tariffa base,13/09/2026,14/09/2026,1,172.05,Porte Nuove Apartments,Confermate,0,OTA,40
-723B3779D2,14/04/2026 08:46,,Airbnb,Yu Hsuan Tsai,Uffizi,Tariffa base,02/08/2026,04/08/2026,2,384.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-0C8379CC70,08/04/2026 09:59,,Airbnb,진영 김,Uffizi,Tariffa base,06/10/2026,11/10/2026,5,1201.25,Nazionale 35 Apartments,Confermate,0,OTA,40
-58584626D8,02/04/2026 15:33,06/04/2026 15:37,Booking,MA TENGFEI CAO MENGYI,Camera Matrimoniale Deluxe,Flessibile,05/07/2026,08/07/2026,3,666.6,Firenze Suite,Cancellate,0,OTA,0
-F31D0ED21C,05/04/2026 22:15,,Booking,Luca Pigola,Suite,Flessibile,07/11/2026,08/11/2026,1,175.11,Firenze Suite,Confermate,0,OTA,0
-57852FF1FC,30/03/2026 19:23,,Booking,jimena palleiro,Bilocale,Standard rate,01/11/2026,04/11/2026,3,418.95,Condotta 16,Confermate,0,OTA,0
-52A99D734B,28/02/2026 05:47,30/03/2026 19:05,Beddy,jayne young,Attico,Standard rate,27/09/2026,02/10/2026,5,2657.75,Condotta 16,Cancellate,0,Sito web,0
-3754C15E0D,30/03/2026 08:42,,Airbnb,Tinja Rönneberg,Ponte Vecchio,Tariffa base,12/07/2026,17/07/2026,5,531.15,Porte Nuove Apartments,Confermate,0,OTA,40
-011DA0659A,30/03/2026 08:40,,Airbnb,筠雅 林,Palazzo Pitti,Tariffa base,06/08/2026,09/08/2026,3,282.25,Porte Nuove Apartments,Confermate,0,OTA,40
-1AA6963D48,29/03/2026 21:10,,Booking,Romuald Schostak,Camera Matrimoniale Deluxe,Non rimborsabile,20/07/2026,22/07/2026,2,341.68,Firenze Suite,Confermate,0,OTA,0
-730DAEC39F,27/03/2026 02:55,,Beddy,Malia Pina,Attico,Standard rate,25/11/2026,29/11/2026,4,661.2,Condotta 16,Confermate,0,Sito web,0
-C43AC18930,26/03/2026 16:03,,Airbnb,Anthony Caniglia,Ponte Vecchio,Tariffa base,19/07/2026,23/07/2026,4,480.8,Porte Nuove Apartments,Confermate,0,OTA,40
-04A3B47D0C,24/03/2026 10:53,25/03/2026 18:34,Booking,le roch rachel,Suite,Flessibile,31/07/2026,02/08/2026,2,443.42,Firenze Suite,Cancellate,0,OTA,0
-D029C9C819,24/03/2026 10:46,25/03/2026 18:33,Booking,le roch rachel,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Flessibile, Flessibile",31/07/2026,02/08/2026,2,739.04,Firenze Suite,Cancellate,0,OTA,0
-38C1DE2FF6,25/03/2026 08:45,,Airbnb,Elisa Birchen,Ponte Vecchio,Tariffa base,07/07/2026,09/07/2026,2,220.5,Porte Nuove Apartments,Confermate,0,OTA,40
-602B29B9E8,25/03/2026 08:44,,Airbnb,Jake Denton,Palazzo Pitti,Tariffa base,07/07/2026,09/07/2026,2,201.5,Porte Nuove Apartments,Confermate,0,OTA,40
-F6F538B081,24/03/2026 21:34,,Booking,Peggy Steinhardt,Suite con Terrazza,Flessibile,20/08/2026,26/08/2026,6,1374.24,Firenze Suite,Confermate,0,OTA,0
-F11EB8AFD6,24/03/2026 00:00,,Booking,Nathan Kline,Trilocale,Standard rate,23/08/2026,25/08/2026,2,1188.6,Condotta 16,Confermate,0,OTA,0
-041F8A7A6B,23/03/2026 17:55,,Airbnb,Bernard Senos,Palazzo Pitti,Tariffa base,11/07/2026,13/07/2026,2,201.5,Porte Nuove Apartments,Confermate,0,OTA,40
-68A05EB985,22/03/2026 23:14,,Booking,Andrea Ghezzi,Trilocale,Standard rate,28/11/2026,29/11/2026,1,259.6,Condotta 16,Confermate,0,OTA,0
-7945054B8B,22/03/2026 17:55,,Airbnb,Дарья Соколова,Palazzo Vecchio,Tariffa base,18/07/2026,20/07/2026,2,209.1,Porte Nuove Apartments,Confermate,0,OTA,40
-8540667FF9,19/03/2026 18:05,,Airbnb,Aran Dhillon,Palazzo Pitti,Tariffa base,24/07/2026,27/07/2026,3,282.25,Porte Nuove Apartments,Confermate,0,OTA,40
-36701A63CC,19/03/2026 08:39,,Airbnb,Marie Eychenne,Palazzo Vecchio,Tariffa base,11/07/2026,17/07/2026,6,547.3,Porte Nuove Apartments,Confermate,0,OTA,40
-1FD8743E54,14/03/2026 06:52,,Booking,Peta Humphreys,Trilocale,Standard rate,19/11/2026,22/11/2026,3,687,Condotta 16,Confermate,0,OTA,0
-D15EB886F3,14/03/2026 06:12,14/03/2026 06:52,Booking,Peta Humphreys,Trilocale,Standard rate,19/11/2026,22/11/2026,3,595.2,Condotta 16,Cancellate,0,OTA,0
-C651A635C6,11/03/2026 18:13,,Booking,Oldrich Hrabanek,"Suite con Terrazza, Suite con Terrazza","Flessibile, Flessibile",27/07/2026,30/07/2026,3,1860.54,Firenze Suite,Confermate,0,OTA,0
-F7332A95AD,08/03/2026 07:34,09/03/2026 00:51,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite,Flessibile,04/12/2026,05/12/2026,1,164.81,Firenze Suite,Cancellate,0,OTA,0
-2B6E8805E3,09/03/2026 00:36,09/03/2026 00:43,Booking,DIEGO ALEJANDRO CASTRO FERNANDEZ,Suite,Flessibile,04/12/2026,06/12/2026,2,329.62,Firenze Suite,Cancellate,0,OTA,0
-A683D0184E,07/03/2026 00:43,,Beddy,Lisa Little,Trilocale,Standard rate,05/11/2026,10/11/2026,5,741,Condotta 16,Confermate,0,Sito web,0
-B61BCD162E,06/03/2026 21:14,,Airbnb,Tash Van Der Kraan,Uffizi,Tariffa base,02/09/2026,06/09/2026,4,917.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-38F1DA705E,28/02/2026 21:32,,Beddy,Carl Shelton,Suite,Flessibile,25/11/2026,26/11/2026,1,130.8,Firenze Suite,Confermate,0,Sito web,0
-AF15569814,27/02/2026 11:07,,Airbnb,Nelly Rask,Ponte Vecchio,Tariffa base,04/08/2026,08/08/2026,4,401,Porte Nuove Apartments,Confermate,0,OTA,40
-9704274041,26/02/2026 18:41,,Booking,Michael Braeschke,Camera Matrimoniale Deluxe,Non rimborsabile,31/08/2026,01/09/2026,1,217.24,Firenze Suite,Confermate,0,OTA,0
-B836B916B2,11/02/2026 12:51,,Airbnb,Sue Cecere,Uffizi,Tariffa base,19/09/2026,24/09/2026,5,1134.75,Nazionale 35 Apartments,Confermate,0,OTA,40
-3949CBF93A,18/01/2026 01:57,09/02/2026 20:22,Beddy,Lauren Putnam,"Camera Matrimoniale Deluxe, Suite con Terrazza","Flessibile, Flessibile",10/07/2026,12/07/2026,2,1153.3,Firenze Suite,Cancellate,0,Sito web,0
-B8C8BF036D,07/02/2026 20:07,,Booking,Aurora Battisti,Camera Matrimoniale Deluxe,Non rimborsabile,15/07/2026,16/07/2026,1,234.88,Firenze Suite,Confermate,0,OTA,0
-09663B390E,04/02/2026 10:15,,Booking,dominique chagnon,Camera Matrimoniale Deluxe,Non rimborsabile,31/08/2026,01/09/2026,1,205.17,Firenze Suite,Confermate,0,OTA,0
-A10CC48CE4,03/02/2026 20:41,,Airbnb,Andrew Carrington,Ponte Vecchio,Tariffa base,27/08/2026,30/08/2026,3,311,Porte Nuove Apartments,Confermate,0,OTA,40
-7FCF16CAE6,03/02/2026 12:27,,Airbnb,Amy Halford,Uffizi,Tariffa base,10/09/2026,12/09/2026,2,498.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-DD04BEE0A7,01/02/2026 22:56,,Booking,Claudio Valiente,Bilocale,Standard rate,27/11/2026,01/12/2026,4,574.56,Condotta 16,Confermate,0,OTA,0
-B4934F9D5A,01/02/2026 20:03,01/02/2026 20:18,Booking,gal aspis,Trilocale,Standard rate,17/09/2026,18/09/2026,1,740.32,Condotta 16,Confermate,0,OTA,0
-DFD10B350B,23/01/2026 03:14,01/02/2026 10:39,Booking,Michael Brett,Trilocale,Standard rate,01/10/2026,04/10/2026,3,1642.08,Condotta 16,Cancellate,0,OTA,0
-2E16AD19A7,01/02/2026 07:22,,Beddy,CAILLAUD SIMON,Suite con Terrazza,Flessibile,13/08/2026,15/08/2026,2,522.3,Firenze Suite,Confermate,0,Sito web,0
-8973DE194A,26/01/2026 22:21,,Booking,Pandit Adhilaga Dres,Bilocale,Standard rate,27/11/2026,02/12/2026,5,718.2,Condotta 16,Confermate,0,OTA,0
-F860162980,26/01/2026 14:36,,Beddy,NEIL HAFFNER,Camera Matrimoniale Deluxe,Flessibile,11/08/2026,13/08/2026,2,298,Firenze Suite,Confermate,0,Sito web,0
-C4B5C80EF7,21/01/2026 18:40,,Booking,Virginia Lewis,Trilocale,Standard rate,02/11/2026,04/11/2026,2,610.84,Condotta 16,Confermate,0,OTA,0
-0481FDD68D,21/01/2026 10:59,,Airbnb,Peter Maclean,Uffizi,Tariffa base,28/07/2026,01/08/2026,4,739.55,Nazionale 35 Apartments,Confermate,0,OTA,40
-EA391F8242,21/01/2026 08:42,,Airbnb,Nick Vissichelli,Uffizi,Tariffa base,15/09/2026,19/09/2026,4,917.2,Nazionale 35 Apartments,Confermate,0,OTA,40
-8DC95CD5BA,16/01/2026 20:46,,Beddy,Michael Bergamini,Suite,Non rimborsabile,05/07/2026,10/07/2026,5,966.6,Firenze Suite,Confermate,0,Sito web,0
-AAA65244EE,16/01/2026 13:21,,Booking,Emmanuelle Sauvan,Bilocale,Standard rate,03/11/2026,08/11/2026,5,718.2,Condotta 16,Confermate,0,OTA,0
-A0C29E594B,16/01/2026 09:24,,Booking,Lydie Perlin,Trilocale,Standard rate,27/11/2026,30/11/2026,3,732.99,Condotta 16,Confermate,0,OTA,0
-A185845F0F,30/12/2025 16:51,,Airbnb,Fanni Söderström,Palazzo Pitti,Tariffa base,13/07/2026,17/07/2026,4,363,Porte Nuove Apartments,Confermate,0,OTA,40
-057B38CD6E,13/12/2025 11:09,,Airbnb,Craig Leak,Uffizi,Tariffa base,25/09/2026,28/09/2026,3,720.35,Nazionale 35 Apartments,Confermate,0,OTA,40
-09420958A7,06/12/2025 11:59,,Airbnb,Min Ji Lee,Cupola,Tariffa base,27/10/2026,29/10/2026,2,403.1,Nazionale 35 Apartments,Confermate,0,OTA,40
-DF14FBB4D6,15/03/2025 10:56,,Beddy,Colm Devine,Trilocale,Standard rate,12/08/2028,13/08/2028,1,330,Condotta 16,Confermate,0,Non Specificato,0
-E185828315,10/07/2026 16:25,,Booking,LU HSIN YU,Deluxe,Tariffa Rimborsabile - Pernottamento,31/08/2026,03/09/2026,3,1330.85,Palazzo Alfani,Confermate,0,OTA,0
-8EB70D623D,10/07/2026 13:56,,Ctrip,YUXIN LIU,Classic,Tariffa Rimborsabile - Pernottamento,27/07/2026,29/07/2026,2,377.36,Palazzo Alfani,Confermate,0,OTA,0
-3A1C6FE33C,08/07/2026 15:19,10/07/2026 11:52,Ctrip,JIAWEI JI,Classic,Tariffa Rimborsabile - Pernottamento,09/08/2026,12/08/2026,3,526.7,Palazzo Alfani,Cancellate,0,OTA,0
-354350F200,29/06/2026 04:54,10/07/2026 03:15,Booking,YOHEI SASAKI,Superior,Tariffa Rimborsabile - Pernottamento,13/10/2026,15/10/2026,2,867.56,Palazzo Alfani,Cancellate,0,OTA,0
-0F5A74801D,10/07/2026 02:04,,Ctrip,JINGJING GUO,Classic,Tariffa Esclusiva,13/07/2026,15/07/2026,2,353.55,Palazzo Alfani,Confermate,0,OTA,0
-BCC1B2D781,09/07/2026 22:03,09/07/2026 22:07,Booking,STEVEN PETTIGREW,Classic,Tariffa Esclusiva,10/07/2026,11/07/2026,1,228.78,Palazzo Alfani,Confermate,14,OTA,0
-F4C6FDD558,14/02/2026 17:36,09/07/2026 10:17,Ctrip,Maria Tuerk,Superior,Tariffa Non Rimborsabile - Pernottamento,09/07/2026,12/07/2026,3,704.25,Palazzo Alfani,Confermate,63,OTA,0
-45FB9C153E,23/06/2026 16:06,09/07/2026 10:17,Booking,Lu Li,Superior,Tariffa Rimborsabile - Pernottamento,09/07/2026,11/07/2026,2,708.65,Palazzo Alfani,Confermate,0,OTA,0
-D5B3CB2F40,09/07/2026 03:47,,Ctrip,YING LI,Deluxe,Tariffa Rimborsabile - Pernottamento,08/08/2026,09/08/2026,1,276.31,Palazzo Alfani,Confermate,0,OTA,0
-CBC25FE54C,04/05/2026 06:18,08/07/2026 23:02,Booking,Weng kai,Superior,Tariffa Rimborsabile - Pernottamento,09/07/2026,11/07/2026,2,751.75,Palazzo Alfani,Confermate,42,OTA,0
-31D13A3E7C,08/07/2026 17:41,,Booking,STEFANO LEMBO,Superior,Tariffa Rimborsabile - Pernottamento,16/08/2026,19/08/2026,3,896.01,Palazzo Alfani,Confermate,0,OTA,0
-712710E20B,15/06/2026 14:26,08/07/2026 12:43,Ctrip,JIACHEN XI,Superior,Tariffa Rimborsabile - Pernottamento,03/08/2026,05/08/2026,2,446.37,Palazzo Alfani,Cancellate,0,OTA,0
-B9570F084D,08/07/2026 10:08,,Ctrip,XIAOLEI SONG,Superior,Tariffa Rimborsabile - Pernottamento,03/08/2026,05/08/2026,2,456.6,Palazzo Alfani,Confermate,0,OTA,0
-61D2BAAD65,07/07/2026 00:24,08/07/2026 00:16,Beddy,Jessica Young,Superior,Tariffa Rimborsabile - Pernottamento,22/08/2026,26/08/2026,4,1000,Palazzo Alfani,Cancellate,0,Sito web,0
-F551D9D052,08/07/2026 00:11,,Beddy,Jessica Young,Superior,Tariffa Rimborsabile - Pernottamento,27/08/2026,01/09/2026,5,1217,Palazzo Alfani,Confermate,0,Sito web,0
-97F686C344,12/11/2025 11:32,07/07/2026 16:49,Booking,BRIAN PATRICK COYNE,Superior,Tariffa Non Rimborsabile - Pernottamento,08/07/2026,09/07/2026,1,261,Palazzo Alfani,Confermate,14,OTA,0
-D0FA14FBB7,27/06/2026 16:09,07/07/2026 16:48,Ctrip,YUJIA LI,Classic,Tariffa Rimborsabile - Pernottamento,08/07/2026,09/07/2026,1,208.28,Palazzo Alfani,Confermate,14,OTA,0
-68CE3360D0,01/06/2026 15:41,07/07/2026 13:15,Ctrip,TIANYU HUANG,Classic,Tariffa Rimborsabile - Pernottamento,06/07/2026,08/07/2026,2,661.79,Palazzo Alfani,Confermate,28,OTA,0
-EE88A0EEEB,09/06/2026 14:52,07/07/2026 11:51,Ctrip,WEI LI,Classic,Tariffa Rimborsabile - Pernottamento,09/07/2026,10/07/2026,1,291.02,Palazzo Alfani,Confermate,0,OTA,0
-D71EE7F673,07/07/2026 02:46,07/07/2026 11:51,Expedia,YONGBO XUN,Classic,Tariffa Esclusiva,13/07/2026,15/07/2026,2,332.22,Palazzo Alfani,Confermate,0,OTA,0
-C39ADBDCAA,06/07/2026 23:04,07/07/2026 11:51,Ctrip,JUNJIE WANG,Classic,Tariffa Esclusiva,11/07/2026,13/07/2026,2,409.47,Palazzo Alfani,Confermate,42,OTA,0
-285D513A32,01/06/2026 14:42,07/07/2026 11:49,Beddy,Darren Moran Sheils,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,567,Palazzo Alfani,Confermate,0,Non Specificato,0
-B6EF187357,12/06/2026 16:55,07/07/2026 11:49,Ctrip,JUNBIN JIANG,Superior,Tariffa Non Rimborsabile - Pernottamento,14/07/2026,15/07/2026,1,197.83,Palazzo Alfani,Confermate,0,OTA,0
-4627E24A6E,26/01/2026 03:39,07/07/2026 11:48,Booking,Harish Vasudevan,Junior suite,Tariffa Rimborsabile - Pernottamento,07/07/2026,08/07/2026,1,249.93,Palazzo Alfani,Cancellate,0,OTA,0
-2933703B21,03/06/2026 19:42,07/07/2026 11:47,Booking,Julie Sipkens,Deluxe,Tariffa Non Rimborsabile - Pernottamento,12/07/2026,13/07/2026,1,362.19,Palazzo Alfani,Confermate,0,OTA,0
-3F1BD1C0AC,10/06/2026 14:37,07/07/2026 02:42,Ctrip,YINUO XUN,Superior,Tariffa Rimborsabile - Pernottamento,13/07/2026,14/07/2026,1,257.61,Palazzo Alfani,Cancellate,0,OTA,0
-E3D43084A9,17/06/2026 01:42,07/07/2026 02:42,Ctrip,YINUO XUN,Superior,Tariffa Rimborsabile - Pernottamento,14/07/2026,15/07/2026,1,268.56,Palazzo Alfani,Cancellate,0,OTA,0
-2782B56529,07/07/2026 02:24,,Booking,EHSAN KHAKBAZ HESHMATI,Classic,Tariffa Esclusiva,16/07/2026,19/07/2026,3,766.76,Palazzo Alfani,Confermate,0,OTA,0
-E05577A89C,19/06/2026 10:44,06/07/2026 14:59,Expedia,Rebecca Barmore,Classic,Tariffa Rimborsabile - Pernottamento,23/09/2026,27/09/2026,4,1431.99,Palazzo Alfani,Cancellate,0,OTA,0
-BC294BD4FB,06/07/2026 14:59,,Expedia,Rebecca Barmore,Classic,Tariffa Rimborsabile - Pernottamento,23/09/2026,27/09/2026,4,1320.42,Palazzo Alfani,Confermate,0,OTA,0
-D02D217E59,06/07/2026 13:38,,Booking,Timothy Tam,Junior suite,Tariffa Non Rimborsabile - Pernottamento,14/09/2026,17/09/2026,3,1053.99,Palazzo Alfani,Confermate,0,OTA,0
-4D08790967,22/06/2026 15:03,05/07/2026 15:52,Ctrip,QILIN LAN,Deluxe,Tariffa Rimborsabile - Pernottamento,03/08/2026,04/08/2026,1,209.4,Palazzo Alfani,Cancellate,0,OTA,0
-E5B954523E,05/07/2026 08:08,,Beddy,Obolensky Guillemine,Superior,Tariffa Non Rimborsabile - Pernottamento,30/08/2026,02/09/2026,3,594,Palazzo Alfani,Confermate,0,Sito web,0
-D6730A7D25,30/06/2026 18:12,04/07/2026 15:33,Booking,YANG XUEMIN; WU SIHUI WU JIAYUE WU JIALU,Classic,Tariffa Non Rimborsabile - Pernottamento,26/07/2026,27/07/2026,1,278.76,Palazzo Alfani,Confermate,0,OTA,0
-D9F226ED9C,30/06/2026 18:04,04/07/2026 15:32,Booking,YANG XUEMIN WU SIHUI WU JIAYUE WU JIALU,Classic,Tariffa Non Rimborsabile - Pernottamento,24/07/2026,26/07/2026,2,489.36,Palazzo Alfani,Confermate,0,OTA,0
-381FC7A311,02/07/2026 05:55,04/07/2026 14:18,Ctrip,YUN ZHENG,Superior,Tariffa Rimborsabile - Pernottamento,08/08/2026,10/08/2026,2,440.39,Palazzo Alfani,Cancellate,0,OTA,0
-AF63B5D7CE,02/07/2026 05:59,04/07/2026 14:14,Ctrip,YUN ZHENG,Deluxe,Tariffa Rimborsabile - Pernottamento,08/08/2026,10/08/2026,2,581.12,Palazzo Alfani,Cancellate,0,OTA,0
-469AFDEF3A,04/07/2026 14:13,,Ctrip,YUN ZHENG,Superior,Tariffa Rimborsabile - Pernottamento,10/08/2026,12/08/2026,2,423.12,Palazzo Alfani,Confermate,0,OTA,0
-64EB85FA1D,02/07/2026 05:54,04/07/2026 14:06,Ctrip,JINGYI LIANG,Superior,Tariffa Rimborsabile - Pernottamento,08/08/2026,10/08/2026,2,440.39,Palazzo Alfani,Cancellate,0,OTA,0
-8EC8C29DB5,04/07/2026 14:06,,Ctrip,JINGYI LIANG,Superior,Tariffa Rimborsabile - Pernottamento,10/08/2026,12/08/2026,2,423.12,Palazzo Alfani,Confermate,0,OTA,0
-A4536E6A09,22/03/2026 18:44,04/07/2026 13:39,Beddy,Renee Tassone,Classic,Tariffa Non Rimborsabile con Colazione inclusa,07/07/2026,09/07/2026,2,744.8,Palazzo Alfani,Confermate,56,Sito web,0
-106BF09E65,20/06/2026 04:30,04/07/2026 13:38,Ctrip,WENYUAN JIN,Classic,Tariffa Non Rimborsabile - Pernottamento,06/07/2026,07/07/2026,1,214.16,Palazzo Alfani,Confermate,21,OTA,0
-03032DC55D,29/11/2025 15:45,04/07/2026 13:38,Beddy,Mei hsuan Wu,Classic,Tariffa Rimborsabile - Pernottamento,04/07/2026,06/07/2026,2,477.36,Palazzo Alfani,Confermate,28,Non Specificato,0
-E50353E38A,04/07/2026 02:54,04/07/2026 13:25,Expedia,amy donabedian,Superior,Tariffa Rimborsabile - Pernottamento,16/10/2026,23/10/2026,7,2905.31,Palazzo Alfani,Confermate,0,OTA,0
-BFD26940E4,23/06/2026 03:23,04/07/2026 13:23,Ctrip,JIANWEN CHEN,Classic,Vantaggio Soggiorno Prolungato,10/09/2026,15/09/2026,5,1462.66,Palazzo Alfani,Confermate,0,OTA,0
-189A39522F,29/06/2026 11:58,04/07/2026 13:22,Ctrip,JIANING YI,Classic,Tariffa Rimborsabile - Pernottamento,30/08/2026,02/09/2026,3,509.41,Palazzo Alfani,Confermate,0,OTA,0
-DAFE905CBB,04/07/2026 10:32,04/07/2026 13:22,Ctrip,Zhaojie Zeng,Classic,Tariffa Rimborsabile - Pernottamento,14/08/2026,17/08/2026,3,617.02,Palazzo Alfani,Confermate,0,OTA,0
-7353D9E179,01/04/2026 11:32,04/07/2026 13:21,Ctrip,YILONG GUO,Junior suite,Tariffa Non Rimborsabile - Pernottamento,15/08/2026,18/08/2026,3,497.34,Palazzo Alfani,Confermate,0,OTA,0
-032B36ECC8,03/07/2026 08:52,04/07/2026 13:21,Beddy,chuda wang,Classic,Tariffa Rimborsabile - Pernottamento,09/08/2026,11/08/2026,2,548,Palazzo Alfani,Confermate,0,Sito web,0
-2B2BF86508,28/06/2026 07:15,04/07/2026 13:16,Ctrip,RUOHAN JIANG,Superior,Tariffa Rimborsabile - Pernottamento,26/07/2026,28/07/2026,2,379.92,Palazzo Alfani,Confermate,0,OTA,0
-0CAFF35F50,28/06/2026 17:49,04/07/2026 13:14,Ctrip,PUI FAN KAM,Superior,Tariffa Rimborsabile - Pernottamento,31/07/2026,04/08/2026,4,969.93,Palazzo Alfani,Confermate,0,OTA,0
-A9CD3CDE4E,12/04/2026 08:10,04/07/2026 13:13,Ctrip,XIAOXIA CHEN,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,505.68,Palazzo Alfani,Confermate,0,OTA,0
-C78BDA773D,09/06/2026 12:12,04/07/2026 13:13,Ctrip,XIN YANG,Superior,Tariffa Non Rimborsabile - Pernottamento,14/07/2026,17/07/2026,3,526.88,Palazzo Alfani,Confermate,0,OTA,0
-2058DB0A79,01/07/2026 20:25,04/07/2026 13:13,Ctrip,LIZHANG DING,Superior,Tariffa Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,260.02,Palazzo Alfani,Confermate,7,OTA,0
-64A0162D4A,15/06/2026 17:18,04/07/2026 13:12,Ctrip,XIANG LU,Superior,Tariffa Non Rimborsabile - Pernottamento,18/07/2026,20/07/2026,2,444.18,Palazzo Alfani,Confermate,0,OTA,0
-A1C4DF4F7D,22/01/2026 08:49,04/07/2026 12:23,Beddy,Dr David Joyce Joyce,Deluxe,Tariffa Rimborsabile - Pernottamento,11/07/2026,12/07/2026,1,275,Palazzo Alfani,Confermate,0,Sito web,0
-B64CF6936D,02/06/2026 12:30,04/07/2026 12:16,Ctrip,YUN LIU,Superior,Tariffa Rimborsabile - Pernottamento,14/07/2026,17/07/2026,3,783.66,Palazzo Alfani,Cancellate,0,OTA,0
-DCDA5BD461,02/07/2026 17:40,03/07/2026 16:14,Beddy,Jeffrey Barba,"Junior suite, Classic, Classic, Classic, Superior, Superior, Superior, Deluxe","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile - Pernottamento",23/11/2026,26/11/2026,3,6489.45,Palazzo Alfani,Confermate,0,Non Specificato,0
-FBBDA9FBC4,03/07/2026 03:08,,Ctrip,YAWEN ZHU,Junior suite,Tariffa Rimborsabile - Pernottamento,13/10/2026,15/10/2026,2,626.02,Palazzo Alfani,Confermate,0,OTA,0
-180DCD0ACD,11/05/2026 04:30,02/07/2026 17:34,Ctrip,TIANYI SHEN,Classic,Tariffa Rimborsabile - Pernottamento,27/09/2026,30/09/2026,3,1053.9,Palazzo Alfani,Confermate,0,OTA,0
-D9DF11A87D,02/06/2026 18:49,02/07/2026 17:33,Ctrip,HONGGE CAI,"Classic, Classic","Tariffa Non Rimborsabile - Pernottamento, Tariffa Non Rimborsabile - Pernottamento",29/09/2026,02/10/2026,3,1939.9,Palazzo Alfani,Confermate,0,OTA,0
-37A9BFEBF9,30/06/2026 17:20,02/07/2026 17:31,Ctrip,YIQING JIANG,Classic,Tariffa Rimborsabile - Pernottamento,27/09/2026,29/09/2026,2,638.96,Palazzo Alfani,Confermate,0,OTA,0
-F2B4008636,03/03/2026 15:25,02/07/2026 17:31,Booking,Xiangzhen Kong,Superior,Tariffa Rimborsabile - Pernottamento,30/09/2026,03/10/2026,3,1159.48,Palazzo Alfani,Confermate,0,OTA,0
-7376AA5D17,06/05/2026 19:14,02/07/2026 17:30,Beddy,Alan Stratton,"Classic, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",15/09/2026,25/09/2026,7,1767.61,Palazzo Alfani,Confermate,0,Non Specificato,0
-E961213CAD,17/02/2026 04:41,02/07/2026 17:30,Booking,Hossein Najari,Classic,Tariffa Rimborsabile - Pernottamento,25/09/2026,28/09/2026,3,1211.64,Palazzo Alfani,Confermate,0,OTA,0
-390700E173,28/06/2026 15:33,02/07/2026 17:27,Ctrip,ZHAOQI LI,Superior,Tariffa Rimborsabile - Pernottamento,22/08/2026,26/08/2026,4,775.49,Palazzo Alfani,Confermate,0,OTA,0
-59E25EA154,26/05/2026 08:57,02/07/2026 17:27,Ctrip,YAN ZHU,Classic,Tariffa Rimborsabile - Pernottamento,13/08/2026,17/08/2026,4,931.79,Palazzo Alfani,Confermate,0,OTA,0
-79C177AB9F,10/06/2026 15:19,02/07/2026 17:25,Ctrip,JIUYI ZHAO,Superior,Tariffa Rimborsabile - Pernottamento,11/08/2026,13/08/2026,2,348.86,Palazzo Alfani,Confermate,0,OTA,0
-81E25176B4,02/07/2026 10:52,02/07/2026 17:25,Ctrip,YING SONG,Classic,Tariffa Rimborsabile - Pernottamento,11/08/2026,13/08/2026,2,465.94,Palazzo Alfani,Confermate,0,OTA,0
-BD5AAB6DB1,01/07/2026 16:53,02/07/2026 12:07,Ctrip,YUCHUN ZHU,Classic,Tariffa Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,224.09,Palazzo Alfani,Confermate,0,OTA,0
-B64E5D58C3,24/06/2026 15:53,02/07/2026 12:06,Beddy,Jennifer Cutchin,Deluxe,Tariffa Non Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,280.8,Palazzo Alfani,Confermate,0,Sito web,0
-8B037AD976,01/07/2026 10:53,02/07/2026 10:43,Ctrip,YING SONG,Classic,Tariffa Rimborsabile - Pernottamento,10/08/2026,12/08/2026,2,490.11,Palazzo Alfani,Cancellate,0,OTA,0
-73E3E7A5F4,13/06/2026 15:44,30/06/2026 16:59,Ctrip,LILI XU,Classic,Tariffa Rimborsabile - Pernottamento,09/07/2026,12/07/2026,3,686.06,Palazzo Alfani,Cancellate,0,OTA,0
-E53F4F2A48,13/06/2026 03:21,30/06/2026 14:31,Ctrip,XIAOHONG GU,Superior,Tariffa Rimborsabile - Pernottamento,11/07/2026,14/07/2026,3,812.12,Palazzo Alfani,Cancellate,0,OTA,0
-D06CAFD372,16/06/2026 18:19,30/06/2026 03:28,Ctrip,JIUYI ZHAO,Classic,Tariffa Rimborsabile - Pernottamento,13/08/2026,16/08/2026,3,528.45,Palazzo Alfani,Cancellate,0,OTA,0
-6ED6B1CC07,29/06/2026 14:46,,Ctrip,YAN ZHANG,Superior,Tariffa Non Rimborsabile - Pernottamento,27/09/2026,30/09/2026,3,885.12,Palazzo Alfani,Confermate,0,OTA,0
-7B96430707,29/06/2026 09:01,,Ctrip,WENSHU ZHU,Deluxe,Tariffa Rimborsabile - Pernottamento,16/07/2026,17/07/2026,1,342.78,Palazzo Alfani,Confermate,0,OTA,0
-304855BA01,29/06/2026 09:01,,Ctrip,WENSHU ZHU,Junior suite,Tariffa Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,206.66,Palazzo Alfani,Confermate,0,OTA,0
-CEB29292FD,28/06/2026 15:18,,Ctrip,HENG LU,Classic,Tariffa Esclusiva,06/07/2026,07/07/2026,1,203.5,Palazzo Alfani,Confermate,21,OTA,0
-C998775B91,28/06/2026 15:08,,Ctrip,SHENG L,Junior suite,Tariffa Esclusiva,06/07/2026,07/07/2026,1,191.19,Palazzo Alfani,Confermate,21,OTA,0
-F4321EAE6F,15/06/2026 10:27,28/06/2026 07:14,Ctrip,RUOHAN JIANG,Superior,Tariffa Rimborsabile - Pernottamento,26/07/2026,28/07/2026,2,425.68,Palazzo Alfani,Cancellate,0,OTA,0
-E0EBB949BF,25/06/2026 11:15,28/06/2026 01:06,Expedia,XINYU Z,Classic,Tariffa Esclusiva,02/07/2026,04/07/2026,2,342.42,Palazzo Alfani,Confermate,28,OTA,0
-43CC634A58,07/05/2026 05:12,27/06/2026 17:06,Ctrip,LIYING ZHENG,Superior,Tariffa Rimborsabile - Pernottamento,05/08/2026,08/08/2026,3,726.28,Palazzo Alfani,Cancellate,0,OTA,0
-11B9F2F8D3,27/06/2026 00:17,27/06/2026 14:50,Ctrip,LILI HUANG,Superior,Tariffa Rimborsabile - Pernottamento,18/07/2026,21/07/2026,3,740.46,Palazzo Alfani,Cancellate,0,OTA,0
-E01DC2CEE0,25/06/2026 05:09,27/06/2026 13:52,Ctrip,YUAN YAN,Junior suite,Tariffa Rimborsabile - Pernottamento,17/08/2026,20/08/2026,3,488.37,Palazzo Alfani,Cancellate,0,OTA,0
-EF99B1AC17,27/06/2026 08:08,,Expedia,YANAN ZHAO,Classic,Tariffa Esclusiva,09/07/2026,11/07/2026,2,352.94,Palazzo Alfani,Confermate,0,OTA,0
-7212953A0B,11/06/2026 15:01,27/06/2026 04:39,Ctrip,GUOGANG YING,Superior,Tariffa Rimborsabile - Pernottamento,30/07/2026,01/08/2026,2,591.55,Palazzo Alfani,Cancellate,0,OTA,0
-5652BACD26,29/04/2026 07:24,27/06/2026 03:56,Booking,Wang Huan Zhuang Tengfei ZhuangYueqi,Classic,Tariffa Rimborsabile - Pernottamento,20/08/2026,22/08/2026,2,626.56,Palazzo Alfani,Cancellate,0,OTA,0
-72362C7201,27/06/2026 03:42,,Ctrip,YUEQI ZHUANG,Junior suite,Tariffa Rimborsabile - Pernottamento,20/08/2026,23/08/2026,3,472.38,Palazzo Alfani,Confermate,0,OTA,0
-5DE20664ED,31/05/2026 15:06,26/06/2026 07:07,Ctrip,JUNYIN ZHENG,Deluxe,Tariffa Rimborsabile - Pernottamento,09/08/2026,13/08/2026,4,1108.7,Palazzo Alfani,Cancellate,0,OTA,0
-9C8EA27779,04/03/2026 10:28,25/06/2026 23:24,Booking,Mei Lee,Superior,Tariffa Rimborsabile - Pernottamento,02/10/2026,05/10/2026,3,1247.49,Palazzo Alfani,Cancellate,0,OTA,0
-F41ECBA7BE,25/06/2026 19:54,25/06/2026 20:07,Ctrip,MEIYI ZHONG,Classic,Tariffa Rimborsabile - Pernottamento,03/07/2026,05/07/2026,2,415.36,Palazzo Alfani,Cancellate,0,OTA,0
-820EF843C1,16/06/2026 14:21,25/06/2026 17:14,Ctrip,ZHE LI,Classic,Tariffa Non Rimborsabile - Pernottamento,01/07/2026,04/07/2026,3,676.82,Palazzo Alfani,Confermate,63,OTA,0
-2E525FB870,20/06/2026 15:04,25/06/2026 16:54,Ctrip,YUQI ZHANG,Superior,Tariffa Rimborsabile - Pernottamento,14/08/2026,16/08/2026,2,440.7,Palazzo Alfani,Cancellate,0,OTA,0
-6C2670E296,29/04/2026 18:33,25/06/2026 12:30,Ctrip,XINYUE LIN,Classic,Tariffa Non Rimborsabile - Pernottamento,08/07/2026,10/07/2026,2,529.3,Palazzo Alfani,Cancellate,0,OTA,0
-CDA70B6BFB,23/06/2026 02:28,25/06/2026 05:09,Ctrip,YUAN YAN,Classic,Tariffa Rimborsabile - Pernottamento,16/08/2026,19/08/2026,3,488.37,Palazzo Alfani,Cancellate,0,OTA,0
-DE6176EEE9,24/06/2026 16:53,,Ctrip,RUYA ZHANG,Junior suite,Tariffa Rimborsabile - Pernottamento,31/08/2026,03/09/2026,3,565.37,Palazzo Alfani,Confermate,0,OTA,0
-D9FF2D372D,10/02/2026 22:38,24/06/2026 00:19,Expedia,Illah Raleigh,Superior,Flessibile pacchetto,18/07/2026,21/07/2026,3,699.05,Palazzo Alfani,Cancellate,0,OTA,0
-6320BF9255,23/06/2026 16:53,,Ctrip,XINYAN LIU,Junior suite,Tariffa Rimborsabile - Pernottamento,28/09/2026,01/10/2026,3,987.41,Palazzo Alfani,Confermate,0,OTA,0
-67B579ABD2,04/12/2025 12:27,23/06/2026 11:57,Beddy,Allison Halloran,"Superior, Classic","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",28/07/2026,29/07/2026,1,570,Palazzo Alfani,Confermate,0,Non Specificato,0
-77C5DB79A0,21/06/2026 23:21,23/06/2026 11:56,Beddy,Kelly Kaspersion,"Classic, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",25/08/2026,28/08/2026,3,1524,Palazzo Alfani,Confermate,0,Sito web,0
-EDB64E9555,20/06/2026 05:34,23/06/2026 11:55,Ctrip,JIANG WANG,Classic,Tariffa Rimborsabile - Pernottamento,19/08/2026,20/08/2026,1,208.94,Palazzo Alfani,Confermate,0,OTA,0
-920E7DA869,20/06/2026 04:50,23/06/2026 11:54,Ctrip,ZHI ZHOU,Classic,Tariffa Rimborsabile - Pernottamento,07/08/2026,09/08/2026,2,453.39,Palazzo Alfani,Confermate,0,OTA,0
-51C752A591,22/06/2026 14:21,23/06/2026 11:53,Ctrip,LIANGZHI WU,Superior,Tariffa Rimborsabile - Pernottamento,01/08/2026,05/08/2026,4,824.66,Palazzo Alfani,Confermate,0,OTA,0
-EA3950A142,01/04/2026 09:30,23/06/2026 11:52,Ctrip,DANHUA CHEN,"Classic, Superior","Vantaggio Soggiorno Prolungato, Vantaggio Soggiorno Prolungato",24/07/2026,29/07/2026,5,917.97,Palazzo Alfani,Confermate,0,OTA,0
-D5EE017C2B,20/06/2026 19:55,23/06/2026 11:52,Beddy,Vacharasiritham Noppadol,"Classic, Superior","Tariffa Non Rimborsabile - Pernottamento, Tariffa Non Rimborsabile - Pernottamento",26/07/2026,28/07/2026,2,843.02,Palazzo Alfani,Confermate,0,Non Specificato,0
-836217BB78,18/06/2026 11:10,23/06/2026 11:51,Ctrip,XIAOYAN SUN,Classic,Tariffa Rimborsabile - Pernottamento,28/07/2026,30/07/2026,2,446.38,Palazzo Alfani,Confermate,0,OTA,0
-845C8AD0D4,31/05/2026 16:44,23/06/2026 11:51,Ctrip,YUNQI CHEN,Classic,Tariffa Rimborsabile - Pernottamento,29/07/2026,31/07/2026,2,377.36,Palazzo Alfani,Confermate,0,OTA,0
-2C1C3370F6,08/06/2026 09:55,23/06/2026 08:38,Ctrip,YIPING GU,Superior,Tariffa Rimborsabile - Pernottamento,10/07/2026,13/07/2026,3,826.81,Palazzo Alfani,Cancellate,0,OTA,0
-26780ABC94,23/06/2026 07:47,,Ctrip,OKSANA MORDOVSKAIA,Junior suite,Tariffa Non Rimborsabile - Pernottamento,14/07/2026,17/07/2026,3,623.49,Palazzo Alfani,Confermate,63,OTA,0
-17981836E6,11/06/2026 14:04,23/06/2026 06:12,Ctrip,YANG GAO,Classic,Tariffa Rimborsabile - Pernottamento,03/07/2026,05/07/2026,2,533.17,Palazzo Alfani,Cancellate,0,OTA,0
-7B0387FBEF,22/06/2026 17:58,,Ctrip,PEISHAN XU,Superior,Tariffa Rimborsabile - Pernottamento,09/08/2026,12/08/2026,3,579,Palazzo Alfani,Confermate,0,OTA,0
-5C5A3AADFB,07/06/2026 14:04,22/06/2026 05:04,Ctrip,LINGLING GONG,Junior suite,Tariffa Rimborsabile - Pernottamento,14/07/2026,18/07/2026,4,729.64,Palazzo Alfani,Cancellate,0,OTA,0
-5E1CFAE896,21/06/2026 21:59,,Booking,Alek Andreev,Superior,Tariffa Non Rimborsabile - Pernottamento,15/07/2026,16/07/2026,1,276.73,Palazzo Alfani,Confermate,0,OTA,0
-26075455D4,18/06/2026 15:21,21/06/2026 17:50,Ctrip,YUE HU,Classic,Tariffa Rimborsabile - Pernottamento,24/07/2026,25/07/2026,1,283.66,Palazzo Alfani,Cancellate,0,OTA,0
-ADF5444BCF,21/06/2026 15:13,,Ctrip,HAONAN ZENG,Junior suite,Tariffa Rimborsabile - Pernottamento,23/07/2026,24/07/2026,1,228.83,Palazzo Alfani,Confermate,0,OTA,0
-4E655B6BB5,13/06/2026 15:17,21/06/2026 14:18,Ctrip,WENBIN WU,Superior,Tariffa Rimborsabile - Pernottamento,08/07/2026,09/07/2026,1,245.97,Palazzo Alfani,Cancellate,0,OTA,0
-0C9D14A2D0,24/05/2026 08:52,20/06/2026 11:37,Ctrip,YAN WANG,Junior suite,Tariffa Rimborsabile - Pernottamento,04/07/2026,07/07/2026,3,790.56,Palazzo Alfani,Cancellate,0,OTA,0
-0E5DB8BA5A,20/06/2026 03:06,,Ctrip,ZIRU HE,Classic,Tariffa Rimborsabile - Pernottamento,23/07/2026,24/07/2026,1,257.75,Palazzo Alfani,Confermate,0,OTA,0
-CE31785948,11/06/2026 08:18,19/06/2026 10:44,Ctrip,Rebecca Barmore,Classic,Tariffa Rimborsabile - Pernottamento,23/09/2026,27/09/2026,4,1600.32,Palazzo Alfani,Cancellate,0,OTA,0
-A1F3999CA4,15/06/2026 13:44,19/06/2026 08:13,Ctrip,TINGTING CHEN,Superior,Tariffa Rimborsabile - Pernottamento,30/07/2026,05/08/2026,6,1364.34,Palazzo Alfani,Cancellate,0,OTA,0
-25AE7D3E99,18/06/2026 21:31,,Ctrip,YANXUAN TONG,Classic,Tariffa Rimborsabile - Pernottamento,20/07/2026,22/07/2026,2,532.8,Palazzo Alfani,Confermate,0,OTA,0
-3F44C6BC97,11/06/2026 08:45,18/06/2026 07:59,Ctrip,HUI QIAO,Superior,Tariffa Rimborsabile - Pernottamento,25/07/2026,28/07/2026,3,754.64,Palazzo Alfani,Cancellate,0,OTA,0
-B0B12286A7,13/01/2026 19:32,17/06/2026 14:59,Booking,Michael Braun,Superior,Tariffa Rimborsabile - Pernottamento,20/07/2026,26/07/2026,6,1557.12,Palazzo Alfani,Confermate,0,OTA,0
-EDEDA1F6BA,08/03/2026 10:01,17/06/2026 14:59,Beddy,Roberto Faccari,Superior,Tariffa Rimborsabile - Pernottamento,24/07/2026,31/07/2026,7,1700.98,Palazzo Alfani,Confermate,0,Sito web,0
-F955213B3D,04/11/2025 16:23,17/06/2026 14:59,Expedia,BRENT THOMAS LONG,Superior,Tariffa Rimborsabile - Pernottamento,22/07/2026,24/07/2026,2,549.56,Palazzo Alfani,Confermate,0,OTA,0
-F06893E026,15/03/2026 02:42,17/06/2026 14:59,Expedia,Cristopher Pere,Superior,Flessibile pacchetto,19/07/2026,22/07/2026,3,829.68,Palazzo Alfani,Confermate,0,OTA,0
-A8A8538472,04/06/2026 18:18,17/06/2026 14:54,Ctrip,CHANGPING LI,Classic,Tariffa Rimborsabile - Pernottamento,24/07/2026,28/07/2026,4,891.18,Palazzo Alfani,Confermate,0,OTA,0
-02B18C9BCC,17/06/2026 12:33,,Beddy,Nicole Tsang,Deluxe,Tariffa Rimborsabile con Colazione inclusa,23/03/2027,26/03/2027,3,1395,Palazzo Alfani,Confermate,0,Sito web,0
-DC34A27895,28/05/2026 17:18,16/06/2026 16:31,Beddy,Jacqueline De Mesy,Junior suite,Tariffa Rimborsabile - Pernottamento,11/10/2026,14/10/2026,3,1032,Palazzo Alfani,Cancellate,0,Sito web,0
-12D7DB86C2,23/05/2026 16:17,16/06/2026 14:54,Expedia,FANGFANG ZHANG,Classic,Flessibile pacchetto,03/08/2026,05/08/2026,2,346.47,Palazzo Alfani,Confermate,0,OTA,0
-013F0BCD45,27/01/2026 21:59,16/06/2026 14:53,Booking,Paul Weinberg,Classic,Tariffa Rimborsabile - Pernottamento,31/07/2026,05/08/2026,5,1303.05,Palazzo Alfani,Confermate,0,OTA,0
-9892D95D42,16/06/2026 14:25,,Ctrip,yanli liu,Junior suite,Tariffa Non Rimborsabile - Pernottamento,01/07/2026,04/07/2026,3,613.7,Palazzo Alfani,Confermate,42,OTA,0
-F87F98C07D,22/05/2026 17:24,16/06/2026 14:22,Ctrip,MIN HU,Deluxe,Tariffa Rimborsabile - Pernottamento,31/07/2026,02/08/2026,2,656.23,Palazzo Alfani,Cancellate,0,OTA,0
-ABA9597957,16/06/2026 14:22,,Ctrip,MIN HU,Deluxe,Tariffa Rimborsabile - Pernottamento,01/08/2026,03/08/2026,2,632.05,Palazzo Alfani,Confermate,0,OTA,0
-5CD2D65CB8,27/04/2026 05:43,16/06/2026 13:57,Ctrip,XUEJING BAI,Deluxe,Tariffa Rimborsabile - Pernottamento,30/07/2026,31/07/2026,1,229.59,Palazzo Alfani,Confermate,0,OTA,0
-F65E6ABCD8,03/06/2026 17:25,16/06/2026 13:55,Ctrip,BEIJING Zhang,Superior,Tariffa Non Rimborsabile - Pernottamento,29/07/2026,01/08/2026,3,557.14,Palazzo Alfani,Confermate,0,OTA,0
-5E2E87DC22,16/06/2026 13:46,,Booking,Eduardo Diaz Rivera,Superior,Tariffa Rimborsabile - Pernottamento,25/03/2027,28/03/2027,3,1223.42,Palazzo Alfani,Confermate,0,OTA,0
-46A7B2E8B8,16/06/2026 02:47,16/06/2026 06:13,Booking,SIYUAN HOU LUSI HUANG,Classic,Tariffa Rimborsabile - Pernottamento,17/08/2026,19/08/2026,2,446.5,Palazzo Alfani,Cancellate,0,OTA,0
-2E09CDB75E,15/06/2026 16:26,,Booking,Abadi Tisnadisastra,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,08/07/2026,3,1192.06,Palazzo Alfani,Confermate,84,OTA,0
-46DC75103E,11/06/2026 05:12,15/06/2026 09:28,Ctrip,XIAOJING ZHANG,Superior,Tariffa Rimborsabile - Pernottamento,04/08/2026,06/08/2026,2,379.9,Palazzo Alfani,Cancellate,0,OTA,0
-9169AD4167,11/06/2026 05:11,15/06/2026 09:28,Ctrip,XIAOJING ZHANG,Classic,Tariffa Rimborsabile - Pernottamento,04/08/2026,06/08/2026,2,377.36,Palazzo Alfani,Cancellate,0,OTA,0
-8A017D134C,15/06/2026 08:09,,Ctrip,QiJi Wang,Deluxe,Tariffa Non Rimborsabile - Pernottamento,09/07/2026,11/07/2026,2,721.33,Palazzo Alfani,Confermate,70,OTA,0
-39A1BD01E3,14/06/2026 20:12,,Booking,Alek Andreev,Superior,Tariffa Non Rimborsabile - Pernottamento,16/07/2026,18/07/2026,2,652.63,Palazzo Alfani,Confermate,0,OTA,0
-AEF932487F,14/06/2026 16:39,,Ctrip,Huanhuan Peng,Deluxe,Tariffa Non Rimborsabile - Pernottamento,04/08/2026,06/08/2026,2,529.32,Palazzo Alfani,Confermate,0,OTA,0
-AF65B4DC9C,07/06/2026 17:51,14/06/2026 11:29,Ctrip,CHEN WANG,Classic,Tariffa Rimborsabile - Pernottamento,11/10/2026,14/10/2026,3,929.94,Palazzo Alfani,Cancellate,0,OTA,0
-210BF0EA7C,02/06/2026 09:48,14/06/2026 04:42,Ctrip,MEI LU,Classic,Tariffa Rimborsabile - Pernottamento,08/08/2026,13/08/2026,5,960.7,Palazzo Alfani,Cancellate,0,OTA,0
-6F47C4D466,28/01/2026 13:55,13/06/2026 22:10,Booking,Elizavet SYMEONIDOU,Deluxe,Tariffa Rimborsabile - Pernottamento,17/07/2026,18/07/2026,1,368.32,Palazzo Alfani,Cancellate,0,OTA,0
-A89B17DF66,13/06/2026 11:19,,Ctrip,LEI CHEN,Classic,Tariffa Non Rimborsabile - Pernottamento,07/07/2026,09/07/2026,2,369.92,Palazzo Alfani,Confermate,28,OTA,0
-3374EB4548,11/04/2026 00:57,13/06/2026 10:41,Ctrip,WEI XIA,Classic,Tariffa Rimborsabile - Pernottamento,20/07/2026,22/07/2026,2,449.92,Palazzo Alfani,Cancellate,0,OTA,0
-AE3DDEE1C3,07/06/2026 07:18,13/06/2026 01:54,Booking,AINA YU,Superior,Tariffa Rimborsabile - Pernottamento,06/07/2026,09/07/2026,3,960.84,Palazzo Alfani,Confermate,63,OTA,0
-34722E15EB,11/06/2026 17:01,11/06/2026 17:33,Booking,Daniel Wagner Costa Souza,Classic,Tariffa Rimborsabile - Pernottamento,24/08/2026,27/08/2026,3,776.4,Palazzo Alfani,Cancellate,0,OTA,0
-C68FAD8B73,11/06/2026 12:54,,Ctrip,YE LI,Deluxe,Tariffa Rimborsabile - Pernottamento,07/07/2026,09/07/2026,2,710.51,Palazzo Alfani,Confermate,56,OTA,0
-C8F56A71D8,08/06/2026 06:30,11/06/2026 11:20,Ctrip,YANG GAO,Classic,Tariffa Rimborsabile - Pernottamento,10/07/2026,11/07/2026,1,254.45,Palazzo Alfani,Cancellate,0,OTA,0
-1A4A68CB04,10/06/2026 05:48,10/06/2026 06:59,Booking,GONG WENTING ZHOU KAIRAN,Junior suite,Tariffa Rimborsabile - Pernottamento,01/10/2026,02/10/2026,1,426.38,Palazzo Alfani,Cancellate,0,OTA,0
-04CD03B50E,23/11/2025 05:49,09/06/2026 03:56,Expedia,Lindsay Raynes,Deluxe,Tariffa Rimborsabile - Pernottamento,08/07/2026,12/07/2026,4,1964.02,Palazzo Alfani,Cancellate,0,OTA,0
-922FE919CD,07/06/2026 00:57,09/06/2026 01:40,Expedia,Sameer Sheth,Deluxe,Tariffa Rimborsabile - Pernottamento,16/07/2026,17/07/2026,1,362.66,Palazzo Alfani,Cancellate,0,OTA,0
-8C1D539AF8,03/06/2026 21:50,08/06/2026 13:34,Booking,Farah Abboud,Superior,Tariffa Rimborsabile - Pernottamento,02/09/2026,04/09/2026,2,720.47,Palazzo Alfani,Confermate,0,OTA,0
-15A421D68D,08/02/2026 06:12,08/06/2026 13:29,Expedia,EUNSOL KIM,Classic,Non rimborsabile pacchetto,15/07/2026,17/07/2026,2,329.36,Palazzo Alfani,Confermate,0,OTA,0
-319F201F5E,03/06/2026 04:12,08/06/2026 13:26,Ctrip,LAN JIANG,Classic,Tariffa Non Rimborsabile - Pernottamento,18/07/2026,20/07/2026,2,397.22,Palazzo Alfani,Confermate,0,OTA,0
-194048D030,18/02/2026 01:11,08/06/2026 13:26,Booking,Jobel Virgens Filho,Superior,Tariffa Rimborsabile - Pernottamento,16/07/2026,19/07/2026,3,806.85,Palazzo Alfani,Confermate,0,OTA,0
-F98A466505,06/05/2026 12:04,08/06/2026 13:26,Ctrip,BINQI FENG,Superior,Tariffa Rimborsabile - Pernottamento,16/07/2026,18/07/2026,2,516.95,Palazzo Alfani,Confermate,0,OTA,0
-66BEBF5AEB,05/06/2026 23:37,08/06/2026 13:14,Booking,Zoi Tzikou,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,15/07/2026,3,986.15,Palazzo Alfani,Confermate,0,OTA,0
-A1C9C6550D,18/04/2026 09:04,08/06/2026 12:19,Ctrip,Rui Su,Classic,Tariffa Rimborsabile - Pernottamento,22/08/2026,24/08/2026,2,458.32,Palazzo Alfani,Confermate,0,OTA,0
-D51634141F,24/05/2026 15:43,08/06/2026 12:19,Ctrip,LIXIN WEI,Classic,Tariffa Rimborsabile - Pernottamento,19/08/2026,23/08/2026,4,916.92,Palazzo Alfani,Confermate,0,OTA,0
-DCB30F101C,09/05/2026 12:07,08/06/2026 12:18,Ctrip,YUNZENG LI,Superior,Vantaggio Soggiorno Prolungato,06/08/2026,11/08/2026,5,965.32,Palazzo Alfani,Confermate,0,OTA,0
-FDC76A7D04,21/02/2026 22:19,08/06/2026 12:17,Booking,Angela Vitale,Classic,Tariffa Rimborsabile - Pernottamento,05/08/2026,10/08/2026,5,1141,Palazzo Alfani,Confermate,0,OTA,0
-99C1616986,06/06/2026 15:57,08/06/2026 12:16,Expedia,CONG ZENG,Classic,Tariffa Non Rimborsabile - Pernottamento,10/08/2026,14/08/2026,4,664.63,Palazzo Alfani,Confermate,0,OTA,0
-59DA301D6F,04/06/2026 18:19,08/06/2026 12:12,Expedia,GEN LI,Junior suite,Tariffa Rimborsabile - Pernottamento,24/07/2026,28/07/2026,4,845.28,Palazzo Alfani,Confermate,0,OTA,0
-3171239DA1,08/06/2026 10:38,,Beddy,Nancy Schulman Soiefer,Superior,Tariffa Rimborsabile con Colazione inclusa,25/09/2026,26/09/2026,1,362.9,Palazzo Alfani,Confermate,0,Non Specificato,0
-B0284163B4,11/05/2026 04:21,08/06/2026 10:33,Ctrip,JIA ZHOU,Superior,Tariffa Rimborsabile - Pernottamento,27/09/2026,30/09/2026,3,1092.76,Palazzo Alfani,Confermate,0,OTA,0
-958A83BBEA,26/05/2026 16:53,08/06/2026 10:31,Ctrip,YUXUAN LIN,Superior,Tariffa Rimborsabile - Pernottamento,25/09/2026,26/09/2026,1,325.1,Palazzo Alfani,Confermate,0,OTA,0
-29D4F923FA,28/05/2026 21:43,08/06/2026 08:10,Booking,Nguyen Van Hung & Tran Thi My Dung,Junior suite,Tariffa Rimborsabile - Pernottamento,17/09/2026,20/09/2026,3,1302.35,Palazzo Alfani,Cancellate,0,OTA,0
-D50B1FED3C,07/06/2026 16:34,,Expedia,Andre Luis Agoncillo,Junior suite,Tariffa Rimborsabile - Pernottamento,19/07/2026,22/07/2026,3,706.81,Palazzo Alfani,Confermate,0,OTA,0
-F0A04AB58E,06/06/2026 03:26,,Expedia,Carolyn Ross,Deluxe,Tariffa Rimborsabile - Pernottamento,13/08/2026,17/08/2026,4,1267,Palazzo Alfani,Confermate,0,OTA,0
-9E23B43EC1,05/06/2026 17:23,,Beddy,Marijana Starcevic,Junior suite,Tariffa Rimborsabile - Pernottamento,27/11/2026,30/11/2026,3,753,Palazzo Alfani,Confermate,0,Sito web,0
-ED3E0FA4B8,04/06/2026 05:28,,Ctrip,SHI WU,Superior,Tariffa Non Rimborsabile - Pernottamento,18/07/2026,21/07/2026,3,716.72,Palazzo Alfani,Confermate,0,OTA,0
-1BA97FDFBC,03/06/2026 14:36,,Ctrip,RICARDO DOS SANTOS,Deluxe,Tariffa Rimborsabile - Pernottamento,09/10/2026,12/10/2026,3,1631.1,Palazzo Alfani,Confermate,0,OTA,0
-F6753ADCDF,19/05/2026 04:17,03/06/2026 13:53,Ctrip,yanyan cao,Superior,Tariffa Rimborsabile - Pernottamento,31/07/2026,01/08/2026,1,268.41,Palazzo Alfani,Cancellate,0,OTA,0
-58D8A88CFA,03/06/2026 10:01,,Ctrip,XIAOYUAN LIU,Superior,Tariffa Rimborsabile - Pernottamento,06/08/2026,09/08/2026,3,676.6,Palazzo Alfani,Confermate,0,OTA,0
-73BB11AAC2,03/06/2026 09:49,,Beddy,Melinda Manley,Superior,Tariffa Rimborsabile - Pernottamento,03/10/2026,07/10/2026,4,1815,Palazzo Alfani,Confermate,0,Sito web,0
-43AB3A0C80,20/05/2026 15:38,03/06/2026 07:55,Ctrip,ZHE LI,Junior suite,Tariffa Rimborsabile - Pernottamento,14/07/2026,17/07/2026,3,656.67,Palazzo Alfani,Cancellate,0,OTA,0
-7CF8275E9D,20/05/2026 15:43,02/06/2026 23:14,Ctrip,DASONG LI,Superior,Tariffa Non Rimborsabile - Pernottamento,08/07/2026,10/07/2026,2,628.78,Palazzo Alfani,Confermate,42,OTA,0
-ED9CE1D263,29/05/2026 17:01,02/06/2026 23:13,Ctrip,YUANYUAN ZHOU,Superior,Tariffa Rimborsabile - Pernottamento,07/07/2026,08/07/2026,1,235.59,Palazzo Alfani,Confermate,21,OTA,0
-82A84504B6,23/11/2025 05:57,02/06/2026 23:08,Expedia,Carly Barry,Classic,Tariffa Rimborsabile - Pernottamento,08/07/2026,12/07/2026,4,1341.92,Palazzo Alfani,Cancellate,0,OTA,0
-D6803DE47B,23/11/2025 05:54,02/06/2026 23:08,Expedia,Jen McCool,Superior,Tariffa Rimborsabile - Pernottamento,08/07/2026,12/07/2026,4,1464.86,Palazzo Alfani,Cancellate,0,OTA,0
-5C43273155,31/12/2025 23:55,02/06/2026 23:07,Expedia,Kathleen Barry,Superior,Tariffa Rimborsabile - Pernottamento,08/07/2026,12/07/2026,4,1280.34,Palazzo Alfani,Cancellate,0,OTA,0
-6BCCA41EC0,12/05/2026 05:09,02/06/2026 13:33,Ctrip,XIAOMENG WANG,Superior,Tariffa Rimborsabile - Pernottamento,07/08/2026,10/08/2026,3,760.8,Palazzo Alfani,Cancellate,0,OTA,0
-4F26A2E974,24/04/2026 13:37,02/06/2026 09:53,Expedia,YEJIANG ZHOU,Classic,Flessibile pacchetto,01/07/2026,05/07/2026,4,1238.6,Palazzo Alfani,Cancellate,0,OTA,0
-E57A847A2E,02/06/2026 03:56,,Ctrip,YEJIANG ZHOU,Superior,Tariffa Non Rimborsabile - Pernottamento,01/07/2026,05/07/2026,4,1111.32,Palazzo Alfani,Confermate,56,OTA,0
-50BF209C9A,02/06/2026 02:05,,Ctrip,WANG YUNJIA WANG YUNJIA,Deluxe,Tariffa Non Rimborsabile - Pernottamento,01/07/2026,04/07/2026,3,1063.94,Palazzo Alfani,Confermate,84,OTA,0
-B8ACDFFEA6,21/05/2026 05:26,01/06/2026 03:48,Expedia,SHAOHAN QI,Superior,Flessibile pacchetto,13/07/2026,17/07/2026,4,970.76,Palazzo Alfani,Cancellate,0,OTA,0
-E76D399A9B,21/05/2026 05:26,01/06/2026 03:47,Expedia,CHUNMEI SONG,Superior,Flessibile pacchetto,13/07/2026,17/07/2026,4,970.76,Palazzo Alfani,Cancellate,0,OTA,0
-C35DAA79DA,31/05/2026 21:24,01/06/2026 03:22,Ctrip,HAN HU,Superior,Tariffa Rimborsabile - Pernottamento,10/07/2026,12/07/2026,2,588.64,Palazzo Alfani,Cancellate,0,OTA,0
-5B4AE188BC,17/04/2026 07:25,29/05/2026 17:09,Ctrip,XIAODONG GUO,Classic,Tariffa Rimborsabile - Pernottamento,20/08/2026,22/08/2026,2,517.54,Palazzo Alfani,Cancellate,0,OTA,0
-DF32DED494,15/04/2026 18:43,29/05/2026 13:34,Expedia,Caroline Wetherilt,Deluxe,Flessibile pacchetto,14/08/2026,17/08/2026,3,971.34,Palazzo Alfani,Cancellate,0,OTA,0
-60C6D52029,29/05/2026 00:31,,Ctrip,QI HUANG,Junior suite,Tariffa Rimborsabile - Pernottamento,07/10/2026,11/10/2026,4,1253.7,Palazzo Alfani,Confermate,0,OTA,0
-96D2C876CC,26/05/2026 22:25,28/05/2026 16:01,Beddy,Deborah Voronoff,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,09/07/2026,4,1176,Palazzo Alfani,Confermate,28,Sito web,0
-8435DDB566,27/05/2026 22:24,28/05/2026 05:38,Beddy,Jacquelyn Wieland,Deluxe,Tariffa Rimborsabile - Pernottamento,21/12/2026,26/12/2026,5,2588.52,Palazzo Alfani,Cancellate,0,Sito web,0
-005C71BFCD,27/05/2026 07:31,,Ctrip,ZIHE LI,Deluxe,Tariffa Rimborsabile - Pernottamento,19/08/2026,21/08/2026,2,568.16,Palazzo Alfani,Confermate,0,OTA,0
-5A7C554448,26/02/2026 13:54,26/05/2026 14:41,Booking,Qing Shen; Jiaqi Shen; Wenjing Du; Jiachen Du,Superior,Tariffa Rimborsabile - Pernottamento,11/07/2026,13/07/2026,2,563.87,Palazzo Alfani,Cancellate,0,OTA,0
-9ED1D0E39F,09/02/2026 00:16,22/05/2026 14:54,Booking,Kelly THAM,Superior,Tariffa Rimborsabile - Pernottamento,25/08/2026,31/08/2026,6,1691.76,Palazzo Alfani,Cancellate,0,OTA,0
-433B44A2E9,22/05/2026 14:51,,Booking,Kelly THAM,Deluxe,Tariffa Rimborsabile - Pernottamento,25/08/2026,31/08/2026,6,2264.16,Palazzo Alfani,Confermate,0,OTA,0
-C3BBC10EAE,21/05/2026 06:37,21/05/2026 14:07,Ctrip,CHUNMEI SONG,Superior,Tariffa Rimborsabile - Pernottamento,13/07/2026,16/07/2026,3,743.52,Palazzo Alfani,Confermate,0,OTA,0
-EE9B846459,14/02/2026 12:22,20/05/2026 14:15,Booking,Emilie Oteri,Superior,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,466.54,Palazzo Alfani,Cancellate,0,OTA,0
-1C2B2710C0,20/05/2026 12:17,20/05/2026 13:33,Booking,Erlangga Muljadi,Deluxe,Tariffa Rimborsabile - Pernottamento,12/10/2026,14/10/2026,2,1157.1,Palazzo Alfani,Cancellate,0,OTA,0
-03480AC10F,08/05/2026 15:18,19/05/2026 04:18,Ctrip,yanyan cao,Superior,Tariffa Rimborsabile - Pernottamento,31/07/2026,01/08/2026,1,268.41,Palazzo Alfani,Cancellate,0,OTA,0
-9356504499,24/03/2026 23:03,18/05/2026 18:27,Beddy,Liz Elder,"Classic, Superior, Deluxe","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",22/10/2026,28/10/2026,6,7317,Palazzo Alfani,Confermate,0,Sito web,0
-546954111C,13/01/2026 18:39,18/05/2026 18:26,Expedia,SCOTT REID,Superior,Tariffa Non Rimborsabile - Pernottamento,26/09/2026,29/09/2026,3,747.21,Palazzo Alfani,Confermate,0,OTA,0
-512EAD0D50,23/03/2026 09:56,18/05/2026 18:24,Beddy,Jennifer Star Chadwell,"Superior, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",10/09/2026,13/09/2026,3,2245.8,Palazzo Alfani,Confermate,0,Sito web,0
-684A6E43E8,29/04/2026 03:01,18/05/2026 18:24,Booking,Kara Meyer,Classic,Tariffa Non Rimborsabile - Pernottamento,05/09/2026,09/09/2026,4,1745.64,Palazzo Alfani,Confermate,0,OTA,0
-A38A06C1F2,29/04/2026 02:52,18/05/2026 18:24,Booking,Randy Davison,Superior,Tariffa Non Rimborsabile - Pernottamento,05/09/2026,09/09/2026,4,1685.36,Palazzo Alfani,Confermate,0,OTA,0
-C2B7E55468,13/01/2026 18:34,11/05/2026 19:32,Booking,Steve Kozlowski,Junior suite,Tariffa Rimborsabile - Pernottamento,19/07/2026,26/07/2026,7,1465.58,Palazzo Alfani,Cancellate,0,OTA,0
-91BD90B637,08/05/2026 18:22,11/05/2026 18:34,Booking,Steve Kozlowski,Junior suite,Tariffa Rimborsabile - Pernottamento,18/07/2026,19/07/2026,1,277.44,Palazzo Alfani,Cancellate,0,OTA,0
-4E2536CCBC,10/04/2026 15:56,11/05/2026 01:23,Ctrip,JINGYAN SUN,Classic,Tariffa Rimborsabile - Pernottamento,12/07/2026,14/07/2026,2,483.12,Palazzo Alfani,Cancellate,0,OTA,0
-359FDC77B8,10/04/2026 16:11,11/05/2026 01:23,Ctrip,JINGYAN SUN,Classic,Tariffa Rimborsabile - Pernottamento,15/07/2026,16/07/2026,1,241.56,Palazzo Alfani,Cancellate,0,OTA,0
-DDFAB3E859,07/04/2026 12:48,10/05/2026 16:34,Ctrip,JIAYI SHEN,Superior,Tariffa Rimborsabile - Pernottamento,08/07/2026,10/07/2026,2,547.33,Palazzo Alfani,Cancellate,0,OTA,0
-C277120736,08/05/2026 10:06,08/05/2026 16:59,Ctrip,MING ZHI,Classic,Tariffa Rimborsabile - Pernottamento,10/07/2026,11/07/2026,1,277.06,Palazzo Alfani,Cancellate,0,OTA,0
-9156EC24E2,07/05/2026 02:25,,Beddy,Monique Perna Perna,Deluxe,Tariffa Non Rimborsabile - Pernottamento,28/09/2026,01/10/2026,3,1566,Palazzo Alfani,Confermate,0,Sito web,0
-E47516E3C3,25/04/2026 10:58,06/05/2026 12:05,Ctrip,BINQI FENG,Superior,Tariffa Rimborsabile - Pernottamento,16/07/2026,18/07/2026,2,551.59,Palazzo Alfani,Cancellate,0,OTA,0
-78513BEBF8,29/04/2026 02:43,,Booking,Randy Davison,Deluxe,Tariffa Non Rimborsabile - Pernottamento,05/09/2026,09/09/2026,4,2238.56,Palazzo Alfani,Confermate,0,OTA,0
-F97721A2CF,26/04/2026 14:17,28/04/2026 21:49,Expedia,ERIC FRITZ,Deluxe,Flessibile pacchetto,23/08/2026,25/08/2026,2,647.56,Palazzo Alfani,Cancellate,0,OTA,0
-A8F86DE511,22/02/2026 21:24,26/04/2026 06:05,Beddy,Konstantina Vlahos,Deluxe,Tariffa Rimborsabile - Pernottamento,15/09/2026,19/09/2026,4,1880,Palazzo Alfani,Cancellate,0,Sito web,0
-C7A7C7B9AF,18/01/2026 09:27,26/04/2026 03:30,Booking,John Charatsis,Superior,Tariffa Rimborsabile - Pernottamento,29/09/2026,02/10/2026,3,1121.25,Palazzo Alfani,Cancellate,0,OTA,0
-ABE29B300E,25/04/2026 10:53,25/04/2026 10:57,Ctrip,BINQI FENG,Classic,Tariffa Rimborsabile - Pernottamento,18/07/2026,20/07/2026,2,517.03,Palazzo Alfani,Cancellate,0,OTA,0
-0388E1FFA9,25/04/2026 08:22,,Ctrip,HETIAN HU,Superior,Tariffa Rimborsabile - Pernottamento,04/07/2026,07/07/2026,3,1018.68,Palazzo Alfani,Confermate,63,OTA,0
-719415F3D0,22/04/2026 10:37,22/04/2026 10:38,Beddy,Marian Williams,"Superior, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",01/10/2026,04/10/2026,3,2627.48,Palazzo Alfani,Confermate,0,Non Specificato,0
-B8C3CD0FEC,21/04/2026 14:46,,Ctrip,YE QIU,Junior suite,Tariffa Rimborsabile - Pernottamento,31/07/2026,10/08/2026,10,2208.7,Palazzo Alfani,Confermate,0,OTA,0
-90D748F67D,23/12/2025 23:53,21/04/2026 13:05,Booking,Rafael Jaen Garcia,Classic,Tariffa Rimborsabile - Pernottamento,25/08/2026,30/08/2026,5,1303.05,Palazzo Alfani,Confermate,0,OTA,0
-CDCF466092,18/01/2026 13:32,20/04/2026 19:05,Booking,"Meng Wang,Yan Liu Jinghua Wang Junyou Xiao Kaichia Hsiao Shuhua Tseng,Yichen Hsiao",Deluxe,Tariffa Rimborsabile - Pernottamento,03/07/2026,04/07/2026,1,401.59,Palazzo Alfani,Cancellate,0,OTA,0
-4412429096,19/04/2026 14:01,,Ctrip,YIKAI SHI,Deluxe,Tariffa Rimborsabile - Pernottamento,26/09/2026,27/09/2026,1,484.62,Palazzo Alfani,Confermate,0,OTA,0
-682CE0C04A,01/02/2026 09:04,18/04/2026 07:49,Booking,Natalie Medina,Classic,Tariffa Rimborsabile - Pernottamento,05/07/2026,10/07/2026,5,1336.13,Palazzo Alfani,Cancellate,0,OTA,0
-5A07F4623D,16/03/2026 10:55,18/04/2026 05:23,Ctrip,YANG ZOU,Deluxe,Tariffa Rimborsabile - Pernottamento,05/08/2026,06/08/2026,1,310.89,Palazzo Alfani,Cancellate,0,OTA,0
-106B9351C2,01/03/2026 20:11,16/04/2026 16:35,Beddy,Frans Lammersen,Classic,Tariffa Non Rimborsabile - Pernottamento,20/07/2026,23/07/2026,3,621,Palazzo Alfani,Confermate,0,Sito web,0
-10A41BC653,11/04/2026 07:59,16/04/2026 16:35,Ctrip,HIROYUKI TSUKUDA,Classic,Tariffa Non Rimborsabile - Pernottamento,22/07/2026,24/07/2026,2,497.44,Palazzo Alfani,Confermate,0,OTA,0
-ED8F89A3D7,09/03/2026 15:10,16/04/2026 16:34,Booking,Nathalie VALERY,Classic,Tariffa Rimborsabile - Pernottamento,13/07/2026,15/07/2026,2,538.54,Palazzo Alfani,Confermate,0,OTA,0
-B573461791,15/04/2026 16:37,15/04/2026 20:40,Expedia,JENNIFER CROSBY,Deluxe,Flessibile pacchetto,11/02/2027,14/02/2027,3,1484.7,Palazzo Alfani,Cancellate,0,OTA,0
-DBCC4073D7,17/03/2026 14:49,11/04/2026 10:18,Ctrip,TING HUA,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,08/07/2026,3,759.06,Palazzo Alfani,Cancellate,0,OTA,0
-388AF75920,07/04/2026 16:24,,Ctrip,XIAOBIN ZHAO,Superior,Tariffa Rimborsabile - Pernottamento,04/07/2026,06/07/2026,2,567.83,Palazzo Alfani,Confermate,28,OTA,0
-C3ED5DD28D,07/04/2026 16:16,,Ctrip,MANRU ZHAO,Classic,Tariffa Rimborsabile - Pernottamento,04/07/2026,06/07/2026,2,554.61,Palazzo Alfani,Confermate,28,OTA,0
-52158AE832,06/04/2026 18:18,07/04/2026 14:46,Ctrip,XIAOCHUN JIANG,Classic,Tariffa Rimborsabile - Pernottamento,06/07/2026,08/07/2026,2,531.04,Palazzo Alfani,Cancellate,0,OTA,0
-F1FE9B1356,26/10/2025 11:32,03/04/2026 05:15,Booking,Maria Salazar,Deluxe,Tariffa Rimborsabile - Pernottamento,30/07/2026,03/08/2026,4,1887.75,Palazzo Alfani,Cancellate,0,OTA,0
-9DF720AA5B,30/03/2026 09:09,,Ctrip,LIJING YANG,Junior suite,Tariffa Non Rimborsabile - Pernottamento,09/07/2026,13/07/2026,4,836.34,Palazzo Alfani,Confermate,0,OTA,0
-02C8C31CD5,24/02/2026 16:02,30/03/2026 07:43,Booking,SHIH YingHsun,Junior suite,Tariffa Rimborsabile - Pernottamento,09/07/2026,13/07/2026,4,1042.43,Palazzo Alfani,Cancellate,0,OTA,0
-679982DB51,29/03/2026 16:19,,Ctrip,Feiyang Hou,Deluxe,Tariffa Rimborsabile - Pernottamento,01/10/2026,03/10/2026,2,917.75,Palazzo Alfani,Confermate,0,OTA,0
-30058B5C95,27/03/2026 12:59,28/03/2026 08:28,Booking,HWANG JUNG MIN,Superior,Tariffa Rimborsabile - Pernottamento,02/10/2026,06/10/2026,4,2084.51,Palazzo Alfani,Cancellate,0,OTA,0
-812E6BD8C8,18/03/2026 02:26,26/03/2026 02:28,Ctrip,BENJAMIN SI CHEN,Classic,Tariffa Rimborsabile - Pernottamento,21/07/2026,25/07/2026,4,1025.41,Palazzo Alfani,Cancellate,0,OTA,0
-C7562DB0F2,22/03/2026 09:17,25/03/2026 07:34,Ctrip,RUI ZHANG,Junior suite,Tariffa Rimborsabile - Pernottamento,14/07/2026,18/07/2026,4,833.45,Palazzo Alfani,Cancellate,0,OTA,0
-914678B13E,12/03/2026 01:24,25/03/2026 01:23,Ctrip,DAN LI,Superior,Tariffa Rimborsabile - Pernottamento,27/07/2026,29/07/2026,2,485,Palazzo Alfani,Cancellate,0,OTA,0
-92804DDC3C,12/03/2026 01:24,25/03/2026 01:22,Ctrip,BAOFENG LIN,Superior,Tariffa Rimborsabile - Pernottamento,27/07/2026,29/07/2026,2,450.56,Palazzo Alfani,Cancellate,0,OTA,0
-AA3D841744,19/03/2026 03:25,22/03/2026 17:02,Beddy,FRANCIS MANLEY,Classic,Tariffa Rimborsabile - Pernottamento,08/10/2026,12/10/2026,4,1400,Palazzo Alfani,Confermate,0,Sito web,0
-6AD60110ED,22/01/2026 01:56,19/03/2026 12:28,Booking,SIMONE DE ARAUJO FEITOZA ALEXANDRE RIBEIRO FEITOZA ALEXANDRE RIBEIRO FEITOZA JUNIOR BEATRIZ DE ARAUJO FEITO,Classic,Tariffa Non Rimborsabile - Pernottamento,21/07/2026,24/07/2026,3,801.06,Palazzo Alfani,Confermate,0,OTA,0
-A6265EBBE6,14/01/2026 02:36,19/03/2026 12:28,Expedia,TINGTING YE,Classic,Flessibile pacchetto,19/07/2026,21/07/2026,2,375.04,Palazzo Alfani,Confermate,0,OTA,0
-048787A3E4,22/02/2026 13:51,16/03/2026 22:19,Booking,Nataliia Prelovskaia,Classic,Tariffa Rimborsabile - Pernottamento,21/07/2026,23/07/2026,2,572.7,Palazzo Alfani,Cancellate,0,OTA,0
-ED8B6F5857,16/03/2026 15:55,,Ctrip,XINYI JIANG,Classic,Tariffa Rimborsabile - Pernottamento,11/07/2026,13/07/2026,2,495.5,Palazzo Alfani,Confermate,42,OTA,0
-4626AA9549,22/02/2026 11:08,14/03/2026 08:49,Ctrip,TING HUA,Classic,Tariffa Rimborsabile - Pernottamento,05/07/2026,07/07/2026,2,500.62,Palazzo Alfani,Cancellate,0,OTA,0
-E5772C12AA,09/03/2026 08:55,10/03/2026 11:46,Booking,Gennady Pavlov,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,07/07/2026,2,646.63,Palazzo Alfani,Cancellate,0,OTA,0
-B6AEE095B4,08/03/2026 17:35,08/03/2026 19:46,Expedia,YUFANG WANG,Classic,Flessibile pacchetto,29/09/2026,02/10/2026,3,941.62,Palazzo Alfani,Cancellate,0,OTA,0
-0A0EF74752,06/03/2026 13:15,08/03/2026 17:02,Expedia,JIAJIA LIU,Classic,Flessibile pacchetto,03/07/2026,05/07/2026,2,470.36,Palazzo Alfani,Cancellate,0,OTA,0
-DDC2263B0B,07/03/2026 06:04,,Expedia,DA LI,Deluxe,Non rimborsabile pacchetto,03/10/2026,05/10/2026,2,726.75,Palazzo Alfani,Confermate,0,OTA,0
-B217CD50BE,01/03/2026 23:46,06/03/2026 23:05,Booking,Kelly THAM,Superior,Tariffa Rimborsabile - Pernottamento,25/08/2026,30/08/2026,5,1409.8,Palazzo Alfani,Cancellate,0,OTA,0
-674A0CA8E1,10/02/2026 19:07,27/02/2026 14:20,Booking,Ananya Shukla,Classic,Tariffa Rimborsabile - Pernottamento,16/09/2026,19/09/2026,3,1014.81,Palazzo Alfani,Cancellate,0,OTA,0
-5C7200AD80,27/02/2026 06:33,,Ctrip,JING YOU,Deluxe,Tariffa Rimborsabile - Pernottamento,06/08/2026,08/08/2026,2,615.32,Palazzo Alfani,Confermate,0,OTA,0
-D3E51DABC8,26/02/2026 08:35,27/02/2026 06:33,Ctrip,JING YOU,Deluxe,Tariffa Rimborsabile - Pernottamento,05/08/2026,07/08/2026,2,615.32,Palazzo Alfani,Cancellate,0,OTA,0
-06D3A6E4E3,23/02/2026 23:33,,Booking,DAVID ANDALUZ GARCIA,Superior,Tariffa Rimborsabile - Pernottamento,01/07/2026,05/07/2026,4,1517.66,Palazzo Alfani,Confermate,84,OTA,0
-606AAC1F23,22/02/2026 23:21,23/02/2026 05:27,Booking,Vibhuti Nanda,Classic,Tariffa Rimborsabile - Pernottamento,06/08/2026,09/08/2026,3,724.86,Palazzo Alfani,Cancellate,0,OTA,0
-80FA58933F,23/02/2026 05:02,,Expedia,Nikita Ager,Deluxe,Flessibile pacchetto,24/07/2026,26/07/2026,2,564.86,Palazzo Alfani,Confermate,0,OTA,0
-3ECBA351B9,18/02/2026 19:36,,Expedia,Casey Vaught,Superior,Non rimborsabile pacchetto,21/07/2026,25/07/2026,4,850.78,Palazzo Alfani,Confermate,0,OTA,0
-5DD4D3C2F8,18/02/2026 18:49,,Booking,Cohen Shira,Deluxe,Tariffa Rimborsabile - Pernottamento,21/08/2026,23/08/2026,2,779.98,Palazzo Alfani,Confermate,0,OTA,0
-71DFCCFD71,18/02/2026 01:02,18/02/2026 01:08,Booking,Jobel Virgens Filho,Classic,Tariffa Rimborsabile - Pernottamento,15/07/2026,19/07/2026,4,1072.42,Palazzo Alfani,Cancellate,0,OTA,0
-332C839EF5,18/02/2026 01:02,,Booking,Rodrigo Pereira,Classic,Tariffa Rimborsabile - Pernottamento,16/07/2026,19/07/2026,3,748.71,Palazzo Alfani,Confermate,0,OTA,0
-5A8F3D72E0,18/02/2026 00:40,18/02/2026 01:00,Booking,Rodrigo Pereira,Classic,Tariffa Rimborsabile - Pernottamento,15/07/2026,19/07/2026,4,994.9,Palazzo Alfani,Cancellate,0,OTA,0
-B87B5CDDE9,25/01/2026 22:25,17/02/2026 22:05,Booking,Sonia BURREL,Deluxe,Tariffa Rimborsabile - Pernottamento,06/08/2026,08/08/2026,2,831.84,Palazzo Alfani,Cancellate,0,OTA,0
-BE804D5070,16/02/2026 06:47,16/02/2026 08:08,Booking,Vivirito Anthony,Deluxe,Tariffa Rimborsabile - Pernottamento,17/08/2026,20/08/2026,3,1166.01,Palazzo Alfani,Cancellate,0,OTA,0
-9B403FE17A,14/02/2026 21:18,15/02/2026 17:35,Booking,Susan Freeman,Deluxe,Tariffa Rimborsabile - Pernottamento,06/10/2026,08/10/2026,2,961.7,Palazzo Alfani,Cancellate,0,OTA,0
-8B18E4C654,14/02/2026 20:43,14/02/2026 21:13,Booking,Susan Freeman,Deluxe,Tariffa Rimborsabile - Pernottamento,06/10/2026,08/10/2026,2,961.7,Palazzo Alfani,Cancellate,0,OTA,0
-451839EEEF,16/01/2026 07:54,11/02/2026 01:03,Ctrip,Kok Chuan Tee,Classic,Tariffa Rimborsabile - Pernottamento,02/10/2026,05/10/2026,3,963.33,Palazzo Alfani,Confermate,0,OTA,0
-1ED0BD622B,13/01/2026 18:39,11/02/2026 01:02,Expedia,WARREN SEAMAN,Superior,Tariffa Non Rimborsabile - Pernottamento,26/09/2026,29/09/2026,3,747.21,Palazzo Alfani,Confermate,0,OTA,0
-0BDF8B0196,09/02/2026 13:32,,Expedia,Swi Chun Ho,Junior suite,Tariffa Rimborsabile - Pernottamento,02/10/2026,05/10/2026,3,986.37,Palazzo Alfani,Confermate,0,OTA,0
-B7B6E4400D,07/02/2026 13:12,,Beddy,Tanya DI LORENZO,Classic,Tariffa Rimborsabile con Colazione inclusa,02/10/2026,05/10/2026,3,1128.6,Palazzo Alfani,Confermate,0,Sito web,0
-6644F8FEF4,13/01/2026 07:24,06/02/2026 04:16,Booking,Andrew Attard,Deluxe,Tariffa Rimborsabile - Pernottamento,24/07/2026,27/07/2026,3,1141.55,Palazzo Alfani,Cancellate,0,OTA,0
-67C175AD1D,23/01/2026 05:33,01/02/2026 23:58,Booking,Tanima Pal,Classic,Tariffa Rimborsabile - Pernottamento,21/08/2026,23/08/2026,2,548.42,Palazzo Alfani,Cancellate,0,OTA,0
-AA078FB77D,21/01/2026 19:21,25/01/2026 03:46,Expedia,SILVIENE DE ARAUJO TREVISAN,Classic,Flessibile pacchetto,21/07/2026,24/07/2026,3,685.56,Palazzo Alfani,Cancellate,0,OTA,0
-D19E38253B,17/01/2026 23:06,,Beddy,Keren Kaplan Mintz,Superior,Tariffa Rimborsabile - Pernottamento,21/07/2026,25/07/2026,4,1085,Palazzo Alfani,Confermate,0,Sito web,0
-D28B8A76B5,17/01/2026 18:58,,Expedia,Richard Burke,Deluxe,Vantaggio Soggiorno Prolungato,18/07/2026,24/07/2026,6,1646.29,Palazzo Alfani,Confermate,0,OTA,0
-2AE50A9AA3,14/01/2026 18:51,15/01/2026 03:08,Booking,Bree Kuenzle,Deluxe,Tariffa Rimborsabile - Pernottamento,14/09/2026,15/09/2026,1,459.18,Palazzo Alfani,Cancellate,0,OTA,0
-2E87D2542D,14/01/2026 21:47,14/01/2026 22:01,Booking,Conrad Santamaria,Classic,Tariffa Rimborsabile - Pernottamento,30/07/2026,05/08/2026,6,1599.12,Palazzo Alfani,Cancellate,0,OTA,0
-1C6BF81570,14/01/2026 03:03,,Booking,Peter Thomson,Deluxe,Tariffa Rimborsabile - Pernottamento,16/10/2026,20/10/2026,4,1847.08,Palazzo Alfani,Confermate,0,OTA,0
-14AD9A4654,03/01/2026 04:44,07/01/2026 16:37,Booking,Melanie Brunet,Deluxe,Tariffa Rimborsabile - Pernottamento,21/07/2026,22/07/2026,1,364.21,Palazzo Alfani,Cancellate,0,OTA,0
-E4CFE12C9B,04/01/2026 01:08,,Booking,Czerny Claudine,Deluxe,Tariffa Rimborsabile - Pernottamento,19/09/2026,24/09/2026,5,2362.55,Palazzo Alfani,Confermate,0,OTA,0
-2F7A4B121F,27/12/2025 10:07,01/01/2026 22:19,Booking,Raymond Nogael,Deluxe,Tariffa Rimborsabile - Pernottamento,07/08/2026,08/08/2026,1,388.72,Palazzo Alfani,Cancellate,0,OTA,0
-E52CD2318D,09/11/2025 11:32,20/12/2025 13:45,Booking,Stefan Schicke,Deluxe,Tariffa Rimborsabile - Pernottamento,01/10/2026,05/10/2026,4,2278.08,Palazzo Alfani,Cancellate,0,OTA,0
-E64A8C9A32,29/11/2025 15:47,,Beddy,Sheila Leete,Deluxe,Tariffa Rimborsabile - Pernottamento,11/09/2026,14/09/2026,3,1690.5,Palazzo Alfani,Confermate,0,Non Specificato,0
-B33C05C599,29/11/2025 15:42,,Beddy,Jenting Tan,Deluxe,Tariffa Rimborsabile - Pernottamento,04/07/2026,06/07/2026,2,591.76,Palazzo Alfani,Confermate,28,Non Specificato,0
-4DB4978EE9,21/11/2025 11:32,,Booking,Michael Khalife,Deluxe,Tariffa Rimborsabile - Pernottamento,27/07/2026,30/07/2026,3,1170.96,Palazzo Alfani,Confermate,0,OTA,0
-3BBDE17E1B,20/09/2025 22:18,,Expedia,KATHERINE STEELE,Deluxe,Flessibile pacchetto,13/07/2026,16/07/2026,3,1099.95,Palazzo Alfani,Confermate,0,OTA,0
-2264,03/07/2026 06:55:00,,Expedia,Ronna Macarilay,Blu,Blu - Standard,29/10/2026,01/11/2026,3,320.8,Florence David's Apartament,Confermate,36,Expedia,0
-2013,16/01/2026 21:56:53,,Booking,Gonzalez Fran,Senape,Senape - Standard,27/10/2026,29/10/2026,2,301.16,Florence David's Apartament,Confermate,36,Booking,0
-2269,07/07/2026 20:21:00,,Expedia,Elizabeth Gardner,Verde,Verde - Standard,19/09/2026,21/09/2026,2,377.53,Florence David's Apartament,Confermate,24,Expedia,0
-2270,08/07/2026 21:46:00,,Expedia,Chloe Haller-Kaplan,Verde,Verde - Standard,17/09/2026,18/09/2026,1,187.84,Florence David's Apartament,Confermate,12,Expedia,0
-2267,06/07/2026 14:20:00,,Expedia Affilia,YUANWEI TANG,Blu,Blu - Non Rimborsabile OTA,04/09/2026,06/09/2026,2,266.97,Florence David's Apartament,Confermate,24,Expedia Affilia,0
-2253,25/06/2026 14:44:38,,Booking Engine,Stefan Germaine,Verde,Verde - Standard,04/09/2026,07/09/2026,3,487,Florence David's Apartament,Confermate,36,Booking Engine,0
-2183,04/05/2026 00:09:00,,Expedia,Taylor Cathryn Byykkonen,Verde,Verde,31/08/2026,04/09/2026,4,449.79,Florence David's Apartament,Confermate,48,Expedia,0
-2249,22/06/2026 23:51:16,,Booking,contreras hernán,Blu,Blu - Non Rimborsabile OTA,26/08/2026,30/08/2026,4,319.98,Florence David's Apartament,Confermate,48,Booking,0
-2256,28/06/2026 23:34:38,,Booking Engine,Christian Mauricio Carpio Romero,Senape,Senape - Non Rimborsabile BE,22/08/2026,23/08/2026,1,83.7,Florence David's Apartament,Confermate,12,Booking Engine,0
-2254,28/06/2026 23:13:11,28/06/2026,Booking Engine,Christian Mauricio Carpio Romero,Senape,Senape - Non Rimborsabile BE,22/08/2026,23/08/2026,1,83.7,Florence David's Apartament,Cancellate,0,Booking Engine,0
-2237,21/06/2026 14:48:11,,Booking,Spyridon Dermentzoglou,Blu,Blu - Non Rimborsabile OTA,20/08/2026,23/08/2026,3,251.83,Florence David's Apartament,Confermate,36,Booking,0
-2193,10/05/2026 11:33:11,,Booking,Jansen Björn,Verde,Verde - Non Rimborsabile OTA,20/08/2026,23/08/2026,3,321.32,Florence David's Apartament,Confermate,36,Booking,0
-2268,07/07/2026 20:46:58,,Airbnb,Luke Robinson,Verde,Verde - Standard,19/08/2026,20/08/2026,1,73.01,Florence David's Apartament,Confermate,0,Airbnb,0
-2244,22/06/2026 16:02:48,,Booking,Artico Dario Gino,Blu,Blu - Non Rimborsabile OTA,19/08/2026,20/08/2026,1,66.27,Florence David's Apartament,Confermate,12,Booking,0
-2261,01/07/2026 12:18:36,,Airbnb,Carolina Ortega Guttack,Verde,Verde - Standard,17/08/2026,18/08/2026,1,76.89,Florence David's Apartament,Confermate,0,Airbnb,0
-2239,21/06/2026 23:28:33,,Booking,Fournier Hugo,Blu,Blu - Non Rimborsabile OTA,15/08/2026,17/08/2026,2,187.45,Florence David's Apartament,Confermate,24,Booking,0
-2258,29/06/2026 05:30:37,,Booking Engine,Paulina Antoniou,Senape,Senape - Standard,13/08/2026,18/08/2026,5,495,Florence David's Apartament,Confermate,60,Booking Engine,0
-2247,22/06/2026 19:48:07,,Booking,BANTOUVAS GEORGIOS,Verde,Verde - Non Rimborsabile OTA,13/08/2026,17/08/2026,4,336.08,Florence David's Apartament,Confermate,48,Booking,0
-2240,22/06/2026 14:49:09,,Booking,Piñeiro Agustín,Blu,Blu - Non Rimborsabile OTA,12/08/2026,15/08/2026,3,214.91,Florence David's Apartament,Confermate,36,Booking,0
-2275,10/07/2026 16:21:58,,Airbnb,혜미 김,Verde,Verde - Standard,11/08/2026,13/08/2026,2,142.21,Florence David's Apartament,Confermate,0,Airbnb,0
-2246,22/06/2026 19:46:18,,Booking,Cavazzi Ilaria,Blu,Blu - Non Rimborsabile OTA,10/08/2026,12/08/2026,2,134.44,Florence David's Apartament,Confermate,24,Booking,0
-2266,05/07/2026 19:48:02,,Booking,QUENOUILLERE Pierre,Verde,Verde - Non Rimborsabile OTA,09/08/2026,11/08/2026,2,178.04,Florence David's Apartament,Confermate,24,Booking,0
-2243,22/06/2026 15:48:24,,Booking,HIJAZI VEGA MARIAM,Verde,Verde - Standard,06/08/2026,09/08/2026,3,292.43,Florence David's Apartament,Confermate,36,Booking,0
-2222,01/06/2026 11:08:00,,Expedia Affilia,WOOSEOK IM,Blu,Blu - Non Rimborsabile OTA,06/08/2026,08/08/2026,2,199.19,Florence David's Apartament,Confermate,24,Expedia Affilia,0
-2229,11/06/2026 05:17:00,,Expedia,SOPHIE ET MICHEL KORHEL,Senape,Senape,04/08/2026,09/08/2026,5,465.96,Florence David's Apartament,Confermate,90,Expedia,0
-2245,22/06/2026 18:42:47,22/06/2026,Booking,Dołżyński Aleksander,Verde,Verde - Standard,03/08/2026,05/08/2026,2,175.66,Florence David's Apartament,Cancellate,0,Booking,0
-2216,31/05/2026 15:53:18,,Booking,Berthé Jehan,Blu,Blu - Non Rimborsabile OTA,03/08/2026,05/08/2026,2,167.16,Florence David's Apartament,Confermate,24,Booking,0
-2230,11/06/2026 15:59:58,,Airbnb,Pato Alanis Alanis Ortega,Verde,Verde - Standard,02/08/2026,03/08/2026,1,89.74,Florence David's Apartament,Confermate,0,Airbnb,0
-2169,27/04/2026 16:29:00,,Expedia Affilia,Hiu Yin Li,Blu,Blu,26/07/2026,29/07/2026,3,212.2,Florence David's Apartament,Confermate,36,Expedia Affilia,0
-2235,16/06/2026 08:35:22,,Airbnb,Heidi Vanneste,Verde,Verde - Standard,25/07/2026,28/07/2026,3,276.31,Florence David's Apartament,Confermate,0,Airbnb,0
-2271,09/07/2026 12:31:48,,Airbnb,Pan Leilei,Verde,Verde - Standard,24/07/2026,25/07/2026,1,77.57,Florence David's Apartament,Confermate,0,Airbnb,0
-2220,31/05/2026 20:44:08,,Booking,Balbás Paula,Blu,Blu - Non Rimborsabile OTA,24/07/2026,26/07/2026,2,203.89,Florence David's Apartament,Confermate,24,Booking,0
-2250,23/06/2026 05:23:18,27/06/2026,Booking,Taylor Lara,Verde,Verde - Standard,22/07/2026,25/07/2026,3,356.07,Florence David's Apartament,Cancellate,0,Booking,0
-2218,31/05/2026 16:52:53,,Booking,SANSON Jasmine,Senape,Senape - Non Rimborsabile OTA,19/07/2026,22/07/2026,3,391.69,Florence David's Apartament,Confermate,54,Booking,0
-2173,30/04/2026 17:22:07,,Booking,de Oliveira Isaura Costa,Blu,Blu - Min Stay 5 notti,17/07/2026,24/07/2026,7,740.55,Florence David's Apartament,Confermate,84,Booking,0
-2106,24/03/2026 14:48:45,,Booking,Sanchez Castany Jana,Verde,Verde - Standard,17/07/2026,20/07/2026,3,431.58,Florence David's Apartament,Confermate,36,Booking,0
-2241,22/06/2026 14:51:29,,Booking,Zhang Lu,Senape,Senape - Non Rimborsabile OTA,15/07/2026,17/07/2026,2,256.8,Florence David's Apartament,Confermate,24,Booking,0
-2272,09/07/2026 19:44:30,,Booking,Uliana Simone,Senape,Senape - Non Rimborsabile OTA,14/07/2026,15/07/2026,1,98.68,Florence David's Apartament,Confermate,6,Booking,0
-2204,14/05/2026 11:28:47,,Booking,Knížek Michal,Verde,Verde - Non Rimborsabile OTA,14/07/2026,16/07/2026,2,238.38,Florence David's Apartament,Confermate,24,Booking,0
-2242,22/06/2026 14:54:07,06/07/2026,Booking,Iannaccone Marilena,Senape,Senape - Standard,13/07/2026,15/07/2026,2,286.62,Florence David's Apartament,Cancellate,0,Booking,0
-2175,03/05/2026 13:58:30,,Booking Engine,Yelyzaveta Arnautova,Blu,Blu - Standard,13/07/2026,17/07/2026,4,459.36,Florence David's Apartament,Confermate,48,Booking Engine,0
-2221,31/05/2026 23:00:10,,Booking,Kim HaeJin,Senape,Senape - Non Rimborsabile OTA,12/07/2026,13/07/2026,1,128.73,Florence David's Apartament,Confermate,18,Booking,0
-2260,29/06/2026 21:54:58,,Booking Engine,Camila Barros,Blu,Blu - Non Rimborsabile BE,11/07/2026,13/07/2026,2,159.3,Florence David's Apartament,Confermate,24,Booking Engine,0
-2259,29/06/2026 18:47:55,29/06/2026,Booking Engine,Camila Barros,Blu,Blu - Non Rimborsabile BE,11/07/2026,13/07/2026,2,159.3,Florence David's Apartament,Cancellate,0,Booking Engine,0
-2236,19/06/2026 22:59:00,,HOMEAWAY_IT,Cordelia Klammer,Verde,Verde - Standard,11/07/2026,12/07/2026,1,130.9,Florence David's Apartament,Confermate,12,HOMEAWAY_IT,0
-2274,10/07/2026 11:52:56,,Booking Engine,Ricardo Jamaica,Verde,Verde - Standard,10/07/2026,11/07/2026,1,80,Florence David's Apartament,Confermate,6,Booking Engine,0
-2263,01/07/2026 18:08:41,,Booking Engine,Marianna Grondona,Blu,Blu - Non Rimborsabile BE,10/07/2026,11/07/2026,1,81,Florence David's Apartament,Confermate,12,Booking Engine,0
-2255,28/06/2026 23:20:09,,Booking Engine,Anjali Anjali,Senape,Senape - Non Rimborsabile BE,10/07/2026,11/07/2026,1,111.6,Florence David's Apartament,Confermate,18,Booking Engine,0
-2273,09/07/2026 21:59:15,,Booking,JAMAICA RICARDO,Senape,Senape - Standard,09/07/2026,10/07/2026,1,90.43,Florence David's Apartament,Confermate,6,Booking,0
-2265,05/07/2026 17:59:40,,Airbnb,Keval Ramanathan,Blu,Blu - Standard,09/07/2026,10/07/2026,1,62.36,Florence David's Apartament,Confermate,0,Airbnb,0
-2248,22/06/2026 22:45:46,,Booking,Thal Mikołaj,Blu,Blu - Non Rimborsabile OTA,06/07/2026,09/07/2026,3,319.04,Florence David's Apartament,Confermate,36,Booking,0
-2170,28/04/2026 18:18:00,,Expedia Affilia,Francesca Wilhelmina van Tartwijk,Verde,Verde,06/07/2026,10/07/2026,4,392.5,Florence David's Apartament,Confermate,48,Expedia Affilia,0
-2238,21/06/2026 21:19:57,,Booking,Giordano Arianna,Blu,Blu - Standard,05/07/2026,06/07/2026,1,111.5,Florence David's Apartament,Confermate,12,Booking,0
-2087,09/03/2026 08:16:00,15/06/2026,Expedia,Zhirong Zhang,Blu,Blu - Standard,05/07/2026,10/07/2026,5,594.37,Florence David's Apartament,Cancellate,30,Expedia,0
-2257,29/06/2026 01:28:17,,Booking,TAO HUI,Senape,Senape - Non Rimborsabile OTA,04/07/2026,07/07/2026,3,290.97,Florence David's Apartament,Confermate,36,Booking,0
-2155,19/04/2026 02:26:54,,Booking,Amourgis Ashley,Verde,Verde - Non Rimborsabile OTA,04/07/2026,05/07/2026,1,126.52,Florence David's Apartament,Confermate,12,Booking,0
-2262,01/07/2026 16:22:03,,Airbnb,Pawan Balasubramaniam,Verde,Verde - Standard,03/07/2026,04/07/2026,1,61.6,Florence David's Apartament,Confermate,0,Airbnb,0
-2233,13/06/2026 20:55:38,,Booking,Bukowska Alicja,Blu,Blu - Non Rimborsabile OTA,03/07/2026,05/07/2026,2,221.3,Florence David's Apartament,Confermate,24,Booking,0
-2188,04/05/2026 15:09:00,10/05/2026,Expedia,Ziyue Tian,Senape,Senape,03/07/2026,07/07/2026,4,445.51,Florence David's Apartament,Cancellate,24,Expedia,0
-
 `;
 const AIRBNB_DATA = []  /* Airbnb data moved to separate dashboard (airbnb_dashboard.html) */;
 const EXPEDIA_DATA = {
-  "as_of": "2026-07-10",
+  "as_of": "2026-07-07",
   "alfani": {
-    "2026-07-10": null,
-    "2026-07-11": null,
-    "2026-07-12": null,
-    "2026-07-13": 280,
-    "2026-07-14": null,
-    "2026-07-15": 270,
+    "2026-07-07": null,
+    "2026-07-08": null,
+    "2026-07-09": null,
+    "2026-07-10": 260,
+    "2026-07-11": 236,
+    "2026-07-12": 236,
+    "2026-07-13": 249,
+    "2026-07-14": 260,
+    "2026-07-15": 263,
     "2026-07-16": null,
     "2026-07-17": null,
-    "2026-07-18": 265,
-    "2026-07-19": 260,
-    "2026-07-20": 329,
+    "2026-07-18": 242,
+    "2026-07-19": 254,
+    "2026-07-20": 334,
     "2026-07-21": null,
-    "2026-07-22": 257,
+    "2026-07-22": 247,
     "2026-07-23": null,
     "2026-07-24": null,
-    "2026-07-25": 251,
-    "2026-07-26": 434,
-    "2026-07-27": null,
+    "2026-07-25": 271,
+    "2026-07-26": 422,
+    "2026-07-27": 247,
     "2026-07-28": 230,
     "2026-07-29": 218,
     "2026-07-30": 218,
     "2026-07-31": 236,
-    "2026-08-01": 253,
-    "2026-08-02": 248,
-    "2026-08-03": 247,
-    "2026-08-04": 247,
+    "2026-08-01": 280,
+    "2026-08-02": 268,
+    "2026-08-03": 261,
+    "2026-08-04": 250,
     "2026-08-05": 224,
     "2026-08-06": 247,
-    "2026-08-07": 247,
-    "2026-08-08": 247,
-    "2026-08-09": 247,
-    "2026-08-10": 239,
+    "2026-08-07": 251,
+    "2026-08-08": 273,
+    "2026-08-09": 272,
+    "2026-08-10": 247,
     "2026-08-11": 230,
     "2026-08-12": 230,
     "2026-08-13": 206,
     "2026-08-14": null,
     "2026-08-15": null,
-    "2026-08-16": 247,
-    "2026-08-17": 288,
+    "2026-08-16": 259,
+    "2026-08-17": 316,
     "2026-08-18": 206,
     "2026-08-19": 206,
     "2026-08-20": 224,
@@ -8831,14 +8770,14 @@ const EXPEDIA_DATA = {
     "2026-08-27": 230,
     "2026-08-28": 206,
     "2026-08-29": 206,
-    "2026-08-30": 231,
+    "2026-08-30": 238,
     "2026-08-31": 247,
     "2026-09-01": 271,
-    "2026-09-02": 341,
-    "2026-09-03": 355,
-    "2026-09-04": 351,
-    "2026-09-05": 380,
-    "2026-09-06": 372,
+    "2026-09-02": 318,
+    "2026-09-03": 331,
+    "2026-09-04": 339,
+    "2026-09-05": 351,
+    "2026-09-06": 347,
     "2026-09-07": 411,
     "2026-09-08": 434,
     "2026-09-09": 434,
@@ -9140,177 +9079,177 @@ const EXPEDIA_DATA = {
     "2027-07-02": 275,
     "2027-07-03": 275,
     "2027-07-04": 275,
-    "2027-07-05": 275,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-05": 275
   },
   "compset_avg_alfani": {
-    "2026-07-10": 250,
+    "2026-07-07": 289,
+    "2026-07-08": 276,
+    "2026-07-09": 246,
+    "2026-07-10": 251,
     "2026-07-11": 322,
-    "2026-07-12": 338,
-    "2026-07-13": 262,
-    "2026-07-14": 296,
-    "2026-07-15": 339,
+    "2026-07-12": 303,
+    "2026-07-13": 260,
+    "2026-07-14": 270,
+    "2026-07-15": 287,
     "2026-07-16": 257,
-    "2026-07-17": 310,
-    "2026-07-18": 295,
-    "2026-07-19": 300,
-    "2026-07-20": 277,
+    "2026-07-17": 274,
+    "2026-07-18": 298,
+    "2026-07-19": 279,
+    "2026-07-20": 273,
     "2026-07-21": 268,
-    "2026-07-22": 272,
-    "2026-07-23": 292,
-    "2026-07-24": 383,
-    "2026-07-25": 295,
-    "2026-07-26": 262,
-    "2026-07-27": 255,
-    "2026-07-28": 279,
-    "2026-07-29": 241,
-    "2026-07-30": 256,
+    "2026-07-22": 257,
+    "2026-07-23": 330,
+    "2026-07-24": 362,
+    "2026-07-25": 293,
+    "2026-07-26": 255,
+    "2026-07-27": 252,
+    "2026-07-28": 275,
+    "2026-07-29": 240,
+    "2026-07-30": 264,
     "2026-07-31": 289,
     "2026-08-01": 249,
-    "2026-08-02": 261,
+    "2026-08-02": 262,
     "2026-08-03": 257,
-    "2026-08-04": 259,
+    "2026-08-04": 246,
     "2026-08-05": 248,
-    "2026-08-06": 239,
-    "2026-08-07": 253,
-    "2026-08-08": 233,
+    "2026-08-06": 232,
+    "2026-08-07": 247,
+    "2026-08-08": 229,
     "2026-08-09": 231,
     "2026-08-10": 239,
     "2026-08-11": 248,
-    "2026-08-12": 216,
-    "2026-08-13": 215,
-    "2026-08-14": 225,
-    "2026-08-15": 246,
-    "2026-08-16": 213,
-    "2026-08-17": 233,
-    "2026-08-18": 225,
-    "2026-08-19": 214,
-    "2026-08-20": 222,
+    "2026-08-12": 221,
+    "2026-08-13": 216,
+    "2026-08-14": 227,
+    "2026-08-15": 249,
+    "2026-08-16": 212,
+    "2026-08-17": 217,
+    "2026-08-18": 224,
+    "2026-08-19": 216,
+    "2026-08-20": 224,
     "2026-08-21": 258,
     "2026-08-22": 243,
-    "2026-08-23": 217,
-    "2026-08-24": 228,
-    "2026-08-25": 232,
-    "2026-08-26": 228,
-    "2026-08-27": 219,
-    "2026-08-28": 224,
-    "2026-08-29": 234,
+    "2026-08-23": 214,
+    "2026-08-24": 216,
+    "2026-08-25": 222,
+    "2026-08-26": 229,
+    "2026-08-27": 221,
+    "2026-08-28": 225,
+    "2026-08-29": 235,
     "2026-08-30": 244,
     "2026-08-31": 237,
-    "2026-09-01": 344,
-    "2026-09-02": 362,
-    "2026-09-03": 351,
+    "2026-09-01": 340,
+    "2026-09-02": 365,
+    "2026-09-03": 350,
     "2026-09-04": 323,
-    "2026-09-05": 405,
-    "2026-09-06": 363,
-    "2026-09-07": 372,
-    "2026-09-08": 399,
-    "2026-09-09": 383,
-    "2026-09-10": 372,
-    "2026-09-11": 400,
-    "2026-09-12": 458,
-    "2026-09-13": 411,
-    "2026-09-14": 376,
-    "2026-09-15": 385,
-    "2026-09-16": 441,
-    "2026-09-17": 384,
-    "2026-09-18": 472,
-    "2026-09-19": 464,
-    "2026-09-20": 469,
-    "2026-09-21": 385,
-    "2026-09-22": 428,
-    "2026-09-23": 420,
-    "2026-09-24": 430,
-    "2026-09-25": 472,
-    "2026-09-26": 420,
-    "2026-09-27": 409,
-    "2026-09-28": 417,
-    "2026-09-29": 415,
-    "2026-09-30": 437,
-    "2026-10-01": 422,
-    "2026-10-02": 412,
-    "2026-10-03": 475,
-    "2026-10-04": 398,
-    "2026-10-05": 375,
-    "2026-10-06": 373,
-    "2026-10-07": 387,
-    "2026-10-08": 377,
-    "2026-10-09": 394,
-    "2026-10-10": 396,
-    "2026-10-11": 349,
-    "2026-10-12": 376,
-    "2026-10-13": 346,
-    "2026-10-14": 332,
-    "2026-10-15": 372,
-    "2026-10-16": 371,
+    "2026-09-05": 403,
+    "2026-09-06": 359,
+    "2026-09-07": 369,
+    "2026-09-08": 397,
+    "2026-09-09": 390,
+    "2026-09-10": 360,
+    "2026-09-11": 397,
+    "2026-09-12": 454,
+    "2026-09-13": 403,
+    "2026-09-14": 365,
+    "2026-09-15": 383,
+    "2026-09-16": 439,
+    "2026-09-17": 413,
+    "2026-09-18": 415,
+    "2026-09-19": 458,
+    "2026-09-20": 455,
+    "2026-09-21": 380,
+    "2026-09-22": 426,
+    "2026-09-23": 415,
+    "2026-09-24": 435,
+    "2026-09-25": 469,
+    "2026-09-26": 416,
+    "2026-09-27": 405,
+    "2026-09-28": 402,
+    "2026-09-29": 412,
+    "2026-09-30": 436,
+    "2026-10-01": 415,
+    "2026-10-02": 404,
+    "2026-10-03": 471,
+    "2026-10-04": 399,
+    "2026-10-05": 369,
+    "2026-10-06": 374,
+    "2026-10-07": 388,
+    "2026-10-08": 381,
+    "2026-10-09": 398,
+    "2026-10-10": 403,
+    "2026-10-11": 357,
+    "2026-10-12": 387,
+    "2026-10-13": 357,
+    "2026-10-14": 339,
+    "2026-10-15": 378,
+    "2026-10-16": 378,
     "2026-10-17": 379,
-    "2026-10-18": 338,
-    "2026-10-19": 305,
-    "2026-10-20": 354,
-    "2026-10-21": 327,
-    "2026-10-22": 311,
-    "2026-10-23": 330,
-    "2026-10-24": 334,
-    "2026-10-25": 307,
-    "2026-10-26": 302,
-    "2026-10-27": 309,
-    "2026-10-28": 312,
-    "2026-10-29": 308,
-    "2026-10-30": 318,
-    "2026-10-31": 322,
-    "2026-11-01": 234,
-    "2026-11-02": 229,
-    "2026-11-03": 231,
-    "2026-11-04": 231,
-    "2026-11-05": 248,
-    "2026-11-06": 237,
-    "2026-11-07": 261,
-    "2026-11-08": 221,
-    "2026-11-09": 228,
-    "2026-11-10": 229,
-    "2026-11-11": 230,
-    "2026-11-12": 236,
-    "2026-11-13": 236,
-    "2026-11-14": 248,
+    "2026-10-18": 343,
+    "2026-10-19": 310,
+    "2026-10-20": 358,
+    "2026-10-21": 332,
+    "2026-10-22": 319,
+    "2026-10-23": 340,
+    "2026-10-24": 339,
+    "2026-10-25": 312,
+    "2026-10-26": 308,
+    "2026-10-27": 311,
+    "2026-10-28": 316,
+    "2026-10-29": 313,
+    "2026-10-30": 325,
+    "2026-10-31": 328,
+    "2026-11-01": 227,
+    "2026-11-02": 223,
+    "2026-11-03": 230,
+    "2026-11-04": 230,
+    "2026-11-05": 242,
+    "2026-11-06": 231,
+    "2026-11-07": 259,
+    "2026-11-08": 220,
+    "2026-11-09": 224,
+    "2026-11-10": 223,
+    "2026-11-11": 224,
+    "2026-11-12": 227,
+    "2026-11-13": 232,
+    "2026-11-14": 247,
     "2026-11-15": 206,
-    "2026-11-16": 200,
-    "2026-11-17": 196,
-    "2026-11-18": 193,
-    "2026-11-19": 201,
-    "2026-11-20": 203,
-    "2026-11-21": 233,
-    "2026-11-22": 193,
-    "2026-11-23": 196,
-    "2026-11-24": 199,
-    "2026-11-25": 200,
-    "2026-11-26": 201,
-    "2026-11-27": 227,
-    "2026-11-28": 283,
+    "2026-11-16": 199,
+    "2026-11-17": 194,
+    "2026-11-18": 194,
+    "2026-11-19": 202,
+    "2026-11-20": 202,
+    "2026-11-21": 232,
+    "2026-11-22": 194,
+    "2026-11-23": 194,
+    "2026-11-24": 196,
+    "2026-11-25": 198,
+    "2026-11-26": 199,
+    "2026-11-27": 225,
+    "2026-11-28": 280,
     "2026-11-29": 206,
     "2026-11-30": 195,
-    "2026-12-01": 191,
+    "2026-12-01": 189,
     "2026-12-02": 191,
     "2026-12-03": 193,
-    "2026-12-04": 209,
-    "2026-12-05": 225,
-    "2026-12-06": 220,
+    "2026-12-04": 208,
+    "2026-12-05": 222,
+    "2026-12-06": 221,
     "2026-12-07": 242,
     "2026-12-08": 195,
-    "2026-12-09": 191,
+    "2026-12-09": 192,
     "2026-12-10": 190,
     "2026-12-11": 197,
     "2026-12-12": 209,
     "2026-12-13": 185,
-    "2026-12-14": 187,
+    "2026-12-14": 188,
     "2026-12-15": 192,
-    "2026-12-16": 200,
+    "2026-12-16": 201,
     "2026-12-17": 197,
     "2026-12-18": 205,
-    "2026-12-19": 230,
+    "2026-12-19": 221,
     "2026-12-20": 200,
-    "2026-12-21": 204,
+    "2026-12-21": 205,
     "2026-12-22": 203,
     "2026-12-23": 201,
     "2026-12-24": 214,
@@ -9335,10 +9274,10 @@ const EXPEDIA_DATA = {
     "2027-01-12": 348,
     "2027-01-13": 348,
     "2027-01-14": 296,
-    "2027-01-15": 250,
-    "2027-01-16": 249,
-    "2027-01-17": 222,
-    "2027-01-18": 213,
+    "2027-01-15": 252,
+    "2027-01-16": 251,
+    "2027-01-17": 224,
+    "2027-01-18": 215,
     "2027-01-19": 214,
     "2027-01-20": 217,
     "2027-01-21": 217,
@@ -9349,27 +9288,27 @@ const EXPEDIA_DATA = {
     "2027-01-26": 212,
     "2027-01-27": 212,
     "2027-01-28": 212,
-    "2027-01-29": 215,
-    "2027-01-30": 244,
-    "2027-01-31": 222,
+    "2027-01-29": 217,
+    "2027-01-30": 247,
+    "2027-01-31": 224,
     "2027-02-01": 206,
     "2027-02-02": 203,
     "2027-02-03": 203,
-    "2027-02-04": 222,
+    "2027-02-04": 224,
     "2027-02-05": 237,
     "2027-02-06": 251,
     "2027-02-07": 226,
-    "2027-02-08": 214,
+    "2027-02-08": 216,
     "2027-02-09": 214,
     "2027-02-10": 216,
     "2027-02-11": 221,
     "2027-02-12": 222,
     "2027-02-13": 281,
     "2027-02-14": 218,
-    "2027-02-15": 216,
-    "2027-02-16": 216,
-    "2027-02-17": 216,
-    "2027-02-18": 221,
+    "2027-02-15": 218,
+    "2027-02-16": 218,
+    "2027-02-17": 218,
+    "2027-02-18": 223,
     "2027-02-19": 224,
     "2027-02-20": 244,
     "2027-02-21": 214,
@@ -9382,36 +9321,36 @@ const EXPEDIA_DATA = {
     "2027-02-28": 214,
     "2027-03-01": 220,
     "2027-03-02": 220,
-    "2027-03-03": 217,
-    "2027-03-04": 219,
+    "2027-03-03": 219,
+    "2027-03-04": 221,
     "2027-03-05": 227,
     "2027-03-06": 250,
     "2027-03-07": 221,
-    "2027-03-08": 223,
+    "2027-03-08": 226,
     "2027-03-09": 231,
     "2027-03-10": 230,
     "2027-03-11": 248,
     "2027-03-12": 250,
-    "2027-03-13": 254,
-    "2027-03-14": 224,
-    "2027-03-15": 230,
+    "2027-03-13": 256,
+    "2027-03-14": 226,
+    "2027-03-15": 232,
     "2027-03-16": 230,
-    "2027-03-17": 254,
+    "2027-03-17": 256,
     "2027-03-18": 259,
     "2027-03-19": 261,
     "2027-03-20": 269,
-    "2027-03-21": 242,
-    "2027-03-22": 249,
-    "2027-03-23": 251,
-    "2027-03-24": 263,
-    "2027-03-25": 287,
-    "2027-03-26": 374,
+    "2027-03-21": 243,
+    "2027-03-22": 250,
+    "2027-03-23": 252,
+    "2027-03-24": 265,
+    "2027-03-25": 289,
+    "2027-03-26": 376,
     "2027-03-27": 441,
     "2027-03-28": 416,
-    "2027-03-29": 311,
-    "2027-03-30": 280,
-    "2027-03-31": 280,
-    "2027-04-01": 302,
+    "2027-03-29": 305,
+    "2027-03-30": 274,
+    "2027-03-31": 274,
+    "2027-04-01": 296,
     "2027-04-02": 301,
     "2027-04-03": 338,
     "2027-04-04": 291,
@@ -9438,16 +9377,16 @@ const EXPEDIA_DATA = {
     "2027-04-25": 350,
     "2027-04-26": 350,
     "2027-04-27": 350,
-    "2027-04-28": 357,
+    "2027-04-28": 350,
     "2027-04-29": 373,
     "2027-04-30": 373,
     "2027-05-01": 409,
-    "2027-05-02": 365,
-    "2027-05-03": 365,
+    "2027-05-02": 367,
+    "2027-05-03": 367,
     "2027-05-04": 364,
-    "2027-05-05": 365,
-    "2027-05-06": 365,
-    "2027-05-07": 365,
+    "2027-05-05": 367,
+    "2027-05-06": 367,
+    "2027-05-07": 367,
     "2027-05-08": 367,
     "2027-05-09": 364,
     "2027-05-10": 364,
@@ -9472,9 +9411,9 @@ const EXPEDIA_DATA = {
     "2027-05-29": 367,
     "2027-05-30": 364,
     "2027-05-31": 366,
-    "2027-06-01": 440,
-    "2027-06-02": 440,
-    "2027-06-03": 440,
+    "2027-06-01": 423,
+    "2027-06-02": 423,
+    "2027-06-03": 423,
     "2027-06-04": 423,
     "2027-06-05": 440,
     "2027-06-06": 440,
@@ -9506,14 +9445,14 @@ const EXPEDIA_DATA = {
     "2027-07-02": 274,
     "2027-07-03": 274,
     "2027-07-04": 274,
-    "2027-07-05": 274,
-    "2027-07-06": 274,
-    "2027-07-07": 274,
-    "2027-07-08": 274
+    "2027-07-05": 274
   },
   "competitors_alfani": {
     "Residence Hilda": {
-      "2026-07-10": 217,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": 281,
+      "2026-07-10": 256,
       "2026-07-11": null,
       "2026-07-12": 230,
       "2026-07-13": 254,
@@ -9598,7 +9537,7 @@ const EXPEDIA_DATA = {
       "2026-09-30": 496,
       "2026-10-01": 484,
       "2026-10-02": 484,
-      "2026-10-03": 565,
+      "2026-10-03": 530,
       "2026-10-04": 530,
       "2026-10-05": 530,
       "2026-10-06": 484,
@@ -9873,18 +9812,18 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Martelli 6 Suites and Apartments": {
+      "2026-07-07": 240,
+      "2026-07-08": 258,
+      "2026-07-09": 278,
       "2026-07-10": 234,
       "2026-07-11": 223,
       "2026-07-12": 253,
       "2026-07-13": 185,
       "2026-07-14": 247,
-      "2026-07-15": 414,
+      "2026-07-15": 250,
       "2026-07-16": 224,
       "2026-07-17": 213,
       "2026-07-18": 250,
@@ -9895,12 +9834,12 @@ const EXPEDIA_DATA = {
       "2026-07-23": 224,
       "2026-07-24": 267,
       "2026-07-25": 280,
-      "2026-07-26": 199,
-      "2026-07-27": 199,
+      "2026-07-26": 209,
+      "2026-07-27": 209,
       "2026-07-28": 253,
       "2026-07-29": 231,
-      "2026-07-30": 195,
-      "2026-07-31": 199,
+      "2026-07-30": 231,
+      "2026-07-31": 234,
       "2026-08-01": 192,
       "2026-08-02": 223,
       "2026-08-03": 231,
@@ -9919,7 +9858,7 @@ const EXPEDIA_DATA = {
       "2026-08-16": 219,
       "2026-08-17": 228,
       "2026-08-18": 232,
-      "2026-08-19": 195,
+      "2026-08-19": 205,
       "2026-08-20": 209,
       "2026-08-21": 238,
       "2026-08-22": 224,
@@ -9927,9 +9866,9 @@ const EXPEDIA_DATA = {
       "2026-08-24": 189,
       "2026-08-25": 232,
       "2026-08-26": 204,
-      "2026-08-27": 192,
-      "2026-08-28": 189,
-      "2026-08-29": 192,
+      "2026-08-27": 202,
+      "2026-08-28": 199,
+      "2026-08-29": 202,
       "2026-08-30": 188,
       "2026-08-31": 210,
       "2026-09-01": 292,
@@ -9938,25 +9877,25 @@ const EXPEDIA_DATA = {
       "2026-09-04": 268,
       "2026-09-05": 395,
       "2026-09-06": 296,
-      "2026-09-07": 340,
+      "2026-09-07": 328,
       "2026-09-08": 275,
-      "2026-09-09": 279,
+      "2026-09-09": 289,
       "2026-09-10": 271,
       "2026-09-11": 333,
       "2026-09-12": 344,
-      "2026-09-13": 351,
-      "2026-09-14": 381,
+      "2026-09-13": 314,
+      "2026-09-14": 330,
       "2026-09-15": 275,
       "2026-09-16": 328,
-      "2026-09-17": 333,
-      "2026-09-18": 489,
+      "2026-09-17": 328,
+      "2026-09-18": 330,
       "2026-09-19": null,
-      "2026-09-20": null,
+      "2026-09-20": 377,
       "2026-09-21": 313,
-      "2026-09-22": 270,
+      "2026-09-22": 280,
       "2026-09-23": 390,
       "2026-09-24": 431,
-      "2026-09-25": 279,
+      "2026-09-25": 289,
       "2026-09-26": 329,
       "2026-09-27": 330,
       "2026-09-28": 296,
@@ -9965,13 +9904,13 @@ const EXPEDIA_DATA = {
       "2026-10-01": null,
       "2026-10-02": 319,
       "2026-10-03": 422,
-      "2026-10-04": 247,
+      "2026-10-04": 257,
       "2026-10-05": 268,
       "2026-10-06": 409,
       "2026-10-07": 316,
       "2026-10-08": 299,
       "2026-10-09": 266,
-      "2026-10-10": 268,
+      "2026-10-10": 278,
       "2026-10-11": 237,
       "2026-10-12": 262,
       "2026-10-13": 296,
@@ -9988,34 +9927,34 @@ const EXPEDIA_DATA = {
       "2026-10-24": 257,
       "2026-10-25": 265,
       "2026-10-26": 227,
-      "2026-10-27": 265,
-      "2026-10-28": 217,
+      "2026-10-27": 241,
+      "2026-10-28": 227,
       "2026-10-29": 193,
       "2026-10-30": 253,
       "2026-10-31": 269,
       "2026-11-01": 168,
       "2026-11-02": 140,
       "2026-11-03": 165,
-      "2026-11-04": 140,
-      "2026-11-05": 139,
-      "2026-11-06": 151,
-      "2026-11-07": 162,
+      "2026-11-04": 150,
+      "2026-11-05": 135,
+      "2026-11-06": 147,
+      "2026-11-07": 172,
       "2026-11-08": 152,
       "2026-11-09": 151,
       "2026-11-10": 135,
       "2026-11-11": 135,
       "2026-11-12": 151,
       "2026-11-13": 176,
-      "2026-11-14": 162,
-      "2026-11-15": 139,
-      "2026-11-16": 139,
-      "2026-11-17": 139,
-      "2026-11-18": 139,
-      "2026-11-19": 139,
+      "2026-11-14": 172,
+      "2026-11-15": 149,
+      "2026-11-16": 149,
+      "2026-11-17": 149,
+      "2026-11-18": 149,
+      "2026-11-19": 149,
       "2026-11-20": 135,
-      "2026-11-21": 162,
-      "2026-11-22": 139,
-      "2026-11-23": 139,
+      "2026-11-21": 172,
+      "2026-11-22": 149,
+      "2026-11-23": 149,
       "2026-11-24": 135,
       "2026-11-25": 135,
       "2026-11-26": 135,
@@ -10024,26 +9963,26 @@ const EXPEDIA_DATA = {
       "2026-11-29": 204,
       "2026-11-30": 135,
       "2026-12-01": 123,
-      "2026-12-02": 127,
-      "2026-12-03": 127,
-      "2026-12-04": 139,
+      "2026-12-02": 137,
+      "2026-12-03": 137,
+      "2026-12-04": 149,
       "2026-12-05": 147,
-      "2026-12-06": 151,
+      "2026-12-06": 161,
       "2026-12-07": null,
       "2026-12-08": 151,
-      "2026-12-09": 139,
+      "2026-12-09": 149,
       "2026-12-10": 135,
       "2026-12-11": 147,
       "2026-12-12": 140,
       "2026-12-13": 140,
-      "2026-12-14": 127,
+      "2026-12-14": 137,
       "2026-12-15": 140,
-      "2026-12-16": 127,
+      "2026-12-16": 137,
       "2026-12-17": 123,
       "2026-12-18": 135,
       "2026-12-19": 147,
       "2026-12-20": 135,
-      "2026-12-21": 139,
+      "2026-12-21": 149,
       "2026-12-22": 152,
       "2026-12-23": 135,
       "2026-12-24": 170,
@@ -10068,10 +10007,10 @@ const EXPEDIA_DATA = {
       "2027-01-12": 368,
       "2027-01-13": 368,
       "2027-01-14": 147,
-      "2027-01-15": 151,
-      "2027-01-16": 151,
-      "2027-01-17": 127,
-      "2027-01-18": 139,
+      "2027-01-15": 161,
+      "2027-01-16": 161,
+      "2027-01-17": 137,
+      "2027-01-18": 149,
       "2027-01-19": 135,
       "2027-01-20": 135,
       "2027-01-21": 135,
@@ -10082,27 +10021,27 @@ const EXPEDIA_DATA = {
       "2027-01-26": 135,
       "2027-01-27": 135,
       "2027-01-28": 135,
-      "2027-01-29": 139,
-      "2027-01-30": 151,
-      "2027-01-31": 127,
+      "2027-01-29": 149,
+      "2027-01-30": 161,
+      "2027-01-31": 137,
       "2027-02-01": 140,
       "2027-02-02": 123,
       "2027-02-03": 123,
-      "2027-02-04": 127,
+      "2027-02-04": 137,
       "2027-02-05": 123,
       "2027-02-06": 151,
       "2027-02-07": 140,
-      "2027-02-08": 127,
+      "2027-02-08": 137,
       "2027-02-09": 123,
       "2027-02-10": 135,
       "2027-02-11": 135,
       "2027-02-12": 135,
       "2027-02-13": 344,
       "2027-02-14": 147,
-      "2027-02-15": 139,
-      "2027-02-16": 139,
-      "2027-02-17": 139,
-      "2027-02-18": 139,
+      "2027-02-15": 149,
+      "2027-02-16": 149,
+      "2027-02-17": 149,
+      "2027-02-18": 149,
       "2027-02-19": 147,
       "2027-02-20": 158,
       "2027-02-21": 123,
@@ -10115,30 +10054,30 @@ const EXPEDIA_DATA = {
       "2027-02-28": 123,
       "2027-03-01": 135,
       "2027-03-02": 135,
-      "2027-03-03": 139,
-      "2027-03-04": 139,
+      "2027-03-03": 149,
+      "2027-03-04": 149,
       "2027-03-05": 147,
       "2027-03-06": 158,
       "2027-03-07": 135,
-      "2027-03-08": 135,
+      "2027-03-08": 149,
       "2027-03-09": 151,
       "2027-03-10": 147,
       "2027-03-11": 147,
       "2027-03-12": 158,
-      "2027-03-13": 162,
-      "2027-03-14": 139,
-      "2027-03-15": 139,
+      "2027-03-13": 172,
+      "2027-03-14": 149,
+      "2027-03-15": 149,
       "2027-03-16": 135,
-      "2027-03-17": 139,
+      "2027-03-17": 149,
       "2027-03-18": 151,
       "2027-03-19": 147,
       "2027-03-20": 175,
-      "2027-03-21": 139,
-      "2027-03-22": 139,
-      "2027-03-23": 151,
-      "2027-03-24": 151,
-      "2027-03-25": 151,
-      "2027-03-26": 174,
+      "2027-03-21": 149,
+      "2027-03-22": 149,
+      "2027-03-23": 161,
+      "2027-03-24": 161,
+      "2027-03-25": 161,
+      "2027-03-26": 184,
       "2027-03-27": null,
       "2027-03-28": null,
       "2027-03-29": 158,
@@ -10175,12 +10114,12 @@ const EXPEDIA_DATA = {
       "2027-04-29": 193,
       "2027-04-30": 193,
       "2027-05-01": null,
-      "2027-05-02": 233,
-      "2027-05-03": 233,
+      "2027-05-02": 243,
+      "2027-05-03": 243,
       "2027-05-04": 228,
-      "2027-05-05": 233,
-      "2027-05-06": 233,
-      "2027-05-07": 233,
+      "2027-05-05": 243,
+      "2027-05-06": 243,
+      "2027-05-07": 243,
       "2027-05-08": 240,
       "2027-05-09": 228,
       "2027-05-10": 228,
@@ -10239,14 +10178,14 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Casa del Sarto": {
-      "2026-07-10": 270,
-      "2026-07-11": 228,
+      "2026-07-07": 228,
+      "2026-07-08": 228,
+      "2026-07-09": 217,
+      "2026-07-10": 244,
+      "2026-07-11": 206,
       "2026-07-12": 206,
       "2026-07-13": 228,
       "2026-07-14": 228,
@@ -10254,9 +10193,9 @@ const EXPEDIA_DATA = {
       "2026-07-16": 217,
       "2026-07-17": 217,
       "2026-07-18": 206,
-      "2026-07-19": 233,
-      "2026-07-20": 233,
-      "2026-07-21": 233,
+      "2026-07-19": 217,
+      "2026-07-20": 217,
+      "2026-07-21": 217,
       "2026-07-22": 233,
       "2026-07-23": 233,
       "2026-07-24": 233,
@@ -10605,27 +10544,27 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Chic Stay Boutique Apartments": {
-      "2026-07-10": null,
+      "2026-07-07": null,
+      "2026-07-08": 312,
+      "2026-07-09": 312,
+      "2026-07-10": 304,
       "2026-07-11": 377,
       "2026-07-12": null,
       "2026-07-13": 312,
-      "2026-07-14": null,
-      "2026-07-15": null,
-      "2026-07-16": 280,
-      "2026-07-17": 264,
+      "2026-07-14": 312,
+      "2026-07-15": 304,
+      "2026-07-16": 304,
+      "2026-07-17": null,
       "2026-07-18": 322,
       "2026-07-19": 286,
       "2026-07-20": 358,
       "2026-07-21": 394,
       "2026-07-22": 376,
-      "2026-07-23": null,
-      "2026-07-24": null,
+      "2026-07-23": 376,
+      "2026-07-24": 358,
       "2026-07-25": 340,
       "2026-07-26": 358,
       "2026-07-27": 412,
@@ -10694,13 +10633,13 @@ const EXPEDIA_DATA = {
       "2026-09-28": 403,
       "2026-09-29": 403,
       "2026-09-30": 471,
-      "2026-10-01": 529,
-      "2026-10-02": 529,
-      "2026-10-03": 529,
-      "2026-10-04": 471,
-      "2026-10-05": 471,
-      "2026-10-06": 471,
-      "2026-10-07": 471,
+      "2026-10-01": null,
+      "2026-10-02": 430,
+      "2026-10-03": 430,
+      "2026-10-04": 430,
+      "2026-10-05": 430,
+      "2026-10-06": 430,
+      "2026-10-07": 430,
       "2026-10-08": 430,
       "2026-10-09": null,
       "2026-10-10": null,
@@ -10971,35 +10910,35 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Condotta 16 Apartments": {
-      "2026-07-10": 243,
+      "2026-07-07": 218,
+      "2026-07-08": 236,
+      "2026-07-09": 223,
+      "2026-07-10": 250,
       "2026-07-11": 316,
       "2026-07-12": 495,
       "2026-07-13": null,
-      "2026-07-14": 223,
-      "2026-07-15": 316,
-      "2026-07-16": 263,
+      "2026-07-14": 202,
+      "2026-07-15": 226,
+      "2026-07-16": 238,
       "2026-07-17": 226,
-      "2026-07-18": 250,
-      "2026-07-19": 241,
-      "2026-07-20": 253,
-      "2026-07-21": 248,
-      "2026-07-22": 244,
-      "2026-07-23": 450,
-      "2026-07-24": 266,
-      "2026-07-25": 241,
-      "2026-07-26": 241,
-      "2026-07-27": 241,
-      "2026-07-28": 238,
-      "2026-07-29": 226,
-      "2026-07-30": 231,
-      "2026-07-31": 251,
-      "2026-08-01": 254,
+      "2026-07-18": 272,
+      "2026-07-19": 238,
+      "2026-07-20": 238,
+      "2026-07-21": 226,
+      "2026-07-22": 238,
+      "2026-07-23": 440,
+      "2026-07-24": 202,
+      "2026-07-25": 202,
+      "2026-07-26": 190,
+      "2026-07-27": 199,
+      "2026-07-28": 199,
+      "2026-07-29": 202,
+      "2026-07-30": 202,
+      "2026-07-31": 202,
+      "2026-08-01": 202,
       "2026-08-02": 190,
       "2026-08-03": 190,
       "2026-08-04": 190,
@@ -11014,7 +10953,7 @@ const EXPEDIA_DATA = {
       "2026-08-13": 202,
       "2026-08-14": 214,
       "2026-08-15": null,
-      "2026-08-16": 206,
+      "2026-08-16": 199,
       "2026-08-17": 190,
       "2026-08-18": 190,
       "2026-08-19": 190,
@@ -11030,102 +10969,102 @@ const EXPEDIA_DATA = {
       "2026-08-29": 213,
       "2026-08-30": 203,
       "2026-08-31": 220,
-      "2026-09-01": 247,
-      "2026-09-02": 307,
-      "2026-09-03": 295,
-      "2026-09-04": 376,
-      "2026-09-05": 406,
-      "2026-09-06": 328,
-      "2026-09-07": 313,
-      "2026-09-08": 341,
-      "2026-09-09": 327,
-      "2026-09-10": 431,
-      "2026-09-11": 422,
-      "2026-09-12": 449,
-      "2026-09-13": 364,
-      "2026-09-14": 343,
-      "2026-09-15": 340,
-      "2026-09-16": 353,
-      "2026-09-17": 358,
-      "2026-09-18": 435,
-      "2026-09-19": 433,
-      "2026-09-20": 348,
-      "2026-09-21": 343,
-      "2026-09-22": 462,
-      "2026-09-23": 364,
-      "2026-09-24": 358,
-      "2026-09-25": 534,
-      "2026-09-26": 484,
-      "2026-09-27": 414,
-      "2026-09-28": 396,
-      "2026-09-29": 416,
-      "2026-09-30": 414,
-      "2026-10-01": 374,
-      "2026-10-02": 465,
-      "2026-10-03": 479,
-      "2026-10-04": 442,
-      "2026-10-05": 437,
-      "2026-10-06": 373,
-      "2026-10-07": 364,
-      "2026-10-08": 373,
-      "2026-10-09": 461,
-      "2026-10-10": 452,
-      "2026-10-11": 393,
-      "2026-10-12": 415,
-      "2026-10-13": 400,
-      "2026-10-14": 351,
-      "2026-10-15": 348,
-      "2026-10-16": 433,
-      "2026-10-17": 422,
-      "2026-10-18": 330,
-      "2026-10-19": 302,
-      "2026-10-20": 310,
-      "2026-10-21": 298,
-      "2026-10-22": 317,
-      "2026-10-23": 395,
-      "2026-10-24": 386,
-      "2026-10-25": 303,
-      "2026-10-26": 303,
-      "2026-10-27": 280,
-      "2026-10-28": 275,
-      "2026-10-29": 290,
-      "2026-10-30": 377,
-      "2026-10-31": 377,
-      "2026-11-01": 254,
-      "2026-11-02": 240,
-      "2026-11-03": 203,
-      "2026-11-04": 214,
-      "2026-11-05": 241,
-      "2026-11-06": 245,
-      "2026-11-07": 216,
-      "2026-11-08": 197,
-      "2026-11-09": 197,
-      "2026-11-10": 203,
-      "2026-11-11": 214,
-      "2026-11-12": 228,
-      "2026-11-13": 245,
-      "2026-11-14": 222,
-      "2026-11-15": 196,
+      "2026-09-01": 222,
+      "2026-09-02": 289,
+      "2026-09-03": 290,
+      "2026-09-04": 370,
+      "2026-09-05": 390,
+      "2026-09-06": 326,
+      "2026-09-07": 301,
+      "2026-09-08": 315,
+      "2026-09-09": 310,
+      "2026-09-10": 323,
+      "2026-09-11": 390,
+      "2026-09-12": 415,
+      "2026-09-13": 336,
+      "2026-09-14": 315,
+      "2026-09-15": 316,
+      "2026-09-16": 332,
+      "2026-09-17": 328,
+      "2026-09-18": 387,
+      "2026-09-19": 395,
+      "2026-09-20": 316,
+      "2026-09-21": 302,
+      "2026-09-22": 434,
+      "2026-09-23": 329,
+      "2026-09-24": 322,
+      "2026-09-25": 499,
+      "2026-09-26": 448,
+      "2026-09-27": 383,
+      "2026-09-28": 365,
+      "2026-09-29": 400,
+      "2026-09-30": 402,
+      "2026-10-01": 428,
+      "2026-10-02": 496,
+      "2026-10-03": 581,
+      "2026-10-04": 487,
+      "2026-10-05": 428,
+      "2026-10-06": 427,
+      "2026-10-07": 409,
+      "2026-10-08": 425,
+      "2026-10-09": 499,
+      "2026-10-10": 493,
+      "2026-10-11": 453,
+      "2026-10-12": 505,
+      "2026-10-13": 486,
+      "2026-10-14": 406,
+      "2026-10-15": 404,
+      "2026-10-16": 488,
+      "2026-10-17": 469,
+      "2026-10-18": 383,
+      "2026-10-19": 342,
+      "2026-10-20": 349,
+      "2026-10-21": 348,
+      "2026-10-22": 383,
+      "2026-10-23": 453,
+      "2026-10-24": 431,
+      "2026-10-25": 352,
+      "2026-10-26": 351,
+      "2026-10-27": 317,
+      "2026-10-28": 307,
+      "2026-10-29": 330,
+      "2026-10-30": 433,
+      "2026-10-31": 433,
+      "2026-11-01": 193,
+      "2026-11-02": 190,
+      "2026-11-03": 190,
+      "2026-11-04": 190,
+      "2026-11-05": 190,
+      "2026-11-06": 190,
+      "2026-11-07": 190,
+      "2026-11-08": 190,
+      "2026-11-09": 190,
+      "2026-11-10": 190,
+      "2026-11-11": 190,
+      "2026-11-12": 190,
+      "2026-11-13": 207,
+      "2026-11-14": 207,
+      "2026-11-15": 190,
       "2026-11-16": 190,
       "2026-11-17": 190,
       "2026-11-18": 190,
-      "2026-11-19": 195,
-      "2026-11-20": 199,
-      "2026-11-21": 210,
+      "2026-11-19": 190,
+      "2026-11-20": 190,
+      "2026-11-21": 190,
       "2026-11-22": 190,
-      "2026-11-23": 219,
-      "2026-11-24": 214,
-      "2026-11-25": 212,
-      "2026-11-26": 209,
-      "2026-11-27": 209,
+      "2026-11-23": 190,
+      "2026-11-24": 190,
+      "2026-11-25": 190,
+      "2026-11-26": 190,
+      "2026-11-27": 190,
       "2026-11-28": null,
       "2026-11-29": 226,
       "2026-11-30": 190,
-      "2026-12-01": 207,
-      "2026-12-02": 200,
-      "2026-12-03": 197,
-      "2026-12-04": 214,
-      "2026-12-05": 221,
+      "2026-12-01": 190,
+      "2026-12-02": 190,
+      "2026-12-03": 190,
+      "2026-12-04": 190,
+      "2026-12-05": 190,
       "2026-12-06": 197,
       "2026-12-07": 245,
       "2026-12-08": 226,
@@ -11139,7 +11078,7 @@ const EXPEDIA_DATA = {
       "2026-12-16": 264,
       "2026-12-17": 264,
       "2026-12-18": 264,
-      "2026-12-19": 334,
+      "2026-12-19": 264,
       "2026-12-20": 264,
       "2026-12-21": 327,
       "2026-12-22": 327,
@@ -11337,25 +11276,25 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Florence Art Apartments": {
-      "2026-07-10": 302,
-      "2026-07-11": 302,
-      "2026-07-12": 692,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": null,
+      "2026-07-11": null,
+      "2026-07-12": null,
       "2026-07-13": null,
       "2026-07-14": null,
       "2026-07-15": null,
       "2026-07-16": null,
-      "2026-07-17": 792,
+      "2026-07-17": null,
       "2026-07-18": null,
       "2026-07-19": 372,
       "2026-07-20": null,
       "2026-07-21": null,
-      "2026-07-22": 372,
+      "2026-07-22": 422,
       "2026-07-23": null,
       "2026-07-24": 792,
       "2026-07-25": null,
@@ -11397,14 +11336,14 @@ const EXPEDIA_DATA = {
       "2026-08-30": null,
       "2026-08-31": null,
       "2026-09-01": null,
-      "2026-09-02": 312,
+      "2026-09-02": null,
       "2026-09-03": null,
       "2026-09-04": null,
       "2026-09-05": null,
       "2026-09-06": null,
       "2026-09-07": null,
       "2026-09-08": null,
-      "2026-09-09": 312,
+      "2026-09-09": null,
       "2026-09-10": null,
       "2026-09-11": null,
       "2026-09-12": null,
@@ -11415,11 +11354,11 @@ const EXPEDIA_DATA = {
       "2026-09-17": null,
       "2026-09-18": null,
       "2026-09-19": null,
-      "2026-09-20": 472,
+      "2026-09-20": null,
       "2026-09-21": null,
       "2026-09-22": null,
       "2026-09-23": null,
-      "2026-09-24": 352,
+      "2026-09-24": null,
       "2026-09-25": null,
       "2026-09-26": null,
       "2026-09-27": null,
@@ -11703,12 +11642,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Granduomo Charming Accomodation": {
+      "2026-07-07": 480,
+      "2026-07-08": 480,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": 586,
       "2026-07-12": 480,
@@ -11718,12 +11657,12 @@ const EXPEDIA_DATA = {
       "2026-07-16": 480,
       "2026-07-17": 480,
       "2026-07-18": 586,
-      "2026-07-19": 525,
+      "2026-07-19": 359,
       "2026-07-20": 480,
       "2026-07-21": 480,
       "2026-07-22": null,
-      "2026-07-23": null,
-      "2026-07-24": 639,
+      "2026-07-23": 525,
+      "2026-07-24": 586,
       "2026-07-25": 586,
       "2026-07-26": 359,
       "2026-07-27": 359,
@@ -11736,9 +11675,9 @@ const EXPEDIA_DATA = {
       "2026-08-03": 525,
       "2026-08-04": 359,
       "2026-08-05": 359,
-      "2026-08-06": 480,
-      "2026-08-07": 480,
-      "2026-08-08": 359,
+      "2026-08-06": 410,
+      "2026-08-07": 410,
+      "2026-08-08": 307,
       "2026-08-09": 307,
       "2026-08-10": 410,
       "2026-08-11": 448,
@@ -11778,8 +11717,8 @@ const EXPEDIA_DATA = {
       "2026-09-14": null,
       "2026-09-15": 355,
       "2026-09-16": 624,
-      "2026-09-17": null,
-      "2026-09-18": 548,
+      "2026-09-17": 624,
+      "2026-09-18": 355,
       "2026-09-19": 548,
       "2026-09-20": 548,
       "2026-09-21": 355,
@@ -12069,25 +12008,25 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Residenza Marchesi Pontenani": {
-      "2026-07-10": 111,
-      "2026-07-11": 123,
+      "2026-07-07": null,
+      "2026-07-08": 111,
+      "2026-07-09": 115,
+      "2026-07-10": 123,
+      "2026-07-11": 119,
       "2026-07-12": 115,
-      "2026-07-13": 111,
-      "2026-07-14": null,
+      "2026-07-13": 115,
+      "2026-07-14": 119,
       "2026-07-15": null,
       "2026-07-16": 111,
-      "2026-07-17": 128,
+      "2026-07-17": null,
       "2026-07-18": null,
       "2026-07-19": 141,
       "2026-07-20": 115,
-      "2026-07-21": 119,
-      "2026-07-22": null,
+      "2026-07-21": 128,
+      "2026-07-22": 108,
       "2026-07-23": null,
       "2026-07-24": null,
       "2026-07-25": 169,
@@ -12100,7 +12039,7 @@ const EXPEDIA_DATA = {
       "2026-08-01": 136,
       "2026-08-02": 111,
       "2026-08-03": 112,
-      "2026-08-04": null,
+      "2026-08-04": 144,
       "2026-08-05": null,
       "2026-08-06": 126,
       "2026-08-07": 144,
@@ -12108,20 +12047,20 @@ const EXPEDIA_DATA = {
       "2026-08-09": null,
       "2026-08-10": null,
       "2026-08-11": null,
-      "2026-08-12": 115,
-      "2026-08-13": 111,
+      "2026-08-12": 127,
+      "2026-08-13": 119,
       "2026-08-14": 135,
       "2026-08-15": null,
       "2026-08-16": 112,
-      "2026-08-17": 135,
-      "2026-08-18": 152,
+      "2026-08-17": 127,
+      "2026-08-18": 144,
       "2026-08-19": 117,
-      "2026-08-20": 125,
+      "2026-08-20": 117,
       "2026-08-21": null,
       "2026-08-22": null,
-      "2026-08-23": 119,
-      "2026-08-24": null,
-      "2026-08-25": null,
+      "2026-08-23": 98,
+      "2026-08-24": 110,
+      "2026-08-25": 135,
       "2026-08-26": 105,
       "2026-08-27": 119,
       "2026-08-28": 144,
@@ -12337,10 +12276,10 @@ const EXPEDIA_DATA = {
       "2027-03-26": null,
       "2027-03-27": null,
       "2027-03-28": null,
-      "2027-03-29": 162,
-      "2027-03-30": 162,
-      "2027-03-31": 162,
-      "2027-04-01": 162,
+      "2027-03-29": 128,
+      "2027-03-30": 128,
+      "2027-03-31": 128,
+      "2027-04-01": 128,
       "2027-04-02": 146,
       "2027-04-03": null,
       "2027-04-04": 155,
@@ -12435,64 +12374,64 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Ricasoli Garden Relais": {
-      "2026-07-10": null,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 250,
       "2026-07-11": null,
-      "2026-07-12": 239,
-      "2026-07-13": 233,
+      "2026-07-12": 271,
+      "2026-07-13": 239,
       "2026-07-14": null,
       "2026-07-15": null,
       "2026-07-16": 239,
-      "2026-07-17": null,
+      "2026-07-17": 271,
       "2026-07-18": null,
       "2026-07-19": null,
       "2026-07-20": null,
-      "2026-07-21": 239,
+      "2026-07-21": 271,
       "2026-07-22": null,
       "2026-07-23": null,
-      "2026-07-24": null,
-      "2026-07-25": 239,
-      "2026-07-26": null,
+      "2026-07-24": 271,
+      "2026-07-25": 271,
+      "2026-07-26": 239,
       "2026-07-27": 206,
       "2026-07-28": 206,
-      "2026-07-29": 239,
-      "2026-07-30": 206,
-      "2026-07-31": 233,
-      "2026-08-01": 233,
-      "2026-08-02": 233,
+      "2026-07-29": 252,
+      "2026-07-30": 271,
+      "2026-07-31": 239,
+      "2026-08-01": 239,
+      "2026-08-02": 239,
       "2026-08-03": 206,
       "2026-08-04": 206,
-      "2026-08-05": 233,
-      "2026-08-06": 233,
-      "2026-08-07": 239,
-      "2026-08-08": 239,
+      "2026-08-05": 239,
+      "2026-08-06": 239,
+      "2026-08-07": 252,
+      "2026-08-08": 252,
       "2026-08-09": 206,
       "2026-08-10": 206,
       "2026-08-11": 206,
-      "2026-08-12": 239,
+      "2026-08-12": 271,
       "2026-08-13": 206,
-      "2026-08-14": 239,
-      "2026-08-15": 239,
+      "2026-08-14": 271,
+      "2026-08-15": 271,
       "2026-08-16": 206,
       "2026-08-17": 206,
       "2026-08-18": 206,
-      "2026-08-19": 233,
-      "2026-08-20": 239,
+      "2026-08-19": 239,
+      "2026-08-20": 271,
       "2026-08-21": 206,
       "2026-08-22": 206,
       "2026-08-23": 206,
-      "2026-08-24": 233,
-      "2026-08-25": 233,
-      "2026-08-26": 233,
+      "2026-08-24": 239,
+      "2026-08-25": 239,
+      "2026-08-26": 239,
       "2026-08-27": 206,
       "2026-08-28": 206,
       "2026-08-29": 206,
-      "2026-08-30": 233,
+      "2026-08-30": 239,
       "2026-08-31": 206,
       "2026-09-01": 368,
       "2026-09-02": 368,
@@ -12801,18 +12740,18 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Solo Experience Hotel": {
-      "2026-07-10": 373,
-      "2026-07-11": 282,
+      "2026-07-07": 281,
+      "2026-07-08": 310,
+      "2026-07-09": 297,
+      "2026-07-10": 345,
+      "2026-07-11": 292,
       "2026-07-12": 251,
-      "2026-07-13": 254,
-      "2026-07-14": 259,
-      "2026-07-15": 257,
+      "2026-07-13": 230,
+      "2026-07-14": 235,
+      "2026-07-15": 233,
       "2026-07-16": 219,
       "2026-07-17": 254,
       "2026-07-18": 229,
@@ -12822,18 +12761,18 @@ const EXPEDIA_DATA = {
       "2026-07-22": 237,
       "2026-07-23": 238,
       "2026-07-24": 218,
-      "2026-07-25": 259,
+      "2026-07-25": 250,
       "2026-07-26": 192,
       "2026-07-27": 183,
       "2026-07-28": 199,
       "2026-07-29": 227,
       "2026-07-30": 202,
       "2026-07-31": 214,
-      "2026-08-01": 213,
+      "2026-08-01": 258,
       "2026-08-02": 145,
       "2026-08-03": 208,
       "2026-08-04": 221,
-      "2026-08-05": 210,
+      "2026-08-05": 201,
       "2026-08-06": 199,
       "2026-08-07": 220,
       "2026-08-08": 198,
@@ -12860,12 +12799,12 @@ const EXPEDIA_DATA = {
       "2026-08-29": 190,
       "2026-08-30": 210,
       "2026-08-31": 225,
-      "2026-09-01": 246,
+      "2026-09-01": 237,
       "2026-09-02": 245,
       "2026-09-03": 307,
       "2026-09-04": 273,
       "2026-09-05": 303,
-      "2026-09-06": 340,
+      "2026-09-06": 304,
       "2026-09-07": 329,
       "2026-09-08": 348,
       "2026-09-09": 379,
@@ -12887,8 +12826,8 @@ const EXPEDIA_DATA = {
       "2026-09-25": 343,
       "2026-09-26": 337,
       "2026-09-27": 336,
-      "2026-09-28": 334,
-      "2026-09-29": 396,
+      "2026-09-28": 325,
+      "2026-09-29": 387,
       "2026-09-30": 336,
       "2026-10-01": 365,
       "2026-10-02": 380,
@@ -12897,8 +12836,8 @@ const EXPEDIA_DATA = {
       "2026-10-05": 330,
       "2026-10-06": 322,
       "2026-10-07": 342,
-      "2026-10-08": 328,
-      "2026-10-09": 318,
+      "2026-10-08": 319,
+      "2026-10-09": 309,
       "2026-10-10": 344,
       "2026-10-11": 318,
       "2026-10-12": 272,
@@ -12907,7 +12846,7 @@ const EXPEDIA_DATA = {
       "2026-10-15": 328,
       "2026-10-16": 328,
       "2026-10-17": 335,
-      "2026-10-18": 307,
+      "2026-10-18": 298,
       "2026-10-19": 259,
       "2026-10-20": 349,
       "2026-10-21": 333,
@@ -12932,7 +12871,7 @@ const EXPEDIA_DATA = {
       "2026-11-09": 146,
       "2026-11-10": 161,
       "2026-11-11": 165,
-      "2026-11-12": 184,
+      "2026-11-12": 175,
       "2026-11-13": 179,
       "2026-11-14": 212,
       "2026-11-15": 136,
@@ -12948,7 +12887,7 @@ const EXPEDIA_DATA = {
       "2026-11-25": 154,
       "2026-11-26": 166,
       "2026-11-27": 188,
-      "2026-11-28": 226,
+      "2026-11-28": 208,
       "2026-11-29": 128,
       "2026-11-30": 126,
       "2026-12-01": 117,
@@ -13167,12 +13106,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Tornabuoni Suites Collection": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": 458,
       "2026-07-12": 423,
@@ -13187,7 +13126,7 @@ const EXPEDIA_DATA = {
       "2026-07-21": 274,
       "2026-07-22": null,
       "2026-07-23": 354,
-      "2026-07-24": null,
+      "2026-07-24": 423,
       "2026-07-25": 308,
       "2026-07-26": 297,
       "2026-07-27": 365,
@@ -13208,10 +13147,10 @@ const EXPEDIA_DATA = {
       "2026-08-11": 274,
       "2026-08-12": 274,
       "2026-08-13": 262,
-      "2026-08-14": 285,
-      "2026-08-15": 285,
+      "2026-08-14": 274,
+      "2026-08-15": 274,
       "2026-08-16": 262,
-      "2026-08-17": 412,
+      "2026-08-17": 274,
       "2026-08-18": 343,
       "2026-08-19": 262,
       "2026-08-20": 262,
@@ -13253,7 +13192,7 @@ const EXPEDIA_DATA = {
       "2026-09-25": 458,
       "2026-09-26": 458,
       "2026-09-27": 481,
-      "2026-09-28": 504,
+      "2026-09-28": 412,
       "2026-09-29": 319,
       "2026-09-30": 527,
       "2026-10-01": 504,
@@ -13272,13 +13211,13 @@ const EXPEDIA_DATA = {
       "2026-10-14": 354,
       "2026-10-15": 458,
       "2026-10-16": 365,
-      "2026-10-17": 504,
+      "2026-10-17": 458,
       "2026-10-18": 365,
       "2026-10-19": 319,
       "2026-10-20": 389,
       "2026-10-21": 354,
       "2026-10-22": 319,
-      "2026-10-23": 319,
+      "2026-10-23": 354,
       "2026-10-24": 354,
       "2026-10-25": 319,
       "2026-10-26": 319,
@@ -13295,15 +13234,15 @@ const EXPEDIA_DATA = {
       "2026-11-06": 262,
       "2026-11-07": 285,
       "2026-11-08": 205,
-      "2026-11-09": 274,
-      "2026-11-10": 274,
-      "2026-11-11": 274,
-      "2026-11-12": 274,
+      "2026-11-09": 239,
+      "2026-11-10": 239,
+      "2026-11-11": 239,
+      "2026-11-12": 239,
       "2026-11-13": 239,
       "2026-11-14": 228,
       "2026-11-15": 193,
-      "2026-11-16": 239,
-      "2026-11-17": 239,
+      "2026-11-16": 216,
+      "2026-11-17": 216,
       "2026-11-18": 216,
       "2026-11-19": 216,
       "2026-11-20": 216,
@@ -13465,7 +13404,7 @@ const EXPEDIA_DATA = {
       "2027-04-25": 319,
       "2027-04-26": 319,
       "2027-04-27": 319,
-      "2027-04-28": 354,
+      "2027-04-28": 319,
       "2027-04-29": 319,
       "2027-04-30": 319,
       "2027-05-01": 319,
@@ -13499,9 +13438,9 @@ const EXPEDIA_DATA = {
       "2027-05-29": 319,
       "2027-05-30": 319,
       "2027-05-31": 319,
-      "2027-06-01": 354,
-      "2027-06-02": 354,
-      "2027-06-03": 354,
+      "2027-06-01": 319,
+      "2027-06-02": 319,
+      "2027-06-03": 319,
       "2027-06-04": 319,
       "2027-06-05": 354,
       "2027-06-06": 354,
@@ -13533,379 +13472,379 @@ const EXPEDIA_DATA = {
       "2027-07-02": 274,
       "2027-07-03": 274,
       "2027-07-04": 274,
-      "2027-07-05": 274,
-      "2027-07-06": 274,
-      "2027-07-07": 274,
-      "2027-07-08": 274
+      "2027-07-05": 274
     }
   },
   "search_current_alfani": {
-    "2026-07-10": 54679,
-    "2026-07-11": 55068,
-    "2026-07-12": 52001,
-    "2026-07-13": 52059,
-    "2026-07-14": 52136,
-    "2026-07-15": 52229,
-    "2026-07-16": 50212,
-    "2026-07-17": 50079,
-    "2026-07-18": 49585,
-    "2026-07-19": 48025,
-    "2026-07-20": 51444,
-    "2026-07-21": 52316,
-    "2026-07-22": 52810,
-    "2026-07-23": 51538,
-    "2026-07-24": 48405,
-    "2026-07-25": 45090,
-    "2026-07-26": 41968,
-    "2026-07-27": 43668,
-    "2026-07-28": 42320,
-    "2026-07-29": 40818,
-    "2026-07-30": 39262,
-    "2026-07-31": 37803,
-    "2026-08-01": 39661,
-    "2026-08-02": 39753,
-    "2026-08-03": 40598,
-    "2026-08-04": 41078,
-    "2026-08-05": 40048,
-    "2026-08-06": 40412,
-    "2026-08-07": 40737,
-    "2026-08-08": 38270,
-    "2026-08-09": 36638,
-    "2026-08-10": 38624,
-    "2026-08-11": 38203,
-    "2026-08-12": 37690,
-    "2026-08-13": 38748,
-    "2026-08-14": 37640,
-    "2026-08-15": 36325,
-    "2026-08-16": 36053,
-    "2026-08-17": 38097,
-    "2026-08-18": 38443,
-    "2026-08-19": 38669,
-    "2026-08-20": 35893,
-    "2026-08-21": 34749,
-    "2026-08-22": 33138,
-    "2026-08-23": 31853,
-    "2026-08-24": 33496,
-    "2026-08-25": 33946,
-    "2026-08-26": 33929,
-    "2026-08-27": 33890,
-    "2026-08-28": 34097,
-    "2026-08-29": 34308,
-    "2026-08-30": 34316,
-    "2026-08-31": 33741,
-    "2026-09-01": 38702,
-    "2026-09-02": 41632,
-    "2026-09-03": 46173,
-    "2026-09-04": 47248,
-    "2026-09-05": 48440,
-    "2026-09-06": 49299,
-    "2026-09-07": 51645,
-    "2026-09-08": 52879,
-    "2026-09-09": 55607,
-    "2026-09-10": 57544,
-    "2026-09-11": 57066,
-    "2026-09-12": 55127,
-    "2026-09-13": 52888,
-    "2026-09-14": 52418,
-    "2026-09-15": 51644,
-    "2026-09-16": 51242,
-    "2026-09-17": 54615,
-    "2026-09-18": 51707,
-    "2026-09-19": 49940,
-    "2026-09-20": 49244,
-    "2026-09-21": 49626,
-    "2026-09-22": 50743,
-    "2026-09-23": 49707,
-    "2026-09-24": 50838,
-    "2026-09-25": 48021,
-    "2026-09-26": 45124,
-    "2026-09-27": 41930,
-    "2026-09-28": 40052,
-    "2026-09-29": 39236,
-    "2026-09-30": 36616,
-    "2026-10-01": 38985,
-    "2026-10-02": 39376,
-    "2026-10-03": 40292,
-    "2026-10-04": 39250,
-    "2026-10-05": 41018,
-    "2026-10-06": 40079,
-    "2026-10-07": 38658,
-    "2026-10-08": 37508,
-    "2026-10-09": 36436,
-    "2026-10-10": 34582,
-    "2026-10-11": 33082,
-    "2026-10-12": 33658,
-    "2026-10-13": 33496,
-    "2026-10-14": 32586,
-    "2026-10-15": 31982,
-    "2026-10-16": 30279,
-    "2026-10-17": 28669,
-    "2026-10-18": 26516,
-    "2026-10-19": 25851,
-    "2026-10-20": 24801,
-    "2026-10-21": 22934,
-    "2026-10-22": 20398,
-    "2026-10-23": 19205,
-    "2026-10-24": 17815,
-    "2026-10-25": 16802,
-    "2026-10-26": 16774,
-    "2026-10-27": 15195,
-    "2026-10-28": 13960,
-    "2026-10-29": 12480,
-    "2026-10-30": 10879,
-    "2026-10-31": 9568,
-    "2026-11-01": 10566,
-    "2026-11-02": 10336,
-    "2026-11-03": 10139,
-    "2026-11-04": 10129,
-    "2026-11-05": 10105,
-    "2026-11-06": 9750,
-    "2026-11-07": 9588,
-    "2026-11-08": 9661,
-    "2026-11-09": 10053,
-    "2026-11-10": 10449,
-    "2026-11-11": 10315,
-    "2026-11-12": 9848,
-    "2026-11-13": 9168,
-    "2026-11-14": 8585,
-    "2026-11-15": 8011,
-    "2026-11-16": 7998,
-    "2026-11-17": 7207,
-    "2026-11-18": 7191,
-    "2026-11-19": 7350,
-    "2026-11-20": 8259,
-    "2026-11-21": 8498,
-    "2026-11-22": 8835,
-    "2026-11-23": 9270,
-    "2026-11-24": 9323,
-    "2026-11-25": 9222,
-    "2026-11-26": 9096,
-    "2026-11-27": 9423,
-    "2026-11-28": 8721,
-    "2026-11-29": 6642,
-    "2026-11-30": 4611,
-    "2026-12-01": 4440,
-    "2026-12-02": 4049,
-    "2026-12-03": 4291,
-    "2026-12-04": 4272,
-    "2026-12-05": 4217,
-    "2026-12-06": 4224,
-    "2026-12-07": 4201,
-    "2026-12-08": 3912,
-    "2026-12-09": 3794,
-    "2026-12-10": 3514,
-    "2026-12-11": 3367,
-    "2026-12-12": 3298,
-    "2026-12-13": 3216,
-    "2026-12-14": 3684,
-    "2026-12-15": 3521,
-    "2026-12-16": 3462,
-    "2026-12-17": 3409,
-    "2026-12-18": 3385,
-    "2026-12-19": 3877,
-    "2026-12-20": 4255,
-    "2026-12-21": 4590,
-    "2026-12-22": 4960,
-    "2026-12-23": 5607,
-    "2026-12-24": 6392,
-    "2026-12-25": 7103,
-    "2026-12-26": 8166,
-    "2026-12-27": 8356,
-    "2026-12-28": 8663,
-    "2026-12-29": 8046,
-    "2026-12-30": 7502,
-    "2026-12-31": 6748,
-    "2027-01-01": 6263,
-    "2027-01-02": 4289,
-    "2027-01-03": 3562,
-    "2027-01-04": 3200,
-    "2027-01-05": 3330,
-    "2027-01-06": 3414,
-    "2027-01-07": 3484,
-    "2027-01-08": 3390,
-    "2027-01-09": 3036,
-    "2027-01-10": 2693,
-    "2027-01-11": 2649,
-    "2027-01-12": 2435,
-    "2027-01-13": 2287,
-    "2027-01-14": 2091,
-    "2027-01-15": 1963,
-    "2027-01-16": 1825,
-    "2027-01-17": 1781,
-    "2027-01-18": 1639,
-    "2027-01-19": 1673,
-    "2027-01-20": 1459,
-    "2027-01-21": 1402,
-    "2027-01-22": 1405,
-    "2027-01-23": 1360,
-    "2027-01-24": 1415,
-    "2027-01-25": 1431,
-    "2027-01-26": 1356,
-    "2027-01-27": 1244,
-    "2027-01-28": 1193,
-    "2027-01-29": 1061,
-    "2027-01-30": 1031,
-    "2027-01-31": 876,
-    "2027-02-01": 1265,
-    "2027-02-02": 1353,
-    "2027-02-03": 1280,
-    "2027-02-04": 1367,
-    "2027-02-05": 1677,
-    "2027-02-06": 1797,
-    "2027-02-07": 1877,
-    "2027-02-08": 2081,
-    "2027-02-09": 2038,
-    "2027-02-10": 2234,
-    "2027-02-11": 2440,
-    "2027-02-12": 2294,
-    "2027-02-13": 2408,
-    "2027-02-14": 2496,
-    "2027-02-15": 2613,
-    "2027-02-16": 2608,
-    "2027-02-17": 2377,
-    "2027-02-18": 2223,
-    "2027-02-19": 1826,
-    "2027-02-20": 1507,
-    "2027-02-21": 1369,
-    "2027-02-22": 1425,
-    "2027-02-23": 1384,
-    "2027-02-24": 1403,
-    "2027-02-25": 1377,
-    "2027-02-26": 1369,
-    "2027-02-27": 1143,
-    "2027-02-28": 1038,
-    "2027-03-01": 1531,
-    "2027-03-02": 1653,
-    "2027-03-03": 1728,
-    "2027-03-04": 1854,
-    "2027-03-05": 1940,
-    "2027-03-06": 2045,
-    "2027-03-07": 2115,
-    "2027-03-08": 2425,
-    "2027-03-09": 2503,
-    "2027-03-10": 2541,
-    "2027-03-11": 2843,
-    "2027-03-12": 3044,
-    "2027-03-13": 2931,
-    "2027-03-14": 2716,
-    "2027-03-15": 2660,
-    "2027-03-16": 2614,
-    "2027-03-17": 2958,
-    "2027-03-18": 2826,
-    "2027-03-19": 2757,
-    "2027-03-20": 2512,
-    "2027-03-21": 2766,
-    "2027-03-22": 3233,
-    "2027-03-23": 3401,
-    "2027-03-24": 3287,
-    "2027-03-25": 3163,
-    "2027-03-26": 2672,
-    "2027-03-27": 2170,
-    "2027-03-28": 1936,
-    "2027-03-29": 1937,
-    "2027-03-30": 1950,
-    "2027-03-31": 1814,
-    "2027-04-01": 2228,
-    "2027-04-02": 2583,
-    "2027-04-03": 2373,
-    "2027-04-04": 2496,
-    "2027-04-05": 2748,
-    "2027-04-06": 3116,
-    "2027-04-07": 3223,
-    "2027-04-08": 3093,
-    "2027-04-09": 2850,
-    "2027-04-10": 2717,
-    "2027-04-11": 2748,
-    "2027-04-12": 2915,
-    "2027-04-13": 2922,
-    "2027-04-14": 2904,
-    "2027-04-15": 2933,
-    "2027-04-16": 2758,
-    "2027-04-17": 2665,
-    "2027-04-18": 2549,
-    "2027-04-19": 2614,
-    "2027-04-20": 2808,
-    "2027-04-21": 2715,
-    "2027-04-22": 2786,
-    "2027-04-23": 2571,
-    "2027-04-24": 2364,
-    "2027-04-25": 2208,
-    "2027-04-26": 2238,
-    "2027-04-27": 2066,
-    "2027-04-28": 1865,
-    "2027-04-29": 2028,
-    "2027-04-30": 1881,
-    "2027-05-01": 2052,
-    "2027-05-02": 2142,
-    "2027-05-03": 2344,
-    "2027-05-04": 2579,
-    "2027-05-05": 2913,
-    "2027-05-06": 3127,
-    "2027-05-07": 3123,
-    "2027-05-08": 3040,
-    "2027-05-09": 2905,
-    "2027-05-10": 2793,
-    "2027-05-11": 2848,
-    "2027-05-12": 2726,
-    "2027-05-13": 2765,
-    "2027-05-14": 2547,
-    "2027-05-15": 2374,
-    "2027-05-16": 2234,
-    "2027-05-17": 2323,
-    "2027-05-18": 2438,
-    "2027-05-19": 2489,
-    "2027-05-20": 2508,
-    "2027-05-21": 2538,
-    "2027-05-22": 2333,
-    "2027-05-23": 2189,
-    "2027-05-24": 2166,
-    "2027-05-25": 2007,
-    "2027-05-26": 1802,
-    "2027-05-27": 1557,
-    "2027-05-28": 1432,
-    "2027-05-29": 1272,
-    "2027-05-30": 1220,
-    "2027-05-31": 1029,
-    "2027-06-01": 1176,
-    "2027-06-02": 1179,
-    "2027-06-03": 1228,
-    "2027-06-04": 1148,
-    "2027-06-05": 990,
-    "2027-06-06": 1055,
-    "2027-06-07": 1088,
-    "2027-06-08": 1090,
-    "2027-06-09": 1036,
-    "2027-06-10": 1125,
-    "2027-06-11": 1071,
-    "2027-06-12": 956,
-    "2027-06-13": 877,
-    "2027-06-14": 946,
-    "2027-06-15": 924,
-    "2027-06-16": 902,
-    "2027-06-17": 943,
-    "2027-06-18": 818,
-    "2027-06-19": 692,
-    "2027-06-20": 700,
-    "2027-06-21": 1102,
-    "2027-06-22": 1060,
-    "2027-06-23": 1017,
-    "2027-06-24": 665,
-    "2027-06-25": 540,
-    "2027-06-26": 431,
-    "2027-06-27": 429,
-    "2027-06-28": 420,
-    "2027-06-29": 456,
-    "2027-06-30": 457,
-    "2027-07-01": 507,
-    "2027-07-02": 524,
-    "2027-07-03": 517,
-    "2027-07-04": 469,
-    "2027-07-05": 461,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2026-07-07": 56735,
+    "2026-07-08": 54933,
+    "2026-07-09": 53652,
+    "2026-07-10": 53740,
+    "2026-07-11": 54115,
+    "2026-07-12": 50996,
+    "2026-07-13": 50952,
+    "2026-07-14": 51067,
+    "2026-07-15": 51217,
+    "2026-07-16": 49136,
+    "2026-07-17": 48909,
+    "2026-07-18": 47944,
+    "2026-07-19": 46189,
+    "2026-07-20": 49698,
+    "2026-07-21": 50979,
+    "2026-07-22": 51559,
+    "2026-07-23": 50373,
+    "2026-07-24": 47278,
+    "2026-07-25": 43925,
+    "2026-07-26": 40844,
+    "2026-07-27": 42424,
+    "2026-07-28": 41106,
+    "2026-07-29": 39689,
+    "2026-07-30": 38190,
+    "2026-07-31": 36685,
+    "2026-08-01": 38575,
+    "2026-08-02": 38682,
+    "2026-08-03": 39507,
+    "2026-08-04": 39906,
+    "2026-08-05": 38955,
+    "2026-08-06": 39365,
+    "2026-08-07": 39630,
+    "2026-08-08": 37400,
+    "2026-08-09": 35757,
+    "2026-08-10": 37650,
+    "2026-08-11": 37159,
+    "2026-08-12": 36663,
+    "2026-08-13": 37791,
+    "2026-08-14": 36691,
+    "2026-08-15": 35201,
+    "2026-08-16": 34840,
+    "2026-08-17": 36699,
+    "2026-08-18": 37298,
+    "2026-08-19": 37720,
+    "2026-08-20": 35060,
+    "2026-08-21": 33914,
+    "2026-08-22": 32250,
+    "2026-08-23": 31028,
+    "2026-08-24": 32742,
+    "2026-08-25": 33120,
+    "2026-08-26": 32997,
+    "2026-08-27": 32831,
+    "2026-08-28": 33090,
+    "2026-08-29": 33440,
+    "2026-08-30": 33468,
+    "2026-08-31": 32855,
+    "2026-09-01": 37709,
+    "2026-09-02": 40587,
+    "2026-09-03": 45050,
+    "2026-09-04": 46251,
+    "2026-09-05": 47397,
+    "2026-09-06": 48176,
+    "2026-09-07": 50424,
+    "2026-09-08": 51754,
+    "2026-09-09": 54486,
+    "2026-09-10": 56430,
+    "2026-09-11": 55897,
+    "2026-09-12": 54082,
+    "2026-09-13": 51576,
+    "2026-09-14": 51002,
+    "2026-09-15": 50250,
+    "2026-09-16": 49810,
+    "2026-09-17": 53152,
+    "2026-09-18": 50455,
+    "2026-09-19": 48820,
+    "2026-09-20": 47991,
+    "2026-09-21": 48389,
+    "2026-09-22": 49343,
+    "2026-09-23": 48274,
+    "2026-09-24": 49273,
+    "2026-09-25": 46507,
+    "2026-09-26": 43550,
+    "2026-09-27": 40568,
+    "2026-09-28": 38931,
+    "2026-09-29": 38091,
+    "2026-09-30": 35538,
+    "2026-10-01": 38008,
+    "2026-10-02": 38403,
+    "2026-10-03": 39239,
+    "2026-10-04": 38325,
+    "2026-10-05": 40070,
+    "2026-10-06": 39242,
+    "2026-10-07": 37748,
+    "2026-10-08": 36605,
+    "2026-10-09": 35545,
+    "2026-10-10": 33530,
+    "2026-10-11": 32019,
+    "2026-10-12": 32504,
+    "2026-10-13": 32392,
+    "2026-10-14": 31566,
+    "2026-10-15": 31015,
+    "2026-10-16": 29452,
+    "2026-10-17": 27833,
+    "2026-10-18": 25761,
+    "2026-10-19": 24995,
+    "2026-10-20": 23966,
+    "2026-10-21": 22183,
+    "2026-10-22": 19789,
+    "2026-10-23": 18624,
+    "2026-10-24": 17384,
+    "2026-10-25": 16379,
+    "2026-10-26": 16351,
+    "2026-10-27": 14840,
+    "2026-10-28": 13577,
+    "2026-10-29": 12137,
+    "2026-10-30": 10555,
+    "2026-10-31": 9292,
+    "2026-11-01": 10318,
+    "2026-11-02": 10099,
+    "2026-11-03": 9908,
+    "2026-11-04": 9863,
+    "2026-11-05": 9700,
+    "2026-11-06": 9299,
+    "2026-11-07": 9176,
+    "2026-11-08": 9274,
+    "2026-11-09": 9543,
+    "2026-11-10": 9931,
+    "2026-11-11": 9823,
+    "2026-11-12": 9491,
+    "2026-11-13": 8831,
+    "2026-11-14": 8236,
+    "2026-11-15": 7792,
+    "2026-11-16": 7731,
+    "2026-11-17": 6955,
+    "2026-11-18": 6993,
+    "2026-11-19": 7130,
+    "2026-11-20": 8037,
+    "2026-11-21": 8266,
+    "2026-11-22": 8605,
+    "2026-11-23": 9055,
+    "2026-11-24": 9097,
+    "2026-11-25": 8949,
+    "2026-11-26": 8825,
+    "2026-11-27": 9144,
+    "2026-11-28": 8457,
+    "2026-11-29": 6418,
+    "2026-11-30": 4417,
+    "2026-12-01": 4247,
+    "2026-12-02": 3876,
+    "2026-12-03": 4124,
+    "2026-12-04": 4182,
+    "2026-12-05": 4129,
+    "2026-12-06": 4153,
+    "2026-12-07": 4129,
+    "2026-12-08": 3849,
+    "2026-12-09": 3737,
+    "2026-12-10": 3440,
+    "2026-12-11": 3299,
+    "2026-12-12": 3225,
+    "2026-12-13": 3147,
+    "2026-12-14": 3538,
+    "2026-12-15": 3367,
+    "2026-12-16": 3316,
+    "2026-12-17": 3272,
+    "2026-12-18": 3264,
+    "2026-12-19": 3688,
+    "2026-12-20": 4101,
+    "2026-12-21": 4452,
+    "2026-12-22": 4842,
+    "2026-12-23": 5405,
+    "2026-12-24": 6144,
+    "2026-12-25": 6826,
+    "2026-12-26": 7917,
+    "2026-12-27": 8072,
+    "2026-12-28": 8389,
+    "2026-12-29": 7834,
+    "2026-12-30": 7320,
+    "2026-12-31": 6544,
+    "2027-01-01": 6085,
+    "2027-01-02": 4206,
+    "2027-01-03": 3486,
+    "2027-01-04": 3126,
+    "2027-01-05": 3240,
+    "2027-01-06": 3302,
+    "2027-01-07": 3371,
+    "2027-01-08": 3252,
+    "2027-01-09": 2931,
+    "2027-01-10": 2597,
+    "2027-01-11": 2563,
+    "2027-01-12": 2368,
+    "2027-01-13": 2233,
+    "2027-01-14": 2023,
+    "2027-01-15": 1898,
+    "2027-01-16": 1759,
+    "2027-01-17": 1700,
+    "2027-01-18": 1567,
+    "2027-01-19": 1592,
+    "2027-01-20": 1387,
+    "2027-01-21": 1355,
+    "2027-01-22": 1364,
+    "2027-01-23": 1338,
+    "2027-01-24": 1399,
+    "2027-01-25": 1415,
+    "2027-01-26": 1332,
+    "2027-01-27": 1213,
+    "2027-01-28": 1173,
+    "2027-01-29": 1038,
+    "2027-01-30": 1015,
+    "2027-01-31": 855,
+    "2027-02-01": 1227,
+    "2027-02-02": 1314,
+    "2027-02-03": 1230,
+    "2027-02-04": 1321,
+    "2027-02-05": 1619,
+    "2027-02-06": 1732,
+    "2027-02-07": 1821,
+    "2027-02-08": 2029,
+    "2027-02-09": 1987,
+    "2027-02-10": 2176,
+    "2027-02-11": 2379,
+    "2027-02-12": 2251,
+    "2027-02-13": 2342,
+    "2027-02-14": 2414,
+    "2027-02-15": 2532,
+    "2027-02-16": 2520,
+    "2027-02-17": 2303,
+    "2027-02-18": 2155,
+    "2027-02-19": 1783,
+    "2027-02-20": 1444,
+    "2027-02-21": 1305,
+    "2027-02-22": 1360,
+    "2027-02-23": 1326,
+    "2027-02-24": 1342,
+    "2027-02-25": 1328,
+    "2027-02-26": 1320,
+    "2027-02-27": 1062,
+    "2027-02-28": 963,
+    "2027-03-01": 1452,
+    "2027-03-02": 1574,
+    "2027-03-03": 1652,
+    "2027-03-04": 1778,
+    "2027-03-05": 1882,
+    "2027-03-06": 1986,
+    "2027-03-07": 2044,
+    "2027-03-08": 2273,
+    "2027-03-09": 2353,
+    "2027-03-10": 2474,
+    "2027-03-11": 2750,
+    "2027-03-12": 2933,
+    "2027-03-13": 2831,
+    "2027-03-14": 2639,
+    "2027-03-15": 2577,
+    "2027-03-16": 2549,
+    "2027-03-17": 2796,
+    "2027-03-18": 2684,
+    "2027-03-19": 2612,
+    "2027-03-20": 2376,
+    "2027-03-21": 2667,
+    "2027-03-22": 3122,
+    "2027-03-23": 3301,
+    "2027-03-24": 3204,
+    "2027-03-25": 3091,
+    "2027-03-26": 2607,
+    "2027-03-27": 2109,
+    "2027-03-28": 1877,
+    "2027-03-29": 1847,
+    "2027-03-30": 1854,
+    "2027-03-31": 1703,
+    "2027-04-01": 2128,
+    "2027-04-02": 2478,
+    "2027-04-03": 2287,
+    "2027-04-04": 2399,
+    "2027-04-05": 2629,
+    "2027-04-06": 2974,
+    "2027-04-07": 3091,
+    "2027-04-08": 2960,
+    "2027-04-09": 2728,
+    "2027-04-10": 2593,
+    "2027-04-11": 2622,
+    "2027-04-12": 2806,
+    "2027-04-13": 2795,
+    "2027-04-14": 2783,
+    "2027-04-15": 2806,
+    "2027-04-16": 2631,
+    "2027-04-17": 2546,
+    "2027-04-18": 2464,
+    "2027-04-19": 2530,
+    "2027-04-20": 2711,
+    "2027-04-21": 2631,
+    "2027-04-22": 2698,
+    "2027-04-23": 2479,
+    "2027-04-24": 2269,
+    "2027-04-25": 2128,
+    "2027-04-26": 2168,
+    "2027-04-27": 2008,
+    "2027-04-28": 1802,
+    "2027-04-29": 1967,
+    "2027-04-30": 1792,
+    "2027-05-01": 1919,
+    "2027-05-02": 1999,
+    "2027-05-03": 2183,
+    "2027-05-04": 2424,
+    "2027-05-05": 2740,
+    "2027-05-06": 2950,
+    "2027-05-07": 2935,
+    "2027-05-08": 2815,
+    "2027-05-09": 2685,
+    "2027-05-10": 2573,
+    "2027-05-11": 2612,
+    "2027-05-12": 2489,
+    "2027-05-13": 2506,
+    "2027-05-14": 2327,
+    "2027-05-15": 2143,
+    "2027-05-16": 2017,
+    "2027-05-17": 2122,
+    "2027-05-18": 2157,
+    "2027-05-19": 2201,
+    "2027-05-20": 2187,
+    "2027-05-21": 2266,
+    "2027-05-22": 2051,
+    "2027-05-23": 1907,
+    "2027-05-24": 1901,
+    "2027-05-25": 1807,
+    "2027-05-26": 1647,
+    "2027-05-27": 1440,
+    "2027-05-28": 1325,
+    "2027-05-29": 1185,
+    "2027-05-30": 1156,
+    "2027-05-31": 992,
+    "2027-06-01": 1143,
+    "2027-06-02": 1140,
+    "2027-06-03": 1180,
+    "2027-06-04": 1064,
+    "2027-06-05": 903,
+    "2027-06-06": 981,
+    "2027-06-07": 985,
+    "2027-06-08": 978,
+    "2027-06-09": 956,
+    "2027-06-10": 1058,
+    "2027-06-11": 1006,
+    "2027-06-12": 905,
+    "2027-06-13": 832,
+    "2027-06-14": 909,
+    "2027-06-15": 900,
+    "2027-06-16": 868,
+    "2027-06-17": 916,
+    "2027-06-18": 792,
+    "2027-06-19": 570,
+    "2027-06-20": 586,
+    "2027-06-21": 958,
+    "2027-06-22": 915,
+    "2027-06-23": 901,
+    "2027-06-24": 562,
+    "2027-06-25": 487,
+    "2027-06-26": 387,
+    "2027-06-27": 369,
+    "2027-06-28": 357,
+    "2027-06-29": 383,
+    "2027-06-30": 393,
+    "2027-07-01": 454,
+    "2027-07-02": 469,
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "search_previous_alfani": {
+    "2026-07-07": 63455,
+    "2026-07-08": 61937,
+    "2026-07-09": 61100,
     "2026-07-10": 60481,
     "2026-07-11": 59490,
     "2026-07-12": 56865,
@@ -14264,37 +14203,37 @@ const EXPEDIA_DATA = {
     "2027-06-30": 57291,
     "2027-07-01": 58126,
     "2027-07-02": 58310,
-    "2027-07-03": 55730,
-    "2027-07-04": 55317,
-    "2027-07-05": 58659,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "condotta": {
-    "2026-07-10": 243,
+    "2026-07-07": 218,
+    "2026-07-08": 236,
+    "2026-07-09": 223,
+    "2026-07-10": 250,
     "2026-07-11": 316,
     "2026-07-12": 495,
     "2026-07-13": null,
-    "2026-07-14": 223,
-    "2026-07-15": 316,
-    "2026-07-16": 263,
+    "2026-07-14": 202,
+    "2026-07-15": 226,
+    "2026-07-16": 238,
     "2026-07-17": 226,
-    "2026-07-18": 250,
-    "2026-07-19": 241,
-    "2026-07-20": 253,
-    "2026-07-21": 248,
-    "2026-07-22": 244,
-    "2026-07-23": 450,
-    "2026-07-24": 266,
-    "2026-07-25": 241,
-    "2026-07-26": 241,
-    "2026-07-27": 241,
-    "2026-07-28": 238,
-    "2026-07-29": 226,
-    "2026-07-30": 231,
-    "2026-07-31": 251,
-    "2026-08-01": 254,
+    "2026-07-18": 272,
+    "2026-07-19": 238,
+    "2026-07-20": 238,
+    "2026-07-21": 226,
+    "2026-07-22": 238,
+    "2026-07-23": 440,
+    "2026-07-24": 202,
+    "2026-07-25": 202,
+    "2026-07-26": 190,
+    "2026-07-27": 199,
+    "2026-07-28": 199,
+    "2026-07-29": 202,
+    "2026-07-30": 202,
+    "2026-07-31": 202,
+    "2026-08-01": 202,
     "2026-08-02": 190,
     "2026-08-03": 190,
     "2026-08-04": 190,
@@ -14309,7 +14248,7 @@ const EXPEDIA_DATA = {
     "2026-08-13": 202,
     "2026-08-14": 214,
     "2026-08-15": null,
-    "2026-08-16": 206,
+    "2026-08-16": 199,
     "2026-08-17": 190,
     "2026-08-18": 190,
     "2026-08-19": 190,
@@ -14325,102 +14264,102 @@ const EXPEDIA_DATA = {
     "2026-08-29": 213,
     "2026-08-30": 203,
     "2026-08-31": 220,
-    "2026-09-01": 247,
-    "2026-09-02": 307,
-    "2026-09-03": 295,
-    "2026-09-04": 376,
-    "2026-09-05": 406,
-    "2026-09-06": 328,
-    "2026-09-07": 313,
-    "2026-09-08": 341,
-    "2026-09-09": 327,
-    "2026-09-10": 431,
-    "2026-09-11": 422,
-    "2026-09-12": 449,
-    "2026-09-13": 364,
-    "2026-09-14": 343,
-    "2026-09-15": 340,
-    "2026-09-16": 353,
-    "2026-09-17": 358,
-    "2026-09-18": 435,
-    "2026-09-19": 433,
-    "2026-09-20": 348,
-    "2026-09-21": 343,
-    "2026-09-22": 462,
-    "2026-09-23": 364,
-    "2026-09-24": 358,
-    "2026-09-25": 534,
-    "2026-09-26": 484,
-    "2026-09-27": 414,
-    "2026-09-28": 396,
-    "2026-09-29": 416,
-    "2026-09-30": 414,
-    "2026-10-01": 374,
-    "2026-10-02": 465,
-    "2026-10-03": 479,
-    "2026-10-04": 442,
-    "2026-10-05": 437,
-    "2026-10-06": 373,
-    "2026-10-07": 364,
-    "2026-10-08": 373,
-    "2026-10-09": 461,
-    "2026-10-10": 452,
-    "2026-10-11": 393,
-    "2026-10-12": 415,
-    "2026-10-13": 400,
-    "2026-10-14": 351,
-    "2026-10-15": 348,
-    "2026-10-16": 433,
-    "2026-10-17": 422,
-    "2026-10-18": 330,
-    "2026-10-19": 302,
-    "2026-10-20": 310,
-    "2026-10-21": 298,
-    "2026-10-22": 317,
-    "2026-10-23": 395,
-    "2026-10-24": 386,
-    "2026-10-25": 303,
-    "2026-10-26": 303,
-    "2026-10-27": 280,
-    "2026-10-28": 275,
-    "2026-10-29": 290,
-    "2026-10-30": 377,
-    "2026-10-31": 377,
-    "2026-11-01": 254,
-    "2026-11-02": 240,
-    "2026-11-03": 203,
-    "2026-11-04": 214,
-    "2026-11-05": 241,
-    "2026-11-06": 245,
-    "2026-11-07": 216,
-    "2026-11-08": 197,
-    "2026-11-09": 197,
-    "2026-11-10": 203,
-    "2026-11-11": 214,
-    "2026-11-12": 228,
-    "2026-11-13": 245,
-    "2026-11-14": 222,
-    "2026-11-15": 196,
+    "2026-09-01": 222,
+    "2026-09-02": 289,
+    "2026-09-03": 290,
+    "2026-09-04": 370,
+    "2026-09-05": 390,
+    "2026-09-06": 326,
+    "2026-09-07": 301,
+    "2026-09-08": 315,
+    "2026-09-09": 310,
+    "2026-09-10": 323,
+    "2026-09-11": 390,
+    "2026-09-12": 415,
+    "2026-09-13": 336,
+    "2026-09-14": 315,
+    "2026-09-15": 316,
+    "2026-09-16": 332,
+    "2026-09-17": 328,
+    "2026-09-18": 387,
+    "2026-09-19": 395,
+    "2026-09-20": 316,
+    "2026-09-21": 302,
+    "2026-09-22": 434,
+    "2026-09-23": 329,
+    "2026-09-24": 322,
+    "2026-09-25": 499,
+    "2026-09-26": 448,
+    "2026-09-27": 383,
+    "2026-09-28": 365,
+    "2026-09-29": 400,
+    "2026-09-30": 402,
+    "2026-10-01": 428,
+    "2026-10-02": 496,
+    "2026-10-03": 581,
+    "2026-10-04": 487,
+    "2026-10-05": 428,
+    "2026-10-06": 427,
+    "2026-10-07": 409,
+    "2026-10-08": 425,
+    "2026-10-09": 499,
+    "2026-10-10": 493,
+    "2026-10-11": 453,
+    "2026-10-12": 505,
+    "2026-10-13": 486,
+    "2026-10-14": 406,
+    "2026-10-15": 404,
+    "2026-10-16": 488,
+    "2026-10-17": 469,
+    "2026-10-18": 383,
+    "2026-10-19": 342,
+    "2026-10-20": 349,
+    "2026-10-21": 348,
+    "2026-10-22": 383,
+    "2026-10-23": 453,
+    "2026-10-24": 431,
+    "2026-10-25": 352,
+    "2026-10-26": 351,
+    "2026-10-27": 317,
+    "2026-10-28": 307,
+    "2026-10-29": 330,
+    "2026-10-30": 433,
+    "2026-10-31": 433,
+    "2026-11-01": 193,
+    "2026-11-02": 190,
+    "2026-11-03": 190,
+    "2026-11-04": 190,
+    "2026-11-05": 190,
+    "2026-11-06": 190,
+    "2026-11-07": 190,
+    "2026-11-08": 190,
+    "2026-11-09": 190,
+    "2026-11-10": 190,
+    "2026-11-11": 190,
+    "2026-11-12": 190,
+    "2026-11-13": 207,
+    "2026-11-14": 207,
+    "2026-11-15": 190,
     "2026-11-16": 190,
     "2026-11-17": 190,
     "2026-11-18": 190,
-    "2026-11-19": 195,
-    "2026-11-20": 199,
-    "2026-11-21": 210,
+    "2026-11-19": 190,
+    "2026-11-20": 190,
+    "2026-11-21": 190,
     "2026-11-22": 190,
-    "2026-11-23": 219,
-    "2026-11-24": 214,
-    "2026-11-25": 212,
-    "2026-11-26": 209,
-    "2026-11-27": 209,
+    "2026-11-23": 190,
+    "2026-11-24": 190,
+    "2026-11-25": 190,
+    "2026-11-26": 190,
+    "2026-11-27": 190,
     "2026-11-28": null,
     "2026-11-29": 226,
     "2026-11-30": 190,
-    "2026-12-01": 207,
-    "2026-12-02": 200,
-    "2026-12-03": 197,
-    "2026-12-04": 214,
-    "2026-12-05": 221,
+    "2026-12-01": 190,
+    "2026-12-02": 190,
+    "2026-12-03": 190,
+    "2026-12-04": 190,
+    "2026-12-05": 190,
     "2026-12-06": 197,
     "2026-12-07": 245,
     "2026-12-08": 226,
@@ -14434,7 +14373,7 @@ const EXPEDIA_DATA = {
     "2026-12-16": 264,
     "2026-12-17": 264,
     "2026-12-18": 264,
-    "2026-12-19": 334,
+    "2026-12-19": 264,
     "2026-12-20": 264,
     "2026-12-21": 327,
     "2026-12-22": 327,
@@ -14632,74 +14571,74 @@ const EXPEDIA_DATA = {
     "2027-07-02": null,
     "2027-07-03": null,
     "2027-07-04": null,
-    "2027-07-05": null,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-05": null
   },
   "compset_avg_condotta": {
-    "2026-07-10": 215,
-    "2026-07-11": 310,
-    "2026-07-12": 327,
-    "2026-07-13": 252,
-    "2026-07-14": 296,
-    "2026-07-15": 326,
-    "2026-07-16": 258,
-    "2026-07-17": 343,
-    "2026-07-18": 300,
-    "2026-07-19": 306,
-    "2026-07-20": 269,
-    "2026-07-21": 252,
-    "2026-07-22": 273,
-    "2026-07-23": 244,
-    "2026-07-24": 482,
-    "2026-07-25": 283,
-    "2026-07-26": 288,
-    "2026-07-27": 224,
-    "2026-07-28": 257,
-    "2026-07-29": 225,
-    "2026-07-30": 255,
-    "2026-07-31": 319,
-    "2026-08-01": 263,
-    "2026-08-02": 260,
-    "2026-08-03": 255,
-    "2026-08-04": 254,
-    "2026-08-05": 250,
-    "2026-08-06": 254,
-    "2026-08-07": 249,
-    "2026-08-08": 233,
-    "2026-08-09": 236,
-    "2026-08-10": 260,
-    "2026-08-11": 250,
-    "2026-08-12": 215,
-    "2026-08-13": 203,
-    "2026-08-14": 217,
-    "2026-08-15": 244,
-    "2026-08-16": 211,
-    "2026-08-17": 224,
-    "2026-08-18": 207,
-    "2026-08-19": 205,
-    "2026-08-20": 210,
+    "2026-07-07": 354,
+    "2026-07-08": 273,
+    "2026-07-09": 204,
+    "2026-07-10": 227,
+    "2026-07-11": 287,
+    "2026-07-12": 256,
+    "2026-07-13": 251,
+    "2026-07-14": 256,
+    "2026-07-15": 324,
+    "2026-07-16": 253,
+    "2026-07-17": 306,
+    "2026-07-18": 297,
+    "2026-07-19": 269,
+    "2026-07-20": 286,
+    "2026-07-21": 258,
+    "2026-07-22": 248,
+    "2026-07-23": 337,
+    "2026-07-24": 430,
+    "2026-07-25": 294,
+    "2026-07-26": 294,
+    "2026-07-27": 233,
+    "2026-07-28": 264,
+    "2026-07-29": 232,
+    "2026-07-30": 270,
+    "2026-07-31": 320,
+    "2026-08-01": 269,
+    "2026-08-02": 266,
+    "2026-08-03": 258,
+    "2026-08-04": 241,
+    "2026-08-05": 252,
+    "2026-08-06": 241,
+    "2026-08-07": 243,
+    "2026-08-08": 230,
+    "2026-08-09": 242,
+    "2026-08-10": 262,
+    "2026-08-11": 254,
+    "2026-08-12": 224,
+    "2026-08-13": 205,
+    "2026-08-14": 225,
+    "2026-08-15": 254,
+    "2026-08-16": 214,
+    "2026-08-17": 228,
+    "2026-08-18": 210,
+    "2026-08-19": 211,
+    "2026-08-20": 221,
     "2026-08-21": 230,
     "2026-08-22": 236,
-    "2026-08-23": 209,
-    "2026-08-24": 239,
-    "2026-08-25": 239,
-    "2026-08-26": 232,
+    "2026-08-23": 205,
+    "2026-08-24": 214,
+    "2026-08-25": 219,
+    "2026-08-26": 234,
     "2026-08-27": 218,
     "2026-08-28": 218,
     "2026-08-29": 237,
-    "2026-08-30": 249,
+    "2026-08-30": 252,
     "2026-08-31": 219,
     "2026-09-01": 356,
-    "2026-09-02": 366,
-    "2026-09-03": 330,
-    "2026-09-04": 337,
-    "2026-09-05": 420,
-    "2026-09-06": 399,
+    "2026-09-02": 371,
+    "2026-09-03": 326,
+    "2026-09-04": 335,
+    "2026-09-05": 415,
+    "2026-09-06": 394,
     "2026-09-07": 382,
     "2026-09-08": 425,
-    "2026-09-09": 406,
+    "2026-09-09": 421,
     "2026-09-10": 407,
     "2026-09-11": 415,
     "2026-09-12": 491,
@@ -14707,14 +14646,14 @@ const EXPEDIA_DATA = {
     "2026-09-14": 403,
     "2026-09-15": 413,
     "2026-09-16": 492,
-    "2026-09-17": 433,
-    "2026-09-18": 504,
+    "2026-09-17": 471,
+    "2026-09-18": 466,
     "2026-09-19": 513,
-    "2026-09-20": 488,
+    "2026-09-20": 491,
     "2026-09-21": 428,
     "2026-09-22": 466,
     "2026-09-23": 444,
-    "2026-09-24": 447,
+    "2026-09-24": 466,
     "2026-09-25": 517,
     "2026-09-26": 424,
     "2026-09-27": 456,
@@ -14723,7 +14662,7 @@ const EXPEDIA_DATA = {
     "2026-09-30": 466,
     "2026-10-01": 431,
     "2026-10-02": 441,
-    "2026-10-03": 525,
+    "2026-10-03": 516,
     "2026-10-04": 452,
     "2026-10-05": 395,
     "2026-10-06": 378,
@@ -14753,38 +14692,38 @@ const EXPEDIA_DATA = {
     "2026-10-30": 344,
     "2026-10-31": 344,
     "2026-11-01": 253,
-    "2026-11-02": 232,
-    "2026-11-03": 230,
-    "2026-11-04": 228,
-    "2026-11-05": 227,
+    "2026-11-02": 233,
+    "2026-11-03": 231,
+    "2026-11-04": 229,
+    "2026-11-05": 228,
     "2026-11-06": 238,
     "2026-11-07": 261,
-    "2026-11-08": 223,
-    "2026-11-09": 225,
-    "2026-11-10": 225,
-    "2026-11-11": 225,
-    "2026-11-12": 225,
+    "2026-11-08": 224,
+    "2026-11-09": 226,
+    "2026-11-10": 226,
+    "2026-11-11": 226,
+    "2026-11-12": 226,
     "2026-11-13": 235,
     "2026-11-14": 261,
-    "2026-11-15": 219,
-    "2026-11-16": 197,
-    "2026-11-17": 197,
-    "2026-11-18": 197,
-    "2026-11-19": 197,
+    "2026-11-15": 220,
+    "2026-11-16": 198,
+    "2026-11-17": 198,
+    "2026-11-18": 198,
+    "2026-11-19": 198,
     "2026-11-20": 212,
     "2026-11-21": 238,
-    "2026-11-22": 209,
-    "2026-11-23": 215,
-    "2026-11-24": 215,
-    "2026-11-25": 219,
-    "2026-11-26": 200,
+    "2026-11-22": 211,
+    "2026-11-23": 216,
+    "2026-11-24": 216,
+    "2026-11-25": 220,
+    "2026-11-26": 201,
     "2026-11-27": 229,
     "2026-11-28": 277,
-    "2026-11-29": 206,
-    "2026-11-30": 204,
-    "2026-12-01": 196,
-    "2026-12-02": 196,
-    "2026-12-03": 196,
+    "2026-11-29": 207,
+    "2026-11-30": 205,
+    "2026-12-01": 198,
+    "2026-12-02": 198,
+    "2026-12-03": 198,
     "2026-12-04": 217,
     "2026-12-05": 236,
     "2026-12-06": 236,
@@ -14900,10 +14839,10 @@ const EXPEDIA_DATA = {
     "2027-03-26": 355,
     "2027-03-27": 355,
     "2027-03-28": 355,
-    "2027-03-29": 335,
-    "2027-03-30": 266,
-    "2027-03-31": 266,
-    "2027-04-01": 295,
+    "2027-03-29": 327,
+    "2027-03-30": 258,
+    "2027-03-31": 258,
+    "2027-04-01": 286,
     "2027-04-02": 294,
     "2027-04-03": 349,
     "2027-04-04": 282,
@@ -14998,15 +14937,15 @@ const EXPEDIA_DATA = {
     "2027-07-02": 275,
     "2027-07-03": 275,
     "2027-07-04": 275,
-    "2027-07-05": 275,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-05": 275
   },
   "competitors_condotta": {
     "Casa del Sarto": {
-      "2026-07-10": 270,
-      "2026-07-11": 228,
+      "2026-07-07": 228,
+      "2026-07-08": 228,
+      "2026-07-09": 217,
+      "2026-07-10": 244,
+      "2026-07-11": 206,
       "2026-07-12": 206,
       "2026-07-13": 228,
       "2026-07-14": 228,
@@ -15014,9 +14953,9 @@ const EXPEDIA_DATA = {
       "2026-07-16": 217,
       "2026-07-17": 217,
       "2026-07-18": 206,
-      "2026-07-19": 233,
-      "2026-07-20": 233,
-      "2026-07-21": 233,
+      "2026-07-19": 217,
+      "2026-07-20": 217,
+      "2026-07-21": 217,
       "2026-07-22": 233,
       "2026-07-23": 233,
       "2026-07-24": 233,
@@ -15365,25 +15304,25 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Florence Art Apartments": {
-      "2026-07-10": 302,
-      "2026-07-11": 302,
-      "2026-07-12": 692,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": null,
+      "2026-07-11": null,
+      "2026-07-12": null,
       "2026-07-13": null,
       "2026-07-14": null,
       "2026-07-15": null,
       "2026-07-16": null,
-      "2026-07-17": 792,
+      "2026-07-17": null,
       "2026-07-18": null,
       "2026-07-19": 372,
       "2026-07-20": null,
       "2026-07-21": null,
-      "2026-07-22": 372,
+      "2026-07-22": 422,
       "2026-07-23": null,
       "2026-07-24": 792,
       "2026-07-25": null,
@@ -15425,14 +15364,14 @@ const EXPEDIA_DATA = {
       "2026-08-30": null,
       "2026-08-31": null,
       "2026-09-01": null,
-      "2026-09-02": 312,
+      "2026-09-02": null,
       "2026-09-03": null,
       "2026-09-04": null,
       "2026-09-05": null,
       "2026-09-06": null,
       "2026-09-07": null,
       "2026-09-08": null,
-      "2026-09-09": 312,
+      "2026-09-09": null,
       "2026-09-10": null,
       "2026-09-11": null,
       "2026-09-12": null,
@@ -15443,11 +15382,11 @@ const EXPEDIA_DATA = {
       "2026-09-17": null,
       "2026-09-18": null,
       "2026-09-19": null,
-      "2026-09-20": 472,
+      "2026-09-20": null,
       "2026-09-21": null,
       "2026-09-22": null,
       "2026-09-23": null,
-      "2026-09-24": 352,
+      "2026-09-24": null,
       "2026-09-25": null,
       "2026-09-26": null,
       "2026-09-27": null,
@@ -15731,12 +15670,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Granduomo Charming Accomodation": {
+      "2026-07-07": 480,
+      "2026-07-08": 480,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": 586,
       "2026-07-12": 480,
@@ -15746,12 +15685,12 @@ const EXPEDIA_DATA = {
       "2026-07-16": 480,
       "2026-07-17": 480,
       "2026-07-18": 586,
-      "2026-07-19": 525,
+      "2026-07-19": 359,
       "2026-07-20": 480,
       "2026-07-21": 480,
       "2026-07-22": null,
-      "2026-07-23": null,
-      "2026-07-24": 639,
+      "2026-07-23": 525,
+      "2026-07-24": 586,
       "2026-07-25": 586,
       "2026-07-26": 359,
       "2026-07-27": 359,
@@ -15764,9 +15703,9 @@ const EXPEDIA_DATA = {
       "2026-08-03": 525,
       "2026-08-04": 359,
       "2026-08-05": 359,
-      "2026-08-06": 480,
-      "2026-08-07": 480,
-      "2026-08-08": 359,
+      "2026-08-06": 410,
+      "2026-08-07": 410,
+      "2026-08-08": 307,
       "2026-08-09": 307,
       "2026-08-10": 410,
       "2026-08-11": 448,
@@ -15806,8 +15745,8 @@ const EXPEDIA_DATA = {
       "2026-09-14": null,
       "2026-09-15": 355,
       "2026-09-16": 624,
-      "2026-09-17": null,
-      "2026-09-18": 548,
+      "2026-09-17": 624,
+      "2026-09-18": 355,
       "2026-09-19": 548,
       "2026-09-20": 548,
       "2026-09-21": 355,
@@ -16097,51 +16036,51 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Palazzo Alfani al David": {
-      "2026-07-10": null,
-      "2026-07-11": null,
-      "2026-07-12": null,
-      "2026-07-13": 280,
-      "2026-07-14": null,
-      "2026-07-15": 270,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 260,
+      "2026-07-11": 236,
+      "2026-07-12": 236,
+      "2026-07-13": 249,
+      "2026-07-14": 260,
+      "2026-07-15": 263,
       "2026-07-16": null,
       "2026-07-17": null,
-      "2026-07-18": 265,
-      "2026-07-19": 260,
-      "2026-07-20": 329,
+      "2026-07-18": 242,
+      "2026-07-19": 254,
+      "2026-07-20": 334,
       "2026-07-21": null,
-      "2026-07-22": 257,
+      "2026-07-22": 247,
       "2026-07-23": null,
       "2026-07-24": null,
-      "2026-07-25": 251,
-      "2026-07-26": 434,
-      "2026-07-27": null,
+      "2026-07-25": 271,
+      "2026-07-26": 422,
+      "2026-07-27": 247,
       "2026-07-28": 230,
       "2026-07-29": 218,
       "2026-07-30": 218,
       "2026-07-31": 236,
-      "2026-08-01": 253,
-      "2026-08-02": 248,
-      "2026-08-03": 247,
-      "2026-08-04": 247,
+      "2026-08-01": 280,
+      "2026-08-02": 268,
+      "2026-08-03": 261,
+      "2026-08-04": 250,
       "2026-08-05": 224,
       "2026-08-06": 247,
-      "2026-08-07": 247,
-      "2026-08-08": 247,
-      "2026-08-09": 247,
-      "2026-08-10": 239,
+      "2026-08-07": 251,
+      "2026-08-08": 273,
+      "2026-08-09": 272,
+      "2026-08-10": 247,
       "2026-08-11": 230,
       "2026-08-12": 230,
       "2026-08-13": 206,
       "2026-08-14": null,
       "2026-08-15": null,
-      "2026-08-16": 247,
-      "2026-08-17": 288,
+      "2026-08-16": 259,
+      "2026-08-17": 316,
       "2026-08-18": 206,
       "2026-08-19": 206,
       "2026-08-20": 224,
@@ -16154,14 +16093,14 @@ const EXPEDIA_DATA = {
       "2026-08-27": 230,
       "2026-08-28": 206,
       "2026-08-29": 206,
-      "2026-08-30": 231,
+      "2026-08-30": 238,
       "2026-08-31": 247,
       "2026-09-01": 271,
-      "2026-09-02": 341,
-      "2026-09-03": 355,
-      "2026-09-04": 351,
-      "2026-09-05": 380,
-      "2026-09-06": 372,
+      "2026-09-02": 318,
+      "2026-09-03": 331,
+      "2026-09-04": 339,
+      "2026-09-05": 351,
+      "2026-09-06": 347,
       "2026-09-07": 411,
       "2026-09-08": 434,
       "2026-09-09": 434,
@@ -16463,13 +16402,13 @@ const EXPEDIA_DATA = {
       "2027-07-02": 275,
       "2027-07-03": 275,
       "2027-07-04": 275,
-      "2027-07-05": 275,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": 275
     },
     "Residence Hilda": {
-      "2026-07-10": 217,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": 281,
+      "2026-07-10": 256,
       "2026-07-11": null,
       "2026-07-12": 230,
       "2026-07-13": 254,
@@ -16554,7 +16493,7 @@ const EXPEDIA_DATA = {
       "2026-09-30": 496,
       "2026-10-01": 484,
       "2026-10-02": 484,
-      "2026-10-03": 565,
+      "2026-10-03": 530,
       "2026-10-04": 530,
       "2026-10-05": 530,
       "2026-10-06": 484,
@@ -16829,54 +16768,54 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Residenza Della Signoria": {
-      "2026-07-10": 176,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
-      "2026-07-13": 180,
-      "2026-07-14": 180,
+      "2026-07-13": 191,
+      "2026-07-14": 191,
       "2026-07-15": null,
-      "2026-07-16": null,
-      "2026-07-17": 188,
-      "2026-07-18": 199,
+      "2026-07-16": 227,
+      "2026-07-17": null,
+      "2026-07-18": 211,
       "2026-07-19": null,
-      "2026-07-20": 188,
-      "2026-07-21": 188,
+      "2026-07-20": null,
+      "2026-07-21": 195,
       "2026-07-22": null,
       "2026-07-23": null,
       "2026-07-24": null,
-      "2026-07-25": 223,
-      "2026-07-26": 195,
-      "2026-07-27": 195,
-      "2026-07-28": 195,
-      "2026-07-29": 195,
-      "2026-07-30": 195,
+      "2026-07-25": 234,
+      "2026-07-26": null,
+      "2026-07-27": null,
+      "2026-07-28": 246,
+      "2026-07-29": null,
+      "2026-07-30": 223,
       "2026-07-31": null,
       "2026-08-01": null,
       "2026-08-02": null,
       "2026-08-03": null,
-      "2026-08-04": 191,
+      "2026-08-04": 207,
       "2026-08-05": null,
       "2026-08-06": null,
-      "2026-08-07": 199,
+      "2026-08-07": 215,
       "2026-08-08": null,
       "2026-08-09": null,
       "2026-08-10": null,
-      "2026-08-11": 184,
+      "2026-08-11": 199,
       "2026-08-12": null,
       "2026-08-13": null,
       "2026-08-14": null,
       "2026-08-15": null,
       "2026-08-16": null,
       "2026-08-17": null,
-      "2026-08-18": 184,
-      "2026-08-19": 184,
-      "2026-08-20": 184,
+      "2026-08-18": null,
+      "2026-08-19": null,
+      "2026-08-20": null,
       "2026-08-21": null,
       "2026-08-22": null,
       "2026-08-23": null,
@@ -16950,38 +16889,38 @@ const EXPEDIA_DATA = {
       "2026-10-30": null,
       "2026-10-31": null,
       "2026-11-01": 184,
-      "2026-11-02": 176,
-      "2026-11-03": 176,
-      "2026-11-04": 176,
-      "2026-11-05": 176,
+      "2026-11-02": 184,
+      "2026-11-03": 184,
+      "2026-11-04": 184,
+      "2026-11-05": 184,
       "2026-11-06": null,
       "2026-11-07": null,
-      "2026-11-08": 176,
-      "2026-11-09": 176,
-      "2026-11-10": 176,
-      "2026-11-11": 176,
-      "2026-11-12": 176,
+      "2026-11-08": 184,
+      "2026-11-09": 184,
+      "2026-11-10": 184,
+      "2026-11-11": 184,
+      "2026-11-12": 184,
       "2026-11-13": null,
       "2026-11-14": null,
-      "2026-11-15": 176,
-      "2026-11-16": 176,
-      "2026-11-17": 176,
-      "2026-11-18": 176,
-      "2026-11-19": 176,
+      "2026-11-15": 184,
+      "2026-11-16": 184,
+      "2026-11-17": 184,
+      "2026-11-18": 184,
+      "2026-11-19": 184,
       "2026-11-20": null,
       "2026-11-21": null,
-      "2026-11-22": 176,
-      "2026-11-23": 176,
-      "2026-11-24": 176,
-      "2026-11-25": 176,
-      "2026-11-26": 176,
+      "2026-11-22": 184,
+      "2026-11-23": 184,
+      "2026-11-24": 184,
+      "2026-11-25": 184,
+      "2026-11-26": 184,
       "2026-11-27": null,
       "2026-11-28": null,
-      "2026-11-29": 176,
-      "2026-11-30": 176,
-      "2026-12-01": 176,
-      "2026-12-02": 176,
-      "2026-12-03": 176,
+      "2026-11-29": 184,
+      "2026-11-30": 184,
+      "2026-12-01": 184,
+      "2026-12-02": 184,
+      "2026-12-03": 184,
       "2026-12-04": null,
       "2026-12-05": null,
       "2026-12-06": null,
@@ -17195,25 +17134,25 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Residenza Marchesi Pontenani": {
-      "2026-07-10": 111,
-      "2026-07-11": 123,
+      "2026-07-07": null,
+      "2026-07-08": 111,
+      "2026-07-09": 115,
+      "2026-07-10": 123,
+      "2026-07-11": 119,
       "2026-07-12": 115,
-      "2026-07-13": 111,
-      "2026-07-14": null,
+      "2026-07-13": 115,
+      "2026-07-14": 119,
       "2026-07-15": null,
       "2026-07-16": 111,
-      "2026-07-17": 128,
+      "2026-07-17": null,
       "2026-07-18": null,
       "2026-07-19": 141,
       "2026-07-20": 115,
-      "2026-07-21": 119,
-      "2026-07-22": null,
+      "2026-07-21": 128,
+      "2026-07-22": 108,
       "2026-07-23": null,
       "2026-07-24": null,
       "2026-07-25": 169,
@@ -17226,7 +17165,7 @@ const EXPEDIA_DATA = {
       "2026-08-01": 136,
       "2026-08-02": 111,
       "2026-08-03": 112,
-      "2026-08-04": null,
+      "2026-08-04": 144,
       "2026-08-05": null,
       "2026-08-06": 126,
       "2026-08-07": 144,
@@ -17234,20 +17173,20 @@ const EXPEDIA_DATA = {
       "2026-08-09": null,
       "2026-08-10": null,
       "2026-08-11": null,
-      "2026-08-12": 115,
-      "2026-08-13": 111,
+      "2026-08-12": 127,
+      "2026-08-13": 119,
       "2026-08-14": 135,
       "2026-08-15": null,
       "2026-08-16": 112,
-      "2026-08-17": 135,
-      "2026-08-18": 152,
+      "2026-08-17": 127,
+      "2026-08-18": 144,
       "2026-08-19": 117,
-      "2026-08-20": 125,
+      "2026-08-20": 117,
       "2026-08-21": null,
       "2026-08-22": null,
-      "2026-08-23": 119,
-      "2026-08-24": null,
-      "2026-08-25": null,
+      "2026-08-23": 98,
+      "2026-08-24": 110,
+      "2026-08-25": 135,
       "2026-08-26": 105,
       "2026-08-27": 119,
       "2026-08-28": 144,
@@ -17463,10 +17402,10 @@ const EXPEDIA_DATA = {
       "2027-03-26": null,
       "2027-03-27": null,
       "2027-03-28": null,
-      "2027-03-29": 162,
-      "2027-03-30": 162,
-      "2027-03-31": 162,
-      "2027-04-01": 162,
+      "2027-03-29": 128,
+      "2027-03-30": 128,
+      "2027-03-31": 128,
+      "2027-04-01": 128,
       "2027-04-02": 146,
       "2027-04-03": null,
       "2027-04-04": 155,
@@ -17561,64 +17500,64 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Ricasoli Garden Relais": {
-      "2026-07-10": null,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 250,
       "2026-07-11": null,
-      "2026-07-12": 239,
-      "2026-07-13": 233,
+      "2026-07-12": 271,
+      "2026-07-13": 239,
       "2026-07-14": null,
       "2026-07-15": null,
       "2026-07-16": 239,
-      "2026-07-17": null,
+      "2026-07-17": 271,
       "2026-07-18": null,
       "2026-07-19": null,
       "2026-07-20": null,
-      "2026-07-21": 239,
+      "2026-07-21": 271,
       "2026-07-22": null,
       "2026-07-23": null,
-      "2026-07-24": null,
-      "2026-07-25": 239,
-      "2026-07-26": null,
+      "2026-07-24": 271,
+      "2026-07-25": 271,
+      "2026-07-26": 239,
       "2026-07-27": 206,
       "2026-07-28": 206,
-      "2026-07-29": 239,
-      "2026-07-30": 206,
-      "2026-07-31": 233,
-      "2026-08-01": 233,
-      "2026-08-02": 233,
+      "2026-07-29": 252,
+      "2026-07-30": 271,
+      "2026-07-31": 239,
+      "2026-08-01": 239,
+      "2026-08-02": 239,
       "2026-08-03": 206,
       "2026-08-04": 206,
-      "2026-08-05": 233,
-      "2026-08-06": 233,
-      "2026-08-07": 239,
-      "2026-08-08": 239,
+      "2026-08-05": 239,
+      "2026-08-06": 239,
+      "2026-08-07": 252,
+      "2026-08-08": 252,
       "2026-08-09": 206,
       "2026-08-10": 206,
       "2026-08-11": 206,
-      "2026-08-12": 239,
+      "2026-08-12": 271,
       "2026-08-13": 206,
-      "2026-08-14": 239,
-      "2026-08-15": 239,
+      "2026-08-14": 271,
+      "2026-08-15": 271,
       "2026-08-16": 206,
       "2026-08-17": 206,
       "2026-08-18": 206,
-      "2026-08-19": 233,
-      "2026-08-20": 239,
+      "2026-08-19": 239,
+      "2026-08-20": 271,
       "2026-08-21": 206,
       "2026-08-22": 206,
       "2026-08-23": 206,
-      "2026-08-24": 233,
-      "2026-08-25": 233,
-      "2026-08-26": 233,
+      "2026-08-24": 239,
+      "2026-08-25": 239,
+      "2026-08-26": 239,
       "2026-08-27": 206,
       "2026-08-28": 206,
       "2026-08-29": 206,
-      "2026-08-30": 233,
+      "2026-08-30": 239,
       "2026-08-31": 206,
       "2026-09-01": 368,
       "2026-09-02": 368,
@@ -17927,379 +17866,379 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     }
   },
   "search_current_condotta": {
-    "2026-07-10": 54679,
-    "2026-07-11": 55068,
-    "2026-07-12": 52001,
-    "2026-07-13": 52059,
-    "2026-07-14": 52136,
-    "2026-07-15": 52229,
-    "2026-07-16": 50212,
-    "2026-07-17": 50079,
-    "2026-07-18": 49585,
-    "2026-07-19": 48025,
-    "2026-07-20": 51444,
-    "2026-07-21": 52316,
-    "2026-07-22": 52810,
-    "2026-07-23": 51538,
-    "2026-07-24": 48405,
-    "2026-07-25": 45090,
-    "2026-07-26": 41968,
-    "2026-07-27": 43668,
-    "2026-07-28": 42320,
-    "2026-07-29": 40818,
-    "2026-07-30": 39262,
-    "2026-07-31": 37803,
-    "2026-08-01": 39661,
-    "2026-08-02": 39753,
-    "2026-08-03": 40598,
-    "2026-08-04": 41078,
-    "2026-08-05": 40048,
-    "2026-08-06": 40412,
-    "2026-08-07": 40737,
-    "2026-08-08": 38270,
-    "2026-08-09": 36638,
-    "2026-08-10": 38624,
-    "2026-08-11": 38203,
-    "2026-08-12": 37690,
-    "2026-08-13": 38748,
-    "2026-08-14": 37640,
-    "2026-08-15": 36325,
-    "2026-08-16": 36053,
-    "2026-08-17": 38097,
-    "2026-08-18": 38443,
-    "2026-08-19": 38669,
-    "2026-08-20": 35893,
-    "2026-08-21": 34749,
-    "2026-08-22": 33138,
-    "2026-08-23": 31853,
-    "2026-08-24": 33496,
-    "2026-08-25": 33946,
-    "2026-08-26": 33929,
-    "2026-08-27": 33890,
-    "2026-08-28": 34097,
-    "2026-08-29": 34308,
-    "2026-08-30": 34316,
-    "2026-08-31": 33741,
-    "2026-09-01": 38702,
-    "2026-09-02": 41632,
-    "2026-09-03": 46173,
-    "2026-09-04": 47248,
-    "2026-09-05": 48440,
-    "2026-09-06": 49299,
-    "2026-09-07": 51645,
-    "2026-09-08": 52879,
-    "2026-09-09": 55607,
-    "2026-09-10": 57544,
-    "2026-09-11": 57066,
-    "2026-09-12": 55127,
-    "2026-09-13": 52888,
-    "2026-09-14": 52418,
-    "2026-09-15": 51644,
-    "2026-09-16": 51242,
-    "2026-09-17": 54615,
-    "2026-09-18": 51707,
-    "2026-09-19": 49940,
-    "2026-09-20": 49244,
-    "2026-09-21": 49626,
-    "2026-09-22": 50743,
-    "2026-09-23": 49707,
-    "2026-09-24": 50838,
-    "2026-09-25": 48021,
-    "2026-09-26": 45124,
-    "2026-09-27": 41930,
-    "2026-09-28": 40052,
-    "2026-09-29": 39236,
-    "2026-09-30": 36616,
-    "2026-10-01": 38985,
-    "2026-10-02": 39376,
-    "2026-10-03": 40292,
-    "2026-10-04": 39250,
-    "2026-10-05": 41018,
-    "2026-10-06": 40079,
-    "2026-10-07": 38658,
-    "2026-10-08": 37508,
-    "2026-10-09": 36436,
-    "2026-10-10": 34582,
-    "2026-10-11": 33082,
-    "2026-10-12": 33658,
-    "2026-10-13": 33496,
-    "2026-10-14": 32586,
-    "2026-10-15": 31982,
-    "2026-10-16": 30279,
-    "2026-10-17": 28669,
-    "2026-10-18": 26516,
-    "2026-10-19": 25851,
-    "2026-10-20": 24801,
-    "2026-10-21": 22934,
-    "2026-10-22": 20398,
-    "2026-10-23": 19205,
-    "2026-10-24": 17815,
-    "2026-10-25": 16802,
-    "2026-10-26": 16774,
-    "2026-10-27": 15195,
-    "2026-10-28": 13960,
-    "2026-10-29": 12480,
-    "2026-10-30": 10879,
-    "2026-10-31": 9568,
-    "2026-11-01": 10566,
-    "2026-11-02": 10336,
-    "2026-11-03": 10139,
-    "2026-11-04": 10129,
-    "2026-11-05": 10105,
-    "2026-11-06": 9750,
-    "2026-11-07": 9588,
-    "2026-11-08": 9661,
-    "2026-11-09": 10053,
-    "2026-11-10": 10449,
-    "2026-11-11": 10315,
-    "2026-11-12": 9848,
-    "2026-11-13": 9168,
-    "2026-11-14": 8585,
-    "2026-11-15": 8011,
-    "2026-11-16": 7998,
-    "2026-11-17": 7207,
-    "2026-11-18": 7191,
-    "2026-11-19": 7350,
-    "2026-11-20": 8259,
-    "2026-11-21": 8498,
-    "2026-11-22": 8835,
-    "2026-11-23": 9270,
-    "2026-11-24": 9323,
-    "2026-11-25": 9222,
-    "2026-11-26": 9096,
-    "2026-11-27": 9423,
-    "2026-11-28": 8721,
-    "2026-11-29": 6642,
-    "2026-11-30": 4611,
-    "2026-12-01": 4440,
-    "2026-12-02": 4049,
-    "2026-12-03": 4291,
-    "2026-12-04": 4272,
-    "2026-12-05": 4217,
-    "2026-12-06": 4224,
-    "2026-12-07": 4201,
-    "2026-12-08": 3912,
-    "2026-12-09": 3794,
-    "2026-12-10": 3514,
-    "2026-12-11": 3367,
-    "2026-12-12": 3298,
-    "2026-12-13": 3216,
-    "2026-12-14": 3684,
-    "2026-12-15": 3521,
-    "2026-12-16": 3462,
-    "2026-12-17": 3409,
-    "2026-12-18": 3385,
-    "2026-12-19": 3877,
-    "2026-12-20": 4255,
-    "2026-12-21": 4590,
-    "2026-12-22": 4960,
-    "2026-12-23": 5607,
-    "2026-12-24": 6392,
-    "2026-12-25": 7103,
-    "2026-12-26": 8166,
-    "2026-12-27": 8356,
-    "2026-12-28": 8663,
-    "2026-12-29": 8046,
-    "2026-12-30": 7502,
-    "2026-12-31": 6748,
-    "2027-01-01": 6263,
-    "2027-01-02": 4289,
-    "2027-01-03": 3562,
-    "2027-01-04": 3200,
-    "2027-01-05": 3330,
-    "2027-01-06": 3414,
-    "2027-01-07": 3484,
-    "2027-01-08": 3390,
-    "2027-01-09": 3036,
-    "2027-01-10": 2693,
-    "2027-01-11": 2649,
-    "2027-01-12": 2435,
-    "2027-01-13": 2287,
-    "2027-01-14": 2091,
-    "2027-01-15": 1963,
-    "2027-01-16": 1825,
-    "2027-01-17": 1781,
-    "2027-01-18": 1639,
-    "2027-01-19": 1673,
-    "2027-01-20": 1459,
-    "2027-01-21": 1402,
-    "2027-01-22": 1405,
-    "2027-01-23": 1360,
-    "2027-01-24": 1415,
-    "2027-01-25": 1431,
-    "2027-01-26": 1356,
-    "2027-01-27": 1244,
-    "2027-01-28": 1193,
-    "2027-01-29": 1061,
-    "2027-01-30": 1031,
-    "2027-01-31": 876,
-    "2027-02-01": 1265,
-    "2027-02-02": 1353,
-    "2027-02-03": 1280,
-    "2027-02-04": 1367,
-    "2027-02-05": 1677,
-    "2027-02-06": 1797,
-    "2027-02-07": 1877,
-    "2027-02-08": 2081,
-    "2027-02-09": 2038,
-    "2027-02-10": 2234,
-    "2027-02-11": 2440,
-    "2027-02-12": 2294,
-    "2027-02-13": 2408,
-    "2027-02-14": 2496,
-    "2027-02-15": 2613,
-    "2027-02-16": 2608,
-    "2027-02-17": 2377,
-    "2027-02-18": 2223,
-    "2027-02-19": 1826,
-    "2027-02-20": 1507,
-    "2027-02-21": 1369,
-    "2027-02-22": 1425,
-    "2027-02-23": 1384,
-    "2027-02-24": 1403,
-    "2027-02-25": 1377,
-    "2027-02-26": 1369,
-    "2027-02-27": 1143,
-    "2027-02-28": 1038,
-    "2027-03-01": 1531,
-    "2027-03-02": 1653,
-    "2027-03-03": 1728,
-    "2027-03-04": 1854,
-    "2027-03-05": 1940,
-    "2027-03-06": 2045,
-    "2027-03-07": 2115,
-    "2027-03-08": 2425,
-    "2027-03-09": 2503,
-    "2027-03-10": 2541,
-    "2027-03-11": 2843,
-    "2027-03-12": 3044,
-    "2027-03-13": 2931,
-    "2027-03-14": 2716,
-    "2027-03-15": 2660,
-    "2027-03-16": 2614,
-    "2027-03-17": 2958,
-    "2027-03-18": 2826,
-    "2027-03-19": 2757,
-    "2027-03-20": 2512,
-    "2027-03-21": 2766,
-    "2027-03-22": 3233,
-    "2027-03-23": 3401,
-    "2027-03-24": 3287,
-    "2027-03-25": 3163,
-    "2027-03-26": 2672,
-    "2027-03-27": 2170,
-    "2027-03-28": 1936,
-    "2027-03-29": 1937,
-    "2027-03-30": 1950,
-    "2027-03-31": 1814,
-    "2027-04-01": 2228,
-    "2027-04-02": 2583,
-    "2027-04-03": 2373,
-    "2027-04-04": 2496,
-    "2027-04-05": 2748,
-    "2027-04-06": 3116,
-    "2027-04-07": 3223,
-    "2027-04-08": 3093,
-    "2027-04-09": 2850,
-    "2027-04-10": 2717,
-    "2027-04-11": 2748,
-    "2027-04-12": 2915,
-    "2027-04-13": 2922,
-    "2027-04-14": 2904,
-    "2027-04-15": 2933,
-    "2027-04-16": 2758,
-    "2027-04-17": 2665,
-    "2027-04-18": 2549,
-    "2027-04-19": 2614,
-    "2027-04-20": 2808,
-    "2027-04-21": 2715,
-    "2027-04-22": 2786,
-    "2027-04-23": 2571,
-    "2027-04-24": 2364,
-    "2027-04-25": 2208,
-    "2027-04-26": 2238,
-    "2027-04-27": 2066,
-    "2027-04-28": 1865,
-    "2027-04-29": 2028,
-    "2027-04-30": 1881,
-    "2027-05-01": 2052,
-    "2027-05-02": 2142,
-    "2027-05-03": 2344,
-    "2027-05-04": 2579,
-    "2027-05-05": 2913,
-    "2027-05-06": 3127,
-    "2027-05-07": 3123,
-    "2027-05-08": 3040,
-    "2027-05-09": 2905,
-    "2027-05-10": 2793,
-    "2027-05-11": 2848,
-    "2027-05-12": 2726,
-    "2027-05-13": 2765,
-    "2027-05-14": 2547,
-    "2027-05-15": 2374,
-    "2027-05-16": 2234,
-    "2027-05-17": 2323,
-    "2027-05-18": 2438,
-    "2027-05-19": 2489,
-    "2027-05-20": 2508,
-    "2027-05-21": 2538,
-    "2027-05-22": 2333,
-    "2027-05-23": 2189,
-    "2027-05-24": 2166,
-    "2027-05-25": 2007,
-    "2027-05-26": 1802,
-    "2027-05-27": 1557,
-    "2027-05-28": 1432,
-    "2027-05-29": 1272,
-    "2027-05-30": 1220,
-    "2027-05-31": 1029,
-    "2027-06-01": 1176,
-    "2027-06-02": 1179,
-    "2027-06-03": 1228,
-    "2027-06-04": 1148,
-    "2027-06-05": 990,
-    "2027-06-06": 1055,
-    "2027-06-07": 1088,
-    "2027-06-08": 1090,
-    "2027-06-09": 1036,
-    "2027-06-10": 1125,
-    "2027-06-11": 1071,
-    "2027-06-12": 956,
-    "2027-06-13": 877,
-    "2027-06-14": 946,
-    "2027-06-15": 924,
-    "2027-06-16": 902,
-    "2027-06-17": 943,
-    "2027-06-18": 818,
-    "2027-06-19": 692,
-    "2027-06-20": 700,
-    "2027-06-21": 1102,
-    "2027-06-22": 1060,
-    "2027-06-23": 1017,
-    "2027-06-24": 665,
-    "2027-06-25": 540,
-    "2027-06-26": 431,
-    "2027-06-27": 429,
-    "2027-06-28": 420,
-    "2027-06-29": 456,
-    "2027-06-30": 457,
-    "2027-07-01": 507,
-    "2027-07-02": 524,
-    "2027-07-03": 517,
-    "2027-07-04": 469,
-    "2027-07-05": 461,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2026-07-07": 56735,
+    "2026-07-08": 54933,
+    "2026-07-09": 53652,
+    "2026-07-10": 53740,
+    "2026-07-11": 54115,
+    "2026-07-12": 50996,
+    "2026-07-13": 50952,
+    "2026-07-14": 51067,
+    "2026-07-15": 51217,
+    "2026-07-16": 49136,
+    "2026-07-17": 48909,
+    "2026-07-18": 47944,
+    "2026-07-19": 46189,
+    "2026-07-20": 49698,
+    "2026-07-21": 50979,
+    "2026-07-22": 51559,
+    "2026-07-23": 50373,
+    "2026-07-24": 47278,
+    "2026-07-25": 43925,
+    "2026-07-26": 40844,
+    "2026-07-27": 42424,
+    "2026-07-28": 41106,
+    "2026-07-29": 39689,
+    "2026-07-30": 38190,
+    "2026-07-31": 36685,
+    "2026-08-01": 38575,
+    "2026-08-02": 38682,
+    "2026-08-03": 39507,
+    "2026-08-04": 39906,
+    "2026-08-05": 38955,
+    "2026-08-06": 39365,
+    "2026-08-07": 39630,
+    "2026-08-08": 37400,
+    "2026-08-09": 35757,
+    "2026-08-10": 37650,
+    "2026-08-11": 37159,
+    "2026-08-12": 36663,
+    "2026-08-13": 37791,
+    "2026-08-14": 36691,
+    "2026-08-15": 35201,
+    "2026-08-16": 34840,
+    "2026-08-17": 36699,
+    "2026-08-18": 37298,
+    "2026-08-19": 37720,
+    "2026-08-20": 35060,
+    "2026-08-21": 33914,
+    "2026-08-22": 32250,
+    "2026-08-23": 31028,
+    "2026-08-24": 32742,
+    "2026-08-25": 33120,
+    "2026-08-26": 32997,
+    "2026-08-27": 32831,
+    "2026-08-28": 33090,
+    "2026-08-29": 33440,
+    "2026-08-30": 33468,
+    "2026-08-31": 32855,
+    "2026-09-01": 37709,
+    "2026-09-02": 40587,
+    "2026-09-03": 45050,
+    "2026-09-04": 46251,
+    "2026-09-05": 47397,
+    "2026-09-06": 48176,
+    "2026-09-07": 50424,
+    "2026-09-08": 51754,
+    "2026-09-09": 54486,
+    "2026-09-10": 56430,
+    "2026-09-11": 55897,
+    "2026-09-12": 54082,
+    "2026-09-13": 51576,
+    "2026-09-14": 51002,
+    "2026-09-15": 50250,
+    "2026-09-16": 49810,
+    "2026-09-17": 53152,
+    "2026-09-18": 50455,
+    "2026-09-19": 48820,
+    "2026-09-20": 47991,
+    "2026-09-21": 48389,
+    "2026-09-22": 49343,
+    "2026-09-23": 48274,
+    "2026-09-24": 49273,
+    "2026-09-25": 46507,
+    "2026-09-26": 43550,
+    "2026-09-27": 40568,
+    "2026-09-28": 38931,
+    "2026-09-29": 38091,
+    "2026-09-30": 35538,
+    "2026-10-01": 38008,
+    "2026-10-02": 38403,
+    "2026-10-03": 39239,
+    "2026-10-04": 38325,
+    "2026-10-05": 40070,
+    "2026-10-06": 39242,
+    "2026-10-07": 37748,
+    "2026-10-08": 36605,
+    "2026-10-09": 35545,
+    "2026-10-10": 33530,
+    "2026-10-11": 32019,
+    "2026-10-12": 32504,
+    "2026-10-13": 32392,
+    "2026-10-14": 31566,
+    "2026-10-15": 31015,
+    "2026-10-16": 29452,
+    "2026-10-17": 27833,
+    "2026-10-18": 25761,
+    "2026-10-19": 24995,
+    "2026-10-20": 23966,
+    "2026-10-21": 22183,
+    "2026-10-22": 19789,
+    "2026-10-23": 18624,
+    "2026-10-24": 17384,
+    "2026-10-25": 16379,
+    "2026-10-26": 16351,
+    "2026-10-27": 14840,
+    "2026-10-28": 13577,
+    "2026-10-29": 12137,
+    "2026-10-30": 10555,
+    "2026-10-31": 9292,
+    "2026-11-01": 10318,
+    "2026-11-02": 10099,
+    "2026-11-03": 9908,
+    "2026-11-04": 9863,
+    "2026-11-05": 9700,
+    "2026-11-06": 9299,
+    "2026-11-07": 9176,
+    "2026-11-08": 9274,
+    "2026-11-09": 9543,
+    "2026-11-10": 9931,
+    "2026-11-11": 9823,
+    "2026-11-12": 9491,
+    "2026-11-13": 8831,
+    "2026-11-14": 8236,
+    "2026-11-15": 7792,
+    "2026-11-16": 7731,
+    "2026-11-17": 6955,
+    "2026-11-18": 6993,
+    "2026-11-19": 7130,
+    "2026-11-20": 8037,
+    "2026-11-21": 8266,
+    "2026-11-22": 8605,
+    "2026-11-23": 9055,
+    "2026-11-24": 9097,
+    "2026-11-25": 8949,
+    "2026-11-26": 8825,
+    "2026-11-27": 9144,
+    "2026-11-28": 8457,
+    "2026-11-29": 6418,
+    "2026-11-30": 4417,
+    "2026-12-01": 4247,
+    "2026-12-02": 3876,
+    "2026-12-03": 4124,
+    "2026-12-04": 4182,
+    "2026-12-05": 4129,
+    "2026-12-06": 4153,
+    "2026-12-07": 4129,
+    "2026-12-08": 3849,
+    "2026-12-09": 3737,
+    "2026-12-10": 3440,
+    "2026-12-11": 3299,
+    "2026-12-12": 3225,
+    "2026-12-13": 3147,
+    "2026-12-14": 3538,
+    "2026-12-15": 3367,
+    "2026-12-16": 3316,
+    "2026-12-17": 3272,
+    "2026-12-18": 3264,
+    "2026-12-19": 3688,
+    "2026-12-20": 4101,
+    "2026-12-21": 4452,
+    "2026-12-22": 4842,
+    "2026-12-23": 5405,
+    "2026-12-24": 6144,
+    "2026-12-25": 6826,
+    "2026-12-26": 7917,
+    "2026-12-27": 8072,
+    "2026-12-28": 8389,
+    "2026-12-29": 7834,
+    "2026-12-30": 7320,
+    "2026-12-31": 6544,
+    "2027-01-01": 6085,
+    "2027-01-02": 4206,
+    "2027-01-03": 3486,
+    "2027-01-04": 3126,
+    "2027-01-05": 3240,
+    "2027-01-06": 3302,
+    "2027-01-07": 3371,
+    "2027-01-08": 3252,
+    "2027-01-09": 2931,
+    "2027-01-10": 2597,
+    "2027-01-11": 2563,
+    "2027-01-12": 2368,
+    "2027-01-13": 2233,
+    "2027-01-14": 2023,
+    "2027-01-15": 1898,
+    "2027-01-16": 1759,
+    "2027-01-17": 1700,
+    "2027-01-18": 1567,
+    "2027-01-19": 1592,
+    "2027-01-20": 1387,
+    "2027-01-21": 1355,
+    "2027-01-22": 1364,
+    "2027-01-23": 1338,
+    "2027-01-24": 1399,
+    "2027-01-25": 1415,
+    "2027-01-26": 1332,
+    "2027-01-27": 1213,
+    "2027-01-28": 1173,
+    "2027-01-29": 1038,
+    "2027-01-30": 1015,
+    "2027-01-31": 855,
+    "2027-02-01": 1227,
+    "2027-02-02": 1314,
+    "2027-02-03": 1230,
+    "2027-02-04": 1321,
+    "2027-02-05": 1619,
+    "2027-02-06": 1732,
+    "2027-02-07": 1821,
+    "2027-02-08": 2029,
+    "2027-02-09": 1987,
+    "2027-02-10": 2176,
+    "2027-02-11": 2379,
+    "2027-02-12": 2251,
+    "2027-02-13": 2342,
+    "2027-02-14": 2414,
+    "2027-02-15": 2532,
+    "2027-02-16": 2520,
+    "2027-02-17": 2303,
+    "2027-02-18": 2155,
+    "2027-02-19": 1783,
+    "2027-02-20": 1444,
+    "2027-02-21": 1305,
+    "2027-02-22": 1360,
+    "2027-02-23": 1326,
+    "2027-02-24": 1342,
+    "2027-02-25": 1328,
+    "2027-02-26": 1320,
+    "2027-02-27": 1062,
+    "2027-02-28": 963,
+    "2027-03-01": 1452,
+    "2027-03-02": 1574,
+    "2027-03-03": 1652,
+    "2027-03-04": 1778,
+    "2027-03-05": 1882,
+    "2027-03-06": 1986,
+    "2027-03-07": 2044,
+    "2027-03-08": 2273,
+    "2027-03-09": 2353,
+    "2027-03-10": 2474,
+    "2027-03-11": 2750,
+    "2027-03-12": 2933,
+    "2027-03-13": 2831,
+    "2027-03-14": 2639,
+    "2027-03-15": 2577,
+    "2027-03-16": 2549,
+    "2027-03-17": 2796,
+    "2027-03-18": 2684,
+    "2027-03-19": 2612,
+    "2027-03-20": 2376,
+    "2027-03-21": 2667,
+    "2027-03-22": 3122,
+    "2027-03-23": 3301,
+    "2027-03-24": 3204,
+    "2027-03-25": 3091,
+    "2027-03-26": 2607,
+    "2027-03-27": 2109,
+    "2027-03-28": 1877,
+    "2027-03-29": 1847,
+    "2027-03-30": 1854,
+    "2027-03-31": 1703,
+    "2027-04-01": 2128,
+    "2027-04-02": 2478,
+    "2027-04-03": 2287,
+    "2027-04-04": 2399,
+    "2027-04-05": 2629,
+    "2027-04-06": 2974,
+    "2027-04-07": 3091,
+    "2027-04-08": 2960,
+    "2027-04-09": 2728,
+    "2027-04-10": 2593,
+    "2027-04-11": 2622,
+    "2027-04-12": 2806,
+    "2027-04-13": 2795,
+    "2027-04-14": 2783,
+    "2027-04-15": 2806,
+    "2027-04-16": 2631,
+    "2027-04-17": 2546,
+    "2027-04-18": 2464,
+    "2027-04-19": 2530,
+    "2027-04-20": 2711,
+    "2027-04-21": 2631,
+    "2027-04-22": 2698,
+    "2027-04-23": 2479,
+    "2027-04-24": 2269,
+    "2027-04-25": 2128,
+    "2027-04-26": 2168,
+    "2027-04-27": 2008,
+    "2027-04-28": 1802,
+    "2027-04-29": 1967,
+    "2027-04-30": 1792,
+    "2027-05-01": 1919,
+    "2027-05-02": 1999,
+    "2027-05-03": 2183,
+    "2027-05-04": 2424,
+    "2027-05-05": 2740,
+    "2027-05-06": 2950,
+    "2027-05-07": 2935,
+    "2027-05-08": 2815,
+    "2027-05-09": 2685,
+    "2027-05-10": 2573,
+    "2027-05-11": 2612,
+    "2027-05-12": 2489,
+    "2027-05-13": 2506,
+    "2027-05-14": 2327,
+    "2027-05-15": 2143,
+    "2027-05-16": 2017,
+    "2027-05-17": 2122,
+    "2027-05-18": 2157,
+    "2027-05-19": 2201,
+    "2027-05-20": 2187,
+    "2027-05-21": 2266,
+    "2027-05-22": 2051,
+    "2027-05-23": 1907,
+    "2027-05-24": 1901,
+    "2027-05-25": 1807,
+    "2027-05-26": 1647,
+    "2027-05-27": 1440,
+    "2027-05-28": 1325,
+    "2027-05-29": 1185,
+    "2027-05-30": 1156,
+    "2027-05-31": 992,
+    "2027-06-01": 1143,
+    "2027-06-02": 1140,
+    "2027-06-03": 1180,
+    "2027-06-04": 1064,
+    "2027-06-05": 903,
+    "2027-06-06": 981,
+    "2027-06-07": 985,
+    "2027-06-08": 978,
+    "2027-06-09": 956,
+    "2027-06-10": 1058,
+    "2027-06-11": 1006,
+    "2027-06-12": 905,
+    "2027-06-13": 832,
+    "2027-06-14": 909,
+    "2027-06-15": 900,
+    "2027-06-16": 868,
+    "2027-06-17": 916,
+    "2027-06-18": 792,
+    "2027-06-19": 570,
+    "2027-06-20": 586,
+    "2027-06-21": 958,
+    "2027-06-22": 915,
+    "2027-06-23": 901,
+    "2027-06-24": 562,
+    "2027-06-25": 487,
+    "2027-06-26": 387,
+    "2027-06-27": 369,
+    "2027-06-28": 357,
+    "2027-06-29": 383,
+    "2027-06-30": 393,
+    "2027-07-01": 454,
+    "2027-07-02": 469,
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "search_previous_condotta": {
+    "2026-07-07": 63455,
+    "2026-07-08": 61937,
+    "2026-07-09": 61100,
     "2026-07-10": 60481,
     "2026-07-11": 59490,
     "2026-07-12": 56865,
@@ -18658,181 +18597,181 @@ const EXPEDIA_DATA = {
     "2027-06-30": 57291,
     "2027-07-01": 58126,
     "2027-07-02": 58310,
-    "2027-07-03": 55730,
-    "2027-07-04": 55317,
-    "2027-07-05": 58659,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "davids": {
-    "2026-07-10": null,
-    "2026-07-11": 126,
-    "2026-07-12": 99,
-    "2026-07-13": 99,
-    "2026-07-14": null,
+    "2026-07-07": 123,
+    "2026-07-08": 116,
+    "2026-07-09": 115,
+    "2026-07-10": 136,
+    "2026-07-11": 133,
+    "2026-07-12": 117,
+    "2026-07-13": 118,
+    "2026-07-14": 139,
     "2026-07-15": null,
-    "2026-07-16": 116,
-    "2026-07-17": 132,
-    "2026-07-18": 132,
+    "2026-07-16": 117,
+    "2026-07-17": 131,
+    "2026-07-18": 129,
     "2026-07-19": null,
-    "2026-07-20": 131,
-    "2026-07-21": 130,
-    "2026-07-22": 136,
-    "2026-07-23": 127,
-    "2026-07-24": 140,
+    "2026-07-20": 132,
+    "2026-07-21": 125,
+    "2026-07-22": 129,
+    "2026-07-23": 125,
+    "2026-07-24": 126,
     "2026-07-25": 132,
     "2026-07-26": 132,
-    "2026-07-27": 126,
+    "2026-07-27": 124,
     "2026-07-28": null,
     "2026-07-29": null,
     "2026-07-30": null,
     "2026-07-31": null,
     "2026-08-01": null,
-    "2026-08-02": 106,
-    "2026-08-03": 113,
-    "2026-08-04": 110,
-    "2026-08-05": 113,
+    "2026-08-02": 111,
+    "2026-08-03": 119,
+    "2026-08-04": 118,
+    "2026-08-05": 112,
     "2026-08-06": null,
     "2026-08-07": null,
-    "2026-08-08": 131,
-    "2026-08-09": 105,
-    "2026-08-10": 120,
-    "2026-08-11": 122,
-    "2026-08-12": 127,
+    "2026-08-08": 124,
+    "2026-08-09": 111,
+    "2026-08-10": 126,
+    "2026-08-11": 123,
+    "2026-08-12": 124,
     "2026-08-13": null,
     "2026-08-14": null,
     "2026-08-15": null,
     "2026-08-16": null,
-    "2026-08-17": 117,
-    "2026-08-18": 96,
-    "2026-08-19": 118,
-    "2026-08-20": 117,
-    "2026-08-21": 118,
+    "2026-08-17": 112,
+    "2026-08-18": 104,
+    "2026-08-19": 115,
+    "2026-08-20": 125,
+    "2026-08-21": 127,
     "2026-08-22": null,
-    "2026-08-23": 110,
-    "2026-08-24": 105,
-    "2026-08-25": 109,
-    "2026-08-26": 115,
-    "2026-08-27": 116,
-    "2026-08-28": 138,
-    "2026-08-29": 144,
-    "2026-08-30": 122,
-    "2026-08-31": 141,
-    "2026-09-01": 153,
-    "2026-09-02": 159,
+    "2026-08-23": 98,
+    "2026-08-24": 111,
+    "2026-08-25": 113,
+    "2026-08-26": 122,
+    "2026-08-27": 122,
+    "2026-08-28": 145,
+    "2026-08-29": 151,
+    "2026-08-30": 130,
+    "2026-08-31": 151,
+    "2026-09-01": 159,
+    "2026-09-02": 164,
     "2026-09-03": 173,
     "2026-09-04": null,
     "2026-09-05": null,
-    "2026-09-06": 192,
-    "2026-09-07": 227,
-    "2026-09-08": 245,
-    "2026-09-09": 251,
-    "2026-09-10": 239,
-    "2026-09-11": 256,
-    "2026-09-12": 249,
-    "2026-09-13": 209,
-    "2026-09-14": 222,
-    "2026-09-15": 236,
-    "2026-09-16": 245,
-    "2026-09-17": null,
-    "2026-09-18": 241,
-    "2026-09-19": null,
-    "2026-09-20": 244,
-    "2026-09-21": 236,
-    "2026-09-22": 251,
-    "2026-09-23": 241,
-    "2026-09-24": 252,
-    "2026-09-25": 251,
+    "2026-09-06": 176,
+    "2026-09-07": 231,
+    "2026-09-08": 250,
+    "2026-09-09": 250,
+    "2026-09-10": 237,
+    "2026-09-11": 257,
+    "2026-09-12": 232,
+    "2026-09-13": 214,
+    "2026-09-14": 228,
+    "2026-09-15": 244,
+    "2026-09-16": 253,
+    "2026-09-17": 251,
+    "2026-09-18": 243,
+    "2026-09-19": 255,
+    "2026-09-20": 230,
+    "2026-09-21": 246,
+    "2026-09-22": 257,
+    "2026-09-23": 256,
+    "2026-09-24": 245,
+    "2026-09-25": 252,
     "2026-09-26": 263,
     "2026-09-27": 231,
-    "2026-09-28": 250,
-    "2026-09-29": 262,
-    "2026-09-30": 278,
-    "2026-10-01": 267,
-    "2026-10-02": 300,
-    "2026-10-03": 301,
-    "2026-10-04": 214,
-    "2026-10-05": 222,
-    "2026-10-06": 232,
-    "2026-10-07": 239,
-    "2026-10-08": 273,
-    "2026-10-09": 271,
-    "2026-10-10": 266,
-    "2026-10-11": 209,
-    "2026-10-12": 218,
-    "2026-10-13": 214,
-    "2026-10-14": 244,
-    "2026-10-15": 255,
+    "2026-09-28": 251,
+    "2026-09-29": 266,
+    "2026-09-30": 280,
+    "2026-10-01": 265,
+    "2026-10-02": 301,
+    "2026-10-03": 306,
+    "2026-10-04": 216,
+    "2026-10-05": 224,
+    "2026-10-06": 239,
+    "2026-10-07": 248,
+    "2026-10-08": 265,
+    "2026-10-09": 270,
+    "2026-10-10": 272,
+    "2026-10-11": 210,
+    "2026-10-12": 214,
+    "2026-10-13": 216,
+    "2026-10-14": 255,
+    "2026-10-15": 257,
     "2026-10-16": 269,
-    "2026-10-17": 243,
+    "2026-10-17": 249,
     "2026-10-18": 183,
-    "2026-10-19": 190,
-    "2026-10-20": 188,
-    "2026-10-21": 190,
-    "2026-10-22": 182,
-    "2026-10-23": 201,
-    "2026-10-24": 190,
-    "2026-10-25": 143,
-    "2026-10-26": 159,
-    "2026-10-27": 159,
-    "2026-10-28": 150,
-    "2026-10-29": 139,
-    "2026-10-30": 166,
+    "2026-10-19": 192,
+    "2026-10-20": 194,
+    "2026-10-21": 197,
+    "2026-10-22": 186,
+    "2026-10-23": 202,
+    "2026-10-24": 194,
+    "2026-10-25": 145,
+    "2026-10-26": 160,
+    "2026-10-27": 166,
+    "2026-10-28": 155,
+    "2026-10-29": 143,
+    "2026-10-30": 168,
     "2026-10-31": null,
-    "2026-11-01": 137,
-    "2026-11-02": 157,
-    "2026-11-03": 155,
-    "2026-11-04": 157,
-    "2026-11-05": 155,
-    "2026-11-06": 164,
-    "2026-11-07": 167,
-    "2026-11-08": 127,
-    "2026-11-09": 140,
-    "2026-11-10": 139,
-    "2026-11-11": 140,
-    "2026-11-12": 145,
-    "2026-11-13": 153,
-    "2026-11-14": 157,
-    "2026-11-15": 132,
-    "2026-11-16": 137,
-    "2026-11-17": 134,
-    "2026-11-18": 138,
-    "2026-11-19": 145,
-    "2026-11-20": 154,
-    "2026-11-21": 155,
-    "2026-11-22": 124,
-    "2026-11-23": 134,
-    "2026-11-24": 134,
-    "2026-11-25": 138,
-    "2026-11-26": 147,
-    "2026-11-27": 746,
+    "2026-11-01": 116,
+    "2026-11-02": 134,
+    "2026-11-03": 136,
+    "2026-11-04": 137,
+    "2026-11-05": 136,
+    "2026-11-06": 143,
+    "2026-11-07": 147,
+    "2026-11-08": 106,
+    "2026-11-09": 119,
+    "2026-11-10": 122,
+    "2026-11-11": 123,
+    "2026-11-12": 125,
+    "2026-11-13": 132,
+    "2026-11-14": 136,
+    "2026-11-15": 106,
+    "2026-11-16": 117,
+    "2026-11-17": 117,
+    "2026-11-18": 120,
+    "2026-11-19": 124,
+    "2026-11-20": 133,
+    "2026-11-21": 136,
+    "2026-11-22": 103,
+    "2026-11-23": 113,
+    "2026-11-24": 117,
+    "2026-11-25": 119,
+    "2026-11-26": 127,
+    "2026-11-27": 647,
     "2026-11-28": null,
-    "2026-11-29": 140,
-    "2026-11-30": 139,
-    "2026-12-01": 133,
-    "2026-12-02": 133,
-    "2026-12-03": 138,
+    "2026-11-29": 124,
+    "2026-11-30": 119,
+    "2026-12-01": 115,
+    "2026-12-02": 115,
+    "2026-12-03": 117,
     "2026-12-04": null,
     "2026-12-05": null,
     "2026-12-06": null,
-    "2026-12-07": 178,
-    "2026-12-08": 130,
-    "2026-12-09": 129,
-    "2026-12-10": 131,
-    "2026-12-11": 134,
-    "2026-12-12": 134,
-    "2026-12-13": 110,
-    "2026-12-14": 125,
-    "2026-12-15": 129,
-    "2026-12-16": 130,
-    "2026-12-17": 136,
-    "2026-12-18": 145,
-    "2026-12-19": 150,
-    "2026-12-20": 126,
-    "2026-12-21": 138,
-    "2026-12-22": 143,
-    "2026-12-23": 146,
+    "2026-12-07": 158,
+    "2026-12-08": 110,
+    "2026-12-09": 108,
+    "2026-12-10": 109,
+    "2026-12-11": 110,
+    "2026-12-12": 112,
+    "2026-12-13": 89,
+    "2026-12-14": 103,
+    "2026-12-15": 109,
+    "2026-12-16": 108,
+    "2026-12-17": 112,
+    "2026-12-18": 122,
+    "2026-12-19": 126,
+    "2026-12-20": 104,
+    "2026-12-21": 116,
+    "2026-12-22": 124,
+    "2026-12-23": 152,
     "2026-12-24": null,
     "2026-12-25": null,
     "2026-12-26": null,
@@ -18850,16 +18789,16 @@ const EXPEDIA_DATA = {
     "2027-01-07": null,
     "2027-01-08": null,
     "2027-01-09": null,
-    "2027-01-10": 131,
+    "2027-01-10": 132,
     "2027-01-11": null,
     "2027-01-12": null,
     "2027-01-13": null,
     "2027-01-14": null,
     "2027-01-15": null,
     "2027-01-16": null,
-    "2027-01-17": 134,
-    "2027-01-18": 138,
-    "2027-01-19": 148,
+    "2027-01-17": 130,
+    "2027-01-18": 137,
+    "2027-01-19": 151,
     "2027-01-20": null,
     "2027-01-21": null,
     "2027-01-22": null,
@@ -18871,28 +18810,28 @@ const EXPEDIA_DATA = {
     "2027-01-28": null,
     "2027-01-29": null,
     "2027-01-30": null,
-    "2027-01-31": 130,
+    "2027-01-31": 133,
     "2027-02-01": null,
     "2027-02-02": null,
     "2027-02-03": null,
     "2027-02-04": null,
     "2027-02-05": null,
     "2027-02-06": null,
-    "2027-02-07": 137,
+    "2027-02-07": 136,
     "2027-02-08": null,
     "2027-02-09": null,
     "2027-02-10": null,
     "2027-02-11": null,
     "2027-02-12": null,
     "2027-02-13": null,
-    "2027-02-14": 131,
+    "2027-02-14": 129,
     "2027-02-15": null,
     "2027-02-16": null,
     "2027-02-17": null,
     "2027-02-18": null,
     "2027-02-19": null,
     "2027-02-20": null,
-    "2027-02-21": 134,
+    "2027-02-21": 133,
     "2027-02-22": null,
     "2027-02-23": null,
     "2027-02-24": null,
@@ -18906,14 +18845,14 @@ const EXPEDIA_DATA = {
     "2027-03-04": null,
     "2027-03-05": null,
     "2027-03-06": null,
-    "2027-03-07": 143,
+    "2027-03-07": 146,
     "2027-03-08": null,
     "2027-03-09": null,
     "2027-03-10": null,
     "2027-03-11": null,
     "2027-03-12": null,
     "2027-03-13": null,
-    "2027-03-14": 148,
+    "2027-03-14": 151,
     "2027-03-15": null,
     "2027-03-16": null,
     "2027-03-17": null,
@@ -18927,218 +18866,218 @@ const EXPEDIA_DATA = {
     "2027-03-25": null,
     "2027-03-26": null,
     "2027-03-27": null,
-    "2027-03-28": 319,
+    "2027-03-28": 323,
     "2027-03-29": null,
     "2027-03-30": null,
     "2027-03-31": null,
     "2027-04-01": null,
     "2027-04-02": null,
     "2027-04-03": null,
-    "2027-04-04": 256,
+    "2027-04-04": 257,
     "2027-04-05": null,
     "2027-04-06": null,
     "2027-04-07": null,
     "2027-04-08": null,
     "2027-04-09": null,
     "2027-04-10": null,
-    "2027-04-11": 280,
+    "2027-04-11": 283,
     "2027-04-12": null,
     "2027-04-13": null,
     "2027-04-14": null,
     "2027-04-15": null,
     "2027-04-16": null,
     "2027-04-17": null,
-    "2027-04-18": 286,
+    "2027-04-18": 291,
     "2027-04-19": null,
     "2027-04-20": null,
     "2027-04-21": null,
     "2027-04-22": null,
     "2027-04-23": null,
     "2027-04-24": null,
-    "2027-04-25": 297,
+    "2027-04-25": 299,
     "2027-04-26": null,
     "2027-04-27": null,
     "2027-04-28": null,
     "2027-04-29": null,
     "2027-04-30": null,
     "2027-05-01": null,
-    "2027-05-02": 309,
+    "2027-05-02": 319,
     "2027-05-03": null,
     "2027-05-04": null,
     "2027-05-05": null,
     "2027-05-06": null,
     "2027-05-07": null,
     "2027-05-08": null,
-    "2027-05-09": 319,
+    "2027-05-09": 328,
     "2027-05-10": null,
     "2027-05-11": null,
     "2027-05-12": null,
     "2027-05-13": null,
     "2027-05-14": null,
     "2027-05-15": null,
-    "2027-05-16": 320,
+    "2027-05-16": 326,
     "2027-05-17": null,
     "2027-05-18": null,
     "2027-05-19": null,
     "2027-05-20": null,
     "2027-05-21": null,
     "2027-05-22": null,
-    "2027-05-23": 315,
+    "2027-05-23": 301,
     "2027-05-24": null,
     "2027-05-25": null,
     "2027-05-26": null,
     "2027-05-27": null,
     "2027-05-28": null,
     "2027-05-29": null,
-    "2027-05-30": 314,
+    "2027-05-30": 295,
     "2027-05-31": null,
     "2027-06-01": null,
     "2027-06-02": null,
     "2027-06-03": null,
     "2027-06-04": null,
     "2027-06-05": null,
-    "2027-06-06": 333,
+    "2027-06-06": 328,
     "2027-06-07": null,
     "2027-06-08": null,
     "2027-06-09": null,
     "2027-06-10": null,
     "2027-06-11": null,
     "2027-06-12": null,
-    "2027-06-13": 298,
+    "2027-06-13": 325,
     "2027-06-14": null,
     "2027-06-15": null,
     "2027-06-16": null,
     "2027-06-17": null,
     "2027-06-18": null,
     "2027-06-19": null,
-    "2027-06-20": 297,
+    "2027-06-20": 271,
     "2027-06-21": null,
     "2027-06-22": null,
     "2027-06-23": null,
     "2027-06-24": null,
     "2027-06-25": null,
     "2027-06-26": null,
-    "2027-06-27": 239,
+    "2027-06-27": 241,
     "2027-06-28": null,
     "2027-06-29": null,
     "2027-06-30": null,
-    "2027-07-01": 208,
-    "2027-07-02": 235,
-    "2027-07-03": 213,
+    "2027-07-01": 204,
+    "2027-07-02": 234,
+    "2027-07-03": 211,
     "2027-07-04": 196,
-    "2027-07-05": 194,
-    "2027-07-06": 195,
-    "2027-07-07": 194,
-    "2027-07-08": 194
+    "2027-07-05": 194
   },
   "compset_avg_davids": {
-    "2026-07-10": 142,
-    "2026-07-11": 173,
-    "2026-07-12": 175,
-    "2026-07-13": 160,
-    "2026-07-14": 187,
-    "2026-07-15": 243,
-    "2026-07-16": 171,
-    "2026-07-17": 208,
-    "2026-07-18": 224,
-    "2026-07-19": 181,
-    "2026-07-20": 222,
-    "2026-07-21": 175,
-    "2026-07-22": 207,
-    "2026-07-23": 172,
-    "2026-07-24": 199,
-    "2026-07-25": 243,
-    "2026-07-26": 152,
-    "2026-07-27": 165,
-    "2026-07-28": 171,
-    "2026-07-29": 169,
-    "2026-07-30": 171,
-    "2026-07-31": 192,
-    "2026-08-01": 184,
-    "2026-08-02": 152,
-    "2026-08-03": 176,
-    "2026-08-04": 189,
-    "2026-08-05": 177,
-    "2026-08-06": 167,
-    "2026-08-07": null,
-    "2026-08-08": 153,
-    "2026-08-09": 149,
-    "2026-08-10": 158,
+    "2026-07-07": 185,
+    "2026-07-08": 250,
+    "2026-07-09": 233,
+    "2026-07-10": 210,
+    "2026-07-11": 188,
+    "2026-07-12": 188,
+    "2026-07-13": 197,
+    "2026-07-14": 208,
+    "2026-07-15": 253,
+    "2026-07-16": 174,
+    "2026-07-17": 212,
+    "2026-07-18": 300,
+    "2026-07-19": 171,
+    "2026-07-20": 202,
+    "2026-07-21": 182,
+    "2026-07-22": 186,
+    "2026-07-23": 160,
+    "2026-07-24": 180,
+    "2026-07-25": 206,
+    "2026-07-26": 159,
+    "2026-07-27": 170,
+    "2026-07-28": 178,
+    "2026-07-29": 174,
+    "2026-07-30": 176,
+    "2026-07-31": 195,
+    "2026-08-01": 187,
+    "2026-08-02": 154,
+    "2026-08-03": 177,
+    "2026-08-04": 186,
+    "2026-08-05": 176,
+    "2026-08-06": 170,
+    "2026-08-07": 116,
+    "2026-08-08": 158,
+    "2026-08-09": 150,
+    "2026-08-10": 159,
     "2026-08-11": 149,
-    "2026-08-12": 154,
-    "2026-08-13": 154,
-    "2026-08-14": 133,
+    "2026-08-12": 155,
+    "2026-08-13": 155,
+    "2026-08-14": 136,
     "2026-08-15": 176,
     "2026-08-16": 140,
-    "2026-08-17": 157,
-    "2026-08-18": 159,
-    "2026-08-19": 166,
-    "2026-08-20": 165,
-    "2026-08-21": 169,
+    "2026-08-17": 162,
+    "2026-08-18": 158,
+    "2026-08-19": 162,
+    "2026-08-20": 164,
+    "2026-08-21": 173,
     "2026-08-22": 189,
-    "2026-08-23": 153,
+    "2026-08-23": 154,
     "2026-08-24": 165,
-    "2026-08-25": 169,
-    "2026-08-26": 171,
-    "2026-08-27": 181,
-    "2026-08-28": 166,
-    "2026-08-29": 232,
-    "2026-08-30": 172,
-    "2026-08-31": 197,
-    "2026-09-01": 248,
-    "2026-09-02": 246,
-    "2026-09-03": 262,
-    "2026-09-04": 279,
-    "2026-09-05": 420,
+    "2026-08-25": 168,
+    "2026-08-26": 170,
+    "2026-08-27": 180,
+    "2026-08-28": 173,
+    "2026-08-29": 234,
+    "2026-08-30": 177,
+    "2026-08-31": 202,
+    "2026-09-01": 258,
+    "2026-09-02": 253,
+    "2026-09-03": 253,
+    "2026-09-04": 284,
+    "2026-09-05": 367,
     "2026-09-06": 336,
-    "2026-09-07": 331,
-    "2026-09-08": 330,
+    "2026-09-07": 335,
+    "2026-09-08": 316,
     "2026-09-09": 261,
-    "2026-09-10": 283,
+    "2026-09-10": 288,
     "2026-09-11": 346,
     "2026-09-12": null,
-    "2026-09-13": 317,
-    "2026-09-14": 295,
+    "2026-09-13": 300,
+    "2026-09-14": 322,
     "2026-09-15": 285,
-    "2026-09-16": 325,
+    "2026-09-16": 327,
     "2026-09-17": 325,
-    "2026-09-18": 309,
+    "2026-09-18": 371,
     "2026-09-19": 451,
     "2026-09-20": 315,
     "2026-09-21": 315,
     "2026-09-22": 341,
     "2026-09-23": 341,
-    "2026-09-24": 342,
+    "2026-09-24": 333,
     "2026-09-25": 359,
-    "2026-09-26": 344,
+    "2026-09-26": 355,
     "2026-09-27": 291,
-    "2026-09-28": 335,
+    "2026-09-28": 334,
     "2026-09-29": 315,
     "2026-09-30": 341,
-    "2026-10-01": 326,
+    "2026-10-01": 300,
     "2026-10-02": 354,
-    "2026-10-03": 397,
-    "2026-10-04": 324,
+    "2026-10-03": 355,
+    "2026-10-04": 295,
     "2026-10-05": 267,
-    "2026-10-06": 306,
+    "2026-10-06": 283,
     "2026-10-07": 292,
     "2026-10-08": 291,
     "2026-10-09": 308,
     "2026-10-10": 309,
-    "2026-10-11": 272,
+    "2026-10-11": 274,
     "2026-10-12": 276,
-    "2026-10-13": 274,
-    "2026-10-14": 305,
-    "2026-10-15": 284,
+    "2026-10-13": 273,
+    "2026-10-14": 287,
+    "2026-10-15": 276,
     "2026-10-16": 317,
     "2026-10-17": 291,
     "2026-10-18": 253,
-    "2026-10-19": 279,
-    "2026-10-20": 268,
+    "2026-10-19": 273,
+    "2026-10-20": 257,
     "2026-10-21": 262,
     "2026-10-22": 265,
     "2026-10-23": 286,
-    "2026-10-24": 300,
+    "2026-10-24": 282,
     "2026-10-25": 257,
     "2026-10-26": 257,
     "2026-10-27": 250,
@@ -19146,14 +19085,14 @@ const EXPEDIA_DATA = {
     "2026-10-29": 251,
     "2026-10-30": 272,
     "2026-10-31": 267,
-    "2026-11-01": 161,
+    "2026-11-01": 166,
     "2026-11-02": 161,
     "2026-11-03": 161,
     "2026-11-04": 161,
     "2026-11-05": 161,
-    "2026-11-06": 178,
-    "2026-11-07": 201,
-    "2026-11-08": 160,
+    "2026-11-06": 176,
+    "2026-11-07": 198,
+    "2026-11-08": 159,
     "2026-11-09": 162,
     "2026-11-10": 164,
     "2026-11-11": 163,
@@ -19392,76 +19331,76 @@ const EXPEDIA_DATA = {
     "2027-07-02": 252,
     "2027-07-03": 252,
     "2027-07-04": 256,
-    "2027-07-05": 256,
-    "2027-07-06": 256,
-    "2027-07-07": 256,
-    "2027-07-08": 256
+    "2027-07-05": 256
   },
   "competitors_davids": {
     "B&B Stanze Guelfe": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
-      "2026-07-11": 98,
-      "2026-07-12": 83,
+      "2026-07-11": 108,
+      "2026-07-12": 90,
       "2026-07-13": null,
       "2026-07-14": null,
       "2026-07-15": null,
-      "2026-07-16": 101,
-      "2026-07-17": 105,
-      "2026-07-18": 108,
+      "2026-07-16": 126,
+      "2026-07-17": 134,
+      "2026-07-18": null,
       "2026-07-19": 108,
-      "2026-07-20": null,
+      "2026-07-20": 137,
       "2026-07-21": null,
       "2026-07-22": null,
       "2026-07-23": null,
       "2026-07-24": null,
       "2026-07-25": null,
-      "2026-07-26": 94,
-      "2026-07-27": 101,
-      "2026-07-28": 101,
-      "2026-07-29": 98,
-      "2026-07-30": 98,
-      "2026-07-31": 108,
+      "2026-07-26": 116,
+      "2026-07-27": 126,
+      "2026-07-28": 126,
+      "2026-07-29": 116,
+      "2026-07-30": 112,
+      "2026-07-31": 123,
       "2026-08-01": null,
       "2026-08-02": 134,
       "2026-08-03": null,
       "2026-08-04": null,
-      "2026-08-05": 108,
-      "2026-08-06": 98,
-      "2026-08-07": null,
-      "2026-08-08": 119,
-      "2026-08-09": 123,
-      "2026-08-10": 98,
-      "2026-08-11": 101,
-      "2026-08-12": 101,
-      "2026-08-13": 98,
-      "2026-08-14": 105,
+      "2026-08-05": 123,
+      "2026-08-06": 112,
+      "2026-08-07": 116,
+      "2026-08-08": 134,
+      "2026-08-09": 130,
+      "2026-08-10": 105,
+      "2026-08-11": 108,
+      "2026-08-12": 108,
+      "2026-08-13": 105,
+      "2026-08-14": 112,
       "2026-08-15": null,
       "2026-08-16": 98,
       "2026-08-17": 98,
       "2026-08-18": 101,
       "2026-08-19": 101,
-      "2026-08-20": 98,
-      "2026-08-21": 105,
+      "2026-08-20": 105,
+      "2026-08-21": 119,
       "2026-08-22": null,
       "2026-08-23": 98,
       "2026-08-24": 98,
       "2026-08-25": 101,
       "2026-08-26": 101,
       "2026-08-27": 98,
-      "2026-08-28": 105,
+      "2026-08-28": 119,
       "2026-08-29": null,
-      "2026-08-30": 105,
-      "2026-08-31": 105,
-      "2026-09-01": 159,
-      "2026-09-02": 198,
-      "2026-09-03": 198,
-      "2026-09-04": 180,
+      "2026-08-30": 126,
+      "2026-08-31": 126,
+      "2026-09-01": 188,
+      "2026-09-02": 220,
+      "2026-09-03": 220,
+      "2026-09-04": 195,
       "2026-09-05": null,
       "2026-09-06": null,
       "2026-09-07": null,
       "2026-09-08": null,
       "2026-09-09": 162,
-      "2026-09-10": 195,
+      "2026-09-10": 216,
       "2026-09-11": null,
       "2026-09-12": null,
       "2026-09-13": null,
@@ -19513,7 +19452,7 @@ const EXPEDIA_DATA = {
       "2026-10-29": null,
       "2026-10-30": null,
       "2026-10-31": null,
-      "2026-11-01": 126,
+      "2026-11-01": 148,
       "2026-11-02": 126,
       "2026-11-03": 126,
       "2026-11-04": 126,
@@ -19759,35 +19698,35 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Residenza Fanti": {
-      "2026-07-10": 142,
-      "2026-07-11": 120,
-      "2026-07-12": 120,
-      "2026-07-13": 131,
-      "2026-07-14": 131,
+      "2026-07-07": 120,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 163,
+      "2026-07-11": 152,
+      "2026-07-12": 142,
+      "2026-07-13": 142,
+      "2026-07-14": 163,
       "2026-07-15": null,
       "2026-07-16": 131,
       "2026-07-17": null,
       "2026-07-18": null,
-      "2026-07-19": 152,
+      "2026-07-19": 163,
       "2026-07-20": null,
-      "2026-07-21": 152,
-      "2026-07-22": 152,
+      "2026-07-21": 163,
+      "2026-07-22": 142,
       "2026-07-23": 142,
       "2026-07-24": null,
       "2026-07-25": null,
-      "2026-07-26": 142,
+      "2026-07-26": 152,
       "2026-07-27": 142,
-      "2026-07-28": 131,
-      "2026-07-29": 131,
-      "2026-07-30": 131,
+      "2026-07-28": 142,
+      "2026-07-29": 142,
+      "2026-07-30": 142,
       "2026-07-31": null,
-      "2026-08-01": 152,
+      "2026-08-01": 163,
       "2026-08-02": 142,
       "2026-08-03": 131,
       "2026-08-04": 131,
@@ -20125,61 +20064,61 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": 260,
-      "2027-07-05": 260,
-      "2027-07-06": 260,
-      "2027-07-07": 260,
-      "2027-07-08": 260
+      "2027-07-05": 260
     },
     "RFC Repubblica Florence Core B&B": {
-      "2026-07-10": null,
-      "2026-07-11": 243,
-      "2026-07-12": 257,
-      "2026-07-13": null,
-      "2026-07-14": 243,
-      "2026-07-15": 243,
-      "2026-07-16": 243,
-      "2026-07-17": 250,
-      "2026-07-18": 257,
-      "2026-07-19": 243,
-      "2026-07-20": 243,
+      "2026-07-07": 250,
+      "2026-07-08": 250,
+      "2026-07-09": 233,
+      "2026-07-10": 247,
+      "2026-07-11": 257,
+      "2026-07-12": 278,
+      "2026-07-13": 253,
+      "2026-07-14": 253,
+      "2026-07-15": 253,
+      "2026-07-16": 233,
+      "2026-07-17": 239,
+      "2026-07-18": 244,
+      "2026-07-19": null,
+      "2026-07-20": 233,
       "2026-07-21": null,
-      "2026-07-22": 243,
+      "2026-07-22": 244,
       "2026-07-23": null,
       "2026-07-24": null,
-      "2026-07-25": 264,
+      "2026-07-25": null,
       "2026-07-26": null,
-      "2026-07-27": 239,
-      "2026-07-28": 239,
+      "2026-07-27": 236,
+      "2026-07-28": 236,
       "2026-07-29": 243,
       "2026-07-30": 243,
-      "2026-07-31": 250,
+      "2026-07-31": 243,
       "2026-08-01": null,
       "2026-08-02": null,
-      "2026-08-03": 233,
-      "2026-08-04": 244,
-      "2026-08-05": 244,
-      "2026-08-06": 233,
+      "2026-08-03": 229,
+      "2026-08-04": 229,
+      "2026-08-05": 229,
+      "2026-08-06": 229,
       "2026-08-07": null,
       "2026-08-08": null,
       "2026-08-09": null,
-      "2026-08-10": 233,
-      "2026-08-11": 233,
-      "2026-08-12": 233,
-      "2026-08-13": 233,
+      "2026-08-10": 229,
+      "2026-08-11": 229,
+      "2026-08-12": 229,
+      "2026-08-13": 229,
       "2026-08-14": null,
       "2026-08-15": null,
       "2026-08-16": null,
-      "2026-08-17": 233,
-      "2026-08-18": 233,
-      "2026-08-19": 233,
-      "2026-08-20": 247,
+      "2026-08-17": 229,
+      "2026-08-18": 229,
+      "2026-08-19": 229,
+      "2026-08-20": 229,
       "2026-08-21": null,
       "2026-08-22": null,
       "2026-08-23": null,
-      "2026-08-24": 233,
-      "2026-08-25": 233,
-      "2026-08-26": 247,
-      "2026-08-27": 243,
+      "2026-08-24": 229,
+      "2026-08-25": 229,
+      "2026-08-26": 229,
+      "2026-08-27": 229,
       "2026-08-28": null,
       "2026-08-29": null,
       "2026-08-30": null,
@@ -20191,13 +20130,13 @@ const EXPEDIA_DATA = {
       "2026-09-05": null,
       "2026-09-06": null,
       "2026-09-07": null,
-      "2026-09-08": 390,
+      "2026-09-08": null,
       "2026-09-09": null,
       "2026-09-10": null,
       "2026-09-11": null,
       "2026-09-12": null,
-      "2026-09-13": 390,
-      "2026-09-14": null,
+      "2026-09-13": null,
+      "2026-09-14": 404,
       "2026-09-15": null,
       "2026-09-16": 390,
       "2026-09-17": null,
@@ -20214,12 +20153,12 @@ const EXPEDIA_DATA = {
       "2026-09-28": 390,
       "2026-09-29": null,
       "2026-09-30": null,
-      "2026-10-01": 376,
+      "2026-10-01": null,
       "2026-10-02": null,
       "2026-10-03": null,
       "2026-10-04": null,
       "2026-10-05": null,
-      "2026-10-06": 376,
+      "2026-10-06": null,
       "2026-10-07": null,
       "2026-10-08": null,
       "2026-10-09": null,
@@ -20237,7 +20176,7 @@ const EXPEDIA_DATA = {
       "2026-10-21": null,
       "2026-10-22": null,
       "2026-10-23": null,
-      "2026-10-24": 334,
+      "2026-10-24": null,
       "2026-10-25": null,
       "2026-10-26": null,
       "2026-10-27": null,
@@ -20491,12 +20430,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Althea Rooms": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
@@ -20857,12 +20796,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Apollo Guest House": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
@@ -20871,15 +20810,15 @@ const EXPEDIA_DATA = {
       "2026-07-15": null,
       "2026-07-16": 142,
       "2026-07-17": null,
-      "2026-07-18": 182,
-      "2026-07-19": 162,
-      "2026-07-20": 162,
+      "2026-07-18": null,
+      "2026-07-19": null,
+      "2026-07-20": 172,
       "2026-07-21": null,
       "2026-07-22": null,
       "2026-07-23": null,
-      "2026-07-24": 162,
+      "2026-07-24": 147,
       "2026-07-25": null,
-      "2026-07-26": 183,
+      "2026-07-26": 174,
       "2026-07-27": 152,
       "2026-07-28": null,
       "2026-07-29": 156,
@@ -20939,7 +20878,7 @@ const EXPEDIA_DATA = {
       "2026-09-21": null,
       "2026-09-22": null,
       "2026-09-23": null,
-      "2026-09-24": 255,
+      "2026-09-24": 219,
       "2026-09-25": 287,
       "2026-09-26": 237,
       "2026-09-27": 242,
@@ -20948,8 +20887,8 @@ const EXPEDIA_DATA = {
       "2026-09-30": null,
       "2026-10-01": null,
       "2026-10-02": 309,
-      "2026-10-03": null,
-      "2026-10-04": null,
+      "2026-10-03": 273,
+      "2026-10-04": 237,
       "2026-10-05": 201,
       "2026-10-06": 201,
       "2026-10-07": 228,
@@ -20958,14 +20897,14 @@ const EXPEDIA_DATA = {
       "2026-10-10": 255,
       "2026-10-11": 260,
       "2026-10-12": 228,
-      "2026-10-13": 237,
-      "2026-10-14": null,
-      "2026-10-15": 251,
+      "2026-10-13": 228,
+      "2026-10-14": 228,
+      "2026-10-15": 228,
       "2026-10-16": 287,
       "2026-10-17": 219,
       "2026-10-18": 178,
-      "2026-10-19": 210,
-      "2026-10-20": 224,
+      "2026-10-19": 192,
+      "2026-10-20": 192,
       "2026-10-21": 224,
       "2026-10-22": 215,
       "2026-10-23": 224,
@@ -20982,9 +20921,9 @@ const EXPEDIA_DATA = {
       "2026-11-03": 129,
       "2026-11-04": 129,
       "2026-11-05": 129,
-      "2026-11-06": 138,
-      "2026-11-07": 156,
-      "2026-11-08": 138,
+      "2026-11-06": 129,
+      "2026-11-07": 147,
+      "2026-11-08": 129,
       "2026-11-09": 129,
       "2026-11-10": 138,
       "2026-11-11": 138,
@@ -21223,12 +21162,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Aramis Deluxe Rooms": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
@@ -21267,8 +21206,8 @@ const EXPEDIA_DATA = {
       "2026-08-14": null,
       "2026-08-15": 192,
       "2026-08-16": 179,
-      "2026-08-17": null,
-      "2026-08-18": null,
+      "2026-08-17": 179,
+      "2026-08-18": 157,
       "2026-08-19": null,
       "2026-08-20": 179,
       "2026-08-21": 193,
@@ -21276,7 +21215,7 @@ const EXPEDIA_DATA = {
       "2026-08-23": 179,
       "2026-08-24": 157,
       "2026-08-25": null,
-      "2026-08-26": null,
+      "2026-08-26": 179,
       "2026-08-27": 157,
       "2026-08-28": null,
       "2026-08-29": 206,
@@ -21284,9 +21223,9 @@ const EXPEDIA_DATA = {
       "2026-08-31": 194,
       "2026-09-01": 369,
       "2026-09-02": 323,
-      "2026-09-03": 369,
+      "2026-09-03": 323,
       "2026-09-04": 338,
-      "2026-09-05": 420,
+      "2026-09-05": 367,
       "2026-09-06": 412,
       "2026-09-07": 412,
       "2026-09-08": 359,
@@ -21299,7 +21238,7 @@ const EXPEDIA_DATA = {
       "2026-09-15": 359,
       "2026-09-16": 359,
       "2026-09-17": 412,
-      "2026-09-18": null,
+      "2026-09-18": 432,
       "2026-09-19": 451,
       "2026-09-20": 359,
       "2026-09-21": 359,
@@ -21589,12 +21528,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": 252,
       "2027-07-03": 252,
       "2027-07-04": 252,
-      "2027-07-05": 252,
-      "2027-07-06": 252,
-      "2027-07-07": 252,
-      "2027-07-08": 252
+      "2027-07-05": 252
     },
     "Holiday Rooms Florence": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
@@ -21955,40 +21894,40 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "La Locandiera B&B": {
-      "2026-07-10": null,
-      "2026-07-11": 230,
-      "2026-07-12": 239,
-      "2026-07-13": 190,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 218,
+      "2026-07-11": 235,
+      "2026-07-12": 244,
+      "2026-07-13": 198,
       "2026-07-14": null,
       "2026-07-15": null,
       "2026-07-16": 238,
       "2026-07-17": 275,
-      "2026-07-18": 350,
-      "2026-07-19": 238,
-      "2026-07-20": 260,
-      "2026-07-21": 197,
-      "2026-07-22": 224,
-      "2026-07-23": 203,
-      "2026-07-24": 236,
-      "2026-07-25": 248,
-      "2026-07-26": 190,
-      "2026-07-27": 193,
-      "2026-07-28": 199,
-      "2026-07-29": 205,
-      "2026-07-30": 210,
-      "2026-07-31": 242,
-      "2026-08-01": 217,
-      "2026-08-02": 181,
-      "2026-08-03": 181,
-      "2026-08-04": 226,
+      "2026-07-18": 356,
+      "2026-07-19": 242,
+      "2026-07-20": 265,
+      "2026-07-21": 200,
+      "2026-07-22": 172,
+      "2026-07-23": 179,
+      "2026-07-24": 212,
+      "2026-07-25": 196,
+      "2026-07-26": 193,
+      "2026-07-27": 197,
+      "2026-07-28": 205,
+      "2026-07-29": 208,
+      "2026-07-30": 211,
+      "2026-07-31": 247,
+      "2026-08-01": 220,
+      "2026-08-02": 187,
+      "2026-08-03": 186,
+      "2026-08-04": 228,
       "2026-08-05": 223,
-      "2026-08-06": 205,
+      "2026-08-06": 208,
       "2026-08-07": null,
       "2026-08-08": null,
       "2026-08-09": null,
@@ -22001,35 +21940,35 @@ const EXPEDIA_DATA = {
       "2026-08-16": null,
       "2026-08-17": null,
       "2026-08-18": null,
-      "2026-08-19": 193,
-      "2026-08-20": 197,
-      "2026-08-21": 229,
+      "2026-08-19": 176,
+      "2026-08-20": 200,
+      "2026-08-21": 232,
       "2026-08-22": 215,
-      "2026-08-23": 205,
-      "2026-08-24": 203,
-      "2026-08-25": 208,
-      "2026-08-26": 218,
-      "2026-08-27": 300,
-      "2026-08-28": 256,
-      "2026-08-29": 258,
+      "2026-08-23": 214,
+      "2026-08-24": 205,
+      "2026-08-25": 210,
+      "2026-08-26": 221,
+      "2026-08-27": 304,
+      "2026-08-28": 260,
+      "2026-08-29": 263,
       "2026-08-30": 248,
-      "2026-08-31": 245,
+      "2026-08-31": 247,
       "2026-09-01": null,
       "2026-09-02": null,
       "2026-09-03": null,
-      "2026-09-04": 376,
+      "2026-09-04": 382,
       "2026-09-05": null,
       "2026-09-06": null,
-      "2026-09-07": 407,
-      "2026-09-08": 398,
+      "2026-09-07": 424,
+      "2026-09-08": 404,
       "2026-09-09": null,
       "2026-09-10": null,
       "2026-09-11": null,
       "2026-09-12": null,
-      "2026-09-13": 300,
+      "2026-09-13": 308,
       "2026-09-14": null,
       "2026-09-15": null,
-      "2026-09-16": 336,
+      "2026-09-16": 346,
       "2026-09-17": null,
       "2026-09-18": null,
       "2026-09-19": null,
@@ -22039,9 +21978,9 @@ const EXPEDIA_DATA = {
       "2026-09-23": null,
       "2026-09-24": null,
       "2026-09-25": null,
-      "2026-09-26": null,
+      "2026-09-26": 377,
       "2026-09-27": null,
-      "2026-09-28": 347,
+      "2026-09-28": 342,
       "2026-09-29": null,
       "2026-09-30": null,
       "2026-10-01": null,
@@ -22054,17 +21993,17 @@ const EXPEDIA_DATA = {
       "2026-10-08": null,
       "2026-10-09": null,
       "2026-10-10": null,
-      "2026-10-11": 229,
+      "2026-10-11": 234,
       "2026-10-12": null,
-      "2026-10-13": 257,
-      "2026-10-14": 314,
+      "2026-10-13": 263,
+      "2026-10-14": 319,
       "2026-10-15": null,
       "2026-10-16": null,
       "2026-10-17": null,
       "2026-10-18": null,
       "2026-10-19": null,
       "2026-10-20": null,
-      "2026-10-21": 244,
+      "2026-10-21": 246,
       "2026-10-22": null,
       "2026-10-23": null,
       "2026-10-24": null,
@@ -22321,12 +22260,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "La Tana dei Leoni B&B": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
@@ -22687,12 +22626,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Locanda il Salimbecco": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
@@ -23053,12 +22992,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Residenza San Lorenzo": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
@@ -23419,379 +23358,379 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     }
   },
   "search_current_davids": {
-    "2026-07-10": 54679,
-    "2026-07-11": 55068,
-    "2026-07-12": 52001,
-    "2026-07-13": 52059,
-    "2026-07-14": 52136,
-    "2026-07-15": 52229,
-    "2026-07-16": 50212,
-    "2026-07-17": 50079,
-    "2026-07-18": 49585,
-    "2026-07-19": 48025,
-    "2026-07-20": 51444,
-    "2026-07-21": 52316,
-    "2026-07-22": 52810,
-    "2026-07-23": 51538,
-    "2026-07-24": 48405,
-    "2026-07-25": 45090,
-    "2026-07-26": 41968,
-    "2026-07-27": 43668,
-    "2026-07-28": 42320,
-    "2026-07-29": 40818,
-    "2026-07-30": 39262,
-    "2026-07-31": 37803,
-    "2026-08-01": 39661,
-    "2026-08-02": 39753,
-    "2026-08-03": 40598,
-    "2026-08-04": 41078,
-    "2026-08-05": 40048,
-    "2026-08-06": 40412,
-    "2026-08-07": 40737,
-    "2026-08-08": 38270,
-    "2026-08-09": 36638,
-    "2026-08-10": 38624,
-    "2026-08-11": 38203,
-    "2026-08-12": 37690,
-    "2026-08-13": 38748,
-    "2026-08-14": 37640,
-    "2026-08-15": 36325,
-    "2026-08-16": 36053,
-    "2026-08-17": 38097,
-    "2026-08-18": 38443,
-    "2026-08-19": 38669,
-    "2026-08-20": 35893,
-    "2026-08-21": 34749,
-    "2026-08-22": 33138,
-    "2026-08-23": 31853,
-    "2026-08-24": 33496,
-    "2026-08-25": 33946,
-    "2026-08-26": 33929,
-    "2026-08-27": 33890,
-    "2026-08-28": 34097,
-    "2026-08-29": 34308,
-    "2026-08-30": 34316,
-    "2026-08-31": 33741,
-    "2026-09-01": 38702,
-    "2026-09-02": 41632,
-    "2026-09-03": 46173,
-    "2026-09-04": 47248,
-    "2026-09-05": 48440,
-    "2026-09-06": 49299,
-    "2026-09-07": 51645,
-    "2026-09-08": 52879,
-    "2026-09-09": 55607,
-    "2026-09-10": 57544,
-    "2026-09-11": 57066,
-    "2026-09-12": 55127,
-    "2026-09-13": 52888,
-    "2026-09-14": 52418,
-    "2026-09-15": 51644,
-    "2026-09-16": 51242,
-    "2026-09-17": 54615,
-    "2026-09-18": 51707,
-    "2026-09-19": 49940,
-    "2026-09-20": 49244,
-    "2026-09-21": 49626,
-    "2026-09-22": 50743,
-    "2026-09-23": 49707,
-    "2026-09-24": 50838,
-    "2026-09-25": 48021,
-    "2026-09-26": 45124,
-    "2026-09-27": 41930,
-    "2026-09-28": 40052,
-    "2026-09-29": 39236,
-    "2026-09-30": 36616,
-    "2026-10-01": 38985,
-    "2026-10-02": 39376,
-    "2026-10-03": 40292,
-    "2026-10-04": 39250,
-    "2026-10-05": 41018,
-    "2026-10-06": 40079,
-    "2026-10-07": 38658,
-    "2026-10-08": 37508,
-    "2026-10-09": 36436,
-    "2026-10-10": 34582,
-    "2026-10-11": 33082,
-    "2026-10-12": 33658,
-    "2026-10-13": 33496,
-    "2026-10-14": 32586,
-    "2026-10-15": 31982,
-    "2026-10-16": 30279,
-    "2026-10-17": 28669,
-    "2026-10-18": 26516,
-    "2026-10-19": 25851,
-    "2026-10-20": 24801,
-    "2026-10-21": 22934,
-    "2026-10-22": 20398,
-    "2026-10-23": 19205,
-    "2026-10-24": 17815,
-    "2026-10-25": 16802,
-    "2026-10-26": 16774,
-    "2026-10-27": 15195,
-    "2026-10-28": 13960,
-    "2026-10-29": 12480,
-    "2026-10-30": 10879,
-    "2026-10-31": 9568,
-    "2026-11-01": 10566,
-    "2026-11-02": 10336,
-    "2026-11-03": 10139,
-    "2026-11-04": 10129,
-    "2026-11-05": 10105,
-    "2026-11-06": 9750,
-    "2026-11-07": 9588,
-    "2026-11-08": 9661,
-    "2026-11-09": 10053,
-    "2026-11-10": 10449,
-    "2026-11-11": 10315,
-    "2026-11-12": 9848,
-    "2026-11-13": 9168,
-    "2026-11-14": 8585,
-    "2026-11-15": 8011,
-    "2026-11-16": 7998,
-    "2026-11-17": 7207,
-    "2026-11-18": 7191,
-    "2026-11-19": 7350,
-    "2026-11-20": 8259,
-    "2026-11-21": 8498,
-    "2026-11-22": 8835,
-    "2026-11-23": 9270,
-    "2026-11-24": 9323,
-    "2026-11-25": 9222,
-    "2026-11-26": 9096,
-    "2026-11-27": 9423,
-    "2026-11-28": 8721,
-    "2026-11-29": 6642,
-    "2026-11-30": 4611,
-    "2026-12-01": 4440,
-    "2026-12-02": 4049,
-    "2026-12-03": 4291,
-    "2026-12-04": 4272,
-    "2026-12-05": 4217,
-    "2026-12-06": 4224,
-    "2026-12-07": 4201,
-    "2026-12-08": 3912,
-    "2026-12-09": 3794,
-    "2026-12-10": 3514,
-    "2026-12-11": 3367,
-    "2026-12-12": 3298,
-    "2026-12-13": 3216,
-    "2026-12-14": 3684,
-    "2026-12-15": 3521,
-    "2026-12-16": 3462,
-    "2026-12-17": 3409,
-    "2026-12-18": 3385,
-    "2026-12-19": 3877,
-    "2026-12-20": 4255,
-    "2026-12-21": 4590,
-    "2026-12-22": 4960,
-    "2026-12-23": 5607,
-    "2026-12-24": 6392,
-    "2026-12-25": 7103,
-    "2026-12-26": 8166,
-    "2026-12-27": 8356,
-    "2026-12-28": 8663,
-    "2026-12-29": 8046,
-    "2026-12-30": 7502,
-    "2026-12-31": 6748,
-    "2027-01-01": 6263,
-    "2027-01-02": 4289,
-    "2027-01-03": 3562,
-    "2027-01-04": 3200,
-    "2027-01-05": 3330,
-    "2027-01-06": 3414,
-    "2027-01-07": 3484,
-    "2027-01-08": 3390,
-    "2027-01-09": 3036,
-    "2027-01-10": 2693,
-    "2027-01-11": 2649,
-    "2027-01-12": 2435,
-    "2027-01-13": 2287,
-    "2027-01-14": 2091,
-    "2027-01-15": 1963,
-    "2027-01-16": 1825,
-    "2027-01-17": 1781,
-    "2027-01-18": 1639,
-    "2027-01-19": 1673,
-    "2027-01-20": 1459,
-    "2027-01-21": 1402,
-    "2027-01-22": 1405,
-    "2027-01-23": 1360,
-    "2027-01-24": 1415,
-    "2027-01-25": 1431,
-    "2027-01-26": 1356,
-    "2027-01-27": 1244,
-    "2027-01-28": 1193,
-    "2027-01-29": 1061,
-    "2027-01-30": 1031,
-    "2027-01-31": 876,
-    "2027-02-01": 1265,
-    "2027-02-02": 1353,
-    "2027-02-03": 1280,
-    "2027-02-04": 1367,
-    "2027-02-05": 1677,
-    "2027-02-06": 1797,
-    "2027-02-07": 1877,
-    "2027-02-08": 2081,
-    "2027-02-09": 2038,
-    "2027-02-10": 2234,
-    "2027-02-11": 2440,
-    "2027-02-12": 2294,
-    "2027-02-13": 2408,
-    "2027-02-14": 2496,
-    "2027-02-15": 2613,
-    "2027-02-16": 2608,
-    "2027-02-17": 2377,
-    "2027-02-18": 2223,
-    "2027-02-19": 1826,
-    "2027-02-20": 1507,
-    "2027-02-21": 1369,
-    "2027-02-22": 1425,
-    "2027-02-23": 1384,
-    "2027-02-24": 1403,
-    "2027-02-25": 1377,
-    "2027-02-26": 1369,
-    "2027-02-27": 1143,
-    "2027-02-28": 1038,
-    "2027-03-01": 1531,
-    "2027-03-02": 1653,
-    "2027-03-03": 1728,
-    "2027-03-04": 1854,
-    "2027-03-05": 1940,
-    "2027-03-06": 2045,
-    "2027-03-07": 2115,
-    "2027-03-08": 2425,
-    "2027-03-09": 2503,
-    "2027-03-10": 2541,
-    "2027-03-11": 2843,
-    "2027-03-12": 3044,
-    "2027-03-13": 2931,
-    "2027-03-14": 2716,
-    "2027-03-15": 2660,
-    "2027-03-16": 2614,
-    "2027-03-17": 2958,
-    "2027-03-18": 2826,
-    "2027-03-19": 2757,
-    "2027-03-20": 2512,
-    "2027-03-21": 2766,
-    "2027-03-22": 3233,
-    "2027-03-23": 3401,
-    "2027-03-24": 3287,
-    "2027-03-25": 3163,
-    "2027-03-26": 2672,
-    "2027-03-27": 2170,
-    "2027-03-28": 1936,
-    "2027-03-29": 1937,
-    "2027-03-30": 1950,
-    "2027-03-31": 1814,
-    "2027-04-01": 2228,
-    "2027-04-02": 2583,
-    "2027-04-03": 2373,
-    "2027-04-04": 2496,
-    "2027-04-05": 2748,
-    "2027-04-06": 3116,
-    "2027-04-07": 3223,
-    "2027-04-08": 3093,
-    "2027-04-09": 2850,
-    "2027-04-10": 2717,
-    "2027-04-11": 2748,
-    "2027-04-12": 2915,
-    "2027-04-13": 2922,
-    "2027-04-14": 2904,
-    "2027-04-15": 2933,
-    "2027-04-16": 2758,
-    "2027-04-17": 2665,
-    "2027-04-18": 2549,
-    "2027-04-19": 2614,
-    "2027-04-20": 2808,
-    "2027-04-21": 2715,
-    "2027-04-22": 2786,
-    "2027-04-23": 2571,
-    "2027-04-24": 2364,
-    "2027-04-25": 2208,
-    "2027-04-26": 2238,
-    "2027-04-27": 2066,
-    "2027-04-28": 1865,
-    "2027-04-29": 2028,
-    "2027-04-30": 1881,
-    "2027-05-01": 2052,
-    "2027-05-02": 2142,
-    "2027-05-03": 2344,
-    "2027-05-04": 2579,
-    "2027-05-05": 2913,
-    "2027-05-06": 3127,
-    "2027-05-07": 3123,
-    "2027-05-08": 3040,
-    "2027-05-09": 2905,
-    "2027-05-10": 2793,
-    "2027-05-11": 2848,
-    "2027-05-12": 2726,
-    "2027-05-13": 2765,
-    "2027-05-14": 2547,
-    "2027-05-15": 2374,
-    "2027-05-16": 2234,
-    "2027-05-17": 2323,
-    "2027-05-18": 2438,
-    "2027-05-19": 2489,
-    "2027-05-20": 2508,
-    "2027-05-21": 2538,
-    "2027-05-22": 2333,
-    "2027-05-23": 2189,
-    "2027-05-24": 2166,
-    "2027-05-25": 2007,
-    "2027-05-26": 1802,
-    "2027-05-27": 1557,
-    "2027-05-28": 1432,
-    "2027-05-29": 1272,
-    "2027-05-30": 1220,
-    "2027-05-31": 1029,
-    "2027-06-01": 1176,
-    "2027-06-02": 1179,
-    "2027-06-03": 1228,
-    "2027-06-04": 1148,
-    "2027-06-05": 990,
-    "2027-06-06": 1055,
-    "2027-06-07": 1088,
-    "2027-06-08": 1090,
-    "2027-06-09": 1036,
-    "2027-06-10": 1125,
-    "2027-06-11": 1071,
-    "2027-06-12": 956,
-    "2027-06-13": 877,
-    "2027-06-14": 946,
-    "2027-06-15": 924,
-    "2027-06-16": 902,
-    "2027-06-17": 943,
-    "2027-06-18": 818,
-    "2027-06-19": 692,
-    "2027-06-20": 700,
-    "2027-06-21": 1102,
-    "2027-06-22": 1060,
-    "2027-06-23": 1017,
-    "2027-06-24": 665,
-    "2027-06-25": 540,
-    "2027-06-26": 431,
-    "2027-06-27": 429,
-    "2027-06-28": 420,
-    "2027-06-29": 456,
-    "2027-06-30": 457,
-    "2027-07-01": 507,
-    "2027-07-02": 524,
-    "2027-07-03": 517,
-    "2027-07-04": 469,
-    "2027-07-05": 461,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2026-07-07": 56735,
+    "2026-07-08": 54933,
+    "2026-07-09": 53652,
+    "2026-07-10": 53740,
+    "2026-07-11": 54115,
+    "2026-07-12": 50996,
+    "2026-07-13": 50952,
+    "2026-07-14": 51067,
+    "2026-07-15": 51217,
+    "2026-07-16": 49136,
+    "2026-07-17": 48909,
+    "2026-07-18": 47944,
+    "2026-07-19": 46189,
+    "2026-07-20": 49698,
+    "2026-07-21": 50979,
+    "2026-07-22": 51559,
+    "2026-07-23": 50373,
+    "2026-07-24": 47278,
+    "2026-07-25": 43925,
+    "2026-07-26": 40844,
+    "2026-07-27": 42424,
+    "2026-07-28": 41106,
+    "2026-07-29": 39689,
+    "2026-07-30": 38190,
+    "2026-07-31": 36685,
+    "2026-08-01": 38575,
+    "2026-08-02": 38682,
+    "2026-08-03": 39507,
+    "2026-08-04": 39906,
+    "2026-08-05": 38955,
+    "2026-08-06": 39365,
+    "2026-08-07": 39630,
+    "2026-08-08": 37400,
+    "2026-08-09": 35757,
+    "2026-08-10": 37650,
+    "2026-08-11": 37159,
+    "2026-08-12": 36663,
+    "2026-08-13": 37791,
+    "2026-08-14": 36691,
+    "2026-08-15": 35201,
+    "2026-08-16": 34840,
+    "2026-08-17": 36699,
+    "2026-08-18": 37298,
+    "2026-08-19": 37720,
+    "2026-08-20": 35060,
+    "2026-08-21": 33914,
+    "2026-08-22": 32250,
+    "2026-08-23": 31028,
+    "2026-08-24": 32742,
+    "2026-08-25": 33120,
+    "2026-08-26": 32997,
+    "2026-08-27": 32831,
+    "2026-08-28": 33090,
+    "2026-08-29": 33440,
+    "2026-08-30": 33468,
+    "2026-08-31": 32855,
+    "2026-09-01": 37709,
+    "2026-09-02": 40587,
+    "2026-09-03": 45050,
+    "2026-09-04": 46251,
+    "2026-09-05": 47397,
+    "2026-09-06": 48176,
+    "2026-09-07": 50424,
+    "2026-09-08": 51754,
+    "2026-09-09": 54486,
+    "2026-09-10": 56430,
+    "2026-09-11": 55897,
+    "2026-09-12": 54082,
+    "2026-09-13": 51576,
+    "2026-09-14": 51002,
+    "2026-09-15": 50250,
+    "2026-09-16": 49810,
+    "2026-09-17": 53152,
+    "2026-09-18": 50455,
+    "2026-09-19": 48820,
+    "2026-09-20": 47991,
+    "2026-09-21": 48389,
+    "2026-09-22": 49343,
+    "2026-09-23": 48274,
+    "2026-09-24": 49273,
+    "2026-09-25": 46507,
+    "2026-09-26": 43550,
+    "2026-09-27": 40568,
+    "2026-09-28": 38931,
+    "2026-09-29": 38091,
+    "2026-09-30": 35538,
+    "2026-10-01": 38008,
+    "2026-10-02": 38403,
+    "2026-10-03": 39239,
+    "2026-10-04": 38325,
+    "2026-10-05": 40070,
+    "2026-10-06": 39242,
+    "2026-10-07": 37748,
+    "2026-10-08": 36605,
+    "2026-10-09": 35545,
+    "2026-10-10": 33530,
+    "2026-10-11": 32019,
+    "2026-10-12": 32504,
+    "2026-10-13": 32392,
+    "2026-10-14": 31566,
+    "2026-10-15": 31015,
+    "2026-10-16": 29452,
+    "2026-10-17": 27833,
+    "2026-10-18": 25761,
+    "2026-10-19": 24995,
+    "2026-10-20": 23966,
+    "2026-10-21": 22183,
+    "2026-10-22": 19789,
+    "2026-10-23": 18624,
+    "2026-10-24": 17384,
+    "2026-10-25": 16379,
+    "2026-10-26": 16351,
+    "2026-10-27": 14840,
+    "2026-10-28": 13577,
+    "2026-10-29": 12137,
+    "2026-10-30": 10555,
+    "2026-10-31": 9292,
+    "2026-11-01": 10318,
+    "2026-11-02": 10099,
+    "2026-11-03": 9908,
+    "2026-11-04": 9863,
+    "2026-11-05": 9700,
+    "2026-11-06": 9299,
+    "2026-11-07": 9176,
+    "2026-11-08": 9274,
+    "2026-11-09": 9543,
+    "2026-11-10": 9931,
+    "2026-11-11": 9823,
+    "2026-11-12": 9491,
+    "2026-11-13": 8831,
+    "2026-11-14": 8236,
+    "2026-11-15": 7792,
+    "2026-11-16": 7731,
+    "2026-11-17": 6955,
+    "2026-11-18": 6993,
+    "2026-11-19": 7130,
+    "2026-11-20": 8037,
+    "2026-11-21": 8266,
+    "2026-11-22": 8605,
+    "2026-11-23": 9055,
+    "2026-11-24": 9097,
+    "2026-11-25": 8949,
+    "2026-11-26": 8825,
+    "2026-11-27": 9144,
+    "2026-11-28": 8457,
+    "2026-11-29": 6418,
+    "2026-11-30": 4417,
+    "2026-12-01": 4247,
+    "2026-12-02": 3876,
+    "2026-12-03": 4124,
+    "2026-12-04": 4182,
+    "2026-12-05": 4129,
+    "2026-12-06": 4153,
+    "2026-12-07": 4129,
+    "2026-12-08": 3849,
+    "2026-12-09": 3737,
+    "2026-12-10": 3440,
+    "2026-12-11": 3299,
+    "2026-12-12": 3225,
+    "2026-12-13": 3147,
+    "2026-12-14": 3538,
+    "2026-12-15": 3367,
+    "2026-12-16": 3316,
+    "2026-12-17": 3272,
+    "2026-12-18": 3264,
+    "2026-12-19": 3688,
+    "2026-12-20": 4101,
+    "2026-12-21": 4452,
+    "2026-12-22": 4842,
+    "2026-12-23": 5405,
+    "2026-12-24": 6144,
+    "2026-12-25": 6826,
+    "2026-12-26": 7917,
+    "2026-12-27": 8072,
+    "2026-12-28": 8389,
+    "2026-12-29": 7834,
+    "2026-12-30": 7320,
+    "2026-12-31": 6544,
+    "2027-01-01": 6085,
+    "2027-01-02": 4206,
+    "2027-01-03": 3486,
+    "2027-01-04": 3126,
+    "2027-01-05": 3240,
+    "2027-01-06": 3302,
+    "2027-01-07": 3371,
+    "2027-01-08": 3252,
+    "2027-01-09": 2931,
+    "2027-01-10": 2597,
+    "2027-01-11": 2563,
+    "2027-01-12": 2368,
+    "2027-01-13": 2233,
+    "2027-01-14": 2023,
+    "2027-01-15": 1898,
+    "2027-01-16": 1759,
+    "2027-01-17": 1700,
+    "2027-01-18": 1567,
+    "2027-01-19": 1592,
+    "2027-01-20": 1387,
+    "2027-01-21": 1355,
+    "2027-01-22": 1364,
+    "2027-01-23": 1338,
+    "2027-01-24": 1399,
+    "2027-01-25": 1415,
+    "2027-01-26": 1332,
+    "2027-01-27": 1213,
+    "2027-01-28": 1173,
+    "2027-01-29": 1038,
+    "2027-01-30": 1015,
+    "2027-01-31": 855,
+    "2027-02-01": 1227,
+    "2027-02-02": 1314,
+    "2027-02-03": 1230,
+    "2027-02-04": 1321,
+    "2027-02-05": 1619,
+    "2027-02-06": 1732,
+    "2027-02-07": 1821,
+    "2027-02-08": 2029,
+    "2027-02-09": 1987,
+    "2027-02-10": 2176,
+    "2027-02-11": 2379,
+    "2027-02-12": 2251,
+    "2027-02-13": 2342,
+    "2027-02-14": 2414,
+    "2027-02-15": 2532,
+    "2027-02-16": 2520,
+    "2027-02-17": 2303,
+    "2027-02-18": 2155,
+    "2027-02-19": 1783,
+    "2027-02-20": 1444,
+    "2027-02-21": 1305,
+    "2027-02-22": 1360,
+    "2027-02-23": 1326,
+    "2027-02-24": 1342,
+    "2027-02-25": 1328,
+    "2027-02-26": 1320,
+    "2027-02-27": 1062,
+    "2027-02-28": 963,
+    "2027-03-01": 1452,
+    "2027-03-02": 1574,
+    "2027-03-03": 1652,
+    "2027-03-04": 1778,
+    "2027-03-05": 1882,
+    "2027-03-06": 1986,
+    "2027-03-07": 2044,
+    "2027-03-08": 2273,
+    "2027-03-09": 2353,
+    "2027-03-10": 2474,
+    "2027-03-11": 2750,
+    "2027-03-12": 2933,
+    "2027-03-13": 2831,
+    "2027-03-14": 2639,
+    "2027-03-15": 2577,
+    "2027-03-16": 2549,
+    "2027-03-17": 2796,
+    "2027-03-18": 2684,
+    "2027-03-19": 2612,
+    "2027-03-20": 2376,
+    "2027-03-21": 2667,
+    "2027-03-22": 3122,
+    "2027-03-23": 3301,
+    "2027-03-24": 3204,
+    "2027-03-25": 3091,
+    "2027-03-26": 2607,
+    "2027-03-27": 2109,
+    "2027-03-28": 1877,
+    "2027-03-29": 1847,
+    "2027-03-30": 1854,
+    "2027-03-31": 1703,
+    "2027-04-01": 2128,
+    "2027-04-02": 2478,
+    "2027-04-03": 2287,
+    "2027-04-04": 2399,
+    "2027-04-05": 2629,
+    "2027-04-06": 2974,
+    "2027-04-07": 3091,
+    "2027-04-08": 2960,
+    "2027-04-09": 2728,
+    "2027-04-10": 2593,
+    "2027-04-11": 2622,
+    "2027-04-12": 2806,
+    "2027-04-13": 2795,
+    "2027-04-14": 2783,
+    "2027-04-15": 2806,
+    "2027-04-16": 2631,
+    "2027-04-17": 2546,
+    "2027-04-18": 2464,
+    "2027-04-19": 2530,
+    "2027-04-20": 2711,
+    "2027-04-21": 2631,
+    "2027-04-22": 2698,
+    "2027-04-23": 2479,
+    "2027-04-24": 2269,
+    "2027-04-25": 2128,
+    "2027-04-26": 2168,
+    "2027-04-27": 2008,
+    "2027-04-28": 1802,
+    "2027-04-29": 1967,
+    "2027-04-30": 1792,
+    "2027-05-01": 1919,
+    "2027-05-02": 1999,
+    "2027-05-03": 2183,
+    "2027-05-04": 2424,
+    "2027-05-05": 2740,
+    "2027-05-06": 2950,
+    "2027-05-07": 2935,
+    "2027-05-08": 2815,
+    "2027-05-09": 2685,
+    "2027-05-10": 2573,
+    "2027-05-11": 2612,
+    "2027-05-12": 2489,
+    "2027-05-13": 2506,
+    "2027-05-14": 2327,
+    "2027-05-15": 2143,
+    "2027-05-16": 2017,
+    "2027-05-17": 2122,
+    "2027-05-18": 2157,
+    "2027-05-19": 2201,
+    "2027-05-20": 2187,
+    "2027-05-21": 2266,
+    "2027-05-22": 2051,
+    "2027-05-23": 1907,
+    "2027-05-24": 1901,
+    "2027-05-25": 1807,
+    "2027-05-26": 1647,
+    "2027-05-27": 1440,
+    "2027-05-28": 1325,
+    "2027-05-29": 1185,
+    "2027-05-30": 1156,
+    "2027-05-31": 992,
+    "2027-06-01": 1143,
+    "2027-06-02": 1140,
+    "2027-06-03": 1180,
+    "2027-06-04": 1064,
+    "2027-06-05": 903,
+    "2027-06-06": 981,
+    "2027-06-07": 985,
+    "2027-06-08": 978,
+    "2027-06-09": 956,
+    "2027-06-10": 1058,
+    "2027-06-11": 1006,
+    "2027-06-12": 905,
+    "2027-06-13": 832,
+    "2027-06-14": 909,
+    "2027-06-15": 900,
+    "2027-06-16": 868,
+    "2027-06-17": 916,
+    "2027-06-18": 792,
+    "2027-06-19": 570,
+    "2027-06-20": 586,
+    "2027-06-21": 958,
+    "2027-06-22": 915,
+    "2027-06-23": 901,
+    "2027-06-24": 562,
+    "2027-06-25": 487,
+    "2027-06-26": 387,
+    "2027-06-27": 369,
+    "2027-06-28": 357,
+    "2027-06-29": 383,
+    "2027-06-30": 393,
+    "2027-07-01": 454,
+    "2027-07-02": 469,
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "search_previous_davids": {
+    "2026-07-07": 63455,
+    "2026-07-08": 61937,
+    "2026-07-09": 61100,
     "2026-07-10": 60481,
     "2026-07-11": 59490,
     "2026-07-12": 56865,
@@ -24150,151 +24089,151 @@ const EXPEDIA_DATA = {
     "2027-06-30": 57291,
     "2027-07-01": 58126,
     "2027-07-02": 58310,
-    "2027-07-03": 55730,
-    "2027-07-04": 55317,
-    "2027-07-05": 58659,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "firenze": {
+    "2026-07-07": null,
+    "2026-07-08": null,
+    "2026-07-09": null,
     "2026-07-10": 223,
-    "2026-07-11": 201,
-    "2026-07-12": 202,
-    "2026-07-13": 205,
-    "2026-07-14": null,
-    "2026-07-15": null,
-    "2026-07-16": 232,
-    "2026-07-17": 213,
-    "2026-07-18": 193,
-    "2026-07-19": 178,
-    "2026-07-20": 183,
-    "2026-07-21": 273,
-    "2026-07-22": 201,
-    "2026-07-23": 178,
-    "2026-07-24": 206,
-    "2026-07-25": 178,
+    "2026-07-11": 210,
+    "2026-07-12": 197,
+    "2026-07-13": 217,
+    "2026-07-14": 221,
+    "2026-07-15": 304,
+    "2026-07-16": 213,
+    "2026-07-17": 214,
+    "2026-07-18": 214,
+    "2026-07-19": 180,
+    "2026-07-20": 196,
+    "2026-07-21": 196,
+    "2026-07-22": 204,
+    "2026-07-23": 196,
+    "2026-07-24": 209,
+    "2026-07-25": 195,
     "2026-07-26": 178,
-    "2026-07-27": 178,
+    "2026-07-27": 185,
     "2026-07-28": 178,
-    "2026-07-29": 182,
+    "2026-07-29": 178,
     "2026-07-30": 178,
     "2026-07-31": 182,
-    "2026-08-01": 180,
-    "2026-08-02": 178,
-    "2026-08-03": 178,
-    "2026-08-04": 178,
-    "2026-08-05": 178,
-    "2026-08-06": 178,
-    "2026-08-07": 181,
-    "2026-08-08": 178,
+    "2026-08-01": 213,
+    "2026-08-02": 185,
+    "2026-08-03": 187,
+    "2026-08-04": 197,
+    "2026-08-05": 195,
+    "2026-08-06": 190,
+    "2026-08-07": 212,
+    "2026-08-08": 197,
     "2026-08-09": 178,
-    "2026-08-10": 178,
-    "2026-08-11": 178,
-    "2026-08-12": 178,
-    "2026-08-13": 178,
-    "2026-08-14": 178,
+    "2026-08-10": 184,
+    "2026-08-11": 191,
+    "2026-08-12": 183,
+    "2026-08-13": 196,
+    "2026-08-14": 194,
     "2026-08-15": null,
-    "2026-08-16": 178,
-    "2026-08-17": 178,
-    "2026-08-18": 178,
-    "2026-08-19": 178,
-    "2026-08-20": 178,
+    "2026-08-16": 194,
+    "2026-08-17": 190,
+    "2026-08-18": 206,
+    "2026-08-19": 181,
+    "2026-08-20": 187,
     "2026-08-21": 178,
     "2026-08-22": 178,
-    "2026-08-23": 178,
-    "2026-08-24": 178,
-    "2026-08-25": 178,
-    "2026-08-26": 178,
-    "2026-08-27": 178,
-    "2026-08-28": 178,
-    "2026-08-29": 202,
-    "2026-08-30": 178,
-    "2026-08-31": 202,
+    "2026-08-23": 184,
+    "2026-08-24": 184,
+    "2026-08-25": 187,
+    "2026-08-26": 185,
+    "2026-08-27": 182,
+    "2026-08-28": 184,
+    "2026-08-29": 209,
+    "2026-08-30": 197,
+    "2026-08-31": 226,
     "2026-09-01": 250,
-    "2026-09-02": 304,
-    "2026-09-03": 304,
-    "2026-09-04": 353,
-    "2026-09-05": 380,
-    "2026-09-06": 347,
-    "2026-09-07": 360,
-    "2026-09-08": 353,
-    "2026-09-09": 366,
-    "2026-09-10": 387,
-    "2026-09-11": 377,
-    "2026-09-12": 481,
-    "2026-09-13": 391,
-    "2026-09-14": 383,
-    "2026-09-15": 354,
-    "2026-09-16": 368,
-    "2026-09-17": 365,
-    "2026-09-18": 429,
-    "2026-09-19": 488,
-    "2026-09-20": 434,
-    "2026-09-21": 422,
-    "2026-09-22": 355,
-    "2026-09-23": 361,
-    "2026-09-24": 384,
-    "2026-09-25": 424,
-    "2026-09-26": 410,
-    "2026-09-27": 370,
-    "2026-09-28": 327,
-    "2026-09-29": 368,
-    "2026-09-30": 352,
-    "2026-10-01": 380,
-    "2026-10-02": 482,
-    "2026-10-03": 481,
-    "2026-10-04": 429,
-    "2026-10-05": 392,
-    "2026-10-06": 368,
-    "2026-10-07": 389,
-    "2026-10-08": 370,
-    "2026-10-09": 390,
-    "2026-10-10": 411,
-    "2026-10-11": 349,
-    "2026-10-12": 332,
-    "2026-10-13": 332,
-    "2026-10-14": 335,
-    "2026-10-15": 348,
-    "2026-10-16": 387,
-    "2026-10-17": 371,
-    "2026-10-18": 329,
-    "2026-10-19": 313,
-    "2026-10-20": 323,
-    "2026-10-21": 309,
-    "2026-10-22": 308,
-    "2026-10-23": 304,
-    "2026-10-24": 311,
+    "2026-09-02": 285,
+    "2026-09-03": 297,
+    "2026-09-04": 338,
+    "2026-09-05": 343,
+    "2026-09-06": 338,
+    "2026-09-07": 348,
+    "2026-09-08": 309,
+    "2026-09-09": 291,
+    "2026-09-10": 328,
+    "2026-09-11": 319,
+    "2026-09-12": 459,
+    "2026-09-13": 367,
+    "2026-09-14": 347,
+    "2026-09-15": 320,
+    "2026-09-16": 297,
+    "2026-09-17": 292,
+    "2026-09-18": 366,
+    "2026-09-19": 456,
+    "2026-09-20": 396,
+    "2026-09-21": 400,
+    "2026-09-22": 332,
+    "2026-09-23": 301,
+    "2026-09-24": 314,
+    "2026-09-25": 339,
+    "2026-09-26": 340,
+    "2026-09-27": 319,
+    "2026-09-28": 283,
+    "2026-09-29": 329,
+    "2026-09-30": 298,
+    "2026-10-01": 438,
+    "2026-10-02": 549,
+    "2026-10-03": 509,
+    "2026-10-04": 423,
+    "2026-10-05": 397,
+    "2026-10-06": 421,
+    "2026-10-07": 405,
+    "2026-10-08": 403,
+    "2026-10-09": 414,
+    "2026-10-10": 446,
+    "2026-10-11": 387,
+    "2026-10-12": 355,
+    "2026-10-13": 355,
+    "2026-10-14": 361,
+    "2026-10-15": 379,
+    "2026-10-16": 423,
+    "2026-10-17": 398,
+    "2026-10-18": 355,
+    "2026-10-19": 330,
+    "2026-10-20": 345,
+    "2026-10-21": 326,
+    "2026-10-22": 324,
+    "2026-10-23": 358,
+    "2026-10-24": 359,
     "2026-10-25": 282,
-    "2026-10-26": 261,
-    "2026-10-27": 277,
+    "2026-10-26": 264,
+    "2026-10-27": 279,
     "2026-10-28": 277,
     "2026-10-29": 269,
-    "2026-10-30": 313,
-    "2026-10-31": 317,
-    "2026-11-01": 229,
-    "2026-11-02": 225,
-    "2026-11-03": 202,
-    "2026-11-04": 202,
-    "2026-11-05": 201,
-    "2026-11-06": 219,
-    "2026-11-07": 219,
-    "2026-11-08": 197,
-    "2026-11-09": 203,
-    "2026-11-10": 202,
-    "2026-11-11": 202,
-    "2026-11-12": 196,
-    "2026-11-13": 220,
-    "2026-11-14": 209,
-    "2026-11-15": 185,
-    "2026-11-16": 199,
-    "2026-11-17": 187,
-    "2026-11-18": 184,
-    "2026-11-19": 184,
-    "2026-11-20": 208,
-    "2026-11-21": 209,
-    "2026-11-22": 200,
-    "2026-11-23": 209,
+    "2026-10-30": 328,
+    "2026-10-31": 328,
+    "2026-11-01": 199,
+    "2026-11-02": 189,
+    "2026-11-03": 178,
+    "2026-11-04": 178,
+    "2026-11-05": 178,
+    "2026-11-06": 202,
+    "2026-11-07": 202,
+    "2026-11-08": 178,
+    "2026-11-09": 178,
+    "2026-11-10": 178,
+    "2026-11-11": 178,
+    "2026-11-12": 178,
+    "2026-11-13": 202,
+    "2026-11-14": 202,
+    "2026-11-15": 178,
+    "2026-11-16": 178,
+    "2026-11-17": 178,
+    "2026-11-18": 178,
+    "2026-11-19": 178,
+    "2026-11-20": 202,
+    "2026-11-21": 202,
+    "2026-11-22": 178,
+    "2026-11-23": 178,
     "2026-11-24": 178,
     "2026-11-25": 178,
     "2026-11-26": 178,
@@ -24302,26 +24241,26 @@ const EXPEDIA_DATA = {
     "2026-11-28": null,
     "2026-11-29": 178,
     "2026-11-30": 178,
-    "2026-12-01": 254,
-    "2026-12-02": 194,
-    "2026-12-03": 193,
-    "2026-12-04": 206,
-    "2026-12-05": 202,
-    "2026-12-06": 222,
-    "2026-12-07": 257,
-    "2026-12-08": 241,
-    "2026-12-09": 182,
-    "2026-12-10": 183,
-    "2026-12-11": 196,
-    "2026-12-12": 195,
-    "2026-12-13": 206,
-    "2026-12-14": 244,
-    "2026-12-15": 242,
-    "2026-12-16": 189,
-    "2026-12-17": 188,
-    "2026-12-18": 199,
-    "2026-12-19": 203,
-    "2026-12-20": 221,
+    "2026-12-01": 218,
+    "2026-12-02": 178,
+    "2026-12-03": 178,
+    "2026-12-04": 178,
+    "2026-12-05": 178,
+    "2026-12-06": 178,
+    "2026-12-07": 203,
+    "2026-12-08": 190,
+    "2026-12-09": 178,
+    "2026-12-10": 178,
+    "2026-12-11": 178,
+    "2026-12-12": 178,
+    "2026-12-13": 178,
+    "2026-12-14": 199,
+    "2026-12-15": 199,
+    "2026-12-16": 178,
+    "2026-12-17": 178,
+    "2026-12-18": 178,
+    "2026-12-19": 178,
+    "2026-12-20": 183,
     "2026-12-21": 228,
     "2026-12-22": 235,
     "2026-12-23": 183,
@@ -24518,75 +24457,75 @@ const EXPEDIA_DATA = {
     "2027-07-02": null,
     "2027-07-03": null,
     "2027-07-04": null,
-    "2027-07-05": null,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-05": null
   },
   "compset_avg_firenze": {
-    "2026-07-10": null,
-    "2026-07-11": 180,
-    "2026-07-12": 194,
-    "2026-07-13": 257,
-    "2026-07-14": 244,
-    "2026-07-15": 278,
-    "2026-07-16": 229,
-    "2026-07-17": 216,
-    "2026-07-18": 262,
-    "2026-07-19": 193,
-    "2026-07-20": 256,
-    "2026-07-21": 206,
-    "2026-07-22": 247,
-    "2026-07-23": 200,
-    "2026-07-24": 218,
-    "2026-07-25": 212,
-    "2026-07-26": 237,
-    "2026-07-27": 199,
-    "2026-07-28": 192,
-    "2026-07-29": 198,
-    "2026-07-30": 184,
-    "2026-07-31": 207,
-    "2026-08-01": 220,
-    "2026-08-02": 206,
-    "2026-08-03": 204,
-    "2026-08-04": 219,
-    "2026-08-05": 220,
-    "2026-08-06": 210,
-    "2026-08-07": 217,
-    "2026-08-08": 227,
-    "2026-08-09": 211,
-    "2026-08-10": 209,
-    "2026-08-11": 212,
-    "2026-08-12": 203,
-    "2026-08-13": 207,
-    "2026-08-14": 220,
-    "2026-08-15": 220,
-    "2026-08-16": 213,
-    "2026-08-17": 221,
-    "2026-08-18": 198,
-    "2026-08-19": 190,
-    "2026-08-20": 206,
+    "2026-07-07": null,
+    "2026-07-08": 263,
+    "2026-07-09": 206,
+    "2026-07-10": 239,
+    "2026-07-11": 230,
+    "2026-07-12": 211,
+    "2026-07-13": 251,
+    "2026-07-14": 251,
+    "2026-07-15": 282,
+    "2026-07-16": 253,
+    "2026-07-17": 233,
+    "2026-07-18": 227,
+    "2026-07-19": 194,
+    "2026-07-20": 258,
+    "2026-07-21": 202,
+    "2026-07-22": 277,
+    "2026-07-23": 210,
+    "2026-07-24": 265,
+    "2026-07-25": 228,
+    "2026-07-26": 241,
+    "2026-07-27": 212,
+    "2026-07-28": 202,
+    "2026-07-29": 202,
+    "2026-07-30": 196,
+    "2026-07-31": 208,
+    "2026-08-01": 233,
+    "2026-08-02": 213,
+    "2026-08-03": 213,
+    "2026-08-04": 234,
+    "2026-08-05": 223,
+    "2026-08-06": 213,
+    "2026-08-07": 220,
+    "2026-08-08": 236,
+    "2026-08-09": 222,
+    "2026-08-10": 202,
+    "2026-08-11": 214,
+    "2026-08-12": 210,
+    "2026-08-13": 209,
+    "2026-08-14": 228,
+    "2026-08-15": 227,
+    "2026-08-16": 215,
+    "2026-08-17": 229,
+    "2026-08-18": 200,
+    "2026-08-19": 193,
+    "2026-08-20": 218,
     "2026-08-21": 214,
     "2026-08-22": 214,
-    "2026-08-23": 199,
-    "2026-08-24": 211,
-    "2026-08-25": 207,
-    "2026-08-26": 198,
-    "2026-08-27": 201,
+    "2026-08-23": 201,
+    "2026-08-24": 207,
+    "2026-08-25": 211,
+    "2026-08-26": 201,
+    "2026-08-27": 203,
     "2026-08-28": 204,
     "2026-08-29": 215,
-    "2026-08-30": 206,
-    "2026-08-31": 211,
+    "2026-08-30": 217,
+    "2026-08-31": 219,
     "2026-09-01": 343,
-    "2026-09-02": 350,
-    "2026-09-03": 364,
-    "2026-09-04": 366,
-    "2026-09-05": 394,
-    "2026-09-06": 386,
+    "2026-09-02": 345,
+    "2026-09-03": 358,
+    "2026-09-04": 363,
+    "2026-09-05": 387,
+    "2026-09-06": 380,
     "2026-09-07": 381,
-    "2026-09-08": 363,
-    "2026-09-09": 408,
-    "2026-09-10": 400,
+    "2026-09-08": 365,
+    "2026-09-09": 410,
+    "2026-09-10": 403,
     "2026-09-11": 502,
     "2026-09-12": 523,
     "2026-09-13": 381,
@@ -24604,17 +24543,17 @@ const EXPEDIA_DATA = {
     "2026-09-25": 507,
     "2026-09-26": 419,
     "2026-09-27": 431,
-    "2026-09-28": 445,
-    "2026-09-29": 424,
-    "2026-09-30": 413,
-    "2026-10-01": 414,
+    "2026-09-28": 437,
+    "2026-09-29": 416,
+    "2026-09-30": 405,
+    "2026-10-01": 406,
     "2026-10-02": 463,
-    "2026-10-03": 494,
+    "2026-10-03": 468,
     "2026-10-04": 397,
     "2026-10-05": 395,
-    "2026-10-06": 430,
-    "2026-10-07": 393,
-    "2026-10-08": 385,
+    "2026-10-06": 422,
+    "2026-10-07": 385,
+    "2026-10-08": 378,
     "2026-10-09": 391,
     "2026-10-10": 396,
     "2026-10-11": 370,
@@ -24784,9 +24723,9 @@ const EXPEDIA_DATA = {
     "2027-03-24": 261,
     "2027-03-25": 268,
     "2027-03-26": 276,
-    "2027-03-27": 303,
-    "2027-03-28": 303,
-    "2027-03-29": 349,
+    "2027-03-27": 276,
+    "2027-03-28": 276,
+    "2027-03-29": 323,
     "2027-03-30": 273,
     "2027-03-31": 273,
     "2027-04-01": 288,
@@ -24812,71 +24751,71 @@ const EXPEDIA_DATA = {
     "2027-04-21": 287,
     "2027-04-22": 287,
     "2027-04-23": 287,
-    "2027-04-24": 308,
-    "2027-04-25": 308,
-    "2027-04-26": 308,
-    "2027-04-27": 308,
-    "2027-04-28": 308,
-    "2027-04-29": 308,
-    "2027-04-30": 303,
-    "2027-05-01": 303,
-    "2027-05-02": 324,
-    "2027-05-03": 324,
-    "2027-05-04": 324,
-    "2027-05-05": 324,
-    "2027-05-06": 339,
-    "2027-05-07": 339,
-    "2027-05-08": 339,
-    "2027-05-09": 324,
-    "2027-05-10": 324,
-    "2027-05-11": 324,
-    "2027-05-12": 324,
-    "2027-05-13": 324,
-    "2027-05-14": 324,
-    "2027-05-15": 324,
-    "2027-05-16": 324,
-    "2027-05-17": 324,
-    "2027-05-18": 324,
-    "2027-05-19": 324,
-    "2027-05-20": 324,
-    "2027-05-21": 324,
-    "2027-05-22": 324,
-    "2027-05-23": 324,
-    "2027-05-24": 324,
-    "2027-05-25": 324,
-    "2027-05-26": 324,
-    "2027-05-27": 324,
-    "2027-05-28": 324,
-    "2027-05-29": 324,
-    "2027-05-30": 324,
-    "2027-05-31": 324,
-    "2027-06-01": 337,
-    "2027-06-02": 337,
-    "2027-06-03": 349,
-    "2027-06-04": 349,
-    "2027-06-05": 349,
-    "2027-06-06": 349,
-    "2027-06-07": 349,
-    "2027-06-08": 349,
-    "2027-06-09": 349,
-    "2027-06-10": 349,
-    "2027-06-11": 349,
-    "2027-06-12": 349,
-    "2027-06-13": 349,
-    "2027-06-14": 349,
-    "2027-06-15": 349,
-    "2027-06-16": 349,
-    "2027-06-17": 349,
-    "2027-06-18": 349,
-    "2027-06-19": 349,
-    "2027-06-20": 349,
-    "2027-06-21": 349,
-    "2027-06-22": 349,
-    "2027-06-23": 349,
-    "2027-06-24": 349,
-    "2027-06-25": 349,
-    "2027-06-26": 349,
-    "2027-06-27": 349,
+    "2027-04-24": 292,
+    "2027-04-25": 292,
+    "2027-04-26": 287,
+    "2027-04-27": 287,
+    "2027-04-28": 287,
+    "2027-04-29": 287,
+    "2027-04-30": 283,
+    "2027-05-01": 283,
+    "2027-05-02": 303,
+    "2027-05-03": 306,
+    "2027-05-04": 306,
+    "2027-05-05": 306,
+    "2027-05-06": 310,
+    "2027-05-07": 310,
+    "2027-05-08": 310,
+    "2027-05-09": 306,
+    "2027-05-10": 306,
+    "2027-05-11": 306,
+    "2027-05-12": 306,
+    "2027-05-13": 306,
+    "2027-05-14": 306,
+    "2027-05-15": 306,
+    "2027-05-16": 306,
+    "2027-05-17": 306,
+    "2027-05-18": 306,
+    "2027-05-19": 306,
+    "2027-05-20": 306,
+    "2027-05-21": 306,
+    "2027-05-22": 306,
+    "2027-05-23": 306,
+    "2027-05-24": 306,
+    "2027-05-25": 306,
+    "2027-05-26": 306,
+    "2027-05-27": 306,
+    "2027-05-28": 306,
+    "2027-05-29": 306,
+    "2027-05-30": 306,
+    "2027-05-31": 306,
+    "2027-06-01": 315,
+    "2027-06-02": 315,
+    "2027-06-03": 317,
+    "2027-06-04": 317,
+    "2027-06-05": 317,
+    "2027-06-06": 317,
+    "2027-06-07": 317,
+    "2027-06-08": 317,
+    "2027-06-09": 317,
+    "2027-06-10": 317,
+    "2027-06-11": 317,
+    "2027-06-12": 317,
+    "2027-06-13": 317,
+    "2027-06-14": 343,
+    "2027-06-15": 343,
+    "2027-06-16": 343,
+    "2027-06-17": 343,
+    "2027-06-18": 323,
+    "2027-06-19": 323,
+    "2027-06-20": 323,
+    "2027-06-21": 323,
+    "2027-06-22": 323,
+    "2027-06-23": 323,
+    "2027-06-24": 323,
+    "2027-06-25": 323,
+    "2027-06-26": 323,
+    "2027-06-27": 323,
     "2027-06-28": 323,
     "2027-06-29": 323,
     "2027-06-30": 323,
@@ -24884,52 +24823,52 @@ const EXPEDIA_DATA = {
     "2027-07-02": 272,
     "2027-07-03": 272,
     "2027-07-04": 272,
-    "2027-07-05": 246,
-    "2027-07-06": 232,
-    "2027-07-07": 232,
-    "2027-07-08": 232
+    "2027-07-05": 246
   },
   "competitors_firenze": {
     "Palazzo Alfani al David": {
-      "2026-07-10": null,
-      "2026-07-11": null,
-      "2026-07-12": null,
-      "2026-07-13": 280,
-      "2026-07-14": null,
-      "2026-07-15": 270,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 260,
+      "2026-07-11": 236,
+      "2026-07-12": 236,
+      "2026-07-13": 249,
+      "2026-07-14": 260,
+      "2026-07-15": 263,
       "2026-07-16": null,
       "2026-07-17": null,
-      "2026-07-18": 265,
-      "2026-07-19": 260,
-      "2026-07-20": 329,
+      "2026-07-18": 242,
+      "2026-07-19": 254,
+      "2026-07-20": 334,
       "2026-07-21": null,
-      "2026-07-22": 257,
+      "2026-07-22": 247,
       "2026-07-23": null,
       "2026-07-24": null,
-      "2026-07-25": 251,
-      "2026-07-26": 434,
-      "2026-07-27": null,
+      "2026-07-25": 271,
+      "2026-07-26": 422,
+      "2026-07-27": 247,
       "2026-07-28": 230,
       "2026-07-29": 218,
       "2026-07-30": 218,
       "2026-07-31": 236,
-      "2026-08-01": 253,
-      "2026-08-02": 248,
-      "2026-08-03": 247,
-      "2026-08-04": 247,
+      "2026-08-01": 280,
+      "2026-08-02": 268,
+      "2026-08-03": 261,
+      "2026-08-04": 250,
       "2026-08-05": 224,
       "2026-08-06": 247,
-      "2026-08-07": 247,
-      "2026-08-08": 247,
-      "2026-08-09": 247,
-      "2026-08-10": 239,
+      "2026-08-07": 251,
+      "2026-08-08": 273,
+      "2026-08-09": 272,
+      "2026-08-10": 247,
       "2026-08-11": 230,
       "2026-08-12": 230,
       "2026-08-13": 206,
       "2026-08-14": null,
       "2026-08-15": null,
-      "2026-08-16": 247,
-      "2026-08-17": 288,
+      "2026-08-16": 259,
+      "2026-08-17": 316,
       "2026-08-18": 206,
       "2026-08-19": 206,
       "2026-08-20": 224,
@@ -24942,14 +24881,14 @@ const EXPEDIA_DATA = {
       "2026-08-27": 230,
       "2026-08-28": 206,
       "2026-08-29": 206,
-      "2026-08-30": 231,
+      "2026-08-30": 238,
       "2026-08-31": 247,
       "2026-09-01": 271,
-      "2026-09-02": 341,
-      "2026-09-03": 355,
-      "2026-09-04": 351,
-      "2026-09-05": 380,
-      "2026-09-06": 372,
+      "2026-09-02": 318,
+      "2026-09-03": 331,
+      "2026-09-04": 339,
+      "2026-09-05": 351,
+      "2026-09-06": 347,
       "2026-09-07": 411,
       "2026-09-08": 434,
       "2026-09-09": 434,
@@ -25251,65 +25190,65 @@ const EXPEDIA_DATA = {
       "2027-07-02": 275,
       "2027-07-03": 275,
       "2027-07-04": 275,
-      "2027-07-05": 275,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": 275
     },
     "La Maison du Sage": {
-      "2026-07-10": null,
-      "2026-07-11": 180,
-      "2026-07-12": 180,
+      "2026-07-07": null,
+      "2026-07-08": 202,
+      "2026-07-09": 146,
+      "2026-07-10": 225,
+      "2026-07-11": 225,
+      "2026-07-12": 191,
       "2026-07-13": 180,
-      "2026-07-14": 258,
-      "2026-07-15": 314,
-      "2026-07-16": 314,
-      "2026-07-17": 187,
-      "2026-07-18": 187,
-      "2026-07-19": 156,
+      "2026-07-14": 270,
+      "2026-07-15": 331,
+      "2026-07-16": 301,
+      "2026-07-17": 218,
+      "2026-07-18": 218,
+      "2026-07-19": 167,
       "2026-07-20": 218,
-      "2026-07-21": 156,
-      "2026-07-22": 238,
-      "2026-07-23": 177,
-      "2026-07-24": 218,
-      "2026-07-25": 218,
-      "2026-07-26": 187,
-      "2026-07-27": 167,
-      "2026-07-28": 167,
-      "2026-07-29": 167,
-      "2026-07-30": 167,
+      "2026-07-21": 177,
+      "2026-07-22": 249,
+      "2026-07-23": 198,
+      "2026-07-24": 259,
+      "2026-07-25": 259,
+      "2026-07-26": 218,
+      "2026-07-27": 198,
+      "2026-07-28": 177,
+      "2026-07-29": 177,
+      "2026-07-30": 177,
       "2026-07-31": 198,
-      "2026-08-01": 198,
-      "2026-08-02": 167,
-      "2026-08-03": 187,
-      "2026-08-04": 187,
-      "2026-08-05": 187,
-      "2026-08-06": 187,
+      "2026-08-01": 228,
+      "2026-08-02": 177,
+      "2026-08-03": 218,
+      "2026-08-04": 259,
+      "2026-08-05": 198,
+      "2026-08-06": 198,
       "2026-08-07": 198,
       "2026-08-08": 198,
-      "2026-08-09": 167,
-      "2026-08-10": 146,
-      "2026-08-11": 167,
+      "2026-08-09": 177,
+      "2026-08-10": 156,
+      "2026-08-11": 177,
       "2026-08-12": 167,
-      "2026-08-13": 167,
+      "2026-08-13": 177,
       "2026-08-14": 187,
-      "2026-08-15": 198,
+      "2026-08-15": 187,
       "2026-08-16": 156,
-      "2026-08-17": 156,
-      "2026-08-18": 177,
-      "2026-08-19": 146,
-      "2026-08-20": 167,
+      "2026-08-17": 167,
+      "2026-08-18": 187,
+      "2026-08-19": 156,
+      "2026-08-20": 198,
       "2026-08-21": 187,
       "2026-08-22": 218,
-      "2026-08-23": 177,
-      "2026-08-24": 187,
-      "2026-08-25": 187,
-      "2026-08-26": 156,
-      "2026-08-27": 146,
+      "2026-08-23": 187,
+      "2026-08-24": 198,
+      "2026-08-25": 218,
+      "2026-08-26": 167,
+      "2026-08-27": 156,
       "2026-08-28": 187,
       "2026-08-29": 187,
-      "2026-08-30": 198,
-      "2026-08-31": 198,
+      "2026-08-30": 238,
+      "2026-08-31": 238,
       "2026-09-01": 414,
       "2026-09-02": 373,
       "2026-09-03": 414,
@@ -25337,17 +25276,17 @@ const EXPEDIA_DATA = {
       "2026-09-25": 455,
       "2026-09-26": 486,
       "2026-09-27": 363,
-      "2026-09-28": 466,
-      "2026-09-29": 466,
-      "2026-09-30": 455,
-      "2026-10-01": 455,
+      "2026-09-28": 434,
+      "2026-09-29": 434,
+      "2026-09-30": 424,
+      "2026-10-01": 424,
       "2026-10-02": 424,
       "2026-10-03": 496,
       "2026-10-04": 455,
       "2026-10-05": 455,
-      "2026-10-06": 486,
-      "2026-10-07": 455,
-      "2026-10-08": 424,
+      "2026-10-06": 455,
+      "2026-10-07": 424,
+      "2026-10-08": 393,
       "2026-10-09": 424,
       "2026-10-10": 424,
       "2026-10-11": 373,
@@ -25617,13 +25556,13 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Relais Condotta": {
-      "2026-07-10": null,
+      "2026-07-07": null,
+      "2026-07-08": 335,
+      "2026-07-09": 222,
+      "2026-07-10": 222,
       "2026-07-11": null,
       "2026-07-12": 222,
       "2026-07-13": 335,
@@ -25631,11 +25570,11 @@ const EXPEDIA_DATA = {
       "2026-07-15": null,
       "2026-07-16": 222,
       "2026-07-17": 335,
-      "2026-07-18": 335,
+      "2026-07-18": 222,
       "2026-07-19": 222,
       "2026-07-20": 222,
       "2026-07-21": 222,
-      "2026-07-22": null,
+      "2026-07-22": 335,
       "2026-07-23": 222,
       "2026-07-24": null,
       "2026-07-25": 222,
@@ -25683,9 +25622,9 @@ const EXPEDIA_DATA = {
       "2026-09-05": 320,
       "2026-09-06": 320,
       "2026-09-07": 320,
-      "2026-09-08": 320,
-      "2026-09-09": 320,
-      "2026-09-10": 320,
+      "2026-09-08": 327,
+      "2026-09-09": 327,
+      "2026-09-10": 327,
       "2026-09-11": 432,
       "2026-09-12": 432,
       "2026-09-13": 320,
@@ -25708,7 +25647,7 @@ const EXPEDIA_DATA = {
       "2026-09-30": 320,
       "2026-10-01": 282,
       "2026-10-02": null,
-      "2026-10-03": null,
+      "2026-10-03": 387,
       "2026-10-04": 275,
       "2026-10-05": 282,
       "2026-10-06": 387,
@@ -25983,12 +25922,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Residenza dei Pucci": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": 136,
@@ -26000,14 +25939,14 @@ const EXPEDIA_DATA = {
       "2026-07-18": null,
       "2026-07-19": 148,
       "2026-07-20": null,
-      "2026-07-21": null,
+      "2026-07-21": 136,
       "2026-07-22": null,
       "2026-07-23": null,
       "2026-07-24": null,
       "2026-07-25": 148,
       "2026-07-26": 148,
       "2026-07-27": 148,
-      "2026-07-28": 148,
+      "2026-07-28": null,
       "2026-07-29": 148,
       "2026-07-30": 148,
       "2026-07-31": 148,
@@ -26349,19 +26288,19 @@ const EXPEDIA_DATA = {
       "2027-07-02": 294,
       "2027-07-03": 294,
       "2027-07-04": 294,
-      "2027-07-05": 294,
-      "2027-07-06": 294,
-      "2027-07-07": 294,
-      "2027-07-08": 294
+      "2027-07-05": 294
     },
     "Residenza La Musa Amarcord": {
+      "2026-07-07": null,
+      "2026-07-08": 251,
+      "2026-07-09": 251,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
       "2026-07-13": null,
       "2026-07-14": 251,
       "2026-07-15": 251,
-      "2026-07-16": 143,
+      "2026-07-16": 251,
       "2026-07-17": 195,
       "2026-07-18": null,
       "2026-07-19": 177,
@@ -26384,9 +26323,9 @@ const EXPEDIA_DATA = {
       "2026-08-05": 233,
       "2026-08-06": 159,
       "2026-08-07": 177,
-      "2026-08-08": null,
-      "2026-08-09": null,
-      "2026-08-10": 233,
+      "2026-08-08": 233,
+      "2026-08-09": 233,
+      "2026-08-10": 177,
       "2026-08-11": 233,
       "2026-08-12": 159,
       "2026-08-13": 233,
@@ -26400,8 +26339,8 @@ const EXPEDIA_DATA = {
       "2026-08-21": 233,
       "2026-08-22": 177,
       "2026-08-23": 159,
-      "2026-08-24": 181,
-      "2026-08-25": 163,
+      "2026-08-24": 147,
+      "2026-08-25": 147,
       "2026-08-26": 147,
       "2026-08-27": 199,
       "2026-08-28": 199,
@@ -26615,9 +26554,9 @@ const EXPEDIA_DATA = {
       "2027-03-24": 161,
       "2027-03-25": 161,
       "2027-03-26": 222,
-      "2027-03-27": null,
-      "2027-03-28": null,
-      "2027-03-29": null,
+      "2027-03-27": 222,
+      "2027-03-28": 222,
+      "2027-03-29": 222,
       "2027-03-30": 177,
       "2027-03-31": 177,
       "2027-04-01": 177,
@@ -26643,71 +26582,71 @@ const EXPEDIA_DATA = {
       "2027-04-21": 222,
       "2027-04-22": 222,
       "2027-04-23": 222,
-      "2027-04-24": null,
-      "2027-04-25": null,
-      "2027-04-26": null,
-      "2027-04-27": null,
-      "2027-04-28": null,
-      "2027-04-29": null,
-      "2027-04-30": null,
-      "2027-05-01": null,
-      "2027-05-02": null,
-      "2027-05-03": null,
-      "2027-05-04": null,
-      "2027-05-05": null,
-      "2027-05-06": null,
-      "2027-05-07": null,
-      "2027-05-08": null,
-      "2027-05-09": null,
-      "2027-05-10": null,
-      "2027-05-11": null,
-      "2027-05-12": null,
-      "2027-05-13": null,
-      "2027-05-14": null,
-      "2027-05-15": null,
-      "2027-05-16": null,
-      "2027-05-17": null,
-      "2027-05-18": null,
-      "2027-05-19": null,
-      "2027-05-20": null,
-      "2027-05-21": null,
-      "2027-05-22": null,
-      "2027-05-23": null,
-      "2027-05-24": null,
-      "2027-05-25": null,
-      "2027-05-26": null,
-      "2027-05-27": null,
-      "2027-05-28": null,
-      "2027-05-29": null,
-      "2027-05-30": null,
-      "2027-05-31": null,
-      "2027-06-01": null,
-      "2027-06-02": null,
-      "2027-06-03": null,
-      "2027-06-04": null,
-      "2027-06-05": null,
-      "2027-06-06": null,
-      "2027-06-07": null,
-      "2027-06-08": null,
-      "2027-06-09": null,
-      "2027-06-10": null,
-      "2027-06-11": null,
-      "2027-06-12": null,
-      "2027-06-13": null,
-      "2027-06-14": null,
-      "2027-06-15": null,
-      "2027-06-16": null,
-      "2027-06-17": null,
-      "2027-06-18": null,
-      "2027-06-19": null,
-      "2027-06-20": null,
-      "2027-06-21": null,
-      "2027-06-22": null,
-      "2027-06-23": null,
-      "2027-06-24": null,
-      "2027-06-25": null,
-      "2027-06-26": null,
-      "2027-06-27": null,
+      "2027-04-24": 242,
+      "2027-04-25": 242,
+      "2027-04-26": 222,
+      "2027-04-27": 222,
+      "2027-04-28": 222,
+      "2027-04-29": 222,
+      "2027-04-30": 242,
+      "2027-05-01": 242,
+      "2027-05-02": 242,
+      "2027-05-03": 252,
+      "2027-05-04": 252,
+      "2027-05-05": 252,
+      "2027-05-06": 252,
+      "2027-05-07": 252,
+      "2027-05-08": 252,
+      "2027-05-09": 252,
+      "2027-05-10": 252,
+      "2027-05-11": 252,
+      "2027-05-12": 252,
+      "2027-05-13": 252,
+      "2027-05-14": 252,
+      "2027-05-15": 252,
+      "2027-05-16": 252,
+      "2027-05-17": 252,
+      "2027-05-18": 252,
+      "2027-05-19": 252,
+      "2027-05-20": 252,
+      "2027-05-21": 252,
+      "2027-05-22": 252,
+      "2027-05-23": 252,
+      "2027-05-24": 252,
+      "2027-05-25": 252,
+      "2027-05-26": 252,
+      "2027-05-27": 252,
+      "2027-05-28": 252,
+      "2027-05-29": 252,
+      "2027-05-30": 252,
+      "2027-05-31": 252,
+      "2027-06-01": 252,
+      "2027-06-02": 252,
+      "2027-06-03": 252,
+      "2027-06-04": 252,
+      "2027-06-05": 252,
+      "2027-06-06": 252,
+      "2027-06-07": 252,
+      "2027-06-08": 252,
+      "2027-06-09": 252,
+      "2027-06-10": 252,
+      "2027-06-11": 252,
+      "2027-06-12": 252,
+      "2027-06-13": 252,
+      "2027-06-14": 332,
+      "2027-06-15": 332,
+      "2027-06-16": 332,
+      "2027-06-17": 332,
+      "2027-06-18": 272,
+      "2027-06-19": 272,
+      "2027-06-20": 272,
+      "2027-06-21": 272,
+      "2027-06-22": 272,
+      "2027-06-23": 272,
+      "2027-06-24": 272,
+      "2027-06-25": 272,
+      "2027-06-26": 272,
+      "2027-06-27": 272,
       "2027-06-28": 272,
       "2027-06-29": 272,
       "2027-06-30": 272,
@@ -26715,64 +26654,64 @@ const EXPEDIA_DATA = {
       "2027-07-02": 246,
       "2027-07-03": 246,
       "2027-07-04": 246,
-      "2027-07-05": 170,
-      "2027-07-06": 170,
-      "2027-07-07": 170,
-      "2027-07-08": 170
+      "2027-07-05": 170
     },
     "Ricasoli Garden Relais": {
-      "2026-07-10": null,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 250,
       "2026-07-11": null,
-      "2026-07-12": 239,
-      "2026-07-13": 233,
+      "2026-07-12": 271,
+      "2026-07-13": 239,
       "2026-07-14": null,
       "2026-07-15": null,
       "2026-07-16": 239,
-      "2026-07-17": null,
+      "2026-07-17": 271,
       "2026-07-18": null,
       "2026-07-19": null,
       "2026-07-20": null,
-      "2026-07-21": 239,
+      "2026-07-21": 271,
       "2026-07-22": null,
       "2026-07-23": null,
-      "2026-07-24": null,
-      "2026-07-25": 239,
-      "2026-07-26": null,
+      "2026-07-24": 271,
+      "2026-07-25": 271,
+      "2026-07-26": 239,
       "2026-07-27": 206,
       "2026-07-28": 206,
-      "2026-07-29": 239,
-      "2026-07-30": 206,
-      "2026-07-31": 233,
-      "2026-08-01": 233,
-      "2026-08-02": 233,
+      "2026-07-29": 252,
+      "2026-07-30": 271,
+      "2026-07-31": 239,
+      "2026-08-01": 239,
+      "2026-08-02": 239,
       "2026-08-03": 206,
       "2026-08-04": 206,
-      "2026-08-05": 233,
-      "2026-08-06": 233,
-      "2026-08-07": 239,
-      "2026-08-08": 239,
+      "2026-08-05": 239,
+      "2026-08-06": 239,
+      "2026-08-07": 252,
+      "2026-08-08": 252,
       "2026-08-09": 206,
       "2026-08-10": 206,
       "2026-08-11": 206,
-      "2026-08-12": 239,
+      "2026-08-12": 271,
       "2026-08-13": 206,
-      "2026-08-14": 239,
-      "2026-08-15": 239,
+      "2026-08-14": 271,
+      "2026-08-15": 271,
       "2026-08-16": 206,
       "2026-08-17": 206,
       "2026-08-18": 206,
-      "2026-08-19": 233,
-      "2026-08-20": 239,
+      "2026-08-19": 239,
+      "2026-08-20": 271,
       "2026-08-21": 206,
       "2026-08-22": 206,
       "2026-08-23": 206,
-      "2026-08-24": 233,
-      "2026-08-25": 233,
-      "2026-08-26": 233,
+      "2026-08-24": 239,
+      "2026-08-25": 239,
+      "2026-08-26": 239,
       "2026-08-27": 206,
       "2026-08-28": 206,
       "2026-08-29": 206,
-      "2026-08-30": 233,
+      "2026-08-30": 239,
       "2026-08-31": 206,
       "2026-09-01": 368,
       "2026-09-02": 368,
@@ -27081,12 +27020,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Velona's Jungle Luxury Suites": {
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
@@ -27447,379 +27386,379 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     }
   },
   "search_current_firenze": {
-    "2026-07-10": 54679,
-    "2026-07-11": 55068,
-    "2026-07-12": 52001,
-    "2026-07-13": 52059,
-    "2026-07-14": 52136,
-    "2026-07-15": 52229,
-    "2026-07-16": 50212,
-    "2026-07-17": 50079,
-    "2026-07-18": 49585,
-    "2026-07-19": 48025,
-    "2026-07-20": 51444,
-    "2026-07-21": 52316,
-    "2026-07-22": 52810,
-    "2026-07-23": 51538,
-    "2026-07-24": 48405,
-    "2026-07-25": 45090,
-    "2026-07-26": 41968,
-    "2026-07-27": 43668,
-    "2026-07-28": 42320,
-    "2026-07-29": 40818,
-    "2026-07-30": 39262,
-    "2026-07-31": 37803,
-    "2026-08-01": 39661,
-    "2026-08-02": 39753,
-    "2026-08-03": 40598,
-    "2026-08-04": 41078,
-    "2026-08-05": 40048,
-    "2026-08-06": 40412,
-    "2026-08-07": 40737,
-    "2026-08-08": 38270,
-    "2026-08-09": 36638,
-    "2026-08-10": 38624,
-    "2026-08-11": 38203,
-    "2026-08-12": 37690,
-    "2026-08-13": 38748,
-    "2026-08-14": 37640,
-    "2026-08-15": 36325,
-    "2026-08-16": 36053,
-    "2026-08-17": 38097,
-    "2026-08-18": 38443,
-    "2026-08-19": 38669,
-    "2026-08-20": 35893,
-    "2026-08-21": 34749,
-    "2026-08-22": 33138,
-    "2026-08-23": 31853,
-    "2026-08-24": 33496,
-    "2026-08-25": 33946,
-    "2026-08-26": 33929,
-    "2026-08-27": 33890,
-    "2026-08-28": 34097,
-    "2026-08-29": 34308,
-    "2026-08-30": 34316,
-    "2026-08-31": 33741,
-    "2026-09-01": 38702,
-    "2026-09-02": 41632,
-    "2026-09-03": 46173,
-    "2026-09-04": 47248,
-    "2026-09-05": 48440,
-    "2026-09-06": 49299,
-    "2026-09-07": 51645,
-    "2026-09-08": 52879,
-    "2026-09-09": 55607,
-    "2026-09-10": 57544,
-    "2026-09-11": 57066,
-    "2026-09-12": 55127,
-    "2026-09-13": 52888,
-    "2026-09-14": 52418,
-    "2026-09-15": 51644,
-    "2026-09-16": 51242,
-    "2026-09-17": 54615,
-    "2026-09-18": 51707,
-    "2026-09-19": 49940,
-    "2026-09-20": 49244,
-    "2026-09-21": 49626,
-    "2026-09-22": 50743,
-    "2026-09-23": 49707,
-    "2026-09-24": 50838,
-    "2026-09-25": 48021,
-    "2026-09-26": 45124,
-    "2026-09-27": 41930,
-    "2026-09-28": 40052,
-    "2026-09-29": 39236,
-    "2026-09-30": 36616,
-    "2026-10-01": 38985,
-    "2026-10-02": 39376,
-    "2026-10-03": 40292,
-    "2026-10-04": 39250,
-    "2026-10-05": 41018,
-    "2026-10-06": 40079,
-    "2026-10-07": 38658,
-    "2026-10-08": 37508,
-    "2026-10-09": 36436,
-    "2026-10-10": 34582,
-    "2026-10-11": 33082,
-    "2026-10-12": 33658,
-    "2026-10-13": 33496,
-    "2026-10-14": 32586,
-    "2026-10-15": 31982,
-    "2026-10-16": 30279,
-    "2026-10-17": 28669,
-    "2026-10-18": 26516,
-    "2026-10-19": 25851,
-    "2026-10-20": 24801,
-    "2026-10-21": 22934,
-    "2026-10-22": 20398,
-    "2026-10-23": 19205,
-    "2026-10-24": 17815,
-    "2026-10-25": 16802,
-    "2026-10-26": 16774,
-    "2026-10-27": 15195,
-    "2026-10-28": 13960,
-    "2026-10-29": 12480,
-    "2026-10-30": 10879,
-    "2026-10-31": 9568,
-    "2026-11-01": 10566,
-    "2026-11-02": 10336,
-    "2026-11-03": 10139,
-    "2026-11-04": 10129,
-    "2026-11-05": 10105,
-    "2026-11-06": 9750,
-    "2026-11-07": 9588,
-    "2026-11-08": 9661,
-    "2026-11-09": 10053,
-    "2026-11-10": 10449,
-    "2026-11-11": 10315,
-    "2026-11-12": 9848,
-    "2026-11-13": 9168,
-    "2026-11-14": 8585,
-    "2026-11-15": 8011,
-    "2026-11-16": 7998,
-    "2026-11-17": 7207,
-    "2026-11-18": 7191,
-    "2026-11-19": 7350,
-    "2026-11-20": 8259,
-    "2026-11-21": 8498,
-    "2026-11-22": 8835,
-    "2026-11-23": 9270,
-    "2026-11-24": 9323,
-    "2026-11-25": 9222,
-    "2026-11-26": 9096,
-    "2026-11-27": 9423,
-    "2026-11-28": 8721,
-    "2026-11-29": 6642,
-    "2026-11-30": 4611,
-    "2026-12-01": 4440,
-    "2026-12-02": 4049,
-    "2026-12-03": 4291,
-    "2026-12-04": 4272,
-    "2026-12-05": 4217,
-    "2026-12-06": 4224,
-    "2026-12-07": 4201,
-    "2026-12-08": 3912,
-    "2026-12-09": 3794,
-    "2026-12-10": 3514,
-    "2026-12-11": 3367,
-    "2026-12-12": 3298,
-    "2026-12-13": 3216,
-    "2026-12-14": 3684,
-    "2026-12-15": 3521,
-    "2026-12-16": 3462,
-    "2026-12-17": 3409,
-    "2026-12-18": 3385,
-    "2026-12-19": 3877,
-    "2026-12-20": 4255,
-    "2026-12-21": 4590,
-    "2026-12-22": 4960,
-    "2026-12-23": 5607,
-    "2026-12-24": 6392,
-    "2026-12-25": 7103,
-    "2026-12-26": 8166,
-    "2026-12-27": 8356,
-    "2026-12-28": 8663,
-    "2026-12-29": 8046,
-    "2026-12-30": 7502,
-    "2026-12-31": 6748,
-    "2027-01-01": 6263,
-    "2027-01-02": 4289,
-    "2027-01-03": 3562,
-    "2027-01-04": 3200,
-    "2027-01-05": 3330,
-    "2027-01-06": 3414,
-    "2027-01-07": 3484,
-    "2027-01-08": 3390,
-    "2027-01-09": 3036,
-    "2027-01-10": 2693,
-    "2027-01-11": 2649,
-    "2027-01-12": 2435,
-    "2027-01-13": 2287,
-    "2027-01-14": 2091,
-    "2027-01-15": 1963,
-    "2027-01-16": 1825,
-    "2027-01-17": 1781,
-    "2027-01-18": 1639,
-    "2027-01-19": 1673,
-    "2027-01-20": 1459,
-    "2027-01-21": 1402,
-    "2027-01-22": 1405,
-    "2027-01-23": 1360,
-    "2027-01-24": 1415,
-    "2027-01-25": 1431,
-    "2027-01-26": 1356,
-    "2027-01-27": 1244,
-    "2027-01-28": 1193,
-    "2027-01-29": 1061,
-    "2027-01-30": 1031,
-    "2027-01-31": 876,
-    "2027-02-01": 1265,
-    "2027-02-02": 1353,
-    "2027-02-03": 1280,
-    "2027-02-04": 1367,
-    "2027-02-05": 1677,
-    "2027-02-06": 1797,
-    "2027-02-07": 1877,
-    "2027-02-08": 2081,
-    "2027-02-09": 2038,
-    "2027-02-10": 2234,
-    "2027-02-11": 2440,
-    "2027-02-12": 2294,
-    "2027-02-13": 2408,
-    "2027-02-14": 2496,
-    "2027-02-15": 2613,
-    "2027-02-16": 2608,
-    "2027-02-17": 2377,
-    "2027-02-18": 2223,
-    "2027-02-19": 1826,
-    "2027-02-20": 1507,
-    "2027-02-21": 1369,
-    "2027-02-22": 1425,
-    "2027-02-23": 1384,
-    "2027-02-24": 1403,
-    "2027-02-25": 1377,
-    "2027-02-26": 1369,
-    "2027-02-27": 1143,
-    "2027-02-28": 1038,
-    "2027-03-01": 1531,
-    "2027-03-02": 1653,
-    "2027-03-03": 1728,
-    "2027-03-04": 1854,
-    "2027-03-05": 1940,
-    "2027-03-06": 2045,
-    "2027-03-07": 2115,
-    "2027-03-08": 2425,
-    "2027-03-09": 2503,
-    "2027-03-10": 2541,
-    "2027-03-11": 2843,
-    "2027-03-12": 3044,
-    "2027-03-13": 2931,
-    "2027-03-14": 2716,
-    "2027-03-15": 2660,
-    "2027-03-16": 2614,
-    "2027-03-17": 2958,
-    "2027-03-18": 2826,
-    "2027-03-19": 2757,
-    "2027-03-20": 2512,
-    "2027-03-21": 2766,
-    "2027-03-22": 3233,
-    "2027-03-23": 3401,
-    "2027-03-24": 3287,
-    "2027-03-25": 3163,
-    "2027-03-26": 2672,
-    "2027-03-27": 2170,
-    "2027-03-28": 1936,
-    "2027-03-29": 1937,
-    "2027-03-30": 1950,
-    "2027-03-31": 1814,
-    "2027-04-01": 2228,
-    "2027-04-02": 2583,
-    "2027-04-03": 2373,
-    "2027-04-04": 2496,
-    "2027-04-05": 2748,
-    "2027-04-06": 3116,
-    "2027-04-07": 3223,
-    "2027-04-08": 3093,
-    "2027-04-09": 2850,
-    "2027-04-10": 2717,
-    "2027-04-11": 2748,
-    "2027-04-12": 2915,
-    "2027-04-13": 2922,
-    "2027-04-14": 2904,
-    "2027-04-15": 2933,
-    "2027-04-16": 2758,
-    "2027-04-17": 2665,
-    "2027-04-18": 2549,
-    "2027-04-19": 2614,
-    "2027-04-20": 2808,
-    "2027-04-21": 2715,
-    "2027-04-22": 2786,
-    "2027-04-23": 2571,
-    "2027-04-24": 2364,
-    "2027-04-25": 2208,
-    "2027-04-26": 2238,
-    "2027-04-27": 2066,
-    "2027-04-28": 1865,
-    "2027-04-29": 2028,
-    "2027-04-30": 1881,
-    "2027-05-01": 2052,
-    "2027-05-02": 2142,
-    "2027-05-03": 2344,
-    "2027-05-04": 2579,
-    "2027-05-05": 2913,
-    "2027-05-06": 3127,
-    "2027-05-07": 3123,
-    "2027-05-08": 3040,
-    "2027-05-09": 2905,
-    "2027-05-10": 2793,
-    "2027-05-11": 2848,
-    "2027-05-12": 2726,
-    "2027-05-13": 2765,
-    "2027-05-14": 2547,
-    "2027-05-15": 2374,
-    "2027-05-16": 2234,
-    "2027-05-17": 2323,
-    "2027-05-18": 2438,
-    "2027-05-19": 2489,
-    "2027-05-20": 2508,
-    "2027-05-21": 2538,
-    "2027-05-22": 2333,
-    "2027-05-23": 2189,
-    "2027-05-24": 2166,
-    "2027-05-25": 2007,
-    "2027-05-26": 1802,
-    "2027-05-27": 1557,
-    "2027-05-28": 1432,
-    "2027-05-29": 1272,
-    "2027-05-30": 1220,
-    "2027-05-31": 1029,
-    "2027-06-01": 1176,
-    "2027-06-02": 1179,
-    "2027-06-03": 1228,
-    "2027-06-04": 1148,
-    "2027-06-05": 990,
-    "2027-06-06": 1055,
-    "2027-06-07": 1088,
-    "2027-06-08": 1090,
-    "2027-06-09": 1036,
-    "2027-06-10": 1125,
-    "2027-06-11": 1071,
-    "2027-06-12": 956,
-    "2027-06-13": 877,
-    "2027-06-14": 946,
-    "2027-06-15": 924,
-    "2027-06-16": 902,
-    "2027-06-17": 943,
-    "2027-06-18": 818,
-    "2027-06-19": 692,
-    "2027-06-20": 700,
-    "2027-06-21": 1102,
-    "2027-06-22": 1060,
-    "2027-06-23": 1017,
-    "2027-06-24": 665,
-    "2027-06-25": 540,
-    "2027-06-26": 431,
-    "2027-06-27": 429,
-    "2027-06-28": 420,
-    "2027-06-29": 456,
-    "2027-06-30": 457,
-    "2027-07-01": 507,
-    "2027-07-02": 524,
-    "2027-07-03": 517,
-    "2027-07-04": 469,
-    "2027-07-05": 461,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2026-07-07": 56735,
+    "2026-07-08": 54933,
+    "2026-07-09": 53652,
+    "2026-07-10": 53740,
+    "2026-07-11": 54115,
+    "2026-07-12": 50996,
+    "2026-07-13": 50952,
+    "2026-07-14": 51067,
+    "2026-07-15": 51217,
+    "2026-07-16": 49136,
+    "2026-07-17": 48909,
+    "2026-07-18": 47944,
+    "2026-07-19": 46189,
+    "2026-07-20": 49698,
+    "2026-07-21": 50979,
+    "2026-07-22": 51559,
+    "2026-07-23": 50373,
+    "2026-07-24": 47278,
+    "2026-07-25": 43925,
+    "2026-07-26": 40844,
+    "2026-07-27": 42424,
+    "2026-07-28": 41106,
+    "2026-07-29": 39689,
+    "2026-07-30": 38190,
+    "2026-07-31": 36685,
+    "2026-08-01": 38575,
+    "2026-08-02": 38682,
+    "2026-08-03": 39507,
+    "2026-08-04": 39906,
+    "2026-08-05": 38955,
+    "2026-08-06": 39365,
+    "2026-08-07": 39630,
+    "2026-08-08": 37400,
+    "2026-08-09": 35757,
+    "2026-08-10": 37650,
+    "2026-08-11": 37159,
+    "2026-08-12": 36663,
+    "2026-08-13": 37791,
+    "2026-08-14": 36691,
+    "2026-08-15": 35201,
+    "2026-08-16": 34840,
+    "2026-08-17": 36699,
+    "2026-08-18": 37298,
+    "2026-08-19": 37720,
+    "2026-08-20": 35060,
+    "2026-08-21": 33914,
+    "2026-08-22": 32250,
+    "2026-08-23": 31028,
+    "2026-08-24": 32742,
+    "2026-08-25": 33120,
+    "2026-08-26": 32997,
+    "2026-08-27": 32831,
+    "2026-08-28": 33090,
+    "2026-08-29": 33440,
+    "2026-08-30": 33468,
+    "2026-08-31": 32855,
+    "2026-09-01": 37709,
+    "2026-09-02": 40587,
+    "2026-09-03": 45050,
+    "2026-09-04": 46251,
+    "2026-09-05": 47397,
+    "2026-09-06": 48176,
+    "2026-09-07": 50424,
+    "2026-09-08": 51754,
+    "2026-09-09": 54486,
+    "2026-09-10": 56430,
+    "2026-09-11": 55897,
+    "2026-09-12": 54082,
+    "2026-09-13": 51576,
+    "2026-09-14": 51002,
+    "2026-09-15": 50250,
+    "2026-09-16": 49810,
+    "2026-09-17": 53152,
+    "2026-09-18": 50455,
+    "2026-09-19": 48820,
+    "2026-09-20": 47991,
+    "2026-09-21": 48389,
+    "2026-09-22": 49343,
+    "2026-09-23": 48274,
+    "2026-09-24": 49273,
+    "2026-09-25": 46507,
+    "2026-09-26": 43550,
+    "2026-09-27": 40568,
+    "2026-09-28": 38931,
+    "2026-09-29": 38091,
+    "2026-09-30": 35538,
+    "2026-10-01": 38008,
+    "2026-10-02": 38403,
+    "2026-10-03": 39239,
+    "2026-10-04": 38325,
+    "2026-10-05": 40070,
+    "2026-10-06": 39242,
+    "2026-10-07": 37748,
+    "2026-10-08": 36605,
+    "2026-10-09": 35545,
+    "2026-10-10": 33530,
+    "2026-10-11": 32019,
+    "2026-10-12": 32504,
+    "2026-10-13": 32392,
+    "2026-10-14": 31566,
+    "2026-10-15": 31015,
+    "2026-10-16": 29452,
+    "2026-10-17": 27833,
+    "2026-10-18": 25761,
+    "2026-10-19": 24995,
+    "2026-10-20": 23966,
+    "2026-10-21": 22183,
+    "2026-10-22": 19789,
+    "2026-10-23": 18624,
+    "2026-10-24": 17384,
+    "2026-10-25": 16379,
+    "2026-10-26": 16351,
+    "2026-10-27": 14840,
+    "2026-10-28": 13577,
+    "2026-10-29": 12137,
+    "2026-10-30": 10555,
+    "2026-10-31": 9292,
+    "2026-11-01": 10318,
+    "2026-11-02": 10099,
+    "2026-11-03": 9908,
+    "2026-11-04": 9863,
+    "2026-11-05": 9700,
+    "2026-11-06": 9299,
+    "2026-11-07": 9176,
+    "2026-11-08": 9274,
+    "2026-11-09": 9543,
+    "2026-11-10": 9931,
+    "2026-11-11": 9823,
+    "2026-11-12": 9491,
+    "2026-11-13": 8831,
+    "2026-11-14": 8236,
+    "2026-11-15": 7792,
+    "2026-11-16": 7731,
+    "2026-11-17": 6955,
+    "2026-11-18": 6993,
+    "2026-11-19": 7130,
+    "2026-11-20": 8037,
+    "2026-11-21": 8266,
+    "2026-11-22": 8605,
+    "2026-11-23": 9055,
+    "2026-11-24": 9097,
+    "2026-11-25": 8949,
+    "2026-11-26": 8825,
+    "2026-11-27": 9144,
+    "2026-11-28": 8457,
+    "2026-11-29": 6418,
+    "2026-11-30": 4417,
+    "2026-12-01": 4247,
+    "2026-12-02": 3876,
+    "2026-12-03": 4124,
+    "2026-12-04": 4182,
+    "2026-12-05": 4129,
+    "2026-12-06": 4153,
+    "2026-12-07": 4129,
+    "2026-12-08": 3849,
+    "2026-12-09": 3737,
+    "2026-12-10": 3440,
+    "2026-12-11": 3299,
+    "2026-12-12": 3225,
+    "2026-12-13": 3147,
+    "2026-12-14": 3538,
+    "2026-12-15": 3367,
+    "2026-12-16": 3316,
+    "2026-12-17": 3272,
+    "2026-12-18": 3264,
+    "2026-12-19": 3688,
+    "2026-12-20": 4101,
+    "2026-12-21": 4452,
+    "2026-12-22": 4842,
+    "2026-12-23": 5405,
+    "2026-12-24": 6144,
+    "2026-12-25": 6826,
+    "2026-12-26": 7917,
+    "2026-12-27": 8072,
+    "2026-12-28": 8389,
+    "2026-12-29": 7834,
+    "2026-12-30": 7320,
+    "2026-12-31": 6544,
+    "2027-01-01": 6085,
+    "2027-01-02": 4206,
+    "2027-01-03": 3486,
+    "2027-01-04": 3126,
+    "2027-01-05": 3240,
+    "2027-01-06": 3302,
+    "2027-01-07": 3371,
+    "2027-01-08": 3252,
+    "2027-01-09": 2931,
+    "2027-01-10": 2597,
+    "2027-01-11": 2563,
+    "2027-01-12": 2368,
+    "2027-01-13": 2233,
+    "2027-01-14": 2023,
+    "2027-01-15": 1898,
+    "2027-01-16": 1759,
+    "2027-01-17": 1700,
+    "2027-01-18": 1567,
+    "2027-01-19": 1592,
+    "2027-01-20": 1387,
+    "2027-01-21": 1355,
+    "2027-01-22": 1364,
+    "2027-01-23": 1338,
+    "2027-01-24": 1399,
+    "2027-01-25": 1415,
+    "2027-01-26": 1332,
+    "2027-01-27": 1213,
+    "2027-01-28": 1173,
+    "2027-01-29": 1038,
+    "2027-01-30": 1015,
+    "2027-01-31": 855,
+    "2027-02-01": 1227,
+    "2027-02-02": 1314,
+    "2027-02-03": 1230,
+    "2027-02-04": 1321,
+    "2027-02-05": 1619,
+    "2027-02-06": 1732,
+    "2027-02-07": 1821,
+    "2027-02-08": 2029,
+    "2027-02-09": 1987,
+    "2027-02-10": 2176,
+    "2027-02-11": 2379,
+    "2027-02-12": 2251,
+    "2027-02-13": 2342,
+    "2027-02-14": 2414,
+    "2027-02-15": 2532,
+    "2027-02-16": 2520,
+    "2027-02-17": 2303,
+    "2027-02-18": 2155,
+    "2027-02-19": 1783,
+    "2027-02-20": 1444,
+    "2027-02-21": 1305,
+    "2027-02-22": 1360,
+    "2027-02-23": 1326,
+    "2027-02-24": 1342,
+    "2027-02-25": 1328,
+    "2027-02-26": 1320,
+    "2027-02-27": 1062,
+    "2027-02-28": 963,
+    "2027-03-01": 1452,
+    "2027-03-02": 1574,
+    "2027-03-03": 1652,
+    "2027-03-04": 1778,
+    "2027-03-05": 1882,
+    "2027-03-06": 1986,
+    "2027-03-07": 2044,
+    "2027-03-08": 2273,
+    "2027-03-09": 2353,
+    "2027-03-10": 2474,
+    "2027-03-11": 2750,
+    "2027-03-12": 2933,
+    "2027-03-13": 2831,
+    "2027-03-14": 2639,
+    "2027-03-15": 2577,
+    "2027-03-16": 2549,
+    "2027-03-17": 2796,
+    "2027-03-18": 2684,
+    "2027-03-19": 2612,
+    "2027-03-20": 2376,
+    "2027-03-21": 2667,
+    "2027-03-22": 3122,
+    "2027-03-23": 3301,
+    "2027-03-24": 3204,
+    "2027-03-25": 3091,
+    "2027-03-26": 2607,
+    "2027-03-27": 2109,
+    "2027-03-28": 1877,
+    "2027-03-29": 1847,
+    "2027-03-30": 1854,
+    "2027-03-31": 1703,
+    "2027-04-01": 2128,
+    "2027-04-02": 2478,
+    "2027-04-03": 2287,
+    "2027-04-04": 2399,
+    "2027-04-05": 2629,
+    "2027-04-06": 2974,
+    "2027-04-07": 3091,
+    "2027-04-08": 2960,
+    "2027-04-09": 2728,
+    "2027-04-10": 2593,
+    "2027-04-11": 2622,
+    "2027-04-12": 2806,
+    "2027-04-13": 2795,
+    "2027-04-14": 2783,
+    "2027-04-15": 2806,
+    "2027-04-16": 2631,
+    "2027-04-17": 2546,
+    "2027-04-18": 2464,
+    "2027-04-19": 2530,
+    "2027-04-20": 2711,
+    "2027-04-21": 2631,
+    "2027-04-22": 2698,
+    "2027-04-23": 2479,
+    "2027-04-24": 2269,
+    "2027-04-25": 2128,
+    "2027-04-26": 2168,
+    "2027-04-27": 2008,
+    "2027-04-28": 1802,
+    "2027-04-29": 1967,
+    "2027-04-30": 1792,
+    "2027-05-01": 1919,
+    "2027-05-02": 1999,
+    "2027-05-03": 2183,
+    "2027-05-04": 2424,
+    "2027-05-05": 2740,
+    "2027-05-06": 2950,
+    "2027-05-07": 2935,
+    "2027-05-08": 2815,
+    "2027-05-09": 2685,
+    "2027-05-10": 2573,
+    "2027-05-11": 2612,
+    "2027-05-12": 2489,
+    "2027-05-13": 2506,
+    "2027-05-14": 2327,
+    "2027-05-15": 2143,
+    "2027-05-16": 2017,
+    "2027-05-17": 2122,
+    "2027-05-18": 2157,
+    "2027-05-19": 2201,
+    "2027-05-20": 2187,
+    "2027-05-21": 2266,
+    "2027-05-22": 2051,
+    "2027-05-23": 1907,
+    "2027-05-24": 1901,
+    "2027-05-25": 1807,
+    "2027-05-26": 1647,
+    "2027-05-27": 1440,
+    "2027-05-28": 1325,
+    "2027-05-29": 1185,
+    "2027-05-30": 1156,
+    "2027-05-31": 992,
+    "2027-06-01": 1143,
+    "2027-06-02": 1140,
+    "2027-06-03": 1180,
+    "2027-06-04": 1064,
+    "2027-06-05": 903,
+    "2027-06-06": 981,
+    "2027-06-07": 985,
+    "2027-06-08": 978,
+    "2027-06-09": 956,
+    "2027-06-10": 1058,
+    "2027-06-11": 1006,
+    "2027-06-12": 905,
+    "2027-06-13": 832,
+    "2027-06-14": 909,
+    "2027-06-15": 900,
+    "2027-06-16": 868,
+    "2027-06-17": 916,
+    "2027-06-18": 792,
+    "2027-06-19": 570,
+    "2027-06-20": 586,
+    "2027-06-21": 958,
+    "2027-06-22": 915,
+    "2027-06-23": 901,
+    "2027-06-24": 562,
+    "2027-06-25": 487,
+    "2027-06-26": 387,
+    "2027-06-27": 369,
+    "2027-06-28": 357,
+    "2027-06-29": 383,
+    "2027-06-30": 393,
+    "2027-07-01": 454,
+    "2027-07-02": 469,
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "search_previous_firenze": {
+    "2026-07-07": 63455,
+    "2026-07-08": 61937,
+    "2026-07-09": 61100,
     "2026-07-10": 60481,
     "2026-07-11": 59490,
     "2026-07-12": 56865,
@@ -28178,76 +28117,76 @@ const EXPEDIA_DATA = {
     "2027-06-30": 57291,
     "2027-07-01": 58126,
     "2027-07-02": 58310,
-    "2027-07-03": 55730,
-    "2027-07-04": 55317,
-    "2027-07-05": 58659,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "compset_avg": {
-    "2026-07-10": 215,
-    "2026-07-11": 310,
-    "2026-07-12": 327,
-    "2026-07-13": 252,
-    "2026-07-14": 296,
-    "2026-07-15": 326,
-    "2026-07-16": 258,
-    "2026-07-17": 343,
-    "2026-07-18": 300,
-    "2026-07-19": 306,
-    "2026-07-20": 269,
-    "2026-07-21": 252,
-    "2026-07-22": 273,
-    "2026-07-23": 244,
-    "2026-07-24": 482,
-    "2026-07-25": 283,
-    "2026-07-26": 288,
-    "2026-07-27": 224,
-    "2026-07-28": 257,
-    "2026-07-29": 225,
-    "2026-07-30": 255,
-    "2026-07-31": 319,
-    "2026-08-01": 263,
-    "2026-08-02": 260,
-    "2026-08-03": 255,
-    "2026-08-04": 254,
-    "2026-08-05": 250,
-    "2026-08-06": 254,
-    "2026-08-07": 249,
-    "2026-08-08": 233,
-    "2026-08-09": 236,
-    "2026-08-10": 260,
-    "2026-08-11": 250,
-    "2026-08-12": 215,
-    "2026-08-13": 203,
-    "2026-08-14": 217,
-    "2026-08-15": 244,
-    "2026-08-16": 211,
-    "2026-08-17": 224,
-    "2026-08-18": 207,
-    "2026-08-19": 205,
-    "2026-08-20": 210,
+    "2026-07-07": 354,
+    "2026-07-08": 273,
+    "2026-07-09": 204,
+    "2026-07-10": 227,
+    "2026-07-11": 287,
+    "2026-07-12": 256,
+    "2026-07-13": 251,
+    "2026-07-14": 256,
+    "2026-07-15": 324,
+    "2026-07-16": 253,
+    "2026-07-17": 306,
+    "2026-07-18": 297,
+    "2026-07-19": 269,
+    "2026-07-20": 286,
+    "2026-07-21": 258,
+    "2026-07-22": 248,
+    "2026-07-23": 337,
+    "2026-07-24": 430,
+    "2026-07-25": 294,
+    "2026-07-26": 294,
+    "2026-07-27": 233,
+    "2026-07-28": 264,
+    "2026-07-29": 232,
+    "2026-07-30": 270,
+    "2026-07-31": 320,
+    "2026-08-01": 269,
+    "2026-08-02": 266,
+    "2026-08-03": 258,
+    "2026-08-04": 241,
+    "2026-08-05": 252,
+    "2026-08-06": 241,
+    "2026-08-07": 243,
+    "2026-08-08": 230,
+    "2026-08-09": 242,
+    "2026-08-10": 262,
+    "2026-08-11": 254,
+    "2026-08-12": 224,
+    "2026-08-13": 205,
+    "2026-08-14": 225,
+    "2026-08-15": 254,
+    "2026-08-16": 214,
+    "2026-08-17": 228,
+    "2026-08-18": 210,
+    "2026-08-19": 211,
+    "2026-08-20": 221,
     "2026-08-21": 230,
     "2026-08-22": 236,
-    "2026-08-23": 209,
-    "2026-08-24": 239,
-    "2026-08-25": 239,
-    "2026-08-26": 232,
+    "2026-08-23": 205,
+    "2026-08-24": 214,
+    "2026-08-25": 219,
+    "2026-08-26": 234,
     "2026-08-27": 218,
     "2026-08-28": 218,
     "2026-08-29": 237,
-    "2026-08-30": 249,
+    "2026-08-30": 252,
     "2026-08-31": 219,
     "2026-09-01": 356,
-    "2026-09-02": 366,
-    "2026-09-03": 330,
-    "2026-09-04": 337,
-    "2026-09-05": 420,
-    "2026-09-06": 399,
+    "2026-09-02": 371,
+    "2026-09-03": 326,
+    "2026-09-04": 335,
+    "2026-09-05": 415,
+    "2026-09-06": 394,
     "2026-09-07": 382,
     "2026-09-08": 425,
-    "2026-09-09": 406,
+    "2026-09-09": 421,
     "2026-09-10": 407,
     "2026-09-11": 415,
     "2026-09-12": 491,
@@ -28255,14 +28194,14 @@ const EXPEDIA_DATA = {
     "2026-09-14": 403,
     "2026-09-15": 413,
     "2026-09-16": 492,
-    "2026-09-17": 433,
-    "2026-09-18": 504,
+    "2026-09-17": 471,
+    "2026-09-18": 466,
     "2026-09-19": 513,
-    "2026-09-20": 488,
+    "2026-09-20": 491,
     "2026-09-21": 428,
     "2026-09-22": 466,
     "2026-09-23": 444,
-    "2026-09-24": 447,
+    "2026-09-24": 466,
     "2026-09-25": 517,
     "2026-09-26": 424,
     "2026-09-27": 456,
@@ -28271,7 +28210,7 @@ const EXPEDIA_DATA = {
     "2026-09-30": 466,
     "2026-10-01": 431,
     "2026-10-02": 441,
-    "2026-10-03": 525,
+    "2026-10-03": 516,
     "2026-10-04": 452,
     "2026-10-05": 395,
     "2026-10-06": 378,
@@ -28301,38 +28240,38 @@ const EXPEDIA_DATA = {
     "2026-10-30": 344,
     "2026-10-31": 344,
     "2026-11-01": 253,
-    "2026-11-02": 232,
-    "2026-11-03": 230,
-    "2026-11-04": 228,
-    "2026-11-05": 227,
+    "2026-11-02": 233,
+    "2026-11-03": 231,
+    "2026-11-04": 229,
+    "2026-11-05": 228,
     "2026-11-06": 238,
     "2026-11-07": 261,
-    "2026-11-08": 223,
-    "2026-11-09": 225,
-    "2026-11-10": 225,
-    "2026-11-11": 225,
-    "2026-11-12": 225,
+    "2026-11-08": 224,
+    "2026-11-09": 226,
+    "2026-11-10": 226,
+    "2026-11-11": 226,
+    "2026-11-12": 226,
     "2026-11-13": 235,
     "2026-11-14": 261,
-    "2026-11-15": 219,
-    "2026-11-16": 197,
-    "2026-11-17": 197,
-    "2026-11-18": 197,
-    "2026-11-19": 197,
+    "2026-11-15": 220,
+    "2026-11-16": 198,
+    "2026-11-17": 198,
+    "2026-11-18": 198,
+    "2026-11-19": 198,
     "2026-11-20": 212,
     "2026-11-21": 238,
-    "2026-11-22": 209,
-    "2026-11-23": 215,
-    "2026-11-24": 215,
-    "2026-11-25": 219,
-    "2026-11-26": 200,
+    "2026-11-22": 211,
+    "2026-11-23": 216,
+    "2026-11-24": 216,
+    "2026-11-25": 220,
+    "2026-11-26": 201,
     "2026-11-27": 229,
     "2026-11-28": 277,
-    "2026-11-29": 206,
-    "2026-11-30": 204,
-    "2026-12-01": 196,
-    "2026-12-02": 196,
-    "2026-12-03": 196,
+    "2026-11-29": 207,
+    "2026-11-30": 205,
+    "2026-12-01": 198,
+    "2026-12-02": 198,
+    "2026-12-03": 198,
     "2026-12-04": 217,
     "2026-12-05": 236,
     "2026-12-06": 236,
@@ -28448,10 +28387,10 @@ const EXPEDIA_DATA = {
     "2027-03-26": 355,
     "2027-03-27": 355,
     "2027-03-28": 355,
-    "2027-03-29": 335,
-    "2027-03-30": 266,
-    "2027-03-31": 266,
-    "2027-04-01": 295,
+    "2027-03-29": 327,
+    "2027-03-30": 258,
+    "2027-03-31": 258,
+    "2027-04-01": 286,
     "2027-04-02": 294,
     "2027-04-03": 349,
     "2027-04-04": 282,
@@ -28546,15 +28485,15 @@ const EXPEDIA_DATA = {
     "2027-07-02": 275,
     "2027-07-03": 275,
     "2027-07-04": 275,
-    "2027-07-05": 275,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-05": 275
   },
   "competitors": {
     "Casa del Sarto": {
-      "2026-07-10": 270,
-      "2026-07-11": 228,
+      "2026-07-07": 228,
+      "2026-07-08": 228,
+      "2026-07-09": 217,
+      "2026-07-10": 244,
+      "2026-07-11": 206,
       "2026-07-12": 206,
       "2026-07-13": 228,
       "2026-07-14": 228,
@@ -28562,9 +28501,9 @@ const EXPEDIA_DATA = {
       "2026-07-16": 217,
       "2026-07-17": 217,
       "2026-07-18": 206,
-      "2026-07-19": 233,
-      "2026-07-20": 233,
-      "2026-07-21": 233,
+      "2026-07-19": 217,
+      "2026-07-20": 217,
+      "2026-07-21": 217,
       "2026-07-22": 233,
       "2026-07-23": 233,
       "2026-07-24": 233,
@@ -28913,25 +28852,25 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Florence Art Apartments": {
-      "2026-07-10": 302,
-      "2026-07-11": 302,
-      "2026-07-12": 692,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": null,
+      "2026-07-11": null,
+      "2026-07-12": null,
       "2026-07-13": null,
       "2026-07-14": null,
       "2026-07-15": null,
       "2026-07-16": null,
-      "2026-07-17": 792,
+      "2026-07-17": null,
       "2026-07-18": null,
       "2026-07-19": 372,
       "2026-07-20": null,
       "2026-07-21": null,
-      "2026-07-22": 372,
+      "2026-07-22": 422,
       "2026-07-23": null,
       "2026-07-24": 792,
       "2026-07-25": null,
@@ -28973,14 +28912,14 @@ const EXPEDIA_DATA = {
       "2026-08-30": null,
       "2026-08-31": null,
       "2026-09-01": null,
-      "2026-09-02": 312,
+      "2026-09-02": null,
       "2026-09-03": null,
       "2026-09-04": null,
       "2026-09-05": null,
       "2026-09-06": null,
       "2026-09-07": null,
       "2026-09-08": null,
-      "2026-09-09": 312,
+      "2026-09-09": null,
       "2026-09-10": null,
       "2026-09-11": null,
       "2026-09-12": null,
@@ -28991,11 +28930,11 @@ const EXPEDIA_DATA = {
       "2026-09-17": null,
       "2026-09-18": null,
       "2026-09-19": null,
-      "2026-09-20": 472,
+      "2026-09-20": null,
       "2026-09-21": null,
       "2026-09-22": null,
       "2026-09-23": null,
-      "2026-09-24": 352,
+      "2026-09-24": null,
       "2026-09-25": null,
       "2026-09-26": null,
       "2026-09-27": null,
@@ -29279,12 +29218,12 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Granduomo Charming Accomodation": {
+      "2026-07-07": 480,
+      "2026-07-08": 480,
+      "2026-07-09": null,
       "2026-07-10": null,
       "2026-07-11": 586,
       "2026-07-12": 480,
@@ -29294,12 +29233,12 @@ const EXPEDIA_DATA = {
       "2026-07-16": 480,
       "2026-07-17": 480,
       "2026-07-18": 586,
-      "2026-07-19": 525,
+      "2026-07-19": 359,
       "2026-07-20": 480,
       "2026-07-21": 480,
       "2026-07-22": null,
-      "2026-07-23": null,
-      "2026-07-24": 639,
+      "2026-07-23": 525,
+      "2026-07-24": 586,
       "2026-07-25": 586,
       "2026-07-26": 359,
       "2026-07-27": 359,
@@ -29312,9 +29251,9 @@ const EXPEDIA_DATA = {
       "2026-08-03": 525,
       "2026-08-04": 359,
       "2026-08-05": 359,
-      "2026-08-06": 480,
-      "2026-08-07": 480,
-      "2026-08-08": 359,
+      "2026-08-06": 410,
+      "2026-08-07": 410,
+      "2026-08-08": 307,
       "2026-08-09": 307,
       "2026-08-10": 410,
       "2026-08-11": 448,
@@ -29354,8 +29293,8 @@ const EXPEDIA_DATA = {
       "2026-09-14": null,
       "2026-09-15": 355,
       "2026-09-16": 624,
-      "2026-09-17": null,
-      "2026-09-18": 548,
+      "2026-09-17": 624,
+      "2026-09-18": 355,
       "2026-09-19": 548,
       "2026-09-20": 548,
       "2026-09-21": 355,
@@ -29645,51 +29584,51 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Palazzo Alfani al David": {
-      "2026-07-10": null,
-      "2026-07-11": null,
-      "2026-07-12": null,
-      "2026-07-13": 280,
-      "2026-07-14": null,
-      "2026-07-15": 270,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 260,
+      "2026-07-11": 236,
+      "2026-07-12": 236,
+      "2026-07-13": 249,
+      "2026-07-14": 260,
+      "2026-07-15": 263,
       "2026-07-16": null,
       "2026-07-17": null,
-      "2026-07-18": 265,
-      "2026-07-19": 260,
-      "2026-07-20": 329,
+      "2026-07-18": 242,
+      "2026-07-19": 254,
+      "2026-07-20": 334,
       "2026-07-21": null,
-      "2026-07-22": 257,
+      "2026-07-22": 247,
       "2026-07-23": null,
       "2026-07-24": null,
-      "2026-07-25": 251,
-      "2026-07-26": 434,
-      "2026-07-27": null,
+      "2026-07-25": 271,
+      "2026-07-26": 422,
+      "2026-07-27": 247,
       "2026-07-28": 230,
       "2026-07-29": 218,
       "2026-07-30": 218,
       "2026-07-31": 236,
-      "2026-08-01": 253,
-      "2026-08-02": 248,
-      "2026-08-03": 247,
-      "2026-08-04": 247,
+      "2026-08-01": 280,
+      "2026-08-02": 268,
+      "2026-08-03": 261,
+      "2026-08-04": 250,
       "2026-08-05": 224,
       "2026-08-06": 247,
-      "2026-08-07": 247,
-      "2026-08-08": 247,
-      "2026-08-09": 247,
-      "2026-08-10": 239,
+      "2026-08-07": 251,
+      "2026-08-08": 273,
+      "2026-08-09": 272,
+      "2026-08-10": 247,
       "2026-08-11": 230,
       "2026-08-12": 230,
       "2026-08-13": 206,
       "2026-08-14": null,
       "2026-08-15": null,
-      "2026-08-16": 247,
-      "2026-08-17": 288,
+      "2026-08-16": 259,
+      "2026-08-17": 316,
       "2026-08-18": 206,
       "2026-08-19": 206,
       "2026-08-20": 224,
@@ -29702,14 +29641,14 @@ const EXPEDIA_DATA = {
       "2026-08-27": 230,
       "2026-08-28": 206,
       "2026-08-29": 206,
-      "2026-08-30": 231,
+      "2026-08-30": 238,
       "2026-08-31": 247,
       "2026-09-01": 271,
-      "2026-09-02": 341,
-      "2026-09-03": 355,
-      "2026-09-04": 351,
-      "2026-09-05": 380,
-      "2026-09-06": 372,
+      "2026-09-02": 318,
+      "2026-09-03": 331,
+      "2026-09-04": 339,
+      "2026-09-05": 351,
+      "2026-09-06": 347,
       "2026-09-07": 411,
       "2026-09-08": 434,
       "2026-09-09": 434,
@@ -30011,13 +29950,13 @@ const EXPEDIA_DATA = {
       "2027-07-02": 275,
       "2027-07-03": 275,
       "2027-07-04": 275,
-      "2027-07-05": 275,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": 275
     },
     "Residence Hilda": {
-      "2026-07-10": 217,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": 281,
+      "2026-07-10": 256,
       "2026-07-11": null,
       "2026-07-12": 230,
       "2026-07-13": 254,
@@ -30102,7 +30041,7 @@ const EXPEDIA_DATA = {
       "2026-09-30": 496,
       "2026-10-01": 484,
       "2026-10-02": 484,
-      "2026-10-03": 565,
+      "2026-10-03": 530,
       "2026-10-04": 530,
       "2026-10-05": 530,
       "2026-10-06": 484,
@@ -30377,54 +30316,54 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Residenza Della Signoria": {
-      "2026-07-10": 176,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": null,
       "2026-07-11": null,
       "2026-07-12": null,
-      "2026-07-13": 180,
-      "2026-07-14": 180,
+      "2026-07-13": 191,
+      "2026-07-14": 191,
       "2026-07-15": null,
-      "2026-07-16": null,
-      "2026-07-17": 188,
-      "2026-07-18": 199,
+      "2026-07-16": 227,
+      "2026-07-17": null,
+      "2026-07-18": 211,
       "2026-07-19": null,
-      "2026-07-20": 188,
-      "2026-07-21": 188,
+      "2026-07-20": null,
+      "2026-07-21": 195,
       "2026-07-22": null,
       "2026-07-23": null,
       "2026-07-24": null,
-      "2026-07-25": 223,
-      "2026-07-26": 195,
-      "2026-07-27": 195,
-      "2026-07-28": 195,
-      "2026-07-29": 195,
-      "2026-07-30": 195,
+      "2026-07-25": 234,
+      "2026-07-26": null,
+      "2026-07-27": null,
+      "2026-07-28": 246,
+      "2026-07-29": null,
+      "2026-07-30": 223,
       "2026-07-31": null,
       "2026-08-01": null,
       "2026-08-02": null,
       "2026-08-03": null,
-      "2026-08-04": 191,
+      "2026-08-04": 207,
       "2026-08-05": null,
       "2026-08-06": null,
-      "2026-08-07": 199,
+      "2026-08-07": 215,
       "2026-08-08": null,
       "2026-08-09": null,
       "2026-08-10": null,
-      "2026-08-11": 184,
+      "2026-08-11": 199,
       "2026-08-12": null,
       "2026-08-13": null,
       "2026-08-14": null,
       "2026-08-15": null,
       "2026-08-16": null,
       "2026-08-17": null,
-      "2026-08-18": 184,
-      "2026-08-19": 184,
-      "2026-08-20": 184,
+      "2026-08-18": null,
+      "2026-08-19": null,
+      "2026-08-20": null,
       "2026-08-21": null,
       "2026-08-22": null,
       "2026-08-23": null,
@@ -30498,38 +30437,38 @@ const EXPEDIA_DATA = {
       "2026-10-30": null,
       "2026-10-31": null,
       "2026-11-01": 184,
-      "2026-11-02": 176,
-      "2026-11-03": 176,
-      "2026-11-04": 176,
-      "2026-11-05": 176,
+      "2026-11-02": 184,
+      "2026-11-03": 184,
+      "2026-11-04": 184,
+      "2026-11-05": 184,
       "2026-11-06": null,
       "2026-11-07": null,
-      "2026-11-08": 176,
-      "2026-11-09": 176,
-      "2026-11-10": 176,
-      "2026-11-11": 176,
-      "2026-11-12": 176,
+      "2026-11-08": 184,
+      "2026-11-09": 184,
+      "2026-11-10": 184,
+      "2026-11-11": 184,
+      "2026-11-12": 184,
       "2026-11-13": null,
       "2026-11-14": null,
-      "2026-11-15": 176,
-      "2026-11-16": 176,
-      "2026-11-17": 176,
-      "2026-11-18": 176,
-      "2026-11-19": 176,
+      "2026-11-15": 184,
+      "2026-11-16": 184,
+      "2026-11-17": 184,
+      "2026-11-18": 184,
+      "2026-11-19": 184,
       "2026-11-20": null,
       "2026-11-21": null,
-      "2026-11-22": 176,
-      "2026-11-23": 176,
-      "2026-11-24": 176,
-      "2026-11-25": 176,
-      "2026-11-26": 176,
+      "2026-11-22": 184,
+      "2026-11-23": 184,
+      "2026-11-24": 184,
+      "2026-11-25": 184,
+      "2026-11-26": 184,
       "2026-11-27": null,
       "2026-11-28": null,
-      "2026-11-29": 176,
-      "2026-11-30": 176,
-      "2026-12-01": 176,
-      "2026-12-02": 176,
-      "2026-12-03": 176,
+      "2026-11-29": 184,
+      "2026-11-30": 184,
+      "2026-12-01": 184,
+      "2026-12-02": 184,
+      "2026-12-03": 184,
       "2026-12-04": null,
       "2026-12-05": null,
       "2026-12-06": null,
@@ -30743,25 +30682,25 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Residenza Marchesi Pontenani": {
-      "2026-07-10": 111,
-      "2026-07-11": 123,
+      "2026-07-07": null,
+      "2026-07-08": 111,
+      "2026-07-09": 115,
+      "2026-07-10": 123,
+      "2026-07-11": 119,
       "2026-07-12": 115,
-      "2026-07-13": 111,
-      "2026-07-14": null,
+      "2026-07-13": 115,
+      "2026-07-14": 119,
       "2026-07-15": null,
       "2026-07-16": 111,
-      "2026-07-17": 128,
+      "2026-07-17": null,
       "2026-07-18": null,
       "2026-07-19": 141,
       "2026-07-20": 115,
-      "2026-07-21": 119,
-      "2026-07-22": null,
+      "2026-07-21": 128,
+      "2026-07-22": 108,
       "2026-07-23": null,
       "2026-07-24": null,
       "2026-07-25": 169,
@@ -30774,7 +30713,7 @@ const EXPEDIA_DATA = {
       "2026-08-01": 136,
       "2026-08-02": 111,
       "2026-08-03": 112,
-      "2026-08-04": null,
+      "2026-08-04": 144,
       "2026-08-05": null,
       "2026-08-06": 126,
       "2026-08-07": 144,
@@ -30782,20 +30721,20 @@ const EXPEDIA_DATA = {
       "2026-08-09": null,
       "2026-08-10": null,
       "2026-08-11": null,
-      "2026-08-12": 115,
-      "2026-08-13": 111,
+      "2026-08-12": 127,
+      "2026-08-13": 119,
       "2026-08-14": 135,
       "2026-08-15": null,
       "2026-08-16": 112,
-      "2026-08-17": 135,
-      "2026-08-18": 152,
+      "2026-08-17": 127,
+      "2026-08-18": 144,
       "2026-08-19": 117,
-      "2026-08-20": 125,
+      "2026-08-20": 117,
       "2026-08-21": null,
       "2026-08-22": null,
-      "2026-08-23": 119,
-      "2026-08-24": null,
-      "2026-08-25": null,
+      "2026-08-23": 98,
+      "2026-08-24": 110,
+      "2026-08-25": 135,
       "2026-08-26": 105,
       "2026-08-27": 119,
       "2026-08-28": 144,
@@ -31011,10 +30950,10 @@ const EXPEDIA_DATA = {
       "2027-03-26": null,
       "2027-03-27": null,
       "2027-03-28": null,
-      "2027-03-29": 162,
-      "2027-03-30": 162,
-      "2027-03-31": 162,
-      "2027-04-01": 162,
+      "2027-03-29": 128,
+      "2027-03-30": 128,
+      "2027-03-31": 128,
+      "2027-04-01": 128,
       "2027-04-02": 146,
       "2027-04-03": null,
       "2027-04-04": 155,
@@ -31109,64 +31048,64 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     },
     "Ricasoli Garden Relais": {
-      "2026-07-10": null,
+      "2026-07-07": null,
+      "2026-07-08": null,
+      "2026-07-09": null,
+      "2026-07-10": 250,
       "2026-07-11": null,
-      "2026-07-12": 239,
-      "2026-07-13": 233,
+      "2026-07-12": 271,
+      "2026-07-13": 239,
       "2026-07-14": null,
       "2026-07-15": null,
       "2026-07-16": 239,
-      "2026-07-17": null,
+      "2026-07-17": 271,
       "2026-07-18": null,
       "2026-07-19": null,
       "2026-07-20": null,
-      "2026-07-21": 239,
+      "2026-07-21": 271,
       "2026-07-22": null,
       "2026-07-23": null,
-      "2026-07-24": null,
-      "2026-07-25": 239,
-      "2026-07-26": null,
+      "2026-07-24": 271,
+      "2026-07-25": 271,
+      "2026-07-26": 239,
       "2026-07-27": 206,
       "2026-07-28": 206,
-      "2026-07-29": 239,
-      "2026-07-30": 206,
-      "2026-07-31": 233,
-      "2026-08-01": 233,
-      "2026-08-02": 233,
+      "2026-07-29": 252,
+      "2026-07-30": 271,
+      "2026-07-31": 239,
+      "2026-08-01": 239,
+      "2026-08-02": 239,
       "2026-08-03": 206,
       "2026-08-04": 206,
-      "2026-08-05": 233,
-      "2026-08-06": 233,
-      "2026-08-07": 239,
-      "2026-08-08": 239,
+      "2026-08-05": 239,
+      "2026-08-06": 239,
+      "2026-08-07": 252,
+      "2026-08-08": 252,
       "2026-08-09": 206,
       "2026-08-10": 206,
       "2026-08-11": 206,
-      "2026-08-12": 239,
+      "2026-08-12": 271,
       "2026-08-13": 206,
-      "2026-08-14": 239,
-      "2026-08-15": 239,
+      "2026-08-14": 271,
+      "2026-08-15": 271,
       "2026-08-16": 206,
       "2026-08-17": 206,
       "2026-08-18": 206,
-      "2026-08-19": 233,
-      "2026-08-20": 239,
+      "2026-08-19": 239,
+      "2026-08-20": 271,
       "2026-08-21": 206,
       "2026-08-22": 206,
       "2026-08-23": 206,
-      "2026-08-24": 233,
-      "2026-08-25": 233,
-      "2026-08-26": 233,
+      "2026-08-24": 239,
+      "2026-08-25": 239,
+      "2026-08-26": 239,
       "2026-08-27": 206,
       "2026-08-28": 206,
       "2026-08-29": 206,
-      "2026-08-30": 233,
+      "2026-08-30": 239,
       "2026-08-31": 206,
       "2026-09-01": 368,
       "2026-09-02": 368,
@@ -31475,379 +31414,379 @@ const EXPEDIA_DATA = {
       "2027-07-02": null,
       "2027-07-03": null,
       "2027-07-04": null,
-      "2027-07-05": null,
-      "2027-07-06": null,
-      "2027-07-07": null,
-      "2027-07-08": null
+      "2027-07-05": null
     }
   },
   "search_current": {
-    "2026-07-10": 54679,
-    "2026-07-11": 55068,
-    "2026-07-12": 52001,
-    "2026-07-13": 52059,
-    "2026-07-14": 52136,
-    "2026-07-15": 52229,
-    "2026-07-16": 50212,
-    "2026-07-17": 50079,
-    "2026-07-18": 49585,
-    "2026-07-19": 48025,
-    "2026-07-20": 51444,
-    "2026-07-21": 52316,
-    "2026-07-22": 52810,
-    "2026-07-23": 51538,
-    "2026-07-24": 48405,
-    "2026-07-25": 45090,
-    "2026-07-26": 41968,
-    "2026-07-27": 43668,
-    "2026-07-28": 42320,
-    "2026-07-29": 40818,
-    "2026-07-30": 39262,
-    "2026-07-31": 37803,
-    "2026-08-01": 39661,
-    "2026-08-02": 39753,
-    "2026-08-03": 40598,
-    "2026-08-04": 41078,
-    "2026-08-05": 40048,
-    "2026-08-06": 40412,
-    "2026-08-07": 40737,
-    "2026-08-08": 38270,
-    "2026-08-09": 36638,
-    "2026-08-10": 38624,
-    "2026-08-11": 38203,
-    "2026-08-12": 37690,
-    "2026-08-13": 38748,
-    "2026-08-14": 37640,
-    "2026-08-15": 36325,
-    "2026-08-16": 36053,
-    "2026-08-17": 38097,
-    "2026-08-18": 38443,
-    "2026-08-19": 38669,
-    "2026-08-20": 35893,
-    "2026-08-21": 34749,
-    "2026-08-22": 33138,
-    "2026-08-23": 31853,
-    "2026-08-24": 33496,
-    "2026-08-25": 33946,
-    "2026-08-26": 33929,
-    "2026-08-27": 33890,
-    "2026-08-28": 34097,
-    "2026-08-29": 34308,
-    "2026-08-30": 34316,
-    "2026-08-31": 33741,
-    "2026-09-01": 38702,
-    "2026-09-02": 41632,
-    "2026-09-03": 46173,
-    "2026-09-04": 47248,
-    "2026-09-05": 48440,
-    "2026-09-06": 49299,
-    "2026-09-07": 51645,
-    "2026-09-08": 52879,
-    "2026-09-09": 55607,
-    "2026-09-10": 57544,
-    "2026-09-11": 57066,
-    "2026-09-12": 55127,
-    "2026-09-13": 52888,
-    "2026-09-14": 52418,
-    "2026-09-15": 51644,
-    "2026-09-16": 51242,
-    "2026-09-17": 54615,
-    "2026-09-18": 51707,
-    "2026-09-19": 49940,
-    "2026-09-20": 49244,
-    "2026-09-21": 49626,
-    "2026-09-22": 50743,
-    "2026-09-23": 49707,
-    "2026-09-24": 50838,
-    "2026-09-25": 48021,
-    "2026-09-26": 45124,
-    "2026-09-27": 41930,
-    "2026-09-28": 40052,
-    "2026-09-29": 39236,
-    "2026-09-30": 36616,
-    "2026-10-01": 38985,
-    "2026-10-02": 39376,
-    "2026-10-03": 40292,
-    "2026-10-04": 39250,
-    "2026-10-05": 41018,
-    "2026-10-06": 40079,
-    "2026-10-07": 38658,
-    "2026-10-08": 37508,
-    "2026-10-09": 36436,
-    "2026-10-10": 34582,
-    "2026-10-11": 33082,
-    "2026-10-12": 33658,
-    "2026-10-13": 33496,
-    "2026-10-14": 32586,
-    "2026-10-15": 31982,
-    "2026-10-16": 30279,
-    "2026-10-17": 28669,
-    "2026-10-18": 26516,
-    "2026-10-19": 25851,
-    "2026-10-20": 24801,
-    "2026-10-21": 22934,
-    "2026-10-22": 20398,
-    "2026-10-23": 19205,
-    "2026-10-24": 17815,
-    "2026-10-25": 16802,
-    "2026-10-26": 16774,
-    "2026-10-27": 15195,
-    "2026-10-28": 13960,
-    "2026-10-29": 12480,
-    "2026-10-30": 10879,
-    "2026-10-31": 9568,
-    "2026-11-01": 10566,
-    "2026-11-02": 10336,
-    "2026-11-03": 10139,
-    "2026-11-04": 10129,
-    "2026-11-05": 10105,
-    "2026-11-06": 9750,
-    "2026-11-07": 9588,
-    "2026-11-08": 9661,
-    "2026-11-09": 10053,
-    "2026-11-10": 10449,
-    "2026-11-11": 10315,
-    "2026-11-12": 9848,
-    "2026-11-13": 9168,
-    "2026-11-14": 8585,
-    "2026-11-15": 8011,
-    "2026-11-16": 7998,
-    "2026-11-17": 7207,
-    "2026-11-18": 7191,
-    "2026-11-19": 7350,
-    "2026-11-20": 8259,
-    "2026-11-21": 8498,
-    "2026-11-22": 8835,
-    "2026-11-23": 9270,
-    "2026-11-24": 9323,
-    "2026-11-25": 9222,
-    "2026-11-26": 9096,
-    "2026-11-27": 9423,
-    "2026-11-28": 8721,
-    "2026-11-29": 6642,
-    "2026-11-30": 4611,
-    "2026-12-01": 4440,
-    "2026-12-02": 4049,
-    "2026-12-03": 4291,
-    "2026-12-04": 4272,
-    "2026-12-05": 4217,
-    "2026-12-06": 4224,
-    "2026-12-07": 4201,
-    "2026-12-08": 3912,
-    "2026-12-09": 3794,
-    "2026-12-10": 3514,
-    "2026-12-11": 3367,
-    "2026-12-12": 3298,
-    "2026-12-13": 3216,
-    "2026-12-14": 3684,
-    "2026-12-15": 3521,
-    "2026-12-16": 3462,
-    "2026-12-17": 3409,
-    "2026-12-18": 3385,
-    "2026-12-19": 3877,
-    "2026-12-20": 4255,
-    "2026-12-21": 4590,
-    "2026-12-22": 4960,
-    "2026-12-23": 5607,
-    "2026-12-24": 6392,
-    "2026-12-25": 7103,
-    "2026-12-26": 8166,
-    "2026-12-27": 8356,
-    "2026-12-28": 8663,
-    "2026-12-29": 8046,
-    "2026-12-30": 7502,
-    "2026-12-31": 6748,
-    "2027-01-01": 6263,
-    "2027-01-02": 4289,
-    "2027-01-03": 3562,
-    "2027-01-04": 3200,
-    "2027-01-05": 3330,
-    "2027-01-06": 3414,
-    "2027-01-07": 3484,
-    "2027-01-08": 3390,
-    "2027-01-09": 3036,
-    "2027-01-10": 2693,
-    "2027-01-11": 2649,
-    "2027-01-12": 2435,
-    "2027-01-13": 2287,
-    "2027-01-14": 2091,
-    "2027-01-15": 1963,
-    "2027-01-16": 1825,
-    "2027-01-17": 1781,
-    "2027-01-18": 1639,
-    "2027-01-19": 1673,
-    "2027-01-20": 1459,
-    "2027-01-21": 1402,
-    "2027-01-22": 1405,
-    "2027-01-23": 1360,
-    "2027-01-24": 1415,
-    "2027-01-25": 1431,
-    "2027-01-26": 1356,
-    "2027-01-27": 1244,
-    "2027-01-28": 1193,
-    "2027-01-29": 1061,
-    "2027-01-30": 1031,
-    "2027-01-31": 876,
-    "2027-02-01": 1265,
-    "2027-02-02": 1353,
-    "2027-02-03": 1280,
-    "2027-02-04": 1367,
-    "2027-02-05": 1677,
-    "2027-02-06": 1797,
-    "2027-02-07": 1877,
-    "2027-02-08": 2081,
-    "2027-02-09": 2038,
-    "2027-02-10": 2234,
-    "2027-02-11": 2440,
-    "2027-02-12": 2294,
-    "2027-02-13": 2408,
-    "2027-02-14": 2496,
-    "2027-02-15": 2613,
-    "2027-02-16": 2608,
-    "2027-02-17": 2377,
-    "2027-02-18": 2223,
-    "2027-02-19": 1826,
-    "2027-02-20": 1507,
-    "2027-02-21": 1369,
-    "2027-02-22": 1425,
-    "2027-02-23": 1384,
-    "2027-02-24": 1403,
-    "2027-02-25": 1377,
-    "2027-02-26": 1369,
-    "2027-02-27": 1143,
-    "2027-02-28": 1038,
-    "2027-03-01": 1531,
-    "2027-03-02": 1653,
-    "2027-03-03": 1728,
-    "2027-03-04": 1854,
-    "2027-03-05": 1940,
-    "2027-03-06": 2045,
-    "2027-03-07": 2115,
-    "2027-03-08": 2425,
-    "2027-03-09": 2503,
-    "2027-03-10": 2541,
-    "2027-03-11": 2843,
-    "2027-03-12": 3044,
-    "2027-03-13": 2931,
-    "2027-03-14": 2716,
-    "2027-03-15": 2660,
-    "2027-03-16": 2614,
-    "2027-03-17": 2958,
-    "2027-03-18": 2826,
-    "2027-03-19": 2757,
-    "2027-03-20": 2512,
-    "2027-03-21": 2766,
-    "2027-03-22": 3233,
-    "2027-03-23": 3401,
-    "2027-03-24": 3287,
-    "2027-03-25": 3163,
-    "2027-03-26": 2672,
-    "2027-03-27": 2170,
-    "2027-03-28": 1936,
-    "2027-03-29": 1937,
-    "2027-03-30": 1950,
-    "2027-03-31": 1814,
-    "2027-04-01": 2228,
-    "2027-04-02": 2583,
-    "2027-04-03": 2373,
-    "2027-04-04": 2496,
-    "2027-04-05": 2748,
-    "2027-04-06": 3116,
-    "2027-04-07": 3223,
-    "2027-04-08": 3093,
-    "2027-04-09": 2850,
-    "2027-04-10": 2717,
-    "2027-04-11": 2748,
-    "2027-04-12": 2915,
-    "2027-04-13": 2922,
-    "2027-04-14": 2904,
-    "2027-04-15": 2933,
-    "2027-04-16": 2758,
-    "2027-04-17": 2665,
-    "2027-04-18": 2549,
-    "2027-04-19": 2614,
-    "2027-04-20": 2808,
-    "2027-04-21": 2715,
-    "2027-04-22": 2786,
-    "2027-04-23": 2571,
-    "2027-04-24": 2364,
-    "2027-04-25": 2208,
-    "2027-04-26": 2238,
-    "2027-04-27": 2066,
-    "2027-04-28": 1865,
-    "2027-04-29": 2028,
-    "2027-04-30": 1881,
-    "2027-05-01": 2052,
-    "2027-05-02": 2142,
-    "2027-05-03": 2344,
-    "2027-05-04": 2579,
-    "2027-05-05": 2913,
-    "2027-05-06": 3127,
-    "2027-05-07": 3123,
-    "2027-05-08": 3040,
-    "2027-05-09": 2905,
-    "2027-05-10": 2793,
-    "2027-05-11": 2848,
-    "2027-05-12": 2726,
-    "2027-05-13": 2765,
-    "2027-05-14": 2547,
-    "2027-05-15": 2374,
-    "2027-05-16": 2234,
-    "2027-05-17": 2323,
-    "2027-05-18": 2438,
-    "2027-05-19": 2489,
-    "2027-05-20": 2508,
-    "2027-05-21": 2538,
-    "2027-05-22": 2333,
-    "2027-05-23": 2189,
-    "2027-05-24": 2166,
-    "2027-05-25": 2007,
-    "2027-05-26": 1802,
-    "2027-05-27": 1557,
-    "2027-05-28": 1432,
-    "2027-05-29": 1272,
-    "2027-05-30": 1220,
-    "2027-05-31": 1029,
-    "2027-06-01": 1176,
-    "2027-06-02": 1179,
-    "2027-06-03": 1228,
-    "2027-06-04": 1148,
-    "2027-06-05": 990,
-    "2027-06-06": 1055,
-    "2027-06-07": 1088,
-    "2027-06-08": 1090,
-    "2027-06-09": 1036,
-    "2027-06-10": 1125,
-    "2027-06-11": 1071,
-    "2027-06-12": 956,
-    "2027-06-13": 877,
-    "2027-06-14": 946,
-    "2027-06-15": 924,
-    "2027-06-16": 902,
-    "2027-06-17": 943,
-    "2027-06-18": 818,
-    "2027-06-19": 692,
-    "2027-06-20": 700,
-    "2027-06-21": 1102,
-    "2027-06-22": 1060,
-    "2027-06-23": 1017,
-    "2027-06-24": 665,
-    "2027-06-25": 540,
-    "2027-06-26": 431,
-    "2027-06-27": 429,
-    "2027-06-28": 420,
-    "2027-06-29": 456,
-    "2027-06-30": 457,
-    "2027-07-01": 507,
-    "2027-07-02": 524,
-    "2027-07-03": 517,
-    "2027-07-04": 469,
-    "2027-07-05": 461,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2026-07-07": 56735,
+    "2026-07-08": 54933,
+    "2026-07-09": 53652,
+    "2026-07-10": 53740,
+    "2026-07-11": 54115,
+    "2026-07-12": 50996,
+    "2026-07-13": 50952,
+    "2026-07-14": 51067,
+    "2026-07-15": 51217,
+    "2026-07-16": 49136,
+    "2026-07-17": 48909,
+    "2026-07-18": 47944,
+    "2026-07-19": 46189,
+    "2026-07-20": 49698,
+    "2026-07-21": 50979,
+    "2026-07-22": 51559,
+    "2026-07-23": 50373,
+    "2026-07-24": 47278,
+    "2026-07-25": 43925,
+    "2026-07-26": 40844,
+    "2026-07-27": 42424,
+    "2026-07-28": 41106,
+    "2026-07-29": 39689,
+    "2026-07-30": 38190,
+    "2026-07-31": 36685,
+    "2026-08-01": 38575,
+    "2026-08-02": 38682,
+    "2026-08-03": 39507,
+    "2026-08-04": 39906,
+    "2026-08-05": 38955,
+    "2026-08-06": 39365,
+    "2026-08-07": 39630,
+    "2026-08-08": 37400,
+    "2026-08-09": 35757,
+    "2026-08-10": 37650,
+    "2026-08-11": 37159,
+    "2026-08-12": 36663,
+    "2026-08-13": 37791,
+    "2026-08-14": 36691,
+    "2026-08-15": 35201,
+    "2026-08-16": 34840,
+    "2026-08-17": 36699,
+    "2026-08-18": 37298,
+    "2026-08-19": 37720,
+    "2026-08-20": 35060,
+    "2026-08-21": 33914,
+    "2026-08-22": 32250,
+    "2026-08-23": 31028,
+    "2026-08-24": 32742,
+    "2026-08-25": 33120,
+    "2026-08-26": 32997,
+    "2026-08-27": 32831,
+    "2026-08-28": 33090,
+    "2026-08-29": 33440,
+    "2026-08-30": 33468,
+    "2026-08-31": 32855,
+    "2026-09-01": 37709,
+    "2026-09-02": 40587,
+    "2026-09-03": 45050,
+    "2026-09-04": 46251,
+    "2026-09-05": 47397,
+    "2026-09-06": 48176,
+    "2026-09-07": 50424,
+    "2026-09-08": 51754,
+    "2026-09-09": 54486,
+    "2026-09-10": 56430,
+    "2026-09-11": 55897,
+    "2026-09-12": 54082,
+    "2026-09-13": 51576,
+    "2026-09-14": 51002,
+    "2026-09-15": 50250,
+    "2026-09-16": 49810,
+    "2026-09-17": 53152,
+    "2026-09-18": 50455,
+    "2026-09-19": 48820,
+    "2026-09-20": 47991,
+    "2026-09-21": 48389,
+    "2026-09-22": 49343,
+    "2026-09-23": 48274,
+    "2026-09-24": 49273,
+    "2026-09-25": 46507,
+    "2026-09-26": 43550,
+    "2026-09-27": 40568,
+    "2026-09-28": 38931,
+    "2026-09-29": 38091,
+    "2026-09-30": 35538,
+    "2026-10-01": 38008,
+    "2026-10-02": 38403,
+    "2026-10-03": 39239,
+    "2026-10-04": 38325,
+    "2026-10-05": 40070,
+    "2026-10-06": 39242,
+    "2026-10-07": 37748,
+    "2026-10-08": 36605,
+    "2026-10-09": 35545,
+    "2026-10-10": 33530,
+    "2026-10-11": 32019,
+    "2026-10-12": 32504,
+    "2026-10-13": 32392,
+    "2026-10-14": 31566,
+    "2026-10-15": 31015,
+    "2026-10-16": 29452,
+    "2026-10-17": 27833,
+    "2026-10-18": 25761,
+    "2026-10-19": 24995,
+    "2026-10-20": 23966,
+    "2026-10-21": 22183,
+    "2026-10-22": 19789,
+    "2026-10-23": 18624,
+    "2026-10-24": 17384,
+    "2026-10-25": 16379,
+    "2026-10-26": 16351,
+    "2026-10-27": 14840,
+    "2026-10-28": 13577,
+    "2026-10-29": 12137,
+    "2026-10-30": 10555,
+    "2026-10-31": 9292,
+    "2026-11-01": 10318,
+    "2026-11-02": 10099,
+    "2026-11-03": 9908,
+    "2026-11-04": 9863,
+    "2026-11-05": 9700,
+    "2026-11-06": 9299,
+    "2026-11-07": 9176,
+    "2026-11-08": 9274,
+    "2026-11-09": 9543,
+    "2026-11-10": 9931,
+    "2026-11-11": 9823,
+    "2026-11-12": 9491,
+    "2026-11-13": 8831,
+    "2026-11-14": 8236,
+    "2026-11-15": 7792,
+    "2026-11-16": 7731,
+    "2026-11-17": 6955,
+    "2026-11-18": 6993,
+    "2026-11-19": 7130,
+    "2026-11-20": 8037,
+    "2026-11-21": 8266,
+    "2026-11-22": 8605,
+    "2026-11-23": 9055,
+    "2026-11-24": 9097,
+    "2026-11-25": 8949,
+    "2026-11-26": 8825,
+    "2026-11-27": 9144,
+    "2026-11-28": 8457,
+    "2026-11-29": 6418,
+    "2026-11-30": 4417,
+    "2026-12-01": 4247,
+    "2026-12-02": 3876,
+    "2026-12-03": 4124,
+    "2026-12-04": 4182,
+    "2026-12-05": 4129,
+    "2026-12-06": 4153,
+    "2026-12-07": 4129,
+    "2026-12-08": 3849,
+    "2026-12-09": 3737,
+    "2026-12-10": 3440,
+    "2026-12-11": 3299,
+    "2026-12-12": 3225,
+    "2026-12-13": 3147,
+    "2026-12-14": 3538,
+    "2026-12-15": 3367,
+    "2026-12-16": 3316,
+    "2026-12-17": 3272,
+    "2026-12-18": 3264,
+    "2026-12-19": 3688,
+    "2026-12-20": 4101,
+    "2026-12-21": 4452,
+    "2026-12-22": 4842,
+    "2026-12-23": 5405,
+    "2026-12-24": 6144,
+    "2026-12-25": 6826,
+    "2026-12-26": 7917,
+    "2026-12-27": 8072,
+    "2026-12-28": 8389,
+    "2026-12-29": 7834,
+    "2026-12-30": 7320,
+    "2026-12-31": 6544,
+    "2027-01-01": 6085,
+    "2027-01-02": 4206,
+    "2027-01-03": 3486,
+    "2027-01-04": 3126,
+    "2027-01-05": 3240,
+    "2027-01-06": 3302,
+    "2027-01-07": 3371,
+    "2027-01-08": 3252,
+    "2027-01-09": 2931,
+    "2027-01-10": 2597,
+    "2027-01-11": 2563,
+    "2027-01-12": 2368,
+    "2027-01-13": 2233,
+    "2027-01-14": 2023,
+    "2027-01-15": 1898,
+    "2027-01-16": 1759,
+    "2027-01-17": 1700,
+    "2027-01-18": 1567,
+    "2027-01-19": 1592,
+    "2027-01-20": 1387,
+    "2027-01-21": 1355,
+    "2027-01-22": 1364,
+    "2027-01-23": 1338,
+    "2027-01-24": 1399,
+    "2027-01-25": 1415,
+    "2027-01-26": 1332,
+    "2027-01-27": 1213,
+    "2027-01-28": 1173,
+    "2027-01-29": 1038,
+    "2027-01-30": 1015,
+    "2027-01-31": 855,
+    "2027-02-01": 1227,
+    "2027-02-02": 1314,
+    "2027-02-03": 1230,
+    "2027-02-04": 1321,
+    "2027-02-05": 1619,
+    "2027-02-06": 1732,
+    "2027-02-07": 1821,
+    "2027-02-08": 2029,
+    "2027-02-09": 1987,
+    "2027-02-10": 2176,
+    "2027-02-11": 2379,
+    "2027-02-12": 2251,
+    "2027-02-13": 2342,
+    "2027-02-14": 2414,
+    "2027-02-15": 2532,
+    "2027-02-16": 2520,
+    "2027-02-17": 2303,
+    "2027-02-18": 2155,
+    "2027-02-19": 1783,
+    "2027-02-20": 1444,
+    "2027-02-21": 1305,
+    "2027-02-22": 1360,
+    "2027-02-23": 1326,
+    "2027-02-24": 1342,
+    "2027-02-25": 1328,
+    "2027-02-26": 1320,
+    "2027-02-27": 1062,
+    "2027-02-28": 963,
+    "2027-03-01": 1452,
+    "2027-03-02": 1574,
+    "2027-03-03": 1652,
+    "2027-03-04": 1778,
+    "2027-03-05": 1882,
+    "2027-03-06": 1986,
+    "2027-03-07": 2044,
+    "2027-03-08": 2273,
+    "2027-03-09": 2353,
+    "2027-03-10": 2474,
+    "2027-03-11": 2750,
+    "2027-03-12": 2933,
+    "2027-03-13": 2831,
+    "2027-03-14": 2639,
+    "2027-03-15": 2577,
+    "2027-03-16": 2549,
+    "2027-03-17": 2796,
+    "2027-03-18": 2684,
+    "2027-03-19": 2612,
+    "2027-03-20": 2376,
+    "2027-03-21": 2667,
+    "2027-03-22": 3122,
+    "2027-03-23": 3301,
+    "2027-03-24": 3204,
+    "2027-03-25": 3091,
+    "2027-03-26": 2607,
+    "2027-03-27": 2109,
+    "2027-03-28": 1877,
+    "2027-03-29": 1847,
+    "2027-03-30": 1854,
+    "2027-03-31": 1703,
+    "2027-04-01": 2128,
+    "2027-04-02": 2478,
+    "2027-04-03": 2287,
+    "2027-04-04": 2399,
+    "2027-04-05": 2629,
+    "2027-04-06": 2974,
+    "2027-04-07": 3091,
+    "2027-04-08": 2960,
+    "2027-04-09": 2728,
+    "2027-04-10": 2593,
+    "2027-04-11": 2622,
+    "2027-04-12": 2806,
+    "2027-04-13": 2795,
+    "2027-04-14": 2783,
+    "2027-04-15": 2806,
+    "2027-04-16": 2631,
+    "2027-04-17": 2546,
+    "2027-04-18": 2464,
+    "2027-04-19": 2530,
+    "2027-04-20": 2711,
+    "2027-04-21": 2631,
+    "2027-04-22": 2698,
+    "2027-04-23": 2479,
+    "2027-04-24": 2269,
+    "2027-04-25": 2128,
+    "2027-04-26": 2168,
+    "2027-04-27": 2008,
+    "2027-04-28": 1802,
+    "2027-04-29": 1967,
+    "2027-04-30": 1792,
+    "2027-05-01": 1919,
+    "2027-05-02": 1999,
+    "2027-05-03": 2183,
+    "2027-05-04": 2424,
+    "2027-05-05": 2740,
+    "2027-05-06": 2950,
+    "2027-05-07": 2935,
+    "2027-05-08": 2815,
+    "2027-05-09": 2685,
+    "2027-05-10": 2573,
+    "2027-05-11": 2612,
+    "2027-05-12": 2489,
+    "2027-05-13": 2506,
+    "2027-05-14": 2327,
+    "2027-05-15": 2143,
+    "2027-05-16": 2017,
+    "2027-05-17": 2122,
+    "2027-05-18": 2157,
+    "2027-05-19": 2201,
+    "2027-05-20": 2187,
+    "2027-05-21": 2266,
+    "2027-05-22": 2051,
+    "2027-05-23": 1907,
+    "2027-05-24": 1901,
+    "2027-05-25": 1807,
+    "2027-05-26": 1647,
+    "2027-05-27": 1440,
+    "2027-05-28": 1325,
+    "2027-05-29": 1185,
+    "2027-05-30": 1156,
+    "2027-05-31": 992,
+    "2027-06-01": 1143,
+    "2027-06-02": 1140,
+    "2027-06-03": 1180,
+    "2027-06-04": 1064,
+    "2027-06-05": 903,
+    "2027-06-06": 981,
+    "2027-06-07": 985,
+    "2027-06-08": 978,
+    "2027-06-09": 956,
+    "2027-06-10": 1058,
+    "2027-06-11": 1006,
+    "2027-06-12": 905,
+    "2027-06-13": 832,
+    "2027-06-14": 909,
+    "2027-06-15": 900,
+    "2027-06-16": 868,
+    "2027-06-17": 916,
+    "2027-06-18": 792,
+    "2027-06-19": 570,
+    "2027-06-20": 586,
+    "2027-06-21": 958,
+    "2027-06-22": 915,
+    "2027-06-23": 901,
+    "2027-06-24": 562,
+    "2027-06-25": 487,
+    "2027-06-26": 387,
+    "2027-06-27": 369,
+    "2027-06-28": 357,
+    "2027-06-29": 383,
+    "2027-06-30": 393,
+    "2027-07-01": 454,
+    "2027-07-02": 469,
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   },
   "search_previous": {
+    "2026-07-07": 63455,
+    "2026-07-08": 61937,
+    "2026-07-09": 61100,
     "2026-07-10": 60481,
     "2026-07-11": 59490,
     "2026-07-12": 56865,
@@ -32206,12 +32145,9 @@ const EXPEDIA_DATA = {
     "2027-06-30": 57291,
     "2027-07-01": 58126,
     "2027-07-02": 58310,
-    "2027-07-03": 55730,
-    "2027-07-04": 55317,
-    "2027-07-05": 58659,
-    "2027-07-06": null,
-    "2027-07-07": null,
-    "2027-07-08": null
+    "2027-07-03": null,
+    "2027-07-04": null,
+    "2027-07-05": null
   }
 }
 ;
@@ -32363,181 +32299,184 @@ const EVENTS_CSV = `Date,Event
    Letto al boot via loadAirdna(AIRDNA_CSV). Sostituire interamente a ogni nuovo export. */
 const AIRDNA_CSV = `
 "Date","Booked Listings","Daily Rate"
-"2026-07-10","1873","247"
-"2026-07-11","1821","251"
-"2026-07-12","1698","241"
-"2026-07-13","1693","238"
-"2026-07-14","1907","237"
-"2026-07-15","1989","238"
-"2026-07-16","1735","244"
-"2026-07-17","1631","248"
-"2026-07-18","1644","251"
-"2026-07-19","1555","239"
-"2026-07-20","1591","242"
-"2026-07-21","1592","241"
-"2026-07-22","1582","237"
-"2026-07-23","1574","239"
-"2026-07-24","1541","244"
-"2026-07-25","1446","248"
-"2026-07-26","1286","240"
-"2026-07-27","1269","233"
-"2026-07-28","1156","236"
-"2026-07-29","1138","234"
-"2026-07-30","1111","243"
-"2026-07-31","1094","243"
-"2026-08-01","1197","243"
-"2026-08-02","1112","236"
-"2026-08-03","1124","230"
-"2026-08-04","1157","228"
-"2026-08-05","1157","228"
-"2026-08-06","1153","230"
-"2026-08-07","1118","237"
-"2026-08-08","1129","235"
-"2026-08-09","1021","235"
-"2026-08-10","1032","236"
-"2026-08-11","994","233"
-"2026-08-12","964","227"
-"2026-08-13","938","230"
-"2026-08-14","942","238"
-"2026-08-15","924","239"
-"2026-08-16","904","232"
-"2026-08-17","883","230"
-"2026-08-18","881","228"
-"2026-08-19","893","230"
-"2026-08-20","872","236"
-"2026-08-21","821","242"
-"2026-08-22","799","243"
-"2026-08-23","760","235"
-"2026-08-24","747","237"
-"2026-08-25","727","230"
-"2026-08-26","721","232"
-"2026-08-27","726","239"
-"2026-08-28","726","243"
-"2026-08-29","799","251"
-"2026-08-30","809","248"
-"2026-08-31","782","258"
-"2026-09-01","836","260"
-"2026-09-02","889","263"
-"2026-09-03","954","275"
-"2026-09-04","1027","290"
-"2026-09-05","1102","295"
-"2026-09-06","1083","279"
-"2026-09-07","1118","276"
-"2026-09-08","1195","275"
-"2026-09-09","1252","275"
-"2026-09-10","1271","287"
-"2026-09-11","1276","291"
-"2026-09-12","1316","294"
-"2026-09-13","1240","281"
-"2026-09-14","1214","282"
-"2026-09-15","1241","280"
-"2026-09-16","1257","280"
-"2026-09-17","1270","289"
-"2026-09-18","1283","299"
-"2026-09-19","1280","305"
-"2026-09-20","1225","297"
-"2026-09-21","1210","283"
-"2026-09-22","1225","289"
-"2026-09-23","1241","285"
-"2026-09-24","1262","297"
-"2026-09-25","1255","299"
-"2026-09-26","1253","295"
-"2026-09-27","1173","282"
-"2026-09-28","1212","281"
-"2026-09-29","1252","285"
-"2026-09-30","1283","292"
-"2026-10-01","1271","291"
-"2026-10-02","1207","299"
-"2026-10-03","1168","305"
-"2026-10-04","1042","289"
-"2026-10-05","922","286"
-"2026-10-06","921","284"
-"2026-10-07","906","280"
-"2026-10-08","922","282"
-"2026-10-09","883","290"
-"2026-10-10","870","293"
-"2026-10-11","812","288"
-"2026-10-12","787","283"
-"2026-10-13","783","283"
-"2026-10-14","734","285"
-"2026-10-15","724","282"
-"2026-10-16","668","282"
-"2026-10-17","626","289"
-"2026-10-18","570","278"
-"2026-10-19","543","278"
-"2026-10-20","567","281"
-"2026-10-21","548","275"
-"2026-10-22","509","274"
-"2026-10-23","483","278"
-"2026-10-24","468","278"
-"2026-10-25","409","264"
-"2026-10-26","396","250"
-"2026-10-27","372","245"
-"2026-10-28","345","247"
-"2026-10-29","326","256"
-"2026-10-30","309","256"
-"2026-10-31","289","265"
-"2026-11-01","259","231"
-"2026-11-02","231","212"
-"2026-11-03","225","208"
-"2026-11-04","227","202"
-"2026-11-05","232","202"
-"2026-11-06","235","205"
-"2026-11-07","224","205"
-"2026-11-08","194","193"
-"2026-11-09","185","193"
-"2026-11-10","171","190"
-"2026-11-11","170","181"
-"2026-11-12","181","184"
-"2026-11-13","183","195"
-"2026-11-14","180","194"
-"2026-11-15","140","196"
-"2026-11-16","140","184"
-"2026-11-17","137","178"
-"2026-11-18","147","188"
-"2026-11-19","156","210"
-"2026-11-20","174","215"
-"2026-11-21","205","250"
-"2026-11-22","208","234"
-"2026-11-23","224","244"
-"2026-11-24","222","244"
-"2026-11-25","195","252"
-"2026-11-26","235","236"
-"2026-11-27","389","236"
-"2026-11-28","475","231"
-"2026-11-29","383","223"
-"2026-11-30","166","216"
-"2026-12-01","110","207"
-"2026-12-02","104","205"
-"2026-12-03","93","218"
-"2026-12-04","107","234"
-"2026-12-05","124","238"
-"2026-12-06","122","248"
-"2026-12-07","113","228"
-"2026-12-08","84","222"
-"2026-12-09","84","206"
-"2026-12-10","76","208"
-"2026-12-11","97","223"
-"2026-12-12","94","234"
-"2026-12-13","84","233"
-"2026-12-14","76","225"
-"2026-12-15","75","209"
-"2026-12-16","76","223"
-"2026-12-17","86","221"
-"2026-12-18","96","245"
-"2026-12-19","106","279"
-"2026-12-20","109","301"
-"2026-12-21","108","276"
-"2026-12-22","120","261"
-"2026-12-23","145","269"
-"2026-12-24","182","261"
-"2026-12-25","172","276"
-"2026-12-26","163","269"
-"2026-12-27","171","261"
-"2026-12-28","176","260"
-"2026-12-29","177","257"
-"2026-12-30","168","273"
-"2026-12-31","162","275"
+"2026-07-07","1874","248"
+"2026-07-08","1842","247"
+"2026-07-09","1786","248"
+"2026-07-10","1785","251"
+"2026-07-11","1735","253"
+"2026-07-12","1634","243"
+"2026-07-13","1633","238"
+"2026-07-14","1835","239"
+"2026-07-15","1915","238"
+"2026-07-16","1685","244"
+"2026-07-17","1582","249"
+"2026-07-18","1581","255"
+"2026-07-19","1496","242"
+"2026-07-20","1536","244"
+"2026-07-21","1557","242"
+"2026-07-22","1538","238"
+"2026-07-23","1520","238"
+"2026-07-24","1476","242"
+"2026-07-25","1372","247"
+"2026-07-26","1226","241"
+"2026-07-27","1204","234"
+"2026-07-28","1102","237"
+"2026-07-29","1082","236"
+"2026-07-30","1053","240"
+"2026-07-31","1027","242"
+"2026-08-01","1128","244"
+"2026-08-02","1059","237"
+"2026-08-03","1071","230"
+"2026-08-04","1114","231"
+"2026-08-05","1105","230"
+"2026-08-06","1105","233"
+"2026-08-07","1070","238"
+"2026-08-08","1083","235"
+"2026-08-09","986","236"
+"2026-08-10","987","237"
+"2026-08-11","953","233"
+"2026-08-12","925","230"
+"2026-08-13","901","233"
+"2026-08-14","897","239"
+"2026-08-15","901","240"
+"2026-08-16","873","231"
+"2026-08-17","857","231"
+"2026-08-18","850","230"
+"2026-08-19","852","234"
+"2026-08-20","831","239"
+"2026-08-21","785","245"
+"2026-08-22","763","246"
+"2026-08-23","721","240"
+"2026-08-24","704","242"
+"2026-08-25","688","235"
+"2026-08-26","689","237"
+"2026-08-27","706","244"
+"2026-08-28","697","247"
+"2026-08-29","772","253"
+"2026-08-30","771","250"
+"2026-08-31","750","260"
+"2026-09-01","805","261"
+"2026-09-02","860","267"
+"2026-09-03","926","276"
+"2026-09-04","1006","297"
+"2026-09-05","1075","296"
+"2026-09-06","1057","286"
+"2026-09-07","1077","276"
+"2026-09-08","1143","276"
+"2026-09-09","1191","276"
+"2026-09-10","1228","285"
+"2026-09-11","1229","291"
+"2026-09-12","1279","294"
+"2026-09-13","1209","279"
+"2026-09-14","1189","281"
+"2026-09-15","1214","281"
+"2026-09-16","1225","280"
+"2026-09-17","1238","290"
+"2026-09-18","1240","298"
+"2026-09-19","1243","305"
+"2026-09-20","1190","295"
+"2026-09-21","1169","287"
+"2026-09-22","1180","287"
+"2026-09-23","1201","287"
+"2026-09-24","1223","296"
+"2026-09-25","1218","301"
+"2026-09-26","1225","299"
+"2026-09-27","1136","284"
+"2026-09-28","1163","284"
+"2026-09-29","1210","286"
+"2026-09-30","1236","295"
+"2026-10-01","1222","291"
+"2026-10-02","1160","294"
+"2026-10-03","1115","296"
+"2026-10-04","993","287"
+"2026-10-05","906","284"
+"2026-10-06","901","285"
+"2026-10-07","871","281"
+"2026-10-08","890","287"
+"2026-10-09","848","293"
+"2026-10-10","839","294"
+"2026-10-11","781","285"
+"2026-10-12","763","280"
+"2026-10-13","754","282"
+"2026-10-14","710","284"
+"2026-10-15","710","282"
+"2026-10-16","651","280"
+"2026-10-17","607","286"
+"2026-10-18","556","276"
+"2026-10-19","530","279"
+"2026-10-20","554","284"
+"2026-10-21","531","281"
+"2026-10-22","494","276"
+"2026-10-23","468","279"
+"2026-10-24","451","278"
+"2026-10-25","396","264"
+"2026-10-26","382","251"
+"2026-10-27","359","246"
+"2026-10-28","335","254"
+"2026-10-29","310","258"
+"2026-10-30","291","259"
+"2026-10-31","271","269"
+"2026-11-01","255","233"
+"2026-11-02","225","216"
+"2026-11-03","228","210"
+"2026-11-04","230","207"
+"2026-11-05","236","205"
+"2026-11-06","239","206"
+"2026-11-07","228","206"
+"2026-11-08","197","193"
+"2026-11-09","187","191"
+"2026-11-10","173","188"
+"2026-11-11","171","178"
+"2026-11-12","183","179"
+"2026-11-13","185","192"
+"2026-11-14","179","191"
+"2026-11-15","141","188"
+"2026-11-16","140","179"
+"2026-11-17","135","174"
+"2026-11-18","141","188"
+"2026-11-19","147","208"
+"2026-11-20","168","208"
+"2026-11-21","203","234"
+"2026-11-22","210","230"
+"2026-11-23","225","237"
+"2026-11-24","221","232"
+"2026-11-25","194","238"
+"2026-11-26","230","223"
+"2026-11-27","378","236"
+"2026-11-28","464","231"
+"2026-11-29","376","227"
+"2026-11-30","164","216"
+"2026-12-01","111","207"
+"2026-12-02","105","208"
+"2026-12-03","96","218"
+"2026-12-04","116","229"
+"2026-12-05","128","234"
+"2026-12-06","126","241"
+"2026-12-07","117","214"
+"2026-12-08","88","215"
+"2026-12-09","85","203"
+"2026-12-10","77","208"
+"2026-12-11","102","216"
+"2026-12-12","101","237"
+"2026-12-13","91","233"
+"2026-12-14","82","216"
+"2026-12-15","80","203"
+"2026-12-16","80","209"
+"2026-12-17","91","221"
+"2026-12-18","104","245"
+"2026-12-19","115","259"
+"2026-12-20","116","291"
+"2026-12-21","112","276"
+"2026-12-22","124","278"
+"2026-12-23","149","275"
+"2026-12-24","185","269"
+"2026-12-25","178","276"
+"2026-12-26","170","269"
+"2026-12-27","174","267"
+"2026-12-28","178","258"
+"2026-12-29","179","252"
+"2026-12-30","167","271"
+"2026-12-31","164","271"
 `;
 const BEDDY_DATA = {
  "asOf": "2026-05-12",

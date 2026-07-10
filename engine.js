@@ -20100,7 +20100,7 @@ function renderPriceTree(sel){
   ];
   const fmtP=v=>(v==null||!isFinite(v))?'\u2014':'\u20ac'+Math.round(v);
   const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  let head='<tr><th style="position:sticky;left:0;background:var(--surface);z-index:3;text-align:left;min-width:172px">Channel / rate</th>';
+  let head='<tr><th style="position:sticky;left:0;background:var(--surface);z-index:3;text-align:left;min-width:172px">Channel / rate ↓ · Date →</th>';
   days.forEach(d=>{ const wk=(d.getDay()===0||d.getDay()===6); head+=`<th style="min-width:62px;text-align:center;padding:6px 4px;${wk?'background:rgba(195,131,59,.06)':''}"><div style="font-family:'DM Mono',monospace">${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}</div><div style="font-size:9px;color:${wk?'#c4823b':'var(--ink-3)'};font-weight:600">${DOW[d.getDay()]}</div></th>`; });
   head+='</tr>';
   let body=''; let lastG=null;
@@ -20111,7 +20111,18 @@ function renderPriceTree(sel){
     days.forEach((d,i)=>{ const l=L[i]; const v=(l==null)?null:ln.c(l, ymd(d)); const wk=(d.getDay()===0||d.getDay()===6); body+=`<td style="text-align:center;font-family:'DM Mono',monospace;${ln.bold?'font-weight:700':''};${wk?'background:rgba(195,131,59,.04)':''}">${fmtP(v)}</td>`; });
     body+='</tr>';
   });
-  tHost.innerHTML=`<div style="overflow-x:auto"><table class="data" style="font-size:12px;border-collapse:collapse;white-space:nowrap">${head}${body}</table></div>`;
+  tHost.innerHTML=`
+    <div id="ptree-topscroll" style="overflow-x:auto;overflow-y:hidden"><div id="ptree-topscroll-inner" style="height:1px"></div></div>
+    <div id="ptree-scroll" style="overflow-x:auto"><table class="data" style="font-size:12px;border-collapse:collapse;white-space:nowrap">${head}${body}</table></div>`;
+  try {
+    const topScroll=document.getElementById('ptree-topscroll'), topInner=document.getElementById('ptree-topscroll-inner'), scrollWrap=document.getElementById('ptree-scroll');
+    const tbl=scrollWrap.querySelector('table');
+    const syncW=()=>{ if(tbl&&topInner) topInner.style.width=tbl.scrollWidth+'px'; };
+    syncW(); setTimeout(syncW,120);
+    let syncing=false;
+    topScroll.addEventListener('scroll',()=>{ if(syncing)return; syncing=true; scrollWrap.scrollLeft=topScroll.scrollLeft; syncing=false; });
+    scrollWrap.addEventListener('scroll',()=>{ if(syncing)return; syncing=true; topScroll.scrollLeft=scrollWrap.scrollLeft; syncing=false; });
+  } catch(e){}
 }
 function setTab(name){
   CURRENT_TAB = name;
