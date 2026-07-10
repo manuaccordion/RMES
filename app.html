@@ -1006,6 +1006,12 @@ function mobRenderBigPicture(){
     html+=kpi('OCC', (tot.occC*100).toFixed(0)+'%', chip(tot.occC,tot.occP));
     if(isFinite(tot.adrC)) html+=kpi('ADR', fmtEUR(tot.adrC), chip(tot.adrC,tot.adrP));
   }
+  try {
+    const _ymNow = TODAY.getFullYear()*100+(TODAY.getMonth()+1);
+    const _Af = (typeof aggForecast==='function')?aggForecast(sel):null;
+    const _mNow = (_Af&&_Af.monthly)?_Af.monthly[_ymNow]:null;
+    if(_mNow){ const _snap=(typeof fp_getFcstSnapshot==='function')?fp_getFcstSnapshot(sel,_ymNow):null; const _den=(_snap&&_snap.fcstRev>0)?_snap.fcstRev:(_mNow.fcstRev||0); if(_den>0){ html+=kpi('Achievement', Math.round((_mNow.otbRev||0)/_den*100)+'%', 'vs Fcst snapshot'); } }
+  } catch(e){}
   html+='</div>';
   html+='<div class="bp-title">Booking curve · cumulative revenue</div>';
   try{ const bc=bookingCurveData(sel);
@@ -1024,8 +1030,25 @@ function mobRenderBigPicture(){
   try{ const days=_bigPickupByDay(sel,7); const mx=Math.max(1,...days.map(d=>d.rn));
     html+='<div class="bp-pkbars">'+days.map(d=>`<div class="bp-pkbar" data-pkday="${d.ymdNum}"><div class="bp-pkv">${d.rn}</div><div class="bp-pktrack"><div class="bp-pkfill" style="height:${Math.round(d.rn/mx*100)}%"></div></div><div class="bp-pklab">${d.label}</div></div>`).join('')+'</div><div class="bp-note">Tap a day for the booking detail</div>'; }
   catch(e){ html+='<div class="bp-empty">No pickup data.</div>'; }
-  html+='<div class="bp-title">Channel share · by revenue (year)</div>';
-  try{ const A=aggOTBYearly(sel);
+  html+='<div class="bp-title">Pickup · last 4 weeks vs STLY</div>';
+  try {
+    const keys=new Set(structKeysFor(sel)); const today4=new Date(TODAY);today4.setHours(0,0,0,0); const N4=28;
+    const curD=[],stlyD=[]; for(let i=0;i<N4;i++){ const d=new Date(today4.getTime()-(N4-1-i)*86400000); curD.push(ymd(d)); stlyD.push(ymd(new Date(d.getTime()-364*86400000))); }
+    const byY={}; for(const b of BOOKINGS){ if(b.cancelled||!keys.has(b.struct))continue; byY[b.bookYmd]=(byY[b.bookYmd]||0)+(b.notti||0); }
+    const cur=[],stly=[]; let cc=0,sc=0; for(let i=0;i<N4;i++){ cc+=(byY[curD[i]]||0); sc+=(byY[stlyD[i]]||0); cur.push(cc); stly.push(sc); }
+    const mx=Math.max(1,cur[N4-1]||0,stly[N4-1]||0);
+    const W=340,H=120,pl=8,pr=48,pt=10,pb=8,pw=W-pl-pr,ph=H-pt-pb;
+    const xA=i=>pl+(i/(N4-1))*pw, yA=v=>pt+ph-(v/mx)*ph;
+    const pth=a=>a.map((v,i)=>`${i?'L':'M'}${xA(i).toFixed(1)} ${yA(v).toFixed(1)}`).join(' ');
+    let e1=yA(cur[N4-1]||0), e2=yA(stly[N4-1]||0); if(Math.abs(e1-e2)<11){ if(e1<=e2){e1-=6;e2+=6;}else{e1+=6;e2-=6;} }
+    let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+    svg+=`<path d="${pth(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="4 3" opacity=".85"/>`;
+    svg+=`<path d="${pth(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>`;
+    svg+=`<text x="${W-pr+4}" y="${e1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${cur[N4-1]||0} RN</text>`;
+    svg+=`<text x="${W-pr+4}" y="${e2+3}" font-size="10" font-weight="700" fill="#7a4d96">${stly[N4-1]||0} LY</text></svg>`;
+    html+=`<div style="padding:4px 2px 2px">${svg}</div>`;
+  } catch(e){}
+  html+='<div class="bp-title">Channel share · by revenue (year)</div>';  try{ const A=aggOTBYearly(sel);
     const palette=['#0E9FC2','#0A7A97','#2BB3C9','#1689AE','#5BC4DC','#3d7a4b','#c9a227','#8e5fa8'];
     const toArr=(obj)=>Object.keys(obj||{}).map(k=>({name:(k&&k.trim())?k:'Direct',rev:(obj[k]&&obj[k].rev)||0})).filter(x=>x.rev>0).sort((a,b)=>b.rev-a.rev);
     const cur=toArr(A&&A.canCur), prev=toArr(A&&A.canPrev);
