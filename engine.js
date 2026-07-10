@@ -20023,16 +20023,28 @@ function ptreeGetConfig(){
   return Object.assign({
     mkBooking:57, mkExpedia:62, mkCtrip:62, mkAirbnb:10,
     member:10, promo:20, pkg:10, nr:10, airbnb15:15, airbnb30:20,
-    spEnabled:false, spPct:30, spFrom:'', spTo:'', spBookFrom:'', spBookTo:'', days:90
+    spEnabled:false, spPct:30, spFrom:'', spTo:'', spBookFrom:'', spBookTo:'', days:90,
+    roomBy:{}, suppBy:{}
   }, c);
 }
 function ptreeSaveConfig(c){ try { localStorage.setItem(PTREE_KEY, JSON.stringify(c)); } catch(e){} }
-function ptreeConfigHtml(cfg){
+function ptreeAutoSupp(sel, room){
+  const baseRT=(CFG.structures[sel]&&CFG.structures[sel].baseRT)||null;
+  if(!baseRT || room===baseRT) return 0;
+  try { const today=new Date(TODAY); return Math.round(_globalSupplementForRT(sel, room, today.getMonth()+1))||0; } catch(e){ return 0; }
+}
+function ptreeConfigHtml(cfg, sel){
   const n=(id,lbl,val,w)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="number" value="${val}" style="width:${w||56}px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
   const d=(id,lbl,val)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="date" value="${val||''}" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
   const dopt=[30,60,90,180,365].map(x=>`<button class="pt-daybtn" data-days="${x}" style="padding:5px 11px;border:1px solid var(--line);border-radius:7px;background:${(+cfg.days===x)?'var(--sel)':'var(--surface)'};color:${(+cfg.days===x)?'#fff':'var(--ink-2)'};font-family:'DM Mono',monospace;font-size:12px;cursor:pointer">${x}d</button>`).join('');
+  const st=CFG.structures[sel]||{}; const baseRT=st.baseRT||''; const rooms=Object.keys(st.rooms||{});
+  const room=(cfg.roomBy&&cfg.roomBy[sel])||baseRT;
+  const supp=(cfg.suppBy&&cfg.suppBy[sel+'|'+room]!=null)?cfg.suppBy[sel+'|'+room]:ptreeAutoSupp(sel,room);
+  const roomSel=`<select id="pt-room" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:12px">${rooms.map(r=>`<option value="${r}" ${r===room?'selected':''}>${r}${r===baseRT?' (base)':''}</option>`).join('')}</select>`;
   return `
     <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Room (tree base)</span>
+        <div style="display:flex;gap:8px;align-items:flex-end">${roomSel}${n('supp','Supplement €',supp,64)}</div></div>
       <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Markup % (channel base)</span>
         <div style="display:flex;gap:8px">${n('mkBooking','Booking',cfg.mkBooking)}${n('mkExpedia','Expedia',cfg.mkExpedia)}${n('mkCtrip','Ctrip',cfg.mkCtrip)}${n('mkAirbnb','Airbnb',cfg.mkAirbnb)}</div></div>
       <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Offers % (stack)</span>
@@ -20047,8 +20059,10 @@ function ptreeConfigHtml(cfg){
       <button id="pt-apply" style="padding:8px 18px;background:var(--sel);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;align-self:flex-end">Apply</button>
     </div>`;
 }
-function ptreeWireConfig(){
+function ptreeWireConfig(sel){
   document.querySelectorAll('.pt-daybtn').forEach(b=>b.addEventListener('click',()=>{ const c=ptreeGetConfig(); c.days=+b.dataset.days; ptreeSaveConfig(c); const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built; renderPriceTree(CURRENT_STRUCT); }));
+  const rm=document.getElementById('pt-room');
+  if(rm) rm.addEventListener('change',()=>{ const c=ptreeGetConfig(); c.roomBy=c.roomBy||{}; c.roomBy[sel]=rm.value; ptreeSaveConfig(c); const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built; renderPriceTree(sel); });
   const btn=document.getElementById('pt-apply'); if(!btn) return;
   btn.addEventListener('click', ()=>{
     const g=id=>{const el=document.getElementById('pt-'+id);return el?el.value:'';};
@@ -20056,22 +20070,26 @@ function ptreeWireConfig(){
     ['mkBooking','mkExpedia','mkCtrip','mkAirbnb','member','promo','pkg','nr','airbnb15','airbnb30','spPct'].forEach(k=>{const v=parseFloat(g(k));if(isFinite(v))c[k]=v;});
     c.spFrom=g('spFrom'); c.spTo=g('spTo'); c.spBookFrom=g('spBookFrom'); c.spBookTo=g('spBookTo');
     const cb=document.getElementById('pt-spEnabled'); c.spEnabled=cb?cb.checked:false;
+    const room=g('room'); if(room){ c.roomBy=c.roomBy||{}; c.roomBy[sel]=room; const sv=parseFloat(g('supp')); if(isFinite(sv)){ c.suppBy=c.suppBy||{}; c.suppBy[sel+'|'+room]=sv; } }
     ptreeSaveConfig(c);
     const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built;
-    renderPriceTree(CURRENT_STRUCT);
+    renderPriceTree(sel);
   });
 }
 function renderPriceTree(sel){
   const tHost=document.getElementById('ptree-table'), cHost=document.getElementById('ptree-config');
   if(!tHost) return;
   const cfg=ptreeGetConfig();
-  if(cHost && !cHost.dataset.built){ cHost.innerHTML=ptreeConfigHtml(cfg); cHost.dataset.built='1'; ptreeWireConfig(); }
+  if(cHost && (cHost.dataset.built!=='1' || cHost.dataset.struct!==sel)){ cHost.innerHTML=ptreeConfigHtml(cfg, sel); cHost.dataset.built='1'; cHost.dataset.struct=sel; ptreeWireConfig(sel); }
   const f=x=>(x||0)/100;
   const m=f(cfg.member), pk=f(cfg.pkg), nr=f(cfg.nr);
   const mk={booking:1+f(cfg.mkBooking),expedia:1+f(cfg.mkExpedia),ctrip:1+f(cfg.mkCtrip),airbnb:1+f(cfg.mkAirbnb)};
   const spN=(s)=>s?+String(s).replace(/-/g,''):0;
   const today=new Date(TODAY);today.setHours(0,0,0,0);
   const todayN=ymd(today);
+  const baseRT=(CFG.structures[sel]&&CFG.structures[sel].baseRT)||'';
+  const room=(cfg.roomBy&&cfg.roomBy[sel])||baseRT;
+  const supp=(cfg.suppBy&&cfg.suppBy[sel+'|'+room]!=null)?(+cfg.suppBy[sel+'|'+room]):ptreeAutoSupp(sel,room);
   const promoFor=(ch,dn)=>{
     if(cfg.spEnabled && (ch==='booking'||ch==='expedia')){
       const bookOk=(!cfg.spBookFrom||todayN>=spN(cfg.spBookFrom))&&(!cfg.spBookTo||todayN<=spN(cfg.spBookTo));
@@ -20082,33 +20100,43 @@ function renderPriceTree(sel){
   };
   const N=Math.max(7,Math.min(365,cfg.days||90));
   const days=[]; for(let i=0;i<N;i++){ days.push(new Date(today.getTime()+i*86400000)); }
-  const L=days.map(d=>{ let v=null; try{ v=newrmesGetCurrentReference(sel, ymd(d)); }catch(e){} return (v&&isFinite(v)&&v>0)?v:null; });
+  const L=days.map(d=>{ let v=null; try{ v=newrmesGetCurrentReference(sel, ymd(d)); }catch(e){} return (v&&isFinite(v)&&v>0)?(v+supp):null; });
   const grpColor={Beddy:'#2f7fb5',Booking:'#003580',Expedia:'#c4823b',Ctrip:'#2577e3',Airbnb:'#e0565b','':'#6b5b3f'};
   const lines=[
     {g:'',lbl:'Last Update (L)',c:(L)=>L,bold:true},
-    {g:'Beddy',lbl:'Flexible',c:(L)=>L},
-    {g:'Beddy',lbl:'Non-ref (\u221210%)',c:(L)=>L*(1-nr)},
-    {g:'Booking',lbl:'Flex \u2212member \u2212promo',c:(L,dn)=>L*mk.booking*(1-m-promoFor('booking',dn))},
-    {g:'Booking',lbl:'NR \u2212member \u2212promo',c:(L,dn)=>L*mk.booking*(1-nr)*(1-m-promoFor('booking',dn))},
-    {g:'Expedia',lbl:'Flex \u2212mem \u2212promo \u2212pkg',c:(L,dn)=>L*mk.expedia*(1-m-pk-promoFor('expedia',dn))},
-    {g:'Expedia',lbl:'NR \u2212mem \u2212promo \u2212pkg',c:(L,dn)=>L*mk.expedia*(1-nr)*(1-m-pk-promoFor('expedia',dn))},
-    {g:'Ctrip',lbl:'Flex \u2212member \u2212promo',c:(L,dn)=>L*mk.ctrip*(1-m-promoFor('ctrip',dn))},
-    {g:'Ctrip',lbl:'NR \u2212member \u2212promo',c:(L,dn)=>L*mk.ctrip*(1-nr)*(1-m-promoFor('ctrip',dn))},
-    {g:'Airbnb',lbl:'Base',c:(L)=>L*mk.airbnb},
+    {g:'Beddy',lbl:'Flexible',c:(L)=>L,cmp:'flex',beddy:true},
+    {g:'Beddy',lbl:'Non-ref (\u221210%)',c:(L)=>L*(1-nr),cmp:'nr',beddy:true},
+    {g:'Booking',lbl:'Flex \u2212member \u2212promo',c:(L,dn)=>L*mk.booking*(1-m-promoFor('booking',dn)),cmp:'flex'},
+    {g:'Booking',lbl:'NR \u2212member \u2212promo',c:(L,dn)=>L*mk.booking*(1-nr)*(1-m-promoFor('booking',dn)),cmp:'nr'},
+    {g:'Expedia',lbl:'Flex \u2212mem \u2212promo \u2212pkg',c:(L,dn)=>L*mk.expedia*(1-m-pk-promoFor('expedia',dn)),cmp:'flex'},
+    {g:'Expedia',lbl:'NR \u2212mem \u2212promo \u2212pkg',c:(L,dn)=>L*mk.expedia*(1-nr)*(1-m-pk-promoFor('expedia',dn)),cmp:'nr'},
+    {g:'Ctrip',lbl:'Flex \u2212member \u2212promo',c:(L,dn)=>L*mk.ctrip*(1-m-promoFor('ctrip',dn)),cmp:'flex'},
+    {g:'Ctrip',lbl:'NR \u2212member \u2212promo',c:(L,dn)=>L*mk.ctrip*(1-nr)*(1-m-promoFor('ctrip',dn)),cmp:'nr'},
+    {g:'Airbnb',lbl:'Base',c:(L)=>L*mk.airbnb,cmp:'flex'},
     {g:'Airbnb',lbl:'\u221215% (>15 nights)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb15))},
     {g:'Airbnb',lbl:'\u221220% (\u22651 month)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb30))},
   ];
+  // valori precalcolati + min per rate type (per colorare Beddy)
+  const vals=lines.map(ln=>days.map((d,i)=>{ const l=L[i]; return (l==null)?null:ln.c(l, ymd(d)); }));
+  const minFlex=days.map((d,di)=>{ let mn=Infinity; lines.forEach((ln,li)=>{ if(ln.cmp==='flex'&&vals[li][di]!=null) mn=Math.min(mn,vals[li][di]); }); return mn; });
+  const minNR=days.map((d,di)=>{ let mn=Infinity; lines.forEach((ln,li)=>{ if(ln.cmp==='nr'&&vals[li][di]!=null) mn=Math.min(mn,vals[li][di]); }); return mn; });
   const fmtP=v=>(v==null||!isFinite(v))?'\u2014':'\u20ac'+Math.round(v);
   const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  let head='<tr><th style="position:sticky;left:0;background:var(--surface);z-index:3;text-align:left;min-width:172px">Channel / rate ↓ · Date →</th>';
+  let head='<tr><th style="position:sticky;left:0;background:var(--surface);z-index:3;text-align:left;min-width:172px">Channel / rate \u2193 \u00b7 Date \u2192</th>';
   days.forEach(d=>{ const wk=(d.getDay()===0||d.getDay()===6); head+=`<th style="min-width:62px;text-align:center;padding:6px 4px;${wk?'background:rgba(195,131,59,.06)':''}"><div style="font-family:'DM Mono',monospace">${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}</div><div style="font-size:9px;color:${wk?'#c4823b':'var(--ink-3)'};font-weight:600">${DOW[d.getDay()]}</div></th>`; });
   head+='</tr>';
   let body=''; let lastG=null;
-  lines.forEach(ln=>{
+  lines.forEach((ln,li)=>{
     if(ln.g!==lastG && ln.g!==''){ body+=`<tr><td colspan="${N+1}" style="background:${grpColor[ln.g]}14;color:${grpColor[ln.g]};font-weight:700;font-size:11px;padding:4px 8px;position:sticky;left:0">${ln.g}</td></tr>`; lastG=ln.g; }
     const lblStyle = ln.bold?'font-weight:700;color:var(--ink)':'color:var(--ink-2)';
     body+=`<tr><td style="position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;${lblStyle};border-left:2px solid ${grpColor[ln.g]||'transparent'}">${ln.lbl}</td>`;
-    days.forEach((d,i)=>{ const l=L[i]; const v=(l==null)?null:ln.c(l, ymd(d)); const wk=(d.getDay()===0||d.getDay()===6); body+=`<td style="text-align:center;font-family:'DM Mono',monospace;${ln.bold?'font-weight:700':''};${wk?'background:rgba(195,131,59,.04)':''}">${fmtP(v)}</td>`; });
+    days.forEach((d,i)=>{ const v=vals[li][i]; const wk=(d.getDay()===0||d.getDay()===6);
+      let bg=wk?'rgba(195,131,59,.04)':''; let col='';
+      if(ln.beddy && v!=null){ const mn=(ln.cmp==='flex')?minFlex[i]:minNR[i];
+        if(v<=mn+0.5){ bg='rgba(61,122,75,.16)'; col='#2f6b3f'; }  // Beddy è il più economico -> verde
+        else { bg='rgba(168,59,59,.14)'; col='#a83b3b'; }          // c'è un canale più economico (stessa tariffa) -> rosso
+      }
+      body+=`<td style="text-align:center;font-family:'DM Mono',monospace;${ln.bold?'font-weight:700':''};background:${bg||'transparent'};${col?'color:'+col+';font-weight:700':''}">${fmtP(v)}</td>`; });
     body+='</tr>';
   });
   tHost.innerHTML=`
