@@ -20023,34 +20023,38 @@ function ptreeGetConfig(){
   return Object.assign({
     mkBooking:57, mkExpedia:62, mkCtrip:62, mkAirbnb:10,
     member:10, promo:20, pkg:10, nr:10, airbnb15:15, airbnb30:20,
-    spEnabled:false, spPct:30, spFrom:'', spTo:'', days:90
+    spEnabled:false, spPct:30, spFrom:'', spTo:'', spBookFrom:'', spBookTo:'', days:90
   }, c);
 }
 function ptreeSaveConfig(c){ try { localStorage.setItem(PTREE_KEY, JSON.stringify(c)); } catch(e){} }
 function ptreeConfigHtml(cfg){
-  const n=(id,lbl,val,w)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="number" value="${val}" style="width:${w||58}px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
+  const n=(id,lbl,val,w)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="number" value="${val}" style="width:${w||56}px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
   const d=(id,lbl,val)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="date" value="${val||''}" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
+  const dopt=[30,60,90,180,365].map(x=>`<button class="pt-daybtn" data-days="${x}" style="padding:5px 11px;border:1px solid var(--line);border-radius:7px;background:${(+cfg.days===x)?'var(--sel)':'var(--surface)'};color:${(+cfg.days===x)?'#fff':'var(--ink-2)'};font-family:'DM Mono',monospace;font-size:12px;cursor:pointer">${x}d</button>`).join('');
   return `
     <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
-      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Markup % (base canale)</span>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Markup % (channel base)</span>
         <div style="display:flex;gap:8px">${n('mkBooking','Booking',cfg.mkBooking)}${n('mkExpedia','Expedia',cfg.mkExpedia)}${n('mkCtrip','Ctrip',cfg.mkCtrip)}${n('mkAirbnb','Airbnb',cfg.mkAirbnb)}</div></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Offerte % (si sommano)</span>
-        <div style="display:flex;gap:8px">${n('member','Member',cfg.member)}${n('promo','Promo',cfg.promo)}${n('pkg','Package (Exp)',cfg.pkg,74)}${n('nr','Non-ref',cfg.nr)}</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Offers % (stack)</span>
+        <div style="display:flex;gap:8px">${n('member','Member',cfg.member)}${n('promo','Promo',cfg.promo)}${n('pkg','Package (Exp)',cfg.pkg,72)}${n('nr','Non-ref',cfg.nr)}</div></div>
       <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Airbnb LOS %</span>
-        <div style="display:flex;gap:8px">${n('airbnb15','>15gg',cfg.airbnb15)}${n('airbnb30','≥1 mese',cfg.airbnb30)}${n('days','Giorni',cfg.days)}</div></div>
+        <div style="display:flex;gap:8px">${n('airbnb15','&gt;15 nights',cfg.airbnb15,72)}${n('airbnb30','&ge;1 month',cfg.airbnb30,72)}</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Days to show</span>
+        <div style="display:flex;gap:6px">${dopt}</div></div>
       <div style="display:flex;flex-direction:column;gap:4px;padding:6px 10px;background:rgba(195,131,59,.06);border-radius:8px">
-        <label style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px"><input id="pt-spEnabled" type="checkbox" ${cfg.spEnabled?'checked':''}> Promo speciale (Booking/Expedia)</label>
-        <div style="display:flex;gap:8px">${n('spPct','Promo %',cfg.spPct)}${d('spFrom','Travel da',cfg.spFrom)}${d('spTo','Travel a',cfg.spTo)}</div></div>
+        <label style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px"><input id="pt-spEnabled" type="checkbox" ${cfg.spEnabled?'checked':''}> Special promo (Booking/Expedia)</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">${n('spPct','Promo %',cfg.spPct)}${d('spBookFrom','Booked from',cfg.spBookFrom)}${d('spBookTo','Booked to',cfg.spBookTo)}${d('spFrom','Travel from',cfg.spFrom)}${d('spTo','Travel to',cfg.spTo)}</div></div>
       <button id="pt-apply" style="padding:8px 18px;background:var(--sel);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;align-self:flex-end">Apply</button>
     </div>`;
 }
 function ptreeWireConfig(){
+  document.querySelectorAll('.pt-daybtn').forEach(b=>b.addEventListener('click',()=>{ const c=ptreeGetConfig(); c.days=+b.dataset.days; ptreeSaveConfig(c); const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built; renderPriceTree(CURRENT_STRUCT); }));
   const btn=document.getElementById('pt-apply'); if(!btn) return;
   btn.addEventListener('click', ()=>{
     const g=id=>{const el=document.getElementById('pt-'+id);return el?el.value:'';};
     const c=ptreeGetConfig();
-    ['mkBooking','mkExpedia','mkCtrip','mkAirbnb','member','promo','pkg','nr','airbnb15','airbnb30','spPct','days'].forEach(k=>{const v=parseFloat(g(k));if(isFinite(v))c[k]=v;});
-    c.spFrom=g('spFrom'); c.spTo=g('spTo');
+    ['mkBooking','mkExpedia','mkCtrip','mkAirbnb','member','promo','pkg','nr','airbnb15','airbnb30','spPct'].forEach(k=>{const v=parseFloat(g(k));if(isFinite(v))c[k]=v;});
+    c.spFrom=g('spFrom'); c.spTo=g('spTo'); c.spBookFrom=g('spBookFrom'); c.spBookTo=g('spBookTo');
     const cb=document.getElementById('pt-spEnabled'); c.spEnabled=cb?cb.checked:false;
     ptreeSaveConfig(c);
     const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built;
@@ -20066,46 +20070,48 @@ function renderPriceTree(sel){
   const m=f(cfg.member), pk=f(cfg.pkg), nr=f(cfg.nr);
   const mk={booking:1+f(cfg.mkBooking),expedia:1+f(cfg.mkExpedia),ctrip:1+f(cfg.mkCtrip),airbnb:1+f(cfg.mkAirbnb)};
   const spN=(s)=>s?+String(s).replace(/-/g,''):0;
-  const promoFor=(ch,dn)=>{ if(cfg.spEnabled&&(ch==='booking'||ch==='expedia')&&cfg.spFrom&&cfg.spTo){ if(dn>=spN(cfg.spFrom)&&dn<=spN(cfg.spTo)) return f(cfg.spPct); } return f(cfg.promo); };
-  const N=Math.max(7,Math.min(180,cfg.days||90));
   const today=new Date(TODAY);today.setHours(0,0,0,0);
+  const todayN=ymd(today);
+  const promoFor=(ch,dn)=>{
+    if(cfg.spEnabled && (ch==='booking'||ch==='expedia')){
+      const bookOk=(!cfg.spBookFrom||todayN>=spN(cfg.spBookFrom))&&(!cfg.spBookTo||todayN<=spN(cfg.spBookTo));
+      const travelOk=(!cfg.spFrom||dn>=spN(cfg.spFrom))&&(!cfg.spTo||dn<=spN(cfg.spTo));
+      if(bookOk&&travelOk) return f(cfg.spPct);
+    }
+    return f(cfg.promo);
+  };
+  const N=Math.max(7,Math.min(365,cfg.days||90));
   const days=[]; for(let i=0;i<N;i++){ days.push(new Date(today.getTime()+i*86400000)); }
   const L=days.map(d=>{ let v=null; try{ v=newrmesGetCurrentReference(sel, ymd(d)); }catch(e){} return (v&&isFinite(v)&&v>0)?v:null; });
-  const grpColor={Beddy:'#2f7fb5',Booking:'#003580',Expedia:'#00355f',Ctrip:'#2577e3',Airbnb:'#e0565b','':'#6b5b3f'};
+  const grpColor={Beddy:'#2f7fb5',Booking:'#003580',Expedia:'#c4823b',Ctrip:'#2577e3',Airbnb:'#e0565b','':'#6b5b3f'};
   const lines=[
     {g:'',lbl:'Last Update (L)',c:(L)=>L,bold:true},
     {g:'Beddy',lbl:'Flexible',c:(L)=>L},
-    {g:'Beddy',lbl:'Non-ref (−10%)',c:(L)=>L*(1-nr)},
-    {g:'Booking',lbl:'Flexible',c:(L)=>L*mk.booking},
-    {g:'Booking',lbl:'Flex −member −promo',c:(L,dn)=>L*mk.booking*(1-m-promoFor('booking',dn))},
-    {g:'Booking',lbl:'Non-ref',c:(L)=>L*mk.booking*(1-nr)},
-    {g:'Booking',lbl:'NR −member −promo',c:(L,dn)=>L*mk.booking*(1-nr)*(1-m-promoFor('booking',dn))},
-    {g:'Expedia',lbl:'Flexible',c:(L)=>L*mk.expedia},
-    {g:'Expedia',lbl:'Flex −mem −promo −pkg',c:(L,dn)=>L*mk.expedia*(1-m-pk-promoFor('expedia',dn))},
-    {g:'Expedia',lbl:'Non-ref',c:(L)=>L*mk.expedia*(1-nr)},
-    {g:'Expedia',lbl:'NR −mem −promo −pkg',c:(L,dn)=>L*mk.expedia*(1-nr)*(1-m-pk-promoFor('expedia',dn))},
-    {g:'Ctrip',lbl:'Flexible',c:(L)=>L*mk.ctrip},
-    {g:'Ctrip',lbl:'Flex −member −promo',c:(L,dn)=>L*mk.ctrip*(1-m-promoFor('ctrip',dn))},
-    {g:'Ctrip',lbl:'Non-ref',c:(L)=>L*mk.ctrip*(1-nr)},
-    {g:'Ctrip',lbl:'NR −member −promo',c:(L,dn)=>L*mk.ctrip*(1-nr)*(1-m-promoFor('ctrip',dn))},
+    {g:'Beddy',lbl:'Non-ref (\u221210%)',c:(L)=>L*(1-nr)},
+    {g:'Booking',lbl:'Flex \u2212member \u2212promo',c:(L,dn)=>L*mk.booking*(1-m-promoFor('booking',dn))},
+    {g:'Booking',lbl:'NR \u2212member \u2212promo',c:(L,dn)=>L*mk.booking*(1-nr)*(1-m-promoFor('booking',dn))},
+    {g:'Expedia',lbl:'Flex \u2212mem \u2212promo \u2212pkg',c:(L,dn)=>L*mk.expedia*(1-m-pk-promoFor('expedia',dn))},
+    {g:'Expedia',lbl:'NR \u2212mem \u2212promo \u2212pkg',c:(L,dn)=>L*mk.expedia*(1-nr)*(1-m-pk-promoFor('expedia',dn))},
+    {g:'Ctrip',lbl:'Flex \u2212member \u2212promo',c:(L,dn)=>L*mk.ctrip*(1-m-promoFor('ctrip',dn))},
+    {g:'Ctrip',lbl:'NR \u2212member \u2212promo',c:(L,dn)=>L*mk.ctrip*(1-nr)*(1-m-promoFor('ctrip',dn))},
     {g:'Airbnb',lbl:'Base',c:(L)=>L*mk.airbnb},
-    {g:'Airbnb',lbl:'−15% (>15gg)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb15))},
-    {g:'Airbnb',lbl:'−20% (≥1 mese)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb30))},
+    {g:'Airbnb',lbl:'\u221215% (>15 nights)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb15))},
+    {g:'Airbnb',lbl:'\u221220% (\u22651 month)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb30))},
   ];
-  const fmtP=v=>(v==null||!isFinite(v))?'—':'€'+Math.round(v);
-  const dow=['Su','Mo','Tu','We','Th','Fr','Sa'];
-  let head='<tr><th style="position:sticky;left:0;background:var(--surface);z-index:2;text-align:left;min-width:170px">Channel / rate</th>';
-  days.forEach(d=>{ const wk=(d.getDay()===0||d.getDay()===6); head+=`<th style="min-width:52px;text-align:center;${wk?'background:rgba(195,131,59,.06)':''}"><div style="font-size:9px;color:var(--ink-3)">${dow[d.getDay()]}</div>${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}</th>`; });
+  const fmtP=v=>(v==null||!isFinite(v))?'\u2014':'\u20ac'+Math.round(v);
+  const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  let head='<tr><th style="position:sticky;left:0;background:var(--surface);z-index:3;text-align:left;min-width:172px">Channel / rate</th>';
+  days.forEach(d=>{ const wk=(d.getDay()===0||d.getDay()===6); head+=`<th style="min-width:62px;text-align:center;padding:6px 4px;${wk?'background:rgba(195,131,59,.06)':''}"><div style="font-family:'DM Mono',monospace">${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}</div><div style="font-size:9px;color:${wk?'#c4823b':'var(--ink-3)'};font-weight:600">${DOW[d.getDay()]}</div></th>`; });
   head+='</tr>';
   let body=''; let lastG=null;
   lines.forEach(ln=>{
-    if(ln.g!==lastG && ln.g!==''){ body+=`<tr><td colspan="${N+1}" style="background:${grpColor[ln.g]}12;color:${grpColor[ln.g]};font-weight:700;font-size:11px;padding:4px 8px;position:sticky;left:0">${ln.g}</td></tr>`; lastG=ln.g; }
+    if(ln.g!==lastG && ln.g!==''){ body+=`<tr><td colspan="${N+1}" style="background:${grpColor[ln.g]}14;color:${grpColor[ln.g]};font-weight:700;font-size:11px;padding:4px 8px;position:sticky;left:0">${ln.g}</td></tr>`; lastG=ln.g; }
     const lblStyle = ln.bold?'font-weight:700;color:var(--ink)':'color:var(--ink-2)';
     body+=`<tr><td style="position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;${lblStyle};border-left:2px solid ${grpColor[ln.g]||'transparent'}">${ln.lbl}</td>`;
     days.forEach((d,i)=>{ const l=L[i]; const v=(l==null)?null:ln.c(l, ymd(d)); const wk=(d.getDay()===0||d.getDay()===6); body+=`<td style="text-align:center;font-family:'DM Mono',monospace;${ln.bold?'font-weight:700':''};${wk?'background:rgba(195,131,59,.04)':''}">${fmtP(v)}</td>`; });
     body+='</tr>';
   });
-  tHost.innerHTML=`<div style="overflow-x:auto"><table class="data" style="font-size:12px;border-collapse:collapse">${head}${body}</table></div>`;
+  tHost.innerHTML=`<div style="overflow-x:auto"><table class="data" style="font-size:12px;border-collapse:collapse;white-space:nowrap">${head}${body}</table></div>`;
 }
 function setTab(name){
   CURRENT_TAB = name;
