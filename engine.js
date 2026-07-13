@@ -1038,6 +1038,7 @@ function loadAirdna(csvText){
   }
   MARKET_RATES.sort((a,b)=> a.ymd - b.ymd);
 }
+const _UNKNOWN_ROOM_LOG = [];  // prenotazioni con room-type non nel CFG (es. CAMERA VIRTUALE): contate come Other
 function loadData(csvText){
   const all = parseCSV(csvText);
   RAW = [];
@@ -1084,9 +1085,22 @@ function loadData(csvText){
     const totNet = tot - tax;
     const _validRoomsSet = _structKeyForRooms ? _structRoomsCache[_structKeyForRooms] : null;
     let alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
+    const _alloggiRaw = (r['Alloggi']||'');
+    // "CAMERA VIRTUALE PER SPOSTAMENTI" = segnaposto Beddy usato quando si sposta un ospite:
+    // è un DOPPIONE tecnico (l'ospite occupa già una camera reale). Il suo revenue è reale e va
+    // contato, ma NON le notti (altrimenti l'occupazione supererebbe il 100%).
+    const _isVirtualRoom = /virtuale/i.test(_alloggiRaw);
     if (_validRoomsSet && _validRoomsSet.size){
       const _filtered = alloggi.filter(rm => _validRoomsSet.has(rm));
-      alloggi = _filtered;
+      // Room-type non nel CFG (errori di inserimento nel PMS, es. Firenze con "Trilocale"):
+      // la prenotazione è REALE → si conta in revenue e occupazione, marcata 'Other' così non
+      // inquina i calcoli per-room-type (anchor Base Price, supplementi) che restano sulla baseRT.
+      if (!_filtered.length && alloggi.length){
+        alloggi = alloggi.map(()=>'Other');
+        if (typeof _UNKNOWN_ROOM_LOG !== 'undefined') _UNKNOWN_ROOM_LOG.push((r['Struttura']||'')+' · '+_alloggiRaw+' · '+(r['numero di riferimento']||'')+(_isVirtualRoom?' [virtual: revenue only]':' [data error: counted as Other]'));
+      } else {
+        alloggi = _filtered;
+      }
     }
     if (!alloggi.length) continue;
     const numRooms = alloggi.length;
@@ -1109,12 +1123,17 @@ function loadData(csvText){
     for (const room of alloggi){
       BOOKINGS.push({
         struct, structKey: _structKeyForRooms, room, prov, canale, ref, guest, tariffa,
-        dBook, dIn, dOut, notti,
+        dBook, dIn, dOut,
+        // Camera virtuale (doppione tecnico di spostamento): il REVENUE è reale e va contato
+        // (revPerNight normale, così entra nel revenue per stay-date), ma NON deve generare
+        // occupazione: notti = 0 e i conteggi room-night la saltano (flag virtualRoom).
+        notti: _isVirtualRoom ? 0 : notti,
         revPerNight: revPerRoomNight,
         revPerNightCaricato: revPerRoomNightCaricato,
         channelMarkup,
         isNonRefundable,
         revTotal: revPerRoomNight * notti,
+        virtualRoom: _isVirtualRoom || false,
         cleaning: extraCleaning / numRooms,
         bookYmd: ymd(dBook),
         cancelled: stato === 'Cancellate',
@@ -15266,8 +15285,10 @@ function fcstFloorShare(structKey){
     if (sy){
       for (let j=0; j<sy.length; j++){
         const k = sy[j];
+        if (!b.virtualRoom){
         if (k > ymdMinus90 && k <= ymdToday) curRn += 1;
         if (k > ymdMinus454 && k <= ymdMinus364) lyRn += 1;
+        }
       }
     } else {
       // Fallback (non dovrebbe servire)
@@ -15275,8 +15296,10 @@ function fcstFloorShare(structKey){
       const end = startOfDay(b.dOut);
       while (cur < end){
         const k = ymd(cur);
+        if (!b.virtualRoom){
         if (k > ymdMinus90 && k <= ymdToday) curRn += 1;
         if (k > ymdMinus454 && k <= ymdMinus364) lyRn += 1;
+        }
         cur = addDays(cur, 1);
       }
     }
@@ -15305,8 +15328,10 @@ function fcstShareByMonth(structKey){
         const mmNum = Math.floor(k/100) % 100;
         const mm = mmNum < 10 ? '0'+mmNum : ''+mmNum;
         if (!byMonth[mm]) byMonth[mm] = { curRn: 0, lyRn: 0 };
+        if (!b.virtualRoom){
         if (k > ymdMinus365 && k <= ymdToday) byMonth[mm].curRn += 1;
         if (k > ymdMinus728 && k <= ymdMinus365) byMonth[mm].lyRn += 1;
+        }
       }
     } else {
       let cur = startOfDay(b.dIn);
@@ -15315,8 +15340,10 @@ function fcstShareByMonth(structKey){
         const k = ymd(cur);
         const mm = pad2(cur.getMonth() + 1);
         if (!byMonth[mm]) byMonth[mm] = { curRn: 0, lyRn: 0 };
+        if (!b.virtualRoom){
         if (k > ymdMinus365 && k <= ymdToday) byMonth[mm].curRn += 1;
         if (k > ymdMinus728 && k <= ymdMinus365) byMonth[mm].lyRn += 1;
+        }
         cur = addDays(cur, 1);
       }
     }
@@ -15394,10 +15421,12 @@ function fcstAdrGrowth(structKey){
       for (let j=0; j<sy.length; j++){
         const k = sy[j];
         if (k > ymdMinus90 && k <= ymdToday){
-          curRn += 1; curRev += rpn;
+          if (!b.virtualRoom) curRn += 1;
+          curRev += rpn;
         }
         if (k > ymdMinus454 && k <= ymdMinus364){
-          lyRn += 1; lyRev += rpn;
+          if (!b.virtualRoom) lyRn += 1;
+          lyRev += rpn;
         }
       }
     } else {
@@ -15405,8 +15434,8 @@ function fcstAdrGrowth(structKey){
       const end = startOfDay(b.dOut);
       while (cur < end){
         const k = ymd(cur);
-        if (k > ymdMinus90 && k <= ymdToday){ curRn += 1; curRev += rpn; }
-        if (k > ymdMinus454 && k <= ymdMinus364){ lyRn += 1; lyRev += rpn; }
+        if (k > ymdMinus90 && k <= ymdToday){ if(!b.virtualRoom) curRn += 1; curRev += rpn; }
+        if (k > ymdMinus454 && k <= ymdMinus364){ if(!b.virtualRoom) lyRn += 1; lyRev += rpn; }
         cur = addDays(cur, 1);
       }
     }
@@ -15485,7 +15514,9 @@ function _aggForecastImpl(structKey){
     const b = _aggFcstList[_bi];
     if (b.cancelled) continue;
     if (!_aggFcstUseIndex && !keys.has(b.struct)) continue;
-    if (!rtSet.has(b.room)) continue;
+    // NON scartare le room fuori CFG ('Other' = errori di inserimento PMS o camera virtuale):
+    // il loro revenue è reale e va nei totali; il dettaglio per room-type le ignora comunque.
+    if (b.room !== 'Other' && !rtSet.has(b.room)) continue;
     let cur = startOfDay(b.dIn);
     const end = startOfDay(b.dOut);
     while (cur < end){
@@ -15546,19 +15577,27 @@ function _aggForecastImpl(structKey){
           }
         }
       }
-      if (monthly[ymKey] && monthly[ymKey].byRt[b.room]){
-        monthly[ymKey].otbRn += 1;
+      if (monthly[ymKey]){
+        // Il TOTALE del mese conta sempre (anche room 'Other' = room-type fuori CFG).
+        // Le camere virtuali portano revenue ma NON room-night (doppione tecnico di spostamento).
+        const _rnAdd = b.virtualRoom ? 0 : 1;
+        monthly[ymKey].otbRn += _rnAdd;
         monthly[ymKey].otbRev += b.revPerNight;
-        monthly[ymKey].byRt[b.room].otbRn += 1;
-        monthly[ymKey].byRt[b.room].otbRev += b.revPerNight;
+        const _rt = monthly[ymKey].byRt[b.room];   // null per 'Other' → il dettaglio per room-type resta pulito
+        if (_rt){
+          _rt.otbRn += _rnAdd;
+          _rt.otbRev += b.revPerNight;
+        }
         // OTB nights per stay-date inside the month (used to know "what's already on the books per date")
         const stayYmd = ymd(cur);
-        monthly[ymKey].otbByDate[stayYmd] = (monthly[ymKey].otbByDate[stayYmd] || 0) + 1;
+        monthly[ymKey].otbByDate[stayYmd] = (monthly[ymKey].otbByDate[stayYmd] || 0) + _rnAdd;
         if (cur < today0){
-          monthly[ymKey].actualPastRn += 1;
+          monthly[ymKey].actualPastRn += _rnAdd;
           monthly[ymKey].actualPastRev += b.revPerNight;
-          monthly[ymKey].byRt[b.room].actualPastRn += 1;
-          monthly[ymKey].byRt[b.room].actualPastRev += b.revPerNight;
+          if (_rt){
+            _rt.actualPastRn += _rnAdd;
+            _rt.actualPastRev += b.revPerNight;
+          }
         }
       }
       cur = addDays(cur, 1);
