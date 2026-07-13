@@ -50,6 +50,141 @@ const RMES_CLOUD = (function(){
     'rmes_promos_v1',
     '_data_fingerprint_v1'
   ];
+  // ===== Compressione stato cloud (Firestore: limite RIGIDO 1 MB per documento) =====
+  // Lo stato condiviso (prezzi 365gg x 6 strutture + accept + audit) ha superato 1 MB e le
+  // scritture fallivano silenziosamente: le decisioni non arrivavano piu' al cloud.
+  // Il JSON e' molto ripetitivo -> lo comprimiamo (LZ) prima di scriverlo: ~10x piu' piccolo.
+  const _LZ = (function(){
+    const kStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    function _c(u, bits, getChar){
+      if (u == null) return "";
+      let i, ii, value, ctx_dictionary = {}, ctx_dictionaryToCreate = {}, ctx_c = "", ctx_wc = "", ctx_w = "",
+          ctx_enlargeIn = 2, ctx_dictSize = 3, ctx_numBits = 2, ctx_data = [], ctx_data_val = 0, ctx_data_position = 0;
+      for (ii = 0; ii < u.length; ii += 1){
+        ctx_c = u.charAt(ii);
+        if (!Object.prototype.hasOwnProperty.call(ctx_dictionary, ctx_c)){ ctx_dictionary[ctx_c] = ctx_dictSize++; ctx_dictionaryToCreate[ctx_c] = true; }
+        ctx_wc = ctx_w + ctx_c;
+        if (Object.prototype.hasOwnProperty.call(ctx_dictionary, ctx_wc)){ ctx_w = ctx_wc; }
+        else {
+          if (Object.prototype.hasOwnProperty.call(ctx_dictionaryToCreate, ctx_w)){
+            if (ctx_w.charCodeAt(0) < 256){
+              for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; }
+              value = ctx_w.charCodeAt(0);
+              for (i = 0; i < 8; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
+            } else {
+              value = 1;
+              for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | value; if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = 0; }
+              value = ctx_w.charCodeAt(0);
+              for (i = 0; i < 16; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
+            }
+            ctx_enlargeIn--; if (ctx_enlargeIn == 0){ ctx_enlargeIn = Math.pow(2, ctx_numBits); ctx_numBits++; }
+            delete ctx_dictionaryToCreate[ctx_w];
+          } else {
+            value = ctx_dictionary[ctx_w];
+            for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
+          }
+          ctx_enlargeIn--; if (ctx_enlargeIn == 0){ ctx_enlargeIn = Math.pow(2, ctx_numBits); ctx_numBits++; }
+          ctx_dictionary[ctx_wc] = ctx_dictSize++; ctx_w = String(ctx_c);
+        }
+      }
+      if (ctx_w !== ""){
+        if (Object.prototype.hasOwnProperty.call(ctx_dictionaryToCreate, ctx_w)){
+          if (ctx_w.charCodeAt(0) < 256){
+            for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; }
+            value = ctx_w.charCodeAt(0);
+            for (i = 0; i < 8; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
+          } else {
+            value = 1;
+            for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | value; if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = 0; }
+            value = ctx_w.charCodeAt(0);
+            for (i = 0; i < 16; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
+          }
+          ctx_enlargeIn--; if (ctx_enlargeIn == 0){ ctx_enlargeIn = Math.pow(2, ctx_numBits); ctx_numBits++; }
+          delete ctx_dictionaryToCreate[ctx_w];
+        } else {
+          value = ctx_dictionary[ctx_w];
+          for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
+        }
+        ctx_enlargeIn--; if (ctx_enlargeIn == 0){ ctx_enlargeIn = Math.pow(2, ctx_numBits); ctx_numBits++; }
+      }
+      value = 2;
+      for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
+      while (true){ ctx_data_val = (ctx_data_val << 1); if (ctx_data_position == bits-1){ ctx_data.push(getChar(ctx_data_val)); break; } else ctx_data_position++; }
+      return ctx_data.join('');
+    }
+    function _d(length, resetValue, getNextValue){
+      let dictionary = [], enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [],
+          i, w, bits, resb, maxpower, power, c,
+          data = { val: getNextValue(0), position: resetValue, index: 1 };
+      for (i = 0; i < 3; i += 1) dictionary[i] = i;
+      bits = 0; maxpower = Math.pow(2,2); power = 1;
+      while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
+      switch (bits){
+        case 0: bits = 0; maxpower = Math.pow(2,8); power = 1;
+          while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
+          c = String.fromCharCode(bits); break;
+        case 1: bits = 0; maxpower = Math.pow(2,16); power = 1;
+          while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
+          c = String.fromCharCode(bits); break;
+        case 2: return "";
+      }
+      dictionary[3] = c; w = c; result.push(c);
+      while (true){
+        if (data.index > length) return "";
+        bits = 0; maxpower = Math.pow(2,numBits); power = 1;
+        while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
+        switch (c = bits){
+          case 0: bits = 0; maxpower = Math.pow(2,8); power = 1;
+            while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
+            dictionary[dictSize++] = String.fromCharCode(bits); c = dictSize-1; enlargeIn--; break;
+          case 1: bits = 0; maxpower = Math.pow(2,16); power = 1;
+            while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
+            dictionary[dictSize++] = String.fromCharCode(bits); c = dictSize-1; enlargeIn--; break;
+          case 2: return result.join('');
+        }
+        if (enlargeIn == 0){ enlargeIn = Math.pow(2, numBits); numBits++; }
+        if (dictionary[c]) entry = dictionary[c];
+        else { if (c === dictSize) entry = w + w.charAt(0); else return null; }
+        result.push(entry);
+        dictionary[dictSize++] = w + entry.charAt(0);
+        enlargeIn--; w = entry;
+        if (enlargeIn == 0){ enlargeIn = Math.pow(2, numBits); numBits++; }
+      }
+    }
+    return {
+      compressToBase64: function(input){
+        if (input == null) return "";
+        const res = _c(input, 6, function(a){ return kStr.charAt(a); });
+        switch (res.length % 4){ default: case 0: return res; case 1: return res+"==="; case 2: return res+"=="; case 3: return res+"="; }
+      },
+      decompressFromBase64: function(input){
+        if (input == null || input === "") return null;
+        return _d(input.length, 32, function(index){ return kStr.indexOf(input.charAt(index)); });
+      }
+    };
+  })();
+  // Impacchetta lo stato in un payload compresso {_z, _updatedAt}. Se per qualsiasi motivo la
+  // compressione fallisce, torna al formato in chiaro (retrocompatibile).
+  function _packPayload(raw){
+    try {
+      const json = JSON.stringify(raw);
+      const z = _LZ.compressToBase64(json);
+      if (z && z.length < json.length){
+        return { _z: z, _zv: 1, _updatedAt: Date.now() };
+      }
+    } catch(e){ console.warn('[rmesCloud] compress failed, fallback plain', e); }
+    const p = Object.assign({}, raw); p._updatedAt = Date.now(); return p;
+  }
+  // Legge un payload dal cloud, sia nel formato compresso (_z) sia in quello vecchio in chiaro.
+  function _unpackPayload(payload){
+    if (payload && payload._z){
+      try {
+        const json = _LZ.decompressFromBase64(payload._z);
+        if (json) return JSON.parse(json);
+      } catch(e){ console.error('[rmesCloud] decompress failed', e); return null; }
+    }
+    return payload;
+  }
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAJuFzabHO3O3XVM3DfeWNThB9Wy0jMkHA",
     authDomain: "rmes-manu-enis.firebaseapp.com",
@@ -290,7 +425,7 @@ const RMES_CLOUD = (function(){
           if (!snap.exists){
             return { ok: false, error: 'Cloud document does not exist.' };
           }
-          const payload = snap.data();
+          const payload = _unpackPayload(snap.data());
           if (!payload || typeof payload !== 'object'){
             return { ok: false, error: 'Cloud document is empty or malformed.' };
           }
@@ -357,8 +492,7 @@ const RMES_CLOUD = (function(){
         }
         const db = window.firebase.firestore();
         const ref = db.collection('rmes_shared').doc('state');
-        const payload = _collectLocal();
-        payload._updatedAt = Date.now();
+        const payload = _packPayload(_collectLocal());
         ref.set(payload).then(function(){
           lastRemoteJSON = JSON.stringify(payload);
           _logSync('push');
@@ -402,8 +536,17 @@ const RMES_CLOUD = (function(){
     const obj = {};
     for (const k of SYNC_KEYS){
       try {
-        const raw = localStorage.getItem(k);
-        if (raw != null) obj[k] = raw;   // salvo la stringa grezza (già JSON)
+        let raw = localStorage.getItem(k);
+        if (raw == null) continue;
+        // L'audit log cresce all'infinito e da solo può far sforare il limite di 1 MB del
+        // documento Firestore: teniamo in cloud solo le ultime N voci (le più recenti).
+        if (k === AUDIT_SYNC_KEY){
+          try {
+            const arr = JSON.parse(raw);
+            if (Array.isArray(arr) && arr.length > 400){ raw = JSON.stringify(arr.slice(-400)); }
+          } catch(e){}
+        }
+        obj[k] = raw;   // salvo la stringa grezza (già JSON)
       } catch(e){}
     }
     return obj;
@@ -570,8 +713,7 @@ const RMES_CLOUD = (function(){
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(function(){
       pushTimer = null;
-      const payload = _collectLocal();
-      payload._updatedAt = Date.now();
+      const payload = _packPayload(_collectLocal());
       payload._updatedBy = (function(){
         try { let id = localStorage.getItem('rmes_client_id');
           if (!id){ id = 'c'+Math.random().toString(36).slice(2,8); localStorage.setItem('rmes_client_id', id); }
@@ -613,20 +755,20 @@ const RMES_CLOUD = (function(){
         const ref = db.collection('rmes_shared').doc('state');
         ref.get().then(function(snap){
           if (snap.exists){
-            const remote = snap.data();
-            _applyToLocal(remote);
+            const remote = _unpackPayload(snap.data());
+            if (remote) _applyToLocal(remote);
             lastRemoteJSON = JSON.stringify(remote);
             console.log('[rmesCloud] initial state loaded from cloud');
           } else {
-            // cloud vuoto → prima migrazione: carico lo stato locale attuale
-            const payload = _collectLocal(); payload._updatedAt = Date.now();
-            ref.set(payload).then(function(){ console.log('[rmesCloud] migrated local state to cloud'); }).catch(function(){});
+            // cloud vuoto → prima migrazione: carico lo stato locale attuale (compresso)
+            ref.set(_packPayload(_collectLocal())).then(function(){ console.log('[rmesCloud] migrated local state to cloud'); }).catch(function(){});
           }
           ready = true; _logSync('pull'); _setStatus('synced'); clearTimeout(safety); finish();
           // listener realtime per aggiornamenti altrui
           ref.onSnapshot(function(s){
             if (!s.exists) return;
-            const remote = s.data();
+            const remote = _unpackPayload(s.data());
+            if (!remote) return;
             const j = JSON.stringify(remote);
             if (j === lastRemoteJSON) return;   // è il nostro stesso push
             const changed = _applyToLocal(remote);
@@ -647,7 +789,8 @@ const RMES_CLOUD = (function(){
               if (document.hidden || !available || !db) return;
               ref.get().then(function(snap){
                 if (!snap.exists) return;
-                const remote = snap.data();
+                const remote = _unpackPayload(snap.data());
+                if (!remote) return;
                 const j = JSON.stringify(remote);
                 if (j === lastRemoteJSON) return;   // già allineati
                 const changed = _applyToLocal(remote);
