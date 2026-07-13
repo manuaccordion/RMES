@@ -19806,8 +19806,8 @@ function _bigRenderPickup4w(sel){
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year · ${cur[N-1]||0} RN</span>
       <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY · ${stly[N-1]||0} RN</span></div>`;
   host.innerHTML = `
-    <div style="position:relative">
-      <svg id="pk4-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">
+    <div style="position:relative;max-width:960px;margin:0 auto">
+      <svg id="pk4-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;max-width:960px;height:auto;display:block;margin:0 auto;font-family:'DM Mono',monospace">
         ${grad}${grid}${xlab}
         <path d="${areaOf(cur)}" fill="url(#pk4-grad)"/>
         <path d="${pathOf(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="5 4" opacity=".85"/>
