@@ -4329,14 +4329,15 @@ let SELL_RMES_W_ALL = (function(){
   try {
     const flagKey = 'rmes_factors_v4_migration_2026_05_28';
     const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
-    // Controllo idempotente: anche se il flag è già settato, se trovo pesi in formato vecchio
-    // (price > 0 o occ ≠ 0.25) li forzo ai nuovi default. Questo gestisce il caso Firebase Cloud
-    // che ripristina pesi vecchi sovrascrivendo la migrazione locale.
+    // Il criterio deve essere COERENTE con i default applicati, altrimenti la migrazione si
+    // auto-riattiva ad ogni avvio (prima: applicava occ=0.20 ma considerava "legacy" tutto ciò
+    // che non era occ=0.25 → riscriveva i pesi ogni volta → push sul cloud ad ogni reload →
+    // ping-pong tra i browser). Legacy = il fattore B·ADR (price) è ancora attivo.
     let needsForce = false;
     for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
       const p = SELL_RMES_W_ALL[s];
       if (!p) continue;
-      if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
+      if ((p.price || 0) > 0.001){
         needsForce = true; break;
       }
     }
@@ -4347,7 +4348,7 @@ let SELL_RMES_W_ALL = (function(){
       }
       localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL));
       localStorage.setItem(flagKey, '1');
-      console.log('[RMES] 4-factor migration applied: weights reset to 25/0/25/25/25' + (hadFlag ? ' (forced: legacy format detected)' : ''));
+      console.log('[RMES] 4-factor migration applied (one-shot)' + (hadFlag ? ' — legacy B·ADR weight found' : ''));
     }
   } catch(e){}
 })();
