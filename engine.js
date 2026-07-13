@@ -299,8 +299,12 @@ const RMES_CLOUD = (function(){
     try {
       const parts = [];
       const keysSorted = SYNC_KEYS.slice().sort();
+      // Chiavi ESCLUSE dall'hash: sono log append-only che si FONDONO (merge) invece di essere
+      // sovrascritti, quindi divergono naturalmente tra browser anche quando prezzi e config sono
+      // identici. Includerle darebbe hash diversi = falso allarme "out of sync".
+      const HASH_SKIP = ['_data_fingerprint_v1', AUDIT_SYNC_KEY, 'notes_journal_v2'];
       for (const k of keysSorted){
-        if (k === '_data_fingerprint_v1') continue;  // skip own diagnostic key
+        if (HASH_SKIP.indexOf(k) >= 0) continue;
         const v = localStorage.getItem(k);
         parts.push(k + '=' + (v == null ? 'null' : v));
       }
