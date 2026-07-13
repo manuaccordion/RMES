@@ -19755,42 +19755,107 @@ function _bigRenderPickup4w(sel){
   const keys = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const N = 28;
-  const curDays=[], stlyDays=[];
+  const curDays=[], stlyDays=[], dates=[];
   for (let i=0;i<N;i++){
     const d = new Date(today.getTime() - (N-1-i)*86400000);
+    dates.push(d);
     curDays.push(ymd(d));
     stlyDays.push(ymd(new Date(d.getTime() - 364*86400000)));
   }
-  const byYmd = {};
-  for (const b of BOOKINGS){ if (b.cancelled || !keys.has(b.struct)) continue; byYmd[b.bookYmd]=(byYmd[b.bookYmd]||0)+(b.notti||0); }
-  const cur=[], stly=[]; let cc=0, sc=0;
-  for (let i=0;i<N;i++){ cc+=(byYmd[curDays[i]]||0); sc+=(byYmd[stlyDays[i]]||0); cur.push(cc); stly.push(sc); }
-  const maxV = Math.max(1, cur[N-1]||0, stly[N-1]||0);
-  const W=760, H=210, padL=44, padR=72, padT=12, padB=26;
-  const plotW=W-padL-padR, plotH=H-padT-padB;
-  const xAt=i=> padL + (i/(N-1))*plotW;
-  const yAt=v=> padT+plotH - (v/maxV)*plotH;
-  const pathOf=arr=> arr.map((v,i)=>`${i?'L':'M'}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
-  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
-  for (let g=0;g<=3;g++){ const v=maxV*g/3, y=yAt(v); svg+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">${Math.round(v)}</text>`; }
-  svg+=`<path d="${pathOf(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="5 4" opacity=".85"/>`;
-  svg+=`<path d="${pathOf(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>`;
-  // etichette fine linea con anti-sovrapposizione
-  let ey1=yAt(cur[N-1]||0), ey2=yAt(stly[N-1]||0);
-  if (Math.abs(ey1-ey2)<12){ if(ey1<=ey2){ey1-=6;ey2+=6;} else {ey1+=6;ey2-=6;} }
-  svg+=`<text x="${W-padR+5}" y="${ey1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${cur[N-1]||0} RN</text>`;
-  svg+=`<text x="${W-padR+5}" y="${ey2+3}" font-size="10" font-weight="700" fill="#7a4d96">${stly[N-1]||0} LY</text>`;
-  const fmtD=y=>{const s=String(y);return s.slice(6,8)+'/'+s.slice(4,6);};
-  // bande invisibili per giorno con tooltip (dettaglio all'hover)
-  const bw = plotW/(N-1);
-  for (let i=0;i<N;i++){
-    svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent"><title>${fmtD(curDays[i])} · This year: ${cur[i]} RN · STLY (LY): ${stly[i]} RN</title></rect>`;
+  const rnBy={}, revBy={};
+  for (const b of BOOKINGS){
+    if (b.cancelled || !keys.has(b.struct)) continue;
+    rnBy[b.bookYmd]=(rnBy[b.bookYmd]||0)+(b.notti||0);
+    revBy[b.bookYmd]=(revBy[b.bookYmd]||0)+(b.revTotal||0);
   }
-  svg+=`<text x="${padL}" y="${H-8}" text-anchor="start" font-size="9" fill="var(--ink-3)">${fmtD(curDays[0])}</text>`;
-  svg+=`<text x="${padL+plotW}" y="${H-8}" text-anchor="end" font-size="9" fill="var(--ink-3)">today</text>`;
-  svg+=`</svg>`;
-  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (−364d)</span></div>`;
-  host.innerHTML = svg + leg;
+  const cur=[], stly=[], curDaily=[], stlyDaily=[], curRev=[], stlyRev=[];
+  let cc=0, sc=0, cr=0, sr=0;
+  for (let i=0;i<N;i++){
+    const cd=rnBy[curDays[i]]||0, sd=rnBy[stlyDays[i]]||0;
+    cc+=cd; sc+=sd; cr+=(revBy[curDays[i]]||0); sr+=(revBy[stlyDays[i]]||0);
+    cur.push(cc); stly.push(sc); curDaily.push(cd); stlyDaily.push(sd); curRev.push(cr); stlyRev.push(sr);
+  }
+  // stesse dimensioni della Booking Curve
+  const W = 760, H = 320;
+  const padL = 64, padR = 16, padTop = 16, padBot = 40;
+  const plotW = W - padL - padR, plotH = H - padTop - padBot;
+  const maxV = Math.max(1, cur[N-1]||0, stly[N-1]||0);
+  const xAt = i => padL + (i/(N-1))*plotW;
+  const yAt = v => padTop + plotH - (v/maxV)*plotH;
+  const pathOf = arr => arr.map((v,i)=>`${i?'L':'M'}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
+  const areaOf = arr => `M${xAt(0).toFixed(1)} ${(padTop+plotH).toFixed(1)} ` + arr.map((v,i)=>`L${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ') + ` L${xAt(N-1).toFixed(1)} ${(padTop+plotH).toFixed(1)} Z`;
+  // Y axis
+  let grid='';
+  for (let g=0; g<=4; g++){
+    const val = maxV*g/4, y = yAt(val);
+    grid += `<text x="${padL-10}" y="${y+3}" font-size="10" text-anchor="end" fill="#9a9a9a" font-family="'DM Mono',monospace" font-weight="600">${Math.round(val)}</text>`;
+  }
+  // X labels (ogni 7 giorni)
+  const fmtD = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+  let xlab='';
+  for (let i=0;i<N;i+=7){
+    xlab += `<text x="${xAt(i).toFixed(1)}" y="${(padTop+plotH+20).toFixed(1)}" font-size="10" text-anchor="middle" fill="#9a9a9a" font-family="'DM Mono',monospace" font-weight="600">${fmtD(dates[i])}</text>`;
+  }
+  xlab += `<text x="${xAt(N-1).toFixed(1)}" y="${(padTop+plotH+20).toFixed(1)}" font-size="10" text-anchor="end" fill="#3a8bc2" font-family="'DM Mono',monospace" font-weight="700">today</text>`;
+  const grad = `<defs><linearGradient id="pk4-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6bb6e8" stop-opacity="0.28"/><stop offset="100%" stop-color="#6bb6e8" stop-opacity="0.02"/></linearGradient></defs>`;
+  const hoverRect = `<rect id="pk4-hover-rect" x="${padL}" y="${padTop}" width="${plotW}" height="${plotH}" fill="transparent" style="cursor:crosshair"/>`;
+  const hoverLine = `<line id="pk4-hover-line" x1="0" y1="${padTop}" x2="0" y2="${padTop+plotH}" stroke="#5a3a14" stroke-width="1" opacity="0" style="pointer-events:none"/>`;
+  const dotCur = `<circle id="pk4-dot-cur" cx="0" cy="0" r="5" fill="#2f7fb5" stroke="#fff" stroke-width="2" opacity="0" style="pointer-events:none"/>`;
+  const dotLy  = `<circle id="pk4-dot-ly" cx="0" cy="0" r="4" fill="#7a4d96" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
+  const legend = `<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace">
+      <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year · ${cur[N-1]||0} RN</span>
+      <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY · ${stly[N-1]||0} RN</span></div>`;
+  host.innerHTML = `
+    <div style="position:relative">
+      <svg id="pk4-svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">
+        ${grad}${grid}${xlab}
+        <path d="${areaOf(cur)}" fill="url(#pk4-grad)"/>
+        <path d="${pathOf(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="5 4" opacity=".85"/>
+        <path d="${pathOf(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>
+        ${hoverRect}${hoverLine}${dotLy}${dotCur}
+      </svg>
+      <div id="pk4-tooltip" style="position:absolute;display:none;background:#fff;border:1.5px solid #b59e7d;border-radius:8px;box-shadow:0 6px 20px rgba(90,58,20,.22);padding:10px 14px;font-size:12px;font-family:'DM Sans',sans-serif;pointer-events:none;z-index:10;min-width:230px;line-height:1.5"></div>
+    </div>${legend}`;
+  // Hover: linea guida + dots + tooltip (stesso comportamento della Booking Curve)
+  const svgEl = host.querySelector('#pk4-svg');
+  const rect  = host.querySelector('#pk4-hover-rect');
+  const line  = host.querySelector('#pk4-hover-line');
+  const dC    = host.querySelector('#pk4-dot-cur');
+  const dL    = host.querySelector('#pk4-dot-ly');
+  const tip   = host.querySelector('#pk4-tooltip');
+  const DAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTHS= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (rect){
+    rect.addEventListener('mousemove', function(ev){
+      const r = svgEl.getBoundingClientRect();
+      const vbX = (ev.clientX - r.left) / r.width * W;
+      let i = Math.round((vbX - padL) / plotW * (N-1));
+      if (i < 0) i = 0; if (i > N-1) i = N-1;
+      const x = xAt(i);
+      line.setAttribute('x1', x); line.setAttribute('x2', x); line.setAttribute('opacity','0.4');
+      dC.setAttribute('cx', x); dC.setAttribute('cy', yAt(cur[i])); dC.setAttribute('opacity','1');
+      dL.setAttribute('cx', x); dL.setAttribute('cy', yAt(stly[i])); dL.setAttribute('opacity','0.85');
+      const d = dates[i];
+      const lbl = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
+      const delta = cur[i] - stly[i];
+      const dCol = delta >= 0 ? '#3d7a4b' : '#a83b3b';
+      let html = '<div style="font-weight:700;color:#5a3a14;font-size:12.5px;margin-bottom:8px;border-bottom:1px solid #ece9e2;padding-bottom:5px">'+lbl+'</div>';
+      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 9px;background:#eef6fc;border-radius:5px;margin-bottom:5px"><span style="color:#2f7fb5;font-weight:600;white-space:nowrap">\u25CF This year</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:14px;white-space:nowrap">'+cur[i]+' RN<span style="font-size:10px;color:#888;font-weight:400;margin-left:4px">(+'+curDaily[i]+' that day)</span></b></div>';
+      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 9px;background:#f7f1fa;border-radius:5px;margin-bottom:5px"><span style="color:#7a4d96;font-weight:600;white-space:nowrap">\u25CF STLY</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:14px;white-space:nowrap">'+stly[i]+' RN<span style="font-size:10px;color:#888;font-weight:400;margin-left:4px">(+'+stlyDaily[i]+' that day)</span></b></div>';
+      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:4px 9px"><span style="color:#666;font-weight:600;white-space:nowrap">\u0394 vs STLY</span><b style="font-family:\'DM Mono\',monospace;color:'+dCol+';font-size:13px;white-space:nowrap">'+(delta>=0?'+':'')+delta+' RN</b></div>';
+      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:2px 9px;border-top:1px solid #ece9e2;margin-top:3px"><span style="color:#888;font-size:11px;white-space:nowrap">Revenue booked</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:12px;white-space:nowrap">\u20ac'+Math.round(curRev[i]).toLocaleString('en-GB')+'</b></div>';
+      tip.innerHTML = html;
+      tip.style.display = 'block';
+      const px = (x / W) * r.width;
+      const left = Math.min(Math.max(px - 115, 0), r.width - 240);
+      tip.style.left = left + 'px';
+      tip.style.top = '8px';
+    });
+    rect.addEventListener('mouseleave', function(){
+      line.setAttribute('opacity','0'); dC.setAttribute('opacity','0'); dL.setAttribute('opacity','0');
+      tip.style.display='none';
+    });
+  }
 }
 function _bigRenderBookingCurve(sel){
   const host = document.getElementById('big-bcurve');
