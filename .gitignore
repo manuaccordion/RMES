@@ -1,0 +1,15 @@
+node_modules/
+package*.json
+.last_counts.json
+*.bak_*
+*.backup_*
+data.js.bak*
+engine.js.bak*
+build_*.js
+diagnostic*.js
+sanity_*.js
+add_*.js
+cleaning.js
+calc_pickup.js
+*.csv
+CLAUDE.md
