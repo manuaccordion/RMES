@@ -678,13 +678,23 @@ const RMES_CLOUD = (function(){
         if (raw){
           const parsed = JSON.parse(raw);
           const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
+          // ONE-SHOT: questa migrazione deve girare UNA VOLTA SOLA, non a ogni pull.
+          // Prima girava sempre e si auto-riattivava (applicava occ=0.20 ma poi considerava
+          // "legacy" tutto ciò che non era occ=0.25 → si ri-migrava all'infinito, spingendo
+          // ogni volta sul cloud: loop push/pull tra i browser fino al blocco di Firestore
+          // per troppe scritture (resource-exhausted). Ora il criterio è solo "B·ADR attivo"
+          // e, una volta migrato, il flag impedisce di rifarlo.
+          const MIG_FLAG = 'rmes_4factor_migration_v2';
+          let migDone = false;
+          try { migDone = (localStorage.getItem(MIG_FLAG) === '1'); } catch(e){}
           let needsForce = false;
-          for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
-            const p = parsed[s];
-            if (!p) continue;
-            // Criteri: price > 0 (B·ADR ancora attivo) OPPURE occ != 0.25 (somma vecchia ~20%)
-            if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
-              needsForce = true; break;
+          if (!migDone){
+            for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
+              const p = parsed[s];
+              if (!p) continue;
+              if ((p.price || 0) > 0.001){   // config legacy: il fattore B·ADR era ancora attivo
+                needsForce = true; break;
+              }
             }
           }
           if (needsForce){
@@ -698,9 +708,10 @@ const RMES_CLOUD = (function(){
                 SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
               }
             }
-            console.log('[rmesCloud] 4-factor weights force-applied (cloud had legacy 5-factor config)');
+            console.log('[rmesCloud] 4-factor weights migrated (one-shot)');
             changed = true;  // triggera anche un push verso Firestore
           }
+          if (!migDone){ try { localStorage.setItem(MIG_FLAG, '1'); } catch(e){} }
         }
       } catch(e){}
     } finally {
