@@ -72,6 +72,10 @@ button{font-family:inherit;cursor:pointer}
   font-size:12px;color:var(--ink-2);
 }
 .chip .dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+a.chip{text-decoration:none;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+a.chip:hover{background:#0C1421;border-color:#0C1421;color:#35D0FF}
+a.chip:hover .dot{background:#35D0FF}
+a.chip .dot{background:#0C1421}
 .chip.struct-fs .dot{background:var(--c-fs)}
 .chip.struct-c16 .dot{background:var(--c-c16)}
 .chip.struct-both .dot{background:linear-gradient(90deg,var(--c-fs),var(--c-c16))}
@@ -1402,6 +1406,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="chip" id="chip-date"><span class="dot"></span>OTB as of <strong id="chip-today">—</strong></div>
     <div class="chip" id="chip-cloud" title="Shared state status. 'synced' = your decisions and config are shared in real time with your colleagues. 'local only' = working offline on this browser; changes will sync when the connection is back."><span id="rmes-cloud-status" style="font-weight:600;color:#a83b3b">⚠ local only</span></div>
     <div class="chip" id="chip-user" title="Your user profile. Click to switch. Used to track who made each override/accept." style="cursor:pointer"><span class="dot" style="background:#5a3a14"></span>You: <strong id="chip-user-name">—</strong></div>
+    <a class="chip" id="chip-console" href="console.html" title="Pricing Console — play with the 5 RMES weights and watch the recommended rate move, with every euro explained."><span class="dot"></span><strong>Pricing Console</strong></a>
   </div>
 
   <!-- ============ STRUCT SELECTOR ============ -->
