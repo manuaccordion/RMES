@@ -178,13 +178,24 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
 
 <header class="hud">
   <div class="shell hud-in">
-    <a class="logo" href="index.html">RMES <b>//</b> PRICING<br><b>CONSOLE</b></a>
+    <a class="logo" id="home-link" href="index.html">RMES <b>//</b> PRICING<br><b>CONSOLE</b></a>
     <div class="hud-right">
       <span class="cloud" id="rmes-cloud-status">⚠ local only</span>
-      <a class="kbtn alt sm" href="index.html">Dashboard</a>
+      <a class="kbtn alt sm" id="back-link" href="index.html">Dashboard</a>
     </div>
   </div>
 </header>
+<script>
+/* Small screens go back to the mobile app, big screens to the full dashboard. */
+(function(){
+  var mob = window.matchMedia('(max-width: 880px)').matches;
+  var target = mob ? 'app.html' : 'index.html';
+  var back = document.getElementById('back-link');
+  back.href = target;
+  back.textContent = mob ? 'RMES Mobile' : 'Dashboard';
+  document.getElementById('home-link').href = target;
+})();
+</script>
 
 <main class="shell">
   <div id="boot" class="boot">Loading data…</div>
