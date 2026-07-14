@@ -1108,6 +1108,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const _mobBoot = function(){
     try {
       loadData(EMBEDDED_CSV);
+      // Le cache dei calcoli (forecast, booking curve, pace...) possono essere state popolate
+      // PRIMA di loadData — durante l'init di Firebase — quando BOOKINGS era ancora vuoto:
+      // restavano piene di zeri (booking curve piatta, Achievement 0%). Le azzeriamo qui,
+      // subito dopo il caricamento dati, così vengono ricalcolate sui dati veri.
+      try { if (typeof _invalidatePaceAggCache === 'function') _invalidatePaceAggCache(); } catch(e){}
       if (typeof AIRDNA_CSV !== 'undefined') loadAirdna(AIRDNA_CSV);
       if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
       if (typeof fp_ensureStruct === 'function') fp_ensureStruct(MOB.struct);
