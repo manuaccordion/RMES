@@ -264,6 +264,18 @@ main{flex:1;padding:8px 16px 24px}
 .rate-legend .rl-dash{width:16px;height:0;border-top:2px dashed var(--muted)}
 .rate-legend .rl-area{width:14px;height:11px;border-radius:3px;opacity:.18;display:inline-block}
 .rate-note{font-size:10.5px;color:var(--muted);line-height:1.45;padding:0 4px}
+.ctab-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:8px 0 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.ctab{border-collapse:collapse;width:100%;font-family:'DM Mono',monospace;font-size:11px}
+.ctab th,.ctab td{padding:7px 6px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+.ctab thead th{position:sticky;top:0;background:#F7FAFB;color:var(--muted);font-weight:500;font-size:10px;line-height:1.25}
+.ctab thead th span{display:block;color:#2a1d12;font-weight:600;font-size:11px}
+.ctab thead th.wk{background:#EEF6F9}
+.ctab .ctab-nm{position:sticky;left:0;z-index:1;background:#fff;text-align:left;max-width:112px;overflow:hidden;text-overflow:ellipsis;
+  font-family:'Inter',system-ui,sans-serif;font-size:11.5px;color:#2a1d12}
+.ctab thead .ctab-nm{background:#F7FAFB}
+.ctab tbody tr:last-child td{border-bottom:0}
+.ctab tr.me td{background:rgba(14,159,194,.09);font-weight:600;color:#0B7A97}
+.ctab tr.me .ctab-nm{background:rgba(14,159,194,.14);color:#0B7A97;font-weight:600}
 /* override section in drill-in */
 .ovr-box{margin-top:18px;padding:14px;border-radius:14px;background:var(--org-tint);border:1px solid var(--org-tint2)}
 .ovr-box .ovr-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep);margin-bottom:8px}
@@ -336,7 +348,13 @@ main{flex:1;padding:8px 16px 24px}
     <div class="app-sub" id="head-sub">Revenue Intelligence</div>
   </div>
   <div class="struct-row" id="struct-row"></div>
-  <div class="panel active" id="panel-days">
+  <div class="panel" id="panel-month">
+    <main>
+      <div class="section-label">Monthly Overview · year total + month by month</div>
+      <div id="month-list"><div class="spinner"></div></div>
+    </main>
+  </div>
+  <div class="panel active" id="panel-rate">
     <div class="cal-wrap">
       <div class="cal-head">
         <div class="cal-month" id="cal-month">—</div>
@@ -349,21 +367,10 @@ main{flex:1;padding:8px 16px 24px}
       <div class="cal-strip" id="cal-strip"></div>
     </div>
     <main>
-      <div class="section-label" id="days-label">Suggested price · next 7 days</div>
-      <div id="days-list"><div class="spinner"></div></div>
-    </main>
-  </div>
-  <div class="panel" id="panel-month">
-    <main>
-      <div class="section-label">Monthly Overview · year total + month by month</div>
-      <div id="month-list"><div class="spinner"></div></div>
-    </main>
-  </div>
-  <div class="panel" id="panel-rate">
-    <main>
       <div class="section-label" id="rate-label">Rate Shopper · your Expedia price vs compset · next 7 days</div>
       <div id="rate-chart"><div class="spinner"></div></div>
       <div id="rate-legend"></div>
+      <div id="rate-table"></div>
     </main>
   </div>
   <div class="panel" id="panel-big">
@@ -374,8 +381,7 @@ main{flex:1;padding:8px 16px 24px}
   </div>
 </div>
 <div class="tabbar"><div class="tabbar-inner">
-  <button class="tabbtn active" data-tab="days"><span class="ico">📅</span>Daily Price</button>
-  <button class="tabbtn" data-tab="rate"><span class="ico">📈</span>Rate Shopper</button>
+  <button class="tabbtn active" data-tab="rate"><span class="ico">📈</span>Rate Shopper</button>
   <button class="tabbtn" data-tab="big"><span class="ico">🔭</span>Big Picture</button>
   <button class="tabbtn" data-tab="month"><span class="ico">📊</span>Monthly Overview</button>
 </div></div>
@@ -391,7 +397,7 @@ main{flex:1;padding:8px 16px 24px}
    Orange theme everywhere; day drill-in with a 2nd inner click → Base Price + 5 RMES factors
    + 5 RMES factors; room categories ordered by price; monthly overview with OTB big
    + STLY / LY / Forecast small for Revenue, ADR and Occupancy. */
-const MOB = { struct:'firenze', winStart:null, tab:'days', lastDay:null, lastRow:null, monthView:'otb', monthPast:false };
+const MOB = { struct:'firenze', winStart:null, tab:'rate', lastDay:null, lastRow:null, monthView:'otb', monthPast:false };
 const MOB_STRUCTS = ['firenze','condotta','alfani','davids','nazionale','portenuove'];
 const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MO_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -481,6 +487,7 @@ function mobRenderCalendar(){
 }
 function mobRenderDays(){
   const list=document.getElementById('days-list');
+  if(!list) return;   // Daily Price tab removed — pricing now lives in the Pricing Console
   const start=MOB.winStart||todayYmdNum(); const today=todayYmdNum();
   document.getElementById('days-label').textContent=(start===today)?'Suggested price · next 7 days':'Suggested price · 7 days from '+mobFmtDate(start);
   let map; try{ map=computeRMESPriceMap(MOB.struct,start,7); }catch(e){ console.error(e); list.innerHTML=mobEmpty('⚠️','Could not compute prices.'); return; }
@@ -974,6 +981,39 @@ function mobRenderRateShopper(){
     <span class="rl-item"><span class="rl-area" style="background:${org}"></span>Competitor range (min–max)</span>
   </div>
   <div class="rate-note">Both lines are your prices converted to Expedia space (×${(mobExpDivisor(MOB.struct)).toFixed(3)}): the thick line is what would show on Expedia at the RMES price, the thin line at the current Last update. Days without Expedia data are blank.</div>`;
+  // competitor table — one row per property, one column per day (prices as seen on Expedia)
+  const tbl=document.getElementById('rate-table');
+  if(tbl) tbl.innerHTML = mobCompTableHTML(pts);
+}
+/* Who is charging what, day by day. The chart only shows the band and the average:
+   this is the row-by-row detail, sorted from the cheapest competitor to the dearest. */
+function mobCompTableHTML(pts){
+  const cm = mobCompetitors(MOB.struct);
+  if(!cm) return '';
+  const names = Object.keys(cm).filter(nm => pts.some(p => { const v=cm[nm][p.iso]; return v!=null && isFinite(v) && v>0; }));
+  if(!names.length) return '';
+  const avg = nm => {
+    const vs = pts.map(p=>cm[nm][p.iso]).filter(v=>v!=null&&isFinite(v)&&v>0);
+    return vs.length ? vs.reduce((a,b)=>a+b,0)/vs.length : Infinity;
+  };
+  names.sort((a,b)=> avg(a)-avg(b));
+  const cell = v => (v!=null&&isFinite(v)&&v>0) ? '€'+Math.round(v) : '·';
+  let h = '<div class="section-label" style="margin-top:18px">Competitor prices · Expedia · day by day</div>';
+  h += '<div class="ctab-wrap"><table class="ctab"><thead><tr><th class="ctab-nm">Property</th>';
+  pts.forEach(p=>{ h += `<th${isWeekendYmd(p.yn)?' class="wk"':''}>${DOW_SHORT[p.d.getDay()].slice(0,2)}<span>${p.d.getDate()}</span></th>`; });
+  h += '</tr></thead><tbody>';
+  // my price first, highlighted
+  h += '<tr class="me"><td class="ctab-nm">You · RMES</td>';
+  pts.forEach(p=>{ h += `<td>${cell(p.rmesExp)}</td>`; });
+  h += '</tr>';
+  names.forEach(nm=>{
+    h += `<tr><td class="ctab-nm" title="${escapeHtml(nm)}">${escapeHtml(nm)}</td>`;
+    pts.forEach(p=>{ h += `<td>${cell(cm[nm][p.iso])}</td>`; });
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  h += '<div class="rate-note">Competitor prices are what Expedia shows. Your row is the RMES price converted to Expedia space, so the comparison is like-for-like. A dot means no price published that day.</div>';
+  return h;
 }
 function mobOpenSheet(){ document.getElementById('sheet-bg').classList.add('show'); document.getElementById('sheet').classList.add('show'); }
 function mobCloseSheet(){ document.getElementById('sheet-bg').classList.remove('show'); document.getElementById('sheet').classList.remove('show'); MOB_DETAIL_OPEN=false; }
@@ -1092,7 +1132,7 @@ function mobOpenPickupDay(ymdNum){
   document.getElementById('sheet-body').innerHTML=mobPickupDetailHTML(ymdNum);
   mobOpenSheet();
 }
-function mobRenderAll(){ if(MOB.tab==='days'){ mobRenderCalendar(); mobRenderDays(); } else if(MOB.tab==='month'){ mobRenderMonth(); } else if(MOB.tab==='rate'){ mobRenderRateShopper(); } else if(MOB.tab==='big'){ mobRenderBigPicture(); } }
+function mobRenderAll(){ if(MOB.tab==='rate'){ mobRenderCalendar(); mobRenderRateShopper(); } else if(MOB.tab==='month'){ mobRenderMonth(); } else if(MOB.tab==='big'){ mobRenderBigPicture(); } }
 document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('cal-prev').addEventListener('click', ()=>{ MOB.winStart=addDaysYmd(MOB.winStart||todayYmdNum(),-7); mobRenderAll(); });
   document.getElementById('cal-next').addEventListener('click', ()=>{ const cap=addDaysYmd(todayYmdNum(),365); const nx=addDaysYmd(MOB.winStart||todayYmdNum(),7); MOB.winStart=(nx>cap)?cap:nx; mobRenderAll(); });
@@ -1120,7 +1160,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       document.getElementById('head-sub').textContent = 'Revenue Intelligence';
       window.__MOB_BOOTED = true;      // da ora l'hook remoto può ridisegnare in sicurezza
       mobRenderStructPills(); mobRenderAll();
-    } catch(e){ console.error(e); document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }
+    } catch(e){ console.error(e); document.getElementById('rate-chart').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }
   };
   if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.init){
     RMES_CLOUD.init().then(_mobBoot).catch(_mobBoot);
