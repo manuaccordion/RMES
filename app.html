@@ -1095,7 +1095,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('sheet-bg').addEventListener('click', mobCloseSheet);
   // Mobile: quando arriva un aggiornamento remoto da Firebase (es. accept RMES o override
   // fatto dal PC), ridisegna la vista corrente — così il mobile resta allineato al desktop.
+  window.__MOB_BOOTED = false;
   window.rmesCloudOnRemoteUpdate = function(){
+    // IMPORTANTE: non ridisegnare finché i dati non sono caricati. Firebase può rispondere
+    // PRIMA di loadData: ridisegnare con BOOKINGS vuoto produceva grafici a zero
+    // (booking curve piatta, Achievement 0%) che poi restavano tali.
+    if (!window.__MOB_BOOTED) return;
+    if (typeof BOOKINGS === 'undefined' || !BOOKINGS || !BOOKINGS.length) return;
     try { if (typeof mobRenderStructPills === 'function') mobRenderStructPills(); } catch(e){}
     try { if (typeof mobRenderAll === 'function') mobRenderAll(); } catch(e){}
   };
@@ -1106,6 +1112,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
       if (typeof fp_ensureStruct === 'function') fp_ensureStruct(MOB.struct);
       document.getElementById('head-sub').textContent = 'Revenue Intelligence';
+      window.__MOB_BOOTED = true;      // da ora l'hook remoto può ridisegnare in sicurezza
       mobRenderStructPills(); mobRenderAll();
     } catch(e){ console.error(e); document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }
   };
