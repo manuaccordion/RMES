@@ -545,6 +545,9 @@ function mobToggleCardOverride(yn, cardEl, map){
     ev.stopPropagation();
     const v=parseFloat(inp.value);
     try{ fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, (isFinite(v)&&v>0)?v:null, null); }catch(e){ console.error(e); }
+    // Registra la decisione nel log condiviso (chi + quando + prezzo), come fa il desktop:
+    // senza questo, le modifiche fatte dal telefono risultavano "mai fatte da nessuno".
+    try{ if(typeof logDecision==='function' && isFinite(v) && v>0) logDecision(MOB.struct, yn, 'override', Math.round(v)); }catch(e){}
     mobInvalidateRmesCache();
     mobRenderDays(); // re-render the list so Expedia price + position + badge update
   });
@@ -552,6 +555,7 @@ function mobToggleCardOverride(yn, cardEl, map){
   if(resetBtn) resetBtn.addEventListener('click',(ev)=>{
     ev.stopPropagation();
     try{ fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, null, null); }catch(e){}
+    try{ if(typeof logDecision==='function') logDecision(MOB.struct, yn, 'reset', null); }catch(e){}
     mobInvalidateRmesCache();
     mobRenderDays();
   });
@@ -576,11 +580,41 @@ function mobOpenDay(yn, rmesRow){
   let lastUpd=null; try{ lastUpd=(typeof newrmesGetCurrentReference==='function')?newrmesGetCurrentReference(MOB.struct, yn):null; }catch(e){}
   let luSrc='Base price · not yet adjusted';
   try{
-    const ovr=(typeof newrmesGetFrozenBaseOverride==='function')?newrmesGetFrozenBaseOverride(MOB.struct, yn):null;
-    const acc=(typeof newrmesGetAcceptedMeta==='function')?newrmesGetAcceptedMeta(MOB.struct, yn):null;
     const fmtD=(ts)=>{ if(!ts) return ''; const dd=new Date(ts); if(isNaN(dd.getTime())) return ''; return ('0'+dd.getDate()).slice(-2)+'/'+('0'+(dd.getMonth()+1)).slice(-2)+'/'+dd.getFullYear(); };
-    if(ovr!=null){ luSrc='Manual override'; }
-    else if(acc!=null){ const w=fmtD(acc.ts); luSrc='Accepted RMES'+(w?(' on '+w):''); }
+    // Stessa logica del desktop (most-recent-wins): il prezzo attivo può venire da
+    // 1) override manuale del prezzo finale (🖋 sulla cella Last update)  -> fp_getOverride
+    // 2) accept di un RMES (✓)                                            -> newrmesGetAcceptedMeta
+    // 3) override manuale del Base Price                                  -> newrmesGetFrozenBaseOverride
+    // Prima il mobile NON guardava (1): mostrava il prezzo giusto ma diceva "mai cambiato".
+    let ovrPrice=null, ovrTs=0;
+    try{
+      const o=(typeof fp_getOverride==='function')?fp_getOverride(MOB.struct, iso, baseRT):null;
+      if(o && o.price!=null && isFinite(o.price) && o.price>0){ ovrPrice=+o.price; ovrTs=+(o.ts||0); }
+    }catch(e){}
+    const acc=(typeof newrmesGetAcceptedMeta==='function')?newrmesGetAcceptedMeta(MOB.struct, yn):null;
+    const accTs=(acc && acc.ts) ? +acc.ts : 0;
+    const baseOvr=(typeof newrmesGetFrozenBaseOverride==='function')?newrmesGetFrozenBaseOverride(MOB.struct, yn):null;
+    if(ovrPrice!=null && acc!=null){
+      luSrc = (accTs > ovrTs)
+        ? ('Accepted RMES' + (fmtD(accTs)?(' on '+fmtD(accTs)):''))
+        : ('Manual override' + (fmtD(ovrTs)?(' on '+fmtD(ovrTs)):''));
+    }
+    else if(ovrPrice!=null){ luSrc='Manual override' + (fmtD(ovrTs)?(' on '+fmtD(ovrTs)):''); }
+    else if(acc!=null){ luSrc='Accepted RMES' + (fmtD(accTs)?(' on '+fmtD(accTs)):''); }
+    else if(baseOvr!=null){ luSrc='Manual Base Price override'; }
+    // CHI ha fatto l'ultima modifica: lo leggiamo dal registro decisioni (audit log).
+    if(ovrPrice!=null || acc!=null){
+      try{
+        const log=(typeof _auditLoad==='function')?_auditLoad():[];
+        let last=null;
+        for(const e of log){
+          if(e && e.struct===MOB.struct && +e.ymd===+yn && e.author && e.author!=='unknown'){
+            if(!last || new Date(e.ts) >= new Date(last.ts)) last=e;
+          }
+        }
+        if(last && last.author) luSrc += ' · by ' + last.author;
+      }catch(e){}
+    }
   }catch(e){}
   let html=`<h2>${DOW_SHORT[d.getDay()]} ${d.getDate()} ${MO_FULL[d.getMonth()]} ${d.getFullYear()}</h2>
     <div class="sh-sub">${escapeHtml(mobLabel(MOB.struct))} · base ${escapeHtml(baseRT||'—')}</div>
@@ -1117,6 +1151,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
       if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
       if (typeof fp_ensureStruct === 'function') fp_ensureStruct(MOB.struct);
       document.getElementById('head-sub').textContent = 'Revenue Intelligence';
+      // Sblocca il registro decisioni: parte SOPPRESSO (per non loggare boot/migrazioni) e
+      // finora il mobile non lo riabilitava mai → le modifiche fatte dal telefono non venivano
+      // registrate (nessun "chi/quando"). Il desktop lo faceva già.
+      try { if (typeof _auditEnable === 'function') _auditEnable(); } catch(e){}
       window.__MOB_BOOTED = true;      // da ora l'hook remoto può ridisegnare in sicurezza
       mobRenderStructPills(); mobRenderAll();
     } catch(e){ console.error(e); document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }
