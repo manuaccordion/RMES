@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#070B14">
 <title>RMES — Pricing Console</title>
+<!-- PWA: installable on the phone home screen -->
+<link rel="manifest" href="manifest-console.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RMES Console">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  });
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -122,6 +136,11 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
 .why .cbar{grid-column:1/-1;height:6px;background:#0A1524;border:1px solid var(--grid);border-radius:2px;overflow:hidden}
 .why .cbar i{display:block;height:100%;transition:width .4s ease}
 .acc{margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ovr{display:flex;align-items:center;gap:6px;background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:4px 6px}
+.ovr-lbl{font-size:13px}
+.ovr input{width:92px;background:transparent;border:0;color:var(--txt);font-family:var(--mono);font-size:14px;padding:8px 4px}
+.ovr input:focus{outline:none}
+.ovr input::-webkit-outer-spin-button,.ovr input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .note{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:12px;line-height:1.6}
 
 /* next days strip */
@@ -214,7 +233,12 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
         <ul class="why" id="why"></ul>
         <div class="acc" id="acc-box">
           <button class="kbtn" id="accept">✓ Accept this rate</button>
-          <button class="kbtn alt sm" id="unaccept">Reset to Base</button>
+          <div class="ovr">
+            <span class="ovr-lbl">🖋</span>
+            <input type="number" id="ovr-price" min="0" step="1" inputmode="numeric" placeholder="own price" aria-label="Manual price for this day">
+            <button class="kbtn amber sm" id="ovr-set">Set</button>
+          </div>
+          <button class="kbtn alt sm" id="unaccept">Clear decision</button>
         </div>
         <p class="note" id="note"></p>
       </section>
@@ -349,6 +373,16 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
     var effBase = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, ymd) : null;
     var lastUpdate = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, ymd) : null;
     var accMeta = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(sel, ymd) : null;
+    var iso = ymdToIso(ymd);
+    var ovr = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, iso, baseRT) : null;
+    if (ovr && (ovr.price == null || !isFinite(ovr.price))) ovr = null;
+    // Which decision is actually loaded today: most recent between override 🖋 and accept ✓
+    var accTs = (accMeta && accMeta.ts) ? (Date.parse(accMeta.ts) || 0) : 0;
+    var ovrTs = (ovr && ovr.savedAt) ? (Date.parse(ovr.savedAt) || 0) : 0;
+    var source = 'base';
+    if (ovr && accMeta && accMeta.price != null) source = (accTs > ovrTs) ? 'accepted' : 'override';
+    else if (ovr) source = 'override';
+    else if (accMeta && accMeta.price != null) source = 'accepted';
     var lmf = 0;
     if (typeof fp_lmfLookup === 'function'){
       var days = Math.max(0, Math.round((ymdToDate(ymd).getTime() - ymdToDate(todayYmd()).getTime())/86400000));
@@ -358,11 +392,15 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
     try { if (typeof _getPromoBoost === 'function') promo = _getPromoBoost(sel, ymd).boost; } catch(e){}
     return {
       ymd: ymd,
+      iso: iso,
+      baseRT: baseRT,
       mults: mults,
       na: na,
       effBase: (effBase != null && isFinite(effBase)) ? effBase : null,
       lastUpdate: (lastUpdate != null && isFinite(lastUpdate)) ? lastUpdate : null,
       accepted: (accMeta && accMeta.price != null) ? accMeta : null,
+      override: ovr,
+      source: source,
       lmf: isFinite(lmf) ? lmf : 0,
       event: (typeof _getEventBoost === 'function') ? _getEventBoost(ymd) : 1,
       eventName: (typeof EVENTS !== 'undefined' && EVENTS[ymd]) ? EVENTS[ymd] : null,
@@ -515,12 +553,15 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
       var delta = (p && dd.lastUpdate != null) ? (p.price - dd.lastUpdate) : null;
       var dcol = (delta == null || Math.abs(delta) < 0.5) ? 'flat' : (delta > 0 ? 'up' : 'down');
       var cust = (typeof hasDayWeights === 'function') && hasDayWeights(S.struct, y);
-      html += '<button class="dcard'+(y===S.ymd?' on':'')+(dd && dd.accepted?' acc-on':'')+'" data-y="'+y+'" '+
-        'title="'+(cust ? 'Custom weights for this day' : 'Property default weights')+'">'+
+      var decided = dd && dd.source && dd.source !== 'base';
+      var mark = (dd && dd.source === 'override') ? '🖋' : ((dd && dd.source === 'accepted') ? '✓' : '');
+      html += '<button class="dcard'+(y===S.ymd?' on':'')+(decided?' acc-on':'')+'" data-y="'+y+'" '+
+        'title="'+(cust ? 'Custom weights' : 'Property default weights')+
+        (decided ? ' · ' + (dd.source === 'override' ? 'manual price' : 'accepted rate') : '')+'">'+
         '<div class="dw">'+DOW[d.getDay()]+(cust ? ' <span style="color:var(--amber)">★</span>' : '')+'</div>'+
         '<div class="dd">'+String(y).slice(6,8)+'/'+String(y).slice(4,6)+'</div>'+
         '<div class="dp">'+(p ? eur(p.price) : '—')+'</div>'+
-        '<div class="dv '+dcol+'">'+(delta == null ? '' : (Math.abs(delta) < 0.5 ? '=' : eur1(delta)))+'</div>'+
+        '<div class="dv '+dcol+'">'+(mark ? mark+' ' : '')+(delta == null ? '' : (Math.abs(delta) < 0.5 ? '=' : eur1(delta)))+'</div>'+
       '</button>';
     }
     el.innerHTML = html;
@@ -544,8 +585,10 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
       noteEl.textContent = '';
       document.getElementById('accept').disabled = true;
       document.getElementById('unaccept').disabled = true;
+      document.getElementById('ovr-set').disabled = true;
       return;
     }
+    document.getElementById('ovr-set').disabled = false;
 
     var r = compute(day, S.w);
     rateEl.textContent = eur(r.price);
@@ -596,14 +639,27 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
 
     var notes = [];
     notes.push('Composite ×'+r.composite.toFixed(3)+(r.hitCap ? ' (capped at ±'+Math.round(day.cap*100)+'%)' : ''));
-    if (day.accepted) notes.push('Accepted on '+ (day.accepted.ts ? day.accepted.ts.slice(0,10).split('-').reverse().join('/') : '—') + (day.accepted.author ? ' by '+day.accepted.author : ''));
-    else notes.push('No decision yet — the Base Price is what is loaded today');
+    function when(ts){ return ts ? ts.slice(0,10).split('-').reverse().join('/') : '—'; }
+    if (day.source === 'override'){
+      notes.push('🖋 Manual price ' + eur(day.override.price) + ' set on ' + when(day.override.savedAt) +
+                 (day.override.author ? ' by ' + day.override.author : ''));
+    } else if (day.source === 'accepted'){
+      notes.push('✓ Accepted ' + eur(day.accepted.price) + ' on ' + when(day.accepted.ts) +
+                 (day.accepted.author ? ' by ' + day.accepted.author : ''));
+    } else {
+      notes.push('No decision yet — the Base Price is what is loaded today');
+    }
     if (isDirty()) notes.push('⚠ Weights not saved for this day yet');
     else if (dayIsCustom()) notes.push('★ Custom weights for this day');
     noteEl.textContent = notes.join(' · ');
 
+    var ovrInput = document.getElementById('ovr-price');
+    if (document.activeElement !== ovrInput){
+      ovrInput.value = (day.source === 'override') ? Math.round(day.override.price) : '';
+    }
+    ovrInput.placeholder = 'own price';
     document.getElementById('accept').disabled = false;
-    document.getElementById('unaccept').disabled = !day.accepted;
+    document.getElementById('unaccept').disabled = (day.source === 'base');
   }
 
   function renderAll(){
@@ -676,10 +732,27 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
       renderAll();
     });
 
+    document.getElementById('ovr-set').addEventListener('click', function(){
+      if (!S.day || S.day.effBase == null) return;
+      var v = parseFloat(document.getElementById('ovr-price').value);
+      if (!isFinite(v) || v <= 0){ alert('Type the price you want to load for this day.'); return; }
+      var floor = S.day.floor;
+      if (v < floor && !confirm(eur(v) + ' is below the Floor Rate (' + eur(floor) + ').\nLoad it anyway?')) return;
+      // 🖋 manual price for the day — same key the dashboard writes (rmes_base_rate_overrides_v1)
+      fp_setOverride(S.struct, S.day.iso, S.day.baseRT, Math.round(v));
+      invalidate();
+      renderAll();
+    });
+
+    document.getElementById('ovr-price').addEventListener('keydown', function(e){
+      if (e.key === 'Enter'){ e.preventDefault(); document.getElementById('ovr-set').click(); }
+    });
+
     document.getElementById('unaccept').addEventListener('click', function(){
-      if (!S.day || !S.day.accepted) return;
-      if (!confirm('Remove the accepted rate and go back to the Base Price?')) return;
-      newrmesSetAccepted(S.struct, S.ymd, null);
+      if (!S.day || S.day.source === 'base') return;
+      if (!confirm('Clear the decision for this day and go back to the Base Price?')) return;
+      if (S.day.accepted) newrmesSetAccepted(S.struct, S.ymd, null);
+      if (S.day.override && typeof fp_setOverride === 'function') fp_setOverride(S.struct, S.day.iso, S.day.baseRT, null);
       invalidate();
       renderAll();
     });

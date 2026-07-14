@@ -48,6 +48,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .app-title .dot{width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.25)}
 .app-title .lite{font-weight:400;opacity:.85;font-size:14px}
 .app-sub{font-size:11px;opacity:.9;font-family:'DM Mono',monospace;margin-top:3px;letter-spacing:.02em}
+.head-console{margin-left:auto;font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.02em;
+  color:#fff;text-decoration:none;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+  border-radius:999px;padding:6px 11px;white-space:nowrap}
+.head-console:active{background:rgba(255,255,255,.32)}
 
 .struct-row{display:flex;gap:7px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .struct-row::-webkit-scrollbar{display:none}
@@ -326,7 +330,9 @@ main{flex:1;padding:8px 16px 24px}
 <body>
 <div id="app">
   <div class="app-head">
-    <div class="app-title"><span class="dot"></span>RMES <span class="lite">Mobile</span></div>
+    <div class="app-title"><span class="dot"></span>RMES <span class="lite">Mobile</span>
+      <a class="head-console" href="console.html" title="Pricing Console">🎛 Console</a>
+    </div>
     <div class="app-sub" id="head-sub">Revenue Intelligence</div>
   </div>
   <div class="struct-row" id="struct-row"></div>
@@ -545,9 +551,6 @@ function mobToggleCardOverride(yn, cardEl, map){
     ev.stopPropagation();
     const v=parseFloat(inp.value);
     try{ fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, (isFinite(v)&&v>0)?v:null, null); }catch(e){ console.error(e); }
-    // Registra la decisione nel log condiviso (chi + quando + prezzo), come fa il desktop:
-    // senza questo, le modifiche fatte dal telefono risultavano "mai fatte da nessuno".
-    try{ if(typeof logDecision==='function' && isFinite(v) && v>0) logDecision(MOB.struct, yn, 'override', Math.round(v)); }catch(e){}
     mobInvalidateRmesCache();
     mobRenderDays(); // re-render the list so Expedia price + position + badge update
   });
@@ -555,7 +558,6 @@ function mobToggleCardOverride(yn, cardEl, map){
   if(resetBtn) resetBtn.addEventListener('click',(ev)=>{
     ev.stopPropagation();
     try{ fp_setOverride(MOB.struct, ymdNumToISO(yn), baseRT, null, null); }catch(e){}
-    try{ if(typeof logDecision==='function') logDecision(MOB.struct, yn, 'reset', null); }catch(e){}
     mobInvalidateRmesCache();
     mobRenderDays();
   });
@@ -580,41 +582,11 @@ function mobOpenDay(yn, rmesRow){
   let lastUpd=null; try{ lastUpd=(typeof newrmesGetCurrentReference==='function')?newrmesGetCurrentReference(MOB.struct, yn):null; }catch(e){}
   let luSrc='Base price · not yet adjusted';
   try{
-    const fmtD=(ts)=>{ if(!ts) return ''; const dd=new Date(ts); if(isNaN(dd.getTime())) return ''; return ('0'+dd.getDate()).slice(-2)+'/'+('0'+(dd.getMonth()+1)).slice(-2)+'/'+dd.getFullYear(); };
-    // Stessa logica del desktop (most-recent-wins): il prezzo attivo può venire da
-    // 1) override manuale del prezzo finale (🖋 sulla cella Last update)  -> fp_getOverride
-    // 2) accept di un RMES (✓)                                            -> newrmesGetAcceptedMeta
-    // 3) override manuale del Base Price                                  -> newrmesGetFrozenBaseOverride
-    // Prima il mobile NON guardava (1): mostrava il prezzo giusto ma diceva "mai cambiato".
-    let ovrPrice=null, ovrTs=0;
-    try{
-      const o=(typeof fp_getOverride==='function')?fp_getOverride(MOB.struct, iso, baseRT):null;
-      if(o && o.price!=null && isFinite(o.price) && o.price>0){ ovrPrice=+o.price; ovrTs=+(o.ts||0); }
-    }catch(e){}
+    const ovr=(typeof newrmesGetFrozenBaseOverride==='function')?newrmesGetFrozenBaseOverride(MOB.struct, yn):null;
     const acc=(typeof newrmesGetAcceptedMeta==='function')?newrmesGetAcceptedMeta(MOB.struct, yn):null;
-    const accTs=(acc && acc.ts) ? +acc.ts : 0;
-    const baseOvr=(typeof newrmesGetFrozenBaseOverride==='function')?newrmesGetFrozenBaseOverride(MOB.struct, yn):null;
-    if(ovrPrice!=null && acc!=null){
-      luSrc = (accTs > ovrTs)
-        ? ('Accepted RMES' + (fmtD(accTs)?(' on '+fmtD(accTs)):''))
-        : ('Manual override' + (fmtD(ovrTs)?(' on '+fmtD(ovrTs)):''));
-    }
-    else if(ovrPrice!=null){ luSrc='Manual override' + (fmtD(ovrTs)?(' on '+fmtD(ovrTs)):''); }
-    else if(acc!=null){ luSrc='Accepted RMES' + (fmtD(accTs)?(' on '+fmtD(accTs)):''); }
-    else if(baseOvr!=null){ luSrc='Manual Base Price override'; }
-    // CHI ha fatto l'ultima modifica: lo leggiamo dal registro decisioni (audit log).
-    if(ovrPrice!=null || acc!=null){
-      try{
-        const log=(typeof _auditLoad==='function')?_auditLoad():[];
-        let last=null;
-        for(const e of log){
-          if(e && e.struct===MOB.struct && +e.ymd===+yn && e.author && e.author!=='unknown'){
-            if(!last || new Date(e.ts) >= new Date(last.ts)) last=e;
-          }
-        }
-        if(last && last.author) luSrc += ' · by ' + last.author;
-      }catch(e){}
-    }
+    const fmtD=(ts)=>{ if(!ts) return ''; const dd=new Date(ts); if(isNaN(dd.getTime())) return ''; return ('0'+dd.getDate()).slice(-2)+'/'+('0'+(dd.getMonth()+1)).slice(-2)+'/'+dd.getFullYear(); };
+    if(ovr!=null){ luSrc='Manual override'; }
+    else if(acc!=null){ const w=fmtD(acc.ts); luSrc='Accepted RMES'+(w?(' on '+w):''); }
   }catch(e){}
   let html=`<h2>${DOW_SHORT[d.getDay()]} ${d.getDate()} ${MO_FULL[d.getMonth()]} ${d.getFullYear()}</h2>
     <div class="sh-sub">${escapeHtml(mobLabel(MOB.struct))} · base ${escapeHtml(baseRT||'—')}</div>
@@ -1142,19 +1114,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const _mobBoot = function(){
     try {
       loadData(EMBEDDED_CSV);
-      // Le cache dei calcoli (forecast, booking curve, pace...) possono essere state popolate
-      // PRIMA di loadData — durante l'init di Firebase — quando BOOKINGS era ancora vuoto:
-      // restavano piene di zeri (booking curve piatta, Achievement 0%). Le azzeriamo qui,
-      // subito dopo il caricamento dati, così vengono ricalcolate sui dati veri.
-      try { if (typeof _invalidatePaceAggCache === 'function') _invalidatePaceAggCache(); } catch(e){}
       if (typeof AIRDNA_CSV !== 'undefined') loadAirdna(AIRDNA_CSV);
       if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
       if (typeof fp_ensureStruct === 'function') fp_ensureStruct(MOB.struct);
       document.getElementById('head-sub').textContent = 'Revenue Intelligence';
-      // Sblocca il registro decisioni: parte SOPPRESSO (per non loggare boot/migrazioni) e
-      // finora il mobile non lo riabilitava mai → le modifiche fatte dal telefono non venivano
-      // registrate (nessun "chi/quando"). Il desktop lo faceva già.
-      try { if (typeof _auditEnable === 'function') _auditEnable(); } catch(e){}
       window.__MOB_BOOTED = true;      // da ora l'hook remoto può ridisegnare in sicurezza
       mobRenderStructPills(); mobRenderAll();
     } catch(e){ console.error(e); document.getElementById('days-list').innerHTML = mobEmpty('⚠️','Error loading data: '+escapeHtml(e.message)); }

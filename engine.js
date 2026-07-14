@@ -6552,22 +6552,27 @@ function _rmesCollectRows(structsToShow, dFrom, dTo){
         }
       } catch(e){}
       // RMES applied = prezzo effettivamente attivo per quel giorno, con sorgente.
-      // Priorità: 1) override manuale Base 🖋, 2) RMES accepted, 3) Base Price (no action).
-      // Le prime due hanno un timestamp (savedAt / accepted ts), la terza no.
+      // MOST-RECENT-WINS tra override 🖋 e accept ✓ (stessa regola di newrmesGetCurrentReference:
+      // a parità di timestamp vince l'override). Prima qui l'override vinceva SEMPRE, e su un
+      // giorno con entrambi la colonna mostrava un prezzo diverso dal Last update di Sell Strategy.
       let rmesApplied = null;
       let appliedSource = 'base';   // 'base' | 'accepted' | 'override'
       let appliedTs = null;
       try {
         const _isoForOvr = d.toISOString().slice(0,10);
         const ovr = (typeof fp_getOverride === 'function') ? fp_getOverride(sk, _isoForOvr, baseRT) : null;
-        if (ovr && ovr.price != null && isFinite(ovr.price)){
-          rmesApplied = +ovr.price;
-          appliedSource = 'override';
-          appliedTs = ovr.savedAt || null;
-        } else if (hasAccepted){
+        const hasOvr = !!(ovr && ovr.price != null && isFinite(ovr.price));
+        const _ovrTs = hasOvr && ovr.savedAt ? (Date.parse(ovr.savedAt) || 0) : 0;
+        const _accTs = hasAccepted && meta && meta.ts ? (Date.parse(meta.ts) || 0) : 0;
+        const _acceptWins = hasAccepted && (!hasOvr || _accTs > _ovrTs);
+        if (_acceptWins){
           rmesApplied = meta.price;
           appliedSource = 'accepted';
           appliedTs = meta.ts || null;
+        } else if (hasOvr){
+          rmesApplied = +ovr.price;
+          appliedSource = 'override';
+          appliedTs = ovr.savedAt || null;
         } else if (lastUpdate != null){
           rmesApplied = lastUpdate;  // = Base Price (current reference, no action taken)
           appliedSource = 'base';
