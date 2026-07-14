@@ -30,6 +30,7 @@ const RMES_CLOUD = (function(){
     'rmes_last_suggestion_date_v1',
     // --- configurazione ---
     'rmes_weights_per_struct_v4',
+    'rmes_weights_by_day_v1',        // per-day weight overrides (Pricing Console) — per-cell merge
     'rmes_thresholds_per_struct_v3',
     'rmes_total_cap_v1',
     'rmes_event_weights_v1',
@@ -50,141 +51,6 @@ const RMES_CLOUD = (function(){
     'rmes_promos_v1',
     '_data_fingerprint_v1'
   ];
-  // ===== Compressione stato cloud (Firestore: limite RIGIDO 1 MB per documento) =====
-  // Lo stato condiviso (prezzi 365gg x 6 strutture + accept + audit) ha superato 1 MB e le
-  // scritture fallivano silenziosamente: le decisioni non arrivavano piu' al cloud.
-  // Il JSON e' molto ripetitivo -> lo comprimiamo (LZ) prima di scriverlo: ~10x piu' piccolo.
-  const _LZ = (function(){
-    const kStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    function _c(u, bits, getChar){
-      if (u == null) return "";
-      let i, ii, value, ctx_dictionary = {}, ctx_dictionaryToCreate = {}, ctx_c = "", ctx_wc = "", ctx_w = "",
-          ctx_enlargeIn = 2, ctx_dictSize = 3, ctx_numBits = 2, ctx_data = [], ctx_data_val = 0, ctx_data_position = 0;
-      for (ii = 0; ii < u.length; ii += 1){
-        ctx_c = u.charAt(ii);
-        if (!Object.prototype.hasOwnProperty.call(ctx_dictionary, ctx_c)){ ctx_dictionary[ctx_c] = ctx_dictSize++; ctx_dictionaryToCreate[ctx_c] = true; }
-        ctx_wc = ctx_w + ctx_c;
-        if (Object.prototype.hasOwnProperty.call(ctx_dictionary, ctx_wc)){ ctx_w = ctx_wc; }
-        else {
-          if (Object.prototype.hasOwnProperty.call(ctx_dictionaryToCreate, ctx_w)){
-            if (ctx_w.charCodeAt(0) < 256){
-              for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; }
-              value = ctx_w.charCodeAt(0);
-              for (i = 0; i < 8; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
-            } else {
-              value = 1;
-              for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | value; if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = 0; }
-              value = ctx_w.charCodeAt(0);
-              for (i = 0; i < 16; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
-            }
-            ctx_enlargeIn--; if (ctx_enlargeIn == 0){ ctx_enlargeIn = Math.pow(2, ctx_numBits); ctx_numBits++; }
-            delete ctx_dictionaryToCreate[ctx_w];
-          } else {
-            value = ctx_dictionary[ctx_w];
-            for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
-          }
-          ctx_enlargeIn--; if (ctx_enlargeIn == 0){ ctx_enlargeIn = Math.pow(2, ctx_numBits); ctx_numBits++; }
-          ctx_dictionary[ctx_wc] = ctx_dictSize++; ctx_w = String(ctx_c);
-        }
-      }
-      if (ctx_w !== ""){
-        if (Object.prototype.hasOwnProperty.call(ctx_dictionaryToCreate, ctx_w)){
-          if (ctx_w.charCodeAt(0) < 256){
-            for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; }
-            value = ctx_w.charCodeAt(0);
-            for (i = 0; i < 8; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
-          } else {
-            value = 1;
-            for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | value; if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = 0; }
-            value = ctx_w.charCodeAt(0);
-            for (i = 0; i < 16; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
-          }
-          ctx_enlargeIn--; if (ctx_enlargeIn == 0){ ctx_enlargeIn = Math.pow(2, ctx_numBits); ctx_numBits++; }
-          delete ctx_dictionaryToCreate[ctx_w];
-        } else {
-          value = ctx_dictionary[ctx_w];
-          for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
-        }
-        ctx_enlargeIn--; if (ctx_enlargeIn == 0){ ctx_enlargeIn = Math.pow(2, ctx_numBits); ctx_numBits++; }
-      }
-      value = 2;
-      for (i = 0; i < ctx_numBits; i++){ ctx_data_val = (ctx_data_val << 1) | (value & 1); if (ctx_data_position == bits-1){ ctx_data_position = 0; ctx_data.push(getChar(ctx_data_val)); ctx_data_val = 0; } else ctx_data_position++; value = value >> 1; }
-      while (true){ ctx_data_val = (ctx_data_val << 1); if (ctx_data_position == bits-1){ ctx_data.push(getChar(ctx_data_val)); break; } else ctx_data_position++; }
-      return ctx_data.join('');
-    }
-    function _d(length, resetValue, getNextValue){
-      let dictionary = [], enlargeIn = 4, dictSize = 4, numBits = 3, entry = "", result = [],
-          i, w, bits, resb, maxpower, power, c,
-          data = { val: getNextValue(0), position: resetValue, index: 1 };
-      for (i = 0; i < 3; i += 1) dictionary[i] = i;
-      bits = 0; maxpower = Math.pow(2,2); power = 1;
-      while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
-      switch (bits){
-        case 0: bits = 0; maxpower = Math.pow(2,8); power = 1;
-          while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
-          c = String.fromCharCode(bits); break;
-        case 1: bits = 0; maxpower = Math.pow(2,16); power = 1;
-          while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
-          c = String.fromCharCode(bits); break;
-        case 2: return "";
-      }
-      dictionary[3] = c; w = c; result.push(c);
-      while (true){
-        if (data.index > length) return "";
-        bits = 0; maxpower = Math.pow(2,numBits); power = 1;
-        while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
-        switch (c = bits){
-          case 0: bits = 0; maxpower = Math.pow(2,8); power = 1;
-            while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
-            dictionary[dictSize++] = String.fromCharCode(bits); c = dictSize-1; enlargeIn--; break;
-          case 1: bits = 0; maxpower = Math.pow(2,16); power = 1;
-            while (power != maxpower){ resb = data.val & data.position; data.position >>= 1; if (data.position == 0){ data.position = resetValue; data.val = getNextValue(data.index++); } bits |= (resb>0 ? 1 : 0) * power; power <<= 1; }
-            dictionary[dictSize++] = String.fromCharCode(bits); c = dictSize-1; enlargeIn--; break;
-          case 2: return result.join('');
-        }
-        if (enlargeIn == 0){ enlargeIn = Math.pow(2, numBits); numBits++; }
-        if (dictionary[c]) entry = dictionary[c];
-        else { if (c === dictSize) entry = w + w.charAt(0); else return null; }
-        result.push(entry);
-        dictionary[dictSize++] = w + entry.charAt(0);
-        enlargeIn--; w = entry;
-        if (enlargeIn == 0){ enlargeIn = Math.pow(2, numBits); numBits++; }
-      }
-    }
-    return {
-      compressToBase64: function(input){
-        if (input == null) return "";
-        const res = _c(input, 6, function(a){ return kStr.charAt(a); });
-        switch (res.length % 4){ default: case 0: return res; case 1: return res+"==="; case 2: return res+"=="; case 3: return res+"="; }
-      },
-      decompressFromBase64: function(input){
-        if (input == null || input === "") return null;
-        return _d(input.length, 32, function(index){ return kStr.indexOf(input.charAt(index)); });
-      }
-    };
-  })();
-  // Impacchetta lo stato in un payload compresso {_z, _updatedAt}. Se per qualsiasi motivo la
-  // compressione fallisce, torna al formato in chiaro (retrocompatibile).
-  function _packPayload(raw){
-    try {
-      const json = JSON.stringify(raw);
-      const z = _LZ.compressToBase64(json);
-      if (z && z.length < json.length){
-        return { _z: z, _zv: 1, _updatedAt: Date.now() };
-      }
-    } catch(e){ console.warn('[rmesCloud] compress failed, fallback plain', e); }
-    const p = Object.assign({}, raw); p._updatedAt = Date.now(); return p;
-  }
-  // Legge un payload dal cloud, sia nel formato compresso (_z) sia in quello vecchio in chiaro.
-  function _unpackPayload(payload){
-    if (payload && payload._z){
-      try {
-        const json = _LZ.decompressFromBase64(payload._z);
-        if (json) return JSON.parse(json);
-      } catch(e){ console.error('[rmesCloud] decompress failed', e); return null; }
-    }
-    return payload;
-  }
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyAJuFzabHO3O3XVM3DfeWNThB9Wy0jMkHA",
     authDomain: "rmes-manu-enis.firebaseapp.com",
@@ -299,12 +165,8 @@ const RMES_CLOUD = (function(){
     try {
       const parts = [];
       const keysSorted = SYNC_KEYS.slice().sort();
-      // Chiavi ESCLUSE dall'hash: sono log append-only che si FONDONO (merge) invece di essere
-      // sovrascritti, quindi divergono naturalmente tra browser anche quando prezzi e config sono
-      // identici. Includerle darebbe hash diversi = falso allarme "out of sync".
-      const HASH_SKIP = ['_data_fingerprint_v1', AUDIT_SYNC_KEY, 'notes_journal_v2'];
       for (const k of keysSorted){
-        if (HASH_SKIP.indexOf(k) >= 0) continue;
+        if (k === '_data_fingerprint_v1') continue;  // skip own diagnostic key
         const v = localStorage.getItem(k);
         parts.push(k + '=' + (v == null ? 'null' : v));
       }
@@ -429,7 +291,7 @@ const RMES_CLOUD = (function(){
           if (!snap.exists){
             return { ok: false, error: 'Cloud document does not exist.' };
           }
-          const payload = _unpackPayload(snap.data());
+          const payload = snap.data();
           if (!payload || typeof payload !== 'object'){
             return { ok: false, error: 'Cloud document is empty or malformed.' };
           }
@@ -496,7 +358,8 @@ const RMES_CLOUD = (function(){
         }
         const db = window.firebase.firestore();
         const ref = db.collection('rmes_shared').doc('state');
-        const payload = _packPayload(_collectLocal());
+        const payload = _collectLocal();
+        payload._updatedAt = Date.now();
         ref.set(payload).then(function(){
           lastRemoteJSON = JSON.stringify(payload);
           _logSync('push');
@@ -540,17 +403,8 @@ const RMES_CLOUD = (function(){
     const obj = {};
     for (const k of SYNC_KEYS){
       try {
-        let raw = localStorage.getItem(k);
-        if (raw == null) continue;
-        // L'audit log cresce all'infinito e da solo può far sforare il limite di 1 MB del
-        // documento Firestore: teniamo in cloud solo le ultime N voci (le più recenti).
-        if (k === AUDIT_SYNC_KEY){
-          try {
-            const arr = JSON.parse(raw);
-            if (Array.isArray(arr) && arr.length > 400){ raw = JSON.stringify(arr.slice(-400)); }
-          } catch(e){}
-        }
-        obj[k] = raw;   // salvo la stringa grezza (già JSON)
+        const raw = localStorage.getItem(k);
+        if (raw != null) obj[k] = raw;   // salvo la stringa grezza (già JSON)
       } catch(e){}
     }
     return obj;
@@ -589,7 +443,7 @@ const RMES_CLOUD = (function(){
   // These are edited independently per day by each person. A whole-object last-write-wins
   // replace lets one push clobber the other's edits on different days, so we UNION per
   // (struct, ymd) cell and resolve same-cell conflicts by the newer timestamp.
-  const CELL_MERGE_KEYS = ['rmes_frozen_base_override_v1', 'rmes_accepted_v1', 'rmes_base_rate_overrides_v1'];
+  const CELL_MERGE_KEYS = ['rmes_frozen_base_override_v1', 'rmes_accepted_v1', 'rmes_base_rate_overrides_v1', 'rmes_weights_by_day_v1'];
   function _cellTs(v){
     // Ritorna il timestamp più recente di una "cella" per risolvere conflitti same-cell.
     // Schemi supportati: {ts} (accepted/frozen override), {savedAt} (final override leaf),
@@ -678,23 +532,13 @@ const RMES_CLOUD = (function(){
         if (raw){
           const parsed = JSON.parse(raw);
           const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
-          // ONE-SHOT: questa migrazione deve girare UNA VOLTA SOLA, non a ogni pull.
-          // Prima girava sempre e si auto-riattivava (applicava occ=0.20 ma poi considerava
-          // "legacy" tutto ciò che non era occ=0.25 → si ri-migrava all'infinito, spingendo
-          // ogni volta sul cloud: loop push/pull tra i browser fino al blocco di Firestore
-          // per troppe scritture (resource-exhausted). Ora il criterio è solo "B·ADR attivo"
-          // e, una volta migrato, il flag impedisce di rifarlo.
-          const MIG_FLAG = 'rmes_4factor_migration_v2';
-          let migDone = false;
-          try { migDone = (localStorage.getItem(MIG_FLAG) === '1'); } catch(e){}
           let needsForce = false;
-          if (!migDone){
-            for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
-              const p = parsed[s];
-              if (!p) continue;
-              if ((p.price || 0) > 0.001){   // config legacy: il fattore B·ADR era ancora attivo
-                needsForce = true; break;
-              }
+          for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
+            const p = parsed[s];
+            if (!p) continue;
+            // Criteri: price > 0 (B·ADR ancora attivo) OPPURE occ != 0.25 (somma vecchia ~20%)
+            if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
+              needsForce = true; break;
             }
           }
           if (needsForce){
@@ -708,10 +552,9 @@ const RMES_CLOUD = (function(){
                 SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
               }
             }
-            console.log('[rmesCloud] 4-factor weights migrated (one-shot)');
+            console.log('[rmesCloud] 4-factor weights force-applied (cloud had legacy 5-factor config)');
             changed = true;  // triggera anche un push verso Firestore
           }
-          if (!migDone){ try { localStorage.setItem(MIG_FLAG, '1'); } catch(e){} }
         }
       } catch(e){}
     } finally {
@@ -728,7 +571,8 @@ const RMES_CLOUD = (function(){
     if (pushTimer) clearTimeout(pushTimer);
     pushTimer = setTimeout(function(){
       pushTimer = null;
-      const payload = _packPayload(_collectLocal());
+      const payload = _collectLocal();
+      payload._updatedAt = Date.now();
       payload._updatedBy = (function(){
         try { let id = localStorage.getItem('rmes_client_id');
           if (!id){ id = 'c'+Math.random().toString(36).slice(2,8); localStorage.setItem('rmes_client_id', id); }
@@ -770,20 +614,20 @@ const RMES_CLOUD = (function(){
         const ref = db.collection('rmes_shared').doc('state');
         ref.get().then(function(snap){
           if (snap.exists){
-            const remote = _unpackPayload(snap.data());
-            if (remote) _applyToLocal(remote);
+            const remote = snap.data();
+            _applyToLocal(remote);
             lastRemoteJSON = JSON.stringify(remote);
             console.log('[rmesCloud] initial state loaded from cloud');
           } else {
-            // cloud vuoto → prima migrazione: carico lo stato locale attuale (compresso)
-            ref.set(_packPayload(_collectLocal())).then(function(){ console.log('[rmesCloud] migrated local state to cloud'); }).catch(function(){});
+            // cloud vuoto → prima migrazione: carico lo stato locale attuale
+            const payload = _collectLocal(); payload._updatedAt = Date.now();
+            ref.set(payload).then(function(){ console.log('[rmesCloud] migrated local state to cloud'); }).catch(function(){});
           }
           ready = true; _logSync('pull'); _setStatus('synced'); clearTimeout(safety); finish();
           // listener realtime per aggiornamenti altrui
           ref.onSnapshot(function(s){
             if (!s.exists) return;
-            const remote = _unpackPayload(s.data());
-            if (!remote) return;
+            const remote = s.data();
             const j = JSON.stringify(remote);
             if (j === lastRemoteJSON) return;   // è il nostro stesso push
             const changed = _applyToLocal(remote);
@@ -804,8 +648,7 @@ const RMES_CLOUD = (function(){
               if (document.hidden || !available || !db) return;
               ref.get().then(function(snap){
                 if (!snap.exists) return;
-                const remote = _unpackPayload(snap.data());
-                if (!remote) return;
+                const remote = snap.data();
                 const j = JSON.stringify(remote);
                 if (j === lastRemoteJSON) return;   // già allineati
                 const changed = _applyToLocal(remote);
@@ -4329,15 +4172,14 @@ let SELL_RMES_W_ALL = (function(){
   try {
     const flagKey = 'rmes_factors_v4_migration_2026_05_28';
     const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
-    // Il criterio deve essere COERENTE con i default applicati, altrimenti la migrazione si
-    // auto-riattiva ad ogni avvio (prima: applicava occ=0.20 ma considerava "legacy" tutto ciò
-    // che non era occ=0.25 → riscriveva i pesi ogni volta → push sul cloud ad ogni reload →
-    // ping-pong tra i browser). Legacy = il fattore B·ADR (price) è ancora attivo.
+    // Controllo idempotente: anche se il flag è già settato, se trovo pesi in formato vecchio
+    // (price > 0 o occ ≠ 0.25) li forzo ai nuovi default. Questo gestisce il caso Firebase Cloud
+    // che ripristina pesi vecchi sovrascrivendo la migrazione locale.
     let needsForce = false;
     for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
       const p = SELL_RMES_W_ALL[s];
       if (!p) continue;
-      if ((p.price || 0) > 0.001){
+      if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
         needsForce = true; break;
       }
     }
@@ -4348,7 +4190,7 @@ let SELL_RMES_W_ALL = (function(){
       }
       localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL));
       localStorage.setItem(flagKey, '1');
-      console.log('[RMES] 4-factor migration applied (one-shot)' + (hadFlag ? ' — legacy B·ADR weight found' : ''));
+      console.log('[RMES] 4-factor migration applied: weights reset to 25/0/25/25/25' + (hadFlag ? ' (forced: legacy format detected)' : ''));
     }
   } catch(e){}
 })();
@@ -4365,6 +4207,115 @@ function getCurrentWeights(){
     return out;
   }
   return SELL_RMES_W_ALL[sel] || Object.assign({}, SELL_RMES_W_DEFAULT);
+}
+
+/* ============================================================
+   PER-DAY WEIGHTS (Pricing Console)
+   ============================================================
+   The 5 factor weights are a property-level default (SELL_RMES_W_ALL).
+   A single stay-date can override them: same shape, stored per (struct, ymd).
+   Storage: rmes_weights_by_day_v1 = { struct: { ymd: {occ,pace,comp,airdna,mkt,ts,author} } }
+   Synced via Firebase with per-cell merge, so two people editing different days
+   never overwrite each other. No override → the property default applies.
+   ============================================================ */
+const RMES_W_DAY_KEY = 'rmes_weights_by_day_v1';
+let _WDAY_RAW = null, _WDAY_OBJ = {};
+function _wdayAll(){
+  let raw = null;
+  try { raw = localStorage.getItem(RMES_W_DAY_KEY); } catch(e){}
+  if (raw !== _WDAY_RAW){
+    _WDAY_RAW = raw;
+    try { _WDAY_OBJ = raw ? JSON.parse(raw) : {}; } catch(e){ _WDAY_OBJ = {}; }
+    if (!_WDAY_OBJ || typeof _WDAY_OBJ !== 'object') _WDAY_OBJ = {};
+  }
+  return _WDAY_OBJ;
+}
+function _wdaySave(obj){
+  _WDAY_OBJ = obj;
+  try { localStorage.setItem(RMES_W_DAY_KEY, JSON.stringify(obj)); } catch(e){}
+  try { _WDAY_RAW = localStorage.getItem(RMES_W_DAY_KEY); } catch(e){}
+  if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+}
+/* Returns the per-day override for (struct, ymd), or null. */
+function getDayWeights(structKey, ymd){
+  const all = _wdayAll();
+  const v = all[structKey] && all[structKey][ymd];
+  if (!v || typeof v !== 'object' || v.__deleted) return null;
+  const w = {
+    occ:    +v.occ    || 0,
+    price:  0,
+    pace:   +v.pace   || 0,
+    budget: 0,
+    comp:   +v.comp   || 0,
+    airdna: +v.airdna || 0,
+    mkt:    +v.mkt    || 0,
+  };
+  const s = w.occ + w.pace + w.comp + w.airdna + w.mkt;
+  return (s > 0) ? w : null;
+}
+function getDayWeightsMeta(structKey, ymd){
+  const all = _wdayAll();
+  const v = all[structKey] && all[structKey][ymd];
+  if (!v || typeof v !== 'object' || v.__deleted) return null;
+  return { ts: v.ts || null, author: v.author || null };
+}
+function hasDayWeights(structKey, ymd){ return getDayWeights(structKey, ymd) != null; }
+/* The weights that actually apply to one stay-date: day override, else property default. */
+function getWeightsFor(structKey, ymd){
+  const ovr = (ymd != null) ? getDayWeights(structKey, ymd) : null;
+  if (ovr) return ovr;
+  if (structKey && SELL_RMES_W_ALL[structKey]) return SELL_RMES_W_ALL[structKey];
+  return getCurrentWeights();
+}
+/* w = {occ,pace,comp,airdna,mkt} as fractions (any scale — they get normalised on read). */
+function setDayWeights(structKey, ymd, w){
+  const all = _wdayAll();
+  if (!all[structKey]) all[structKey] = {};
+  all[structKey][ymd] = {
+    occ:    +w.occ    || 0,
+    pace:   +w.pace   || 0,
+    comp:   +w.comp   || 0,
+    airdna: +w.airdna || 0,
+    mkt:    +w.mkt    || 0,
+    ts: new Date().toISOString(),
+    author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null,
+  };
+  _wdaySave(all);
+}
+function setDayWeightsRange(structKey, ymdFrom, ymdTo, w){
+  const all = _wdayAll();
+  if (!all[structKey]) all[structKey] = {};
+  const ts = new Date().toISOString();
+  const author = (typeof getUserProfile === 'function' ? getUserProfile() : null) || null;
+  const d = new Date(Math.floor(ymdFrom/10000), Math.floor((ymdFrom%10000)/100)-1, ymdFrom%100);
+  const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
+  let n = 0;
+  while (d <= dTo && n < 400){
+    const y = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+    all[structKey][y] = {
+      occ: +w.occ||0, pace: +w.pace||0, comp: +w.comp||0, airdna: +w.airdna||0, mkt: +w.mkt||0,
+      ts: ts, author: author,
+    };
+    d.setDate(d.getDate()+1); n++;
+  }
+  _wdaySave(all);
+  return n;
+}
+/* Back to the property default for that day. Tombstone so the delete propagates via Firebase. */
+function clearDayWeights(structKey, ymd){
+  const all = _wdayAll();
+  if (!all[structKey] || !all[structKey][ymd]) return;
+  all[structKey][ymd] = { __deleted: true, ts: new Date().toISOString(),
+    author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
+  _wdaySave(all);
+}
+/* All stay-dates of a property that carry a custom weight set (numbers, ascending). */
+function listDayWeightYmds(structKey){
+  const all = _wdayAll();
+  const m = all[structKey] || {};
+  return Object.keys(m)
+    .filter(k => m[k] && typeof m[k] === 'object' && !m[k].__deleted)
+    .map(Number).filter(isFinite).sort((a,b) => a-b);
 }
 /* === Soglie e moltiplicatori RMES per-struttura === */
 const RMES_TH_DEFAULT = {
@@ -5241,18 +5192,26 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     if (!s) return 0;
     return _suppData.highSeason.has(month) ? s.alta : s.bassa;
   }
-  const W = getCurrentWeights();
-  const wSum = (W.occ + W.price + W.comp + W.pace + (W.budget||0) + W.airdna + (W.mkt||0)) || 1;
-  const wOcc = W.occ/wSum, wPrice = W.price/wSum, wPace = W.pace/wSum, wComp = W.comp/wSum, wAir = W.airdna/wSum;
-  const wMkt = (W.mkt != null ? W.mkt : 0) / wSum;  // E · AirDNA Market — nuovo fattore
-  const wA = wOcc, wB = wPrice, wC = wPace, wD = wComp, wE = wAir, wF = wMkt;
-  const wBudget = (W.budget != null ? W.budget : 0) / wSum;
+  /* Weights are resolved PER DAY: a stay-date can carry its own weight set
+     (Pricing Console), otherwise the property default applies. */
+  function _dayWeightsNorm(ymdNum){
+    const W = (typeof getWeightsFor === 'function') ? getWeightsFor(sel, ymdNum) : getCurrentWeights();
+    const s = (W.occ + W.price + W.comp + W.pace + (W.budget||0) + W.airdna + (W.mkt||0)) || 1;
+    return {
+      occ: W.occ/s, price: W.price/s, pace: W.pace/s, comp: W.comp/s,
+      air: W.airdna/s, mkt: (W.mkt != null ? W.mkt : 0)/s, budget: (W.budget != null ? W.budget : 0)/s,
+      custom: (typeof hasDayWeights === 'function') ? hasDayWeights(sel, ymdNum) : false,
+    };
+  }
   const _invByRT = (_inventoryByRT || {});
   const _rtList = Object.keys(_invByRT);
   const _RT_COLOR_PALETTE = ['#3b6b9a','#a83b3b','#4a7c59','#c4823b','#8e5fa8','#3b6b6b','#c47d7d','#5e8a3a'];
   const _RT_COLORS = {};
   _rtList.forEach((rt, i) => { _RT_COLORS[rt] = _RT_COLOR_PALETTE[i % _RT_COLOR_PALETTE.length]; });
   for (const r of A.rows){
+    const _WD = _dayWeightsNorm(r.ymd);
+    const wOcc = _WD.occ, wPrice = _WD.price, wPace = _WD.pace, wComp = _WD.comp,
+          wAir = _WD.air, wMkt = _WD.mkt, wBudget = _WD.budget;
     const exp2 = (typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
     const ym = r.y * 100 + r.mo;
     let _sourceExpediaBeddyEq = null;
@@ -5461,6 +5420,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           mkt: _mkt_naReason,
         },
         _weightsApplied: _wNorm,
+        _weightsCustom: _WD.custom,
         _debug: {
           occCur: r.curOcc, occStly: r.stlyOcc, occIdx: A_idx,
           rnCur: r.curRn, capCur: r.cap, rnStly: r.stlyRn, capStly: r.cap,
@@ -12305,7 +12265,7 @@ function renderSellStrategy(sel){
       const E_idx = airE.idx;       // listings_quel_giorno / 2948
       const E_mult = airE.mult;
       const E_ratio = airE.ratio;   // E_idx / media (per tooltip)
-      const W = getCurrentWeights();
+      const W = (typeof getWeightsFor === 'function') ? getWeightsFor(sel, r.ymd) : getCurrentWeights();
       const wSum = (W.occ + W.price + W.comp + W.pace + (W.budget||0) + W.airdna) || 1;
       const wA = W.occ/wSum;
       const wB = W.price/wSum;
@@ -19771,107 +19731,42 @@ function _bigRenderPickup4w(sel){
   const keys = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const N = 28;
-  const curDays=[], stlyDays=[], dates=[];
+  const curDays=[], stlyDays=[];
   for (let i=0;i<N;i++){
     const d = new Date(today.getTime() - (N-1-i)*86400000);
-    dates.push(d);
     curDays.push(ymd(d));
     stlyDays.push(ymd(new Date(d.getTime() - 364*86400000)));
   }
-  const rnBy={}, revBy={};
-  for (const b of BOOKINGS){
-    if (b.cancelled || !keys.has(b.struct)) continue;
-    rnBy[b.bookYmd]=(rnBy[b.bookYmd]||0)+(b.notti||0);
-    revBy[b.bookYmd]=(revBy[b.bookYmd]||0)+(b.revTotal||0);
-  }
-  const cur=[], stly=[], curDaily=[], stlyDaily=[], curRev=[], stlyRev=[];
-  let cc=0, sc=0, cr=0, sr=0;
-  for (let i=0;i<N;i++){
-    const cd=rnBy[curDays[i]]||0, sd=rnBy[stlyDays[i]]||0;
-    cc+=cd; sc+=sd; cr+=(revBy[curDays[i]]||0); sr+=(revBy[stlyDays[i]]||0);
-    cur.push(cc); stly.push(sc); curDaily.push(cd); stlyDaily.push(sd); curRev.push(cr); stlyRev.push(sr);
-  }
-  // stesse dimensioni della Booking Curve
-  const W = 760, H = 320;
-  const padL = 64, padR = 16, padTop = 16, padBot = 40;
-  const plotW = W - padL - padR, plotH = H - padTop - padBot;
+  const byYmd = {};
+  for (const b of BOOKINGS){ if (b.cancelled || !keys.has(b.struct)) continue; byYmd[b.bookYmd]=(byYmd[b.bookYmd]||0)+(b.notti||0); }
+  const cur=[], stly=[]; let cc=0, sc=0;
+  for (let i=0;i<N;i++){ cc+=(byYmd[curDays[i]]||0); sc+=(byYmd[stlyDays[i]]||0); cur.push(cc); stly.push(sc); }
   const maxV = Math.max(1, cur[N-1]||0, stly[N-1]||0);
-  const xAt = i => padL + (i/(N-1))*plotW;
-  const yAt = v => padTop + plotH - (v/maxV)*plotH;
-  const pathOf = arr => arr.map((v,i)=>`${i?'L':'M'}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
-  const areaOf = arr => `M${xAt(0).toFixed(1)} ${(padTop+plotH).toFixed(1)} ` + arr.map((v,i)=>`L${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ') + ` L${xAt(N-1).toFixed(1)} ${(padTop+plotH).toFixed(1)} Z`;
-  // Y axis
-  let grid='';
-  for (let g=0; g<=4; g++){
-    const val = maxV*g/4, y = yAt(val);
-    grid += `<text x="${padL-10}" y="${y+3}" font-size="10" text-anchor="end" fill="#9a9a9a" font-family="'DM Mono',monospace" font-weight="600">${Math.round(val)}</text>`;
+  const W=760, H=210, padL=44, padR=72, padT=12, padB=26;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xAt=i=> padL + (i/(N-1))*plotW;
+  const yAt=v=> padT+plotH - (v/maxV)*plotH;
+  const pathOf=arr=> arr.map((v,i)=>`${i?'L':'M'}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+  for (let g=0;g<=3;g++){ const v=maxV*g/3, y=yAt(v); svg+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">${Math.round(v)}</text>`; }
+  svg+=`<path d="${pathOf(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="5 4" opacity=".85"/>`;
+  svg+=`<path d="${pathOf(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>`;
+  // etichette fine linea con anti-sovrapposizione
+  let ey1=yAt(cur[N-1]||0), ey2=yAt(stly[N-1]||0);
+  if (Math.abs(ey1-ey2)<12){ if(ey1<=ey2){ey1-=6;ey2+=6;} else {ey1+=6;ey2-=6;} }
+  svg+=`<text x="${W-padR+5}" y="${ey1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${cur[N-1]||0} RN</text>`;
+  svg+=`<text x="${W-padR+5}" y="${ey2+3}" font-size="10" font-weight="700" fill="#7a4d96">${stly[N-1]||0} LY</text>`;
+  const fmtD=y=>{const s=String(y);return s.slice(6,8)+'/'+s.slice(4,6);};
+  // bande invisibili per giorno con tooltip (dettaglio all'hover)
+  const bw = plotW/(N-1);
+  for (let i=0;i<N;i++){
+    svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent"><title>${fmtD(curDays[i])} · This year: ${cur[i]} RN · STLY (LY): ${stly[i]} RN</title></rect>`;
   }
-  // X labels (ogni 7 giorni)
-  const fmtD = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
-  let xlab='';
-  for (let i=0;i<N;i+=7){
-    xlab += `<text x="${xAt(i).toFixed(1)}" y="${(padTop+plotH+20).toFixed(1)}" font-size="10" text-anchor="middle" fill="#9a9a9a" font-family="'DM Mono',monospace" font-weight="600">${fmtD(dates[i])}</text>`;
-  }
-  xlab += `<text x="${xAt(N-1).toFixed(1)}" y="${(padTop+plotH+20).toFixed(1)}" font-size="10" text-anchor="end" fill="#3a8bc2" font-family="'DM Mono',monospace" font-weight="700">today</text>`;
-  const grad = `<defs><linearGradient id="pk4-grad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6bb6e8" stop-opacity="0.28"/><stop offset="100%" stop-color="#6bb6e8" stop-opacity="0.02"/></linearGradient></defs>`;
-  const hoverRect = `<rect id="pk4-hover-rect" x="${padL}" y="${padTop}" width="${plotW}" height="${plotH}" fill="transparent" style="cursor:crosshair"/>`;
-  const hoverLine = `<line id="pk4-hover-line" x1="0" y1="${padTop}" x2="0" y2="${padTop+plotH}" stroke="#5a3a14" stroke-width="1" opacity="0" style="pointer-events:none"/>`;
-  const dotCur = `<circle id="pk4-dot-cur" cx="0" cy="0" r="5" fill="#2f7fb5" stroke="#fff" stroke-width="2" opacity="0" style="pointer-events:none"/>`;
-  const dotLy  = `<circle id="pk4-dot-ly" cx="0" cy="0" r="4" fill="#7a4d96" stroke="#fff" stroke-width="1.5" opacity="0" style="pointer-events:none"/>`;
-  const legend = `<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace">
-      <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year · ${cur[N-1]||0} RN</span>
-      <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:18px;height:0;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY · ${stly[N-1]||0} RN</span></div>`;
-  host.innerHTML = `
-    <div style="position:relative;max-width:960px;margin:0 auto">
-      <svg id="pk4-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;max-width:960px;height:auto;display:block;margin:0 auto;font-family:'DM Mono',monospace">
-        ${grad}${grid}${xlab}
-        <path d="${areaOf(cur)}" fill="url(#pk4-grad)"/>
-        <path d="${pathOf(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="5 4" opacity=".85"/>
-        <path d="${pathOf(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>
-        ${hoverRect}${hoverLine}${dotLy}${dotCur}
-      </svg>
-      <div id="pk4-tooltip" style="position:absolute;display:none;background:#fff;border:1.5px solid #b59e7d;border-radius:8px;box-shadow:0 6px 20px rgba(90,58,20,.22);padding:10px 14px;font-size:12px;font-family:'DM Sans',sans-serif;pointer-events:none;z-index:10;min-width:230px;line-height:1.5"></div>
-    </div>${legend}`;
-  // Hover: linea guida + dots + tooltip (stesso comportamento della Booking Curve)
-  const svgEl = host.querySelector('#pk4-svg');
-  const rect  = host.querySelector('#pk4-hover-rect');
-  const line  = host.querySelector('#pk4-hover-line');
-  const dC    = host.querySelector('#pk4-dot-cur');
-  const dL    = host.querySelector('#pk4-dot-ly');
-  const tip   = host.querySelector('#pk4-tooltip');
-  const DAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const MONTHS= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  if (rect){
-    rect.addEventListener('mousemove', function(ev){
-      const r = svgEl.getBoundingClientRect();
-      const vbX = (ev.clientX - r.left) / r.width * W;
-      let i = Math.round((vbX - padL) / plotW * (N-1));
-      if (i < 0) i = 0; if (i > N-1) i = N-1;
-      const x = xAt(i);
-      line.setAttribute('x1', x); line.setAttribute('x2', x); line.setAttribute('opacity','0.4');
-      dC.setAttribute('cx', x); dC.setAttribute('cy', yAt(cur[i])); dC.setAttribute('opacity','1');
-      dL.setAttribute('cx', x); dL.setAttribute('cy', yAt(stly[i])); dL.setAttribute('opacity','0.85');
-      const d = dates[i];
-      const lbl = DAYS[d.getDay()] + ' ' + d.getDate() + ' ' + MONTHS[d.getMonth()];
-      const delta = cur[i] - stly[i];
-      const dCol = delta >= 0 ? '#3d7a4b' : '#a83b3b';
-      let html = '<div style="font-weight:700;color:#5a3a14;font-size:12.5px;margin-bottom:8px;border-bottom:1px solid #ece9e2;padding-bottom:5px">'+lbl+'</div>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 9px;background:#eef6fc;border-radius:5px;margin-bottom:5px"><span style="color:#2f7fb5;font-weight:600;white-space:nowrap">\u25CF This year</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:14px;white-space:nowrap">'+cur[i]+' RN<span style="font-size:10px;color:#888;font-weight:400;margin-left:4px">(+'+curDaily[i]+' that day)</span></b></div>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:5px 9px;background:#f7f1fa;border-radius:5px;margin-bottom:5px"><span style="color:#7a4d96;font-weight:600;white-space:nowrap">\u25CF STLY</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:14px;white-space:nowrap">'+stly[i]+' RN<span style="font-size:10px;color:#888;font-weight:400;margin-left:4px">(+'+stlyDaily[i]+' that day)</span></b></div>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:4px 9px"><span style="color:#666;font-weight:600;white-space:nowrap">\u0394 vs STLY</span><b style="font-family:\'DM Mono\',monospace;color:'+dCol+';font-size:13px;white-space:nowrap">'+(delta>=0?'+':'')+delta+' RN</b></div>';
-      html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:2px 9px;border-top:1px solid #ece9e2;margin-top:3px"><span style="color:#888;font-size:11px;white-space:nowrap">Revenue booked</span><b style="font-family:\'DM Mono\',monospace;color:#5a3a14;font-size:12px;white-space:nowrap">\u20ac'+Math.round(curRev[i]).toLocaleString('en-GB')+'</b></div>';
-      tip.innerHTML = html;
-      tip.style.display = 'block';
-      const px = (x / W) * r.width;
-      const left = Math.min(Math.max(px - 115, 0), r.width - 240);
-      tip.style.left = left + 'px';
-      tip.style.top = '8px';
-    });
-    rect.addEventListener('mouseleave', function(){
-      line.setAttribute('opacity','0'); dC.setAttribute('opacity','0'); dL.setAttribute('opacity','0');
-      tip.style.display='none';
-    });
-  }
+  svg+=`<text x="${padL}" y="${H-8}" text-anchor="start" font-size="9" fill="var(--ink-3)">${fmtD(curDays[0])}</text>`;
+  svg+=`<text x="${padL+plotW}" y="${H-8}" text-anchor="end" font-size="9" fill="var(--ink-3)">today</text>`;
+  svg+=`</svg>`;
+  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (−364d)</span></div>`;
+  host.innerHTML = svg + leg;
 }
 function _bigRenderBookingCurve(sel){
   const host = document.getElementById('big-bcurve');

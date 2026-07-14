@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070B14">
+<title>RMES — Pricing Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#070B14; --cab:#0C1421; --panel:#111C2E; --grid:#1B2C46;
+  --neon:#35D0FF; --neon-dim:#1E86C0; --amber:#FFC542; --pink:#FF4D9D; --green:#4CE0A8;
+  --txt:#DCEEFB; --dim:#7E9BB8;
+  --px:'Press Start 2P', monospace;
+  --mono:'IBM Plex Mono', monospace;
+  --body:'Inter', system-ui, sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  background:var(--void); color:var(--txt); font-family:var(--body);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; padding-bottom:40px;
+  background-image:
+    radial-gradient(1200px 700px at 50% -10%, rgba(53,208,255,.10), transparent 60%),
+    linear-gradient(transparent 0 2px, rgba(0,0,0,.16) 2px 4px);
+  background-size:auto, 100% 4px;
+}
+/* CRT overlays */
+.crt{position:fixed;inset:0;pointer-events:none;z-index:90}
+.crt::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(120% 100% at 50% 50%, transparent 55%, rgba(0,0,0,.55) 100%)}
+.crt::after{content:"";position:absolute;inset:0;opacity:.06;
+  background:repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 3px)}
+
+.shell{max-width:1180px;margin:0 auto;padding:0 16px;position:relative;z-index:2}
+
+/* ---------- HUD ---------- */
+.hud{position:sticky;top:0;z-index:60;background:rgba(7,11,20,.92);backdrop-filter:blur(6px);
+  border-bottom:2px solid var(--grid)}
+.hud-in{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;flex-wrap:wrap;padding:8px 0}
+.logo{font-family:var(--px);font-size:11px;letter-spacing:.02em;color:var(--txt);line-height:1.6;text-decoration:none}
+.logo b{color:var(--neon)}
+.hud-right{display:flex;align-items:center;gap:10px}
+.cloud{font-family:var(--mono);font-size:11px;font-weight:600;color:#a83b3b}
+.kbtn{font-family:var(--px);font-size:10px;line-height:1.5;letter-spacing:.02em;cursor:pointer;
+  background:var(--neon);color:var(--void);border:0;border-radius:3px;padding:11px 13px;
+  box-shadow:0 4px 0 #12688F;transition:transform .06s, box-shadow .06s}
+.kbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #12688F}
+.kbtn.amber{background:var(--amber);box-shadow:0 4px 0 #9A6F14}
+.kbtn.amber:active{box-shadow:0 1px 0 #9A6F14}
+.kbtn.alt{background:transparent;color:var(--txt);border:2px solid var(--grid);box-shadow:0 4px 0 #0A1524}
+.kbtn.alt:active{box-shadow:0 1px 0 #0A1524}
+.kbtn[disabled]{opacity:.35;cursor:not-allowed;transform:none;box-shadow:0 4px 0 #12688F}
+.kbtn.sm{font-size:9px;padding:9px 10px}
+:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+/* ---------- structure + date bar ---------- */
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 14px}
+.pill{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  background:#0A1524;color:var(--dim);border:2px solid var(--grid);border-radius:2px;padding:9px 11px;cursor:pointer;transition:.15s}
+.pill:hover{color:var(--txt);border-color:var(--neon-dim)}
+.pill.on{background:var(--neon);color:var(--void);border-color:var(--neon);font-weight:600}
+
+/* ---------- layout ---------- */
+.lab{display:grid;grid-template-columns:1.02fr .98fr;gap:22px;align-items:start}
+.pane{background:var(--panel);border:2px solid var(--grid);border-radius:4px;padding:20px 18px}
+.pane h4{font-family:var(--px);font-size:10px;letter-spacing:.04em;color:var(--neon);margin-bottom:14px}
+
+/* date navigator */
+.daynav{display:flex;align-items:center;gap:8px}
+.daynav .arw{font-family:var(--px);font-size:11px;background:#0A1524;color:var(--txt);border:2px solid var(--grid);
+  border-radius:2px;padding:12px 12px;cursor:pointer;min-width:44px}
+.daynav .arw:hover{border-color:var(--neon-dim)}
+.daynav input[type=date]{flex:1;min-width:120px;background:#0A1524;border:2px solid var(--grid);border-radius:2px;
+  color:var(--txt);font-family:var(--mono);font-size:13px;padding:11px 10px;color-scheme:dark}
+.daymeta{display:flex;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:10px}
+.daymeta b{color:var(--txt);font-weight:500}
+.evt{color:var(--amber)}
+
+/* weights */
+.wtot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 14px}
+.wtot span.sum{font-family:var(--px);font-size:10px;color:var(--void);background:var(--amber);padding:6px 9px;border-radius:2px}
+.fac{margin-bottom:14px}
+.fac .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.fac .nm{font-family:var(--mono);font-size:12.5px;color:var(--txt);letter-spacing:.02em}
+.fac .wv{font-family:var(--px);font-size:10px;color:var(--amber)}
+.fac .ds{font-size:12px;color:var(--dim);margin:2px 0 4px;line-height:1.45}
+.fac .sig{font-family:var(--mono);font-size:11px;margin:0 0 4px}
+.fac.na .nm,.fac.na .ds{opacity:.5}
+.fac.na .wv{color:var(--dim)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:pointer;touch-action:none}
+input[type=range]::-webkit-slider-runnable-track{height:10px;background:#0A1524;border:1px solid var(--grid);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-7px;
+  background:var(--amber);border:2px solid #7A5A18;border-radius:3px;box-shadow:0 0 12px rgba(255,197,66,.6)}
+input[type=range]::-moz-range-track{height:10px;background:#0A1524;border:1px solid var(--grid);border-radius:2px}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--amber);border:2px solid #7A5A18;border-radius:3px}
+.wactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.dirty{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
+
+/* readout */
+.out{position:relative}
+.readout{text-align:center;padding:16px 10px 18px;border-bottom:2px solid var(--grid);margin-bottom:16px}
+.readout .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.readout .rate{font-family:var(--px);font-size:clamp(26px,5vw,40px);color:var(--neon);margin:12px 0 8px;
+  text-shadow:0 0 22px rgba(53,208,255,.55)}
+.readout .rate.bump{animation:bump .35s ease}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+.readout .delta{font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+.up{color:var(--green)}.down{color:var(--pink)}.flat{color:var(--dim)}
+
+/* why */
+.why{list-style:none}
+.why li{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;
+  font-family:var(--mono);font-size:12px;padding:8px 0;border-bottom:1px dashed var(--grid);color:var(--dim)}
+.why li b{font-family:var(--px);font-size:9px}
+.why li.head,.why li.tot{color:var(--txt)}
+.why li.tot{border-bottom:0;border-top:2px solid var(--grid);padding-top:12px}
+.why li.tot b{color:var(--neon);font-size:10px}
+.why li.muted{opacity:.55}
+.why .cbar{grid-column:1/-1;height:6px;background:#0A1524;border:1px solid var(--grid);border-radius:2px;overflow:hidden}
+.why .cbar i{display:block;height:100%;transition:width .4s ease}
+.acc{margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.note{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:12px;line-height:1.6}
+
+/* next days strip */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:8px;margin-top:12px}
+.dcard{background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:9px 6px;text-align:center;cursor:pointer;transition:.15s}
+.dcard:hover{border-color:var(--neon-dim)}
+.dcard.on{border-color:var(--neon);background:#0E2033}
+.dcard .dw{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.dcard .dd{font-family:var(--mono);font-size:12px;color:var(--txt);margin:2px 0 5px}
+.dcard .dp{font-family:var(--px);font-size:10px;color:var(--neon)}
+.dcard .dv{font-family:var(--mono);font-size:10px;margin-top:3px}
+.dcard.acc-on{box-shadow:inset 0 0 0 1px rgba(76,224,168,.5)}
+
+.err{font-family:var(--mono);font-size:12px;color:var(--pink);padding:14px 0;line-height:1.6}
+.boot{font-family:var(--px);font-size:11px;color:var(--dim);padding:60px 0;text-align:center}
+
+@media (max-width:880px){
+  .lab{grid-template-columns:1fr;gap:14px}
+  .out{order:-1;position:sticky;top:66px;z-index:40;
+    box-shadow:0 12px 24px -12px rgba(7,11,20,.95)}
+  .out .readout{padding:10px 6px 12px;margin-bottom:12px}
+  .out .why,.out .acc,.out .note{display:none}
+  .out.open .why,.out.open .acc,.out.open .note{display:block}
+  .out .acc.open{display:flex}
+  .whytoggle{display:block;width:100%;margin-top:4px}
+}
+@media (min-width:881px){ .whytoggle{display:none} }
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="crt" aria-hidden="true"></div>
+
+<header class="hud">
+  <div class="shell hud-in">
+    <a class="logo" href="index.html">RMES <b>//</b> PRICING<br><b>CONSOLE</b></a>
+    <div class="hud-right">
+      <span class="cloud" id="rmes-cloud-status">⚠ local only</span>
+      <a class="kbtn alt sm" href="index.html">Dashboard</a>
+    </div>
+  </div>
+</header>
+
+<main class="shell">
+  <div id="boot" class="boot">Loading data…</div>
+
+  <div id="app" style="display:none">
+    <div class="bar" id="struct-pills"></div>
+
+    <div class="lab">
+      <!-- CONTROLS -->
+      <section class="pane" id="ctrl">
+        <h4>Day</h4>
+        <div class="daynav">
+          <button class="arw" id="d-prev" aria-label="Previous day">&#9664;</button>
+          <input type="date" id="d-date" aria-label="Stay date">
+          <button class="arw" id="d-next" aria-label="Next day">&#9654;</button>
+          <button class="arw" id="d-today" aria-label="Today" title="Today">&#9679;</button>
+        </div>
+        <div class="daymeta" id="d-meta"></div>
+        <div class="strip" id="d-strip"></div>
+
+        <div class="wtot">
+          <h4 style="margin:0">Factor weights</h4>
+          <span class="sum" id="wsum">100 / 100</span>
+        </div>
+        <div id="facs"></div>
+        <div class="wactions">
+          <button class="kbtn amber sm" id="w-day">Apply to this day</button>
+          <button class="kbtn alt sm" id="w-week">Apply to 7 days</button>
+          <button class="kbtn alt sm" id="w-clear">Use property default</button>
+          <button class="kbtn alt sm" id="w-default">Set as property default</button>
+        </div>
+        <div class="wactions">
+          <span class="dirty" id="w-dirty"></span>
+        </div>
+      </section>
+
+      <!-- OUTPUT -->
+      <section class="pane out" id="out">
+        <div class="readout">
+          <div class="lbl">Recommended rate</div>
+          <div class="rate" id="rate">—</div>
+          <div class="delta flat" id="delta">—</div>
+          <button class="kbtn alt sm whytoggle" id="whytoggle" aria-expanded="false">Why this rate ▾</button>
+        </div>
+        <h4>Why this rate</h4>
+        <ul class="why" id="why"></ul>
+        <div class="acc" id="acc-box">
+          <button class="kbtn" id="accept">✓ Accept this rate</button>
+          <button class="kbtn alt sm" id="unaccept">Reset to Base</button>
+        </div>
+        <p class="note" id="note"></p>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script src="data.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="engine.js"></script>
+<script>
+/* ===========================================================================
+   RMES PRICING CONSOLE
+   Standalone arcade-style console on top of the live RMES engine.
+   - Weights are PER DAY. Moving a slider is a sandbox: nothing is stored until
+     you press "Apply to this day" (or "Apply to 7 days"). A day with no weights
+     of its own falls back to the property default (the RMES tab).
+   - Everything else (factor multipliers, LMF, Event, Promo, Floor, Base Price,
+     Last update) is read from the real engine (computeRMESPriceMap), so the
+     numbers match Sell Strategy and Export Pricing.
+   =========================================================================== */
+(function(){
+  'use strict';
+
+  /* Slider key → RMES factor. The storage keys are historical:
+     'airdna' drives D·Demand (Expedia searches) and 'mkt' drives E·AirDNA Market. */
+  var FACTORS = [
+    { k:'occ',    mult:'occ_mult',  na:'occ',   label:'Daily Pickup',  ds:'Rooms sold today vs the expected fill rate' },
+    { k:'pace',   mult:'pace_mult', na:'pace',  label:'Pace Trend',    ds:'Booking pace vs the same point last year' },
+    { k:'comp',   mult:'comp_mult', na:'comp',  label:'Online Pricing',ds:'My price vs the weighted Expedia comp set' },
+    { k:'airdna', mult:'air_mult',  na:'air',   label:'Demand',        ds:'Expedia searches vs the monthly median' },
+    { k:'mkt',    mult:'mkt_mult',  na:'mkt',   label:'AirDNA Market', ds:'Market occupancy vs mine — headroom signal' }
+  ];
+  var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  var S = {
+    struct: 'firenze',
+    ymd: null,          // selected stay date (YYYYMMDD number)
+    w: {},              // sandbox weights, integers summing to 100
+    saved: {},          // weights currently stored FOR THIS DAY (override, or property default)
+    day: null,          // engine snapshot for the selected day
+    lastRate: null
+  };
+  var MAPS = {};        // struct → computeRMESPriceMap result (cached)
+
+  /* ---------- date helpers ---------- */
+  function todayYmd(){ var d=new Date(); d.setHours(0,0,0,0); return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
+  function ymdToDate(n){ return new Date(Math.floor(n/10000), Math.floor((n%10000)/100)-1, n%100); }
+  function dateToYmd(d){ return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate(); }
+  function addDaysYmd(n, k){ var d=ymdToDate(n); d.setDate(d.getDate()+k); return dateToYmd(d); }
+  function ymdToIso(n){ var s=String(n); return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8); }
+  function isoToYmd(s){ return parseInt(s.replace(/-/g,''),10); }
+  function eur(n){ return isFinite(n) ? '€'+Math.round(n) : '—'; }
+  function eur1(n){ return (n>=0?'+':'−')+'€'+Math.abs(n).toFixed(1); }
+
+  /* ---------- weights: sandbox <-> stored ---------- */
+  /* The weights that actually apply to a stay-date: day override if any, else the
+     property default. Returned as five integers adding up to 100. */
+  function effectiveWeightsPct(sel, ymd){
+    var src = (typeof getWeightsFor === 'function') ? getWeightsFor(sel, ymd) : null;
+    if (!src && typeof SELL_RMES_W_ALL !== 'undefined') src = SELL_RMES_W_ALL[sel];
+    var raw = FACTORS.map(function(f){ return (src && isFinite(src[f.k])) ? src[f.k] : 0.20; });
+    var tot = raw.reduce(function(a,b){ return a+b; }, 0) || 1;
+    var pct = raw.map(function(v){ return v/tot*100; });
+    // largest-remainder rounding so the five integers add up to exactly 100
+    var out = pct.map(function(v){ return Math.floor(v); });
+    var rest = 100 - out.reduce(function(a,b){ return a+b; }, 0);
+    var order = pct.map(function(v,i){ return { i:i, f:v-Math.floor(v) }; })
+                   .sort(function(a,b){ return b.f-a.f; });
+    for (var j=0; j<rest; j++) out[order[j % order.length].i]++;
+    var o = {};
+    FACTORS.forEach(function(f,i){ o[f.k] = out[i]; });
+    return o;
+  }
+  function fractions(w){
+    var o = {};
+    FACTORS.forEach(function(f){ o[f.k] = w[f.k] / 100; });
+    return o;
+  }
+  function weightsEqual(a,b){ return FACTORS.every(function(f){ return a[f.k] === b[f.k]; }); }
+  function isDirty(){ return !weightsEqual(S.w, S.saved); }
+  function dayIsCustom(){ return (typeof hasDayWeights === 'function') ? hasDayWeights(S.struct, S.ymd) : false; }
+
+  /* Keep the five weights adding up to exactly 100 (same logic as the RMS Lab prototype). */
+  function normalize(movedKey){
+    var v = Math.round(S.w[movedKey]);
+    if (v > 100) v = 100;
+    if (v < 0) v = 0;
+    S.w[movedKey] = v;
+    var rest = 100 - v;
+    var others = FACTORS.map(function(f){ return f.k; }).filter(function(k){ return k !== movedKey; });
+    var othersSum = others.reduce(function(a,k){ return a + S.w[k]; }, 0);
+    if (othersSum <= 0){
+      var each = Math.floor(rest / others.length);
+      others.forEach(function(k){ S.w[k] = each; });
+    } else {
+      others.forEach(function(k){ S.w[k] = Math.round(S.w[k] / othersSum * rest); });
+    }
+    var total = FACTORS.reduce(function(a,f){ return a + S.w[f.k]; }, 0);
+    if (total !== 100 && others.length){
+      var big = others[0];
+      others.forEach(function(k){ if (S.w[k] > S.w[big]) big = k; });
+      S.w[big] += 100 - total;
+      if (S.w[big] < 0) S.w[big] = 0;
+    }
+  }
+
+  /* ---------- engine bridge ---------- */
+  function priceMap(sel){
+    if (MAPS[sel]) return MAPS[sel];
+    CURRENT_STRUCT = sel;                       // computeRMESPriceMap reads the current struct
+    if (typeof fp_ensureStruct === 'function') fp_ensureStruct(sel);
+    MAPS[sel] = computeRMESPriceMap(sel, todayYmd(), 365);
+    return MAPS[sel];
+  }
+  function invalidate(){ MAPS = {}; if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache(); }
+
+  /* Everything the console needs for one stay date. Weight-independent. */
+  function dayData(sel, ymd){
+    var map = priceMap(sel);
+    var dd = map[ymd];
+    var baseRT = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
+    if (!dd || !baseRT || !dd.multsByRT || !dd.multsByRT[baseRT]) return null;
+    var m = dd.multsByRT[baseRT];
+    var naR = m._naReasons || {};
+    var mults = {}, na = {};
+    FACTORS.forEach(function(f){
+      mults[f.k] = (m[f.mult] != null && isFinite(m[f.mult])) ? m[f.mult] : 1;
+      na[f.k] = naR[f.na] || null;
+    });
+    var effBase = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, ymd) : null;
+    var lastUpdate = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, ymd) : null;
+    var accMeta = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(sel, ymd) : null;
+    var lmf = 0;
+    if (typeof fp_lmfLookup === 'function'){
+      var days = Math.max(0, Math.round((ymdToDate(ymd).getTime() - ymdToDate(todayYmd()).getTime())/86400000));
+      try { lmf = fp_lmfLookup(sel, (dd.curOcc != null ? dd.curOcc : 0), days); } catch(e){ lmf = 0; }
+    }
+    var promo = 1;
+    try { if (typeof _getPromoBoost === 'function') promo = _getPromoBoost(sel, ymd).boost; } catch(e){}
+    return {
+      ymd: ymd,
+      mults: mults,
+      na: na,
+      effBase: (effBase != null && isFinite(effBase)) ? effBase : null,
+      lastUpdate: (lastUpdate != null && isFinite(lastUpdate)) ? lastUpdate : null,
+      accepted: (accMeta && accMeta.price != null) ? accMeta : null,
+      lmf: isFinite(lmf) ? lmf : 0,
+      event: (typeof _getEventBoost === 'function') ? _getEventBoost(ymd) : 1,
+      eventName: (typeof EVENTS !== 'undefined' && EVENTS[ymd]) ? EVENTS[ymd] : null,
+      promo: isFinite(promo) ? promo : 1,
+      floor: (typeof fp_getFloor === 'function') ? fp_getFloor(sel) : 0,
+      cap: (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.30,
+      occ: (dd.curOcc != null) ? dd.curOcc : 0,
+      curRn: dd.curRn || 0,
+      rooms: dd.cap || 0
+    };
+  }
+
+  /* The RMES formula, recomposed with the sandbox weights.
+     Base × Composite × (1 + LMF%) × Event × Promo, floored.
+     Factors flagged n/d for the day carry zero weight; the rest are renormalised —
+     exactly what the engine does in _normalizeWeights(). */
+  function compute(day, w){
+    var active = FACTORS.filter(function(f){ return !day.na[f.k]; });
+    var activeSum = active.reduce(function(a,f){ return a + w[f.k]; }, 0);
+    var wNorm = {};
+    FACTORS.forEach(function(f){ wNorm[f.k] = (activeSum > 0 && !day.na[f.k]) ? w[f.k]/activeSum : 0; });
+
+    var rawDev = FACTORS.reduce(function(a,f){ return a + wNorm[f.k] * (day.mults[f.k] - 1); }, 0);
+    var cap = day.cap;
+    var hitCap = Math.abs(rawDev) > cap;
+    var dev = Math.max(-cap, Math.min(cap, rawDev));
+    var composite = 1 + dev;
+    var scale = (rawDev !== 0) ? dev / rawDev : 1;   // keep the € breakdown adding up after the cap
+
+    var base = day.effBase;
+    var afterFactors = base * composite;
+    var afterLmf = afterFactors * (1 + day.lmf/100);
+    var afterEvent = afterLmf * day.event;
+    var afterPromo = afterEvent * day.promo;
+    var atFloor = afterPromo < day.floor;
+    var price = atFloor ? day.floor : afterPromo;
+
+    var contrib = {};
+    FACTORS.forEach(function(f){ contrib[f.k] = base * wNorm[f.k] * (day.mults[f.k] - 1) * scale; });
+
+    return {
+      price: price, composite: composite, hitCap: hitCap, atFloor: atFloor,
+      wNorm: wNorm, contrib: contrib,
+      lmfEur: afterLmf - afterFactors,
+      eventEur: afterEvent - afterLmf,
+      promoEur: afterPromo - afterEvent,
+      floorEur: atFloor ? (day.floor - afterPromo) : 0
+    };
+  }
+
+  /* ---------- render ---------- */
+  function renderPills(){
+    var el = document.getElementById('struct-pills');
+    var keys = Object.keys(CFG.structures);
+    el.innerHTML = keys.map(function(k){
+      var c = CFG.structures[k];
+      var label = c.label || c.key || k;
+      return '<button class="pill'+(k===S.struct?' on':'')+'" data-s="'+k+'">'+escapeHtml(label)+'</button>';
+    }).join('');
+    el.querySelectorAll('button[data-s]').forEach(function(b){
+      b.addEventListener('click', function(){
+        S.struct = b.dataset.s;
+        renderPills(); renderAll();
+      });
+    });
+  }
+
+  function renderFactors(){
+    var el = document.getElementById('facs');
+    el.innerHTML = FACTORS.map(function(f, i){
+      var naReason = S.day ? S.day.na[f.k] : null;
+      var sig = '';
+      if (S.day){
+        if (naReason){
+          sig = '<div class="sig" style="color:#7E9BB8">no signal today · weight redistributed</div>';
+        } else {
+          var d = (S.day.mults[f.k] - 1) * 100;
+          var col = d > 0.05 ? 'var(--green)' : (d < -0.05 ? 'var(--pink)' : 'var(--dim)');
+          sig = '<div class="sig" style="color:'+col+'">signal '+(d>=0?'+':'')+d.toFixed(1)+'%</div>';
+        }
+      }
+      return '<div class="fac'+(naReason?' na':'')+'">'+
+        '<div class="top"><span class="nm">'+f.label+'</span><span class="wv" id="wv-'+f.k+'">'+S.w[f.k]+'</span></div>'+
+        '<div class="ds">'+f.ds+'</div>'+ sig +
+        '<input type="range" min="0" max="100" value="'+S.w[f.k]+'" data-k="'+f.k+'" '+
+        'aria-label="'+f.label+' weight" title="'+(naReason ? escapeHtml(naReason) : f.label)+'">'+
+      '</div>';
+    }).join('');
+    el.querySelectorAll('input[type=range]').forEach(function(r){
+      r.addEventListener('input', function(){
+        S.w[r.dataset.k] = +r.value;
+        normalize(r.dataset.k);
+        paintWeights();
+        renderOutput();
+        renderStrip();
+      });
+    });
+    paintWeights();
+  }
+
+  function paintWeights(){
+    FACTORS.forEach(function(f){
+      var v = document.getElementById('wv-'+f.k);
+      if (v) v.textContent = S.w[f.k];
+      var r = document.querySelector('input[data-k="'+f.k+'"]');
+      if (r && +r.value !== S.w[f.k]) r.value = S.w[f.k];
+    });
+    var tot = FACTORS.reduce(function(a,f){ return a + S.w[f.k]; }, 0);
+    document.getElementById('wsum').textContent = tot + ' / 100';
+
+    var custom = dayIsCustom();
+    var msg;
+    if (isDirty()) msg = '● unsaved — this day still uses ' + (custom ? 'its saved weights' : 'the property default');
+    else msg = custom ? '★ custom weights saved for this day' : 'property default (no custom weights for this day)';
+    document.getElementById('w-dirty').textContent = msg;
+
+    document.getElementById('w-day').disabled = !isDirty();
+    document.getElementById('w-week').disabled = false;
+    document.getElementById('w-clear').disabled = !custom;
+    document.getElementById('w-default').disabled = false;
+  }
+
+  function renderMeta(){
+    var d = ymdToDate(S.ymd);
+    var day = S.day;
+    var bits = [];
+    bits.push('<span><b>'+DOW[d.getDay()]+'</b> '+String(S.ymd).slice(6,8)+'/'+String(S.ymd).slice(4,6)+'</span>');
+    if (day){
+      bits.push('<span>OTB <b>'+day.curRn+'/'+day.rooms+'</b> ('+Math.round(day.occ*100)+'%)</span>');
+      bits.push('<span>Base <b>'+eur(day.effBase)+'</b></span>');
+      bits.push('<span>Last update <b>'+eur(day.lastUpdate)+'</b></span>');
+      if (day.eventName) bits.push('<span class="evt">★ '+escapeHtml(day.eventName)+'</span>');
+    }
+    document.getElementById('d-meta').innerHTML = bits.join('');
+    document.getElementById('d-date').value = ymdToIso(S.ymd);
+  }
+
+  function renderStrip(){
+    var el = document.getElementById('d-strip');
+    var start = todayYmd();
+    var from = (S.ymd < start) ? start : S.ymd;
+    var html = '';
+    for (var i=0; i<7; i++){
+      var y = addDaysYmd(from, i);
+      var dd = dayData(S.struct, y);
+      // the selected day previews the sandbox weights; the others use their own stored ones
+      var wUse = (y === S.ymd) ? S.w : effectiveWeightsPct(S.struct, y);
+      var p = (dd && dd.effBase != null) ? compute(dd, wUse) : null;
+      var d = ymdToDate(y);
+      var delta = (p && dd.lastUpdate != null) ? (p.price - dd.lastUpdate) : null;
+      var dcol = (delta == null || Math.abs(delta) < 0.5) ? 'flat' : (delta > 0 ? 'up' : 'down');
+      var cust = (typeof hasDayWeights === 'function') && hasDayWeights(S.struct, y);
+      html += '<button class="dcard'+(y===S.ymd?' on':'')+(dd && dd.accepted?' acc-on':'')+'" data-y="'+y+'" '+
+        'title="'+(cust ? 'Custom weights for this day' : 'Property default weights')+'">'+
+        '<div class="dw">'+DOW[d.getDay()]+(cust ? ' <span style="color:var(--amber)">★</span>' : '')+'</div>'+
+        '<div class="dd">'+String(y).slice(6,8)+'/'+String(y).slice(4,6)+'</div>'+
+        '<div class="dp">'+(p ? eur(p.price) : '—')+'</div>'+
+        '<div class="dv '+dcol+'">'+(delta == null ? '' : (Math.abs(delta) < 0.5 ? '=' : eur1(delta)))+'</div>'+
+      '</button>';
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('button[data-y]').forEach(function(b){
+      b.addEventListener('click', function(){ setDay(+b.dataset.y); });
+    });
+  }
+
+  function renderOutput(){
+    var rateEl = document.getElementById('rate');
+    var deltaEl = document.getElementById('delta');
+    var whyEl = document.getElementById('why');
+    var noteEl = document.getElementById('note');
+    var day = S.day;
+
+    if (!day || day.effBase == null){
+      rateEl.textContent = '—';
+      deltaEl.className = 'delta flat';
+      deltaEl.textContent = 'No Base Price for this day';
+      whyEl.innerHTML = '<li class="muted"><span>The engine has no price for this date. Pick a day inside the next 365 days.</span><b></b></li>';
+      noteEl.textContent = '';
+      document.getElementById('accept').disabled = true;
+      document.getElementById('unaccept').disabled = true;
+      return;
+    }
+
+    var r = compute(day, S.w);
+    rateEl.textContent = eur(r.price);
+    if (S.lastRate != null && Math.round(S.lastRate) !== Math.round(r.price)){
+      rateEl.classList.remove('bump'); void rateEl.offsetWidth; rateEl.classList.add('bump');
+    }
+    S.lastRate = r.price;
+
+    var diff = (day.lastUpdate != null) ? (r.price - day.lastUpdate) : 0;
+    deltaEl.className = 'delta ' + (diff > 0.5 ? 'up' : (diff < -0.5 ? 'down' : 'flat'));
+    deltaEl.textContent = 'Last update: ' + eur(day.lastUpdate) + '  →  ' + eur1(diff) +
+      (day.lastUpdate ? '  (' + (diff>=0?'+':'') + (diff/day.lastUpdate*100).toFixed(1) + '%)' : '');
+
+    // Why this rate
+    var rows = [];
+    rows.push({ cls:'head', label:'Base Price', sub:'structural, per day', eurv:null, txt:eur(day.effBase) });
+    var maxAbs = Math.max.apply(null, FACTORS.map(function(f){ return Math.abs(r.contrib[f.k]); }).concat([0.01]));
+    FACTORS.forEach(function(f){
+      var na = day.na[f.k];
+      rows.push({
+        cls: na ? 'muted' : '',
+        label: f.label,
+        sub: na ? 'no signal' : (S.w[f.k] + '% × ' + ((day.mults[f.k]-1)*100).toFixed(1) + '%'),
+        eurv: na ? 0 : r.contrib[f.k],
+        bar: na ? 0 : Math.abs(r.contrib[f.k]) / maxAbs * 100
+      });
+    });
+    if (Math.abs(r.lmfEur) > 0.05) rows.push({ label:'Last-Minute Factor', sub:day.lmf.toFixed(1)+'%', eurv:r.lmfEur, bar:Math.abs(r.lmfEur)/maxAbs*100 });
+    if (Math.abs(r.eventEur) > 0.05) rows.push({ label:'Event Factor', sub:(day.eventName||'event')+' · '+((day.event-1)*100).toFixed(0)+'%', eurv:r.eventEur, bar:Math.abs(r.eventEur)/maxAbs*100 });
+    if (Math.abs(r.promoEur) > 0.05) rows.push({ label:'Promo', sub:((day.promo-1)*100).toFixed(0)+'%', eurv:r.promoEur, bar:Math.abs(r.promoEur)/maxAbs*100 });
+    if (r.atFloor) rows.push({ label:'Floor Rate', sub:'clamped at '+eur(day.floor), eurv:r.floorEur, bar:Math.abs(r.floorEur)/maxAbs*100 });
+
+    var h = '';
+    rows.forEach(function(x){
+      var val = (x.eurv == null) ? x.txt : eur1(x.eurv);
+      var pos = (x.eurv == null) ? true : (x.eurv >= 0);
+      var cls = (x.eurv == null) ? '' : (pos ? 'up' : 'down');
+      h += '<li class="'+(x.cls||'')+'">'+
+             '<span>'+x.label+' <small style="opacity:.65">· '+x.sub+'</small></span>'+
+             '<b class="'+cls+'">'+val+'</b>';
+      if (x.bar != null && x.bar > 0){
+        h += '<span class="cbar"><i style="width:'+x.bar.toFixed(0)+'%;background:'+(pos?'var(--green)':'var(--pink)')+'"></i></span>';
+      }
+      h += '</li>';
+    });
+    h += '<li class="tot"><span>Recommended rate</span><b>'+eur(r.price)+'</b></li>';
+    whyEl.innerHTML = h;
+
+    var notes = [];
+    notes.push('Composite ×'+r.composite.toFixed(3)+(r.hitCap ? ' (capped at ±'+Math.round(day.cap*100)+'%)' : ''));
+    if (day.accepted) notes.push('Accepted on '+ (day.accepted.ts ? day.accepted.ts.slice(0,10).split('-').reverse().join('/') : '—') + (day.accepted.author ? ' by '+day.accepted.author : ''));
+    else notes.push('No decision yet — the Base Price is what is loaded today');
+    if (isDirty()) notes.push('⚠ Weights not saved for this day yet');
+    else if (dayIsCustom()) notes.push('★ Custom weights for this day');
+    noteEl.textContent = notes.join(' · ');
+
+    document.getElementById('accept').disabled = false;
+    document.getElementById('unaccept').disabled = !day.accepted;
+  }
+
+  function renderAll(){
+    S.day = dayData(S.struct, S.ymd);
+    S.saved = effectiveWeightsPct(S.struct, S.ymd);   // weights stored for THIS day
+    S.w = Object.assign({}, S.saved);                 // sandbox starts from them
+    renderMeta();
+    renderFactors();
+    renderStrip();
+    renderOutput();
+  }
+  function setDay(ymd){
+    var min = todayYmd(), max = addDaysYmd(min, 364);
+    if (ymd < min) ymd = min;
+    if (ymd > max) ymd = max;
+    S.ymd = ymd;
+    renderAll();
+  }
+
+  /* ---------- actions ---------- */
+  function wireActions(){
+    document.getElementById('d-prev').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, -1)); });
+    document.getElementById('d-next').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, 1)); });
+    document.getElementById('d-today').addEventListener('click', function(){ setDay(todayYmd()); });
+    document.getElementById('d-date').addEventListener('change', function(e){
+      var v = isoToYmd(e.target.value);
+      if (isFinite(v)) setDay(v); else renderMeta();
+    });
+
+    document.getElementById('w-day').addEventListener('click', function(){
+      setDayWeights(S.struct, S.ymd, fractions(S.w));
+      invalidate();
+      renderAll();
+    });
+
+    document.getElementById('w-week').addEventListener('click', function(){
+      var to = addDaysYmd(S.ymd, 6);
+      if (!confirm('Apply these weights to the 7 days from ' + ymdToIso(S.ymd).split('-').reverse().join('/') +
+                   ' to ' + ymdToIso(to).split('-').reverse().join('/') + '?')) return;
+      setDayWeightsRange(S.struct, S.ymd, to, fractions(S.w));
+      invalidate();
+      renderAll();
+    });
+
+    document.getElementById('w-clear').addEventListener('click', function(){
+      if (!dayIsCustom()) return;
+      if (!confirm('Drop the custom weights for this day and go back to the property default?')) return;
+      clearDayWeights(S.struct, S.ymd);
+      invalidate();
+      renderAll();
+    });
+
+    document.getElementById('w-default').addEventListener('click', function(){
+      if (!confirm('Make these the default weights for ' + (CFG.structures[S.struct].label || S.struct) +
+                   '?\nEvery day without custom weights will use them — here and in the dashboard.')) return;
+      var cur = SELL_RMES_W_ALL[S.struct] || {};
+      SELL_RMES_W_ALL[S.struct] = Object.assign({}, cur, fractions(S.w), { price: 0, budget: 0 });
+      saveRmesWeights();                    // → localStorage → Firebase push
+      invalidate();
+      renderAll();
+    });
+
+    document.getElementById('accept').addEventListener('click', function(){
+      if (!S.day || S.day.effBase == null) return;
+      var r = compute(S.day, S.w);
+      var price = Math.round(r.price);
+      if (isDirty() && !confirm('The weights you moved are not saved for this day.\nAccept ' + eur(price) + ' anyway? (the rate is stored, the weights are not)')) return;
+      newrmesSetAccepted(S.struct, S.ymd, price);
+      invalidate();
+      renderAll();
+    });
+
+    document.getElementById('unaccept').addEventListener('click', function(){
+      if (!S.day || !S.day.accepted) return;
+      if (!confirm('Remove the accepted rate and go back to the Base Price?')) return;
+      newrmesSetAccepted(S.struct, S.ymd, null);
+      invalidate();
+      renderAll();
+    });
+
+    var wt = document.getElementById('whytoggle');
+    wt.addEventListener('click', function(){
+      var out = document.getElementById('out');
+      var open = out.classList.toggle('open');
+      document.getElementById('acc-box').classList.toggle('open', open);
+      wt.setAttribute('aria-expanded', open ? 'true' : 'false');
+      wt.textContent = open ? 'Why this rate ▴' : 'Why this rate ▾';
+    });
+  }
+
+  /* ---------- boot ---------- */
+  function boot(){
+    try {
+      loadData(EMBEDDED_CSV);
+      if (typeof AIRDNA_CSV !== 'undefined') loadAirdna(AIRDNA_CSV);
+      if (typeof EVENTS_CSV !== 'undefined') loadEvents(EVENTS_CSV);
+      if (typeof ensureUserProfile === 'function') ensureUserProfile();
+
+      S.struct = 'firenze';
+      S.ymd = todayYmd();
+
+      document.getElementById('boot').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      renderPills();
+      wireActions();
+      renderAll();
+      window.__CONSOLE_BOOTED = true;
+    } catch(e){
+      console.error(e);
+      document.getElementById('boot').innerHTML = '<div class="err">Data failed to load: ' + escapeHtml(e.message) + '</div>';
+    }
+  }
+
+  /* A colleague accepted a price or changed the weights on another device →
+     rebuild from the fresh localStorage state. The sandbox is left alone. */
+  window.rmesCloudOnRemoteUpdate = function(){
+    if (!window.__CONSOLE_BOOTED) return;
+    if (typeof BOOKINGS === 'undefined' || !BOOKINGS || !BOOKINGS.length) return;
+    try {
+      invalidate();
+      renderAll();
+    } catch(e){ console.warn(e); }
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){
+    if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.init) RMES_CLOUD.init().then(boot).catch(boot);
+    else boot();
+  });
+})();
+</script>
+</body>
+</html>
