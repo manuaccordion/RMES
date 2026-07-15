@@ -84,24 +84,46 @@ body{
 .pill:hover{color:var(--txt);border-color:var(--neon-dim)}
 .pill.on{background:var(--neon);color:var(--void);border-color:var(--neon);font-weight:600}
 
-/* ---------- layout ---------- */
-.lab{display:grid;grid-template-columns:1.02fr .98fr;gap:22px;align-items:start}
-.pane{background:var(--panel);border:2px solid var(--grid);border-radius:4px;padding:20px 18px}
-.pane h4{font-family:var(--px);font-size:10px;letter-spacing:.04em;color:var(--neon);margin-bottom:14px}
-
-/* date navigator */
-.daynav{display:flex;align-items:center;gap:8px}
-.daynav .arw{font-family:var(--px);font-size:11px;background:#0A1524;color:var(--txt);border:2px solid var(--grid);
+/* ---------- deck: single-day card, flip + swipe ---------- */
+.deck-head{display:flex;align-items:center;gap:8px;max-width:440px;margin:16px auto 6px}
+.deck-head .arw{font-family:var(--px);font-size:11px;background:#0A1524;color:var(--txt);border:2px solid var(--grid);
   border-radius:2px;padding:12px 12px;cursor:pointer;min-width:44px}
-.daynav .arw:hover{border-color:var(--neon-dim)}
-.daynav input[type=date]{flex:1;min-width:120px;background:#0A1524;border:2px solid var(--grid);border-radius:2px;
+.deck-head .arw:hover{border-color:var(--neon-dim)}
+.deck-head input[type=date]{flex:1;min-width:110px;background:#0A1524;border:2px solid var(--grid);border-radius:2px;
   color:var(--txt);font-family:var(--mono);font-size:13px;padding:11px 10px;color-scheme:dark}
-.daymeta{display:flex;gap:10px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:10px}
-.daymeta b{color:var(--txt);font-weight:500}
-.evt{color:var(--amber)}
+.swipe-hint{text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);margin:0 0 12px;opacity:.7}
+
+.deck{position:relative;max-width:440px;margin:0 auto;min-height:540px;perspective:1600px}
+.ghost{position:absolute;top:24px;bottom:24px;width:26px;border:2px solid var(--grid);border-radius:6px;
+  background:linear-gradient(180deg,#0E1929,#0A1420);opacity:.55;pointer-events:none;z-index:0}
+.ghost.prev{left:-14px}
+.ghost.next{right:-14px}
+
+.flip{position:relative;width:100%;trans-style:preserve-3d;transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.4,.15,.2,1);z-index:2;touch-action:pan-y}
+.flip.flipped{transform:rotateY(180deg)}
+/* horizontal swipe: JS sets --dx; a class animates the fly-out */
+.flip.dragging{transition:none}
+.flip.fly-left{transition:transform .28s ease, opacity .28s ease;transform:translateX(-120%) rotate(-6deg);opacity:0}
+.flip.fly-right{transition:transform .28s ease, opacity .28s ease;transform:translateX(120%) rotate(6deg);opacity:0}
+
+.face{position:relative;-webkit-backface-visibility:hidden;backface-visibility:hidden;
+  background:var(--panel);border:2px solid var(--grid);border-radius:8px;padding:18px 16px 16px;
+  box-shadow:0 18px 40px -20px rgba(7,11,20,.95)}
+.face.front{cursor:pointer}
+.face.back{position:absolute;inset:0;transform:rotateY(180deg);overflow-y:auto}
+.fday{text-align:center;font-family:var(--px);font-size:12px;color:var(--amber);margin-bottom:8px;letter-spacing:.02em}
+.fday small{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.04em;text-transform:none}
+.fday .evt{color:var(--pink)}
+
+.flip-btn{width:100%;margin-top:16px;font-family:var(--px);font-size:9px;letter-spacing:.02em;cursor:pointer;
+  color:var(--neon);background:transparent;border:2px solid var(--grid);border-radius:4px;padding:13px;transition:.15s}
+.flip-btn:hover{border-color:var(--neon);background:rgba(53,208,255,.08)}
 
 /* weights */
-.wtot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 14px}
+.wtot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 16px}
+.wtot h4{font-family:var(--px);font-size:10px;letter-spacing:.04em;color:var(--neon)}
 .wtot span.sum{font-family:var(--px);font-size:10px;color:var(--void);background:var(--amber);padding:6px 9px;border-radius:2px}
 .fac{margin-bottom:20px}
 .fac .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
@@ -130,31 +152,11 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     linear-gradient(180deg,#FFD873 0%,var(--amber) 46%,#E5A81E 54%,#B9791A 100%);
   border:1px solid #7A5A18;border-radius:7px;
   box-shadow:0 3px 6px rgba(0,0,0,.5), 0 0 14px rgba(255,197,66,.55), inset 0 0 0 2px rgba(0,0,0,.28)}
-.wactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
-.dirty{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
-
-/* readout */
-.out{position:relative}
-.readout{text-align:center;padding:16px 10px 18px;border-bottom:2px solid var(--grid);margin-bottom:16px}
-.readout .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
-.readout .rate{font-family:var(--px);font-size:clamp(26px,5vw,40px);color:var(--neon);margin:12px 0 8px;
-  text-shadow:0 0 22px rgba(53,208,255,.55)}
-.readout .rate.bump{animation:bump .35s ease}
-@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
-.readout .delta{font-family:var(--mono);font-size:12px;letter-spacing:.04em}
-.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0 4px;text-align:left}
-.kpi{background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:9px 10px}
-.kpi .kl{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-.kpi .kv{font-family:var(--px);font-size:12px;color:var(--txt);margin:5px 0 2px;line-height:1.35}
-.kpi .kd{font-family:var(--mono);font-size:11px}
-.kpi.wide{grid-column:1/-1}
-.kpi .rankbar{display:flex;gap:2px;margin-top:5px}
-.kpi .rankbar i{flex:1;height:6px;border-radius:1px;background:var(--grid)}
-.kpi .rankbar i.lo{background:var(--green)}
-.kpi .rankbar i.me{background:var(--neon);box-shadow:0 0 8px rgba(53,208,255,.7)}
-.up{color:var(--green)}.down{color:var(--pink)}.flat{color:var(--dim)}
-
-/* why */
+.wactions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.wactions .kbtn{width:100%}
+.dirty{display:block;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--amber);margin-top:12px;text-align:center;min-height:14px}
+.why-wrap{margin-top:16px;border-top:2px solid var(--grid);padding-top:14px}
+.why-h{font-family:var(--px);font-size:10px;letter-spacing:.04em;color:var(--neon);margin-bottom:10px}
 .why{list-style:none}
 .why li{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;
   font-family:var(--mono);font-size:12px;padding:8px 0;border-bottom:1px dashed var(--grid);color:var(--dim)}
@@ -165,45 +167,45 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
 .why li.muted{opacity:.55}
 .why .cbar{grid-column:1/-1;height:6px;background:#0A1524;border:1px solid var(--grid);border-radius:2px;overflow:hidden}
 .why .cbar i{display:block;height:100%;transition:width .4s ease}
-.acc{margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+/* readout */
+.readout{text-align:center;padding:6px 10px 16px;border-bottom:2px solid var(--grid);margin-bottom:16px}
+.readout .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.readout .rate{font-family:var(--px);font-size:clamp(30px,9vw,44px);color:var(--neon);margin:12px 0 8px;
+  text-shadow:0 0 22px rgba(53,208,255,.55)}
+.readout .rate.bump{animation:bump .35s ease}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
+.readout .delta{font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 0 4px;text-align:left}
+.kpi{background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:9px 10px}
+.kpi .kl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.kpi .kv{font-family:var(--px);font-size:12px;color:var(--txt);margin:5px 0 2px;line-height:1.35}
+.kpi .kd{font-family:var(--mono);font-size:11px}
+.kpi.wide{grid-column:1/-1}
+.kpi .rankbar{display:flex;gap:2px;margin-top:5px}
+.kpi .rankbar i{flex:1;height:6px;border-radius:1px;background:var(--grid)}
+.kpi .rankbar i.lo{background:var(--green)}
+.kpi .rankbar i.me{background:var(--neon);box-shadow:0 0 8px rgba(53,208,255,.7)}
+.up{color:var(--green)}.down{color:var(--pink)}.flat{color:var(--dim)}
+
+.acc{margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
 .ovr{display:flex;align-items:center;gap:6px;background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:4px 6px}
 .ovr-lbl{font-size:13px}
-.ovr input{width:92px;background:transparent;border:0;color:var(--txt);font-family:var(--mono);font-size:14px;padding:8px 4px}
+.ovr input{width:82px;background:transparent;border:0;color:var(--txt);font-family:var(--mono);font-size:14px;padding:8px 4px}
 .ovr input:focus{outline:none}
 .ovr input::-webkit-outer-spin-button,.ovr input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-.note{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:12px;line-height:1.6}
-
-/* next days strip */
-.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:8px;margin-top:12px}
-.dcard{background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:9px 6px;text-align:center;cursor:pointer;transition:.15s}
-.dcard:hover{border-color:var(--neon-dim)}
-.dcard.on{border-color:var(--neon);background:#0E2033}
-.dcard .dw{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
-.dcard .dd{font-family:var(--mono);font-size:12px;color:var(--txt);margin:2px 0 5px}
-.dcard .dp{font-family:var(--px);font-size:10px;color:var(--neon)}
-.dcard .dv{font-family:var(--mono);font-size:10px;margin-top:3px}
-.dcard.acc-on{box-shadow:inset 0 0 0 1px rgba(76,224,168,.5)}
+.note{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:12px;line-height:1.6;text-align:center}
 
 .err{font-family:var(--mono);font-size:12px;color:var(--pink);padding:14px 0;line-height:1.6}
 .boot{font-family:var(--px);font-size:11px;color:var(--dim);padding:60px 0;text-align:center}
 
 @media (max-width:880px){
-  .lab{grid-template-columns:1fr;gap:14px}
-  .out{order:-1;position:sticky;top:66px;z-index:40;
-    box-shadow:0 12px 24px -12px rgba(7,11,20,.95)}
-  .out .readout{padding:10px 6px 12px;margin-bottom:12px}
-  /* Collapsed by default on mobile: hide the whole breakdown, including its heading,
-     until the toggle is pressed. Only the readout + KPIs stay visible. */
-  .out > h4,
-  .out .why,.out .acc,.out .note{display:none}
-  .out.open > h4,
-  .out.open .why,.out.open .note{display:block}
-  .out.open .acc{display:flex}
-  .whytoggle{display:block;width:100%;margin-top:4px}
+  .deck{min-height:0}
+  .swipe-hint{margin-bottom:10px}
 }
-@media (min-width:881px){ .whytoggle{display:none} }
 @media (prefers-reduced-motion:reduce){
-  *{animation:none!important;transition:none!important}
+  *{animation:none!important}
+  .flip{transition:none}
 }
 </style>
 </head>
@@ -236,57 +238,63 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
   <div id="app" style="display:none">
     <div class="bar" id="struct-pills"></div>
 
-    <div class="lab">
-      <!-- CONTROLS -->
-      <section class="pane" id="ctrl">
-        <h4>Day</h4>
-        <div class="daynav">
-          <button class="arw" id="d-prev" aria-label="Previous day">&#9664;</button>
-          <input type="date" id="d-date" aria-label="Stay date">
-          <button class="arw" id="d-next" aria-label="Next day">&#9654;</button>
-          <button class="arw" id="d-today" aria-label="Today" title="Today">&#9679;</button>
-        </div>
-        <div class="daymeta" id="d-meta"></div>
-        <div class="strip" id="d-strip"></div>
+    <div class="deck-head">
+      <button class="arw" id="d-prev" aria-label="Previous day">&#9664;</button>
+      <input type="date" id="d-date" aria-label="Stay date">
+      <button class="arw" id="d-next" aria-label="Next day">&#9654;</button>
+      <button class="arw" id="d-today" aria-label="Today" title="Today">&#9679;</button>
+    </div>
+    <div class="swipe-hint" id="swipe-hint">‹ swipe · tap to flip · swipe ›</div>
 
-        <div class="wtot">
-          <h4 style="margin:0">Factor weights</h4>
-          <span class="sum" id="wsum">100 / 100</span>
-        </div>
-        <div id="facs"></div>
-        <div class="wactions">
-          <button class="kbtn amber sm" id="w-day">Apply to this day</button>
-          <button class="kbtn alt sm" id="w-week">Apply to 7 days</button>
-          <button class="kbtn alt sm" id="w-clear">Use property default</button>
-          <button class="kbtn alt sm" id="w-default">Set as property default</button>
-        </div>
-        <div class="wactions">
-          <span class="dirty" id="w-dirty"></span>
-        </div>
-      </section>
+    <div class="deck" id="deck">
+      <div class="ghost prev" id="ghost-prev"></div>
+      <div class="ghost next" id="ghost-next"></div>
 
-      <!-- OUTPUT -->
-      <section class="pane out" id="out">
-        <div class="readout">
-          <div class="lbl">Recommended rate</div>
-          <div class="rate" id="rate">—</div>
-          <div class="delta flat" id="delta">—</div>
-          <div class="kpis" id="kpis"></div>
-          <button class="kbtn alt sm whytoggle" id="whytoggle" aria-expanded="false">Why this rate ▾</button>
-        </div>
-        <h4>Why this rate</h4>
-        <ul class="why" id="why"></ul>
-        <div class="acc" id="acc-box">
-          <button class="kbtn" id="accept">✓ Accept this rate</button>
-          <div class="ovr">
-            <span class="ovr-lbl">🖋</span>
-            <input type="number" id="ovr-price" min="0" step="1" inputmode="numeric" placeholder="own price" aria-label="Manual price for this day">
-            <button class="kbtn amber sm" id="ovr-set">Set</button>
+      <div class="flip" id="flip">
+        <!-- ============ FRONT: price + KPIs ============ -->
+        <div class="face front" id="face-front">
+          <div class="fday" id="f-day"></div>
+          <div class="readout">
+            <div class="lbl">Recommended rate</div>
+            <div class="rate" id="rate">—</div>
+            <div class="delta flat" id="delta">—</div>
           </div>
-          <button class="kbtn alt sm" id="unaccept">Clear decision</button>
+          <div class="kpis" id="kpis"></div>
+          <div class="acc" id="acc-box">
+            <button class="kbtn" id="accept">✓ Accept</button>
+            <div class="ovr">
+              <span class="ovr-lbl">🖋</span>
+              <input type="number" id="ovr-price" min="0" step="1" inputmode="numeric" placeholder="own price" aria-label="Manual price for this day">
+              <button class="kbtn amber sm" id="ovr-set">Set</button>
+            </div>
+            <button class="kbtn alt sm" id="unaccept">Clear</button>
+          </div>
+          <p class="note" id="note"></p>
+          <button class="flip-btn" id="to-weights" type="button">Adjust weights ⟳</button>
         </div>
-        <p class="note" id="note"></p>
-      </section>
+
+        <!-- ============ BACK: weights ============ -->
+        <div class="face back" id="face-back">
+          <div class="fday" id="b-day"></div>
+          <div class="wtot">
+            <h4 style="margin:0">Factor weights</h4>
+            <span class="sum" id="wsum">100 / 100</span>
+          </div>
+          <div id="facs"></div>
+          <div class="wactions">
+            <button class="kbtn amber sm" id="w-day">Apply to this day</button>
+            <button class="kbtn alt sm" id="w-week">Apply to 7 days</button>
+            <button class="kbtn alt sm" id="w-clear">Property default</button>
+            <button class="kbtn alt sm" id="w-default">Set as default</button>
+          </div>
+          <span class="dirty" id="w-dirty"></span>
+          <div class="why-wrap">
+            <h4 class="why-h">Why this rate</h4>
+            <ul class="why" id="why"></ul>
+          </div>
+          <button class="flip-btn" id="to-front" type="button">⟳ Back to price</button>
+        </div>
+      </div>
     </div>
   </div>
 </main>
@@ -460,8 +468,19 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       curRn: dd.curRn || 0,
       rooms: dd.cap || 0,
       stats: dayStats(sel, ymd),
-      rank: dayRank(sel, ymd, m, baseRT)
+      rank: dayRank(sel, ymd, m, baseRT),
+      pickup: dayPickup(sel, ymd)
     };
+  }
+
+  /* Room-nights booked in the last 7 days for this stay date, vs the same
+     window one year ago. Straight from the engine helper. */
+  function dayPickup(sel, ymd){
+    try {
+      if (typeof pickup7dForStay !== 'function') return null;
+      var p = pickup7dForStay(sel, ymd);
+      return { cur: p.cur, stly: p.stly };
+    } catch(e){ return null; }
   }
 
   /* OTB occupancy/ADR and the same-day-last-year figures, straight from the
@@ -583,7 +602,6 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
         normalize(r.dataset.k);
         paintWeights();
         renderOutput();
-        renderStrip();
       });
     });
     paintWeights();
@@ -611,51 +629,27 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     document.getElementById('w-default').disabled = false;
   }
 
-  function renderMeta(){
-    var d = ymdToDate(S.ymd);
-    var day = S.day;
-    var bits = [];
-    bits.push('<span><b>'+DOW[d.getDay()]+'</b> '+String(S.ymd).slice(6,8)+'/'+String(S.ymd).slice(4,6)+'</span>');
+  function dayHeaderHTML(ymd, day){
+    var d = ymdToDate(ymd);
+    var main = DOW[d.getDay()] + ' ' + String(ymd).slice(6,8) + '/' + String(ymd).slice(4,6) + '/' + String(ymd).slice(0,4);
+    var sub = '';
     if (day){
-      bits.push('<span>OTB <b>'+day.curRn+'/'+day.rooms+'</b> ('+Math.round(day.occ*100)+'%)</span>');
-      bits.push('<span>Base <b>'+eur(day.effBase)+'</b></span>');
-      bits.push('<span>Last update <b>'+eur(day.lastUpdate)+'</b></span>');
-      if (day.eventName) bits.push('<span class="evt">★ '+escapeHtml(day.eventName)+'</span>');
+      sub = 'OTB ' + day.curRn + '/' + day.rooms + ' · Base ' + eur(day.effBase) + ' · Last update ' + eur(day.lastUpdate);
+      if (day.eventName) sub += '</small><small class="evt">★ ' + escapeHtml(day.eventName);
     }
-    document.getElementById('d-meta').innerHTML = bits.join('');
-    document.getElementById('d-date').value = ymdToIso(S.ymd);
+    return main + (sub ? '<small>' + sub + '</small>' : '');
   }
-
-  function renderStrip(){
-    var el = document.getElementById('d-strip');
-    var start = todayYmd();
-    var from = (S.ymd < start) ? start : S.ymd;
-    var html = '';
-    for (var i=0; i<7; i++){
-      var y = addDaysYmd(from, i);
-      var dd = dayData(S.struct, y);
-      // the selected day previews the sandbox weights; the others use their own stored ones
-      var wUse = (y === S.ymd) ? S.w : effectiveWeightsPct(S.struct, y);
-      var p = (dd && dd.effBase != null) ? compute(dd, wUse) : null;
-      var d = ymdToDate(y);
-      var delta = (p && dd.lastUpdate != null) ? (p.price - dd.lastUpdate) : null;
-      var dcol = (delta == null || Math.abs(delta) < 0.5) ? 'flat' : (delta > 0 ? 'up' : 'down');
-      var cust = (typeof hasDayWeights === 'function') && hasDayWeights(S.struct, y);
-      var decided = dd && dd.source && dd.source !== 'base';
-      var mark = (dd && dd.source === 'override') ? '🖋' : ((dd && dd.source === 'accepted') ? '✓' : '');
-      html += '<button class="dcard'+(y===S.ymd?' on':'')+(decided?' acc-on':'')+'" data-y="'+y+'" '+
-        'title="'+(cust ? 'Custom weights' : 'Property default weights')+
-        (decided ? ' · ' + (dd.source === 'override' ? 'manual price' : 'accepted rate') : '')+'">'+
-        '<div class="dw">'+DOW[d.getDay()]+(cust ? ' <span style="color:var(--amber)">★</span>' : '')+'</div>'+
-        '<div class="dd">'+String(y).slice(6,8)+'/'+String(y).slice(4,6)+'</div>'+
-        '<div class="dp">'+(p ? eur(p.price) : '—')+'</div>'+
-        '<div class="dv '+dcol+'">'+(mark ? mark+' ' : '')+(delta == null ? '' : (Math.abs(delta) < 0.5 ? '=' : eur1(delta)))+'</div>'+
-      '</button>';
-    }
-    el.innerHTML = html;
-    el.querySelectorAll('button[data-y]').forEach(function(b){
-      b.addEventListener('click', function(){ setDay(+b.dataset.y); });
-    });
+  function renderMeta(){
+    document.getElementById('d-date').value = ymdToIso(S.ymd);
+    var h = dayHeaderHTML(S.ymd, S.day);
+    document.getElementById('f-day').innerHTML = h;
+    document.getElementById('b-day').innerHTML = h;
+  }
+  /* Faint edges of the previous / next day cards, so it reads as a swipeable deck. */
+  function renderGhosts(){
+    var min = todayYmd(), max = addDaysYmd(min, 364);
+    document.getElementById('ghost-prev').style.visibility = (S.ymd > min) ? 'visible' : 'hidden';
+    document.getElementById('ghost-next').style.visibility = (S.ymd < max) ? 'visible' : 'hidden';
   }
 
   function pctPts(cur, ly){
@@ -688,11 +682,19 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
         '<div class="kd">' + vsTag(pctChg(st.curAdr, st.stlyAdr), 'pct') + '</div></div>');
     }
 
-    // Price now vs last year (Last update vs STLY reference price)
-    var lyRef = st && st.stlyAdr != null ? st.stlyAdr : null;
-    cells.push('<div class="kpi"><div class="kl">Recommended vs LY price</div>' +
-      '<div class="kv">' + eur(S.lastRate) + '</div>' +
-      '<div class="kd">' + vsTag(pctChg(S.lastRate, lyRef), 'pct') + '</div></div>');
+    // Pickup last 7 days for this stay date, vs the same 7-day booking window last year
+    var pk = day.pickup;
+    if (pk){
+      var pkDiff = pk.cur - pk.stly;
+      var pkCls = pkDiff > 0 ? 'up' : (pkDiff < 0 ? 'down' : 'flat');
+      var pkTag = '<span class="' + pkCls + '">' + (pkDiff >= 0 ? '+' : '−') + Math.abs(pkDiff) + ' rn vs LY</span>';
+      cells.push('<div class="kpi"><div class="kl">Pickup · last 7 days</div>' +
+        '<div class="kv">' + pk.cur + ' <small style="opacity:.55;font-size:9px">rn</small></div>' +
+        '<div class="kd">LY ' + pk.stly + ' · ' + pkTag + '</div></div>');
+    } else {
+      cells.push('<div class="kpi"><div class="kl">Pickup · last 7 days</div>' +
+        '<div class="kv" style="font-size:10px;color:var(--dim)">—</div></div>');
+    }
 
     // Competitor position
     if (rk){
@@ -724,7 +726,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       document.getElementById('kpis').innerHTML = '';
       deltaEl.className = 'delta flat';
       deltaEl.textContent = 'No Base Price for this day';
-      whyEl.innerHTML = '<li class="muted"><span>The engine has no price for this date. Pick a day inside the next 365 days.</span><b></b></li>';
+      if (whyEl) whyEl.innerHTML = '<li class="muted"><span>No price for this date.</span><b></b></li>';
       noteEl.textContent = '';
       document.getElementById('accept').disabled = true;
       document.getElementById('unaccept').disabled = true;
@@ -780,7 +782,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       h += '</li>';
     });
     h += '<li class="tot"><span>Recommended rate</span><b>'+eur(r.price)+'</b></li>';
-    whyEl.innerHTML = h;
+    if (whyEl) whyEl.innerHTML = h;
 
     var notes = [];
     notes.push('Composite ×'+r.composite.toFixed(3)+(r.hitCap ? ' (capped at ±'+Math.round(day.cap*100)+'%)' : ''));
@@ -811,28 +813,114 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     S.day = dayData(S.struct, S.ymd);
     S.saved = effectiveWeightsPct(S.struct, S.ymd);   // weights stored for THIS day
     S.w = Object.assign({}, S.saved);                 // sandbox starts from them
+    // always land on the price face when the day changes
+    document.getElementById('flip').classList.remove('flipped');
     renderMeta();
+    renderGhosts();
     renderFactors();
-    renderStrip();
     renderOutput();
   }
-  function setDay(ymd){
+  function setDay(ymd, dir){
     var min = todayYmd(), max = addDaysYmd(min, 364);
     if (ymd < min) ymd = min;
     if (ymd > max) ymd = max;
+    if (ymd === S.ymd){ animateSnapBack(); return; }
     S.ymd = ymd;
-    renderAll();
+    if (dir){
+      // fly the current card out, then bring the new one in from the opposite side
+      var flip = document.getElementById('flip');
+      flip.classList.remove('dragging');
+      flip.classList.add(dir < 0 ? 'fly-left' : 'fly-right');
+      setTimeout(function(){
+        flip.style.transform = '';
+        flip.classList.remove('fly-left','fly-right');
+        var inFrom = dir < 0 ? 120 : -120;
+        flip.style.transition = 'none';
+        flip.style.transform = 'translateX(' + inFrom + '%)';
+        renderAll();
+        void flip.offsetWidth;
+        flip.style.transition = '';
+        flip.style.transform = '';
+      }, 240);
+    } else {
+      renderAll();
+    }
+  }
+  function animateSnapBack(){
+    var flip = document.getElementById('flip');
+    flip.classList.remove('dragging');
+    flip.style.transform = flip.classList.contains('flipped') ? 'rotateY(180deg)' : '';
+  }
+
+  /* ---------- swipe (Tinder-style) ---------- */
+  function wireSwipe(){
+    var flip = document.getElementById('flip');
+    var x0 = null, y0 = null, dx = 0, dragging = false, decided = false;
+    function start(x, y){ x0 = x; y0 = y; dx = 0; dragging = true; decided = false; }
+    function move(x, y){
+      if (!dragging) return false;
+      var ax = x - x0, ay = y - y0;
+      if (!decided){
+        if (Math.abs(ax) < 8 && Math.abs(ay) < 8) return false;
+        decided = true;
+        if (Math.abs(ay) > Math.abs(ax)){ dragging = false; return false; } // vertical → let it scroll
+        flip.classList.add('dragging');
+      }
+      dx = ax;
+      var flipped = flip.classList.contains('flipped');
+      flip.style.transform = (flipped ? 'rotateY(180deg) ' : '') + 'translateX(' + dx + 'px) rotate(' + (dx*0.02) + 'deg)';
+      return true;
+    }
+    function end(){
+      if (!dragging){ return; }
+      dragging = false;
+      flip.classList.remove('dragging');
+      var min = todayYmd(), max = addDaysYmd(min, 364);
+      if (dx <= -60 && S.ymd < max){ hideHint(); setDay(addDaysYmd(S.ymd, 1), +1); }
+      else if (dx >= 60 && S.ymd > min){ hideHint(); setDay(addDaysYmd(S.ymd, -1), -1); }
+      else { animateSnapBack(); }
+      dx = 0;
+    }
+    flip.addEventListener('touchstart', function(e){ start(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+    flip.addEventListener('touchmove', function(e){ if (move(e.touches[0].clientX, e.touches[0].clientY)) e.preventDefault(); }, {passive:false});
+    flip.addEventListener('touchend', end);
+    // mouse (desktop) drag
+    flip.addEventListener('mousedown', function(e){ if (e.target.closest('input,button,.acc')) return; start(e.clientX, e.clientY);
+      var mm = function(ev){ move(ev.clientX, ev.clientY); }, mu = function(){ end(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
+      document.addEventListener('mousemove', mm); document.addEventListener('mouseup', mu);
+    });
+  }
+
+  function doFlip(toBack){
+    var flip = document.getElementById('flip');
+    flip.style.transform = '';
+    flip.classList.toggle('flipped', toBack);
+  }
+  var _hintGone = false;
+  function hideHint(){
+    if (_hintGone) return; _hintGone = true;
+    var el = document.getElementById('swipe-hint');
+    if (el){ el.style.transition = 'opacity .4s'; el.style.opacity = '0'; setTimeout(function(){ el.style.display = 'none'; }, 400); }
   }
 
   /* ---------- actions ---------- */
   function wireActions(){
-    document.getElementById('d-prev').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, -1)); });
-    document.getElementById('d-next').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, 1)); });
+    document.getElementById('d-prev').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, -1), -1); });
+    document.getElementById('d-next').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, 1), +1); });
     document.getElementById('d-today').addEventListener('click', function(){ setDay(todayYmd()); });
     document.getElementById('d-date').addEventListener('change', function(e){
       var v = isoToYmd(e.target.value);
       if (isFinite(v)) setDay(v); else renderMeta();
     });
+
+    // flip: tap the front card, or use the labelled buttons
+    document.getElementById('face-front').addEventListener('click', function(e){
+      if (e.target.closest('input,button,.acc,.ovr')) return;
+      doFlip(true);
+    });
+    document.getElementById('to-weights').addEventListener('click', function(e){ e.stopPropagation(); doFlip(true); });
+    document.getElementById('to-front').addEventListener('click', function(){ doFlip(false); });
+    wireSwipe();
 
     document.getElementById('w-day').addEventListener('click', function(){
       setDayWeights(S.struct, S.ymd, fractions(S.w));
@@ -867,7 +955,8 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       renderAll();
     });
 
-    document.getElementById('accept').addEventListener('click', function(){
+    document.getElementById('accept').addEventListener('click', function(e){
+      e.stopPropagation();
       if (!S.day || S.day.effBase == null) return;
       var r = compute(S.day, S.w);
       var price = Math.round(r.price);
@@ -877,7 +966,8 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       renderAll();
     });
 
-    document.getElementById('ovr-set').addEventListener('click', function(){
+    document.getElementById('ovr-set').addEventListener('click', function(e){
+      e.stopPropagation();
       if (!S.day || S.day.effBase == null) return;
       var v = parseFloat(document.getElementById('ovr-price').value);
       if (!isFinite(v) || v <= 0){ alert('Type the price you want to load for this day.'); return; }
@@ -892,23 +982,16 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     document.getElementById('ovr-price').addEventListener('keydown', function(e){
       if (e.key === 'Enter'){ e.preventDefault(); document.getElementById('ovr-set').click(); }
     });
+    document.getElementById('ovr-price').addEventListener('click', function(e){ e.stopPropagation(); });
 
-    document.getElementById('unaccept').addEventListener('click', function(){
+    document.getElementById('unaccept').addEventListener('click', function(e){
+      e.stopPropagation();
       if (!S.day || S.day.source === 'base') return;
       if (!confirm('Clear the decision for this day and go back to the Base Price?')) return;
       if (S.day.accepted) newrmesSetAccepted(S.struct, S.ymd, null);
       if (S.day.override && typeof fp_setOverride === 'function') fp_setOverride(S.struct, S.day.iso, S.day.baseRT, null);
       invalidate();
       renderAll();
-    });
-
-    var wt = document.getElementById('whytoggle');
-    wt.addEventListener('click', function(){
-      var out = document.getElementById('out');
-      var open = out.classList.toggle('open');
-      document.getElementById('acc-box').classList.toggle('open', open);
-      wt.setAttribute('aria-expanded', open ? 'true' : 'false');
-      wt.textContent = open ? 'Why this rate ▴' : 'Why this rate ▾';
     });
   }
 

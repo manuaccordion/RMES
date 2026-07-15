@@ -4743,6 +4743,48 @@ function ymdToDate(n){
   const y = Math.floor(n/10000), m = Math.floor((n/100)%100), d = n%100;
   return new Date(y, m-1, d);
 }
+
+/* ============================================================
+   PICKUP-7d FOR A STAY DATE (Pricing Console KPI)
+   ============================================================
+   How many room-nights for one stay date were BOOKED in the last 7 days,
+   versus the same 7-day booking window one year ago for the equivalent
+   stay date (today − 364, DoW-aligned).
+     • current: bookings with bookYmd in (TODAY−7, TODAY], staying on `stayYmd`
+     • last year: bookings with bookYmd in (TODAY−364−7, TODAY−364], staying on
+       the stay date shifted back 364 days.
+   Cancelled bookings are excluded; a booking "stays on" a date when
+   dIn <= date < dOut. Returns room-night counts (comparable to OTB).
+   ============================================================ */
+function pickup7dForStay(structKey, stayYmd){
+  const idx = (typeof _BOOKINGS_BY_STRUCT === 'object' && _BOOKINGS_BY_STRUCT)
+    ? (_BOOKINGS_BY_STRUCT[structKey] || null) : null;
+  const rows = idx || BOOKINGS;
+  const stayDate = ymdToDate(stayYmd);
+  const stlyStayYmd = ymd(new Date(stayDate.getFullYear(), stayDate.getMonth(), stayDate.getDate() - 364));
+
+  const winCurFrom = ymd(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - 7));
+  const winCurTo   = TODAY_YMD;
+  const winLyTo    = ymd(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - 364));
+  const winLyFrom  = ymd(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - 364 - 7));
+
+  function count(stayTargetYmd, bkFrom, bkTo){
+    let rn = 0;
+    for (let i = 0; i < rows.length; i++){
+      const b = rows[i];
+      if (idx == null && b.structKey !== structKey) continue;
+      if (b.cancelled) continue;
+      if (b.bookYmd <= bkFrom || b.bookYmd > bkTo) continue;
+      const dInY  = ymd(b.dIn);
+      const dOutY = ymd(b.dOut);
+      if (dInY <= stayTargetYmd && stayTargetYmd < dOutY) rn++;
+    }
+    return rn;
+  }
+  const cur  = count(stayYmd,     winCurFrom, winCurTo);
+  const stly = count(stlyStayYmd, winLyFrom,  winLyTo);
+  return { cur, stly, stlyStayYmd };
+}
 /* Cache pace aggregato strutture (calcolato 1 volta, riusato da computeRMESPriceMap di
    ogni struttura come fallback intermedio quando il pace month-specific di struttura non c'è).
    Le strutture sono nella stessa area (Firenze centro) e fascia qualità/price simile,
