@@ -35,12 +35,19 @@ if ('serviceWorker' in navigator) {
 html,body{min-height:100%}
 body{
   background:var(--void); color:var(--txt); font-family:var(--body);
-  -webkit-font-smoothing:antialiased; overflow-x:hidden; padding-bottom:40px;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden; padding-bottom:76px;
   background-image:
     radial-gradient(1200px 700px at 50% -10%, rgba(53,208,255,.10), transparent 60%),
     linear-gradient(transparent 0 2px, rgba(0,0,0,.16) 2px 4px);
   background-size:auto, 100% 4px;
 }
+.botbar{position:fixed;left:0;right:0;bottom:0;z-index:70;display:flex;justify-content:center;gap:10px;
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:rgba(7,11,20,.94);backdrop-filter:blur(8px);border-top:2px solid var(--grid)}
+.botlink{flex:1;max-width:420px;text-align:center;text-decoration:none;
+  font-family:var(--px);font-size:11px;letter-spacing:.02em;color:var(--void);background:var(--neon);
+  border-radius:4px;padding:15px 12px;box-shadow:0 4px 0 #12688F;transition:transform .06s, box-shadow .06s}
+.botlink:active{transform:translateY(3px);box-shadow:0 1px 0 #12688F}
 /* CRT overlays */
 .crt{position:fixed;inset:0;pointer-events:none;z-index:90}
 .crt::before{content:"";position:absolute;inset:0;
@@ -96,20 +103,33 @@ body{
 /* weights */
 .wtot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 14px}
 .wtot span.sum{font-family:var(--px);font-size:10px;color:var(--void);background:var(--amber);padding:6px 9px;border-radius:2px}
-.fac{margin-bottom:14px}
+.fac{margin-bottom:20px}
 .fac .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .fac .nm{font-family:var(--mono);font-size:12.5px;color:var(--txt);letter-spacing:.02em}
-.fac .wv{font-family:var(--px);font-size:10px;color:var(--amber)}
+.fac .wv{font-family:var(--px);font-size:13px;color:var(--amber);min-width:34px;text-align:right}
 .fac .ds{font-size:12px;color:var(--dim);margin:2px 0 4px;line-height:1.45}
 .fac .sig{font-family:var(--mono);font-size:11px;margin:0 0 4px}
 .fac.na .nm,.fac.na .ds{opacity:.5}
 .fac.na .wv{color:var(--dim)}
-input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:pointer;touch-action:none}
-input[type=range]::-webkit-slider-runnable-track{height:10px;background:#0A1524;border:1px solid var(--grid);border-radius:2px}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-7px;
-  background:var(--amber);border:2px solid #7A5A18;border-radius:3px;box-shadow:0 0 12px rgba(255,197,66,.6)}
-input[type=range]::-moz-range-track{height:10px;background:#0A1524;border:1px solid var(--grid);border-radius:2px}
-input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--amber);border:2px solid #7A5A18;border-radius:3px}
+/* DJ-style faders: tall track, big grooved handle, easy to grab with a thumb. */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:52px;background:transparent;cursor:pointer;touch-action:none}
+input[type=range]::-webkit-slider-runnable-track{height:16px;background:#0A1524;border:1px solid var(--grid);border-radius:8px;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.55)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:44px;margin-top:-14px;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.34) 0 1px, transparent 1px 4px) center/22px 22px no-repeat,
+    linear-gradient(180deg,#FFD873 0%,var(--amber) 46%,#E5A81E 54%,#B9791A 100%);
+  border:1px solid #7A5A18;border-radius:7px;
+  box-shadow:0 3px 6px rgba(0,0,0,.5), 0 0 14px rgba(255,197,66,.55), inset 0 0 0 2px rgba(0,0,0,.28);cursor:grab}
+input[type=range]:active::-webkit-slider-thumb{cursor:grabbing;filter:brightness(1.08)}
+input[type=range]::-moz-range-track{height:16px;background:#0A1524;border:1px solid var(--grid);border-radius:8px;
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.55)}
+input[type=range]::-moz-range-thumb{width:34px;height:44px;
+  background:
+    repeating-linear-gradient(180deg, rgba(0,0,0,.34) 0 1px, transparent 1px 4px) center/22px 22px no-repeat,
+    linear-gradient(180deg,#FFD873 0%,var(--amber) 46%,#E5A81E 54%,#B9791A 100%);
+  border:1px solid #7A5A18;border-radius:7px;
+  box-shadow:0 3px 6px rgba(0,0,0,.5), 0 0 14px rgba(255,197,66,.55), inset 0 0 0 2px rgba(0,0,0,.28)}
 .wactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
 .dirty{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
 
@@ -122,6 +142,16 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
 .readout .rate.bump{animation:bump .35s ease}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
 .readout .delta{font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0 4px;text-align:left}
+.kpi{background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:9px 10px}
+.kpi .kl{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.kpi .kv{font-family:var(--px);font-size:12px;color:var(--txt);margin:5px 0 2px;line-height:1.35}
+.kpi .kd{font-family:var(--mono);font-size:11px}
+.kpi.wide{grid-column:1/-1}
+.kpi .rankbar{display:flex;gap:2px;margin-top:5px}
+.kpi .rankbar i{flex:1;height:6px;border-radius:1px;background:var(--grid)}
+.kpi .rankbar i.lo{background:var(--green)}
+.kpi .rankbar i.me{background:var(--neon);box-shadow:0 0 8px rgba(53,208,255,.7)}
 .up{color:var(--green)}.down{color:var(--pink)}.flat{color:var(--dim)}
 
 /* why */
@@ -162,9 +192,13 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
   .out{order:-1;position:sticky;top:66px;z-index:40;
     box-shadow:0 12px 24px -12px rgba(7,11,20,.95)}
   .out .readout{padding:10px 6px 12px;margin-bottom:12px}
+  /* Collapsed by default on mobile: hide the whole breakdown, including its heading,
+     until the toggle is pressed. Only the readout + KPIs stay visible. */
+  .out > h4,
   .out .why,.out .acc,.out .note{display:none}
-  .out.open .why,.out.open .acc,.out.open .note{display:block}
-  .out .acc.open{display:flex}
+  .out.open > h4,
+  .out.open .why,.out.open .note{display:block}
+  .out.open .acc{display:flex}
   .whytoggle{display:block;width:100%;margin-top:4px}
 }
 @media (min-width:881px){ .whytoggle{display:none} }
@@ -181,7 +215,6 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
     <a class="logo" id="home-link" href="index.html">RMES <b>//</b> PRICING<br><b>CONSOLE</b></a>
     <div class="hud-right">
       <span class="cloud" id="rmes-cloud-status">⚠ local only</span>
-      <a class="kbtn alt sm" id="back-link" href="index.html">Dashboard</a>
     </div>
   </div>
 </header>
@@ -191,9 +224,9 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
   var mob = window.matchMedia('(max-width: 880px)').matches;
   var target = mob ? 'app.html' : 'index.html';
   var back = document.getElementById('back-link');
-  back.href = target;
-  back.textContent = mob ? 'RMES Mobile' : 'Dashboard';
-  document.getElementById('home-link').href = target;
+  if (back){ back.href = target; back.textContent = (mob ? '◂ RMES Mobile' : '◂ Dashboard'); }
+  var home = document.getElementById('home-link');
+  if (home) home.href = target;
 })();
 </script>
 
@@ -238,6 +271,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
           <div class="lbl">Recommended rate</div>
           <div class="rate" id="rate">—</div>
           <div class="delta flat" id="delta">—</div>
+          <div class="kpis" id="kpis"></div>
           <button class="kbtn alt sm whytoggle" id="whytoggle" aria-expanded="false">Why this rate ▾</button>
         </div>
         <h4>Why this rate</h4>
@@ -256,6 +290,10 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
     </div>
   </div>
 </main>
+
+<nav class="botbar" id="botbar">
+  <a class="botlink" id="back-link" href="index.html">◂ Dashboard</a>
+</nav>
 
 <script src="data.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -420,8 +458,47 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
       cap: (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.30,
       occ: (dd.curOcc != null) ? dd.curOcc : 0,
       curRn: dd.curRn || 0,
-      rooms: dd.cap || 0
+      rooms: dd.cap || 0,
+      stats: dayStats(sel, ymd),
+      rank: dayRank(sel, ymd, m, baseRT)
     };
+  }
+
+  /* OTB occupancy/ADR and the same-day-last-year figures, straight from the
+     Sell Strategy aggregator (so they match the dashboard row for row). */
+  function dayStats(sel, ymd){
+    try {
+      var A = aggSellStrategy(sel, ymd, 1, 0);
+      if (A && A.rows && A.rows.length){
+        var r = A.rows.find(function(x){ return x.ymd === ymd; }) || A.rows[0];
+        return {
+          curOcc:  isFinite(r.curOcc)  ? r.curOcc  : null,
+          stlyOcc: isFinite(r.stlyOcc) ? r.stlyOcc : null,
+          curAdr:  (isFinite(r.curAdr)  && r.curRn  > 0) ? r.curAdr  : null,
+          stlyAdr: (isFinite(r.stlyAdr) && r.stlyRn > 0) ? r.stlyAdr : null,
+          curRn:   r.curRn || 0, stlyRn: r.stlyRn || 0, cap: r.cap || 0
+        };
+      }
+    } catch(e){}
+    return null;
+  }
+  /* Where the suggested price sits among the competitors, in Expedia space.
+     Reuses the dashboard's own rank helper so the number is identical. */
+  function dayRank(sel, ymd, m, baseRT){
+    try {
+      if (typeof _sellCompRank !== 'function') return null;
+      var sugg = (m && m.rmesSugg != null) ? m.rmesSugg : null;
+      var map = priceMap(sel), dd = map[ymd];
+      var suggBase = (dd && dd.rmesSuggestedByRT && dd.rmesSuggestedByRT[baseRT] != null)
+        ? dd.rmesSuggestedByRT[baseRT] : (dd ? dd.price : null);
+      if (suggBase == null) return null;
+      var div = (typeof fp_expToBeddyDivisor === 'function') ? fp_expToBeddyDivisor(sel) : 1;
+      var myExp = suggBase * (div || 1);
+      var iso = ymdToIso(ymd);
+      var rk = _sellCompRank(sel, iso, myExp);
+      if (!rk) return null;
+      return { rank: rk.rank, total: rk.total, myExp: myExp };
+    } catch(e){ return null; }
   }
 
   /* The RMES formula, recomposed with the sandbox weights.
@@ -581,6 +658,60 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
     });
   }
 
+  function pctPts(cur, ly){
+    if (cur == null || ly == null) return null;
+    return Math.round(cur*100) - Math.round(ly*100);   // occupancy: difference in points
+  }
+  function pctChg(cur, ly){
+    if (cur == null || ly == null || ly === 0) return null;
+    return (cur - ly) / ly * 100;                        // ADR: percent change
+  }
+  function vsTag(v, unit){
+    if (v == null) return '<span class="flat">no LY</span>';
+    var cls = v > 0.5 ? 'up' : (v < -0.5 ? 'down' : 'flat');
+    var s = (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(unit === 'pt' ? 0 : 1) + (unit === 'pt' ? ' pt' : '%');
+    return '<span class="' + cls + '">' + s + ' vs LY</span>';
+  }
+  function renderKpis(day){
+    var el = document.getElementById('kpis');
+    var st = day.stats, rk = day.rank;
+    var cells = [];
+
+    // Occupancy now vs same day last year
+    if (st){
+      cells.push('<div class="kpi"><div class="kl">Occupancy</div>' +
+        '<div class="kv">' + Math.round(st.curOcc*100) + '% <small style="opacity:.6;font-size:9px">' + st.curRn + '/' + st.cap + '</small></div>' +
+        '<div class="kd">' + vsTag(pctPts(st.curOcc, st.stlyOcc), 'pt') + '</div></div>');
+      // ADR now vs last year
+      cells.push('<div class="kpi"><div class="kl">ADR on books</div>' +
+        '<div class="kv">' + (st.curAdr != null ? eur(st.curAdr) : '—') + '</div>' +
+        '<div class="kd">' + vsTag(pctChg(st.curAdr, st.stlyAdr), 'pct') + '</div></div>');
+    }
+
+    // Price now vs last year (Last update vs STLY reference price)
+    var lyRef = st && st.stlyAdr != null ? st.stlyAdr : null;
+    cells.push('<div class="kpi"><div class="kl">Recommended vs LY price</div>' +
+      '<div class="kv">' + eur(S.lastRate) + '</div>' +
+      '<div class="kd">' + vsTag(pctChg(S.lastRate, lyRef), 'pct') + '</div></div>');
+
+    // Competitor position
+    if (rk){
+      var bars = '';
+      for (var i = 1; i <= rk.total; i++){
+        var c = (i === rk.rank) ? 'me' : (i < rk.rank ? 'lo' : '');
+        bars += '<i class="' + c + '"></i>';
+      }
+      cells.push('<div class="kpi"><div class="kl">Price position</div>' +
+        '<div class="kv">#' + rk.rank + ' <small style="opacity:.6;font-size:9px">of ' + rk.total + '</small></div>' +
+        '<div class="rankbar">' + bars + '</div></div>');
+    } else {
+      cells.push('<div class="kpi"><div class="kl">Price position</div>' +
+        '<div class="kv" style="font-size:10px;color:var(--dim)">no compset</div></div>');
+    }
+
+    el.innerHTML = cells.join('');
+  }
+
   function renderOutput(){
     var rateEl = document.getElementById('rate');
     var deltaEl = document.getElementById('delta');
@@ -590,6 +721,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
 
     if (!day || day.effBase == null){
       rateEl.textContent = '—';
+      document.getElementById('kpis').innerHTML = '';
       deltaEl.className = 'delta flat';
       deltaEl.textContent = 'No Base Price for this day';
       whyEl.innerHTML = '<li class="muted"><span>The engine has no price for this date. Pick a day inside the next 365 days.</span><b></b></li>';
@@ -607,6 +739,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;background:var(--ambe
       rateEl.classList.remove('bump'); void rateEl.offsetWidth; rateEl.classList.add('bump');
     }
     S.lastRate = r.price;
+
+    renderKpis(day);
 
     var diff = (day.lastUpdate != null) ? (r.price - day.lastUpdate) : 0;
     deltaEl.className = 'delta ' + (diff > 0.5 ? 'up' : (diff < -0.5 ? 'down' : 'flat'));
