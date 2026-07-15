@@ -116,6 +116,12 @@ body{
 .fday{text-align:center;font-family:var(--px);font-size:12px;color:var(--amber);margin-bottom:8px;letter-spacing:.02em}
 .fday small{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.04em;text-transform:none}
 .fday .evt{color:var(--pink)}
+.wprice{position:sticky;top:0;z-index:5;display:flex;align-items:baseline;justify-content:center;gap:12px;
+  background:linear-gradient(180deg,var(--panel) 70%,rgba(17,28,46,.0));
+  padding:6px 0 12px;margin:0 0 6px}
+.wp-rate{font-family:var(--px);font-size:22px;color:var(--neon);text-shadow:0 0 18px rgba(53,208,255,.5)}
+.wp-rate.bump{animation:bump .3s ease}
+.wp-delta{font-family:var(--mono);font-size:12px;letter-spacing:.03em}
 
 .flip-btn{width:100%;margin-top:16px;font-family:var(--px);font-size:9px;letter-spacing:.02em;cursor:pointer;
   color:var(--neon);background:transparent;border:2px solid var(--grid);border-radius:4px;padding:13px;transition:.15s}
@@ -276,6 +282,10 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
         <!-- ============ BACK: weights ============ -->
         <div class="face back" id="face-back">
           <div class="fday" id="b-day"></div>
+          <div class="wprice" id="wprice">
+            <span class="wp-rate" id="wp-rate">—</span>
+            <span class="wp-delta flat" id="wp-delta"></span>
+          </div>
           <div class="wtot">
             <h4 style="margin:0">Factor weights</h4>
             <span class="sum" id="wsum">100 / 100</span>
@@ -724,6 +734,8 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     if (!day || day.effBase == null){
       rateEl.textContent = '—';
       document.getElementById('kpis').innerHTML = '';
+      var wr = document.getElementById('wp-rate'), wd = document.getElementById('wp-delta');
+      if (wr) wr.textContent = '—'; if (wd) wd.textContent = '';
       deltaEl.className = 'delta flat';
       deltaEl.textContent = 'No Base Price for this day';
       if (whyEl) whyEl.innerHTML = '<li class="muted"><span>No price for this date.</span><b></b></li>';
@@ -737,8 +749,11 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
 
     var r = compute(day, S.w);
     rateEl.textContent = eur(r.price);
+    var wpRate = document.getElementById('wp-rate');
+    if (wpRate) wpRate.textContent = eur(r.price);
     if (S.lastRate != null && Math.round(S.lastRate) !== Math.round(r.price)){
       rateEl.classList.remove('bump'); void rateEl.offsetWidth; rateEl.classList.add('bump');
+      if (wpRate){ wpRate.classList.remove('bump'); void wpRate.offsetWidth; wpRate.classList.add('bump'); }
     }
     S.lastRate = r.price;
 
@@ -748,6 +763,11 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     deltaEl.className = 'delta ' + (diff > 0.5 ? 'up' : (diff < -0.5 ? 'down' : 'flat'));
     deltaEl.textContent = 'Last update: ' + eur(day.lastUpdate) + '  →  ' + eur1(diff) +
       (day.lastUpdate ? '  (' + (diff>=0?'+':'') + (diff/day.lastUpdate*100).toFixed(1) + '%)' : '');
+    var wpDelta = document.getElementById('wp-delta');
+    if (wpDelta){
+      wpDelta.className = 'wp-delta ' + (diff > 0.5 ? 'up' : (diff < -0.5 ? 'down' : 'flat'));
+      wpDelta.textContent = (day.lastUpdate != null) ? (eur1(diff)) : '';
+    }
 
     // Why this rate
     var rows = [];
@@ -856,7 +876,12 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
   function wireSwipe(){
     var flip = document.getElementById('flip');
     var x0 = null, y0 = null, dx = 0, dragging = false, decided = false;
-    function start(x, y){ x0 = x; y0 = y; dx = 0; dragging = true; decided = false; }
+    function start(x, y){
+      // Swipe changes the day ONLY on the price face. On the weights face,
+      // dragging must stay inside the sliders and never move the card.
+      if (document.getElementById('flip').classList.contains('flipped')) { dragging = false; return; }
+      x0 = x; y0 = y; dx = 0; dragging = true; decided = false;
+    }
     function move(x, y){
       if (!dragging) return false;
       var ax = x - x0, ay = y - y0;
@@ -867,8 +892,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
         flip.classList.add('dragging');
       }
       dx = ax;
-      var flipped = flip.classList.contains('flipped');
-      flip.style.transform = (flipped ? 'rotateY(180deg) ' : '') + 'translateX(' + dx + 'px) rotate(' + (dx*0.02) + 'deg)';
+      flip.style.transform = 'translateX(' + dx + 'px) rotate(' + (dx*0.02) + 'deg)';
       return true;
     }
     function end(){
