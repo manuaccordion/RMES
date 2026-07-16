@@ -19613,7 +19613,7 @@ function renderBigPicture(){
   const host = document.getElementById('big-tree');
   if (!host) return;
   const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'firenze';
-  const n = (BIG_PICKUP_DAYS===7) ? 7 : 1;
+  const n = 7;   // Big Picture hero pickup KPI fixed at 7 days vs LY
   const winLbl = (n===7?'7d':'1d');
   const agg = _bigPickupAgg(sel, n);
   const isBoth = (sel === 'both');
@@ -19666,7 +19666,6 @@ function renderBigPicture(){
     </div>`).join('');
   try { _bigRenderBookingCurve(sel); } catch(e){ const c=document.getElementById('big-bcurve'); if(c)c.innerHTML=''; }
   try { _bigRenderPickup4w(sel); } catch(e){ const c=document.getElementById('big-pk4w'); if(c)c.innerHTML=''; }
-  try { _bigRenderChart(sel); } catch(e){ const c=document.getElementById('big-chart'); if(c)c.innerHTML=''; }
   try { _bigRenderPie(sel); } catch(e){ const c=document.getElementById('big-pie'); if(c)c.innerHTML=''; }
   const allDays = _bigPickupByDay(sel, 7);
   let selDay = BIG_SELECTED_DAY;
@@ -19778,7 +19777,7 @@ function _bigRenderPickup4w(sel){
   const data = _bigPickupGapData(sel);
   const N=data.N, cur=data.totCur, stly=data.totStly, curDays=data.curDays;
   const maxV = Math.max(1, cur[N-1]||0, stly[N-1]||0);
-  const W=760, H=210, padL=44, padR=72, padT=12, padB=26;
+  const W=760, H=145, padL=44, padR=72, padT=12, padB=26;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const xAt=i=> padL + (i/(N-1))*plotW;
   const yAt=v=> padT+plotH - (v/maxV)*plotH;
@@ -19802,7 +19801,11 @@ function _bigRenderPickup4w(sel){
     const gp = cur[i]-stly[i];
     svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent" style="cursor:crosshair" onmousemove="_bigPkHover(${i})" onmouseover="_bigPkHover(${i})"><title>${fmtD(curDays[i])} \u00b7 This year: ${cur[i]} RN \u00b7 STLY (LY): ${stly[i]} RN \u00b7 gap ${(gp>=0?'+':'')+gp}</title></rect>`;
   }
-  svg+=`<text x="${padL}" y="${H-8}" text-anchor="start" font-size="9" fill="var(--ink-3)">${fmtD(curDays[0])}</text>`;
+  for (let i=0;i<N;i+=7){
+    const tx=xAt(i);
+    svg+=`<line x1="${tx.toFixed(1)}" y1="${padT}" x2="${tx.toFixed(1)}" y2="${padT+plotH}" stroke="var(--line)" stroke-width="1" opacity=".5"/>`;
+    svg+=`<text x="${tx.toFixed(1)}" y="${H-8}" text-anchor="${i===0?'start':'middle'}" font-size="9" fill="var(--ink-3)">${fmtD(curDays[i])}</text>`;
+  }
   svg+=`<text x="${padL+plotW}" y="${H-8}" text-anchor="end" font-size="9" fill="var(--ink-3)">today</text>`;
   svg+=`</svg>`;
   const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (\u2212364d)</span><span style="color:var(--ink-3)">\u2014 hover the curve to break the gap down below</span></div>`;
@@ -19919,7 +19922,7 @@ function _bigRenderBookingCurve(sel){
   }
   if (yMax <= 0){ host.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:30px">No data</div>'; return; }
   yMax = yMax * 1.05;
-  const W = 760, H = 320;
+  const W = 760, H = 220;
   const padL = 64, padR = 16, padTop = 16, padBot = 40;
   const plotW = W - padL - padR, plotH = H - padTop - padBot;
   const xAt = (doy)=> padL + (doy/365) * plotW;

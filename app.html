@@ -1072,27 +1072,45 @@ function mobRenderBigPicture(){
     html+=mobBigCurveSVG(bc);
     html+='<div class="bp-legend"><span class="bp-li"><i class="ln sea"></i>OTB 2026</span><span class="bp-li"><i class="ln sea-d"></i>Forecast</span><span class="bp-li"><i class="ln gray-d"></i>LY final</span></div>'; }
   catch(e){ html+='<div class="bp-empty">No booking-curve data.</div>'; }
-  html+='<div class="bp-title">Pickup · last 7 days (RN booked / day)</div>';
-  try{ const days=_bigPickupByDay(sel,7); const mx=Math.max(1,...days.map(d=>d.rn));
-    html+='<div class="bp-pkbars">'+days.map(d=>`<div class="bp-pkbar" data-pkday="${d.ymdNum}"><div class="bp-pkv">${d.rn}</div><div class="bp-pktrack"><div class="bp-pkfill" style="height:${Math.round(d.rn/mx*100)}%"></div></div><div class="bp-pklab">${d.label}</div></div>`).join('')+'</div><div class="bp-note">Tap a day for the booking detail</div>'; }
-  catch(e){ html+='<div class="bp-empty">No pickup data.</div>'; }
   html+='<div class="bp-title">Pickup · last 4 weeks vs STLY</div>';
   try {
-    const keys=new Set(structKeysFor(sel)); const today4=new Date(TODAY);today4.setHours(0,0,0,0); const N4=28;
-    const curD=[],stlyD=[]; for(let i=0;i<N4;i++){ const d=new Date(today4.getTime()-(N4-1-i)*86400000); curD.push(ymd(d)); stlyD.push(ymd(new Date(d.getTime()-364*86400000))); }
-    const byY={}; for(const b of BOOKINGS){ if(b.cancelled||!keys.has(b.struct))continue; byY[b.bookYmd]=(byY[b.bookYmd]||0)+(b.notti||0); }
-    const cur=[],stly=[]; let cc=0,sc=0; for(let i=0;i<N4;i++){ cc+=(byY[curD[i]]||0); sc+=(byY[stlyD[i]]||0); cur.push(cc); stly.push(sc); }
+    const gd=_bigPickupGapData(sel);
+    const N4=gd.N, cur=gd.totCur, stly=gd.totStly, curD=gd.curDays;
+    const fmtD=y=>{const s=String(y);return s.slice(6,8)+'/'+s.slice(4,6);};
     const mx=Math.max(1,cur[N4-1]||0,stly[N4-1]||0);
-    const W=340,H=120,pl=8,pr=48,pt=10,pb=8,pw=W-pl-pr,ph=H-pt-pb;
+    const W=340,H=118,pl=8,pr=48,pt=10,pb=18,pw=W-pl-pr,ph=H-pt-pb;
     const xA=i=>pl+(i/(N4-1))*pw, yA=v=>pt+ph-(v/mx)*ph;
     const pth=a=>a.map((v,i)=>`${i?'L':'M'}${xA(i).toFixed(1)} ${yA(v).toFixed(1)}`).join(' ');
     let e1=yA(cur[N4-1]||0), e2=yA(stly[N4-1]||0); if(Math.abs(e1-e2)<11){ if(e1<=e2){e1-=6;e2+=6;}else{e1+=6;e2-=6;} }
-    let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">`;
+    let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+    for(let i=0;i<N4;i+=7){ const tx=xA(i); svg+=`<line x1="${tx.toFixed(1)}" y1="${pt}" x2="${tx.toFixed(1)}" y2="${pt+ph}" stroke="#E1EEF3"/><text x="${tx.toFixed(1)}" y="${H-5}" text-anchor="${i===0?'start':'middle'}" font-size="8" fill="#9aa6ab">${fmtD(curD[i])}</text>`; }
+    svg+=`<text x="${pl+pw}" y="${H-5}" text-anchor="end" font-size="8" fill="#9aa6ab">today</text>`;
     svg+=`<path d="${pth(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="4 3" opacity=".85"/>`;
     svg+=`<path d="${pth(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>`;
     svg+=`<text x="${W-pr+4}" y="${e1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${cur[N4-1]||0} RN</text>`;
     svg+=`<text x="${W-pr+4}" y="${e2+3}" font-size="10" font-weight="700" fill="#7a4d96">${stly[N4-1]||0} LY</text></svg>`;
     html+=`<div style="padding:4px 2px 2px">${svg}</div>`;
+    const idx=N4-1, net=cur[idx]-stly[idx];
+    const rows=gd.months.map(mk=>({mk:+mk, d:gd.curCum[mk][idx]-gd.stlyCum[mk][idx]}));
+    let maxP=0,maxN=0; rows.forEach(r=>{ if(r.d>maxP)maxP=r.d; if(-r.d>maxN)maxN=-r.d; });
+    const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const nc=net>=0?'#3f8f5f':'#c0574f';
+    html+=`<div class="bp-title" style="margin-top:6px">Pickup gap by stay month <span style="font-weight:400;color:var(--muted);font-size:11px">· net <b style="color:${nc}">${net>=0?'+':''}${net} RN</b></span></div>`;
+    if(rows.length && (maxP>0||maxN>0)){
+      const GW=340,GH=134,gpl=6,gpr=6,gpt=14,gpb=22,gpw=GW-gpl-gpr,gph=GH-gpt-gpb;
+      const n=rows.length,span=(maxP+maxN)||1,sc=gph/span,z=gpt+maxP*sc,slot=gpw/n,bw=Math.min(38,slot*0.6);
+      const GREEN='#3f8f5f',RED='#c0574f';
+      let g=`<svg viewBox="0 0 ${GW} ${GH}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+      g+=`<line x1="${gpl}" y1="${z.toFixed(1)}" x2="${gpl+gpw}" y2="${z.toFixed(1)}" stroke="#E1EEF3"/>`;
+      rows.forEach((r,i)=>{ const cx=gpl+(i+0.5)*slot, x=cx-bw/2, d=r.d, m=r.mk%12;
+        if(d!==0){ const f=d>0?GREEN:RED, h=Math.max(1.5,Math.abs(d)*sc), by=d>0?z-h:z;
+          g+=`<rect x="${x.toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${f}"/>`;
+          g+=`<text x="${cx.toFixed(1)}" y="${(d>0?by-2:by+h+9).toFixed(1)}" text-anchor="middle" font-size="8" font-weight="700" fill="${f}">${d>0?'+':''}${d}</text>`; }
+        g+=`<text x="${cx.toFixed(1)}" y="${GH-8}" text-anchor="middle" font-size="8" fill="#9aa6ab">${MON[m]}</text>`;
+      });
+      g+='</svg>';
+      html+=`<div class="bp-chans" style="margin-top:4px">${g}</div>`;
+    }
   } catch(e){}
   html+='<div class="bp-title">Channel share · by revenue (year)</div>';  try{ const A=aggOTBYearly(sel);
     const palette=['#0E9FC2','#0A7A97','#2BB3C9','#1689AE','#5BC4DC','#3d7a4b','#c9a227','#8e5fa8'];
@@ -1110,7 +1128,6 @@ function mobRenderBigPicture(){
     } else html+='<div class="bp-empty">No channel data.</div>';
   } catch(e){ html+='<div class="bp-empty">No channel data.</div>'; }
   host.innerHTML=html;
-  host.querySelectorAll('.bp-pkbar[data-pkday]').forEach(el=> el.addEventListener('click', ()=> mobOpenPickupDay(+el.dataset.pkday)));
 }
 function mobPickupDetailHTML(ymdNum){
   const sel=MOB.struct;
