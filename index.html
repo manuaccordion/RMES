@@ -47,12 +47,13 @@ button{font-family:inherit;cursor:pointer}
   background:linear-gradient(135deg,var(--arcade),var(--arcade2));
   backdrop-filter:saturate(140%) blur(10px);
   -webkit-backdrop-filter:saturate(140%) blur(10px);
-  border-bottom:2px solid var(--grid);
+  border-bottom:0;
 }
 .topbar-inner{
   max-width:none;margin:0;
   padding:14px 24px;
   display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  border-bottom:2px solid var(--grid);
 }
 .brand{display:flex;align-items:center;gap:12px;min-width:0}
 .brand-logo{width:40px;height:40px;border-radius:10px;flex-shrink:0;box-shadow:var(--shadow)}
@@ -91,15 +92,16 @@ a.chip .dot{background:#0C1421}
 /* ============ STRUTTURA SELECTOR ============ */
 .struct-selector{
   max-width:none;margin:0;
-  padding:16px 24px 0;
+  padding:12px 24px;
   display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--surface-2);border-bottom:1px solid var(--line);
 }
-.struct-label{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#7E9BB8;text-transform:uppercase;letter-spacing:.12em;margin-right:4px}
-.struct-pills{display:inline-flex;gap:6px;background:rgba(255,255,255,.04);padding:5px;border-radius:999px;border:1px solid var(--grid)}
+.struct-label{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.12em;margin-right:4px}
+.struct-pills{display:inline-flex;gap:6px;background:var(--surface);padding:5px;border-radius:999px;border:1px solid var(--line);box-shadow:var(--shadow)}
 .struct-pill{
   border:none;background:transparent;
   padding:8px 16px;border-radius:999px;
-  font-size:13px;font-weight:500;color:#9fb9cf;
+  font-size:13px;font-weight:500;color:var(--ink-2);
   display:inline-flex;align-items:center;gap:8px;
   transition:all .18s ease;
 }
