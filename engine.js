@@ -19733,6 +19733,7 @@ let _BIGPK = null;
 /* Precompute, for the 28-day pickup window, the cumulative RN picked up per STAY MONTH
    at each booking-day index — for this year and STLY (stay shifted +364d to align months).
    Sum over months of the cumulative equals the pickup curve totals. */
+function _bigEurK(v){ const s=v<0?'-':''; const a=Math.abs(v); const b = a>=1000 ? (a/1000).toFixed(a>=10000?0:1)+'k' : String(Math.round(a)); return s+'\u20ac'+b; }
 function _bigPickupGapData(sel){
   const keys = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
@@ -19747,18 +19748,17 @@ function _bigPickupGapData(sel){
   for (let i=0;i<N;i++){ curIdx[curDays[i]]=i; stlyIdx[stlyDays[i]]=i; }
   const curInc={}, stlyInc={};
   const chCurInc={}, chStlyInc={};
-  function addInc(store, mk, idx){ let a=store[mk]; if(!a){ a=new Array(N).fill(0); store[mk]=a; } a[idx]++; }
   function addAmt(store, k, idx, n){ let a=store[k]; if(!a){ a=new Array(N).fill(0); store[k]=a; } a[idx]+=n; }
   for (const b of BOOKINGS){
     if (b.cancelled || !keys.has(b.struct)) continue;
     const din=startOfDay(b.dIn), dout=startOfDay(b.dOut);
     if (!(dout>din)) continue;
     const ch = b.canale || '\u2014';
-    const nt = b.notti || 0;
+    const rpn = (b.revPerNight!=null && isFinite(b.revPerNight)) ? b.revPerNight : 0;
     const ci = curIdx[b.bookYmd];
-    if (ci !== undefined){ let c=din; while(c<dout){ addInc(curInc, c.getFullYear()*12+c.getMonth(), ci); c=addDays(c,1); } addAmt(chCurInc, ch, ci, nt); }
+    if (ci !== undefined){ let c=din, bookRev=0; while(c<dout){ addAmt(curInc, c.getFullYear()*12+c.getMonth(), ci, rpn); bookRev+=rpn; c=addDays(c,1); } addAmt(chCurInc, ch, ci, bookRev); }
     const si = stlyIdx[b.bookYmd];
-    if (si !== undefined){ let c=din; while(c<dout){ const s=addDays(c,364); addInc(stlyInc, s.getFullYear()*12+s.getMonth(), si); c=addDays(c,1); } addAmt(chStlyInc, ch, si, nt); }
+    if (si !== undefined){ let c=din, bookRev=0; while(c<dout){ const s=addDays(c,364); addAmt(stlyInc, s.getFullYear()*12+s.getMonth(), si, rpn); bookRev+=rpn; c=addDays(c,1); } addAmt(chStlyInc, ch, si, bookRev); }
   }
   const keySet = new Set();
   for (const k in curInc) keySet.add(+k);
@@ -19797,8 +19797,8 @@ function _bigRenderPickup4w(sel){
   const yAt=v=> padT+plotH - (v/maxV)*plotH;
   const pathOf=arr=> arr.map((v,i)=>`${i?'L':'M'}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
   _BIGPK = { sel, N, padL, padT, plotW, plotH, maxV, totCur:cur, totStly:stly, data };
-  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace" onmouseleave="_bigPkHover(-1)">`;
-  for (let g=0;g<=3;g++){ const v=maxV*g/3, y=yAt(v); svg+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">${Math.round(v)}</text>`; }
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:960px;display:block;margin:0 auto;height:auto;font-family:'DM Mono',monospace" onmouseleave="_bigPkHover(-1)">`;
+  for (let g=0;g<=3;g++){ const v=maxV*g/3, y=yAt(v); svg+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">${_bigEurK(v)}</text>`; }
   svg+=`<path d="${pathOf(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="5 4" opacity=".85"/>`;
   svg+=`<path d="${pathOf(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>`;
   svg+=`<line id="big-pk-guide" x1="0" y1="${padT}" x2="0" y2="${padT+plotH}" stroke="#c0574f" stroke-width="1" stroke-dasharray="3 3" style="visibility:hidden"/>`;
@@ -19807,13 +19807,13 @@ function _bigRenderPickup4w(sel){
   svg+=`<text id="big-pk-guide-lbl" x="0" y="${padT+8}" text-anchor="middle" font-size="9" font-weight="700" fill="#c0574f" style="visibility:hidden"></text>`;
   let ey1=yAt(cur[N-1]||0), ey2=yAt(stly[N-1]||0);
   if (Math.abs(ey1-ey2)<12){ if(ey1<=ey2){ey1-=6;ey2+=6;} else {ey1+=6;ey2-=6;} }
-  svg+=`<text x="${W-padR+5}" y="${ey1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${cur[N-1]||0} RN</text>`;
-  svg+=`<text x="${W-padR+5}" y="${ey2+3}" font-size="10" font-weight="700" fill="#7a4d96">${stly[N-1]||0} LY</text>`;
+  svg+=`<text x="${W-padR+5}" y="${ey1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${_bigEurK(cur[N-1]||0)}</text>`;
+  svg+=`<text x="${W-padR+5}" y="${ey2+3}" font-size="10" font-weight="700" fill="#7a4d96">${_bigEurK(stly[N-1]||0)} LY</text>`;
   const fmtD=y=>{const s=String(y);return s.slice(6,8)+'/'+s.slice(4,6);};
   const bw = plotW/(N-1);
   for (let i=0;i<N;i++){
     const gp = cur[i]-stly[i];
-    svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent" style="cursor:crosshair" onmousemove="_bigPkHover(${i})" onmouseover="_bigPkHover(${i})"><title>${fmtD(curDays[i])} \u00b7 This year: ${cur[i]} RN \u00b7 STLY (LY): ${stly[i]} RN \u00b7 gap ${(gp>=0?'+':'')+gp}</title></rect>`;
+    svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent" style="cursor:crosshair" onmousemove="_bigPkHover(${i})" onmouseover="_bigPkHover(${i})"><title>${fmtD(curDays[i])} \u00b7 This year: ${_bigEurK(cur[i])} \u00b7 STLY (LY): ${_bigEurK(stly[i])} \u00b7 gap ${gp>=0?'+':''}${_bigEurK(gp)}</title></rect>`;
   }
   let _prevM=-1;
   const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -19849,7 +19849,7 @@ function _bigPkHover(i){
   if(dc){ dc.setAttribute('cx',x.toFixed(1)); dc.setAttribute('cy',yAt(S.totCur[i]).toFixed(1)); dc.style.visibility='visible'; }
   if(ds){ ds.setAttribute('cx',x.toFixed(1)); ds.setAttribute('cy',yAt(S.totStly[i]).toFixed(1)); ds.style.visibility='visible'; }
   const gap=S.totCur[i]-S.totStly[i];
-  if(lb){ const lx=Math.max(S.padL+16, Math.min(S.padL+S.plotW-16, x)); lb.setAttribute('x',lx.toFixed(1)); lb.textContent='gap '+(gap>=0?'+':'')+gap; lb.style.visibility='visible'; }
+  if(lb){ const lx=Math.max(S.padL+16, Math.min(S.padL+S.plotW-16, x)); lb.setAttribute('x',lx.toFixed(1)); lb.textContent='gap '+(gap>=0?'+':'')+_bigEurK(gap); lb.style.visibility='visible'; }
   _bigRenderPickupGapByMonth(S.sel, i);
   _bigRenderPickupByChannel(S.sel, i);
 }
@@ -19869,7 +19869,7 @@ function _bigRenderPickupGapByMonth(sel, hoverIdx){
   const GREEN='#3f8f5f', RED='#c0574f';
   if (titleEl){
     const nc=net>=0?GREEN:RED;
-    titleEl.innerHTML = `Pickup gap by stay month \u2014 last 4 weeks vs LY (&Delta; RN) <span style="font-weight:400;color:var(--ink-3);font-size:11px">\u00b7 cumulative up to ${uptoLbl}${idx>=N-1?' (today)':''} \u00b7 net <b style="color:${nc}">${net>=0?'+':''}${net} RN</b></span>`;
+    titleEl.innerHTML = `Pickup gap by stay month \u2014 last 4 weeks vs LY (&Delta; \u20ac) <span style="font-weight:400;color:var(--ink-3);font-size:11px">\u00b7 cumulative up to ${uptoLbl}${idx>=N-1?' (today)':''} \u00b7 net <b style="color:${nc}">${net>=0?'+':''}${_bigEurK(net)}</b></span>`;
   }
   let maxPos=0, maxNeg=0;
   for (const r of rows){ const d=r.ty-r.st; if(d>maxPos)maxPos=d; if(-d>maxNeg)maxNeg=-d; }
@@ -19881,18 +19881,18 @@ function _bigRenderPickupGapByMonth(sel, hoverIdx){
   const zeroY=padT + maxPos*scale;
   const slot=plotW/n, bw=Math.min(46, slot*0.60);
   const xC=i=> padL + (i+0.5)*slot;
-  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:960px;display:block;margin:0 auto;height:auto;font-family:'DM Mono',monospace">`;
   svg+=`<line x1="${padL}" y1="${zeroY.toFixed(1)}" x2="${padL+plotW}" y2="${zeroY.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
   rows.forEach((r,i)=>{
     const d=r.ty-r.st;
     const y=Math.floor(r.mk/12), m=r.mk%12;
     const pct = r.st>0 ? (d/r.st*100) : null;
-    const tip = `${MON[m]} ${y} \u00b7 pickup TY: ${r.ty} RN \u00b7 STLY: ${r.st} RN \u00b7 \u0394 ${d>=0?'+':''}${d} RN${pct!=null?` (${d>=0?'+':''}${pct.toFixed(0)}%)`:''}`;
+    const tip = `${MON[m]} ${y} \u00b7 pickup TY: ${_bigEurK(r.ty)} \u00b7 STLY: ${_bigEurK(r.st)} \u00b7 \u0394 ${d>=0?'+':''}${_bigEurK(d)}${pct!=null?` (${d>=0?'+':''}${pct.toFixed(0)}%)`:''}`;
     const cx=xC(i), x=cx-bw/2;
     const fill = d>0?GREEN:(d<0?RED:'var(--ink-3)');
     const mlbl = (m===0 || i===0) ? MON[m]+" '"+String(y).slice(2) : MON[m];
     svg+=`<text x="${cx.toFixed(1)}" y="13" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-2)">${mlbl}</text>`;
-    svg+=`<text x="${cx.toFixed(1)}" y="26" text-anchor="middle" font-size="10.5" font-weight="700" fill="${fill}">${d>0?'+':''}${d}</text>`;
+    svg+=`<text x="${cx.toFixed(1)}" y="26" text-anchor="middle" font-size="10.5" font-weight="700" fill="${fill}">${d>0?'+':''}${_bigEurK(d)}</text>`;
     if (d!==0){
       let h=Math.abs(d)*scale; if(h<1.5)h=1.5;
       const barY=d>0?zeroY-h:zeroY;
@@ -19921,7 +19921,7 @@ function _bigRenderPickupByChannel(sel, hoverIdx){
   const TY='#2f7fb5', LY='#7a4d96';
   const titleEl=document.getElementById('big-smchannel-title');
   if (titleEl){
-    titleEl.innerHTML = `Pickup by channel \u2014 last 4 weeks, RN booked (TY vs LY) <span style="font-weight:400;color:var(--ink-3);font-size:11px">\u00b7 cumulative up to ${uptoLbl}${idx>=N-1?' (today)':''} \u00b7 <b style="color:${TY}">${sumTY}</b> vs <b style="color:${LY}">${sumLY}</b> RN</span>`;
+    titleEl.innerHTML = `Pickup by channel \u2014 last 4 weeks, revenue booked (TY vs LY) <span style="font-weight:400;color:var(--ink-3);font-size:11px">\u00b7 cumulative up to ${uptoLbl}${idx>=N-1?' (today)':''} \u00b7 <b style="color:${TY}">${_bigEurK(sumTY)}</b> vs <b style="color:${LY}">${_bigEurK(sumLY)}</b></span>`;
   }
   let maxV=1; for (const r of rows){ if(r.ty>maxV)maxV=r.ty; if(r.ly>maxV)maxV=r.ly; }
   if (rows.length===0){ host.innerHTML='<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:26px">No pickup in this window</div>'; return; }
@@ -19931,18 +19931,18 @@ function _bigRenderPickupByChannel(sel, hoverIdx){
   const groupW=Math.min(slot*0.66, 88), barW=(groupW-4)/2;
   const xC=i=> padL + (i+0.5)*slot;
   const yH=v=> (v/maxV)*plotH;
-  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:960px;display:block;margin:0 auto;height:auto;font-family:'DM Mono',monospace">`;
   svg+=`<line x1="${padL}" y1="${yB.toFixed(1)}" x2="${padL+plotW}" y2="${yB.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
   rows.forEach((r,i)=>{
     const cx=xC(i);
     const tyH=Math.max(r.ty>0?1.5:0, yH(r.ty)), lyH=Math.max(r.ly>0?1.5:0, yH(r.ly));
     const xTy=cx-barW-1, xLy=cx+1;
     const dlt = r.ly>0 ? Math.round((r.ty-r.ly)/r.ly*100) : null;
-    const tip = `${r.ch} \u00b7 TY: ${r.ty} RN \u00b7 LY: ${r.ly} RN${dlt!=null?` (${dlt>=0?'+':''}${dlt}%)`:''}`;
+    const tip = `${r.ch} \u00b7 TY: ${_bigEurK(r.ty)} \u00b7 LY: ${_bigEurK(r.ly)}${dlt!=null?` (${dlt>=0?'+':''}${dlt}%)`:''}`;
     if (r.ty>0) svg+=`<rect x="${xTy.toFixed(1)}" y="${(yB-tyH).toFixed(1)}" width="${barW.toFixed(1)}" height="${tyH.toFixed(1)}" rx="2" fill="${TY}"><title>${tip}</title></rect>`;
     if (r.ly>0) svg+=`<rect x="${xLy.toFixed(1)}" y="${(yB-lyH).toFixed(1)}" width="${barW.toFixed(1)}" height="${lyH.toFixed(1)}" rx="2" fill="${LY}"><title>${tip}</title></rect>`;
-    svg+=`<text x="${(xTy+barW/2).toFixed(1)}" y="${(yB-tyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${TY}">${r.ty}</text>`;
-    svg+=`<text x="${(xLy+barW/2).toFixed(1)}" y="${(yB-lyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${LY}">${r.ly}</text>`;
+    svg+=`<text x="${(xTy+barW/2).toFixed(1)}" y="${(yB-tyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${TY}">${_bigEurK(r.ty)}</text>`;
+    svg+=`<text x="${(xLy+barW/2).toFixed(1)}" y="${(yB-lyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${LY}">${_bigEurK(r.ly)}</text>`;
     svg+=`<text x="${cx.toFixed(1)}" y="${(yB+14).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink-2)">${r.ch}</text>`;
   });
   svg+=`</svg>`;
