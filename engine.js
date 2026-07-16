@@ -4743,48 +4743,6 @@ function ymdToDate(n){
   const y = Math.floor(n/10000), m = Math.floor((n/100)%100), d = n%100;
   return new Date(y, m-1, d);
 }
-
-/* ============================================================
-   PICKUP-7d FOR A STAY DATE (Pricing Console KPI)
-   ============================================================
-   How many room-nights for one stay date were BOOKED in the last 7 days,
-   versus the same 7-day booking window one year ago for the equivalent
-   stay date (today − 364, DoW-aligned).
-     • current: bookings with bookYmd in (TODAY−7, TODAY], staying on `stayYmd`
-     • last year: bookings with bookYmd in (TODAY−364−7, TODAY−364], staying on
-       the stay date shifted back 364 days.
-   Cancelled bookings are excluded; a booking "stays on" a date when
-   dIn <= date < dOut. Returns room-night counts (comparable to OTB).
-   ============================================================ */
-function pickup7dForStay(structKey, stayYmd){
-  const idx = (typeof _BOOKINGS_BY_STRUCT === 'object' && _BOOKINGS_BY_STRUCT)
-    ? (_BOOKINGS_BY_STRUCT[structKey] || null) : null;
-  const rows = idx || BOOKINGS;
-  const stayDate = ymdToDate(stayYmd);
-  const stlyStayYmd = ymd(new Date(stayDate.getFullYear(), stayDate.getMonth(), stayDate.getDate() - 364));
-
-  const winCurFrom = ymd(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - 7));
-  const winCurTo   = TODAY_YMD;
-  const winLyTo    = ymd(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - 364));
-  const winLyFrom  = ymd(new Date(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate() - 364 - 7));
-
-  function count(stayTargetYmd, bkFrom, bkTo){
-    let rn = 0;
-    for (let i = 0; i < rows.length; i++){
-      const b = rows[i];
-      if (idx == null && b.structKey !== structKey) continue;
-      if (b.cancelled) continue;
-      if (b.bookYmd <= bkFrom || b.bookYmd > bkTo) continue;
-      const dInY  = ymd(b.dIn);
-      const dOutY = ymd(b.dOut);
-      if (dInY <= stayTargetYmd && stayTargetYmd < dOutY) rn++;
-    }
-    return rn;
-  }
-  const cur  = count(stayYmd,     winCurFrom, winCurTo);
-  const stly = count(stlyStayYmd, winLyFrom,  winLyTo);
-  return { cur, stly, stlyStayYmd };
-}
 /* Cache pace aggregato strutture (calcolato 1 volta, riusato da computeRMESPriceMap di
    ogni struttura come fallback intermedio quando il pace month-specific di struttura non c'è).
    Le strutture sono nella stessa area (Firenze centro) e fascia qualità/price simile,
@@ -19708,6 +19666,7 @@ function renderBigPicture(){
     </div>`).join('');
   try { _bigRenderBookingCurve(sel); } catch(e){ const c=document.getElementById('big-bcurve'); if(c)c.innerHTML=''; }
   try { _bigRenderPickup4w(sel); } catch(e){ const c=document.getElementById('big-pk4w'); if(c)c.innerHTML=''; }
+  try { _bigRenderStayMonthDelta(sel); } catch(e){ const c=document.getElementById('big-smdelta'); if(c)c.innerHTML=''; }
   try { _bigRenderChart(sel); } catch(e){ const c=document.getElementById('big-chart'); if(c)c.innerHTML=''; }
   try { _bigRenderPie(sel); } catch(e){ const c=document.getElementById('big-pie'); if(c)c.innerHTML=''; }
   const allDays = _bigPickupByDay(sel, 7);
@@ -19813,6 +19772,85 @@ function _bigRenderPickup4w(sel){
   svg+=`<text x="${padL+plotW}" y="${H-8}" text-anchor="end" font-size="9" fill="var(--ink-3)">today</text>`;
   svg+=`</svg>`;
   const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (−364d)</span></div>`;
+  host.innerHTML = svg + leg;
+}
+/* Big Picture — OTB room nights by stay month, Δ vs STLY (diverging bars).
+   Green = that stay month is AHEAD of LY on the books, red = BEHIND.
+   TY  = confirmed RN booked by today, allocated night-by-night to its stay month.
+   STLY = confirmed RN booked by STLY point (today-364), each stay night shifted +364d
+          so it aligns to the current-year month (Sep-2025 -> Sep-2026 bucket). */
+function _bigRenderStayMonthDelta(sel){
+  const host = document.getElementById('big-smdelta');
+  if (!host) return;
+  const keys = new Set(structKeysFor(sel));
+  const now = new Date(TODAY);
+  const curYmNum = now.getFullYear()*12 + now.getMonth();
+  const HORIZON = 14; // current month + next 13
+  const tyM = {}, stlyM = {};
+  for (const b of BOOKINGS){
+    if (b.cancelled || !keys.has(b.struct)) continue;
+    const din = startOfDay(b.dIn), dout = startOfDay(b.dOut);
+    if (!(dout > din)) continue;
+    if (b.bookYmd <= TODAY_YMD){
+      let cur = din;
+      while (cur < dout){
+        const yn = cur.getFullYear()*12 + cur.getMonth();
+        if (yn >= curYmNum && yn < curYmNum+HORIZON) tyM[yn] = (tyM[yn]||0)+1;
+        cur = addDays(cur,1);
+      }
+    }
+    if (b.bookYmd <= STLY_YMD){
+      let cur = din;
+      while (cur < dout){
+        const s = addDays(cur,364);
+        const yn = s.getFullYear()*12 + s.getMonth();
+        if (yn >= curYmNum && yn < curYmNum+HORIZON) stlyM[yn] = (stlyM[yn]||0)+1;
+        cur = addDays(cur,1);
+      }
+    }
+  }
+  let rows = [];
+  for (let k=0;k<HORIZON;k++){ const yn=curYmNum+k; rows.push({ yn, ty:tyM[yn]||0, stly:stlyM[yn]||0 }); }
+  while (rows.length>1 && rows[rows.length-1].ty===0 && rows[rows.length-1].stly===0) rows.pop();
+  let maxPos=0, maxNeg=0, net=0;
+  for (const r of rows){ const d=r.ty-r.stly; net+=d; if(d>maxPos)maxPos=d; if(-d>maxNeg)maxNeg=-d; }
+  if (maxPos===0 && maxNeg===0){ host.innerHTML='<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:26px">No data</div>'; return; }
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const W=760, H=250, padL=40, padR=16, padT=20, padB=38;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const n=rows.length, span=(maxPos+maxNeg)||1, scale=plotH/span;
+  const zeroY=padT + maxPos*scale;
+  const slot=plotW/n, bw=Math.min(46, slot*0.60);
+  const xC=i=> padL + (i+0.5)*slot;
+  const GREEN='#3f8f5f', RED='#c0574f';
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+  // net chip top-right
+  const netCol = net>=0?GREEN:RED;
+  svg+=`<text x="${W-padR}" y="${padT-6}" text-anchor="end" font-size="10.5" font-weight="700" fill="${netCol}">net ${net>=0?'+':''}${net} RN vs LY</text>`;
+  // zero baseline
+  svg+=`<line x1="${padL}" y1="${zeroY.toFixed(1)}" x2="${padL+plotW}" y2="${zeroY.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
+  svg+=`<text x="${padL-4}" y="${zeroY+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">0</text>`;
+  rows.forEach((r,i)=>{
+    const d=r.ty-r.stly;
+    const y=Math.floor(r.yn/12), m=r.yn%12;
+    const pct = r.stly>0 ? (d/r.stly*100) : null;
+    const tip = `${MON[m]} ${y} · OTB now: ${r.ty} RN · STLY: ${r.stly} RN · \u0394 ${d>=0?'+':''}${d} RN${pct!=null?` (${d>=0?'+':''}${pct.toFixed(0)}%)`:''}`;
+    const cx=xC(i), x=cx-bw/2;
+    if (d!==0){
+      const fill = d>0?GREEN:RED;
+      let h=Math.abs(d)*scale; if(h<1.5)h=1.5;
+      const barY = d>0 ? zeroY-h : zeroY;
+      svg+=`<rect x="${x.toFixed(1)}" y="${barY.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${fill}"><title>${tip}</title></rect>`;
+      const ly = d>0 ? barY-3 : barY+h+11;
+      svg+=`<text x="${cx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="${fill}">${d>0?'+':''}${d}</text>`;
+    } else {
+      svg+=`<rect x="${x.toFixed(1)}" y="${(zeroY-3).toFixed(1)}" width="${bw.toFixed(1)}" height="3" fill="var(--line)"><title>${tip}</title></rect>`;
+    }
+    svg+=`<text x="${cx.toFixed(1)}" y="${H-20}" text-anchor="middle" font-size="9" fill="var(--ink-3)">${MON[m]}</text>`;
+    if (m===0 || i===0) svg+=`<text x="${cx.toFixed(1)}" y="${H-9}" text-anchor="middle" font-size="8" fill="var(--ink-3)" opacity=".7">${String(y).slice(2)}</text>`;
+  });
+  svg+=`</svg>`;
+  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:2px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${GREEN};border-radius:2px;display:inline-block"></span>Ahead of LY</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${RED};border-radius:2px;display:inline-block"></span>Behind LY</span></div>`;
   host.innerHTML = svg + leg;
 }
 function _bigRenderBookingCurve(sel){
