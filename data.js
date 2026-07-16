@@ -6259,7 +6259,7 @@ C0F8E3F2FF,16/07/2026 19:31,,Beddy,Kiran Sattiraju,Trilocale,Standard rate,16/06
 132DE5780E,16/07/2026 18:45,,Booking,Hiba Mousli,Attico,Standard rate,09/09/2026,13/09/2026,4,2118.22,Condotta 16,Confermate,0,OTA,0
 A5B1864746,16/07/2026 17:42,,Ctrip,XIAOHUI LIU,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Flessibile, Flessibile",12/08/2026,14/08/2026,2,657.46,Firenze Suite,Confermate,0,OTA,0
 1DF97F7991,16/07/2026 17:38,,Ctrip,XIAOHUI LIU,Suite,Flessibile,12/08/2026,14/08/2026,2,367.28,Firenze Suite,Confermate,0,OTA,0
-BC0EFB4ED0,16/07/2026 16:49,,Airbnb,Rigo Nasopoulos,Cupola,Tariffa base,25/11/2026,29/11/2026,4,460,Nazionale 35 Apartments,Confermate,0,OTA,30
+BC0EFB4ED0,16/07/2026 16:49,,Airbnb,Rigo Nasopoulos,Cupola,Tariffa base,25/11/2026,29/11/2026,4,490,Nazionale 35 Apartments,Confermate,0,OTA,0
 21BF31322A,16/07/2026 13:34,,Ctrip,FUNKIE NAN BIE,Camera Matrimoniale Deluxe,Flessibile,03/08/2026,04/08/2026,1,139.77,Firenze Suite,Confermate,0,OTA,0
 C852DB2C76,15/07/2026 13:01,16/07/2026 04:22,Booking,Jenelle Emery,Bilocale,Standard rate,20/09/2026,25/09/2026,5,1955.59,Condotta 16,Confermate,0,OTA,0
 3A6443E42B,14/07/2026 22:10,15/07/2026 23:39,Booking,Arjun Jheeta,Suite con Terrazza,Flessibile,30/07/2026,03/08/2026,4,1019.63,Firenze Suite,Cancellate,0,OTA,0
