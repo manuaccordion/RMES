@@ -20280,17 +20280,17 @@ function _bigRenderPie(sel){
   const innerArcs = arcs(prev, totPrev, rInIn, rInOut);
   const prevShare={}; prev.forEach(x=>prevShare[x.name]=x.rev/totPrev*100);
   const legend = cur.slice(0,6).map(x=>{
-    const cs=x.rev/totCur*100, ps=prevShare[x.name]; 
+    const cs=x.rev/totCur*100, ps=prevShare[x.name];
     const delta = (ps!=null) ? (cs-ps) : null;
-    const dTxt = (delta==null)?'':` <span style="color:${delta>=0?'#3d7a4b':'#b0464b'}">${delta>=0?'▲':'▼'}${Math.abs(delta).toFixed(0)}</span>`;
-    return `<div style="display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:3px"><span style="width:10px;height:10px;border-radius:2px;background:${colorOf[x.name]};flex-shrink:0"></span><span style="flex:1;color:var(--ink-2)">${x.name}</span><span style="font-family:'DM Mono',monospace;font-weight:600">${cs.toFixed(0)}%${dTxt}</span></div>`;
+    const dTxt = (delta==null)?'':`<span style="color:${delta>=0?'#3d7a4b':'#b0464b'}">${delta>=0?'▲':'▼'}${Math.abs(delta).toFixed(0)}</span>`;
+    return `<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:5px"><span style="width:11px;height:11px;border-radius:2px;background:${colorOf[x.name]};flex-shrink:0"></span><span style="width:74px;color:var(--ink-2)">${x.name}</span><span style="font-family:'DM Mono',monospace;font-weight:600;width:38px;text-align:right">${cs.toFixed(0)}%</span><span style="width:34px;text-align:left">${dTxt}</span></div>`;
   }).join('');
   host.innerHTML = `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center">
     <svg viewBox="0 0 220 220" style="width:160px;height:160px;flex-shrink:0">${outerArcs}${innerArcs}
       <text x="110" y="107" text-anchor="middle" font-size="9" fill="var(--ink-3)">outer: now</text>
       <text x="110" y="119" text-anchor="middle" font-size="9" fill="var(--ink-3)">inner: STLY</text>
     </svg>
-    <div style="min-width:150px;flex:1">${legend}</div>
+    <div style="flex:0 0 auto">${legend}</div>
   </div>`;
 }
 function _bigRenderWindowPills(){ /* toggle 1/7 rimosso: default 1 giorno, selezione dal grafico */ }
