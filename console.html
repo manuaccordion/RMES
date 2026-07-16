@@ -65,7 +65,7 @@ body{
 .logo b{color:var(--neon)}
 .hud-right{display:flex;align-items:center;gap:10px}
 .cloud{font-family:var(--mono);font-size:11px;font-weight:600;color:#a83b3b}
-.kbtn{font-family:var(--px);font-size:10px;line-height:1.5;letter-spacing:.02em;cursor:pointer;
+.kbtn{font-family:var(--mono);font-weight:700;font-size:12px;line-height:1.5;letter-spacing:.02em;cursor:pointer;
   background:var(--neon);color:var(--void);border:0;border-radius:3px;padding:11px 13px;
   box-shadow:0 4px 0 #12688F;transition:transform .06s, box-shadow .06s}
 .kbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #12688F}
@@ -129,12 +129,12 @@ body{
 
 /* weights */
 .wtot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0 16px}
-.wtot h4{font-family:var(--px);font-size:10px;letter-spacing:.04em;color:var(--neon)}
-.wtot span.sum{font-family:var(--px);font-size:10px;color:var(--void);background:var(--amber);padding:6px 9px;border-radius:2px}
+.wtot h4{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:.04em;color:var(--neon)}
+.wtot span.sum{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--void);background:var(--amber);padding:6px 9px;border-radius:2px}
 .fac{margin-bottom:20px}
 .fac .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .fac .nm{font-family:var(--mono);font-size:12.5px;color:var(--txt);letter-spacing:.02em}
-.fac .wv{font-family:var(--px);font-size:13px;color:var(--amber);min-width:34px;text-align:right}
+.fac .wv{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--amber);min-width:34px;text-align:right}
 .fac .ds{font-size:12px;color:var(--dim);margin:2px 0 4px;line-height:1.45}
 .fac .sig{font-family:var(--mono);font-size:11px;margin:0 0 4px}
 .fac.na .nm,.fac.na .ds{opacity:.5}
@@ -185,7 +185,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 0 4px;text-align:left}
 .kpi{background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:9px 10px}
 .kpi .kl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
-.kpi .kv{font-family:var(--px);font-size:12px;color:var(--txt);margin:5px 0 2px;line-height:1.35}
+.kpi .kv{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--txt);margin:5px 0 2px;line-height:1.35}
 .kpi .kd{font-family:var(--mono);font-size:11px}
 .kpi.wide{grid-column:1/-1}
 .kpi .rankbar{display:flex;gap:2px;margin-top:5px}
@@ -229,7 +229,9 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
 <script>
 /* Small screens go back to the mobile app, big screens to the full dashboard. */
 (function(){
-  var mob = window.matchMedia('(max-width: 880px)').matches;
+  var uaMob = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent || '');
+  var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+  var mob = uaMob || (isTouch && window.matchMedia('(max-width: 1024px)').matches) || window.matchMedia('(max-width: 880px)').matches;
   var target = mob ? 'app.html' : 'index.html';
   var back = document.getElementById('back-link');
   if (back){ back.href = target; back.textContent = (mob ? '◂ RMES Mobile' : '◂ Dashboard'); }
@@ -715,7 +717,8 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       }
       cells.push('<div class="kpi"><div class="kl">Price position</div>' +
         '<div class="kv">#' + rk.rank + ' <small style="opacity:.6;font-size:9px">of ' + rk.total + '</small></div>' +
-        '<div class="rankbar">' + bars + '</div></div>');
+        '<div class="rankbar">' + bars + '</div>' +
+        '<div style="font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--dim);margin-top:4px">#1 = cheapest \u00b7 #' + rk.total + ' = priciest</div></div>');
     } else {
       cells.push('<div class="kpi"><div class="kl">Price position</div>' +
         '<div class="kv" style="font-size:10px;color:var(--dim)">no compset</div></div>');

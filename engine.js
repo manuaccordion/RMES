@@ -4465,6 +4465,33 @@ function clampBreakpoint(v){
 function applyThresholds(idx, factorKey){
   return 1 + computeDeviation(idx, factorKey);
 }
+/* Pricing Console helper — room-nights booked in the last 7 days (today-7..today-1,
+   today excluded, standard pickup convention) for a single stay date `ymdNum`, vs the
+   same 7-day booking window one year ago (stay date and booking window both shifted -364).
+   A booking counts if it is confirmed, belongs to the selected property, covers the stay
+   night, and its booking date falls in the window. Returns { cur, stly } room-nights. */
+function pickup7dForStay(sel, ymdNum){
+  if (typeof BOOKINGS === 'undefined' || !BOOKINGS.length) return { cur:0, stly:0 };
+  const keys = new Set(structKeysFor(sel));
+  const todayD = new Date(TODAY); todayD.setHours(0,0,0,0);
+  const loD = new Date(todayD); loD.setDate(loD.getDate()-7);
+  const hiD = new Date(todayD); hiD.setDate(hiD.getDate()-1);
+  const pkLo = ymd(loD), pkHi = ymd(hiD);
+  const loS = new Date(loD); loS.setDate(loS.getDate()-364);
+  const hiS = new Date(hiD); hiS.setDate(hiS.getDate()-364);
+  const pkSLo = ymd(loS), pkSHi = ymd(hiS);
+  const stayCur = startOfDay(ymdToDate(ymdNum));
+  const stayStlyD = new Date(stayCur); stayStlyD.setDate(stayStlyD.getDate()-364);
+  const stayCurYmd = ymd(stayCur), stayStlyYmd = ymd(startOfDay(stayStlyD));
+  let cur=0, stly=0;
+  for (const b of BOOKINGS){
+    if (b.cancelled || !keys.has(b.struct) || !b.dIn || !b.dOut) continue;
+    const dIn = ymd(startOfDay(b.dIn)), dOut = ymd(startOfDay(b.dOut));
+    if (b.bookYmd >= pkLo && b.bookYmd <= pkHi && dIn <= stayCurYmd && stayCurYmd < dOut) cur++;
+    if (b.bookYmd >= pkSLo && b.bookYmd <= pkSHi && dIn <= stayStlyYmd && stayStlyYmd < dOut) stly++;
+  }
+  return { cur, stly };
+}
 function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
   const keys = new Set(structKeysFor(sel));
   const startDate = ymdToDate(startYmdNum);
