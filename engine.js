@@ -4364,11 +4364,13 @@ function computeDeviation(idx, factorKey){
             sumDev = +0.45, cap = 0.25 → clampato a +0.25 → mult = 1.25
 */
 function applyTotalCap(sumDev, capValue){
-  const c = (capValue == null || !isFinite(capValue)) ? 0.40 : capValue;
+  // Total cap REMOVED — the composite is no longer clamped to a ±cap. Each factor's deviation
+  // stays individually bounded ±50% (computeDeviation) and the final RMES price stays bounded
+  // ±20% from Base, so the composite passes through as-is.
   let d = sumDev;
-  if (d > c) d = c;
-  if (d < -c) d = -c;
-  return { mult: 1 + d, clampedDev: d, hitCap: (Math.abs(sumDev) > c) };
+  if (d > 0.50) d = 0.50;
+  if (d < -0.50) d = -0.50;
+  return { mult: 1 + d, clampedDev: d, hitCap: false };
 }
 let RMES_TH_ALL = (function(){
   function clone(){
@@ -6497,7 +6499,7 @@ function _bpExportCSV(){
 /* ============ RMES BREAKDOWN (lower table in Export Pricing tab) ============
    Per ogni giorno (oggi → futuro) e ogni struttura, mostra:
    Last update (active price) · A% B% C% D% E% (single-factor dev% after weighting)
-   · Composite multiplier (Σ peso×dev, ±total cap)
+   · Composite multiplier (Σ peso×dev)
    · LMF · Event · RMES suggested · Δ€ vs Last update
    La sorgente è computeRMESPriceMap (stessa che alimenta la tabella Sell Strategy),
    per coerenza assoluta dei numeri.
@@ -8205,7 +8207,7 @@ function renderRmesBreakdown(){
   let h = '<div style="max-height:70vh;overflow:auto;border:1px solid #eee;border-radius:6px">';
   h += '<table class="data-table" style="width:100%;font-size:12px;border-collapse:separate;border-spacing:0">';
   h += '<thead><tr>';
-  const compositeTip = 'Composite multiplier = Σ (weight × dev%) of the 5 RMES factors, capped at ±total cap (default ±30%, configurable per property).\\n\\nIt is the joint signal from the 5 factors BEFORE LMF and Event Factor.\\n\\nFinal price = Last update × Composite × (1 + LMF%) × Event Factor, then ≥ floor.';
+  const compositeTip = 'Composite multiplier = Σ (weight × dev%) of the 5 RMES factors (each factor bounded ±50%).\\n\\nIt is the joint signal from the 5 factors BEFORE LMF and Event Factor.\\n\\nFinal price = Last update × Composite × (1 + LMF%) × Event Factor, bounded ±20% from Base, then ≥ floor.';
   const cols = [
     { t:'Property',         al:'left',  tip:'Property', sticky:true },
     { t:'Date',             al:'left',  tip:'Stay date', sticky:true },
@@ -8310,7 +8312,7 @@ function renderRmesBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (last 2 weeks booking pace vs LY, W4×60% + W3×40%) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>E·AirDNA</b> (market booked vs my OCC, headroom signal) · <b>Composite</b> (Σ weight×dev, capped ±total cap; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (last 2 weeks booking pace vs LY, W4×60% + W3×40%) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>E·AirDNA</b> (market booked vs my OCC, headroom signal) · <b>Composite</b> (Σ weight×dev; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -10531,7 +10533,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const multFinPct = (mults.multFinale - 1) * 100;
       const multFinCol = mults.multFinale > 1.001 ? '#1e6b4a' : (mults.multFinale < 0.999 ? '#a83b3b' : '#666');
       rmesSection += '<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#f5f5f5;border-radius:4px;margin-bottom:10px;font-size:12px">';
-      rmesSection += '<span style="color:#666;font-weight:600">Composite multiplier (Σ weight × dev, capped ±total cap)</span>';
+      rmesSection += '<span style="color:#666;font-weight:600">Composite multiplier (Σ weight × dev)</span>';
       rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+multFinCol+'">×'+mults.multFinale.toFixed(3)+' ('+(multFinPct>=0?'+':'')+multFinPct.toFixed(1)+'%)</span>';
       rmesSection += '</div>';
       if (typeof fp_lmfLookup === 'function'){
