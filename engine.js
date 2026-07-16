@@ -19853,7 +19853,7 @@ function _bigRenderPickupGapByMonth(sel, hoverIdx){
   for (const r of rows){ const d=r.ty-r.st; if(d>maxPos)maxPos=d; if(-d>maxNeg)maxNeg=-d; }
   if (rows.length===0 || (maxPos===0 && maxNeg===0)){ host.innerHTML='<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:26px">No pickup in this window</div>'; return; }
   const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const W=760, H=250, padL=40, padR=16, padT=20, padB=38;
+  const W=760, H=200, padL=40, padR=16, padT=34, padB=12;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const n=rows.length, span=(maxPos+maxNeg)||1, scale=plotH/span;
   const zeroY=padT + maxPos*scale;
@@ -19861,24 +19861,23 @@ function _bigRenderPickupGapByMonth(sel, hoverIdx){
   const xC=i=> padL + (i+0.5)*slot;
   let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
   svg+=`<line x1="${padL}" y1="${zeroY.toFixed(1)}" x2="${padL+plotW}" y2="${zeroY.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
-  svg+=`<text x="${padL-4}" y="${zeroY+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">0</text>`;
   rows.forEach((r,i)=>{
     const d=r.ty-r.st;
     const y=Math.floor(r.mk/12), m=r.mk%12;
     const pct = r.st>0 ? (d/r.st*100) : null;
     const tip = `${MON[m]} ${y} \u00b7 pickup TY: ${r.ty} RN \u00b7 STLY: ${r.st} RN \u00b7 \u0394 ${d>=0?'+':''}${d} RN${pct!=null?` (${d>=0?'+':''}${pct.toFixed(0)}%)`:''}`;
     const cx=xC(i), x=cx-bw/2;
+    const fill = d>0?GREEN:(d<0?RED:'var(--ink-3)');
+    const mlbl = (m===0 || i===0) ? MON[m]+" '"+String(y).slice(2) : MON[m];
+    svg+=`<text x="${cx.toFixed(1)}" y="13" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink-2)">${mlbl}</text>`;
+    svg+=`<text x="${cx.toFixed(1)}" y="26" text-anchor="middle" font-size="10.5" font-weight="700" fill="${fill}">${d>0?'+':''}${d}</text>`;
     if (d!==0){
-      const fill=d>0?GREEN:RED; let h=Math.abs(d)*scale; if(h<1.5)h=1.5;
+      let h=Math.abs(d)*scale; if(h<1.5)h=1.5;
       const barY=d>0?zeroY-h:zeroY;
       svg+=`<rect x="${x.toFixed(1)}" y="${barY.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${fill}"><title>${tip}</title></rect>`;
-      const ly=d>0?barY-3:barY+h+11;
-      svg+=`<text x="${cx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="${fill}">${d>0?'+':''}${d}</text>`;
     } else {
-      svg+=`<rect x="${x.toFixed(1)}" y="${(zeroY-3).toFixed(1)}" width="${bw.toFixed(1)}" height="3" fill="var(--line)"><title>${tip}</title></rect>`;
+      svg+=`<rect x="${x.toFixed(1)}" y="${(zeroY-1.5).toFixed(1)}" width="${bw.toFixed(1)}" height="3" fill="var(--line)"><title>${tip}</title></rect>`;
     }
-    svg+=`<text x="${cx.toFixed(1)}" y="${H-20}" text-anchor="middle" font-size="9" fill="var(--ink-3)">${MON[m]}</text>`;
-    if (m===0 || i===0) svg+=`<text x="${cx.toFixed(1)}" y="${H-9}" text-anchor="middle" font-size="8" fill="var(--ink-3)" opacity=".7">${String(y).slice(2)}</text>`;
   });
   svg+=`</svg>`;
   const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:2px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${GREEN};border-radius:2px;display:inline-block"></span>Picked up more than LY</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${RED};border-radius:2px;display:inline-block"></span>Picked up less than LY</span></div>`;
