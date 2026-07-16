@@ -19746,15 +19746,19 @@ function _bigPickupGapData(sel){
   const curIdx={}, stlyIdx={};
   for (let i=0;i<N;i++){ curIdx[curDays[i]]=i; stlyIdx[stlyDays[i]]=i; }
   const curInc={}, stlyInc={};
+  const chCurInc={}, chStlyInc={};
   function addInc(store, mk, idx){ let a=store[mk]; if(!a){ a=new Array(N).fill(0); store[mk]=a; } a[idx]++; }
+  function addAmt(store, k, idx, n){ let a=store[k]; if(!a){ a=new Array(N).fill(0); store[k]=a; } a[idx]+=n; }
   for (const b of BOOKINGS){
     if (b.cancelled || !keys.has(b.struct)) continue;
     const din=startOfDay(b.dIn), dout=startOfDay(b.dOut);
     if (!(dout>din)) continue;
+    const ch = b.canale || '\u2014';
+    const nt = b.notti || 0;
     const ci = curIdx[b.bookYmd];
-    if (ci !== undefined){ let c=din; while(c<dout){ addInc(curInc, c.getFullYear()*12+c.getMonth(), ci); c=addDays(c,1); } }
+    if (ci !== undefined){ let c=din; while(c<dout){ addInc(curInc, c.getFullYear()*12+c.getMonth(), ci); c=addDays(c,1); } addAmt(chCurInc, ch, ci, nt); }
     const si = stlyIdx[b.bookYmd];
-    if (si !== undefined){ let c=din; while(c<dout){ const s=addDays(c,364); addInc(stlyInc, s.getFullYear()*12+s.getMonth(), si); c=addDays(c,1); } }
+    if (si !== undefined){ let c=din; while(c<dout){ const s=addDays(c,364); addInc(stlyInc, s.getFullYear()*12+s.getMonth(), si); c=addDays(c,1); } addAmt(chStlyInc, ch, si, nt); }
   }
   const keySet = new Set();
   for (const k in curInc) keySet.add(+k);
@@ -19769,7 +19773,17 @@ function _bigPickupGapData(sel){
     curCum[mk]=cc; stlyCum[mk]=sc;
   }
   const months = monthsAll.filter(mk => curCum[mk][N-1]>0 || stlyCum[mk][N-1]>0);
-  return { N, curDays, stlyDays, months, curCum, stlyCum, totCur, totStly };
+  const chKeys = new Set([...Object.keys(chCurInc), ...Object.keys(chStlyInc)]);
+  const chCurCum={}, chStlyCum={};
+  for (const ch of chKeys){
+    const ci=chCurInc[ch]||new Array(N).fill(0), si=chStlyInc[ch]||new Array(N).fill(0);
+    const cc=new Array(N), sc=new Array(N); let a=0,bb=0;
+    for(let i=0;i<N;i++){ a+=ci[i]; bb+=si[i]; cc[i]=a; sc[i]=bb; }
+    chCurCum[ch]=cc; chStlyCum[ch]=sc;
+  }
+  const channels = [...chKeys].filter(ch => chCurCum[ch][N-1]>0 || chStlyCum[ch][N-1]>0)
+    .sort((a,b)=> (chCurCum[b][N-1]+chStlyCum[b][N-1]) - (chCurCum[a][N-1]+chStlyCum[a][N-1]));
+  return { N, curDays, stlyDays, months, curCum, stlyCum, totCur, totStly, channels, chCurCum, chStlyCum };
 }
 function _bigRenderPickup4w(sel){
   const host = document.getElementById('big-pk4w');
@@ -19817,6 +19831,7 @@ function _bigRenderPickup4w(sel){
   const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (\u2212364d)</span><span style="color:var(--ink-3)">\u2014 hover the curve to break the gap down below</span></div>`;
   host.innerHTML = svg + leg;
   try { _bigRenderPickupGapByMonth(sel, null); } catch(e){ const c=document.getElementById('big-smdelta'); if(c)c.innerHTML=''; }
+  try { _bigRenderPickupByChannel(sel, null); } catch(e){ const c=document.getElementById('big-smchannel'); if(c)c.innerHTML=''; }
 }
 /* global hover handler: moves the guide on the curve + refreshes the bottom breakdown
    with the pickup gap cumulated up to the hovered booking-day. i<0 = reset to full window. */
@@ -19828,7 +19843,7 @@ function _bigPkHover(i){
   const lb=document.getElementById('big-pk-guide-lbl');
   const xAt=k=> S.padL + (k/(S.N-1))*S.plotW;
   const yAt=v=> S.padT+S.plotH - (v/S.maxV)*S.plotH;
-  if (i<0){ [g,dc,ds,lb].forEach(el=>{ if(el) el.style.visibility='hidden'; }); _bigRenderPickupGapByMonth(S.sel, null); return; }
+  if (i<0){ [g,dc,ds,lb].forEach(el=>{ if(el) el.style.visibility='hidden'; }); _bigRenderPickupGapByMonth(S.sel, null); _bigRenderPickupByChannel(S.sel, null); return; }
   const x=xAt(i);
   if(g){ g.setAttribute('x1',x.toFixed(1)); g.setAttribute('x2',x.toFixed(1)); g.style.visibility='visible'; }
   if(dc){ dc.setAttribute('cx',x.toFixed(1)); dc.setAttribute('cy',yAt(S.totCur[i]).toFixed(1)); dc.style.visibility='visible'; }
@@ -19836,6 +19851,7 @@ function _bigPkHover(i){
   const gap=S.totCur[i]-S.totStly[i];
   if(lb){ const lx=Math.max(S.padL+16, Math.min(S.padL+S.plotW-16, x)); lb.setAttribute('x',lx.toFixed(1)); lb.textContent='gap '+(gap>=0?'+':'')+gap; lb.style.visibility='visible'; }
   _bigRenderPickupGapByMonth(S.sel, i);
+  _bigRenderPickupByChannel(S.sel, i);
 }
 /* bottom chart: diverging bars of the pickup gap (TY-STLY) per stay month,
    cumulated up to hoverIdx (default = end of window = today). */
@@ -19887,6 +19903,50 @@ function _bigRenderPickupGapByMonth(sel, hoverIdx){
   });
   svg+=`</svg>`;
   const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:2px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${GREEN};border-radius:2px;display:inline-block"></span>Picked up more than LY</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${RED};border-radius:2px;display:inline-block"></span>Picked up less than LY</span></div>`;
+  host.innerHTML = svg + leg;
+}
+/* Pickup by channel — grouped columns of ABSOLUTE RN booked (TY vs LY), per channel,
+   cumulated up to hoverIdx (default = today). Linked to the pickup curve like the gap chart. */
+function _bigRenderPickupByChannel(sel, hoverIdx){
+  const host = document.getElementById('big-smchannel');
+  if (!host) return;
+  const S=_BIGPK;
+  const data = (S && S.sel===sel && S.data) ? S.data : _bigPickupGapData(sel);
+  const N=data.N;
+  const idx = (hoverIdx==null || hoverIdx<0 || hoverIdx>=N) ? N-1 : hoverIdx;
+  const chans = data.channels || [];
+  const rows = chans.slice(0,6).map(ch=>({ ch, ty:data.chCurCum[ch][idx], ly:data.chStlyCum[ch][idx] }));
+  const upto=data.curDays[idx]; const uptoLbl=String(upto).slice(6,8)+'/'+String(upto).slice(4,6);
+  const sumTY=rows.reduce((s,r)=>s+r.ty,0), sumLY=rows.reduce((s,r)=>s+r.ly,0);
+  const TY='#2f7fb5', LY='#7a4d96';
+  const titleEl=document.getElementById('big-smchannel-title');
+  if (titleEl){
+    titleEl.innerHTML = `Pickup by channel \u2014 last 4 weeks, RN booked (TY vs LY) <span style="font-weight:400;color:var(--ink-3);font-size:11px">\u00b7 cumulative up to ${uptoLbl}${idx>=N-1?' (today)':''} \u00b7 <b style="color:${TY}">${sumTY}</b> vs <b style="color:${LY}">${sumLY}</b> RN</span>`;
+  }
+  let maxV=1; for (const r of rows){ if(r.ty>maxV)maxV=r.ty; if(r.ly>maxV)maxV=r.ly; }
+  if (rows.length===0){ host.innerHTML='<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:26px">No pickup in this window</div>'; return; }
+  const W=760, H=160, padL=60, padR=72, padT=22, padB=30;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const n=rows.length, slot=plotW/n, yB=padT+plotH;
+  const groupW=Math.min(slot*0.66, 88), barW=(groupW-4)/2;
+  const xC=i=> padL + (i+0.5)*slot;
+  const yH=v=> (v/maxV)*plotH;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+  svg+=`<line x1="${padL}" y1="${yB.toFixed(1)}" x2="${padL+plotW}" y2="${yB.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
+  rows.forEach((r,i)=>{
+    const cx=xC(i);
+    const tyH=Math.max(r.ty>0?1.5:0, yH(r.ty)), lyH=Math.max(r.ly>0?1.5:0, yH(r.ly));
+    const xTy=cx-barW-1, xLy=cx+1;
+    const dlt = r.ly>0 ? Math.round((r.ty-r.ly)/r.ly*100) : null;
+    const tip = `${r.ch} \u00b7 TY: ${r.ty} RN \u00b7 LY: ${r.ly} RN${dlt!=null?` (${dlt>=0?'+':''}${dlt}%)`:''}`;
+    if (r.ty>0) svg+=`<rect x="${xTy.toFixed(1)}" y="${(yB-tyH).toFixed(1)}" width="${barW.toFixed(1)}" height="${tyH.toFixed(1)}" rx="2" fill="${TY}"><title>${tip}</title></rect>`;
+    if (r.ly>0) svg+=`<rect x="${xLy.toFixed(1)}" y="${(yB-lyH).toFixed(1)}" width="${barW.toFixed(1)}" height="${lyH.toFixed(1)}" rx="2" fill="${LY}"><title>${tip}</title></rect>`;
+    svg+=`<text x="${(xTy+barW/2).toFixed(1)}" y="${(yB-tyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${TY}">${r.ty}</text>`;
+    svg+=`<text x="${(xLy+barW/2).toFixed(1)}" y="${(yB-lyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${LY}">${r.ly}</text>`;
+    svg+=`<text x="${cx.toFixed(1)}" y="${(yB+14).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink-2)">${r.ch}</text>`;
+  });
+  svg+=`</svg>`;
+  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:2px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${TY};border-radius:2px;display:inline-block"></span>This year</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${LY};border-radius:2px;display:inline-block"></span>LY (same window)</span></div>`;
   host.innerHTML = svg + leg;
 }
 function _bigRenderBookingCurve(sel){

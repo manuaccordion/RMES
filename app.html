@@ -1110,6 +1110,29 @@ function mobRenderBigPicture(){
       g+='</svg>';
       html+=`<div class="bp-chans" style="margin-top:4px">${g}</div>`;
     }
+    const cRows=(gd.channels||[]).slice(0,6).map(ch=>({ch, ty:gd.chCurCum[ch][idx], ly:gd.chStlyCum[ch][idx]}));
+    if(cRows.length){
+      const TY='#2f7fb5', LY='#7a4d96';
+      let cmax=1; cRows.forEach(r=>{ if(r.ty>cmax)cmax=r.ty; if(r.ly>cmax)cmax=r.ly; });
+      const sumTY=cRows.reduce((s,r)=>s+r.ty,0), sumLY=cRows.reduce((s,r)=>s+r.ly,0);
+      html+=`<div class="bp-title" style="margin-top:6px">Pickup by channel <span style="font-weight:400;color:var(--muted);font-size:11px">\u00b7 <b style="color:${TY}">${sumTY}</b> vs <b style="color:${LY}">${sumLY}</b> RN</span></div>`;
+      const CW=340,CH=118,cpl=6,cpr=6,cpt=14,cpb=22,cpw=CW-cpl-cpr,cph=CH-cpt-cpb;
+      const cn=cRows.length, cslot=cpw/cn, cyB=cpt+cph;
+      const cgw=Math.min(cslot*0.72,56), cbw=(cgw-3)/2;
+      const cxC=i=>cpl+(i+0.5)*cslot, cyH=v=>(v/cmax)*cph;
+      let cg=`<svg viewBox="0 0 ${CW} ${CH}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+      cg+=`<line x1="${cpl}" y1="${cyB.toFixed(1)}" x2="${cpl+cpw}" y2="${cyB.toFixed(1)}" stroke="#E1EEF3"/>`;
+      cRows.forEach((r,i)=>{ const cx=cxC(i), th=Math.max(r.ty>0?1.5:0,cyH(r.ty)), lh=Math.max(r.ly>0?1.5:0,cyH(r.ly)), xt=cx-cbw-1, xl=cx+1;
+        if(r.ty>0) cg+=`<rect x="${xt.toFixed(1)}" y="${(cyB-th).toFixed(1)}" width="${cbw.toFixed(1)}" height="${th.toFixed(1)}" rx="2" fill="${TY}"/>`;
+        if(r.ly>0) cg+=`<rect x="${xl.toFixed(1)}" y="${(cyB-lh).toFixed(1)}" width="${cbw.toFixed(1)}" height="${lh.toFixed(1)}" rx="2" fill="${LY}"/>`;
+        cg+=`<text x="${(xt+cbw/2).toFixed(1)}" y="${(cyB-th-2).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="${TY}">${r.ty}</text>`;
+        cg+=`<text x="${(xl+cbw/2).toFixed(1)}" y="${(cyB-lh-2).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="${LY}">${r.ly}</text>`;
+        cg+=`<text x="${cx.toFixed(1)}" y="${(cyB+13).toFixed(1)}" text-anchor="middle" font-size="8" font-weight="700" fill="#5a6b72">${r.ch}</text>`;
+      });
+      cg+='</svg>';
+      html+=`<div class="bp-chans" style="margin-top:4px">${cg}</div>`;
+      html+=`<div class="bp-legend"><span class="bp-li"><i style="background:${TY};width:10px;height:10px;border-radius:2px;display:inline-block"></i>This year</span><span class="bp-li"><i style="background:${LY};width:10px;height:10px;border-radius:2px;display:inline-block"></i>LY</span></div>`;
+    }
   } catch(e){}
   html+='<div class="bp-title">Channel share · by revenue (year)</div>';  try{ const A=aggOTBYearly(sel);
     const palette=['#0E9FC2','#0A7A97','#2BB3C9','#1689AE','#5BC4DC','#3d7a4b','#c9a227','#8e5fa8'];
