@@ -19777,7 +19777,7 @@ function _bigRenderPickup4w(sel){
   const data = _bigPickupGapData(sel);
   const N=data.N, cur=data.totCur, stly=data.totStly, curDays=data.curDays;
   const maxV = Math.max(1, cur[N-1]||0, stly[N-1]||0);
-  const W=760, H=145, padL=44, padR=72, padT=12, padB=26;
+  const W=760, H=160, padL=60, padR=72, padT=14, padB=28;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const xAt=i=> padL + (i/(N-1))*plotW;
   const yAt=v=> padT+plotH - (v/maxV)*plotH;
@@ -19801,12 +19801,18 @@ function _bigRenderPickup4w(sel){
     const gp = cur[i]-stly[i];
     svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent" style="cursor:crosshair" onmousemove="_bigPkHover(${i})" onmouseover="_bigPkHover(${i})"><title>${fmtD(curDays[i])} \u00b7 This year: ${cur[i]} RN \u00b7 STLY (LY): ${stly[i]} RN \u00b7 gap ${(gp>=0?'+':'')+gp}</title></rect>`;
   }
-  for (let i=0;i<N;i+=7){
-    const tx=xAt(i);
-    svg+=`<line x1="${tx.toFixed(1)}" y1="${padT}" x2="${tx.toFixed(1)}" y2="${padT+plotH}" stroke="var(--line)" stroke-width="1" opacity=".5"/>`;
-    svg+=`<text x="${tx.toFixed(1)}" y="${H-8}" text-anchor="${i===0?'start':'middle'}" font-size="9" fill="var(--ink-3)">${fmtD(curDays[i])}</text>`;
+  let _prevM=-1;
+  const MON=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for (let i=0;i<N;i++){
+    const cx=xAt(i);
+    const s=String(curDays[i]); const dd=s.slice(6,8), mm=+s.slice(4,6);
+    svg+=`<text x="${cx.toFixed(1)}" y="${H-15}" text-anchor="middle" font-size="7.5" fill="var(--ink-3)">${dd}</text>`;
+    if (mm!==_prevM){
+      _prevM=mm;
+      svg+=`<line x1="${cx.toFixed(1)}" y1="${padT}" x2="${cx.toFixed(1)}" y2="${padT+plotH}" stroke="var(--line)" stroke-width="1" opacity=".45"/>`;
+      svg+=`<text x="${cx.toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="8.5" font-weight="700" fill="var(--ink-2)">${MON[mm]}</text>`;
+    }
   }
-  svg+=`<text x="${padL+plotW}" y="${H-8}" text-anchor="end" font-size="9" fill="var(--ink-3)">today</text>`;
   svg+=`</svg>`;
   const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (\u2212364d)</span><span style="color:var(--ink-3)">\u2014 hover the curve to break the gap down below</span></div>`;
   host.innerHTML = svg + leg;
@@ -19853,7 +19859,7 @@ function _bigRenderPickupGapByMonth(sel, hoverIdx){
   for (const r of rows){ const d=r.ty-r.st; if(d>maxPos)maxPos=d; if(-d>maxNeg)maxNeg=-d; }
   if (rows.length===0 || (maxPos===0 && maxNeg===0)){ host.innerHTML='<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:26px">No pickup in this window</div>'; return; }
   const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const W=760, H=200, padL=40, padR=16, padT=34, padB=12;
+  const W=760, H=160, padL=60, padR=72, padT=34, padB=12;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const n=rows.length, span=(maxPos+maxNeg)||1, scale=plotH/span;
   const zeroY=padT + maxPos*scale;
@@ -19921,8 +19927,8 @@ function _bigRenderBookingCurve(sel){
   }
   if (yMax <= 0){ host.innerHTML = '<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:30px">No data</div>'; return; }
   yMax = yMax * 1.05;
-  const W = 760, H = 220;
-  const padL = 64, padR = 16, padTop = 16, padBot = 40;
+  const W = 760, H = 160;
+  const padL = 60, padR = 72, padTop = 14, padBot = 28;
   const plotW = W - padL - padR, plotH = H - padTop - padBot;
   const xAt = (doy)=> padL + (doy/365) * plotW;
   const yAt = (v)=> padTop + plotH - (v/yMax)*plotH;
