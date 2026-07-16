@@ -12810,29 +12810,24 @@ function renderSellStrategy(sel){
         let arrow = '';
         let bgCol = 'rgba(195,131,59,.05)';
         let textCol = '#5a3a14';
-        let cellRing = '';
         let _diffPctVsRef = null;
-        // Colore graduato per MAGNITUDINE dello scostamento vs Last update (ref):
-        // più forte il colore = più grande l'aumento/decremento. Bordo pieno se |Δ| >= 30%.
+        // Colore graduato per MAGNITUDINE dello scostamento vs Last update (ref), SENZA soglia:
+        // più forte il colore = più grande l'aumento/decremento (l'alpha cresce libera con |Δ|).
         if (ref != null && ref > 0 && targetOnBaseUnified > 0){
           const diffPct = (targetOnBaseUnified - ref) / ref;   // % vs Last update
           _diffPctVsRef = diffPct;
-          const mag = Math.min(Math.abs(diffPct) / 0.30, 1);   // 0..1, satura a |30%|
+          const a = Math.min(0.10 + Math.abs(diffPct)*1.5, 0.85).toFixed(3);
           if (Math.abs(diffPct) <= 0.02){
             bgCol = 'rgba(74,124,89,.12)';
             textCol = '#2c5c3c';
           } else if (diffPct > 0){
-            const a = (0.10 + mag*0.55).toFixed(3);
             arrow = '<span style="color:#1e6b3a;font-weight:800;margin-right:3px">↑</span>';
             bgCol = 'rgba(46,120,70,'+a+')';
-            textCol = mag>0.5 ? '#123d22' : '#1e5233';
-            if (Math.abs(diffPct) >= 0.30) cellRing = 'box-shadow:inset 0 0 0 2px #1e6b3a;';
+            textCol = Math.abs(diffPct)>0.20 ? '#123d22' : '#1e5233';
           } else {
-            const a = (0.10 + mag*0.55).toFixed(3);
             arrow = '<span style="color:#b0332f;font-weight:800;margin-right:3px">↓</span>';
             bgCol = 'rgba(176,51,47,'+a+')';
-            textCol = mag>0.5 ? '#5c1a18' : '#7a2828';
-            if (Math.abs(diffPct) >= 0.30) cellRing = 'box-shadow:inset 0 0 0 2px #b0332f;';
+            textCol = Math.abs(diffPct)>0.20 ? '#5c1a18' : '#7a2828';
           }
         }
         const acceptBtn = `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" data-rmes-price="${targetOnBaseRounded}" title="Accept this RMES suggestion (€${targetOnBaseRounded}) as the new active price for ${r.ymd}" style="margin-left:6px;font-size:9px;padding:2px 7px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block;vertical-align:middle">✓</button>`;
@@ -12841,7 +12836,7 @@ function renderSellStrategy(sel){
           ? (_diffPctVsRef > 0 ? '\nRMES suggests to RAISE the price ↑ ('+_pctTxt+')' : '\nRMES suggests to LOWER the price ↓ ('+_pctTxt+')')
           : '\nRMES is in line with your active price (±2%)';
         const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${dirHint}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
-        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700;${cellRing}" title="${escapeHtml(cellTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
+        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
     html += `<tr${_searchTipVal}>
       ${_luTdHtml}${_rmesTdHtml}
