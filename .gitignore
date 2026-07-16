@@ -9,7 +9,6 @@ build_*.js
 diagnostic*.js
 sanity_*.js
 add_*.js
-cleaning.js
 calc_pickup.js
 *.csv
 CLAUDE.md
