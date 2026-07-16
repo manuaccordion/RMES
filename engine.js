@@ -19666,7 +19666,6 @@ function renderBigPicture(){
     </div>`).join('');
   try { _bigRenderBookingCurve(sel); } catch(e){ const c=document.getElementById('big-bcurve'); if(c)c.innerHTML=''; }
   try { _bigRenderPickup4w(sel); } catch(e){ const c=document.getElementById('big-pk4w'); if(c)c.innerHTML=''; }
-  try { _bigRenderStayMonthDelta(sel); } catch(e){ const c=document.getElementById('big-smdelta'); if(c)c.innerHTML=''; }
   try { _bigRenderChart(sel); } catch(e){ const c=document.getElementById('big-chart'); if(c)c.innerHTML=''; }
   try { _bigRenderPie(sel); } catch(e){ const c=document.getElementById('big-pie'); if(c)c.innerHTML=''; }
   const allDays = _bigPickupByDay(sel, 7);
@@ -19725,15 +19724,17 @@ function renderBigPicture(){
       </div>
     </div>`;
   const treeEl = document.getElementById('big-tree');
-  if (treeEl) treeEl.innerHTML = treeHtml;
+  if (treeEl) treeEl.innerHTML = '';
   document.querySelectorAll('#panel-big [data-bigbreakdown]').forEach(el=>{
     el.addEventListener('click', (ev)=>{ ev.stopPropagation(); _bigShowBreakdown(el.dataset.bigbreakdown, n); });
   });
   _bigRenderWindowPills();
 }
-function _bigRenderPickup4w(sel){
-  const host = document.getElementById('big-pk4w');
-  if (!host) return;
+let _BIGPK = null;
+/* Precompute, for the 28-day pickup window, the cumulative RN picked up per STAY MONTH
+   at each booking-day index — for this year and STLY (stay shifted +364d to align months).
+   Sum over months of the cumulative equals the pickup curve totals. */
+function _bigPickupGapData(sel){
   const keys = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const N = 28;
@@ -19743,78 +19744,111 @@ function _bigRenderPickup4w(sel){
     curDays.push(ymd(d));
     stlyDays.push(ymd(new Date(d.getTime() - 364*86400000)));
   }
-  const byYmd = {};
-  for (const b of BOOKINGS){ if (b.cancelled || !keys.has(b.struct)) continue; byYmd[b.bookYmd]=(byYmd[b.bookYmd]||0)+(b.notti||0); }
-  const cur=[], stly=[]; let cc=0, sc=0;
-  for (let i=0;i<N;i++){ cc+=(byYmd[curDays[i]]||0); sc+=(byYmd[stlyDays[i]]||0); cur.push(cc); stly.push(sc); }
+  const curIdx={}, stlyIdx={};
+  for (let i=0;i<N;i++){ curIdx[curDays[i]]=i; stlyIdx[stlyDays[i]]=i; }
+  const curInc={}, stlyInc={};
+  function addInc(store, mk, idx){ let a=store[mk]; if(!a){ a=new Array(N).fill(0); store[mk]=a; } a[idx]++; }
+  for (const b of BOOKINGS){
+    if (b.cancelled || !keys.has(b.struct)) continue;
+    const din=startOfDay(b.dIn), dout=startOfDay(b.dOut);
+    if (!(dout>din)) continue;
+    const ci = curIdx[b.bookYmd];
+    if (ci !== undefined){ let c=din; while(c<dout){ addInc(curInc, c.getFullYear()*12+c.getMonth(), ci); c=addDays(c,1); } }
+    const si = stlyIdx[b.bookYmd];
+    if (si !== undefined){ let c=din; while(c<dout){ const s=addDays(c,364); addInc(stlyInc, s.getFullYear()*12+s.getMonth(), si); c=addDays(c,1); } }
+  }
+  const keySet = new Set();
+  for (const k in curInc) keySet.add(+k);
+  for (const k in stlyInc) keySet.add(+k);
+  const monthsAll = [...keySet].sort((a,b)=>a-b);
+  const curCum={}, stlyCum={};
+  const totCur=new Array(N).fill(0), totStly=new Array(N).fill(0);
+  for (const mk of monthsAll){
+    const ci=curInc[mk]||new Array(N).fill(0), si=stlyInc[mk]||new Array(N).fill(0);
+    const cc=new Array(N), sc=new Array(N); let a=0,bb=0;
+    for(let i=0;i<N;i++){ a+=ci[i]; bb+=si[i]; cc[i]=a; sc[i]=bb; totCur[i]+=a; totStly[i]+=bb; }
+    curCum[mk]=cc; stlyCum[mk]=sc;
+  }
+  const months = monthsAll.filter(mk => curCum[mk][N-1]>0 || stlyCum[mk][N-1]>0);
+  return { N, curDays, stlyDays, months, curCum, stlyCum, totCur, totStly };
+}
+function _bigRenderPickup4w(sel){
+  const host = document.getElementById('big-pk4w');
+  if (!host) return;
+  const data = _bigPickupGapData(sel);
+  const N=data.N, cur=data.totCur, stly=data.totStly, curDays=data.curDays;
   const maxV = Math.max(1, cur[N-1]||0, stly[N-1]||0);
   const W=760, H=210, padL=44, padR=72, padT=12, padB=26;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const xAt=i=> padL + (i/(N-1))*plotW;
   const yAt=v=> padT+plotH - (v/maxV)*plotH;
   const pathOf=arr=> arr.map((v,i)=>`${i?'L':'M'}${xAt(i).toFixed(1)} ${yAt(v).toFixed(1)}`).join(' ');
-  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
+  _BIGPK = { sel, N, padL, padT, plotW, plotH, maxV, totCur:cur, totStly:stly, data };
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace" onmouseleave="_bigPkHover(-1)">`;
   for (let g=0;g<=3;g++){ const v=maxV*g/3, y=yAt(v); svg+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">${Math.round(v)}</text>`; }
   svg+=`<path d="${pathOf(stly)}" fill="none" stroke="#7a4d96" stroke-width="2" stroke-dasharray="5 4" opacity=".85"/>`;
   svg+=`<path d="${pathOf(cur)}" fill="none" stroke="#2f7fb5" stroke-width="2.5"/>`;
-  // etichette fine linea con anti-sovrapposizione
+  svg+=`<line id="big-pk-guide" x1="0" y1="${padT}" x2="0" y2="${padT+plotH}" stroke="#c0574f" stroke-width="1" stroke-dasharray="3 3" style="visibility:hidden"/>`;
+  svg+=`<circle id="big-pk-dcur" r="3.4" fill="#2f7fb5" style="visibility:hidden"/>`;
+  svg+=`<circle id="big-pk-dstly" r="3.4" fill="#7a4d96" style="visibility:hidden"/>`;
+  svg+=`<text id="big-pk-guide-lbl" x="0" y="${padT+8}" text-anchor="middle" font-size="9" font-weight="700" fill="#c0574f" style="visibility:hidden"></text>`;
   let ey1=yAt(cur[N-1]||0), ey2=yAt(stly[N-1]||0);
   if (Math.abs(ey1-ey2)<12){ if(ey1<=ey2){ey1-=6;ey2+=6;} else {ey1+=6;ey2-=6;} }
   svg+=`<text x="${W-padR+5}" y="${ey1+3}" font-size="10" font-weight="700" fill="#2f7fb5">${cur[N-1]||0} RN</text>`;
   svg+=`<text x="${W-padR+5}" y="${ey2+3}" font-size="10" font-weight="700" fill="#7a4d96">${stly[N-1]||0} LY</text>`;
   const fmtD=y=>{const s=String(y);return s.slice(6,8)+'/'+s.slice(4,6);};
-  // bande invisibili per giorno con tooltip (dettaglio all'hover)
   const bw = plotW/(N-1);
   for (let i=0;i<N;i++){
-    svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent"><title>${fmtD(curDays[i])} · This year: ${cur[i]} RN · STLY (LY): ${stly[i]} RN</title></rect>`;
+    const gp = cur[i]-stly[i];
+    svg+=`<rect x="${(xAt(i)-bw/2).toFixed(1)}" y="${padT}" width="${bw.toFixed(1)}" height="${plotH}" fill="transparent" style="cursor:crosshair" onmousemove="_bigPkHover(${i})" onmouseover="_bigPkHover(${i})"><title>${fmtD(curDays[i])} \u00b7 This year: ${cur[i]} RN \u00b7 STLY (LY): ${stly[i]} RN \u00b7 gap ${(gp>=0?'+':'')+gp}</title></rect>`;
   }
   svg+=`<text x="${padL}" y="${H-8}" text-anchor="start" font-size="9" fill="var(--ink-3)">${fmtD(curDays[0])}</text>`;
   svg+=`<text x="${padL+plotW}" y="${H-8}" text-anchor="end" font-size="9" fill="var(--ink-3)">today</text>`;
   svg+=`</svg>`;
-  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (−364d)</span></div>`;
+  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:4px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2.5px;background:#2f7fb5;display:inline-block"></span>This year (28d)</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:16px;height:2px;border-top:2px dashed #7a4d96;display:inline-block"></span>STLY (\u2212364d)</span><span style="color:var(--ink-3)">\u2014 hover the curve to break the gap down below</span></div>`;
   host.innerHTML = svg + leg;
+  try { _bigRenderPickupGapByMonth(sel, null); } catch(e){ const c=document.getElementById('big-smdelta'); if(c)c.innerHTML=''; }
 }
-/* Big Picture — OTB room nights by stay month, Δ vs STLY (diverging bars).
-   Green = that stay month is AHEAD of LY on the books, red = BEHIND.
-   TY  = confirmed RN booked by today, allocated night-by-night to its stay month.
-   STLY = confirmed RN booked by STLY point (today-364), each stay night shifted +364d
-          so it aligns to the current-year month (Sep-2025 -> Sep-2026 bucket). */
-function _bigRenderStayMonthDelta(sel){
+/* global hover handler: moves the guide on the curve + refreshes the bottom breakdown
+   with the pickup gap cumulated up to the hovered booking-day. i<0 = reset to full window. */
+function _bigPkHover(i){
+  const S=_BIGPK; if(!S) return;
+  const g=document.getElementById('big-pk-guide');
+  const dc=document.getElementById('big-pk-dcur');
+  const ds=document.getElementById('big-pk-dstly');
+  const lb=document.getElementById('big-pk-guide-lbl');
+  const xAt=k=> S.padL + (k/(S.N-1))*S.plotW;
+  const yAt=v=> S.padT+S.plotH - (v/S.maxV)*S.plotH;
+  if (i<0){ [g,dc,ds,lb].forEach(el=>{ if(el) el.style.visibility='hidden'; }); _bigRenderPickupGapByMonth(S.sel, null); return; }
+  const x=xAt(i);
+  if(g){ g.setAttribute('x1',x.toFixed(1)); g.setAttribute('x2',x.toFixed(1)); g.style.visibility='visible'; }
+  if(dc){ dc.setAttribute('cx',x.toFixed(1)); dc.setAttribute('cy',yAt(S.totCur[i]).toFixed(1)); dc.style.visibility='visible'; }
+  if(ds){ ds.setAttribute('cx',x.toFixed(1)); ds.setAttribute('cy',yAt(S.totStly[i]).toFixed(1)); ds.style.visibility='visible'; }
+  const gap=S.totCur[i]-S.totStly[i];
+  if(lb){ const lx=Math.max(S.padL+16, Math.min(S.padL+S.plotW-16, x)); lb.setAttribute('x',lx.toFixed(1)); lb.textContent='gap '+(gap>=0?'+':'')+gap; lb.style.visibility='visible'; }
+  _bigRenderPickupGapByMonth(S.sel, i);
+}
+/* bottom chart: diverging bars of the pickup gap (TY-STLY) per stay month,
+   cumulated up to hoverIdx (default = end of window = today). */
+function _bigRenderPickupGapByMonth(sel, hoverIdx){
   const host = document.getElementById('big-smdelta');
   if (!host) return;
-  const keys = new Set(structKeysFor(sel));
-  const now = new Date(TODAY);
-  const curYmNum = now.getFullYear()*12 + now.getMonth();
-  const HORIZON = 14; // current month + next 13
-  const tyM = {}, stlyM = {};
-  for (const b of BOOKINGS){
-    if (b.cancelled || !keys.has(b.struct)) continue;
-    const din = startOfDay(b.dIn), dout = startOfDay(b.dOut);
-    if (!(dout > din)) continue;
-    if (b.bookYmd <= TODAY_YMD){
-      let cur = din;
-      while (cur < dout){
-        const yn = cur.getFullYear()*12 + cur.getMonth();
-        if (yn >= curYmNum && yn < curYmNum+HORIZON) tyM[yn] = (tyM[yn]||0)+1;
-        cur = addDays(cur,1);
-      }
-    }
-    if (b.bookYmd <= STLY_YMD){
-      let cur = din;
-      while (cur < dout){
-        const s = addDays(cur,364);
-        const yn = s.getFullYear()*12 + s.getMonth();
-        if (yn >= curYmNum && yn < curYmNum+HORIZON) stlyM[yn] = (stlyM[yn]||0)+1;
-        cur = addDays(cur,1);
-      }
-    }
+  const S=_BIGPK;
+  const data = (S && S.sel===sel && S.data) ? S.data : _bigPickupGapData(sel);
+  const N=data.N;
+  const idx = (hoverIdx==null || hoverIdx<0 || hoverIdx>=N) ? N-1 : hoverIdx;
+  const rows = data.months.map(mk=>({ mk:+mk, ty:data.curCum[mk][idx], st:data.stlyCum[mk][idx] }));
+  const upto=data.curDays[idx]; const uptoLbl=String(upto).slice(6,8)+'/'+String(upto).slice(4,6);
+  const net=data.totCur[idx]-data.totStly[idx];
+  const titleEl=document.getElementById('big-smdelta-title');
+  const GREEN='#3f8f5f', RED='#c0574f';
+  if (titleEl){
+    const nc=net>=0?GREEN:RED;
+    titleEl.innerHTML = `Pickup gap by stay month \u2014 last 4 weeks vs LY (&Delta; RN) <span style="font-weight:400;color:var(--ink-3);font-size:11px">\u00b7 cumulative up to ${uptoLbl}${idx>=N-1?' (today)':''} \u00b7 net <b style="color:${nc}">${net>=0?'+':''}${net} RN</b></span>`;
   }
-  let rows = [];
-  for (let k=0;k<HORIZON;k++){ const yn=curYmNum+k; rows.push({ yn, ty:tyM[yn]||0, stly:stlyM[yn]||0 }); }
-  while (rows.length>1 && rows[rows.length-1].ty===0 && rows[rows.length-1].stly===0) rows.pop();
-  let maxPos=0, maxNeg=0, net=0;
-  for (const r of rows){ const d=r.ty-r.stly; net+=d; if(d>maxPos)maxPos=d; if(-d>maxNeg)maxNeg=-d; }
-  if (maxPos===0 && maxNeg===0){ host.innerHTML='<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:26px">No data</div>'; return; }
+  let maxPos=0, maxNeg=0;
+  for (const r of rows){ const d=r.ty-r.st; if(d>maxPos)maxPos=d; if(-d>maxNeg)maxNeg=-d; }
+  if (rows.length===0 || (maxPos===0 && maxNeg===0)){ host.innerHTML='<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:26px">No pickup in this window</div>'; return; }
   const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const W=760, H=250, padL=40, padR=16, padT=20, padB=38;
   const plotW=W-padL-padR, plotH=H-padT-padB;
@@ -19822,26 +19856,20 @@ function _bigRenderStayMonthDelta(sel){
   const zeroY=padT + maxPos*scale;
   const slot=plotW/n, bw=Math.min(46, slot*0.60);
   const xC=i=> padL + (i+0.5)*slot;
-  const GREEN='#3f8f5f', RED='#c0574f';
   let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'DM Mono',monospace">`;
-  // net chip top-right
-  const netCol = net>=0?GREEN:RED;
-  svg+=`<text x="${W-padR}" y="${padT-6}" text-anchor="end" font-size="10.5" font-weight="700" fill="${netCol}">net ${net>=0?'+':''}${net} RN vs LY</text>`;
-  // zero baseline
   svg+=`<line x1="${padL}" y1="${zeroY.toFixed(1)}" x2="${padL+plotW}" y2="${zeroY.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`;
   svg+=`<text x="${padL-4}" y="${zeroY+3}" text-anchor="end" font-size="9" fill="var(--ink-3)">0</text>`;
   rows.forEach((r,i)=>{
-    const d=r.ty-r.stly;
-    const y=Math.floor(r.yn/12), m=r.yn%12;
-    const pct = r.stly>0 ? (d/r.stly*100) : null;
-    const tip = `${MON[m]} ${y} · OTB now: ${r.ty} RN · STLY: ${r.stly} RN · \u0394 ${d>=0?'+':''}${d} RN${pct!=null?` (${d>=0?'+':''}${pct.toFixed(0)}%)`:''}`;
+    const d=r.ty-r.st;
+    const y=Math.floor(r.mk/12), m=r.mk%12;
+    const pct = r.st>0 ? (d/r.st*100) : null;
+    const tip = `${MON[m]} ${y} \u00b7 pickup TY: ${r.ty} RN \u00b7 STLY: ${r.st} RN \u00b7 \u0394 ${d>=0?'+':''}${d} RN${pct!=null?` (${d>=0?'+':''}${pct.toFixed(0)}%)`:''}`;
     const cx=xC(i), x=cx-bw/2;
     if (d!==0){
-      const fill = d>0?GREEN:RED;
-      let h=Math.abs(d)*scale; if(h<1.5)h=1.5;
-      const barY = d>0 ? zeroY-h : zeroY;
+      const fill=d>0?GREEN:RED; let h=Math.abs(d)*scale; if(h<1.5)h=1.5;
+      const barY=d>0?zeroY-h:zeroY;
       svg+=`<rect x="${x.toFixed(1)}" y="${barY.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="${fill}"><title>${tip}</title></rect>`;
-      const ly = d>0 ? barY-3 : barY+h+11;
+      const ly=d>0?barY-3:barY+h+11;
       svg+=`<text x="${cx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="${fill}">${d>0?'+':''}${d}</text>`;
     } else {
       svg+=`<rect x="${x.toFixed(1)}" y="${(zeroY-3).toFixed(1)}" width="${bw.toFixed(1)}" height="3" fill="var(--line)"><title>${tip}</title></rect>`;
@@ -19850,7 +19878,7 @@ function _bigRenderStayMonthDelta(sel){
     if (m===0 || i===0) svg+=`<text x="${cx.toFixed(1)}" y="${H-9}" text-anchor="middle" font-size="8" fill="var(--ink-3)" opacity=".7">${String(y).slice(2)}</text>`;
   });
   svg+=`</svg>`;
-  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:2px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${GREEN};border-radius:2px;display:inline-block"></span>Ahead of LY</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${RED};border-radius:2px;display:inline-block"></span>Behind LY</span></div>`;
+  const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:2px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${GREEN};border-radius:2px;display:inline-block"></span>Picked up more than LY</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${RED};border-radius:2px;display:inline-block"></span>Picked up less than LY</span></div>`;
   host.innerHTML = svg + leg;
 }
 function _bigRenderBookingCurve(sel){
