@@ -19773,9 +19773,10 @@ function _bigPickupGapData(sel){
   }
   const curIdx={}, stlyIdx={};
   for (let i=0;i<N;i++){ curIdx[curDays[i]]=i; stlyIdx[stlyDays[i]]=i; }
-  const curInc={}, stlyInc={};
-  const chCurInc={}, chStlyInc={};
-  function addAmt(store, k, idx, n){ let a=store[k]; if(!a){ a=new Array(N).fill(0); store[k]=a; } a[idx]+=n; }
+  const curInc={}, stlyInc={}, curIncRn={}, stlyIncRn={};
+  const chCurInc={}, chStlyInc={}, chCurIncRn={}, chStlyIncRn={};
+  const zero=()=>new Array(N).fill(0);
+  function addAmt(store, k, idx, n){ let a=store[k]; if(!a){ a=zero(); store[k]=a; } a[idx]+=n; }
   for (const b of BOOKINGS){
     if (b.cancelled || !keys.has(b.struct)) continue;
     const din=startOfDay(b.dIn), dout=startOfDay(b.dOut);
@@ -19783,34 +19784,34 @@ function _bigPickupGapData(sel){
     const ch = b.canale || '\u2014';
     const rpn = (b.revPerNight!=null && isFinite(b.revPerNight)) ? b.revPerNight : 0;
     const ci = curIdx[b.bookYmd];
-    if (ci !== undefined){ let c=din, bookRev=0; while(c<dout){ addAmt(curInc, c.getFullYear()*12+c.getMonth(), ci, rpn); bookRev+=rpn; c=addDays(c,1); } addAmt(chCurInc, ch, ci, bookRev); }
+    if (ci !== undefined){ let c=din, bookRev=0, bookN=0; while(c<dout){ const mk=c.getFullYear()*12+c.getMonth(); addAmt(curInc, mk, ci, rpn); addAmt(curIncRn, mk, ci, 1); bookRev+=rpn; bookN++; c=addDays(c,1); } addAmt(chCurInc, ch, ci, bookRev); addAmt(chCurIncRn, ch, ci, bookN); }
     const si = stlyIdx[b.bookYmd];
-    if (si !== undefined){ let c=din, bookRev=0; while(c<dout){ const s=addDays(c,364); addAmt(stlyInc, s.getFullYear()*12+s.getMonth(), si, rpn); bookRev+=rpn; c=addDays(c,1); } addAmt(chStlyInc, ch, si, bookRev); }
+    if (si !== undefined){ let c=din, bookRev=0, bookN=0; while(c<dout){ const s=addDays(c,364); const mk=s.getFullYear()*12+s.getMonth(); addAmt(stlyInc, mk, si, rpn); addAmt(stlyIncRn, mk, si, 1); bookRev+=rpn; bookN++; c=addDays(c,1); } addAmt(chStlyInc, ch, si, bookRev); addAmt(chStlyIncRn, ch, si, bookN); }
   }
   const keySet = new Set();
   for (const k in curInc) keySet.add(+k);
   for (const k in stlyInc) keySet.add(+k);
   const monthsAll = [...keySet].sort((a,b)=>a-b);
-  const curCum={}, stlyCum={};
-  const totCur=new Array(N).fill(0), totStly=new Array(N).fill(0);
+  const curCum={}, stlyCum={}, curCumRn={}, stlyCumRn={};
+  const totCur=zero(), totStly=zero();
   for (const mk of monthsAll){
-    const ci=curInc[mk]||new Array(N).fill(0), si=stlyInc[mk]||new Array(N).fill(0);
-    const cc=new Array(N), sc=new Array(N); let a=0,bb=0;
-    for(let i=0;i<N;i++){ a+=ci[i]; bb+=si[i]; cc[i]=a; sc[i]=bb; totCur[i]+=a; totStly[i]+=bb; }
-    curCum[mk]=cc; stlyCum[mk]=sc;
+    const ci=curInc[mk]||zero(), si=stlyInc[mk]||zero(), cir=curIncRn[mk]||zero(), sir=stlyIncRn[mk]||zero();
+    const cc=new Array(N), sc=new Array(N), ccr=new Array(N), scr=new Array(N); let a=0,bb=0,ar=0,br=0;
+    for(let i=0;i<N;i++){ a+=ci[i]; bb+=si[i]; ar+=cir[i]; br+=sir[i]; cc[i]=a; sc[i]=bb; ccr[i]=ar; scr[i]=br; totCur[i]+=a; totStly[i]+=bb; }
+    curCum[mk]=cc; stlyCum[mk]=sc; curCumRn[mk]=ccr; stlyCumRn[mk]=scr;
   }
   const months = monthsAll.filter(mk => curCum[mk][N-1]>0 || stlyCum[mk][N-1]>0);
   const chKeys = new Set([...Object.keys(chCurInc), ...Object.keys(chStlyInc)]);
-  const chCurCum={}, chStlyCum={};
+  const chCurCum={}, chStlyCum={}, chCurCumRn={}, chStlyCumRn={};
   for (const ch of chKeys){
-    const ci=chCurInc[ch]||new Array(N).fill(0), si=chStlyInc[ch]||new Array(N).fill(0);
-    const cc=new Array(N), sc=new Array(N); let a=0,bb=0;
-    for(let i=0;i<N;i++){ a+=ci[i]; bb+=si[i]; cc[i]=a; sc[i]=bb; }
-    chCurCum[ch]=cc; chStlyCum[ch]=sc;
+    const ci=chCurInc[ch]||zero(), si=chStlyInc[ch]||zero(), cir=chCurIncRn[ch]||zero(), sir=chStlyIncRn[ch]||zero();
+    const cc=new Array(N), sc=new Array(N), ccr=new Array(N), scr=new Array(N); let a=0,bb=0,ar=0,br=0;
+    for(let i=0;i<N;i++){ a+=ci[i]; bb+=si[i]; ar+=cir[i]; br+=sir[i]; cc[i]=a; sc[i]=bb; ccr[i]=ar; scr[i]=br; }
+    chCurCum[ch]=cc; chStlyCum[ch]=sc; chCurCumRn[ch]=ccr; chStlyCumRn[ch]=scr;
   }
   const channels = [...chKeys].filter(ch => chCurCum[ch][N-1]>0 || chStlyCum[ch][N-1]>0)
     .sort((a,b)=> (chCurCum[b][N-1]+chStlyCum[b][N-1]) - (chCurCum[a][N-1]+chStlyCum[a][N-1]));
-  return { N, curDays, stlyDays, months, curCum, stlyCum, totCur, totStly, channels, chCurCum, chStlyCum };
+  return { N, curDays, stlyDays, months, curCum, stlyCum, curCumRn, stlyCumRn, totCur, totStly, channels, chCurCum, chStlyCum, chCurCumRn, chStlyCumRn };
 }
 function _bigRenderPickup4w(sel){
   const host = document.getElementById('big-pk4w');
@@ -19889,7 +19890,7 @@ function _bigRenderPickupGapByMonth(sel, hoverIdx){
   const data = (S && S.sel===sel && S.data) ? S.data : _bigPickupGapData(sel);
   const N=data.N;
   const idx = (hoverIdx==null || hoverIdx<0 || hoverIdx>=N) ? N-1 : hoverIdx;
-  const rows = data.months.map(mk=>({ mk:+mk, ty:data.curCum[mk][idx], st:data.stlyCum[mk][idx] }));
+  const rows = data.months.map(mk=>({ mk:+mk, ty:data.curCum[mk][idx], st:data.stlyCum[mk][idx], tyRn:data.curCumRn[mk][idx], stRn:data.stlyCumRn[mk][idx] }));
   const upto=data.curDays[idx]; const uptoLbl=String(upto).slice(6,8)+'/'+String(upto).slice(4,6);
   const net=data.totCur[idx]-data.totStly[idx];
   const titleEl=document.getElementById('big-smdelta-title');
@@ -19914,7 +19915,9 @@ function _bigRenderPickupGapByMonth(sel, hoverIdx){
     const d=r.ty-r.st;
     const y=Math.floor(r.mk/12), m=r.mk%12;
     const pct = r.st>0 ? (d/r.st*100) : null;
-    const tip = `${MON[m]} ${y} \u00b7 pickup TY: ${_bigEurK(r.ty)} \u00b7 STLY: ${_bigEurK(r.st)} \u00b7 \u0394 ${d>=0?'+':''}${_bigEurK(d)}${pct!=null?` (${d>=0?'+':''}${pct.toFixed(0)}%)`:''}`;
+    const rnT=r.tyRn||0, rnL=r.stRn||0, dRn=rnT-rnL;
+    const adrT=rnT>0?r.ty/rnT:null, adrL=rnL>0?r.st/rnL:null, dAdr=(adrT!=null&&adrL!=null)?adrT-adrL:null;
+    const tip = `${MON[m]} ${y}\nRevenue  TY ${_bigEurK(r.ty)} \u00b7 LY ${_bigEurK(r.st)}  (\u0394 ${d>=0?'+':''}${_bigEurK(d)}${pct!=null?', '+(d>=0?'+':'')+pct.toFixed(0)+'%':''})\nRoom nights  TY ${rnT} \u00b7 LY ${rnL}  (\u0394 ${dRn>=0?'+':''}${dRn})\nADR  TY ${adrT!=null?_bigEurK(adrT):'\u2014'} \u00b7 LY ${adrL!=null?_bigEurK(adrL):'\u2014'}${dAdr!=null?`  (\u0394 ${dAdr>=0?'+':''}${_bigEurK(dAdr)})`:''}`;
     const cx=xC(i), x=cx-bw/2;
     const fill = d>0?GREEN:(d<0?RED:'var(--ink-3)');
     const mlbl = (m===0 || i===0) ? MON[m]+" '"+String(y).slice(2) : MON[m];
@@ -19942,7 +19945,7 @@ function _bigRenderPickupByChannel(sel, hoverIdx){
   const N=data.N;
   const idx = (hoverIdx==null || hoverIdx<0 || hoverIdx>=N) ? N-1 : hoverIdx;
   const chans = data.channels || [];
-  const rows = chans.slice(0,6).map(ch=>({ ch, ty:data.chCurCum[ch][idx], ly:data.chStlyCum[ch][idx] }));
+  const rows = chans.slice(0,6).map(ch=>({ ch, ty:data.chCurCum[ch][idx], ly:data.chStlyCum[ch][idx], tyRn:data.chCurCumRn[ch][idx], lyRn:data.chStlyCumRn[ch][idx] }));
   const upto=data.curDays[idx]; const uptoLbl=String(upto).slice(6,8)+'/'+String(upto).slice(4,6);
   const sumTY=rows.reduce((s,r)=>s+r.ty,0), sumLY=rows.reduce((s,r)=>s+r.ly,0);
   const TY='#2f7fb5', LY='#7a4d96';
@@ -19965,7 +19968,9 @@ function _bigRenderPickupByChannel(sel, hoverIdx){
     const tyH=Math.max(r.ty>0?1.5:0, yH(r.ty)), lyH=Math.max(r.ly>0?1.5:0, yH(r.ly));
     const xTy=cx-barW-1, xLy=cx+1;
     const dlt = r.ly>0 ? Math.round((r.ty-r.ly)/r.ly*100) : null;
-    const tip = `${r.ch} \u00b7 TY: ${_bigEurK(r.ty)} \u00b7 LY: ${_bigEurK(r.ly)}${dlt!=null?` (${dlt>=0?'+':''}${dlt}%)`:''}`;
+    const dRev=r.ty-r.ly, rnT=r.tyRn||0, rnL=r.lyRn||0, dRn=rnT-rnL;
+    const adrT=rnT>0?r.ty/rnT:null, adrL=rnL>0?r.ly/rnL:null, dAdr=(adrT!=null&&adrL!=null)?adrT-adrL:null;
+    const tip = `${r.ch}\nRevenue  TY ${_bigEurK(r.ty)} \u00b7 LY ${_bigEurK(r.ly)}  (\u0394 ${dRev>=0?'+':''}${_bigEurK(dRev)}${dlt!=null?', '+(dlt>=0?'+':'')+dlt+'%':''})\nRoom nights  TY ${rnT} \u00b7 LY ${rnL}  (\u0394 ${dRn>=0?'+':''}${dRn})\nADR  TY ${adrT!=null?_bigEurK(adrT):'\u2014'} \u00b7 LY ${adrL!=null?_bigEurK(adrL):'\u2014'}${dAdr!=null?`  (\u0394 ${dAdr>=0?'+':''}${_bigEurK(dAdr)})`:''}`;
     if (r.ty>0) svg+=`<rect x="${xTy.toFixed(1)}" y="${(yB-tyH).toFixed(1)}" width="${barW.toFixed(1)}" height="${tyH.toFixed(1)}" rx="2" fill="${TY}"><title>${tip}</title></rect>`;
     if (r.ly>0) svg+=`<rect x="${xLy.toFixed(1)}" y="${(yB-lyH).toFixed(1)}" width="${barW.toFixed(1)}" height="${lyH.toFixed(1)}" rx="2" fill="${LY}"><title>${tip}</title></rect>`;
     svg+=`<text x="${(xTy+barW/2).toFixed(1)}" y="${(yB-tyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${TY}">${_bigEurK(r.ty)}</text>`;
