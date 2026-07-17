@@ -239,6 +239,60 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
 .nd-kpi{font-size:10.5px;color:var(--dim);white-space:nowrap;font-family:var(--mono)}
 .nd-kpi .up{color:var(--green)} .nd-kpi .down{color:var(--pink)} .nd-kpi .flat{color:var(--dim)}
 .nd-x{background:none;border:1px solid var(--grid);color:var(--dim);border-radius:6px;min-width:28px;height:28px;font-size:15px;cursor:pointer;line-height:1}
+.hud-set{background:none;border:1.5px solid var(--grid);color:var(--dim);border-radius:8px;font-size:16px;width:36px;height:36px;cursor:pointer;line-height:1;flex-shrink:0}
+.hud-set:hover{border-color:var(--neon);color:var(--neon)}
+.set-overlay{position:fixed;inset:0;z-index:200;background:rgba(4,7,14,.92);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);display:none;overflow-y:auto;padding:20px 14px 48px}
+.set-overlay.open{display:block}
+.set-card{max-width:520px;margin:0 auto;background:var(--card);border:1.5px solid var(--grid);border-radius:16px;padding:18px 16px}
+.set-h{font-family:var(--px);font-size:12px;color:var(--neon);margin:0 0 4px;letter-spacing:.02em}
+.set-sub{font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:6px}
+.set-sec{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);border-left:3px solid var(--amber);padding-left:8px;margin:18px 0 8px}
+.set-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--grid)}
+.set-row label{font-family:var(--mono);font-size:12.5px;color:var(--txt)}
+.set-row label small{display:block;color:var(--dim);font-size:10px;margin-top:1px}
+.set-row input{width:104px;text-align:right;font-family:var(--mono);font-weight:700;font-size:16px;background:rgba(255,255,255,.05);border:1.5px solid var(--grid);border-radius:8px;padding:10px 12px;color:var(--txt)}
+.set-row input:focus{border-color:var(--neon);outline:none}
+.set-tg{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:4px}
+.set-tg .tg-cell{background:rgba(255,255,255,.03);border:1px solid var(--grid);border-radius:8px;padding:6px 8px;text-align:center}
+.set-tg .tg-cell span{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em}
+.set-tg .tg-cell input{width:100%;text-align:center;font-family:var(--mono);font-weight:700;font-size:16px;background:none;border:none;color:var(--txt);padding:5px 0}
+.set-tg .tg-cell input:focus{outline:none;color:var(--neon)}
+.set-actions{display:flex;gap:10px;margin-top:20px}
+.set-note{font-family:var(--mono);font-size:10.5px;color:var(--dim);margin-top:16px;line-height:1.6}
+.set-acc{border:1.5px solid var(--grid);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.set-acc-h{width:100%;text-align:left;background:rgba(255,255,255,.03);border:none;color:var(--txt);font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.02em;padding:15px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.set-acc-h:hover{color:var(--neon)}
+.set-acc-caret{color:var(--dim);transition:transform .18s;font-size:12px}
+.set-acc.open .set-acc-caret{transform:rotate(90deg);color:var(--neon)}
+.set-acc-body{display:none;padding:2px 14px 14px}
+.set-acc.open .set-acc-body{display:block}
+.set-subsec{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin:14px 0 6px}
+.fac .fac-i{background:none;border:1px solid var(--grid);color:var(--dim);border-radius:50%;width:18px;height:18px;font-size:11px;line-height:1;cursor:pointer;padding:0;margin-left:6px;vertical-align:middle}
+.fac .fac-i:hover{border-color:var(--neon);color:var(--neon)}
+.fac .fac-note{font-family:var(--body);font-size:11.5px;color:var(--dim);line-height:1.55;background:rgba(255,255,255,.03);border-left:2px solid var(--neon);border-radius:6px;padding:8px 10px;margin:2px 0 6px}
+.cs-row{padding:10px 0;border-bottom:1px solid var(--grid)}
+.cs-row .cs-name{font-family:var(--mono);font-size:12px;color:var(--txt);margin-bottom:7px;word-break:break-word}
+.cs-row .cs-inputs{display:flex;gap:10px}
+.cs-row .cs-fld{flex:1}
+.cs-row .cs-fld span{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:3px}
+.cs-row .cs-fld input{width:100%;text-align:right;font-family:var(--mono);font-weight:700;font-size:16px;background:rgba(255,255,255,.05);border:1.5px solid var(--grid);border-radius:8px;padding:9px 10px;color:var(--txt)}
+.cs-row .cs-fld input:focus{border-color:var(--neon);outline:none}
+.lmf-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px}
+.lmf-tbl{border-collapse:collapse;font-family:var(--mono);margin:0 auto}
+.lmf-tbl th{font-size:9px;color:var(--dim);font-weight:600;padding:4px 5px;text-transform:uppercase;white-space:nowrap}
+.lmf-tbl td{padding:2px}
+.lmf-tbl td:first-child,.lmf-tbl th:first-child{font-size:10px;color:var(--dim);text-align:right;padding-right:8px;white-space:nowrap}
+.lmf-tbl input{width:50px;text-align:center;font-family:var(--mono);font-weight:700;font-size:16px;background:rgba(255,255,255,.05);border:1.5px solid var(--grid);border-radius:6px;padding:6px 2px;color:var(--txt)}
+.lmf-tbl input:focus{border-color:var(--neon);outline:none}
+.pr-card{border:1px solid var(--grid);border-radius:10px;padding:10px;margin-bottom:10px;background:rgba(255,255,255,.02)}
+.pr-card .pr-top{display:flex;gap:8px;margin-bottom:8px}
+.pr-card .pr-top input.pr-label{flex:1;min-width:0;font-family:var(--mono);font-size:14px;background:rgba(255,255,255,.05);border:1.5px solid var(--grid);border-radius:8px;padding:8px 10px;color:var(--txt)}
+.pr-card .pr-top input.pr-pct{width:70px;text-align:right;font-family:var(--mono);font-weight:700;font-size:16px;background:rgba(255,255,255,.05);border:1.5px solid var(--grid);border-radius:8px;padding:8px 6px;color:var(--txt)}
+.pr-card .pr-dates{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pr-card .pr-fld span{font-family:var(--mono);font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:2px}
+.pr-card .pr-fld input{width:100%;font-family:var(--mono);font-size:14px;background:rgba(255,255,255,.05);border:1.5px solid var(--grid);border-radius:8px;padding:7px 8px;color:var(--txt)}
+.pr-card .pr-fld input:focus{border-color:var(--neon);outline:none}
+.pr-card .pr-del{background:none;border:1px solid var(--grid);color:var(--pink);border-radius:8px;padding:6px 12px;font-size:12px;font-family:var(--mono);cursor:pointer;margin-top:9px}
 </style>
 </head>
 <body>
@@ -249,20 +303,26 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     <a class="logo" id="home-link" href="index.html">RMES <b>//</b> PRICING<br><b>CONSOLE</b></a>
     <div class="hud-right">
       <span class="cloud" id="rmes-cloud-status">⚠ local only</span>
+      <button class="hud-set" id="hud-set" type="button" aria-label="Settings" title="RMES settings">⚙</button>
     </div>
   </div>
 </header>
 <script>
 /* Small screens go back to the mobile app, big screens to the full dashboard. */
 (function(){
-  var uaMob = /Mobi|Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent || '');
-  var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-  var mob = uaMob || (isTouch && window.matchMedia('(max-width: 1024px)').matches) || window.matchMedia('(max-width: 880px)').matches;
-  var target = mob ? 'app.html' : 'index.html';
-  var back = document.getElementById('back-link');
-  if (back){ back.href = target; back.textContent = (mob ? '◂ RMES Mobile' : '◂ Dashboard'); }
-  var home = document.getElementById('home-link');
-  if (home) home.href = target;
+  function setLinks(){
+    // Only a WIDE, non-touch screen is treated as desktop → PC dashboard. Everything else
+    // (phones, tablets, any touch device) goes to the mobile app.
+    var desktop = window.matchMedia('(min-width: 1025px)').matches
+                  && !('ontouchstart' in window) && !(navigator.maxTouchPoints > 0);
+    var target = desktop ? 'index.html' : 'app.html';
+    var back = document.getElementById('back-link');
+    if (back){ back.href = target; back.textContent = (desktop ? '◂ Dashboard' : '◂ RMES Mobile'); }
+    var home = document.getElementById('home-link');
+    if (home) home.href = target;
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', setLinks);
+  else setLinks();
 })();
 </script>
 
@@ -367,6 +427,13 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     { k:'airdna', mult:'air_mult',  na:'air',   label:'Demand',        ds:'Expedia searches vs the monthly median' },
     { k:'mkt',    mult:'mkt_mult',  na:'mkt',   label:'AirDNA Market', ds:'Market occupancy vs mine — headroom signal' }
   ];
+  var FAC_INFO = {
+    occ:    'Daily Pickup — compares rooms already sold for this date to the expected fill rate. The dev% for each fill-rate bucket is set in Settings → Daily Pickup thresholds. Only pushes the price UP (never lowers it).',
+    pace:   'Pace Trend — how fast bookings are coming in vs the same point last year (STLY). Faster than LY → positive signal; slower → negative.',
+    comp:   'Online Pricing — your price vs the weighted Expedia comp set (in Beddy-equivalent). Priced below the market → positive (room to raise); above → negative.',
+    airdna: 'Demand — Expedia search volume for this date vs the monthly median. More searches than usual → positive. Muted on event dates (the Event Factor already captures that demand).',
+    mkt:    'AirDNA Market — market occupancy vs yours (headroom). If the market is fuller than you → positive (you can push); if you are fuller → negative.'
+  };
   var DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
   var S = {
@@ -637,8 +704,9 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
         }
       }
       return '<div class="fac'+(naReason?' na':'')+'">'+
-        '<div class="top"><span class="nm">'+f.label+'</span><span class="wv" id="wv-'+f.k+'">'+S.w[f.k]+'</span></div>'+
+        '<div class="top"><span class="nm">'+f.label+' <button class="fac-i" type="button" data-fk="'+f.k+'" title="'+escapeHtml(FAC_INFO[f.k]||'')+'" aria-label="How this signal is computed">\u24d8</button></span><span class="wv" id="wv-'+f.k+'">'+S.w[f.k]+'</span></div>'+
         '<div class="ds">'+f.ds+'</div>'+
+        '<div class="fac-note" id="fn-'+f.k+'" style="display:none">'+(FAC_INFO[f.k]||'')+'</div>'+
         '<div class="fac-line">'+sigInner+'<span class="fac-eur" id="fe-'+f.k+'"></span></div>'+
         '<input type="range" min="0" max="100" value="'+S.w[f.k]+'" data-k="'+f.k+'" '+
         'aria-label="'+f.label+' weight" title="'+(naReason ? escapeHtml(naReason) : f.label)+'">'+
@@ -659,6 +727,9 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
         paintWeights();
         renderOutput();
       });
+    });
+    el.querySelectorAll('.fac-i').forEach(function(b){
+      b.addEventListener('click', function(ev){ ev.stopPropagation(); var n=document.getElementById('fn-'+b.getAttribute('data-fk')); if(n) n.style.display=(n.style.display==='none'?'block':'none'); });
     });
     paintWeights();
   }
@@ -945,6 +1016,185 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       try { renderFlagBtn(); renderNeedBar(); } catch(e){}
     };
   } catch(e){}
+  /* ---------- Settings (foundation config, arcade) ---------- */
+  function _setTgGrid(sel){
+    var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var g=document.getElementById('set-tg'); if(!g) return; var h='';
+    for(var m=1;m<=12;m++){ var v=(typeof fp_getTargetGrowth==='function')?fp_getTargetGrowth(sel,m):5; h+='<div class="tg-cell"><span>'+MON[m-1]+'</span><input type="number" id="set-tg-'+m+'" value="'+v+'" inputmode="decimal"></div>'; }
+    g.innerHTML=h;
+  }
+  var _setFndSnap = null;
+  function _fndSnapshot(sel){
+    var tg=[]; for(var m=1;m<=12;m++){ tg.push((typeof fp_getTargetGrowth==='function')?fp_getTargetGrowth(sel,m):5); }
+    var cs={}; (typeof _csCompetitors==='function'?_csCompetitors(sel):[]).forEach(function(name){ var c=(typeof fp_getCompsetConfig==='function')?fp_getCompsetConfig(sel,name):{peso:100,offset:0}; cs[name]=[c.peso,c.offset]; });
+    return JSON.stringify({
+      a:(typeof fp_getBasePrice==='function')?fp_getBasePrice(sel):null,
+      f:(typeof fp_getFloor==='function')?fp_getFloor(sel):null,
+      o:(typeof fp_getOtaMarkup==='function')?fp_getOtaMarkup(sel):null,
+      e:(typeof fp_getElasticity==='function')?fp_getElasticity(sel):null, tg:tg, cs:cs });
+  }
+  var _evLabels = [];
+  var _csNames = [];
+  var COMP_FIELD = { firenze:'competitors_firenze', condotta:'competitors', alfani:'competitors_alfani', davids:'competitors_davids' };
+  function _csCompetitors(sel){
+    try { var f=COMP_FIELD[sel]; if(!f) return []; var m=(typeof EXPEDIA_DATA!=='undefined')?EXPEDIA_DATA[f]:null; return (m && typeof m==='object')?Object.keys(m).sort(function(a,b){return a.localeCompare(b);}) : []; }
+    catch(e){ return []; }
+  }
+  function _setCsList(sel){
+    var el=document.getElementById('set-cs'); if(!el) return;
+    _csNames=_csCompetitors(sel);
+    if(!_csNames.length){ el.innerHTML='<div class="set-note" style="margin:0">No compset data for this property.</div>'; return; }
+    var h='';
+    _csNames.forEach(function(name,i){
+      var cfg=(typeof fp_getCompsetConfig==='function')?fp_getCompsetConfig(sel,name):{peso:100,offset:0};
+      h += '<div class="cs-row"><div class="cs-name">'+escapeHtml(name)+'</div><div class="cs-inputs">'
+        + '<div class="cs-fld"><span>weight %</span><input type="number" id="set-cs-w-'+i+'" value="'+cfg.peso+'" min="0" max="100" inputmode="decimal"></div>'
+        + '<div class="cs-fld"><span>offset \u20ac</span><input type="number" id="set-cs-o-'+i+'" value="'+cfg.offset+'" inputmode="decimal"></div>'
+        + '</div></div>';
+    });
+    el.innerHTML=h;
+  }
+  function _setEvList(){
+    var el=document.getElementById('set-ev'); if(!el) return;
+    _evLabels=[];
+    if (typeof EVENTS==='undefined'){ el.innerHTML='<div class="set-note" style="margin:0">No events.</div>'; return; }
+    var w=(typeof _getEventWeights==='function')?_getEventWeights():{};
+    var today=todayYmd(), nearest={};
+    for (var k in EVENTS){ var lbl=EVENTS[k]; if(!lbl) continue; var yn=+k; if(yn<today) continue; if(nearest[lbl]==null||yn<nearest[lbl]) nearest[lbl]=yn; }
+    var labels=Object.keys(nearest).sort(function(a,b){ return nearest[a]-nearest[b]; });
+    if(!labels.length){ el.innerHTML='<div class="set-note" style="margin:0">No upcoming events.</div>'; return; }
+    _evLabels=labels; var h='';
+    labels.forEach(function(lbl,i){
+      var d=ymdToDate(nearest[lbl]); var ds=_ndP2(d.getDate())+'/'+_ndP2(d.getMonth()+1);
+      var val=(w[lbl]!=null && isFinite(+w[lbl]))?+w[lbl]:0;
+      h += '<div class="set-row"><label>'+escapeHtml(lbl)+' <small>next '+ds+'</small></label><input type="number" id="set-ev-'+i+'" value="'+val+'" min="-10" max="10" inputmode="decimal"></div>';
+    });
+    el.innerHTML=h;
+  }
+  function _setLmfGrid(sel){
+    var el=document.getElementById('set-lmf'); if(!el) return;
+    if(typeof fp_getLmfMatrix!=='function'){ el.innerHTML=''; return; }
+    var m=fp_getLmfMatrix(sel);
+    var occ=[10,20,30,40,50,60,70,80,100], dta=['0\u201310d','11\u201330d','31\u201360d','61d+'];
+    var h='<tr><th></th>'; dta.forEach(function(d){ h+='<th>'+d+'</th>'; }); h+='</tr>';
+    m.forEach(function(row,r){ h+='<tr><td>\u2264'+occ[r]+'%</td>'; row.forEach(function(v,c){ h+='<td><input type="number" id="set-lmf-'+r+'-'+c+'" value="'+v+'" inputmode="decimal"></td>'; }); h+='</tr>'; });
+    el.innerHTML=h;
+  }
+  var _promoDraft = [];
+  function _isoFromYmd(y){ if(!y) return ''; y=+y; if(!isFinite(y)||y<=0) return ''; return Math.floor(y/10000)+'-'+_ndP2(Math.floor((y%10000)/100))+'-'+_ndP2(y%100); }
+  function _ymdFromIso(iso){ if(!iso) return null; var v=+String(iso).replace(/-/g,''); return (isFinite(v)&&v>0)?v:null; }
+  function _promoReadDom(){
+    _promoDraft = _promoDraft.map(function(p,i){
+      function g(id){ var e=document.getElementById(id); return e?e.value:''; }
+      var pct=parseFloat(g('pr-p-'+i));
+      return { id:(p.id||('p'+Date.now()+'_'+i)), label:g('pr-l-'+i), pct:isFinite(pct)?pct:0,
+        bookFrom:_ymdFromIso(g('pr-bf-'+i)), bookTo:_ymdFromIso(g('pr-bt-'+i)),
+        stayFrom:_ymdFromIso(g('pr-sf-'+i)), stayTo:_ymdFromIso(g('pr-st-'+i)) };
+    });
+  }
+  function _setPromoList(sel){
+    var el=document.getElementById('set-promo'); if(!el) return;
+    var h='';
+    if(!_promoDraft.length){ h='<div class="set-note" style="margin:0 0 6px">No promos yet.</div>'; }
+    _promoDraft.forEach(function(p,i){
+      h += '<div class="pr-card">'
+        + '<div class="pr-top"><input class="pr-label" id="pr-l-'+i+'" placeholder="Label" value="'+escapeHtml(p.label||'')+'"><input class="pr-pct" id="pr-p-'+i+'" type="number" inputmode="decimal" placeholder="%" value="'+(p.pct!=null?p.pct:'')+'"></div>'
+        + '<div class="pr-dates">'
+        + '<div class="pr-fld"><span>book from</span><input type="date" id="pr-bf-'+i+'" value="'+_isoFromYmd(p.bookFrom)+'"></div>'
+        + '<div class="pr-fld"><span>book to</span><input type="date" id="pr-bt-'+i+'" value="'+_isoFromYmd(p.bookTo)+'"></div>'
+        + '<div class="pr-fld"><span>stay from</span><input type="date" id="pr-sf-'+i+'" value="'+_isoFromYmd(p.stayFrom)+'"></div>'
+        + '<div class="pr-fld"><span>stay to</span><input type="date" id="pr-st-'+i+'" value="'+_isoFromYmd(p.stayTo)+'"></div>'
+        + '</div>'
+        + '<button class="pr-del" type="button" data-pi="'+i+'">Delete</button>'
+        + '</div>';
+    });
+    el.innerHTML=h;
+    el.querySelectorAll('.pr-del').forEach(function(b){ b.addEventListener('click', function(){ _promoReadDom(); _promoDraft.splice(+b.getAttribute('data-pi'),1); _setPromoList(sel); }); });
+  }
+  function _setPkGrid(sel){
+    var el=document.getElementById('set-pk'); if(!el) return;
+    var thr=(typeof _rmesPickupGet==='function')?_rmesPickupGet(sel):[];
+    var prev=0, h='';
+    thr.forEach(function(t,i){
+      var lo=Math.round(prev*100), hi=Math.round(t.upTo*100);
+      var lbl = (i===0)? ('\u2264'+hi+'%') : (i===thr.length-1 ? ('>'+lo+'%') : (lo+'\u2013'+hi+'%'));
+      h += '<div class="set-row"><label>Fill '+lbl+' <small>fill-rate bucket</small></label><input type="number" id="set-pk-'+i+'" value="'+Math.round((t.dev||0)*100)+'" inputmode="decimal"></div>';
+      prev=t.upTo;
+    });
+    el.innerHTML=h;
+  }
+  function renderSettings(){
+    var sel=S.struct;
+    var lbl=(CFG.structures[sel] && (CFG.structures[sel].label||CFG.structures[sel].key)) || sel;
+    var pe=document.getElementById('set-prop'); if(pe) pe.textContent = lbl + ' \u00b7 shared config';
+    var a=document.getElementById('set-anchor'); if(a) a.value=(typeof fp_getBasePrice==='function')?(fp_getBasePrice(sel)||''):'';
+    var f=document.getElementById('set-floor'); if(f) f.value=(typeof fp_getFloor==='function')?(fp_getFloor(sel)||''):'';
+    var o=document.getElementById('set-ota'); if(o) o.value=(typeof fp_getOtaMarkup==='function')?fp_getOtaMarkup(sel):'';
+    var e=document.getElementById('set-elast'); if(e) e.value=(typeof fp_getElasticity==='function')?fp_getElasticity(sel):'';
+    _setTgGrid(sel);
+    _setPkGrid(sel);
+    _setEvList();
+    _setCsList(sel);
+    _setLmfGrid(sel);
+    _promoDraft = (typeof _getPromosForStruct==='function') ? JSON.parse(JSON.stringify(_getPromosForStruct(sel)||[])) : [];
+    _setPromoList(sel);
+    _setFndSnap = _fndSnapshot(sel);
+    var ov=document.getElementById('set-overlay');
+    if(ov) ov.querySelectorAll('.set-acc').forEach(function(x){ x.classList.remove('open'); });
+  }
+  function openSettings(){ renderSettings(); var o=document.getElementById('set-overlay'); if(o) o.classList.add('open'); }
+  function closeSettings(){ var o=document.getElementById('set-overlay'); if(o) o.classList.remove('open'); }
+  function applySettings(){
+    var sel=S.struct;
+    function pf(id){ var el=document.getElementById(id); if(!el) return null; var v=parseFloat(el.value); return isFinite(v)?v:null; }
+    var a=pf('set-anchor'), f=pf('set-floor'), o=pf('set-ota'), e=pf('set-elast');
+    if(a!=null && typeof fp_setBasePrice==='function') fp_setBasePrice(sel,a);
+    if(f!=null && typeof fp_setFloor==='function') fp_setFloor(sel,f);
+    if(o!=null && typeof fp_setOtaMarkup==='function') fp_setOtaMarkup(sel,o);
+    if(e!=null && typeof fp_setElasticity==='function') fp_setElasticity(sel,e);
+    if(typeof fp_setTargetGrowth==='function'){ for(var m=1;m<=12;m++){ var v=pf('set-tg-'+m); if(v!=null) fp_setTargetGrowth(sel,m,v); } }
+    if(typeof _rmesPickupSet==='function' && typeof _rmesPickupGet==='function'){
+      var thr=_rmesPickupGet(sel);
+      var newThr=thr.map(function(t,i){ var v=pf('set-pk-'+i); return { upTo:t.upTo, dev:(v!=null? v/100 : t.dev) }; });
+      _rmesPickupSet(sel, newThr);
+    }
+    // Event Factor weights (shared, by event name — not per property, no base re-freeze)
+    if(typeof _setEventWeights==='function' && _evLabels && _evLabels.length){
+      var ew=(typeof _getEventWeights==='function')?_getEventWeights():{};
+      _evLabels.forEach(function(lbl,i){ var v=pf('set-ev-'+i); if(v!=null) ew[lbl]=Math.max(-10,Math.min(10,v)); });
+      _setEventWeights(ew);
+    }
+    // Compset weights + offsets (per competitor) — affects Online Pricing & the Goal Value cap
+    if(typeof fp_setCompsetConfig==='function' && _csNames && _csNames.length){
+      _csNames.forEach(function(name,i){
+        var pw=pf('set-cs-w-'+i), po=pf('set-cs-o-'+i);
+        var cfg=(typeof fp_getCompsetConfig==='function')?fp_getCompsetConfig(sel,name):{peso:100,offset:0};
+        var peso=(pw!=null)?Math.max(0,Math.min(100,pw)):cfg.peso;
+        var off=(po!=null)?po:cfg.offset;
+        fp_setCompsetConfig(sel, name, peso, off);
+      });
+    }
+    // Last-Minute Factor matrix (affects the suggestion, not the frozen base)
+    if(typeof fp_setLmfMatrix==='function' && typeof fp_getLmfMatrix==='function'){
+      var lm=fp_getLmfMatrix(sel);
+      var nlm=lm.map(function(row,r){ return row.map(function(v,c){ var el=document.getElementById('set-lmf-'+r+'-'+c); var x=el?parseFloat(el.value):NaN; return isFinite(x)?x:v; }); });
+      fp_setLmfMatrix(sel, nlm);
+    }
+    // Promos (per property; affect the suggestion, not the frozen base)
+    if(typeof _setPromosForStruct==='function'){
+      _promoReadDom();
+      _setPromosForStruct(sel, _promoDraft.filter(function(p){ return (p.label && p.label.trim()) || (p.pct && p.pct!==0); }));
+    }
+    try {
+      if (typeof newrmesRefreezeRange==='function' && _setFndSnap !== null && _fndSnapshot(sel) !== _setFndSnap){
+        var d0=new Date(TODAY); var fromISO=d0.getFullYear()+'-'+_ndP2(d0.getMonth()+1)+'-'+_ndP2(d0.getDate());
+        var d1=new Date(TODAY); d1.setDate(d1.getDate()+364); var toISO=d1.getFullYear()+'-'+_ndP2(d1.getMonth()+1)+'-'+_ndP2(d1.getDate());
+        newrmesRefreezeRange([sel], fromISO, toISO);
+      }
+    } catch(err){}
+    closeSettings();
+    renderAll();
+  }
   function renderAll(){
     S.day = dayData(S.struct, S.ymd);
     S.saved = effectiveWeightsPct(S.struct, S.ymd);   // weights stored for THIS day
@@ -1060,6 +1310,24 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     document.getElementById('d-prev').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, -1), -1); });
     document.getElementById('d-next').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, 1), +1); });
     document.getElementById('d-today').addEventListener('click', function(){ setDay(todayYmd()); });
+    var _hset=document.getElementById('hud-set'); if(_hset) _hset.addEventListener('click', openSettings);
+    var _sap=document.getElementById('set-apply'); if(_sap) _sap.addEventListener('click', applySettings);
+    var _scl=document.getElementById('set-cancel'); if(_scl) _scl.addEventListener('click', closeSettings);
+    var _sov=document.getElementById('set-overlay');
+    if(_sov){
+      _sov.addEventListener('click', function(ev){ if(ev.target===_sov) closeSettings(); });
+      _sov.querySelectorAll('.set-acc-h').forEach(function(h){
+        h.addEventListener('click', function(){
+          var acc=h.parentNode, wasOpen=acc.classList.contains('open');
+          _sov.querySelectorAll('.set-acc').forEach(function(x){ x.classList.remove('open'); });
+          if(!wasOpen) acc.classList.add('open');
+        });
+      });
+    }
+    var _pkr=document.getElementById('set-pk-reset');
+    if(_pkr) _pkr.addEventListener('click', function(){ if(typeof _rmesPickupReset==='function'){ _rmesPickupReset(S.struct); _setPkGrid(S.struct); } });
+    var _pra=document.getElementById('set-promo-add');
+    if(_pra) _pra.addEventListener('click', function(){ _promoReadDom(); _promoDraft.push({ id:'p'+Date.now(), label:'', pct:0, bookFrom:null, bookTo:null, stayFrom:null, stayTo:null }); _setPromoList(S.struct); });
     var _flagBtn = document.getElementById('d-flag');
     if (_flagBtn) _flagBtn.addEventListener('click', function(){ toggleNeedDay(S.struct, S.ymd); renderFlagBtn(); renderNeedBar(); });
     var _needT = document.getElementById('need-toggle');
@@ -1191,5 +1459,71 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
   });
 })();
 </script>
+<div class="set-overlay" id="set-overlay">
+  <div class="set-card">
+    <h3 class="set-h">⚙ Settings</h3>
+    <div class="set-sub" id="set-prop">—</div>
+
+    <div class="set-acc" id="acc-base">
+      <button class="set-acc-h" type="button" data-acc="base">⚡ Base Price · foundation<span class="set-acc-caret">▸</span></button>
+      <div class="set-acc-body">
+        <div class="set-row"><label>Anchor Price <small>annual reference · Base stays within ±50% of it</small></label><input type="number" id="set-anchor" inputmode="decimal"></div>
+        <div class="set-row"><label>Floor Rate <small>absolute minimum €</small></label><input type="number" id="set-floor" inputmode="decimal"></div>
+        <div class="set-row"><label>OTA markup <small>% stripped from OTA rates in the LY ADR calc</small></label><input type="number" id="set-ota" inputmode="decimal"></div>
+        <div class="set-row"><label>Elasticity <small>price ↔ room-nights sensitivity (×)</small></label><input type="number" id="set-elast" step="0.1" inputmode="decimal"></div>
+        <div class="set-subsec">Target growth · % per stay-month</div>
+        <div class="set-tg" id="set-tg"></div>
+      </div>
+    </div>
+
+    <div class="set-acc" id="acc-pickup">
+      <button class="set-acc-h" type="button" data-acc="pickup">📈 Daily Pickup thresholds<span class="set-acc-caret">▸</span></button>
+      <div class="set-acc-body">
+        <div class="set-note" style="margin-top:0;margin-bottom:8px">Dev% the Daily Pickup factor adds at each fill-rate bucket. Higher fill → more push up. Only positive (never lowers the price).</div>
+        <div id="set-pk"></div>
+        <button class="kbtn alt sm" id="set-pk-reset" type="button" style="margin-top:10px">↺ Reset to default</button>
+      </div>
+    </div>
+
+    <div class="set-acc" id="acc-event">
+      <button class="set-acc-h" type="button" data-acc="event">✨ Event Factor<span class="set-acc-caret">▸</span></button>
+      <div class="set-acc-body">
+        <div class="set-note" style="margin-top:0;margin-bottom:8px">±% applied on event dates · shared across all properties · upcoming events only (−10 … +10).</div>
+        <div id="set-ev"></div>
+      </div>
+    </div>
+
+    <div class="set-acc" id="acc-lmf">
+      <button class="set-acc-h" type="button" data-acc="lmf">⏱ Last-Minute Factor<span class="set-acc-caret">▸</span></button>
+      <div class="set-acc-body">
+        <div class="set-note" style="margin-top:0;margin-bottom:8px">% adjustment by occupancy × days to arrival, applied close to the stay date. Rows = occupancy, columns = days to arrival.</div>
+        <div class="lmf-wrap"><table class="lmf-tbl" id="set-lmf"></table></div>
+      </div>
+    </div>
+
+    <div class="set-acc" id="acc-compset">
+      <button class="set-acc-h" type="button" data-acc="compset">🎯 Compset · weights &amp; offsets<span class="set-acc-caret">▸</span></button>
+      <div class="set-acc-body">
+        <div class="set-note" style="margin-top:0;margin-bottom:8px">Per-competitor weight (%) and offset (€) for this property. Weights drive the Online Pricing factor; weights + offsets set the Expedia Goal Value cap on the Base.</div>
+        <div id="set-cs"></div>
+      </div>
+    </div>
+
+    <div class="set-acc" id="acc-promo">
+      <button class="set-acc-h" type="button" data-acc="promo">🎟 Promo<span class="set-acc-caret">▸</span></button>
+      <div class="set-acc-body">
+        <div class="set-note" style="margin-top:0;margin-bottom:8px">% adjustment for a booking window × stay window. Leave a date empty for “any”. Per property.</div>
+        <div id="set-promo"></div>
+        <button class="kbtn alt sm" id="set-promo-add" type="button" style="margin-top:10px">+ Add promo</button>
+      </div>
+    </div>
+
+    <div class="set-actions">
+      <button class="kbtn" id="set-apply" type="button">✓ Apply</button>
+      <button class="kbtn alt sm" id="set-cancel" type="button">Cancel</button>
+    </div>
+    <div class="set-note">Shared with your team via cloud · applies to the selected property. Changing the Base Price foundation re-freezes the Base for the next 12 months.<br>Weights: edit on the price card (Adjust). Event Factor, Compset &amp; Promos: coming next.</div>
+  </div>
+</div>
 </body>
 </html>
