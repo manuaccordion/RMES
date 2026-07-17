@@ -235,6 +235,9 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
 .nd-go .nd-date{font-weight:700;font-size:13px}
 .nd-go .nd-sub{font-size:10px;color:var(--dim);margin-top:2px}
 .nd-rec{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--neon);white-space:nowrap}
+.nd-kpis{display:flex;flex-wrap:wrap;gap:3px 14px;margin-top:3px}
+.nd-kpi{font-size:10.5px;color:var(--dim);white-space:nowrap;font-family:var(--mono)}
+.nd-kpi .up{color:var(--green)} .nd-kpi .down{color:var(--pink)} .nd-kpi .flat{color:var(--dim)}
 .nd-x{background:none;border:1px solid var(--grid);color:var(--dim);border-radius:6px;min-width:28px;height:28px;font-size:15px;cursor:pointer;line-height:1}
 </style>
 </head>
@@ -276,7 +279,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       <button class="arw" id="d-today" aria-label="Today" title="Today">&#9679;</button>
       <button class="d-flag" id="d-flag" type="button" aria-label="Flag as need day">⚐</button>
     </div>
-    <div class="swipe-hint" id="swipe-hint">‹ swipe · flip · swipe ↑ = need day ›</div>
+    <div class="swipe-hint" id="swipe-hint">‹ swipe days · flick ↑ = need day ›</div>
     <div class="need-bar"><button class="need-toggle" id="need-toggle" type="button">⚑ Need days</button></div>
     <div class="need-panel" id="need-panel" style="display:none"></div>
 
@@ -761,7 +764,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
         '<div class="rankbar">' + bars + '</div>' +
         (rk.compsetAvgBeddy != null
           ? '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:5px">compset avg <b style="color:var(--txt)">' + eur(rk.compsetAvgBeddy) + '</b>'
-            + (rk.myBeddy != null ? ' \u00b7 you <b style="color:var(--txt)">' + eur(rk.myBeddy) + '</b> <span style="color:' + (rk.myBeddy-rk.compsetAvgBeddy>=0?'var(--green)':'var(--pink)') + '">(' + (rk.myBeddy-rk.compsetAvgBeddy>=0?'+':'') + eur1(rk.myBeddy-rk.compsetAvgBeddy) + ')</span>' : '')
+            + (rk.myBeddy != null ? ' \u00b7 you <b style="color:var(--txt)">' + eur(rk.myBeddy) + '</b> <span style="color:' + (rk.myBeddy-rk.compsetAvgBeddy>=0?'var(--green)':'var(--pink)') + '">(' + eur1(rk.myBeddy-rk.compsetAvgBeddy) + ')</span>' : '')
             + '</div>'
           : '') +
         '<div style="font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--dim);margin-top:4px">#1 = cheapest \u00b7 #' + rk.total + ' = priciest</div></div>');
@@ -827,11 +830,11 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     FACTORS.forEach(function(f){
       var fe = document.getElementById('fe-'+f.k); if (!fe) return;
       if (day.na[f.k]){ fe.textContent = '—'; fe.style.color = 'var(--dim)'; }
-      else { var v = r.contrib[f.k]; fe.textContent = (v>=0?'+':'')+eur1(v); fe.style.color = v>0.05?'var(--green)':(v<-0.05?'var(--pink)':'var(--dim)'); }
+      else { var v = r.contrib[f.k]; fe.textContent = eur1(v); fe.style.color = v>0.05?'var(--green)':(v<-0.05?'var(--pink)':'var(--dim)'); }
     });
     function _setComp(id, subId, eurv, subTxt){
       var b=document.getElementById(id), sub=document.getElementById(subId), wrap=b?b.parentNode:null;
-      if(b){ b.textContent=(eurv>=0?'+':'')+eur1(eurv); b.className='cr-eur '+(eurv>0.05?'up':(eurv<-0.05?'down':'')); }
+      if(b){ b.textContent=eur1(eurv); b.className='cr-eur '+(eurv>0.05?'up':(eurv<-0.05?'down':'')); }
       if(sub) sub.textContent = '· '+subTxt;
       if(wrap) wrap.classList.toggle('soft', Math.abs(eurv)<=0.05);
     }
@@ -840,7 +843,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     _setComp('comp-promo','cr-promo-sub', (r.promoEur||0), (day.promo && Math.abs(day.promo-1)>0.0001 ? ((day.promo-1)*100).toFixed(0)+'%' : 'no promo active'));
     var _fw = document.getElementById('cr-floor-wrap');
     if (_fw){
-      if (r.atFloor){ _fw.style.display=''; var _cf=document.getElementById('comp-floor'); if(_cf){ _cf.textContent=(r.floorEur>=0?'+':'')+eur1(r.floorEur); _cf.className='cr-eur '+(r.floorEur>=0?'up':'down'); } var _cfs=document.getElementById('cr-floor-sub'); if(_cfs)_cfs.textContent='· clamped at '+eur(day.floor); }
+      if (r.atFloor){ _fw.style.display=''; var _cf=document.getElementById('comp-floor'); if(_cf){ _cf.textContent=eur1(r.floorEur); _cf.className='cr-eur '+(r.floorEur>=0?'up':'down'); } var _cfs=document.getElementById('cr-floor-sub'); if(_cfs)_cfs.textContent='· clamped at '+eur(day.floor); }
       else _fw.style.display='none';
     }
     var _ct = document.getElementById('comp-total'); if (_ct) _ct.textContent = eur(r.price);
@@ -916,26 +919,18 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     days.forEach(function(ymd){
       var d = ymdToDate(ymd);
       var lbl = _ndP2(d.getDate())+'/'+_ndP2(d.getMonth()+1)+'/'+d.getFullYear();
-      var rec=null, luDiff=null, occ=null;
-      var evt = (typeof EVENTS!=='undefined' && EVENTS[ymd]) ? EVENTS[ymd] : null;
+      var kpiHtml = '<div class="nd-sub">'+_ndDow(ymd)+'</div>';
       try {
         var dd = dayData(S.struct, ymd);
-        if (dd && dd.effBase != null){
-          var r = compute(dd, effectiveWeightsPct(S.struct, ymd));
-          rec = r.price;
-          if (dd.lastUpdate != null) luDiff = rec - dd.lastUpdate;
-          occ = (dd.occ != null) ? dd.occ : null;
+        var st = dd && dd.stats;
+        if (st){
+          var occ = '<span class="nd-kpi">occ '+Math.round(st.curOcc*100)+'% '+vsTag(pctPts(st.curOcc, st.stlyOcc),'pt')+'</span>';
+          var adr = '<span class="nd-kpi">ADR OTB '+(st.curAdr!=null?eur(st.curAdr):'—')+' '+vsTag(pctChg(st.curAdr, st.stlyAdr),'pct')+'</span>';
+          kpiHtml = '<div class="nd-sub">'+_ndDow(ymd)+'</div><div class="nd-kpis">'+occ+adr+'</div>';
         }
       } catch(e){}
-      var sub = _ndDow(ymd) + (occ!=null ? ' \u00b7 occ '+Math.round(occ*100)+'%' : '') + (evt ? ' \u00b7 '+evt : '');
-      var diffTxt = '';
-      if (luDiff != null){
-        var col = luDiff > 0.5 ? 'var(--green)' : (luDiff < -0.5 ? 'var(--pink)' : 'var(--dim)');
-        diffTxt = ' <span style="color:'+col+';font-size:10px">('+(luDiff>=0?'+':'')+eur1(luDiff)+')</span>';
-      }
       html += '<div class="nd-item">'
-        + '<button class="nd-go" data-ymd="'+ymd+'"><div class="nd-date">'+lbl+'</div><div class="nd-sub">'+sub+'</div></button>'
-        + '<div class="nd-rec">'+(rec!=null?eur(rec):'\u2014')+diffTxt+'</div>'
+        + '<button class="nd-go" data-ymd="'+ymd+'"><div class="nd-date">'+lbl+'</div>'+kpiHtml+'</button>'
         + '<button class="nd-x" data-rm="'+ymd+'" title="Remove from Need days">\u00d7</button>'
         + '</div>';
     });
@@ -998,12 +993,12 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
   /* ---------- swipe (Tinder-style) ---------- */
   function wireSwipe(){
     var flip = document.getElementById('flip');
-    var x0 = null, y0 = null, dx = 0, dragging = false, decided = false;
+    var x0 = null, y0 = null, dx = 0, dragging = false, decided = false, t0 = 0;
     function start(x, y){
       // Swipe changes the day ONLY on the price face. On the weights face,
       // dragging must stay inside the sliders and never move the card.
       if (document.getElementById('flip').classList.contains('flipped')) { dragging = false; return; }
-      x0 = x; y0 = y; dx = 0; dragging = true; decided = false;
+      x0 = x; y0 = y; dx = 0; dragging = true; decided = false; t0 = Date.now();
     }
     function move(x, y){
       if (!dragging) return false;
@@ -1035,10 +1030,10 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       if (document.getElementById('flip').classList.contains('flipped')) return;
       var t = e.changedTouches && e.changedTouches[0];
       if (!t || x0 == null || y0 == null) return;
-      var totDy = t.clientY - y0, totDx = t.clientX - x0;
-      if (Math.abs(totDy) > 110 && Math.abs(totDx) < 55){
-        if (totDy < 0) addNeedDay(S.struct, S.ymd); else removeNeedDay(S.struct, S.ymd);
-        renderFlagBtn(); renderNeedBar(); if (typeof hideHint === 'function') hideHint();
+      var totDy = t.clientY - y0, totDx = t.clientX - x0, dt = Date.now() - (t0 || 0);
+      // deliberate FAST upward flick only (not a tap, not a scroll) → add to Need days
+      if (totDy < -130 && Math.abs(totDx) < 45 && dt > 0 && dt < 300 && (Math.abs(totDy)/dt) > 0.6){
+        if (!isNeedDay(S.struct, S.ymd)){ addNeedDay(S.struct, S.ymd); renderFlagBtn(); renderNeedBar(); if (typeof hideHint === 'function') hideHint(); }
       }
     });
     // mouse (desktop) drag
