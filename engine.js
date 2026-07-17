@@ -13744,7 +13744,7 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
   }
 };
 let PIRAMIDE_DAYS = 90;
-let PIRAMIDE_STRUCTS = {firenze: true, condotta: true, alfani: true};
+let PIRAMIDE_STRUCTS = {firenze: true, condotta: true, alfani: true, davids: true};
 function renderPiramide(){
   const wrapEl = document.getElementById('piramide-chart-wrap');
   const legendEl = document.getElementById('piramide-legend');
@@ -13773,6 +13773,7 @@ function renderPiramide(){
       {key:'firenze',  label:'Firenze',  color:'#3b6b9a'},
       {key:'condotta', label:'Condotta', color:'#3d7a4b'},
       {key:'alfani',   label:'Alfani',   color:'#8e5fa8'},
+      {key:'davids',   label:'Enis',     color:'#b0332f'},
     ];
     structPillsEl.innerHTML = sd.map(s => {
       const on = PIRAMIDE_STRUCTS[s.key];
@@ -13782,7 +13783,7 @@ function renderPiramide(){
       btn.addEventListener('click', () => {
         const k = btn.dataset.pstruct;
         PIRAMIDE_STRUCTS[k] = !PIRAMIDE_STRUCTS[k];
-        if (!PIRAMIDE_STRUCTS.firenze && !PIRAMIDE_STRUCTS.condotta && !PIRAMIDE_STRUCTS.alfani){
+        if (!PIRAMIDE_STRUCTS.firenze && !PIRAMIDE_STRUCTS.condotta && !PIRAMIDE_STRUCTS.alfani && !PIRAMIDE_STRUCTS.davids){
           PIRAMIDE_STRUCTS[k] = true;
         }
         renderPiramide();
@@ -13803,6 +13804,7 @@ function renderPiramide(){
     let priceFirenze = null;
     let priceCondotta = null;
     let priceAlfani = null;
+    let priceDavids = null;
     if (typeof EXPEDIA_DATA !== 'undefined' && EXPEDIA_DATA){
       if (EXPEDIA_DATA.firenze){
         const p = EXPEDIA_DATA.firenze[isoKey];
@@ -13815,6 +13817,10 @@ function renderPiramide(){
       if (EXPEDIA_DATA.alfani){
         const p = EXPEDIA_DATA.alfani[isoKey];
         if (p != null && isFinite(p) && p >= 10) priceAlfani = p;
+      }
+      if (EXPEDIA_DATA.davids){
+        const p = EXPEDIA_DATA.davids[isoKey];
+        if (p != null && isFinite(p) && p >= 10) priceDavids = p;
       }
     }
     const compEntries = [];  // { name, price }
@@ -13880,6 +13886,7 @@ function renderPiramide(){
       firenze: priceFirenze,
       condotta: priceCondotta,
       alfani: priceAlfani,
+      davids: priceDavids,
       compMin, compMax, compMed, compN: compEntries.length,
       compMinName, compMaxName,
     });
@@ -13891,7 +13898,7 @@ function renderPiramide(){
   const innerH = H - MARGIN.top - MARGIN.bottom;
   let yMin = Infinity, yMax = -Infinity;
   for (const p of points){
-    for (const v of [p.firenze, p.condotta, p.alfani, p.compMin, p.compMax]){
+    for (const v of [p.firenze, p.condotta, p.alfani, p.davids, p.compMin, p.compMax]){
       if (v != null && isFinite(v)){
         if (v < yMin) yMin = v;
         if (v > yMax) yMax = v;
@@ -13982,7 +13989,8 @@ function renderPiramide(){
   }
   if (PIRAMIDE_STRUCTS.alfani)   svg += buildLine('alfani',   '#8e5fa8', 2);  // viola
   if (PIRAMIDE_STRUCTS.firenze)  svg += buildLine('firenze',  '#3b6b9a', 2);  // blu
-  if (PIRAMIDE_STRUCTS.condotta) svg += buildLine('condotta', '#3d7a4b', 2);  // verde
+  if (PIRAMIDE_STRUCTS.condotta) svg += buildLine('condotta', '#3d7a4b', 2);  // green
+  if (PIRAMIDE_STRUCTS.davids)   svg += buildLine('davids',   '#b0332f', 2);  // red (Enis)
   for (const t of xTicks){
     svg += `<line x1="${t.x}" y1="${MARGIN.top + innerH}" x2="${t.x}" y2="${MARGIN.top + innerH + 4}" stroke="var(--ink-3)" stroke-width="1"/>`;
     svg += `<text x="${t.x}" y="${MARGIN.top + innerH + 16}" text-anchor="middle" fill="var(--ink-3)" font-size="10">${t.label}</text>`;
@@ -13999,6 +14007,7 @@ function renderPiramide(){
     if (PIRAMIDE_STRUCTS.firenze  && p.firenze  != null) tip += `Firenze Suite:    €${Math.round(p.firenze)}\n`;
     if (PIRAMIDE_STRUCTS.condotta && p.condotta != null) tip += `Condotta 16:      €${Math.round(p.condotta)}\n`;
     if (PIRAMIDE_STRUCTS.alfani   && p.alfani   != null) tip += `Palazzo Alfani:   €${Math.round(p.alfani)}\n`;
+    if (PIRAMIDE_STRUCTS.davids   && p.davids   != null) tip += `Enis Guesthouse:  €${Math.round(p.davids)}\n`;
     if (p.compMin != null){
       tip += '─────────────────\n';
       tip += `Compset: ${p.compN} competitor\n`;
@@ -16736,7 +16745,7 @@ function renderRateShopper(){
       <div class="panel-body flush">`;
     if (!sd.compMap || Object.keys(sd.compMap).length === 0){
       html += `<div style="padding:24px;text-align:center;color:var(--ink-3);font-size:12px;font-style:italic">
-        Caricheremo i dati di ${escapeHtml(sd.label)} non appena saranno disponibili nel rate shopper Expedia.
+        We\u2019ll add ${escapeHtml(sd.label)} here as soon as its data is available in the Expedia rate shopper.
       </div>`;
     } else {
       const allDates = new Set();
