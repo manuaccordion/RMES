@@ -113,7 +113,7 @@ body{
   box-shadow:0 18px 40px -20px rgba(7,11,20,.95)}
 .face.front{cursor:pointer}
 .face.back{position:absolute;inset:0;transform:rotateY(180deg);overflow-y:auto}
-.fday{text-align:center;font-family:var(--px);font-size:12px;color:var(--amber);margin-bottom:8px;letter-spacing:.02em}
+.fday{text-align:center;font-family:var(--mono);font-weight:700;font-size:15px;color:var(--amber);margin-bottom:8px;letter-spacing:.04em}
 .fday small{display:block;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:5px;letter-spacing:.04em;text-transform:none}
 .fday .evt{color:var(--pink)}
 .wprice{position:sticky;top:0;z-index:5;display:flex;align-items:baseline;justify-content:center;gap:12px;
@@ -181,7 +181,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
   text-shadow:0 0 22px rgba(53,208,255,.55)}
 .readout .rate.bump{animation:bump .35s ease}
 @keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.06)}100%{transform:scale(1)}}
-.readout .delta{font-family:var(--mono);font-size:12px;letter-spacing:.04em}
+.readout .delta{font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:5px 14px;border-radius:8px;display:inline-block}
 .kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:0 0 4px;text-align:left}
 .kpi{background:#0A1524;border:2px solid var(--grid);border-radius:3px;padding:9px 10px}
 .kpi .kl{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
@@ -213,6 +213,20 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
   *{animation:none!important}
   .flip{transition:none}
 }
+.d-flag{background:none;border:1.5px solid var(--grid);color:var(--dim);border-radius:8px;font-size:16px;cursor:pointer;min-width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center}
+.d-flag.on{border-color:var(--amber);color:var(--amber);background:rgba(240,180,60,.12)}
+.need-bar{display:flex;justify-content:center;margin:0 0 10px}
+.need-toggle{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);background:rgba(255,255,255,.03);border:1.5px solid var(--grid);border-radius:8px;padding:7px 14px;cursor:pointer}
+.need-toggle.has{color:var(--amber);border-color:var(--amber)}
+.need-panel{max-width:520px;margin:0 auto 14px;border:1.5px solid var(--grid);border-radius:12px;background:var(--card);padding:6px 12px}
+.nd-empty{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:center;padding:12px 8px;line-height:1.6}
+.nd-item{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--grid)}
+.nd-item:last-child{border-bottom:none}
+.nd-go{flex:1;text-align:left;background:none;border:none;color:var(--txt);font-family:var(--mono);cursor:pointer;padding:0}
+.nd-go .nd-date{font-weight:700;font-size:13px}
+.nd-go .nd-sub{font-size:10px;color:var(--dim);margin-top:2px}
+.nd-rec{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--neon);white-space:nowrap}
+.nd-x{background:none;border:1px solid var(--grid);color:var(--dim);border-radius:6px;min-width:28px;height:28px;font-size:15px;cursor:pointer;line-height:1}
 </style>
 </head>
 <body>
@@ -251,8 +265,11 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       <input type="date" id="d-date" aria-label="Stay date">
       <button class="arw" id="d-next" aria-label="Next day">&#9654;</button>
       <button class="arw" id="d-today" aria-label="Today" title="Today">&#9679;</button>
+      <button class="d-flag" id="d-flag" type="button" aria-label="Flag as need day">⚐</button>
     </div>
-    <div class="swipe-hint" id="swipe-hint">‹ swipe · tap to flip · swipe ›</div>
+    <div class="swipe-hint" id="swipe-hint">‹ swipe · flip · swipe ↑ = need day ›</div>
+    <div class="need-bar"><button class="need-toggle" id="need-toggle" type="button">⚑ Need days</button></div>
+    <div class="need-panel" id="need-panel" style="display:none"></div>
 
     <div class="deck" id="deck">
       <div class="ghost prev" id="ghost-prev"></div>
@@ -528,7 +545,17 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       var iso = ymdToIso(ymd);
       var rk = _sellCompRank(sel, iso, myExp);
       if (!rk) return null;
-      return { rank: rk.rank, total: rk.total, myExp: myExp };
+      var cAvgBeddy = null;
+      try {
+        var _cf = { firenze:'competitors_firenze', condotta:'competitors', alfani:'competitors_alfani', davids:'competitors_davids', nazionale:'competitors_nazionale', portenuove:'competitors_portenuove' };
+        var compMap = _cf[sel] ? EXPEDIA_DATA[_cf[sel]] : null;
+        if (compMap){
+          var ps = [];
+          for (var cn in compMap){ var v = compMap[cn] ? compMap[cn][iso] : null; if (v != null && isFinite(v) && v >= 10) ps.push(v); }
+          if (ps.length){ var avgExp = ps.reduce(function(a,b){return a+b;},0)/ps.length; cAvgBeddy = (div && div>0) ? avgExp/div : avgExp; }
+        }
+      } catch(e){}
+      return { rank: rk.rank, total: rk.total, myExp: myExp, myBeddy: suggBase, compsetAvgBeddy: cAvgBeddy };
     } catch(e){ return null; }
   }
 
@@ -718,6 +745,11 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       cells.push('<div class="kpi"><div class="kl">Price position</div>' +
         '<div class="kv">#' + rk.rank + ' <small style="opacity:.6;font-size:9px">of ' + rk.total + '</small></div>' +
         '<div class="rankbar">' + bars + '</div>' +
+        (rk.compsetAvgBeddy != null
+          ? '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:5px">compset avg <b style="color:var(--txt)">' + eur(rk.compsetAvgBeddy) + '</b>'
+            + (rk.myBeddy != null ? ' \u00b7 you <b style="color:var(--txt)">' + eur(rk.myBeddy) + '</b> <span style="color:' + (rk.myBeddy-rk.compsetAvgBeddy>=0?'var(--green)':'var(--pink)') + '">(' + (rk.myBeddy-rk.compsetAvgBeddy>=0?'+':'') + eur1(rk.myBeddy-rk.compsetAvgBeddy) + ')</span>' : '')
+            + '</div>'
+          : '') +
         '<div style="font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--dim);margin-top:4px">#1 = cheapest \u00b7 #' + rk.total + ' = priciest</div></div>');
     } else {
       cells.push('<div class="kpi"><div class="kl">Price position</div>' +
@@ -766,6 +798,9 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     deltaEl.className = 'delta ' + (diff > 0.5 ? 'up' : (diff < -0.5 ? 'down' : 'flat'));
     deltaEl.textContent = 'Last update: ' + eur(day.lastUpdate) + '  →  ' + eur1(diff) +
       (day.lastUpdate ? '  (' + (diff>=0?'+':'') + (diff/day.lastUpdate*100).toFixed(1) + '%)' : '');
+    var _dp = (day.lastUpdate) ? Math.abs(diff/day.lastUpdate) : 0;
+    var _da = Math.min(0.10 + _dp*1.3, 0.55).toFixed(3);
+    deltaEl.style.background = (diff > 0.5) ? 'rgba(74,124,89,'+_da+')' : (diff < -0.5 ? 'rgba(214,72,96,'+_da+')' : 'transparent');
     var wpDelta = document.getElementById('wp-delta');
     if (wpDelta){
       wpDelta.className = 'wp-delta ' + (diff > 0.5 ? 'up' : (diff < -0.5 ? 'down' : 'flat'));
@@ -832,6 +867,86 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     document.getElementById('unaccept').disabled = (day.source === 'base');
   }
 
+  /* ---------- Need days (watchlist) ---------- */
+  var NEED_KEY = 'rmes_need_days_v1';
+  /* Shared watchlist, format {struct:{ymd:{ts,on}}} — per-ymd cells so Firebase merges
+     additions from different colleagues (newer ts wins; removals are tombstones on:false). */
+  function _needRead(){
+    var o; try { o = JSON.parse(localStorage.getItem(NEED_KEY) || '{}') || {}; } catch(e){ return {}; }
+    for (var s in o){ if (Array.isArray(o[s])){ var m={}; o[s].forEach(function(y){ m[y]={ts:new Date().toISOString(), on:true}; }); o[s]=m; } }  // migrate old array format
+    return o;
+  }
+  function _needWrite(o){ try { localStorage.setItem(NEED_KEY, JSON.stringify(o)); } catch(e){} }
+  function _needSetFlag(struct, ymd, on){ var o=_needRead(); if(!o[struct]) o[struct]={}; o[struct][ymd] = { ts: new Date().toISOString(), on: !!on }; _needWrite(o); }
+  function getNeedDays(struct){
+    var o = _needRead(); var m = o[struct] || {}; var today = todayYmd(); var out = [];
+    for (var y in m){ var e=m[y], yn=+y; if (e && e.on && isFinite(yn) && yn >= today) out.push(yn); }
+    out.sort(function(a,b){ return a-b; });
+    return out;
+  }
+  function isNeedDay(struct, ymd){ var e=(_needRead()[struct]||{})[ymd]; return !!(e && e.on); }
+  function addNeedDay(struct, ymd){ _needSetFlag(struct, ymd, true); }
+  function removeNeedDay(struct, ymd){ _needSetFlag(struct, ymd, false); }
+  function toggleNeedDay(struct, ymd){ _needSetFlag(struct, ymd, !isNeedDay(struct, ymd)); }
+  function renderFlagBtn(){
+    var b = document.getElementById('d-flag'); if(!b) return;
+    var on = isNeedDay(S.struct, S.ymd);
+    b.classList.toggle('on', on);
+    b.textContent = on ? '\u2691' : '\u2690';
+    b.title = (on ? 'Remove from Need days' : 'Add to Need days') + ' (or swipe up / down)';
+  }
+  function renderNeedBar(){
+    var t = document.getElementById('need-toggle'); if(!t) return;
+    var n = getNeedDays(S.struct).length;
+    t.textContent = '\u2691 Need days' + (n ? ' (' + n + ')' : '');
+    t.classList.toggle('has', n > 0);
+    var p = document.getElementById('need-panel');
+    if (p && p.style.display !== 'none') renderNeedPanel();
+  }
+  function _ndDow(ymd){ var d=ymdToDate(ymd); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]; }
+  function _ndP2(n){ return (n<10?'0':'')+n; }
+  function renderNeedPanel(){
+    var p = document.getElementById('need-panel'); if(!p) return;
+    var days = getNeedDays(S.struct);
+    if (!days.length){ p.innerHTML = '<div class="nd-empty">No days flagged yet.<br>Swipe a day up (or tap \u2690) to add it here.</div>'; return; }
+    var html = '';
+    days.forEach(function(ymd){
+      var d = ymdToDate(ymd);
+      var lbl = _ndP2(d.getDate())+'/'+_ndP2(d.getMonth()+1)+'/'+d.getFullYear();
+      var rec=null, luDiff=null, occ=null;
+      var evt = (typeof EVENTS!=='undefined' && EVENTS[ymd]) ? EVENTS[ymd] : null;
+      try {
+        var dd = dayData(S.struct, ymd);
+        if (dd && dd.effBase != null){
+          var r = compute(dd, effectiveWeightsPct(S.struct, ymd));
+          rec = r.price;
+          if (dd.lastUpdate != null) luDiff = rec - dd.lastUpdate;
+          occ = (dd.occ != null) ? dd.occ : null;
+        }
+      } catch(e){}
+      var sub = _ndDow(ymd) + (occ!=null ? ' \u00b7 occ '+Math.round(occ*100)+'%' : '') + (evt ? ' \u00b7 '+evt : '');
+      var diffTxt = '';
+      if (luDiff != null){
+        var col = luDiff > 0.5 ? 'var(--green)' : (luDiff < -0.5 ? 'var(--pink)' : 'var(--dim)');
+        diffTxt = ' <span style="color:'+col+';font-size:10px">('+(luDiff>=0?'+':'')+eur1(luDiff)+')</span>';
+      }
+      html += '<div class="nd-item">'
+        + '<button class="nd-go" data-ymd="'+ymd+'"><div class="nd-date">'+lbl+'</div><div class="nd-sub">'+sub+'</div></button>'
+        + '<div class="nd-rec">'+(rec!=null?eur(rec):'\u2014')+diffTxt+'</div>'
+        + '<button class="nd-x" data-rm="'+ymd+'" title="Remove from Need days">\u00d7</button>'
+        + '</div>';
+    });
+    p.innerHTML = html;
+    p.querySelectorAll('.nd-go').forEach(function(b){ b.addEventListener('click', function(){ var pp=document.getElementById('need-panel'); if(pp) pp.style.display='none'; setDay(+b.getAttribute('data-ymd')); }); });
+    p.querySelectorAll('.nd-x').forEach(function(b){ b.addEventListener('click', function(){ removeNeedDay(S.struct, +b.getAttribute('data-rm')); renderNeedPanel(); renderNeedBar(); renderFlagBtn(); }); });
+  }
+  try {
+    var _prevRemoteHook = (typeof window.rmesCloudOnRemoteUpdate === 'function') ? window.rmesCloudOnRemoteUpdate : null;
+    window.rmesCloudOnRemoteUpdate = function(){
+      try { if (_prevRemoteHook) _prevRemoteHook(); } catch(e){}
+      try { renderFlagBtn(); renderNeedBar(); } catch(e){}
+    };
+  } catch(e){}
   function renderAll(){
     S.day = dayData(S.struct, S.ymd);
     S.saved = effectiveWeightsPct(S.struct, S.ymd);   // weights stored for THIS day
@@ -842,6 +957,8 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     renderGhosts();
     renderFactors();
     renderOutput();
+    renderFlagBtn();
+    renderNeedBar();
   }
   function setDay(ymd, dir){
     var min = todayYmd(), max = addDaysYmd(min, 364);
@@ -911,6 +1028,16 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     flip.addEventListener('touchstart', function(e){ start(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
     flip.addEventListener('touchmove', function(e){ if (move(e.touches[0].clientX, e.touches[0].clientY)) e.preventDefault(); }, {passive:false});
     flip.addEventListener('touchend', end);
+    flip.addEventListener('touchend', function(e){
+      if (document.getElementById('flip').classList.contains('flipped')) return;
+      var t = e.changedTouches && e.changedTouches[0];
+      if (!t || x0 == null || y0 == null) return;
+      var totDy = t.clientY - y0, totDx = t.clientX - x0;
+      if (Math.abs(totDy) > 110 && Math.abs(totDx) < 55){
+        if (totDy < 0) addNeedDay(S.struct, S.ymd); else removeNeedDay(S.struct, S.ymd);
+        renderFlagBtn(); renderNeedBar(); if (typeof hideHint === 'function') hideHint();
+      }
+    });
     // mouse (desktop) drag
     flip.addEventListener('mousedown', function(e){ if (e.target.closest('input,button,.acc')) return; start(e.clientX, e.clientY);
       var mm = function(ev){ move(ev.clientX, ev.clientY); }, mu = function(){ end(); document.removeEventListener('mousemove', mm); document.removeEventListener('mouseup', mu); };
@@ -935,6 +1062,10 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     document.getElementById('d-prev').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, -1), -1); });
     document.getElementById('d-next').addEventListener('click', function(){ setDay(addDaysYmd(S.ymd, 1), +1); });
     document.getElementById('d-today').addEventListener('click', function(){ setDay(todayYmd()); });
+    var _flagBtn = document.getElementById('d-flag');
+    if (_flagBtn) _flagBtn.addEventListener('click', function(){ toggleNeedDay(S.struct, S.ymd); renderFlagBtn(); renderNeedBar(); });
+    var _needT = document.getElementById('need-toggle');
+    if (_needT) _needT.addEventListener('click', function(){ var p=document.getElementById('need-panel'); if(!p) return; if (p.style.display==='none'){ renderNeedPanel(); p.style.display='block'; } else { p.style.display='none'; } });
     document.getElementById('d-date').addEventListener('change', function(e){
       var v = isoToYmd(e.target.value);
       if (isFinite(v)) setDay(v); else renderMeta();

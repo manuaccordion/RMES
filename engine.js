@@ -49,6 +49,7 @@ const RMES_CLOUD = (function(){
     'notes_journal_v2',
     'rmes_dow_premium_v1',
     'rmes_promos_v1',
+    'rmes_need_days_v1',   // shared "Need days" watchlist (Pricing Console) — per-cell merge
     '_data_fingerprint_v1'
   ];
   const FIREBASE_CONFIG = {
@@ -443,7 +444,7 @@ const RMES_CLOUD = (function(){
   // These are edited independently per day by each person. A whole-object last-write-wins
   // replace lets one push clobber the other's edits on different days, so we UNION per
   // (struct, ymd) cell and resolve same-cell conflicts by the newer timestamp.
-  const CELL_MERGE_KEYS = ['rmes_frozen_base_override_v1', 'rmes_accepted_v1', 'rmes_base_rate_overrides_v1', 'rmes_weights_by_day_v1'];
+  const CELL_MERGE_KEYS = ['rmes_frozen_base_override_v1', 'rmes_accepted_v1', 'rmes_base_rate_overrides_v1', 'rmes_weights_by_day_v1', 'rmes_need_days_v1'];
   function _cellTs(v){
     // Ritorna il timestamp più recente di una "cella" per risolvere conflitti same-cell.
     // Schemi supportati: {ts} (accepted/frozen override), {savedAt} (final override leaf),
@@ -11438,10 +11439,8 @@ function fp_renderFoundationConfigBox(structKey){
 function _sellCompRank(structKey, iso, myExpedia){
   if (myExpedia == null || !isFinite(myExpedia)) return null;
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return null;
-  const compMap = (structKey === 'alfani') ? EXPEDIA_DATA.competitors_alfani
-                : (structKey === 'firenze') ? EXPEDIA_DATA.competitors_firenze
-                : (structKey === 'davids') ? EXPEDIA_DATA.competitors_davids
-                : (structKey === 'condotta') ? EXPEDIA_DATA.competitors : null;
+  const _cf = { firenze:'competitors_firenze', condotta:'competitors', alfani:'competitors_alfani', davids:'competitors_davids', nazionale:'competitors_nazionale', portenuove:'competitors_portenuove' };
+  const compMap = _cf[structKey] ? EXPEDIA_DATA[_cf[structKey]] : null;
   if (!compMap) return null;
   const prices = [];
   for (const cn in compMap){ const v = compMap[cn] ? compMap[cn][iso] : null; if (v != null && isFinite(v) && v >= 10) prices.push(v); }
@@ -11487,6 +11486,26 @@ function _preserveSellHorizontalScroll(fn){
   });
 }
 
+/* Read the "Need days" watchlist (set from the Pricing Console, stored in localStorage,
+   shared per-browser origin) → Set of ymd numbers for the given property. */
+function _rmesNeedDaysSet(structKey){
+  var set = new Set();
+  try {
+    var o = JSON.parse(localStorage.getItem('rmes_need_days_v1') || '{}') || {};
+    var m = o[structKey];
+    if (Array.isArray(m)){ for (var i=0;i<m.length;i++){ var y=+m[i]; if(isFinite(y)) set.add(y); } }
+    else if (m && typeof m === 'object'){ for (var k in m){ var e=m[k]; if(e && e.on){ var yn=+k; if(isFinite(yn)) set.add(yn); } } }
+  } catch(e){}
+  return set;
+}
+try {
+  window.addEventListener('storage', function(ev){
+    if (ev && ev.key === 'rmes_need_days_v1' && typeof CURRENT_TAB !== 'undefined' && CURRENT_TAB === 'sell'
+        && typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined'){
+      try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
+    }
+  });
+} catch(e){}
 function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   if (!wrap) return;
   const orig = wrap.querySelector('table.sell-table');
@@ -11587,6 +11606,7 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   cornerTh.colSpan = 2;
   cornerTh.innerHTML = '<span style="font-size:10px;color:var(--ink-3);font-weight:500;letter-spacing:.04em;text-transform:uppercase">Metric ↓ / Date →</span>';
   trH.appendChild(cornerTh);
+  const _needSet = (typeof _rmesNeedDaysSet === 'function') ? _rmesNeedDaysSet(sel) : null;
   // Per ogni data row originale, prendo data + DoW dalla 3a e 5a <td>
   for (let dIdxH = 0; dIdxH < dataRows.length; dIdxH++){
     const dr = dataRows[dIdxH];
@@ -11598,7 +11618,9 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
     if (occLvls[dIdxH]) thD.classList.add('occ-lvl-' + occLvls[dIdxH]);
     const isWE = (dowText === 'Ven' || dowText === 'Sab' || dowText === 'Dom' || dowText === 'Fri' || dowText === 'Sat' || dowText === 'Sun');
     const dowColor = isWE ? 'color:#c4823b;font-weight:700' : 'color:var(--ink-2);font-weight:500';
-    thD.innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em">${dateText}</div>
+    let _ndFlag = '';
+    try { const _p = dateText.split('/'); if (_p.length === 3){ const _yn = +(_p[2]+_p[1]+_p[0]); if (_needSet && _needSet.has(_yn)){ thD.classList.add('need-day'); _ndFlag = '<span class="nd-mark" title="In your Need days watchlist (Pricing Console)">\u2691</span>'; } } } catch(e){}
+    thD.innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em">${_ndFlag}${dateText}</div>
                      <div style="font-size:10.5px;${dowColor};margin-top:1px">${dowText}</div>`;
     trH.appendChild(thD);
   }

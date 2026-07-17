@@ -1397,6 +1397,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 .big-byprop:hover{opacity:.7}
 .big-card-link:hover{opacity:.65;text-decoration:underline}
 @media(max-width:600px){.big-hero-val{font-size:24px}.big-card{padding:13px 14px}}
+.sell-tposed-datecol.need-day{background:rgba(196,131,59,.12) !important;box-shadow:inset 0 3px 0 #c4823b}
+.sell-tposed-datecol .nd-mark{color:#c4823b;margin-right:4px;font-size:12px;vertical-align:1px}
 </style>
 </head>
 <body>
@@ -2236,6 +2238,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             Click anywhere on the cell to open the full <b>calculation modal</b> with the 5 factors, LMF and Event Factor breakdown.
           </li>
           <li><b>Rate Shopper</b> — Mine w/RMES · Mine · Compset, all in Expedia space, with the market rank (1 = cheapest in the compset). <b>Note</b>: any Expedia value &lt; 10 € is filtered out (it's a minimum-stay number leaked into the price column, not a real rate).</li>
+          <li><b>Need days marker</b> ⚑ — a day you flagged in the <b>Pricing Console</b> watchlist ("Need days") shows a ⚑ and an amber header on its date column here, so the days you're watching stand out at a glance. The watchlist lives in this browser and the marker updates live when you flag/unflag from the console.</li>
         </ul>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Accept / Override by range — the panel above the table</h4>
