@@ -139,6 +139,13 @@ body{
 .fac .sig{font-family:var(--mono);font-size:11px;margin:0}
 .fac .fac-line{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:0 0 5px}
 .fac .fac-eur{font-family:var(--mono);font-weight:700;font-size:13px;white-space:nowrap}
+.comp-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-family:var(--mono);font-size:12.5px;padding:8px 0;border-bottom:1px solid var(--grid)}
+.comp-row .cr-lbl{color:var(--txt)} .comp-row .cr-lbl small{opacity:.6;font-size:10.5px}
+.comp-row .cr-eur{font-weight:700;white-space:nowrap} .comp-row .cr-eur.up{color:var(--green)} .comp-row .cr-eur.down{color:var(--pink)}
+.comp-row.soft{opacity:.45}
+.comp-row.comp-base{border-top:2px solid var(--grid);margin-top:2px}
+.comp-row.comp-total{border-bottom:none;border-top:2px solid var(--grid);margin-top:2px}
+.comp-row.comp-total .cr-lbl{color:var(--neon);font-weight:700} .comp-row.comp-total .cr-eur{color:var(--neon);font-size:16px}
 .fac.na .nm,.fac.na .ds{opacity:.5}
 .fac.na .wv{color:var(--dim)}
 /* DJ-style faders: tall track, big grooved handle, easy to grab with a thumb. */
@@ -308,7 +315,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
             <span class="wp-delta flat" id="wp-delta"></span>
           </div>
           <div class="wtot">
-            <h4 style="margin:0">Factor weights</h4>
+            <h4 style="margin:0">Rate composition</h4>
             <span class="sum" id="wsum">100 / 100</span>
           </div>
           <div id="facs"></div>
@@ -319,10 +326,6 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
             <button class="kbtn alt sm" id="w-default">Set as default</button>
           </div>
           <span class="dirty" id="w-dirty"></span>
-          <div class="why-wrap">
-            <h4 class="why-h">Price breakdown</h4>
-            <ul class="why" id="why"></ul>
-          </div>
           <button class="flip-btn" id="to-front" type="button">⟳ Back to price</button>
         </div>
       </div>
@@ -618,7 +621,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
 
   function renderFactors(){
     var el = document.getElementById('facs');
-    el.innerHTML = FACTORS.map(function(f, i){
+    var facHtml = FACTORS.map(function(f, i){
       var naReason = S.day ? S.day.na[f.k] : null;
       var sigInner = '<span class="sig"></span>';
       if (S.day){
@@ -638,6 +641,14 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
         'aria-label="'+f.label+' weight" title="'+(naReason ? escapeHtml(naReason) : f.label)+'">'+
       '</div>';
     }).join('');
+    el.innerHTML =
+      '<div class="comp-row comp-base"><span class="cr-lbl">Base Price <small>· structural, per day</small></span><b class="cr-eur" id="comp-base">—</b></div>' +
+      facHtml +
+      '<div class="comp-row" id="cr-lmf-wrap"><span class="cr-lbl">Last-Minute Factor <small id="cr-lmf-sub"></small></span><b class="cr-eur" id="comp-lmf">—</b></div>' +
+      '<div class="comp-row" id="cr-event-wrap"><span class="cr-lbl">Event Factor <small id="cr-event-sub"></small></span><b class="cr-eur" id="comp-event">—</b></div>' +
+      '<div class="comp-row" id="cr-promo-wrap"><span class="cr-lbl">Promo <small id="cr-promo-sub"></small></span><b class="cr-eur" id="comp-promo">—</b></div>' +
+      '<div class="comp-row" id="cr-floor-wrap" style="display:none"><span class="cr-lbl">Floor Rate <small id="cr-floor-sub"></small></span><b class="cr-eur" id="comp-floor">—</b></div>' +
+      '<div class="comp-row comp-total"><span class="cr-lbl">Recommended rate</span><b class="cr-eur" id="comp-total">—</b></div>';
     el.querySelectorAll('input[type=range]').forEach(function(r){
       r.addEventListener('input', function(){
         S.w[r.dataset.k] = +r.value;
@@ -776,7 +787,8 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       if (wr) wr.textContent = '—'; if (wd) wd.textContent = '';
       deltaEl.className = 'delta flat';
       deltaEl.textContent = 'No Base Price for this day';
-      if (whyEl) whyEl.innerHTML = '<li class="muted"><span>No price for this date.</span><b></b></li>';
+      ['comp-base','comp-lmf','comp-event','comp-promo','comp-floor','comp-total'].forEach(function(id){ var e=document.getElementById(id); if(e) e.textContent='—'; });
+      FACTORS.forEach(function(f){ var fe=document.getElementById('fe-'+f.k); if(fe) fe.textContent=''; });
       noteEl.textContent = '';
       document.getElementById('accept').disabled = true;
       document.getElementById('unaccept').disabled = true;
@@ -810,44 +822,28 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       wpDelta.textContent = (day.lastUpdate != null) ? (eur1(diff)) : '';
     }
 
-    // per-factor € shown live inside each weight slider row (fused view)
+    // ---- Unified composition (single list): base + per-factor € + customizations + total ----
+    var _cb = document.getElementById('comp-base'); if (_cb) _cb.textContent = eur(day.effBase);
     FACTORS.forEach(function(f){
-      var fe = document.getElementById('fe-'+f.k);
-      if (!fe) return;
+      var fe = document.getElementById('fe-'+f.k); if (!fe) return;
       if (day.na[f.k]){ fe.textContent = '—'; fe.style.color = 'var(--dim)'; }
-      else {
-        var v = r.contrib[f.k];
-        fe.textContent = (v>=0?'+':'') + eur1(v);
-        fe.style.color = v > 0.05 ? 'var(--green)' : (v < -0.05 ? 'var(--pink)' : 'var(--dim)');
-      }
+      else { var v = r.contrib[f.k]; fe.textContent = (v>=0?'+':'')+eur1(v); fe.style.color = v>0.05?'var(--green)':(v<-0.05?'var(--pink)':'var(--dim)'); }
     });
-    // Breakdown: Base + 5-factors subtotal + customizations (always shown) + total
-    var facSum = 0; FACTORS.forEach(function(f){ if(!day.na[f.k]) facSum += r.contrib[f.k]; });
-    var lmfE=(r.lmfEur||0), evE=(r.eventEur||0), prE=(r.promoEur||0);
-    var rows = [];
-    rows.push({ head:true, label:'Base Price', sub:'structural, per day', txt:eur(day.effBase) });
-    rows.push({ label:'Factors', sub:'5 signals combined (above)', eurv:facSum });
-    rows.push({ label:'Last-Minute Factor', sub:(day.lmf ? day.lmf.toFixed(1)+'%' : 'not active'), eurv:lmfE, soft:(Math.abs(lmfE)<=0.05) });
-    rows.push({ label:'Event Factor', sub:(day.eventName ? escapeHtml(day.eventName) : 'no event configured'), eurv:evE, soft:(Math.abs(evE)<=0.05) });
-    rows.push({ label:'Promo', sub:(day.promo && Math.abs(day.promo-1)>0.0001 ? ((day.promo-1)*100).toFixed(0)+'%' : 'no promo active'), eurv:prE, soft:(Math.abs(prE)<=0.05) });
-    if (r.atFloor) rows.push({ label:'Floor Rate', sub:'clamped at '+eur(day.floor), eurv:r.floorEur });
-    var maxAbs = Math.max(Math.abs(facSum), Math.abs(lmfE), Math.abs(evE), Math.abs(prE), 0.01);
-    var h = '';
-    rows.forEach(function(x){
-      var val = (x.eurv == null) ? x.txt : ((x.eurv>=0?'+':'')+eur1(x.eurv));
-      var pos = (x.eurv == null) ? true : (x.eurv >= 0);
-      var cls = (x.eurv == null) ? '' : (pos ? 'up' : 'down');
-      var liCls = (x.head?'head':'') + (x.soft?' muted':'');
-      h += '<li class="'+liCls.trim()+'">'+
-             '<span>'+x.label+' <small style="opacity:.65">· '+x.sub+'</small></span>'+
-             '<b class="'+cls+'">'+val+'</b>';
-      if (x.eurv != null && Math.abs(x.eurv) > 0.05){
-        h += '<span class="cbar"><i style="width:'+(Math.abs(x.eurv)/maxAbs*100).toFixed(0)+'%;background:'+(pos?'var(--green)':'var(--pink)')+'"></i></span>';
-      }
-      h += '</li>';
-    });
-    h += '<li class="tot"><span>Recommended rate</span><b>'+eur(r.price)+'</b></li>';
-    if (whyEl) whyEl.innerHTML = h;
+    function _setComp(id, subId, eurv, subTxt){
+      var b=document.getElementById(id), sub=document.getElementById(subId), wrap=b?b.parentNode:null;
+      if(b){ b.textContent=(eurv>=0?'+':'')+eur1(eurv); b.className='cr-eur '+(eurv>0.05?'up':(eurv<-0.05?'down':'')); }
+      if(sub) sub.textContent = '· '+subTxt;
+      if(wrap) wrap.classList.toggle('soft', Math.abs(eurv)<=0.05);
+    }
+    _setComp('comp-lmf','cr-lmf-sub', (r.lmfEur||0), (day.lmf ? day.lmf.toFixed(1)+'%' : 'not active'));
+    _setComp('comp-event','cr-event-sub', (r.eventEur||0), (day.eventName ? day.eventName : 'no event configured'));
+    _setComp('comp-promo','cr-promo-sub', (r.promoEur||0), (day.promo && Math.abs(day.promo-1)>0.0001 ? ((day.promo-1)*100).toFixed(0)+'%' : 'no promo active'));
+    var _fw = document.getElementById('cr-floor-wrap');
+    if (_fw){
+      if (r.atFloor){ _fw.style.display=''; var _cf=document.getElementById('comp-floor'); if(_cf){ _cf.textContent=(r.floorEur>=0?'+':'')+eur1(r.floorEur); _cf.className='cr-eur '+(r.floorEur>=0?'up':'down'); } var _cfs=document.getElementById('cr-floor-sub'); if(_cfs)_cfs.textContent='· clamped at '+eur(day.floor); }
+      else _fw.style.display='none';
+    }
+    var _ct = document.getElementById('comp-total'); if (_ct) _ct.textContent = eur(r.price);
 
     var notes = [];
     notes.push('Composite ×'+r.composite.toFixed(3)+(r.hitCap ? ' (capped at ±'+Math.round(day.cap*100)+'%)' : ''));
