@@ -277,6 +277,8 @@ main{flex:1;padding:8px 16px 24px}
 .ctab tbody tr:last-child td{border-bottom:0}
 .ctab tr.me td{background:rgba(14,159,194,.09);font-weight:600;color:#0B7A97}
 .ctab tr.me .ctab-nm{background:rgba(14,159,194,.14);color:#0B7A97;font-weight:600}
+.ctab tr.me2 td{background:rgba(14,159,194,.045);font-weight:600;color:#3E8FA6}
+.ctab tr.me2 .ctab-nm{background:rgba(14,159,194,.08);color:#3E8FA6;font-weight:600}
 /* override section in drill-in */
 .ovr-box{margin-top:18px;padding:14px;border-radius:14px;background:var(--org-tint);border:1px solid var(--org-tint2)}
 .ovr-box .ovr-t{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--org-deep);margin-bottom:8px}
@@ -355,7 +357,7 @@ main{flex:1;padding:8px 16px 24px}
       <div id="month-list"><div class="spinner"></div></div>
     </main>
   </div>
-  <div class="panel active" id="panel-rate">
+  <div class="panel" id="panel-rate">
     <div class="cal-wrap">
       <div class="cal-head">
         <div class="cal-month" id="cal-month">—</div>
@@ -374,7 +376,7 @@ main{flex:1;padding:8px 16px 24px}
       <div id="rate-table"></div>
     </main>
   </div>
-  <div class="panel" id="panel-big">
+  <div class="panel active" id="panel-big">
     <main>
       <div class="section-label">Big Picture · the year at a glance</div>
       <div id="big-mob"><div class="spinner"></div></div>
@@ -382,8 +384,8 @@ main{flex:1;padding:8px 16px 24px}
   </div>
 </div>
 <div class="tabbar"><div class="tabbar-inner">
-  <button class="tabbtn active" data-tab="rate"><span class="ico">📈</span>Rate Shopper</button>
-  <button class="tabbtn" data-tab="big"><span class="ico">🔭</span>Big Picture</button>
+  <button class="tabbtn" data-tab="rate"><span class="ico">📈</span>Rate Shopper</button>
+  <button class="tabbtn active" data-tab="big"><span class="ico">🔭</span>Big Picture</button>
   <button class="tabbtn" data-tab="month"><span class="ico">📊</span>Monthly Overview</button>
 </div></div>
 <div class="sheet-bg" id="sheet-bg"></div>
@@ -398,7 +400,7 @@ main{flex:1;padding:8px 16px 24px}
    Orange theme everywhere; day drill-in with a 2nd inner click → Base Price + 5 RMES factors
    + 5 RMES factors; room categories ordered by price; monthly overview with OTB big
    + STLY / LY / Forecast small for Revenue, ADR and Occupancy. */
-const MOB = { struct:'firenze', winStart:null, tab:'rate', lastDay:null, lastRow:null, monthView:'otb', monthPast:false };
+const MOB = { struct:'firenze', winStart:null, tab:'big', lastDay:null, lastRow:null, monthView:'otb', monthPast:false };
 const MOB_STRUCTS = ['firenze','condotta','alfani','davids','nazionale','portenuove'];
 const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MO_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -425,6 +427,11 @@ function mobCompsetAvg(sk, iso){
   else if(sk==='firenze') m=EXPEDIA_DATA.compset_avg_firenze;
   else return null;  // nazionale/portenuove: no Expedia compset
   const v=m?m[iso]:null; return (v!=null&&isFinite(v)&&v>0)?v:null;
+}
+function mobMyExpedia(sk){
+  if(typeof EXPEDIA_DATA==='undefined'||!EXPEDIA_DATA) return null;
+  var m = EXPEDIA_DATA[sk];   // my scraped Expedia price row (firenze/condotta/alfani/davids); none for nazionale/portenuove
+  return (m && typeof m==='object') ? m : null;
 }
 function mobCompetitors(sk){
   if(typeof EXPEDIA_DATA==='undefined'||!EXPEDIA_DATA) return null;
@@ -926,6 +933,7 @@ function mobRenderRateShopper(){
     return { yn, d, iso,
       lastExp: mobToExpedia(ref, MOB.struct),
       rmesExp: mobToExpedia(sugg, MOB.struct),
+      myExp: (function(){ var r=mobMyExpedia(MOB.struct); var v=r?r[iso]:null; return (v!=null&&isFinite(v)&&+v>0)?+v:null; })(),
       comp: mobCompsetAvg(MOB.struct, iso),
       band: mobCompBand(MOB.struct, iso) };
   });
@@ -933,7 +941,7 @@ function mobRenderRateShopper(){
   if(!hasAny){ wrap.innerHTML=mobEmpty('📭','No Expedia compset data for '+escapeHtml(mobLabel(MOB.struct))+' in this window.'); legend.innerHTML=''; return; }
   // y-range from all values present
   let yMin=Infinity,yMax=-Infinity;
-  for(const p of pts){ for(const v of [p.lastExp, p.rmesExp, p.comp, p.band&&p.band.min, p.band&&p.band.max]){ if(v!=null&&isFinite(v)){ if(v<yMin)yMin=v; if(v>yMax)yMax=v; } } }
+  for(const p of pts){ for(const v of [p.myExp, p.rmesExp, p.comp, p.band&&p.band.min, p.band&&p.band.max]){ if(v!=null&&isFinite(v)){ if(v<yMin)yMin=v; if(v>yMax)yMax=v; } } }
   if(!isFinite(yMin)){ wrap.innerHTML=mobEmpty('📭','No data.'); legend.innerHTML=''; return; }
   const rng=Math.max(1,yMax-yMin); yMin=Math.max(0,yMin-rng*0.12); yMax=yMax+rng*0.12;
   // SVG geometry (mobile: fits ~360px wide; let it scale)
@@ -961,10 +969,10 @@ function mobRenderRateShopper(){
   const compSeg=pts.map((p,i)=>p.comp!=null?[xs(i),ys(p.comp)]:null).filter(Boolean);
   if(compSeg.length>1){ svg+=`<polyline points="${compSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="#9a8470" stroke-width="1.5" stroke-dasharray="4 3"/>`; }
   pts.forEach((p,i)=>{ if(p.comp!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.comp).toFixed(1)}" r="2.5" fill="#9a8470"/>`; });
-  // Last update line (thin celeste, dashed, hollow dots)
-  const lastSeg=pts.map((p,i)=>p.lastExp!=null?[xs(i),ys(p.lastExp)]:null).filter(Boolean);
+  // My actual Expedia price line (thin celeste, dashed, hollow dots)
+  const lastSeg=pts.map((p,i)=>p.myExp!=null?[xs(i),ys(p.myExp)]:null).filter(Boolean);
   if(lastSeg.length>1){ svg+=`<polyline points="${lastSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${org}" stroke-opacity="0.5" stroke-width="1.6" stroke-dasharray="3 2"/>`; }
-  pts.forEach((p,i)=>{ if(p.lastExp!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.lastExp).toFixed(1)}" r="2.3" fill="#fff" stroke="${org}" stroke-width="1.2" stroke-opacity="0.7"/>`; });
+  pts.forEach((p,i)=>{ if(p.myExp!=null) svg+=`<circle cx="${xs(i).toFixed(1)}" cy="${ys(p.myExp).toFixed(1)}" r="2.3" fill="#fff" stroke="${org}" stroke-width="1.2" stroke-opacity="0.7"/>`; });
   // RMES price line (thick solid celeste — the prominent one)
   const rmesSeg=pts.map((p,i)=>p.rmesExp!=null?[xs(i),ys(p.rmesExp)]:null).filter(Boolean);
   if(rmesSeg.length>1){ svg+=`<polyline points="${rmesSeg.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="none" stroke="${org}" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>`; }
@@ -977,11 +985,11 @@ function mobRenderRateShopper(){
   // legend
   legend.innerHTML=`<div class="rate-legend">
     <span class="rl-item"><span class="rl-line" style="background:${org};height:3px"></span>RMES price (on Expedia)</span>
-    <span class="rl-item"><span class="rl-line" style="background:${org};opacity:.5;height:2px"></span>Last update (on Expedia)</span>
+    <span class="rl-item"><span class="rl-line" style="background:${org};opacity:.5;height:2px"></span>My Expedia price</span>
     <span class="rl-item"><span class="rl-line rl-dash"></span>Compset average</span>
     <span class="rl-item"><span class="rl-area" style="background:${org}"></span>Competitor range (min–max)</span>
   </div>
-  <div class="rate-note">Both lines are your prices converted to Expedia space (×${(mobExpDivisor(MOB.struct)).toFixed(3)}): the thick line is what would show on Expedia at the RMES price, the thin line at the current Last update. Days without Expedia data are blank.</div>`;
+  <div class="rate-note">Thin line = your <b>actual Expedia price</b> (from the Expedia files). Thick line = the <b>RMES suggestion</b>, converted to Expedia space (×${(mobExpDivisor(MOB.struct)).toFixed(3)}) so it is comparable. Days without an Expedia price are blank.</div>`;
   // competitor table — one row per property, one column per day (prices as seen on Expedia)
   const tbl=document.getElementById('rate-table');
   if(tbl) tbl.innerHTML = mobCompTableHTML(pts);
@@ -1004,7 +1012,10 @@ function mobCompTableHTML(pts){
   pts.forEach(p=>{ h += `<th${isWeekendYmd(p.yn)?' class="wk"':''}>${DOW_SHORT[p.d.getDay()].slice(0,2)}<span>${p.d.getDate()}</span></th>`; });
   h += '</tr></thead><tbody>';
   // my price first, highlighted
-  h += '<tr class="me"><td class="ctab-nm">You · RMES</td>';
+  h += '<tr class="me"><td class="ctab-nm">You · online</td>';
+  pts.forEach(p=>{ h += `<td>${cell(p.myExp)}</td>`; });
+  h += '</tr>';
+  h += '<tr class="me2"><td class="ctab-nm">You · RMES</td>';
   pts.forEach(p=>{ h += `<td>${cell(p.rmesExp)}</td>`; });
   h += '</tr>';
   names.forEach(nm=>{
@@ -1013,7 +1024,7 @@ function mobCompTableHTML(pts){
     h += '</tr>';
   });
   h += '</tbody></table></div>';
-  h += '<div class="rate-note">Competitor prices are what Expedia shows. Your row is the RMES price converted to Expedia space, so the comparison is like-for-like. A dot means no price published that day.</div>';
+  h += '<div class="rate-note"><b>You · online</b> is your <b>actual Expedia price</b> (from the Expedia files) \u2014 the one that counts. <b>You · RMES</b> is what RMES suggests, converted to Expedia space. Competitor prices are what Expedia shows. A dot means no price that day.</div>';
   return h;
 }
 function mobOpenSheet(){ document.getElementById('sheet-bg').classList.add('show'); document.getElementById('sheet').classList.add('show'); }

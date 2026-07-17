@@ -610,27 +610,32 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
   function dayRank(sel, ymd, m, baseRT){
     try {
       if (typeof _sellCompRank !== 'function') return null;
-      var sugg = (m && m.rmesSugg != null) ? m.rmesSugg : null;
+      var iso = ymdToIso(ymd);
+      // My REAL published Expedia price (from the Expedia files). This is what counts for positioning.
+      var myReal = null;
+      try { var mr = (typeof EXPEDIA_DATA!=='undefined' && EXPEDIA_DATA[sel]) ? EXPEDIA_DATA[sel][iso] : null; if (mr!=null && isFinite(mr) && +mr>=10) myReal = +mr; } catch(e){}
+      // Fallback estimate: the RMES suggestion converted to Expedia space (used only when not published that day).
+      var div = (typeof fp_expToBeddyDivisor === 'function') ? (fp_expToBeddyDivisor(sel)||1) : 1;
       var map = priceMap(sel), dd = map[ymd];
       var suggBase = (dd && dd.rmesSuggestedByRT && dd.rmesSuggestedByRT[baseRT] != null)
         ? dd.rmesSuggestedByRT[baseRT] : (dd ? dd.price : null);
-      if (suggBase == null) return null;
-      var div = (typeof fp_expToBeddyDivisor === 'function') ? fp_expToBeddyDivisor(sel) : 1;
-      var myExp = suggBase * (div || 1);
-      var iso = ymdToIso(ymd);
+      var myEst = (suggBase != null) ? suggBase * (div || 1) : null;
+      var myExp = (myReal != null) ? myReal : myEst;
+      if (myExp == null) return null;
       var rk = _sellCompRank(sel, iso, myExp);
       if (!rk) return null;
-      var cAvgBeddy = null;
+      // Competitors' real Expedia average (same competitors, real prices).
+      var compsetAvg = null;
       try {
-        var _cf = { firenze:'competitors_firenze', condotta:'competitors', alfani:'competitors_alfani', davids:'competitors_davids', nazionale:'competitors_nazionale', portenuove:'competitors_portenuove' };
+        var _cf = { firenze:'competitors_firenze', condotta:'competitors', alfani:'competitors_alfani', davids:'competitors_davids' };
         var compMap = _cf[sel] ? EXPEDIA_DATA[_cf[sel]] : null;
         if (compMap){
           var ps = [];
           for (var cn in compMap){ var v = compMap[cn] ? compMap[cn][iso] : null; if (v != null && isFinite(v) && v >= 10) ps.push(v); }
-          if (ps.length){ var avgExp = ps.reduce(function(a,b){return a+b;},0)/ps.length; cAvgBeddy = (div && div>0) ? avgExp/div : avgExp; }
+          if (ps.length){ compsetAvg = ps.reduce(function(a,b){return a+b;},0)/ps.length; }
         }
       } catch(e){}
-      return { rank: rk.rank, total: rk.total, myExp: myExp, myBeddy: suggBase, compsetAvgBeddy: cAvgBeddy };
+      return { rank: rk.rank, total: rk.total, myExp: myExp, myReal: (myReal != null), compsetAvg: compsetAvg };
     } catch(e){ return null; }
   }
 
@@ -833,12 +838,12 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       cells.push('<div class="kpi"><div class="kl">Price position</div>' +
         '<div class="kv">#' + rk.rank + ' <small style="opacity:.6;font-size:9px">of ' + rk.total + '</small></div>' +
         '<div class="rankbar">' + bars + '</div>' +
-        (rk.compsetAvgBeddy != null
-          ? '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:5px">compset avg <b style="color:var(--txt)">' + eur(rk.compsetAvgBeddy) + '</b>'
-            + (rk.myBeddy != null ? ' \u00b7 you <b style="color:var(--txt)">' + eur(rk.myBeddy) + '</b> <span style="color:' + (rk.myBeddy-rk.compsetAvgBeddy>=0?'var(--green)':'var(--pink)') + '">(' + eur1(rk.myBeddy-rk.compsetAvgBeddy) + ')</span>' : '')
+        (rk.compsetAvg != null
+          ? '<div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:5px">compset avg <b style="color:var(--txt)">' + eur(rk.compsetAvg) + '</b>'
+            + (rk.myExp != null ? ' \u00b7 you <b style="color:var(--txt)">' + eur(rk.myExp) + (rk.myReal ? '' : '<span style="color:var(--dim)" title="not published \u2014 RMES estimate">~</span>') + '</b> <span style="color:' + (rk.myExp-rk.compsetAvg>=0?'var(--green)':'var(--pink)') + '">(' + eur1(rk.myExp-rk.compsetAvg) + ')</span>' : '')
             + '</div>'
           : '') +
-        '<div style="font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--dim);margin-top:4px">#1 = cheapest \u00b7 #' + rk.total + ' = priciest</div></div>');
+        '<div style="font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--dim);margin-top:4px">' + (rk.myReal ? 'real Expedia prices' : '~ = RMES estimate (not on Expedia)') + ' \u00b7 #1 = cheapest \u00b7 #' + rk.total + ' = priciest</div></div>');
     } else {
       cells.push('<div class="kpi"><div class="kl">Price position</div>' +
         '<div class="kv" style="font-size:10px;color:var(--dim)">no compset</div></div>');
