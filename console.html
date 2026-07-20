@@ -269,7 +269,11 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
 .set-subsec{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--dim);margin:14px 0 6px}
 .fac .fac-i{background:none;border:1px solid var(--grid);color:var(--dim);border-radius:50%;width:18px;height:18px;font-size:11px;line-height:1;cursor:pointer;padding:0;margin-left:6px;vertical-align:middle}
 .fac .fac-i:hover{border-color:var(--neon);color:var(--neon)}
-.fac .fac-note{font-family:var(--body);font-size:11.5px;color:var(--dim);line-height:1.55;background:rgba(255,255,255,.03);border-left:2px solid var(--neon);border-radius:6px;padding:8px 10px;margin:2px 0 6px}
+.fac .fac-note{font-size:11.5px;color:var(--dim);line-height:1.55;background:rgba(255,255,255,.03);border-left:2px solid var(--neon);border-radius:6px;padding:9px 11px;margin:2px 0 7px}
+.fac .fac-note .fn-how{font-family:var(--body);color:var(--dim);margin-bottom:6px}
+.fac .fac-note .fn-l{font-family:var(--mono);font-size:11px;color:var(--txt);opacity:.9;margin:2px 0}
+.fac .fac-note .fn-l b,.fac .fac-note .fn-fin b{color:var(--neon);font-weight:700}
+.fac .fac-note .fn-fin{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:6px;padding-top:5px;border-top:1px dashed var(--grid)}
 .cs-row{padding:10px 0;border-bottom:1px solid var(--grid)}
 .cs-row .cs-name{font-family:var(--mono);font-size:12px;color:var(--txt);margin-bottom:7px;word-break:break-word}
 .cs-row .cs-inputs{display:flex;gap:10px}
@@ -427,6 +431,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     { k:'airdna', mult:'air_mult',  na:'air',   label:'Demand',        ds:'Expedia searches vs the monthly median' },
     { k:'mkt',    mult:'mkt_mult',  na:'mkt',   label:'AirDNA Market', ds:'Market occupancy vs mine — headroom signal' }
   ];
+  var FAC_CODE = { occ:'A', pace:'B', comp:'C', airdna:'D', mkt:'E' };
   var FAC_INFO = {
     occ:    'Daily Pickup — compares rooms already sold for this date to the expected fill rate. The dev% for each fill-rate bucket is set in Settings → Daily Pickup thresholds. Only pushes the price UP (never lowers it).',
     pace:   'Pace Trend — how fast bookings are coming in vs the same point last year (STLY). Faster than LY → positive signal; slower → negative.',
@@ -556,6 +561,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       iso: iso,
       baseRT: baseRT,
       mults: mults,
+      rawM: m,
       na: na,
       effBase: (effBase != null && isFinite(effBase)) ? effBase : null,
       lastUpdate: (lastUpdate != null && isFinite(lastUpdate)) ? lastUpdate : null,
@@ -694,6 +700,15 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
     });
   }
 
+  function _facNoteHtml(k){
+    try {
+      if (S.day && S.day.rawM && typeof rmesFactorNote === 'function'){
+        var h = rmesFactorNote(FAC_CODE[k], S.day.rawM, S.struct);
+        if (h) return h;
+      }
+    } catch(e){}
+    return '<div class="fn-how">' + (FAC_INFO[k] || '') + '</div>';
+  }
   function renderFactors(){
     var el = document.getElementById('facs');
     var facHtml = FACTORS.map(function(f, i){
@@ -711,7 +726,7 @@ input[type=range]::-moz-range-thumb{width:34px;height:44px;
       return '<div class="fac'+(naReason?' na':'')+'">'+
         '<div class="top"><span class="nm">'+f.label+' <button class="fac-i" type="button" data-fk="'+f.k+'" title="'+escapeHtml(FAC_INFO[f.k]||'')+'" aria-label="How this signal is computed">\u24d8</button></span><span class="wv" id="wv-'+f.k+'">'+S.w[f.k]+'</span></div>'+
         '<div class="ds">'+f.ds+'</div>'+
-        '<div class="fac-note" id="fn-'+f.k+'" style="display:none">'+(FAC_INFO[f.k]||'')+'</div>'+
+        '<div class="fac-note" id="fn-'+f.k+'" style="display:none">'+_facNoteHtml(f.k)+'</div>'+
         '<div class="fac-line">'+sigInner+'<span class="fac-eur" id="fe-'+f.k+'"></span></div>'+
         '<input type="range" min="0" max="100" value="'+S.w[f.k]+'" data-k="'+f.k+'" '+
         'aria-label="'+f.label+' weight" title="'+(naReason ? escapeHtml(naReason) : f.label)+'">'+

@@ -11506,6 +11506,94 @@ try {
     }
   });
 } catch(e){}
+/* Compact per-factor calculation note (same data & logic as the PC "Calculation detail").
+   Used by the Pricing Console info popovers so both stay in sync.
+   code: 'A'|'B'|'C'|'D'|'E' · mults: multsByRT[baseRT] · structKey: property key */
+function rmesFactorNote(code, mults, structKey){
+  if (!mults) return '';
+  var dbg = mults._debug || {};
+  var naR = mults._naReasons || {};
+  function fpct(v,d){ if(v==null||!isFinite(v)) return '\u2014'; return (v>=0?'+':'')+(v*100).toFixed(d==null?1:d)+'%'; }
+  function eu(v){ return (v==null||!isFinite(v)) ? '\u2014' : '\u20ac'+Math.round(v); }
+  function L(txt){ return '<div class="fn-l">'+txt+'</div>'; }
+  function How(txt){ return '<div class="fn-how">'+txt+'</div>'; }
+  function Fin(txt){ return '<div class="fn-fin">'+txt+'</div>'; }
+  var h='';
+  if (code === 'A'){
+    h += How('Fires only when new bookings came in for this stay-date. <b>Primary window</b>: yesterday+today. If zero, <b>fallback</b>: today + previous 7 days. Still zero \u2192 no signal. The % then depends on the fill rate. Never negative.');
+    var pk = dbg.pickupDbg || {};
+    var rn = pk.curRn || dbg.rnCur || 0, cap = pk.cap || dbg.capCur || 0;
+    var fill = cap>0 ? rn/cap : 0;
+    var src = pk.source || 'no_recent_pickup', cnt = pk.pickupCount || 0;
+    var recent;
+    if (src === 'recent_1g') recent = '<b>'+cnt+' booking(s)</b> in the primary window (yesterday+today)';
+    else if (src === 'recent_7g') recent = '<b>'+cnt+' booking(s)</b> in the fallback window (8 days) \u00b7 none in yesterday+today';
+    else if (src === 'no_capacity') recent = '\u2014 (no capacity data)';
+    else recent = '<b>0 bookings</b> in the fallback window (8 days) \u2192 stays at 0%';
+    h += L('Recent pickup: '+recent);
+    h += L('On the books: <b>'+rn+' RN</b> on <b>'+cap+' rooms</b> \u00b7 fill rate <b>'+(fill*100).toFixed(1)+'%</b>');
+    var band = '\u2014';
+    if (src === 'no_recent_pickup') band = 'No signal \u2192 +0%';
+    else if (src === 'no_capacity') band = '\u2014 (no capacity)';
+    else {
+      var thr = (typeof _rmesPickupGet === 'function') ? _rmesPickupGet(structKey)
+              : [{upTo:0.20,dev:0},{upTo:0.50,dev:0.05},{upTo:0.70,dev:0.10},{upTo:0.90,dev:0.15},{upTo:1.00,dev:0.20}];
+      for (var i=0;i<thr.length;i++){
+        var t=thr[i], prev=(i===0)?0:thr[i-1].upTo;
+        if (fill <= t.upTo + 0.0001){
+          var lbl = (i===0) ? ('Fill \u2264'+Math.round(t.upTo*100)+'%')
+                  : (i===thr.length-1) ? ('Fill >'+Math.round(prev*100)+'%')
+                  : ('Fill '+(Math.round(prev*100)+1)+'\u2013'+Math.round(t.upTo*100)+'%');
+          band = lbl+' \u2192 '+((t.dev||0)>=0?'+':'')+Math.round((t.dev||0)*100)+'%';
+          break;
+        }
+      }
+    }
+    h += L('Threshold matched: <b>'+band+'</b>');
+    h += Fin('Applied dev: <b>'+fpct(mults.occ_mult-1)+'</b>');
+  } else if (code === 'B'){
+    h += How('How fast this stay-month is booking vs the same 2 weeks last year, weighting the most recent week <b>60%</b> and the previous one <b>40%</b>. Above 1 = faster than LY \u2192 push up; below 1 \u2192 push down.');
+    var pi = dbg.paceInfo || {};
+    if (pi.pickupCur != null && pi.pickupStly != null){
+      h += L('Pace last 2 weeks: <b>'+(+pi.pickupCur).toFixed(1)+' RN</b> vs <b>'+(+pi.pickupStly).toFixed(1)+' RN</b> STLY');
+      var ratio = (pi.ratio != null) ? pi.ratio : (pi.pickupStly>0 ? pi.pickupCur/pi.pickupStly : null);
+      if (ratio != null) h += L('Pace ratio: <b>'+ratio.toFixed(3)+'</b> \u2192 raw dev <b>'+fpct(ratio-1)+'</b>');
+    }
+    var stMap = {mese_w4:'2-week pace (month)', fallback_aggregate:'aggregate fallback', fallback_annuale_struct:'annual fallback (property)', neutralizzato_no_dati:'neutralized \u2014 no data', fallback:'fallback'};
+    h += L('State: <b>'+((stMap[pi.state]) || pi.state || '\u2014')+'</b>');
+    h += Fin('Applied dev: <b>'+fpct(mults.pace_mult-1)+'</b>');
+  } else if (code === 'C'){
+    h += How('Formula: <b>\u2212(my_Beddy_eq / weighted_compset_Beddy_eq \u2212 1)</b>. Uses my <b>real Expedia price</b> and the <b>weighted Expedia compset</b> (weights only, <b>no</b> offset). Priced above the market \u2192 push down; below \u2192 push up.');
+    h += L('My Expedia price: <b>'+eu(dbg.myExpedia)+'</b> \u2192 Beddy-eq <b>'+eu(dbg.myBeddy)+'</b>');
+    h += L('Weighted compset (Beddy-eq): <b>'+eu(dbg.compsetBeddy)+'</b>');
+    if (dbg.myBeddy != null && dbg.compsetBeddy != null && dbg.compsetBeddy > 0){
+      var r = dbg.myBeddy / dbg.compsetBeddy;
+      h += L('My/compset ratio: <b>'+r.toFixed(3)+'</b> \u2192 raw dev <b>'+fpct(-(r-1))+'</b>');
+    }
+    h += Fin('Applied dev (clamp \u00b150%): <b>'+fpct(mults.comp_mult-1)+'</b>');
+  } else if (code === 'D'){
+    h += How('Formula: <b>(searches \u2212 month median) / month median</b>. More Expedia searches than usual for this date = stronger demand. Muted on event dates (the Event Factor already prices it).');
+    h += L('Expedia searches today: <b>'+(dbg.searchCur != null ? dbg.searchCur.toLocaleString('en-GB') : '\u2014')+'</b>');
+    h += L('Month median: <b>'+(dbg.searchP50Mo != null ? Math.round(dbg.searchP50Mo).toLocaleString('en-GB') : '\u2014')+'</b>');
+    if (dbg.searchDev != null) h += L('Raw dev: <b>'+fpct(dbg.searchDev)+'</b>');
+    h += Fin('Applied dev (clamp \u00b150%): <b>'+fpct(mults.air_mult-1)+'</b>');
+  } else if (code === 'E'){
+    h += How('Formula: <b>(market_idx \u2212 my_OCC) \u00d7 0.80</b> with a <b>\u00b15% deadband</b>. Market fuller than me \u2192 headroom to raise; me fuller than the market \u2192 no extra push.');
+    var ml = (dbg.airdnaListings != null) ? dbg.airdnaListings : null;
+    var mo = (dbg.occCur != null) ? dbg.occCur : null;
+    h += L('Market booked: '+(ml!=null ? ('<b>'+(ml*100).toFixed(1)+'%</b> ('+Math.round(ml*2948).toLocaleString('en-GB')+' / 2,948 listings)') : '<b>\u2014</b> (no AirDNA data)'));
+    if (mo != null) h += L('My OCC (OTB): <b>'+(mo*100).toFixed(1)+'%</b>');
+    if (ml != null && mo != null){
+      var gap = ml - mo, within = Math.abs(gap) < 0.05;
+      h += L('Gap (market \u2212 me): <b>'+(gap>=0?'+':'')+(gap*100).toFixed(1)+'%</b>'+(within?' \u00b7 inside deadband \u2192 neutralized':''));
+      h += L('Raw dev (gap \u00d7 0.80): <b>'+fpct(within?0:gap*0.80)+'</b>');
+    }
+    h += Fin('Applied dev (clamp \u00b150%): <b>'+fpct(mults.mkt_mult-1)+'</b>');
+  }
+  var naKey = {A:'occ',B:'pace',C:'comp',D:'air',E:'mkt'}[code];
+  if (naKey && naR[naKey]) h += Fin('No signal today \u2192 weight redistributed to the other factors.');
+  return h;
+}
 function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   if (!wrap) return;
   const orig = wrap.querySelector('table.sell-table');
