@@ -2490,6 +2490,205 @@ function _renderOTBMonthPills(A){
     });
   });
 }
+/* ============================================================
+   OVERVIEW · Channel trend by month
+   RN / ADR / Revenue per canale, 2026 OTB vs STLY, 12 mesi.
+   Barre raggruppate per mese (una serie per canale scelto).
+   Metrica "All 3" = Revenue(barre) + RN(linea) + ADR(linea) su
+   assi multipli, sulla somma dei canali selezionati.
+   Dati: A.canCurM[m][canale] / A.canPrevM[m][canale] = {rn,rev,bk}
+   ============================================================ */
+var OV_CHAN_METRIC = 'rev';   // 'rn' | 'adr' | 'rev' | 'all'
+var OV_CHAN_SEL = null;       // Set of channel names; null => default top channels
+
+function _ovChanList(A){
+  const tot = {};
+  for (let m=1;m<=12;m++){
+    const cc=(A.canCurM&&A.canCurM[m])||{}, cp=(A.canPrevM&&A.canPrevM[m])||{};
+    for (const k in cc){ tot[k]=(tot[k]||0)+(cc[k].rev||0); }
+    for (const k in cp){ if(!(k in tot)) tot[k]=0; }
+  }
+  return Object.keys(tot).sort((a,b)=>(tot[b]||0)-(tot[a]||0));
+}
+function _ovCell(A,which,m,ch){
+  const src = which==='cur' ? A.canCurM : A.canPrevM;
+  return (src && src[m] && src[m][ch]) ? src[m][ch] : null;
+}
+function _ovVal(cell, metric){
+  if(!cell) return null;
+  if(metric==='rn')  return cell.rn||0;
+  if(metric==='rev') return cell.rev||0;
+  if(metric==='adr') return (cell.rn>0)? cell.rev/cell.rn : null;
+  return null;
+}
+function _ovMetricMeta(metric){
+  if(metric==='rn')  return {label:'Room nights', unit:'',  kind:'num', fmt:(v)=>fmtNum(v)};
+  if(metric==='adr') return {label:'ADR',         unit:'€', kind:'eur', fmt:(v)=>fmtAdr(v)};
+  return               {label:'Revenue',           unit:'€', kind:'rev', fmt:(v)=>fmtEUR(v)};
+}
+/* Barre raggruppate: per ogni mese, per ogni canale selezionato → barra 2026 (piena) + STLY (sbiadita) */
+function _ovGroupedBars(A, sel, colorOf, metric){
+  const meta=_ovMetricMeta(metric);
+  const months=CFG.monthsIT;
+  const W=980,H=340,padL=58,padR=14,padT=16,padB=40;
+  const innerW=W-padL-padR, innerH=H-padT-padB;
+  let vmax=0;
+  for(let m=1;m<=12;m++) for(const ch of sel){
+    const a=_ovVal(_ovCell(A,'cur',m,ch),metric), b=_ovVal(_ovCell(A,'prev',m,ch),metric);
+    if(isFinite(a)&&a>vmax) vmax=a; if(isFinite(b)&&b>vmax) vmax=b;
+  }
+  if(vmax<=0) vmax=1; vmax=niceCeil(vmax);
+  const gW=innerW/12;
+  const nb=Math.max(1,sel.length*2);
+  const usable=gW*0.82, bw=usable/nb, gx0=(gW-usable)/2;
+  let grid=''; const ticks=4;
+  for(let i=0;i<=ticks;i++){
+    const v=vmax*i/ticks, y=padT+innerH*(1-i/ticks);
+    grid+=`<line x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}" stroke="#e6e1d8" stroke-dasharray="2,3"/><text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9.5" font-family="DM Mono,monospace" fill="#8a8a8a">${tickFmt(v,meta.kind,meta.unit)}</text>`;
+  }
+  let bars='',xlab='';
+  for(let mi=0;mi<12;mi++){
+    const m=mi+1, gx=padL+mi*gW;
+    xlab+=`<text x="${(gx+gW/2).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10" font-family="DM Sans,sans-serif" fill="#8a8a8a">${months[mi]}</text>`;
+    let bi=0;
+    for(const ch of sel){
+      const col=colorOf[ch]||'#888';
+      const a=_ovVal(_ovCell(A,'cur',m,ch),metric), b=_ovVal(_ovCell(A,'prev',m,ch),metric);
+      if(isFinite(a)&&a>0){
+        const h=innerH*(a/vmax), x=gx+gx0+bi*bw, y=padT+innerH-h;
+        bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8,bw-1).toFixed(1)}" height="${h.toFixed(1)}" fill="${col}" rx="1"><title>${months[mi]} · ${escapeHtml(ch)} · 2026: ${meta.fmt(a)}</title></rect>`;
+      }
+      bi++;
+      if(isFinite(b)&&b>0){
+        const h=innerH*(b/vmax), x=gx+gx0+bi*bw, y=padT+innerH-h;
+        bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(0.8,bw-1).toFixed(1)}" height="${h.toFixed(1)}" fill="${col}" opacity="0.38" rx="1"><title>${months[mi]} · ${escapeHtml(ch)} · STLY: ${meta.fmt(b)}</title></rect>`;
+      }
+      bi++;
+    }
+  }
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMidYMid meet">${grid}${bars}${xlab}</svg>`;
+}
+/* Assi multipli: somma dei canali selezionati. Revenue=barre (asse sx €),
+   RN=linea (asse dx), ADR=linea (asse estremo dx €). 2026 pieno, STLY tratteggiato/sbiadito. */
+function _ovMultiAxis(A, sel){
+  const months=CFG.monthsIT;
+  const W=980,H=360,padL=58,padR=104,padT=18,padB=40;
+  const innerW=W-padL-padR, innerH=H-padT-padB;
+  const rev={cur:[],prev:[]}, rn={cur:[],prev:[]}, adr={cur:[],prev:[]};
+  for(let m=1;m<=12;m++){
+    let rc=0,rp=0,nc=0,np=0;
+    for(const ch of sel){
+      const c=_ovCell(A,'cur',m,ch), p=_ovCell(A,'prev',m,ch);
+      if(c){rc+=c.rev||0;nc+=c.rn||0;} if(p){rp+=p.rev||0;np+=p.rn||0;}
+    }
+    rev.cur.push(rc); rev.prev.push(rp);
+    rn.cur.push(nc); rn.prev.push(np);
+    adr.cur.push(nc>0?rc/nc:null); adr.prev.push(np>0?rp/np:null);
+  }
+  const maxRev=niceCeil(Math.max(1,...rev.cur,...rev.prev));
+  const maxRn =niceCeil(Math.max(1,...rn.cur,...rn.prev));
+  const adrAll=[...adr.cur,...adr.prev].filter(v=>isFinite(v));
+  const maxAdr=niceCeil(Math.max(1,...(adrAll.length?adrAll:[1])));
+  const gW=innerW/12;
+  const yRev=(v)=>padT+innerH*(1-(v/maxRev));
+  const yRn =(v)=>padT+innerH*(1-(v/maxRn));
+  const yAdr=(v)=>padT+innerH*(1-(v/maxAdr));
+  const cx=(mi)=>padL+mi*gW+gW/2;
+  let grid=''; const ticks=4;
+  for(let i=0;i<=ticks;i++){
+    const y=padT+innerH*(1-i/ticks);
+    grid+=`<line x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}" stroke="#e6e1d8" stroke-dasharray="2,3"/>`;
+    grid+=`<text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9" font-family="DM Mono,monospace" fill="#6b5b3f">${tickFmt(maxRev*i/ticks,'rev','€')}</text>`;
+    grid+=`<text x="${W-padR+6}" y="${y+3}" text-anchor="start" font-size="9" font-family="DM Mono,monospace" fill="#3b6b9a">${fmtNum(maxRn*i/ticks)}</text>`;
+    grid+=`<text x="${W-padR+54}" y="${y+3}" text-anchor="start" font-size="9" font-family="DM Mono,monospace" fill="#3d7a4b">${tickFmt(maxAdr*i/ticks,'eur','€')}</text>`;
+  }
+  let bars='',xlab='';
+  const bw=Math.min(15,gW*0.28);
+  for(let mi=0;mi<12;mi++){
+    xlab+=`<text x="${cx(mi).toFixed(1)}" y="${H-10}" text-anchor="middle" font-size="10" font-family="DM Sans,sans-serif" fill="#8a8a8a">${months[mi]}</text>`;
+    const c=rev.cur[mi], p=rev.prev[mi];
+    if(c>0){const y=yRev(c);bars+=`<rect x="${(cx(mi)-bw-1).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(padT+innerH-y).toFixed(1)}" fill="#6b5b3f" rx="1"><title>${months[mi]} · Revenue 2026: ${fmtEUR(c)}</title></rect>`;}
+    if(p>0){const y=yRev(p);bars+=`<rect x="${(cx(mi)+1).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(padT+innerH-y).toFixed(1)}" fill="#6b5b3f" opacity="0.35" rx="1"><title>${months[mi]} · Revenue STLY: ${fmtEUR(p)}</title></rect>`;}
+  }
+  function poly(arr,yf){ const pts=[]; arr.forEach((v,i)=>{ if(isFinite(v)) pts.push(`${cx(i).toFixed(1)},${yf(v).toFixed(1)}`);}); return pts.join(' '); }
+  function dots(arr,yf,col,lbl,fmt){ let s=''; arr.forEach((v,i)=>{ if(isFinite(v)){ s+=`<circle cx="${cx(i).toFixed(1)}" cy="${yf(v).toFixed(1)}" r="2.6" fill="${col}" stroke="#fff" stroke-width="1"><title>${months[i]} · ${lbl}: ${fmt(v)}</title></circle>`; } }); return s; }
+  const rnPrev=`<polyline points="${poly(rn.prev,yRn)}" fill="none" stroke="#3b6b9a" stroke-width="1.6" stroke-dasharray="4,4" opacity="0.8"/>`;
+  const rnCur =`<polyline points="${poly(rn.cur,yRn)}" fill="none" stroke="#3b6b9a" stroke-width="2.2"/>`;
+  const adrPrev=`<polyline points="${poly(adr.prev,yAdr)}" fill="none" stroke="#3d7a4b" stroke-width="1.6" stroke-dasharray="4,4" opacity="0.8"/>`;
+  const adrCur =`<polyline points="${poly(adr.cur,yAdr)}" fill="none" stroke="#3d7a4b" stroke-width="2.2"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMidYMid meet">${grid}${bars}${rnPrev}${rnCur}${adrPrev}${adrCur}${dots(rn.cur,yRn,'#3b6b9a','RN 2026',fmtNum)}${dots(adr.cur,yAdr,'#3d7a4b','ADR 2026',fmtAdr)}${xlab}</svg>`;
+}
+/* Render del pannello (controlli + grafico). Idempotente: crea il container una volta
+   dentro panel-fcst, sopra il Month filter Source/Channel. Stato in OV_CHAN_METRIC/OV_CHAN_SEL. */
+function _renderChannelTrend(A){
+  if(!A || typeof document==='undefined') return;
+  const panel=document.getElementById('panel-fcst');
+  if(!panel) return;
+  let host=document.getElementById('ov-chan-trend');
+  if(!host){
+    host=document.createElement('div');
+    host.className='panel'; host.id='ov-chan-trend';
+    const anchorPills=document.getElementById('otb-month-pills');
+    const anchorPanel=anchorPills ? anchorPills.closest('.panel') : null;
+    if(anchorPanel && anchorPanel.parentNode){ anchorPanel.parentNode.insertBefore(host, anchorPanel); }
+    else { panel.appendChild(host); }
+  }
+  const channels=_ovChanList(A);
+  if(!channels.length){ host.innerHTML=`<div class="panel-head"><div><h3>Channel trend by month</h3></div></div><div class="panel-body" style="color:var(--ink-3);font-style:italic">No channel data for this property.</div>`; return; }
+  const palette=['#3b6b9a','#3d7a4b','#c4823b','#8e5fa8','#b0464b','#1f8a8a','#c9a227','#7a7a7a'];
+  const colorOf={}; channels.forEach((c,i)=>colorOf[c]=palette[i%palette.length]);
+  if(!(OV_CHAN_SEL instanceof Set)) OV_CHAN_SEL=null;
+  if(OV_CHAN_SEL){ const f=[...OV_CHAN_SEL].filter(c=>channels.includes(c)); OV_CHAN_SEL=new Set(f.length?f:channels.slice(0,Math.min(3,channels.length))); }
+  else OV_CHAN_SEL=new Set(channels.slice(0,Math.min(3,channels.length)));
+  const sel=channels.filter(c=>OV_CHAN_SEL.has(c));
+  const metrics=[{v:'rn',l:'RN'},{v:'adr',l:'ADR'},{v:'rev',l:'Revenue'},{v:'all',l:'All 3'}];
+  const mPills=metrics.map(o=>{ const on=OV_CHAN_METRIC===o.v; return `<button class="rt-pill${on?'':' off'}" data-ovm="${o.v}" style="${on?'border-color:#c4823b;color:#7a4f1c;font-weight:600;background:#fdf3e6':''}">${o.l}</button>`; }).join('');
+  const cPills=channels.map(c=>{ const on=OV_CHAN_SEL.has(c); const col=colorOf[c]; return `<button class="rt-pill${on?'':' off'}" data-ovc="${escapeHtml(c)}" style="${on?`border-color:${col};color:${col};font-weight:600`:''}"><span class="pdot" style="background:${col}"></span>${escapeHtml(c)}</button>`; }).join('');
+  let chart, legend;
+  if(OV_CHAN_METRIC==='all'){
+    chart=_ovMultiAxis(A, sel);
+    legend=`<span class="lg"><span class="swatch" style="background:#6b5b3f;height:9px;width:12px"></span>Revenue (bars · left €)</span><span class="lg"><span class="swatch" style="background:#3b6b9a"></span>RN (line · right)</span><span class="lg"><span class="swatch" style="background:#3d7a4b"></span>ADR (line · far right €)</span><span class="lg"><span class="swatch dashed"></span>STLY (dashed / faded)</span><span class="lg" style="color:var(--ink-3);font-style:italic">= sum of ${sel.length} selected channel${sel.length===1?'':'s'}</span>`;
+  } else {
+    chart=_ovGroupedBars(A, sel, colorOf, OV_CHAN_METRIC);
+    legend=sel.map(c=>`<span class="lg"><span class="swatch" style="background:${colorOf[c]};height:9px;width:12px"></span>${escapeHtml(c)}</span>`).join('')+`<span class="lg" style="margin-left:10px"><span class="swatch" style="background:#8a8a8a;height:9px;width:12px"></span>2026</span><span class="lg"><span class="swatch" style="background:#8a8a8a;height:9px;width:12px;opacity:.38"></span>STLY</span>`;
+  }
+  const metaLbl=(OV_CHAN_METRIC==='all')?'RN · ADR · Revenue':_ovMetricMeta(OV_CHAN_METRIC).label;
+  host.innerHTML=`
+    <div class="panel-head" style="flex-wrap:wrap;gap:10px">
+      <div><h3>Channel trend by month</h3><div class="panel-sub mono">${metaLbl} · 2026 OTB vs STLY · by month</div></div>
+      <div style="display:flex;gap:6px;align-items:center"><span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Metric</span><div style="display:flex;gap:5px;flex-wrap:wrap">${mPills}</div></div>
+    </div>
+    <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-bottom:1px solid var(--line)">
+      <span class="mono" style="font-size:10px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-right:2px">Channels</span>
+      ${cPills}
+      <button class="rt-pill" data-ovc-all="1" style="margin-left:6px;font-weight:600">All</button>
+      <button class="rt-pill" data-ovc-none="1" style="font-weight:600">None</button>
+    </div>
+    <div class="panel-body">
+      ${sel.length? chart : '<div style="color:var(--ink-3);font-style:italic;padding:20px;text-align:center">Select at least one channel.</div>'}
+      <div class="chart-legend" style="margin-top:6px">${sel.length?legend:''}</div>
+    </div>`;
+  host.querySelectorAll('button[data-ovm]').forEach(b=>b.addEventListener('click',()=>{ OV_CHAN_METRIC=b.dataset.ovm; _renderChannelTrend(A); }));
+  host.querySelectorAll('button[data-ovc]').forEach(b=>b.addEventListener('click',()=>{ const c=b.dataset.ovc; if(OV_CHAN_SEL.has(c)) OV_CHAN_SEL.delete(c); else OV_CHAN_SEL.add(c); _renderChannelTrend(A); }));
+  const bAll=host.querySelector('button[data-ovc-all]'); if(bAll) bAll.addEventListener('click',()=>{ OV_CHAN_SEL=new Set(channels); _renderChannelTrend(A); });
+  const bNone=host.querySelector('button[data-ovc-none]'); if(bNone) bNone.addEventListener('click',()=>{ OV_CHAN_SEL=new Set(); _renderChannelTrend(A); });
+  _ovEnsurePlaybookNote();
+}
+/* Nota Playbook per il nuovo grafico (idempotente): le spiegazioni stanno solo nel Playbook. */
+function _ovEnsurePlaybookNote(){
+  if(typeof document==='undefined') return;
+  if(document.getElementById('instr-otb-chantrend')) return;
+  const det=document.getElementById('instr-otb');
+  if(!det) return;
+  const body=det.querySelector('.panel-body');
+  if(!body) return;
+  const p=document.createElement('div');
+  p.id='instr-otb-chantrend';
+  p.style.cssText='margin:14px 0 0 0;padding:12px 14px;background:#f5f9f5;border-left:4px solid #4a7c59;border-radius:0 6px 6px 0;line-height:1.55';
+  p.innerHTML=`<p style="margin:0 0 6px 0;font-weight:700;color:#2c5c3c">📊 Channel trend by month</p>`
+    +`<p style="margin:0;font-size:13px">A configurable chart above the Source/Channel tables. Pick a <b>metric</b> — RN, ADR, Revenue, or <b>All 3</b> — and toggle which <b>channels</b> to include (All / None shortcuts). In <b>RN / ADR / Revenue</b> mode it draws <b>grouped bars per month</b>, one coloured series per selected channel: <b>solid = 2026 OTB</b>, <b>faded = STLY</b>. In <b>All 3</b> mode it <b>sums the selected channels</b> and overlays <b>Revenue</b> (bars, left €-axis), <b>RN</b> (line, right axis) and <b>ADR</b> (line, far-right €-axis), with <b>solid = 2026</b> and <b>dashed = STLY</b>. Hover any bar or point for the exact value.</p>`;
+  body.appendChild(p);
+}
 /* Refresh tabelle Prov/Can in base a OTB_MONTH_FILTER (i 2 grafici restano sempre annuali) */
 function _renderOTBDetailsByMonth(A){
   const m = OTB_MONTH_FILTER;
@@ -2524,6 +2723,7 @@ function _renderOTBDetailsByMonth(A){
     document.getElementById('otb-can-table').innerHTML  = compareTable(cc, cp, cf, 'Channel');
     document.getElementById('otb-can-sub').textContent  = `Channel distribution · ${CFG.monthsITLong[m-1]} 2026 OTB vs STLY · with share % of total`;
   }
+  if (typeof _renderChannelTrend === 'function'){ try { _renderChannelTrend(A); } catch(e){ console.error('channelTrend', e); } }
 }
 function compareTable(cur, prev, fly, labelCol){
   fly = fly || {};
