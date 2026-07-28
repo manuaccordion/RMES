@@ -2716,6 +2716,81 @@ function _ovEnsurePlaybookNote(){
     body.appendChild(g);
   }
 }
+/* ============================================================
+   MOBILE (app.html) · Channel trend by month
+   Stesso grafico del desktop, iniettato nella scheda Monthly Overview
+   dell'app mobile SENZA modificare app.html. Riusa _ovGroupedBars /
+   _ovMultiAxis. Un MutationObserver su #month-list lo tiene aggiornato
+   quando cambi struttura o vista. Stato indipendente dal desktop.
+   ============================================================ */
+var MOB_CHAN_METRIC = 'rev';   // 'rn' | 'adr' | 'rev' | 'all'
+var MOB_CHAN_SEL = null;       // Set of channel names; null => default top channels
+function _mobEnsureChannelTrend(){
+  if(typeof document==='undefined') return;
+  var panel=document.getElementById('panel-month'); if(!panel) return;   // solo app mobile
+  var main=panel.querySelector('main'); if(!main) return;
+  var ml=document.getElementById('month-list');
+  var host=document.getElementById('mob-chan-trend');
+  if(!host){
+    host=document.createElement('div'); host.id='mob-chan-trend';
+    if(ml && ml.parentNode){ ml.parentNode.insertBefore(host, ml); } else { main.appendChild(host); }
+  }
+  _mobRenderChannelTrend(host);
+}
+function _mobRenderChannelTrend(host){
+  if(!host) return;
+  var struct=(typeof MOB!=='undefined' && MOB && MOB.struct)?MOB.struct:'firenze';
+  var A; try{ A=aggOTBYearly(struct); }catch(e){ host.innerHTML=''; return; }
+  var channels=_ovChanList(A);
+  if(!channels.length){ host.innerHTML=''; return; }
+  var palette=['#0E9FC2','#0A7A97','#2BB3C9','#8e5fa8','#c0492f','#3d7a4b','#c9a227','#5E8693'];
+  var colorOf={}; channels.forEach(function(c,i){ colorOf[c]=palette[i%palette.length]; });
+  if(!(MOB_CHAN_SEL instanceof Set)) MOB_CHAN_SEL=null;
+  if(MOB_CHAN_SEL){ var f=[]; MOB_CHAN_SEL.forEach(function(c){ if(channels.indexOf(c)!==-1) f.push(c); }); MOB_CHAN_SEL=new Set(f.length?f:channels.slice(0,Math.min(2,channels.length))); }
+  else MOB_CHAN_SEL=new Set(channels.slice(0,Math.min(2,channels.length)));
+  var sel=channels.filter(function(c){ return MOB_CHAN_SEL.has(c); });
+  var metrics=[{v:'rn',l:'RN'},{v:'adr',l:'ADR'},{v:'rev',l:'Revenue'},{v:'all',l:'All 3'}];
+  function pill(on){ return 'display:inline-block;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:600;border:1.5px solid '+(on?'transparent':'var(--line)')+';'+(on?'background:linear-gradient(135deg,var(--org),var(--org-deep));color:#fff;':'background:var(--card);color:var(--muted);'); }
+  var mHtml=metrics.map(function(o){ return '<button data-mm="'+o.v+'" style="'+pill(MOB_CHAN_METRIC===o.v)+'">'+o.l+'</button>'; }).join(' ');
+  var cHtml=channels.map(function(c){ var on=MOB_CHAN_SEL.has(c); return '<button data-mc="'+escapeHtml(c)+'" style="'+pill(on)+'"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+colorOf[c]+';margin-right:5px;vertical-align:1px"></span>'+escapeHtml(c)+'</button>'; }).join(' ');
+  var chart, legend;
+  if(MOB_CHAN_METRIC==='all'){
+    chart=_ovMultiAxis(A, sel);
+    legend='<b style="color:#6b5b3f">Revenue</b> bars (left €) · <b style="color:#3b6b9a">RN</b> line (right) · <b style="color:#3d7a4b">ADR</b> line (far right €) · solid=2026, dashed=STLY · sum of '+sel.length+' channel'+(sel.length===1?'':'s');
+  } else {
+    chart=_ovGroupedBars(A, sel, colorOf, MOB_CHAN_METRIC);
+    legend=sel.map(function(c){ return '<span style="display:inline-flex;align-items:center;gap:4px;margin-right:8px"><span style="width:10px;height:9px;background:'+colorOf[c]+';border-radius:2px;display:inline-block"></span>'+escapeHtml(c)+'</span>'; }).join('')+'<span style="margin-left:2px;color:var(--muted)">solid=2026 · faded=STLY</span>';
+  }
+  var lbl=(MOB_CHAN_METRIC==='all')?'RN · ADR · Revenue':_ovMetricMeta(MOB_CHAN_METRIC).label;
+  host.innerHTML=''
+    +'<style>#mob-chan-trend .chart-svg{width:100%;height:auto;display:block}#mob-chan-trend button{cursor:pointer;font-family:inherit}</style>'
+    +'<div class="section-label" style="margin-top:16px">Channel trend by month · '+lbl+' · 2026 vs STLY</div>'
+    +'<div style="background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:12px;box-shadow:var(--shadow)">'
+    +'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">'+mHtml+'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px">'+cHtml
+    +' <button data-mc-all="1" style="'+pill(false)+'">All</button> <button data-mc-none="1" style="'+pill(false)+'">None</button></div>'
+    +(sel.length?('<div style="overflow-x:auto">'+chart+'</div>'):'<div style="color:var(--muted);font-style:italic;padding:16px;text-align:center;font-size:13px">Select at least one channel.</div>')
+    +'<div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5">'+(sel.length?legend:'')+'</div>'
+    +'</div>';
+  host.querySelectorAll('button[data-mm]').forEach(function(b){ b.addEventListener('click',function(){ MOB_CHAN_METRIC=b.getAttribute('data-mm'); _mobRenderChannelTrend(host); }); });
+  host.querySelectorAll('button[data-mc]').forEach(function(b){ b.addEventListener('click',function(){ var c=b.getAttribute('data-mc'); if(MOB_CHAN_SEL.has(c)) MOB_CHAN_SEL.delete(c); else MOB_CHAN_SEL.add(c); _mobRenderChannelTrend(host); }); });
+  var ba=host.querySelector('button[data-mc-all]'); if(ba) ba.addEventListener('click',function(){ MOB_CHAN_SEL=new Set(channels); _mobRenderChannelTrend(host); });
+  var bn=host.querySelector('button[data-mc-none]'); if(bn) bn.addEventListener('click',function(){ MOB_CHAN_SEL=new Set(); _mobRenderChannelTrend(host); });
+}
+/* Setup mobile: osserva #month-list e (ri)disegna il grafico canali. Solo su app.html. */
+if(typeof document!=='undefined' && document.addEventListener){
+  document.addEventListener('DOMContentLoaded', function(){
+    if(!document.getElementById('panel-month')) return;   // desktop → ignora
+    var ml=document.getElementById('month-list');
+    if(ml && typeof MutationObserver!=='undefined'){
+      try{ new MutationObserver(function(){ try{ _mobEnsureChannelTrend(); }catch(e){} }).observe(ml,{childList:true}); }catch(e){}
+    }
+    var t=0; var iv=setInterval(function(){ t++;
+      if(typeof BOOKINGS!=='undefined' && BOOKINGS && BOOKINGS.length){ try{ _mobEnsureChannelTrend(); }catch(e){} clearInterval(iv); }
+      if(t>60) clearInterval(iv);
+    }, 250);
+  });
+}
 /* Refresh tabelle Prov/Can in base a OTB_MONTH_FILTER (i 2 grafici restano sempre annuali) */
 function _renderOTBDetailsByMonth(A){
   const m = OTB_MONTH_FILTER;
