@@ -1150,6 +1150,7 @@ function loadData(csvText){
         // occupazione: notti = 0 e i conteggi room-night la saltano (flag virtualRoom).
         notti: _isVirtualRoom ? 0 : notti,
         revPerNight: revPerRoomNightGross,
+        revPerNightNet: revPerRoomNight,   // valore PRE gross-up (netto commissione, "com'era prima")
         revPerNightCaricato: revPerRoomNightCaricato,
         channelMarkup,
         isNonRefundable,
@@ -16060,6 +16061,7 @@ function _aggForecastImpl(structKey){
       actualPastRn: 0, actualPastRev: 0,
       finalLyRn: 0, finalLyRev: 0,
       stlyRn: 0, stlyRev: 0,                  // STLY: booking pace at -364d (only bookings acquired by today-364)
+      otbRevNet: 0, actualPastRevNet: 0, finalLyRevNet: 0, stlyRevNet: 0,   // valori PRE gross-up (per tooltip Overview)
       pickupCurRev: 0, pickupCurRn: 0,
       pickupStlyRev: 0, pickupStlyRn: 0,
       byRt: {},
@@ -16108,6 +16110,7 @@ function _aggForecastImpl(structKey){
         if (monthly[fcstYmKey] && monthly[fcstYmKey].byRt[b.room]){
           monthly[fcstYmKey].finalLyRn += 1;
           monthly[fcstYmKey].finalLyRev += b.revPerNight;
+          monthly[fcstYmKey].finalLyRevNet += b.revPerNightNet;
           monthly[fcstYmKey].byRt[b.room].finalLyRn += 1;
           monthly[fcstYmKey].byRt[b.room].finalLyRev += b.revPerNight;
           // map LY 2025 stay-night to matching date in fcst year 2026 (+364 days)
@@ -16118,6 +16121,7 @@ function _aggForecastImpl(structKey){
           if (b.bookYmd <= STLY_YMD){
             monthly[fcstYmKey].stlyRn += 1;
             monthly[fcstYmKey].stlyRev += b.revPerNight;
+            monthly[fcstYmKey].stlyRevNet += b.revPerNightNet;
           }
         }
         if (dymd >= APR25_FILL_START && dymd <= APR25_FILL_END){
@@ -16125,6 +16129,7 @@ function _aggForecastImpl(structKey){
           if (fillTarget && fillTarget.byRt[b.room]){
             fillTarget.finalLyRn += 1;
             fillTarget.finalLyRev += b.revPerNight;
+            fillTarget.finalLyRevNet += b.revPerNightNet;
             fillTarget.byRt[b.room].finalLyRn += 1;
             fillTarget.byRt[b.room].finalLyRev += b.revPerNight;
           }
@@ -16141,6 +16146,7 @@ function _aggForecastImpl(structKey){
         if (monthly[fcstYmKey] && monthly[fcstYmKey].byRt[b.room]){
           monthly[fcstYmKey].finalLyRn += 1;
           monthly[fcstYmKey].finalLyRev += b.revPerNight;
+          monthly[fcstYmKey].finalLyRevNet += b.revPerNightNet;
           monthly[fcstYmKey].byRt[b.room].finalLyRn += 1;
           monthly[fcstYmKey].byRt[b.room].finalLyRev += b.revPerNight;
           // map this LY stay-night to the matching date in the forecast year (today−364 shift)
@@ -16152,6 +16158,7 @@ function _aggForecastImpl(structKey){
           if (b.bookYmd <= STLY_YMD){
             monthly[fcstYmKey].stlyRn += 1;
             monthly[fcstYmKey].stlyRev += b.revPerNight;
+            monthly[fcstYmKey].stlyRevNet += b.revPerNightNet;
           }
         }
       }
@@ -16161,6 +16168,7 @@ function _aggForecastImpl(structKey){
         const _rnAdd = b.virtualRoom ? 0 : 1;
         monthly[ymKey].otbRn += _rnAdd;
         monthly[ymKey].otbRev += b.revPerNight;
+        monthly[ymKey].otbRevNet += b.revPerNightNet;
         const _rt = monthly[ymKey].byRt[b.room];   // null per 'Other' → il dettaglio per room-type resta pulito
         if (_rt){
           _rt.otbRn += _rnAdd;
@@ -16172,6 +16180,7 @@ function _aggForecastImpl(structKey){
         if (cur < today0){
           monthly[ymKey].actualPastRn += _rnAdd;
           monthly[ymKey].actualPastRev += b.revPerNight;
+          monthly[ymKey].actualPastRevNet += b.revPerNightNet;
           if (_rt){
             _rt.actualPastRn += _rnAdd;
             _rt.actualPastRev += b.revPerNight;
@@ -16572,6 +16581,11 @@ function _aggForecastImpl(structKey){
 /* ============ RENDER ============ */
 let FCST_SHOW_PAST_2026 = false;
 let FCST_HIDE_FUTURE_2027 = false;
+/* Tooltip Overview: mostra Revenue e ADR PRE gross-up (netto commissione OTA, "com'era prima"). */
+function _ovNetTip(net, rn){
+  net = net || 0; var adr = rn>0 ? net/rn : 0;
+  return 'Before gross-up (net of OTA commission): ADR ' + (adr>0?fmtEUR(adr):'—') + ' · Revenue ' + fmtEUR(net);
+}
 function renderForecast(sel){
   const A = aggForecast(sel);
   const M = A.monthly;
@@ -16677,20 +16691,20 @@ function renderForecast(sel){
     body += `<tr>
       <td><b>${monthsITLong[m.mo-1]} ${m.y}</b>${easterBadge}</td>
       <td class="cell-mono cell-flat" title="${m.otbRn} RN of ${A.totRooms*m.days} available">${fmtPct(m.otbOcc,1)}</td>
-      <td class="cell-mono cell-flat">${m.otbRn>0 ? fmtEUR(otbAdrM) : '—'}</td>
-      <td class="cell-mono cell-flat">${fmtEUR(m.otbRev)}</td>
+      <td class="cell-mono cell-flat" style="cursor:help" title="${_ovNetTip(m.otbRevNet, m.otbRn)}">${m.otbRn>0 ? fmtEUR(otbAdrM) : '—'}</td>
+      <td class="cell-mono cell-flat" style="cursor:help" title="${_ovNetTip(m.otbRevNet, m.otbRn)}">${fmtEUR(m.otbRev)}</td>
       ${(() => {
         const stlyCap = A.totRooms * m.days;
         const stlyOcc = stlyCap > 0 ? (m.stlyRn || 0) / stlyCap : 0;
         const stlyAdr = (m.stlyRn || 0) > 0 ? (m.stlyRev / m.stlyRn) : 0;
         return `
           <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)" title="STLY OCC: ${m.stlyRn||0} RN of ${stlyCap} available">${fmtPct(stlyOcc,1)}</td>
-          <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)">${m.stlyRn>0 ? fmtEUR(stlyAdr) : '—'}</td>
-          <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)">${fmtEUR(m.stlyRev || 0)}</td>`;
+          <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03);cursor:help" title="${_ovNetTip(m.stlyRevNet, m.stlyRn)}">${m.stlyRn>0 ? fmtEUR(stlyAdr) : '—'}</td>
+          <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03);cursor:help" title="${_ovNetTip(m.stlyRevNet, m.stlyRn)}">${fmtEUR(m.stlyRev || 0)}</td>`;
       })()}
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtPct(m.finalLyOcc,1)}</td>
-      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(m.finalLyAdr)}</td>
-      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)"><b>${fmtEUR(m.finalLyRev)}</b></td>
+      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(m.finalLyRevNet, m.finalLyRn)}">${fmtEUR(m.finalLyAdr)}</td>
+      <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(m.finalLyRevNet, m.finalLyRn)}"><b>${fmtEUR(m.finalLyRev)}</b></td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(m.occ,1)}</td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(m.adr)}</td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.fcstRev)}</b></td>
