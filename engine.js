@@ -16936,6 +16936,24 @@ function renderForecast(sel){
     }
   }
   renderForecastCharts(A, ymOrder);
+  if (typeof _ovEnsureGrossBadge === 'function'){ try { _ovEnsureGrossBadge(); } catch(e){} }
+}
+/* Badge "gross of OTA commission" accanto ai titoli dell'Overview (idempotente). */
+function _ovGrossBadgeSpan(){
+  return '<span class="ov-gross-badge" title="All revenue and ADR are shown gross of OTA commission (Booking already gross; Expedia/VRBO/Homeaway +18%, Ctrip +15%, Airbnb +15.5%; Direct/Italcamel unchanged). Applies to every year, past included." style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;background:#e8f1ea;color:#2c5c3c;border:1px solid #bcd9c4;padding:2px 8px;border-radius:10px;margin-left:10px;vertical-align:middle;font-family:\'DM Sans\',sans-serif">gross of OTA commission</span>';
+}
+function _ovEnsureGrossBadge(){
+  if(typeof document==='undefined') return;
+  var pf=document.getElementById('panel-fcst');
+  if(pf){
+    var h2=pf.querySelector('.section-head h2');
+    if(h2 && !h2.querySelector('.ov-gross-badge')) h2.insertAdjacentHTML('beforeend', _ovGrossBadgeSpan());
+  }
+  var sub=document.getElementById('fcst-monthly-sub');
+  if(sub && sub.parentElement){
+    var h3=sub.parentElement.querySelector('h3');
+    if(h3 && !h3.querySelector('.ov-gross-badge')) h3.insertAdjacentHTML('beforeend', _ovGrossBadgeSpan());
+  }
 }
 function renderForecastCharts(A, ymOrder){
   const M = A.monthly;
