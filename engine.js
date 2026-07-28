@@ -969,6 +969,23 @@ function normCanale(raw){
   // Fallback: title-case
   return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
 }
+/* Gross-up commissioni OTA: i dati arrivano MISTI (Booking già lordo, gli altri netti).
+   Riportiamo TUTTO al LORDO di commissione così ADR/Revenue sono confrontabili tra canali
+   e tra anni. Fattore = 1/(1 - commissione). Applicato a revPerRoomNight in loadData → vale
+   sia per il reporting sia per il motore RMES/Base Price (che parte da revPerNight).
+     Ctrip 15%   → ÷0.85   (es. 100 → 117.65)
+     Expedia 18% → ÷0.82   (es. 100 → 121.95)   [+ VRBO / Homeaway = stesso gruppo]
+     Airbnb 15.5%→ ÷0.845  (es. 100 → 118.34)
+     Booking     → già lordo (×1) · Direct/Beddy → nessuna commissione (×1) · Italcamel → invariato (×1) */
+function _grossUpFactor(canale){
+  const c = (canale || '').toLowerCase();
+  if (c === 'expedia') return 1 / 0.82;   // 18%
+  if (c === 'vrbo')    return 1 / 0.82;   // come Expedia (gruppo Expedia)
+  if (c.indexOf('homeaway') !== -1) return 1 / 0.82;   // come Expedia (gruppo Expedia)
+  if (c === 'ctrip')   return 1 / 0.85;   // 15%
+  if (c === 'airbnb')  return 1 / 0.845;  // 15.5%
+  return 1;   // Booking (già lordo), Direct/Beddy, Italcamel, altri → invariati
+}
 function normProv(p, canale){
   const t = (p||'').trim();
   if (t && t!=='Non Specificato' && t!=='Non specificato'){
@@ -1109,6 +1126,8 @@ function loadData(csvText){
     const revPerRoomNight = (totNet / notti) / numRooms;
     const canaleRaw = (r['Canale']||'—').trim() || '—';
     const canale = normCanale(canaleRaw);
+    // Gross-up commissioni OTA: porta il ricavo al LORDO in modo uniforme su tutti i canali.
+    const revPerRoomNightGross = revPerRoomNight * _grossUpFactor(canale);
     const prov = normProv(r['Provenienza'], canale);
     const ref = r['numero di riferimento'] || '';
     const guest = (r['prenotante']||'').trim();
@@ -1120,7 +1139,7 @@ function loadData(csvText){
     const isDirect = (canale === 'Direct' || canale === 'Beddy' || canale === 'Diretto' || canale === '—' || canale === '');
     const _markupPct = _markupForCanaleFast(canale);
     const channelMarkup = isDirect ? 0 : (_markupPct / 100);
-    const revPerRoomNightCaricato = revPerRoomNight / (1 + channelMarkup);
+    const revPerRoomNightCaricato = revPerRoomNightGross / (1 + channelMarkup);
     RAW.push(r);
     for (const room of alloggi){
       BOOKINGS.push({
@@ -1130,11 +1149,11 @@ function loadData(csvText){
         // (revPerNight normale, così entra nel revenue per stay-date), ma NON deve generare
         // occupazione: notti = 0 e i conteggi room-night la saltano (flag virtualRoom).
         notti: _isVirtualRoom ? 0 : notti,
-        revPerNight: revPerRoomNight,
+        revPerNight: revPerRoomNightGross,
         revPerNightCaricato: revPerRoomNightCaricato,
         channelMarkup,
         isNonRefundable,
-        revTotal: revPerRoomNight * notti,
+        revTotal: revPerRoomNightGross * notti,
         virtualRoom: _isVirtualRoom || false,
         cleaning: extraCleaning / numRooms,
         bookYmd: ymd(dBook),
@@ -2688,6 +2707,14 @@ function _ovEnsurePlaybookNote(){
   p.innerHTML=`<p style="margin:0 0 6px 0;font-weight:700;color:#2c5c3c">📊 Channel trend by month</p>`
     +`<p style="margin:0;font-size:13px">A configurable chart above the Source/Channel tables. Pick a <b>metric</b> — RN, ADR, Revenue, or <b>All 3</b> — and toggle which <b>channels</b> to include (All / None shortcuts). In <b>RN / ADR / Revenue</b> mode it draws <b>grouped bars per month</b>, one coloured series per selected channel: <b>solid = 2026 OTB</b>, <b>faded = STLY</b>. In <b>All 3</b> mode it <b>sums the selected channels</b> and overlays <b>Revenue</b> (bars, left €-axis), <b>RN</b> (line, right axis) and <b>ADR</b> (line, far-right €-axis), with <b>solid = 2026</b> and <b>dashed = STLY</b>. Hover any bar or point for the exact value.</p>`;
   body.appendChild(p);
+  if(!document.getElementById('instr-gross-note')){
+    const g=document.createElement('div');
+    g.id='instr-gross-note';
+    g.style.cssText='margin:12px 0 0 0;padding:12px 14px;background:#fdf3e6;border-left:4px solid #c4823b;border-radius:0 6px 6px 0;line-height:1.55';
+    g.innerHTML=`<p style="margin:0 0 6px 0;font-weight:700;color:#7a4f1c">💶 Revenue shown gross of OTA commission</p>`
+      +`<p style="margin:0;font-size:13px">Across <b>every tab and every year</b> (past, present, future) revenue and ADR are shown <b>gross of OTA commission</b>, so channels and years are compared like-for-like. Booking already arrives gross (left as-is); the others are grossed up on import: <b>Ctrip +15%</b> (÷0.85), <b>Expedia +18%</b> (÷0.82, and <b>VRBO / Homeaway</b> at the same 18%), <b>Airbnb +15.5%</b> (÷0.845). Direct/Beddy and Italcamel are left unchanged. This also feeds the RMES Base Price engine.</p>`;
+    body.appendChild(g);
+  }
 }
 /* Refresh tabelle Prov/Can in base a OTB_MONTH_FILTER (i 2 grafici restano sempre annuali) */
 function _renderOTBDetailsByMonth(A){
