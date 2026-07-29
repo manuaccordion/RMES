@@ -159,6 +159,23 @@ const RMES_CLOUD = (function(){
       try { if (localStorage.getItem(k) != null) keysCount++; } catch(e){}
     }
     h += '<div style="margin-bottom:10px"><b>Synced keys present:</b> '+keysCount+' / '+SYNC_KEYS.length+'</div>';
+    // === CLOUD DOC SIZE (vs Firestore 1 MB limit) ===
+    try {
+      const sz = _estimateCloudSize();
+      if (sz){
+        const kb = function(n){ return (n/1024).toFixed(0)+' KB'; };
+        const warn = sz.pct >= 80;
+        const col = warn ? '#a83b3b' : (sz.pct >= 60 ? '#9a6b1a' : '#3d7a4b');
+        const bg  = warn ? '#fde8e6' : (sz.pct >= 60 ? '#fbf3e2' : '#eef6ee');
+        const bd  = warn ? '#e8a8a3' : (sz.pct >= 60 ? '#e6cf9a' : '#bcdcbf');
+        h += '<div style="margin-bottom:10px;padding:8px 10px;background:'+bg+';border:1px solid '+bd+';border-radius:5px;font-size:11.5px">'
+          + '<b>Cloud doc size:</b> <span style="color:'+col+';font-weight:700">'+kb(sz.enc)+' / 1024 KB ('+sz.pct+'%)</span>'
+          + '<div style="font-size:10px;color:#888;margin-top:3px">'
+          + (sz.compressed ? ('gzip on — raw '+kb(sz.raw)+' → '+kb(sz.enc)+' on cloud. ') : 'gzip OFF (pako not loaded — hard-reload). ')
+          + (warn ? 'Approaching the 1 MB Firestore limit — pushes may start failing.' : 'Plenty of headroom.')
+          + '</div></div>';
+      }
+    } catch(e){}
     // === CONFIG HASH ===
     // Hash of all synced configurations. Two browsers with the same hash are 100% in sync.
     // If hashes differ, something is out of sync (override, accept, weights, etc.).
@@ -292,9 +309,9 @@ const RMES_CLOUD = (function(){
           if (!snap.exists){
             return { ok: false, error: 'Cloud document does not exist.' };
           }
-          const payload = snap.data();
+          const payload = _decodeFromCloud(snap.data());
           if (!payload || typeof payload !== 'object'){
-            return { ok: false, error: 'Cloud document is empty or malformed.' };
+            return { ok: false, error: 'Cloud document is empty, malformed, or compressed but undecodable (hard-reload with Ctrl+Shift+R to load the compression library).' };
           }
           applyingRemote = true;
           let appliedCount = 0;
@@ -361,7 +378,7 @@ const RMES_CLOUD = (function(){
         const ref = db.collection('rmes_shared').doc('state');
         const payload = _collectLocal();
         payload._updatedAt = Date.now();
-        ref.set(payload).then(function(){
+        ref.set(_encodeForCloud(payload)).then(function(){
           lastRemoteJSON = JSON.stringify(payload);
           _logSync('push');
           _setStatus('synced');
@@ -408,7 +425,102 @@ const RMES_CLOUD = (function(){
         if (raw != null) obj[k] = raw;   // salvo la stringa grezza (già JSON)
       } catch(e){}
     }
+    // Prune past-only entries from purely forward-looking keys before pushing.
+    // frozen_base and last_suggestion are {struct:{ymd:...}} and are never read for
+    // past dates (recomputed for the future). Dropping the long tail of past days
+    // keeps the shared Firestore doc from growing without bound. Local storage is
+    // left untouched; only what we push to the cloud is trimmed. Both keys use
+    // plain last-write-wins on apply, so the prune propagates cleanly to everyone.
+    try {
+      const base = (typeof TODAY !== 'undefined' && TODAY) ? new Date(TODAY) : new Date();
+      base.setDate(base.getDate() - PRUNE_GRACE_DAYS);
+      const cutoff = base.getFullYear()*10000 + (base.getMonth()+1)*100 + base.getDate(); // YYYYMMDD
+      for (const k of PRUNE_PAST_KEYS){
+        if (obj[k] == null) continue;
+        try {
+          const parsed = JSON.parse(obj[k]);
+          if (!parsed || typeof parsed !== 'object') continue;
+          for (const s in parsed){
+            const days = parsed[s];
+            if (!days || typeof days !== 'object') continue;
+            for (const ymd in days){
+              const n = parseInt(String(ymd).replace(/-/g,''), 10); // "2026-07-29" or "20260729" → 20260729
+              if (isFinite(n) && n < cutoff) delete days[ymd];
+            }
+          }
+          obj[k] = JSON.stringify(parsed);
+        } catch(e){ /* keep raw on parse error */ }
+      }
+    } catch(e){}
     return obj;
+  }
+  // Keys pruned of past dates before pushing (forward-looking, recomputable).
+  const PRUNE_PAST_KEYS = ['rmes_frozen_base_v1', 'rmes_last_suggestion_v1'];
+  const PRUNE_GRACE_DAYS = 14;   // keep the recent past visible; only cut the long tail
+
+  // ---- Firestore 1 MB limit: compress the payload with gzip (pako) ----
+  // Firestore caps a single document at 1,048,576 bytes. The shared state (per-day,
+  // per-property config across 6 properties) had crossed that ceiling, so every push
+  // was silently failing and the cloud stayed frozen — which is exactly why two
+  // browsers drift apart. We now write the payload gzip-compressed as one field
+  // (_z1) plus meta at top level. Reads transparently decompress. If pako is missing
+  // (should not happen once both HTML files load it), we fall back to plain format
+  // so nothing breaks, and reads of a plain doc keep working (backward compatible).
+  const CLOUD_BYTE_LIMIT = 1048576;
+  function _u8ToB64(u8){
+    let res = '', CHUNK = 0x8000;
+    for (let i = 0; i < u8.length; i += CHUNK){
+      res += String.fromCharCode.apply(null, u8.subarray(i, Math.min(i+CHUNK, u8.length)));
+    }
+    return btoa(res);
+  }
+  function _b64ToU8(b64){
+    const bin = atob(b64), len = bin.length, u8 = new Uint8Array(len);
+    for (let i = 0; i < len; i++) u8[i] = bin.charCodeAt(i);
+    return u8;
+  }
+  function _pakoOK(){ return !!((typeof pako !== 'undefined') && pako && pako.deflate && pako.inflate); }
+  // Wrap a per-key payload into the object actually stored on Firestore.
+  function _encodeForCloud(payload){
+    const meta = {
+      _updatedAt: payload && payload._updatedAt != null ? payload._updatedAt : Date.now(),
+      _updatedBy: payload && payload._updatedBy != null ? payload._updatedBy : null
+    };
+    try {
+      if (_pakoOK()){
+        const body = {};
+        for (const k in payload){ if (k === '_updatedAt' || k === '_updatedBy') continue; body[k] = payload[k]; }
+        const json = JSON.stringify(body);
+        const b64 = _u8ToB64(pako.deflate(json));
+        return { _z1: b64, _zlen: json.length, _updatedAt: meta._updatedAt, _updatedBy: meta._updatedBy };
+      }
+    } catch(e){ console.warn('[rmesCloud] compress failed → sending plain', e); }
+    return payload; // fallback: plain (no worse than before)
+  }
+  // Turn a Firestore doc back into the per-key payload object (decompress if needed).
+  // Returns null if it is a compressed doc we cannot decode (never wipes local).
+  function _decodeFromCloud(doc){
+    if (!doc || typeof doc !== 'object') return doc;
+    if (doc._z1 == null) return doc; // plain / legacy format
+    try {
+      if (!_pakoOK()){
+        console.warn('[rmesCloud] compressed cloud doc but pako missing → hard-reload (Ctrl+Shift+R) to load it');
+        return null;
+      }
+      const body = JSON.parse(pako.inflate(_b64ToU8(doc._z1), { to: 'string' }));
+      if (doc._updatedAt != null) body._updatedAt = doc._updatedAt;
+      if (doc._updatedBy != null) body._updatedBy = doc._updatedBy;
+      return body;
+    } catch(e){ console.warn('[rmesCloud] decompress failed', e); return null; }
+  }
+  // Estimate the size of the doc we would push right now (for the diagnostics gauge).
+  function _estimateCloudSize(){
+    try {
+      const local = _collectLocal();
+      const rawLen = JSON.stringify(local).length;
+      const encLen = JSON.stringify(_encodeForCloud(local)).length;
+      return { raw: rawLen, enc: encLen, pct: Math.round(encLen / CLOUD_BYTE_LIMIT * 100), compressed: _pakoOK() };
+    } catch(e){ return null; }
   }
 
   // ---- Append-only audit log: merge instead of overwrite ----
@@ -579,7 +691,7 @@ const RMES_CLOUD = (function(){
           if (!id){ id = 'c'+Math.random().toString(36).slice(2,8); localStorage.setItem('rmes_client_id', id); }
           return id; } catch(e){ return 'unknown'; }
       })();
-      db.collection('rmes_shared').doc('state').set(payload)
+      db.collection('rmes_shared').doc('state').set(_encodeForCloud(payload))
         .then(function(){ lastRemoteJSON = JSON.stringify(payload); _logSync('push'); _setStatus('synced'); _lastPushError = null; })
         .catch(function(e){ console.warn('[rmesCloud] push failed', e); _setStatus('offline'); _lastPushError = (e && (e.message || e.code)) || String(e); });
     }, 800);  // accorpa scritture ravvicinate
@@ -615,20 +727,21 @@ const RMES_CLOUD = (function(){
         const ref = db.collection('rmes_shared').doc('state');
         ref.get().then(function(snap){
           if (snap.exists){
-            const remote = snap.data();
+            const remote = _decodeFromCloud(snap.data());
             _applyToLocal(remote);
             lastRemoteJSON = JSON.stringify(remote);
             console.log('[rmesCloud] initial state loaded from cloud');
           } else {
             // cloud vuoto → prima migrazione: carico lo stato locale attuale
             const payload = _collectLocal(); payload._updatedAt = Date.now();
-            ref.set(payload).then(function(){ console.log('[rmesCloud] migrated local state to cloud'); }).catch(function(){});
+            ref.set(_encodeForCloud(payload)).then(function(){ console.log('[rmesCloud] migrated local state to cloud'); }).catch(function(){});
           }
           ready = true; _logSync('pull'); _setStatus('synced'); clearTimeout(safety); finish();
           // listener realtime per aggiornamenti altrui
           ref.onSnapshot(function(s){
             if (!s.exists) return;
-            const remote = s.data();
+            const remote = _decodeFromCloud(s.data());
+            if (remote == null) return;   // compressed doc we cannot decode → ignore, keep local
             const j = JSON.stringify(remote);
             if (j === lastRemoteJSON) return;   // è il nostro stesso push
             const changed = _applyToLocal(remote);
@@ -649,7 +762,8 @@ const RMES_CLOUD = (function(){
               if (document.hidden || !available || !db) return;
               ref.get().then(function(snap){
                 if (!snap.exists) return;
-                const remote = snap.data();
+                const remote = _decodeFromCloud(snap.data());
+                if (remote == null) return;   // compressed doc we cannot decode → ignore
                 const j = JSON.stringify(remote);
                 if (j === lastRemoteJSON) return;   // già allineati
                 const changed = _applyToLocal(remote);
@@ -683,6 +797,9 @@ const RMES_CLOUD = (function(){
     _collectLocal: _collectLocal,
     _mergeAuditRaw: _mergeAuditRaw,
     _applyToLocal: _applyToLocal,
+    _encodeForCloud: _encodeForCloud,
+    _decodeFromCloud: _decodeFromCloud,
+    _estimateCloudSize: _estimateCloudSize,
     showDiagnostics: _showDiagnostics,
     forcePullFromCloud: _forcePullFromCloud,
     forcePushToCloud: _forcePushToCloud,
@@ -2778,20 +2895,9 @@ function _mobRenderChannelTrend(host){
   var ba=host.querySelector('button[data-mc-all]'); if(ba) ba.addEventListener('click',function(){ MOB_CHAN_SEL=new Set(channels); _mobRenderChannelTrend(host); });
   var bn=host.querySelector('button[data-mc-none]'); if(bn) bn.addEventListener('click',function(){ MOB_CHAN_SEL=new Set(); _mobRenderChannelTrend(host); });
 }
-/* Setup mobile: osserva #month-list e (ri)disegna il grafico canali. Solo su app.html. */
-if(typeof document!=='undefined' && document.addEventListener){
-  document.addEventListener('DOMContentLoaded', function(){
-    if(!document.getElementById('panel-month')) return;   // desktop → ignora
-    var ml=document.getElementById('month-list');
-    if(ml && typeof MutationObserver!=='undefined'){
-      try{ new MutationObserver(function(){ try{ _mobEnsureChannelTrend(); }catch(e){} }).observe(ml,{childList:true}); }catch(e){}
-    }
-    var t=0; var iv=setInterval(function(){ t++;
-      if(typeof BOOKINGS!=='undefined' && BOOKINGS && BOOKINGS.length){ try{ _mobEnsureChannelTrend(); }catch(e){} clearInterval(iv); }
-      if(t>60) clearInterval(iv);
-    }, 250);
-  });
-}
+/* Grafico canali sul mobile: DISABILITATO su richiesta (poco leggibile su schermo piccolo).
+   Le funzioni _mobEnsureChannelTrend/_mobRenderChannelTrend restano definite ma non sono più
+   agganciate ad alcun evento, quindi il grafico non compare nell'app mobile. */
 /* Refresh tabelle Prov/Can in base a OTB_MONTH_FILTER (i 2 grafici restano sempre annuali) */
 function _renderOTBDetailsByMonth(A){
   const m = OTB_MONTH_FILTER;

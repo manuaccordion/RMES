@@ -2708,6 +2708,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p>RMES decisions (accepted prices, overrides) and the whole configuration (the 5-factor weights, Daily Pickup thresholds, floor, anchor, target growth, LMF matrix, event weights, compset weights/offsets) are <b>shared in real time</b> between everyone who opens the dashboard. When one person accepts a price or changes a setting, the others see it without re-importing anything, on any browser or device.</p>
         <p>The chip in the top bar shows the status: <b>☁ synced</b> = your changes are saved to the shared store and you are seeing everyone's latest state; <b>⚠ local only</b> = the connection to the shared store is unavailable, so you are working on this browser alone — everything still works and will sync automatically when the connection is back.</p>
         <p>If two people change the same thing at the same moment, the <b>last save wins</b>. In practice you almost never edit the exact same date at the exact same second, so this is rarely an issue.</p>
+        <p>The shared state is stored on Firestore as a <b>single document</b>, which has a hard <b>1 MB limit</b>. To stay well under it the payload is <b>gzip-compressed</b> before it is sent to the cloud (typically ~6-8× smaller), and past-date entries of the purely forward-looking keys (frozen Base Price and yesterday's suggestion snapshot) older than 14 days are <b>trimmed</b> from what is pushed. The <b>Sync Diagnostics</b> panel (open it from the header) shows the current <b>Cloud doc size</b> as a percentage of the 1 MB limit — green with headroom, amber past 60%, red past 80%.</p>
+        <p><b>If you and a colleague see different RMES or Last update numbers:</b> it means a push did not reach the cloud (in the past this happened when the document exceeded 1 MB and every push failed silently). Open <b>Sync Diagnostics</b> and compare the <b>Config hash</b> — same hash on both browsers = fully in sync. If they differ, decide who holds the correct latest state: that person clicks <b>Force PUSH</b>, the other clicks <b>Force PULL from cloud</b>, then both re-check the hash. Always <b>hard-reload (Ctrl+Shift+R)</b> after a new version is published so the compression library and the latest code are loaded.</p>
       </div>
     </details>
 
@@ -2836,6 +2838,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 <!-- Firebase SDK (compat build → espone `firebase` globale, usato da rmesCloud in engine.js) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- pako: gzip del payload Firestore (aggira il limite di 1 MB per documento) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 <script src="engine.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{

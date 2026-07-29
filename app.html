@@ -394,6 +394,8 @@ main{flex:1;padding:8px 16px 24px}
 <script src="data.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- pako: gzip del payload Firestore (aggira il limite di 1 MB per documento) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
 <script src="engine.js"></script>
 <script>
 /* RMES MOBILE APP v2 — reuses engine.js (same RMES logic as the dashboard).
