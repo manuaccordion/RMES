@@ -13818,6 +13818,21 @@ function renderSellStrategy(sel){
         _refreshSell();
       };
     }
+    const btnPeriodClearOvr = document.getElementById('fp-period-clearovr');
+    if (btnPeriodClearOvr){
+      btnPeriodClearOvr.onclick = function(){
+        const r = _fpPeriodDays(); if (!r) return;
+        if (!confirm('Remove ONLY the manual 🖋 override on ' + r.days.length + ' days (baseRT: ' + baseRT + ')?\n\nAccepts and Base underneath are kept: each day reverts to what it showed BEFORE the override (its accepted RMES if any, otherwise its Base Price).')) return;
+        let n = 0;
+        for (const d of r.days){
+          // Tombstone ONLY the final-price override. Do NOT touch accepted / base override,
+          // so a previously-accepted or base value re-surfaces as the active Last update.
+          if (typeof fp_setOverride === 'function'){ fp_setOverride(sel, d.iso, baseRT, null); n++; }
+        }
+        r.setMsg('↺ Removed 🖋 override on ' + n + ' days (accepts/Base kept).');
+        _refreshSell();
+      };
+    }
     const btnPeriodReset = document.getElementById('fp-period-reset');
     if (btnPeriodReset){
       btnPeriodReset.onclick = function(){

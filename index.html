@@ -1846,6 +1846,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <span style="color:#999;font-size:11px">€</span>
           <input type="number" id="fp-period-price" placeholder="price" min="1" step="1" style="width:74px;font-size:12px;padding:3px 6px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink-1)">
           <button id="fp-period-override" style="font-size:11px;font-weight:700;padding:4px 10px;border:1px solid #b86b1f;border-radius:5px;background:#fff;color:#b86b1f;cursor:pointer">🖋 Override</button>
+          <button id="fp-period-clearovr" style="font-size:11px;font-weight:600;padding:4px 10px;border:1px solid #b86b1f;border-radius:5px;background:#fff;color:#b86b1f;cursor:pointer" title="Remove ONLY the manual 🖋 override on the range. Accepts and Base underneath are kept, so each day reverts to what it showed before the override.">↺ Remove 🖋 only</button>
           <button id="fp-period-reset" style="font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink-3);cursor:pointer">↺ Reset</button>
           <span id="fp-period-msg" style="font-size:11px;margin-left:4px;min-height:14px"></span>
         </div>
@@ -2246,6 +2247,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <ul style="margin:6px 0 6px 18px;font-size:13px">
           <li><b>✓ Accept RMES</b> (green) — accepts <b>each day's own suggested RMES</b> for the whole range in one click. Every day's Last update becomes that day's suggestion in green with ✓. No price field needed. Days with no RMES (e.g. past dates) are skipped. The accept becomes the active price because it is the most recent decision, even if a manual override 🖋 existed on that day.</li>
           <li><b>🖋 Override</b> (orange) — type a price in €, then click to force that <b>single fixed price</b> on every day in the range as a manual override. Last update becomes this price in orange with 🖋 on every day, because the override is now the most recent decision.</li>
+          <li><b>↺ Remove 🖋 only</b> — removes <b>just the manual override 🖋</b> on every day in the range, keeping any accepted ✓ and Base underneath. Each day reverts to what it showed <b>before</b> the override (its accepted price if there was one, otherwise its Base Price). Use this to undo a range override without losing legitimate prior pricing (e.g. holidays).</li>
           <li><b>↺ Reset</b> — wipes Base override, manual override 🖋 and accepted ✓ on every day in the range. Last update goes back to the Base Price (black, no icon).</li>
         </ul>
         <p style="margin:6px 0;font-size:12.5px;color:#555">For a single day you can also click a <b>Last update</b> cell directly (override one day), or the <b>✓</b> button in the RMES cell (accept one day). Right-click or Shift+click two Last update cells to override a range inline.</p>
