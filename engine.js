@@ -13151,16 +13151,22 @@ function renderSellStrategy(sel){
             `Overrides apply ONLY to the baseRT (${baseRT_fp}). To change this price, go to the baseRT row.`;
           cellFoundation = `<td class="cell-mono sell-block-fp" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(derivedTip)}"><b style="${textStyle}">↳ ${fpPriceTxt}</b></td>`;
         } else {
-          // baseRT: cella READ-ONLY. Il Base Price strutturale è "accettato per default" e
-          // non si tocca: per agire sul prezzo del giorno usa la cella RMES (✓ accept) o
-          // l'override modale / pulsante "🖋 Override RMES" del pannello periodo.
-          let cellBg = 'rgba(74,124,89,.10)';
-          let cellBorder = 'rgba(74,124,89,.45)';
-          let textStyle = 'color:#2f5538;font-weight:700';
-          let statusIcon = '✓ ';
-          let fpTipPrefix = `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nThis is the structural Base Price for the day, frozen at first calc. Read-only.\n\nComputed once with: LY median ADR (same DoW & month) × target growth, capped at the Expedia Goal Value (weighted compset + offsets), bounded ±50% from Anchor Price, ≥ floor.\n\nTo change the active price for the day, use the RMES cell (✓ to accept the RMES suggestion) or 🖋 Override RMES from the modal / period panel.\nOther RTs inherit Base + monthly supplement.`;
-          const fpTip = fpTipPrefix;
-          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="frozen-readonly" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b></td>`;
+          // baseRT: Base Price cell. The structural Base is "accepted by default", but you
+          // CAN override it for a single day with 🖋 — useful for a holiday the historical
+          // anchor underprices (the RMES target is computed on this Base, so fixing the Base
+          // fixes the suggestion). ↺ reverts to the computed value. Other RTs inherit Base+supp.
+          const _hasOvr = (nrmOverride != null);
+          let cellBg     = _hasOvr ? 'rgba(217,154,78,.12)' : 'rgba(74,124,89,.10)';
+          let cellBorder = _hasOvr ? 'rgba(184,107,31,.45)' : 'rgba(74,124,89,.45)';
+          let textStyle  = _hasOvr ? 'color:#b86b1f;font-weight:700' : 'color:#2f5538;font-weight:700';
+          let statusIcon = _hasOvr ? '🖋 ' : '✓ ';
+          const fpTip = _hasOvr
+            ? `Base Price — MANUAL OVERRIDE\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nOverride value: €${fpEffective.toFixed(0)}\nComputed (frozen): ${nrmFrozen!=null?('€'+Math.round(nrmFrozen)):'—'}\n\nThe RMES target is computed on this Base. Click 🖋 to change it, ↺ to revert to the computed value.\nOther RTs inherit Base + monthly supplement.`
+            : `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nStructural Base for the day: LY median ADR × target growth, capped at the Expedia Goal Value, bounded ±50% from Anchor, ≥ floor.\n\nClick 🖋 to override the Base for THIS single day (e.g. a holiday the history underprices — the RMES target is computed on the Base). Other RTs inherit Base + monthly supplement.`;
+          const _btnStyle = 'font-size:10px;line-height:1;border:none;background:transparent;cursor:pointer;padding:0 1px;color:inherit;opacity:.65';
+          let _btns = `<button class="fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Override Base Price for this day" style="${_btnStyle}">🖋</button>`;
+          if (_hasOvr) _btns += `<button class="fp-inline-reset" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Reset Base Price to the computed value" style="${_btnStyle}">↺</button>`;
+          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${_hasOvr?'override':'frozen'}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b> ${_btns}</td>`;
         }
       }
     }
