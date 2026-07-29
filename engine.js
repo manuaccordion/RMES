@@ -177,27 +177,10 @@ const RMES_CLOUD = (function(){
       }
     } catch(e){}
     // === CONFIG HASH ===
-    // Hash of all synced configurations. Two browsers with the same hash are 100% in sync.
-    // If hashes differ, something is out of sync (override, accept, weights, etc.).
+    // Covers shared pricing decisions + config only (see _computeConfigHash).
     let configHash = '—';
-    try {
-      const parts = [];
-      const keysSorted = SYNC_KEYS.slice().sort();
-      for (const k of keysSorted){
-        if (k === '_data_fingerprint_v1') continue;  // skip own diagnostic key
-        const v = localStorage.getItem(k);
-        parts.push(k + '=' + (v == null ? 'null' : v));
-      }
-      const blob = parts.join('|');
-      // Simple deterministic hash (djb2 variant, 32-bit)
-      let hash = 5381;
-      for (let i = 0; i < blob.length; i++){
-        hash = ((hash << 5) + hash + blob.charCodeAt(i)) | 0;
-      }
-      // Convert to unsigned 32-bit and hex
-      configHash = (hash >>> 0).toString(16).padStart(8, '0').toUpperCase();
-    } catch(e){}
-    h += '<div style="margin-bottom:10px;padding:8px 10px;background:#f4efe4;border:1px solid #d4c8b0;border-radius:5px;font-family:\'DM Mono\',monospace;font-size:11.5px"><b>Config hash:</b> <span style="color:#5a3a14;font-weight:700;letter-spacing:0.5px">' + configHash + '</span><div style="font-size:10px;color:#888;font-family:\'DM Sans\',sans-serif;margin-top:3px">If you and a colleague see the SAME hash → fully in sync. Different hash → out of sync, do "Force pull from cloud".</div></div>';
+    try { configHash = _computeConfigHash(); } catch(e){}
+    h += '<div style="margin-bottom:10px;padding:8px 10px;background:#f4efe4;border:1px solid #d4c8b0;border-radius:5px;font-family:\'DM Mono\',monospace;font-size:11.5px"><b>Config hash:</b> <span style="color:#5a3a14;font-weight:700;letter-spacing:0.5px">' + configHash + '</span><div style="font-size:10px;color:#888;font-family:\'DM Sans\',sans-serif;margin-top:3px">Covers pricing decisions &amp; config (not the local decision log). SAME hash on both browsers → aligned on prices. Different → do "Force pull from cloud".</div></div>';
     // Recent sync history
     if (_syncHistory.length){
       h += '<div style="margin:14px 0 8px;padding-top:10px;border-top:1px solid #ece9e2"><b>Recent sync activity:</b></div>';
@@ -522,6 +505,25 @@ const RMES_CLOUD = (function(){
       return { raw: rawLen, enc: encLen, pct: Math.round(encLen / CLOUD_BYTE_LIMIT * 100), compressed: _pakoOK() };
     } catch(e){ return null; }
   }
+  // Config hash: deterministic fingerprint of the shared PRICING decisions + config.
+  // Excludes the diagnostic fingerprint and the append-only decision log (the log is
+  // merged per device, so it differs between two fully price-aligned browsers).
+  const HASH_EXCLUDE = { '_data_fingerprint_v1':1, 'rmes_audit_log_v1':1 };
+  function _computeConfigHash(){
+    try {
+      const parts = [];
+      const keysSorted = SYNC_KEYS.slice().sort();
+      for (const k of keysSorted){
+        if (HASH_EXCLUDE[k]) continue;
+        let v = null; try { v = localStorage.getItem(k); } catch(e){}
+        parts.push(k + '=' + (v == null ? 'null' : v));
+      }
+      const blob = parts.join('|');
+      let hash = 5381;
+      for (let i = 0; i < blob.length; i++){ hash = ((hash << 5) + hash + blob.charCodeAt(i)) | 0; }
+      return (hash >>> 0).toString(16).padStart(8, '0').toUpperCase();
+    } catch(e){ return '—'; }
+  }
 
   // ---- Append-only audit log: merge instead of overwrite ----
   // The decision log is shared but APPENDED independently by each person. A plain
@@ -800,6 +802,7 @@ const RMES_CLOUD = (function(){
     _encodeForCloud: _encodeForCloud,
     _decodeFromCloud: _decodeFromCloud,
     _estimateCloudSize: _estimateCloudSize,
+    computeConfigHash: _computeConfigHash,
     showDiagnostics: _showDiagnostics,
     forcePullFromCloud: _forcePullFromCloud,
     forcePushToCloud: _forcePushToCloud,
