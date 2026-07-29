@@ -829,6 +829,18 @@ function rmesCloudOnRemoteUpdate(){
   } catch(e){ console.warn('rmesCloudOnRemoteUpdate failed', e); }
 }
 
+/* Heavy tabs rebuild large tables on every visit. To keep tab-switching snappy we
+   skip the rebuild when nothing that affects them has changed — same idea as the
+   existing _FCST_DIRTY flag, generalized. Correct by construction: every pricing
+   change (accept, override, config Apply, remote sync) writes an 'rmes_' key, which
+   goes through the setItem wrapper below and marks all heavy tabs dirty. Struct
+   changes mark them dirty in renderAll(). So a revisit re-renders only when needed. */
+var _TAB_DIRTY = { big:true, baseprice:true, ptree:true };
+function _markHeavyTabsDirty(){
+  try { for (var k in _TAB_DIRTY) _TAB_DIRTY[k] = true; } catch(e){}
+  try { if (typeof _FCST_DIRTY !== 'undefined') _FCST_DIRTY = true; } catch(e){}
+}
+
 /* Intercetta TUTTE le scritture su localStorage una volta sola: se la chiave è una
    chiave RMES sincronizzata, notifica rmesCloud (che fa il push debounced sul cloud).
    Non cambia il comportamento di localStorage: scrive sempre in locale come prima. */
@@ -840,6 +852,8 @@ function rmesCloudOnRemoteUpdate(){
     localStorage.setItem = function(key, value){
       _origSet(key, value);
       try { if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.notifyLocalChange) RMES_CLOUD.notifyLocalChange(key); } catch(e){}
+      // Any pricing/config change (local edit or remote sync) invalidates the heavy tabs.
+      try { if (typeof key === 'string' && key.indexOf('rmes_') === 0 && typeof _markHeavyTabsDirty === 'function') _markHeavyTabsDirty(); } catch(e){}
     };
     try { Object.defineProperty(localStorage, '__rmesWrapped', { value:true, enumerable:false }); }
     catch(e){ /* alcuni browser non permettono defineProperty su localStorage: ignora */ }
@@ -19797,13 +19811,14 @@ function renderAll(){
   if (typeof _RMESMAP_TICK !== 'undefined') _RMESMAP_TICK = {};  // reset cache per-render
   updateChips();
   if (CURRENT_TAB === 'big' && typeof renderBigPicture === 'function'){
-    try { renderBigPicture(); } catch(e){ console.error('renderBigPicture', e); }
+    try { renderBigPicture(); _TAB_DIRTY.big = false; } catch(e){ console.error('renderBigPicture', e); }
   }
   if (typeof renderRMESConfigTab === 'function') renderRMESConfigTab();
   renderOTB(CURRENT_STRUCT);
   RT_VISIBLE = null;  // reset filter on struct change
   renderRT(CURRENT_STRUCT);
-  _FCST_DIRTY = true;
+  _markHeavyTabsDirty();  // struct changed → big / baseprice / ptree / fcst must rebuild on next visit
+  if (CURRENT_TAB === 'big') _TAB_DIRTY.big = false;  // just rendered above
   if (CURRENT_TAB === 'fcst' && typeof renderForecast === 'function'){
     renderForecast(CURRENT_STRUCT); _FCST_DIRTY = false;
   }
@@ -21092,20 +21107,20 @@ function setTab(name){
   CURRENT_TAB = name;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.id==='panel-'+name));
-  if (name === 'big' && typeof renderBigPicture === 'function'){
-    try { renderBigPicture(); } catch(e){ console.error('renderBigPicture', e); }
+  if (name === 'big' && _TAB_DIRTY.big && typeof renderBigPicture === 'function'){
+    try { renderBigPicture(); _TAB_DIRTY.big = false; } catch(e){ console.error('renderBigPicture', e); }
   }
   if (name === 'fcst' && _FCST_DIRTY && typeof renderForecast === 'function'){
     try { renderForecast(CURRENT_STRUCT); _FCST_DIRTY = false; } catch(e){ console.error('renderForecast', e); }
   }
-  if (name === 'baseprice' && typeof renderBasePriceBreakdown === 'function'){
-    try { renderBasePriceBreakdown(); if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown(); } catch(e){ console.error('renderBasePriceBreakdown', e); }
+  if (name === 'baseprice' && _TAB_DIRTY.baseprice && typeof renderBasePriceBreakdown === 'function'){
+    try { renderBasePriceBreakdown(); if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown(); _TAB_DIRTY.baseprice = false; } catch(e){ console.error('renderBasePriceBreakdown', e); }
   }
   if (name === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
   }
-  if (name === 'ptree' && typeof renderPriceTree === 'function'){
-    try { renderPriceTree(CURRENT_STRUCT); } catch(e){ console.error('renderPriceTree', e); }
+  if (name === 'ptree' && _TAB_DIRTY.ptree && typeof renderPriceTree === 'function'){
+    try { renderPriceTree(CURRENT_STRUCT); _TAB_DIRTY.ptree = false; } catch(e){ console.error('renderPriceTree', e); }
   }
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
