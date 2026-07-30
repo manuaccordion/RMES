@@ -34,6 +34,7 @@ const RMES_CLOUD = (function(){
     'rmes_thresholds_per_struct_v3',
     'rmes_total_cap_v1',
     'rmes_event_weights_v1',
+    'rmes_holiday_spillover_v1',
     'rmes_pickup_thresholds_v1',
     'rmes_target_growth_v1',
     'rmes_floor_v1',
@@ -6154,21 +6155,58 @@ function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
 }
 
 /* Effective Base Price for a date: override if present, otherwise frozen calculated. */
-function newrmesGetEffectiveBase(structKey, ymd){
-  const ovr = newrmesGetFrozenBaseOverride(structKey, ymd);
-  if (ovr != null) return ovr;
+/* ===== HOLIDAY-WEEKEND SPILLOVER =====
+   When an EVENT falls on a Thursday, the following Friday & Saturday inherit the
+   Thursday's STRUCTURAL Base Price (the long-weekend/bridge effect the DoW-month
+   history underprices). Rules: inherit only if HIGHER (never lowers a day) and never
+   over a manual 🖋 Base override (explicit decisions win). Toggleable & shared. */
+const SPILLOVER_KEY = 'rmes_holiday_spillover_v1';
+function newrmesSpilloverEnabled(){
+  try { const raw = localStorage.getItem(SPILLOVER_KEY); if (raw == null) return true; const o = JSON.parse(raw); return !(o && o.enabled === false); }
+  catch(e){ return true; }
+}
+function newrmesSetSpilloverEnabled(on){
+  try { localStorage.setItem(SPILLOVER_KEY, JSON.stringify({ enabled: !!on })); } catch(e){}
+}
+// Structural Base of a day = frozen (or live-computed), WITHOUT manual override/accept.
+function _newrmesStructuralBase(structKey, ymd){
   const frozen = newrmesGetFrozenBase(structKey, ymd);
   if (frozen != null) return frozen;
-  // Beyond the frozen 90-day window (or not yet frozen) → compute LIVE, so far-future
-  // days stay updatable until they roll into the reliable window and get frozen.
-  try {
-    const d = fp_ymdNumToDate(ymd);
-    if (d){
-      const live = newrmesCalculateBasePrice(structKey, fp_isoDate(d));
-      if (live != null && isFinite(live) && live > 0) return live;
-    }
-  } catch(e){}
-  return frozen; // null
+  try { const d = fp_ymdNumToDate(ymd); if (d){ const live = newrmesCalculateBasePrice(structKey, fp_isoDate(d)); if (live != null && isFinite(live) && live > 0) return live; } } catch(e){}
+  return null;
+}
+// If ymd is a Fri/Sat whose preceding Thursday is an event, returns {value,thuYmd,event}.
+function newrmesSpilloverInfo(structKey, ymd){
+  if (!newrmesSpilloverEnabled()) return null;
+  const d = fp_ymdNumToDate(ymd); if (!d) return null;
+  const dow = d.getDay();                 // 0=Sun … 6=Sat
+  let back; if (dow === 5) back = 1; else if (dow === 6) back = 2; else return null;
+  const thu = new Date(d); thu.setDate(thu.getDate() - back);
+  if (thu.getDay() !== 4) return null;    // safety: the anchor day must be a Thursday
+  const thuYmd = thu.getFullYear()*10000 + (thu.getMonth()+1)*100 + thu.getDate();
+  const ev = (typeof EVENTS !== 'undefined' && EVENTS[thuYmd]) ? EVENTS[thuYmd] : null;
+  if (!ev) return null;                    // Thursday is not an event → no spillover
+  const thuBase = _newrmesStructuralBase(structKey, thuYmd);
+  if (thuBase == null || !isFinite(thuBase) || thuBase <= 0) return null;
+  return { value: thuBase, thuYmd: thuYmd, event: ev };
+}
+function newrmesSpilloverBase(structKey, ymd){ const i = newrmesSpilloverInfo(structKey, ymd); return i ? i.value : null; }
+
+function newrmesGetEffectiveBase(structKey, ymd){
+  const ovr = newrmesGetFrozenBaseOverride(structKey, ymd);
+  if (ovr != null) return ovr;             // manual 🖋 override wins (explicit decision)
+  let base = newrmesGetFrozenBase(structKey, ymd);
+  if (base == null){
+    // Beyond the frozen window (or not yet frozen) → compute LIVE, so far-future days
+    // stay updatable until they roll into the reliable window and get frozen.
+    try {
+      const d = fp_ymdNumToDate(ymd);
+      if (d){ const live = newrmesCalculateBasePrice(structKey, fp_isoDate(d)); if (live != null && isFinite(live) && live > 0) base = live; }
+    } catch(e){}
+  }
+  // Holiday-weekend spillover (Fri/Sat after a Thursday event), only if higher.
+  try { const spill = newrmesSpilloverBase(structKey, ymd); if (spill != null && (base == null || spill > base)) base = spill; } catch(e){}
+  return base;
 }
 
 /* ============================================================================
@@ -13113,11 +13151,20 @@ function renderSellStrategy(sel){
       // === NewRMES: la cella "Base Price" mostra il Frozen Base Price (con eventuale override) ===
       const fpRTAttr = escapeHtml(fpRT);
       const ymdNumLocal = r.ymd;
-      let nrmFrozen = null, nrmOverride = null, nrmEffective = null;
+      let nrmFrozen = null, nrmOverride = null, nrmEffective = null, nrmSource = 'base', nrmSpill = null;
       if (typeof newrmesGetFrozenBase === 'function'){
         nrmFrozen = newrmesGetFrozenBase(sel, ymdNumLocal);
         nrmOverride = (typeof newrmesGetFrozenBaseOverride === 'function') ? newrmesGetFrozenBaseOverride(sel, ymdNumLocal) : null;
         nrmEffective = (nrmOverride != null) ? nrmOverride : nrmFrozen;
+        if (nrmOverride != null){ nrmSource = 'override'; }
+        else if (typeof newrmesSpilloverInfo === 'function'){
+          // Holiday-weekend spillover: Fri/Sat after a Thursday event inherit the
+          // Thursday's structural Base (only if higher; never over a manual override).
+          try {
+            const _si = newrmesSpilloverInfo(sel, ymdNumLocal);
+            if (_si && _si.value != null && (nrmEffective == null || _si.value > nrmEffective)){ nrmEffective = _si.value; nrmSource = 'spillover'; nrmSpill = _si; }
+          } catch(e){}
+        }
       }
       let fpEffective = null;
       if (isBaseRT){
@@ -13156,17 +13203,25 @@ function renderSellStrategy(sel){
           // anchor underprices (the RMES target is computed on this Base, so fixing the Base
           // fixes the suggestion). ↺ reverts to the computed value. Other RTs inherit Base+supp.
           const _hasOvr = (nrmOverride != null);
-          let cellBg     = _hasOvr ? 'rgba(217,154,78,.12)' : 'rgba(74,124,89,.10)';
-          let cellBorder = _hasOvr ? 'rgba(184,107,31,.45)' : 'rgba(74,124,89,.45)';
-          let textStyle  = _hasOvr ? 'color:#b86b1f;font-weight:700' : 'color:#2f5538;font-weight:700';
-          let statusIcon = _hasOvr ? '🖋 ' : '✓ ';
-          const fpTip = _hasOvr
-            ? `Base Price — MANUAL OVERRIDE\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nOverride value: €${fpEffective.toFixed(0)}\nComputed (frozen): ${nrmFrozen!=null?('€'+Math.round(nrmFrozen)):'—'}\n\nThe RMES target is computed on this Base. Click 🖋 to change it, ↺ to revert to the computed value.\nOther RTs inherit Base + monthly supplement.`
-            : `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nStructural Base for the day: LY median ADR × target growth, capped at the Expedia Goal Value, bounded ±50% from Anchor, ≥ floor.\n\nClick 🖋 to override the Base for THIS single day (e.g. a holiday the history underprices — the RMES target is computed on the Base). Other RTs inherit Base + monthly supplement.`;
+          const _isSpill = (nrmSource === 'spillover');
+          let cellBg     = _hasOvr ? 'rgba(217,154,78,.12)' : (_isSpill ? 'rgba(138,95,168,.12)' : 'rgba(74,124,89,.10)');
+          let cellBorder = _hasOvr ? 'rgba(184,107,31,.45)' : (_isSpill ? 'rgba(138,95,168,.50)' : 'rgba(74,124,89,.45)');
+          let textStyle  = _hasOvr ? 'color:#b86b1f;font-weight:700' : (_isSpill ? 'color:#6f4a8a;font-weight:700' : 'color:#2f5538;font-weight:700');
+          let statusIcon = _hasOvr ? '🖋 ' : (_isSpill ? '↗ ' : '✓ ');
+          let fpTip;
+          if (_hasOvr){
+            fpTip = `Base Price — MANUAL OVERRIDE\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nOverride value: €${fpEffective.toFixed(0)}\nComputed (frozen): ${nrmFrozen!=null?('€'+Math.round(nrmFrozen)):'—'}\n\nThe RMES target is computed on this Base. Click 🖋 to change it, ↺ to revert to the computed value.\nOther RTs inherit Base + monthly supplement.`;
+          } else if (_isSpill){
+            const _thu = nrmSpill ? nrmSpill.thuYmd : null;
+            const _thuTxt = _thu ? `${String(_thu).slice(6,8)}/${String(_thu).slice(4,6)}/${String(_thu).slice(0,4)}` : 'the Thursday';
+            fpTip = `Base Price — HOLIDAY-WEEKEND SPILLOVER ↗\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nInherited value: €${fpEffective.toFixed(0)}\nInherited from the event "${nrmSpill?nrmSpill.event:''}" on Thu ${_thuTxt} (its structural Base).\nOwn computed Base: ${nrmFrozen!=null?('€'+Math.round(nrmFrozen)):'—'} (lower → replaced).\n\nThe RMES target is computed on this Base. Click 🖋 to set your own value instead.\nToggle the rule in the RMES tab (Event Factor → Holiday-weekend spillover).`;
+          } else {
+            fpTip = `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nStructural Base for the day: LY median ADR × target growth, capped at the Expedia Goal Value, bounded ±50% from Anchor, ≥ floor.\n\nClick 🖋 to override the Base for THIS single day (e.g. a holiday the history underprices — the RMES target is computed on the Base). Other RTs inherit Base + monthly supplement.`;
+          }
           const _btnStyle = 'font-size:10px;line-height:1;border:none;background:transparent;cursor:pointer;padding:0 1px;color:inherit;opacity:.65';
           let _btns = `<button class="fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Override Base Price for this day" style="${_btnStyle}">🖋</button>`;
           if (_hasOvr) _btns += `<button class="fp-inline-reset" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Reset Base Price to the computed value" style="${_btnStyle}">↺</button>`;
-          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${_hasOvr?'override':'frozen'}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b> ${_btns}</td>`;
+          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${_hasOvr?'override':(_isSpill?'spillover':'frozen')}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b> ${_btns}</td>`;
         }
       }
     }
@@ -17949,6 +18004,10 @@ function _renderRmesEventsBox(){
       '<div style="padding:10px 14px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--line)">' +
         '<div style="font-size:13px;font-weight:700;color:var(--ink-1)">\u2728 Event Factor</div>' +
         '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Premium % per event (0%% to +20%%). Applied as a final multiplier to the RMES price on dates that match the event. Sorted chronologically from today (' + _ymdLong(_todayYmd) + ') onward; past events are hidden. Weights are shared across all properties.</div>' +
+        '<label style="display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px;color:var(--ink-2);cursor:pointer">' +
+          '<input type="checkbox" id="rmes-spillover-toggle" ' + (newrmesSpilloverEnabled()?'checked':'') + ' style="width:15px;height:15px;margin-top:1px;cursor:pointer;flex:none">' +
+          '<span><b>↗ Holiday-weekend spillover</b> — when an event falls on a <b>Thursday</b>, the following <b>Friday &amp; Saturday</b> inherit that Thursday\u2019s structural Base Price (only if higher; never over a manual 🖋 override). Fixes long-weekend dates the history underprices. Shared across all properties.</span>' +
+        '</label>' +
       '</div>' +
       '<div style="overflow-x:auto;max-height:480px;overflow-y:auto;padding:0">' +
         '<table style="border-collapse:collapse;width:100%"><thead><tr style="position:sticky;top:0;background:#fff;z-index:3">' +
@@ -17964,6 +18023,13 @@ function _renderRmesEventsBox(){
     '</div>';
   wrap.querySelectorAll('.rmes-evw-input').forEach(inp => {
     inp.addEventListener('input', () => { if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty(); });
+  });
+  const sp = document.getElementById('rmes-spillover-toggle');
+  if (sp) sp.addEventListener('change', () => {
+    if (typeof newrmesSetSpilloverEnabled === 'function') newrmesSetSpilloverEnabled(sp.checked);
+    if (typeof _invalidateRmesMapCache === 'function') { try { _invalidateRmesMapCache(); } catch(e){} }
+    if (typeof _markHeavyTabsDirty === 'function') { try { _markHeavyTabsDirty(); } catch(e){} }
+    if (typeof renderSellStrategy === 'function') { try { renderSellStrategy(CURRENT_STRUCT); } catch(e){} }
   });
   const rb = document.getElementById('rmes-evw-reset');
   if (rb) rb.addEventListener('click', () => {
