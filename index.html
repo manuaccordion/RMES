@@ -558,10 +558,12 @@ table.sell-table-transposed thead .sell-tposed-datecol{
 /* Pickup indicator above the date: shows at a glance whether that stay date
    moved in the last 7 days of booking window. Tooltip = RN + delta vs STLY. */
 table.sell-table-transposed thead .sell-pk-line{height:13px;line-height:13px;margin-bottom:1px}
+/* Larghezza FISSA: il marker non deve spostare la data, altrimenti la colonna
+   si disallinea da riga a riga (▲2 e ○ hanno larghezze diverse). */
 .sell-pk-dot{
   display:inline-block;font-size:9.5px;font-weight:800;line-height:13px;
   font-family:'DM Mono',monospace;letter-spacing:-.02em;cursor:help;
-  padding:0 4px;border-radius:7px;
+  width:26px;text-align:center;padding:0;border-radius:7px;flex:0 0 26px;
 }
 .sell-pk-dot.pk-up{color:#1e6b3a;background:rgba(46,120,70,.15)}
 .sell-pk-dot.pk-down{color:#b0332f;background:rgba(176,51,47,.13)}
@@ -570,8 +572,9 @@ table.sell-table-transposed thead .sell-pk-line{height:13px;line-height:13px;mar
 table.sell-table tbody .sell-pk-dot{margin-right:3px;vertical-align:middle}
 /* Cella Date: l'anello colorato (inline) segnala l'occupazione del giorno.
    Nessun riempimento, così i numeri restano leggibili come nelle altre colonne. */
-table.data.sell-table tbody td.sell-date-cell{white-space:nowrap}
-.sell-date-txt{font-weight:600;letter-spacing:.01em}
+table.data.sell-table tbody td.sell-date-cell{white-space:nowrap;text-align:left;padding-left:10px}
+table.data.sell-table tbody td.sell-date-cell > *{vertical-align:middle}
+.sell-date-txt{font-weight:600;letter-spacing:.01em;display:inline-block;font-variant-numeric:tabular-nums}
 /* Row label cells (first column of body) */
 table.sell-table-transposed tbody th.sell-tposed-label{
   background:linear-gradient(90deg,#f4ede0,#fdfbf6);

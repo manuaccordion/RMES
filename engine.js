@@ -5277,7 +5277,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -12803,7 +12803,7 @@ function renderSellStrategy(sel){
     else if (d > 0){ cls='pk-up';   txt='\u25b2'+p.cur; }
     else if (d < 0){ cls='pk-down'; txt='\u25bc'+p.cur; }
     else { cls='pk-flat'; txt='\u25cf'+p.cur; }
-    return `<span class="sell-pk-dot ${cls}" title="${escapeHtml(tip)}">${txt}</span> `;
+    return `<span class="sell-pk-dot ${cls}" title="${escapeHtml(tip)}">${txt}</span>`;
   };
   for (let i=0; i<A.rows.length; i++){
     const r = A.rows[i];
@@ -16466,7 +16466,7 @@ function _fcstGroupStat(R, idx, dates, lead){
 function fcstRecentWeight(lead){
   return Math.max(0, Math.min(1, 1 - lead / FCST_LEAD_RAMP));
 }
-function fcstPickupForDay(idx, rt, stayYmd, lead, priceIdx){
+function fcstPickupForDay(idx, rt, stayYmd, lead, priceIdx, growth){
   const R = idx.byRt[rt] || {};
   const g = fcstSampleDates(stayYmd);
   const A = _fcstGroupStat(R, idx, g.recent,   lead);   // ultimi 90 giorni, stesso DoW
@@ -16474,16 +16474,20 @@ function fcstPickupForDay(idx, rt, stayYmd, lead, priceIdx){
   let w = fcstRecentWeight(lead);
   if (A.mean === null) w = 0;
   if (B.mean === null) w = 1;
-  const pkRn = (A.mean === null && B.mean === null) ? 0 : (w*(A.mean||0) + (1-w)*(B.mean||0));
+  // Il gruppo recente e' gia "a regime": non va scalato. Quello dell'anno scorso
+  // descrive una struttura piu' piccola e va portato al livello di oggi.
+  const gr = (growth != null && isFinite(growth) && growth > 0) ? growth : 1;
+  const meanLy = (B.mean === null) ? null : B.mean * gr;
+  const pkRn = (A.mean === null && meanLy === null) ? 0 : (w*(A.mean||0) + (1-w)*(meanLy||0));
   // ADR: le osservazioni recenti sono gia ai prezzi di oggi; quelle dell'anno
   // scorso vanno riportate a oggi con l'indice prezzo del mese.
   const pi = (priceIdx != null && isFinite(priceIdx) && priceIdx > 0) ? priceIdx : 1;
   const adrRec = A.adr;
-  const adrLy  = (B.adr != null) ? B.adr * pi : null;
+  const adrLy  = (B.adr != null) ? B.adr * pi : null;   // il prezzo lo corregge l'indice, non la crescita
   let pkAdr;
   if (adrRec != null && adrLy != null) pkAdr = w*adrRec + (1-w)*adrLy;
   else pkAdr = (adrRec != null) ? adrRec : (adrLy != null ? adrLy : 0);
-  return { pkRn, pkAdr, nObs: A.n + B.n, nRecent: A.n, nLy: B.n, wRecent: w };
+  return { pkRn, pkAdr, nObs: A.n + B.n, nRecent: A.n, nLy: B.n, wRecent: w, growth: gr };
 }
 /* Indice prezzo del mese: confronta l'ADR gia a libro per quel mese con l'ADR
    che era a libro per lo stesso mese un anno fa, allo stesso punto del ciclo
@@ -16510,6 +16514,8 @@ function _fcstMonthDaily(sel, m, inventory, rtList, baseRT, today0){
   const idx = fcstDayIndex(sel);
   const pi = fcstPriceIndexForMonth(m);
   m.priceIndex = pi;
+  const growth = fcstGrowthFactor(sel);
+  m.growthFactor = growth;
   const totalRooms = rtList.reduce((a,rt)=> a + (inventory[rt]||0), 0);
   const lyAdr = {};
   const out = {};
@@ -16531,9 +16537,13 @@ function _fcstMonthDaily(sel, m, inventory, rtList, baseRT, today0){
       for (const rt of rtList){ out[rt].fcstRn += otbRn[rt]; out[rt].fcstRev += otbRev[rt]; }
       continue;
     }
+    // Cancellazioni: dell'OTB a libro oggi su una notte a `lead` giorni,
+    // solo una quota arrivera' al check-in.
+    const surv = fcstSurvivalAt(sel, lead);
+    for (const rt of rtList){ otbRn[rt] *= surv; otbRev[rt] *= surv; }
     const pk = {}, adr = {};
     for (const rt of rtList){
-      const est = fcstPickupForDay(idx, rt, k, lead, pi.idx);
+      const est = fcstPickupForDay(idx, rt, k, lead, pi.idx, growth);
       let p = est.pkRn;
       // Cap 100% sul proprio inventario, per OGNI tipologia (base e derivate).
       const left = Math.max(0, inventory[rt]*FCST_MAX_OCC_RT - otbRn[rt]);
@@ -16562,6 +16572,108 @@ function _fcstMonthDaily(sel, m, inventory, rtList, baseRT, today0){
     }
   }
   return out;
+}
+/* ---------------------------------------------------------------------------
+   FATTORE DI CRESCITA
+   Il pickup stimato sul campione dell'anno scorso descrive come si riempiva la
+   struttura UN ANNO FA. Se nel frattempo e' cresciuta, quel pickup va scalato,
+   altrimenti si sottostima in modo sistematico (il backtest mostrava -15%).
+   Misura robusta: mediana dei rapporti YoY mese-su-mese sui 12 mesi chiusi,
+   escludendo i mesi in cui l'anno base era quasi vuoto (rampa di avviamento,
+   che altrimenti produce fattori assurdi tipo x1.68).
+   --------------------------------------------------------------------------- */
+const FCST_GROWTH_MIN = 0.85, FCST_GROWTH_MAX = 1.30;
+const FCST_GROWTH_MIN_OCC = 0.30;   // sotto questa OCC l'anno base non fa testo
+let _FCST_GROWTH = {};
+function fcstGrowthFactor(sel){
+  if (_FCST_GROWTH[sel] != null) return _FCST_GROWTH[sel];
+  const keys = new Set(structKeysFor(sel));
+  const inv = fcstRoomsByRT(sel);
+  const rooms = Object.keys(inv).reduce((a,k)=> a + inv[k], 0) || 1;
+  const rn = {};
+  for (const b of BOOKINGS){
+    if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
+    for (let i=0;i<b.stayYmds.length;i++){
+      const ym = Math.floor(b.stayYmds[i]/100);
+      rn[ym] = (rn[ym]||0) + 1;
+    }
+  }
+  const ratios = [];
+  const t = new Date(TODAY);
+  for (let i=12; i>=1; i--){
+    const dd = new Date(t.getFullYear(), t.getMonth()-i, 1);
+    const ym   = dd.getFullYear()*100 + (dd.getMonth()+1);
+    const ymLy = (dd.getFullYear()-1)*100 + (dd.getMonth()+1);
+    const dim  = new Date(dd.getFullYear(), dd.getMonth()+1, 0).getDate();
+    const cur = rn[ym]||0, ly = rn[ymLy]||0;
+    if (ly <= 0) continue;
+    if (ly/(rooms*dim) < FCST_GROWTH_MIN_OCC) continue;   // anno base troppo vuoto
+    ratios.push(cur/ly);
+  }
+  let g = 1;
+  if (ratios.length){
+    ratios.sort((a,b)=>a-b);
+    const m = ratios.length >> 1;
+    g = ratios.length % 2 ? ratios[m] : (ratios[m-1]+ratios[m])/2;
+  }
+  g = Math.max(FCST_GROWTH_MIN, Math.min(FCST_GROWTH_MAX, g));
+  _FCST_GROWTH[sel] = g;
+  return g;
+}
+/* ---------------------------------------------------------------------------
+   CURVA DI SOPRAVVIVENZA (cancellazioni)
+   Il pickup storico conta solo le notti arrivate al check-in, ma l'OTB di oggi
+   contiene prenotazioni che verranno ancora cancellate. S(L) = quota di notti
+   a libro a L giorni dal check-in che sopravvivono davvero.
+   --------------------------------------------------------------------------- */
+const FCST_SURV_MAXLEAD = 365;
+const FCST_SURV_MIN_OBS = 50;
+let _FCST_SURV = {};
+function fcstSurvivalCurve(sel){
+  if (_FCST_SURV[sel]) return _FCST_SURV[sel];
+  const keys = new Set(structKeysFor(sel));
+  const N = FCST_SURV_MAXLEAD + 1;
+  const onD = new Float64Array(N+2), svD = new Float64Array(N+2);
+  const addRange = (arr, a, b) => {            // +1 su [a,b] con difference array
+    if (b < a) return;
+    a = Math.max(0, a); b = Math.min(N-1, b);
+    if (b < a) return;
+    arr[a] += 1; arr[b+1] -= 1;
+  };
+  for (const b of BOOKINGS){
+    if (!b.stayYmds || !keys.has(b.struct)) continue;
+    for (let i=0;i<b.stayYmds.length;i++){
+      const k = b.stayYmds[i];
+      if (k >= TODAY_YMD) continue;                       // solo notti gia chiuse
+      const leadBook = Math.round((ymdToDate(k) - ymdToDate(b.bookYmd)) / 86400000);
+      if (leadBook < 0) continue;
+      if (b.cancelled){
+        const leadCxl = b.cancelYmd ? Math.round((ymdToDate(k) - ymdToDate(b.cancelYmd)) / 86400000) : 0;
+        addRange(onD, Math.max(0, leadCxl+1), leadBook);  // a libro finche' non cancella
+      } else {
+        addRange(onD, 0, leadBook);
+        addRange(svD, 0, leadBook);
+      }
+    }
+  }
+  const S = new Float64Array(N);
+  let on = 0, sv = 0, last = 1;
+  for (let L=0; L<N; L++){
+    on += onD[L]; sv += svD[L];
+    if (on >= FCST_SURV_MIN_OBS){
+      let v = sv/on;
+      if (v > last) v = last;                             // monotona non crescente
+      last = v;
+    }
+    S[L] = last;
+  }
+  _FCST_SURV[sel] = S;
+  return S;
+}
+function fcstSurvivalAt(sel, lead){
+  const S = fcstSurvivalCurve(sel);
+  if (lead <= 0) return 1;
+  return S[Math.min(FCST_SURV_MAXLEAD, Math.round(lead))];
 }
 let _FORECAST_CACHE = {};
 function aggForecast(structKey){
@@ -16633,6 +16745,10 @@ function _aggForecastImpl(structKey){
     const b = _aggFcstList[_bi];
     if (b.cancelled) continue;
     if (!_aggFcstUseIndex && !keys.has(b.struct)) continue;
+    // Coerenza "as of today": una prenotazione fatta dopo oggi non e' OTB.
+    // In produzione non capita mai, ma senza questo filtro qualunque replay
+    // storico (backtest) legge OTB dal futuro e falsa tutto.
+    if (b.bookYmd > ymdToday) continue;
     // NON scartare le room fuori CFG ('Other' = errori di inserimento PMS o camera virtuale):
     // il loro revenue è reale e va nei totali; il dettaglio per room-type le ignora comunque.
     if (b.room !== 'Other' && !rtSet.has(b.room)) continue;
