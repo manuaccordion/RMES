@@ -325,6 +325,8 @@ main{flex:1;padding:8px 16px 24px}
 .bp-note{font-size:10px;color:var(--muted);margin-top:9px;text-align:center}
 .bp-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 2px 10px}
 .bp-chip{display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border-radius:14px;padding:4px 11px;border:1.5px solid}
+.bp-pace-pill{cursor:pointer;color:var(--muted);background:var(--card);border-color:var(--line);user-select:none;-webkit-tap-highlight-color:transparent}
+.bp-pace-pill.on{color:#fff;background:var(--org-deep);border-color:var(--org-deep)}
 .bp-empty{color:var(--muted);font-style:italic;padding:14px;text-align:center;font-size:12px}
 .bp-pkbar{cursor:pointer;transition:transform .1s}
 .bp-pkbar:active{transform:scale(.94)}
@@ -402,7 +404,7 @@ main{flex:1;padding:8px 16px 24px}
    Orange theme everywhere; day drill-in with a 2nd inner click → Base Price + 5 RMES factors
    + 5 RMES factors; room categories ordered by price; monthly overview with OTB big
    + STLY / LY / Forecast small for Revenue, ADR and Occupancy. */
-const MOB = { struct:'firenze', winStart:null, tab:'big', lastDay:null, lastRow:null, monthView:'otb', monthPast:false };
+const MOB = { struct:'firenze', winStart:null, tab:'big', lastDay:null, lastRow:null, monthView:'otb', monthPast:false, paceChans:null };
 const MOB_STRUCTS = ['firenze','condotta','alfani','davids','nazionale','portenuove'];
 const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MO_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1163,7 +1165,72 @@ function mobRenderBigPicture(){
       }).join('')+'</div><div class="bp-note">▲▼ = points vs last year (STLY)</div>';
     } else html+='<div class="bp-empty">No channel data.</div>';
   } catch(e){ html+='<div class="bp-empty">No channel data.</div>'; }
+  html+=mobBookingPaceHTML(sel);
   host.innerHTML=html;
+  mobWirePaceFilter();
+}
+/* ---- Booking pace · last 30 closed days (same logic as the desktop Big Picture) ----
+   Bars = share of bookings per lead-time bucket, this year vs the same 30-day
+   booking window last year. Channel pills filter the whole block. */
+function mobBookingPaceHTML(sel){
+  if (typeof aggBookingPace !== 'function') return '';
+  let A; try { A = aggBookingPace(sel, MOB.paceChans); } catch(e){ return ''; }
+  const P = A.period;
+  const fmtD = (d)=> String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+  let out = `<div class="bp-title">Booking pace · last 30 closed days</div>`;
+  // Channel pills
+  let chans = [];
+  try { chans = (typeof _bwChannelList==='function') ? _bwChannelList(sel,'confirmed') : []; } catch(e){}
+  if (chans.length){
+    const isAll = (MOB.paceChans===null);
+    out += '<div class="bp-chips">'
+        +  `<span class="bp-chip bp-pace-pill${isAll?' on':''}" data-pace="__all">All</span>`
+        +  chans.map(c=>{
+             const on = !isAll && MOB.paceChans.has(c);
+             return `<span class="bp-chip bp-pace-pill${on?' on':''}" data-pace="${escapeHtml(c)}">${escapeHtml(c)}</span>`;
+           }).join('')
+        +  '</div>';
+  }
+  if (!A.totCur && !A.totSty) return out + '<div class="bp-empty">No bookings in this window.</div>';
+  const B = A.buckets;
+  const TY='#2f7fb5', LY='#7a4d96';
+  const maxPct = Math.max(0.05, ...B.map(b=>Math.max(b.curPct,b.styPct)));
+  const W=340,H=150,pl=6,pr=6,pt=16,pb=26,pw=W-pl-pr,ph=H-pt-pb;
+  const slot=pw/B.length, gw=Math.min(slot*0.78,40), bw=(gw-3)/2, yB=pt+ph;
+  const cx=i=>pl+(i+0.5)*slot, hOf=v=>(v/maxPct)*ph;
+  let g=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'IBM Plex Mono',monospace">`;
+  g+=`<line x1="${pl}" y1="${yB.toFixed(1)}" x2="${pl+pw}" y2="${yB.toFixed(1)}" stroke="#E1EEF3"/>`;
+  B.forEach((b,i)=>{
+    const c=cx(i), th=b.curPct>0?Math.max(1.5,hOf(b.curPct)):0, lh=b.styPct>0?Math.max(1.5,hOf(b.styPct)):0;
+    const xt=c-bw-1, xl=c+1;
+    if(th) g+=`<rect x="${xt.toFixed(1)}" y="${(yB-th).toFixed(1)}" width="${bw.toFixed(1)}" height="${th.toFixed(1)}" rx="2" fill="${TY}"/>`;
+    if(lh) g+=`<rect x="${xl.toFixed(1)}" y="${(yB-lh).toFixed(1)}" width="${bw.toFixed(1)}" height="${lh.toFixed(1)}" rx="2" fill="${LY}"/>`;
+    if(b.curPct>0) g+=`<text x="${(xt+bw/2).toFixed(1)}" y="${(yB-th-2).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="${TY}">${Math.round(b.curPct*100)}</text>`;
+    if(b.styPct>0) g+=`<text x="${(xl+bw/2).toFixed(1)}" y="${(yB-lh-2).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="${LY}">${Math.round(b.styPct*100)}</text>`;
+    g+=`<text x="${c.toFixed(1)}" y="${(yB+12).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="#5a6b72">${b.label.replace(' days','').replace(' day','')}</text>`;
+    const adrT=b.curAdr>0?Math.round(b.curAdr):null, adrL=b.styAdr>0?Math.round(b.styAdr):null;
+    if(adrT!=null) g+=`<text x="${c.toFixed(1)}" y="${(yB+22).toFixed(1)}" text-anchor="middle" font-size="7" fill="#9aa6ab">\u20ac${adrT}${adrL!=null?' / '+adrL:''}</text>`;
+  });
+  g+=`<text x="${pl}" y="9" font-size="8" fill="#9aa6ab">% of bookings by lead time \u00b7 \u20ac = ADR TY / LY</text></svg>`;
+  out += `<div class="bp-chans">${g}</div>`;
+  out += `<div class="bp-legend"><span class="bp-li"><i style="background:${TY};width:10px;height:10px;border-radius:2px;display:inline-block"></i>Booked ${fmtD(P.start)}\u2013${fmtD(P.end)} (${A.totCur} bk.)</span>`
+      +  `<span class="bp-li"><i style="background:${LY};width:10px;height:10px;border-radius:2px;display:inline-block"></i>Same window LY (${A.totSty} bk.)</span></div>`;
+  out += `<div class="bp-note">${A.totRnCur} RN this year vs ${A.totRnSty} RN last year \u00b7 revenue gross of OTA commission</div>`;
+  return out;
+}
+function mobWirePaceFilter(){
+  document.querySelectorAll('.bp-pace-pill').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const c = el.dataset.pace;
+      if (c === '__all'){ MOB.paceChans = null; }
+      else {
+        if (MOB.paceChans === null) MOB.paceChans = new Set();
+        if (MOB.paceChans.has(c)){ MOB.paceChans.delete(c); if(!MOB.paceChans.size) MOB.paceChans = null; }
+        else MOB.paceChans.add(c);
+      }
+      mobRenderBigPicture();
+    });
+  });
 }
 function mobPickupDetailHTML(ymdNum){
   const sel=MOB.struct;
