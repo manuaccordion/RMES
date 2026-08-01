@@ -34,7 +34,6 @@ const RMES_CLOUD = (function(){
     'rmes_thresholds_per_struct_v3',
     'rmes_total_cap_v1',
     'rmes_event_weights_v1',
-    'rmes_holiday_spillover_v1',
     'rmes_pickup_thresholds_v1',
     'rmes_target_growth_v1',
     'rmes_floor_v1',
@@ -4922,6 +4921,45 @@ function pickup7dForStay(sel, ymdNum){
   }
   return { cur, stly };
 }
+/* Versione batch di pickup7dForStay: un solo passaggio su BOOKINGS per TUTTE le date
+   della Sell Strategy. Ritorna { ymdNum: {cur, stly} }.
+   cur  = room-nights entrati negli ultimi 7 giorni di booking (today-7..today-1)
+          che coprono quella notte di soggiorno.
+   stly = stessa cosa un anno fa (booking window -364d, notte di soggiorno -364d). */
+function pickup7dMapForStays(sel, ymdList){
+  const out = {};
+  for (const y of ymdList) out[y] = { cur:0, stly:0 };
+  if (typeof BOOKINGS === 'undefined' || !BOOKINGS.length) return out;
+  const keys = new Set(structKeysFor(sel));
+  const todayD = new Date(TODAY); todayD.setHours(0,0,0,0);
+  const loD = new Date(todayD); loD.setDate(loD.getDate()-7);
+  const hiD = new Date(todayD); hiD.setDate(hiD.getDate()-1);
+  const pkLo = ymd(loD), pkHi = ymd(hiD);
+  const pkSLo = ymd(new Date(loD.getTime()-364*864e5));
+  const pkSHi = ymd(new Date(hiD.getTime()-364*864e5));
+  // Mappa notte-STLY → notte-corrente, per attribuire le prenotazioni STLY alla riga giusta.
+  const stlyToCur = {};
+  for (const y of ymdList){
+    const d = new Date(ymdToDate(y).getTime() - 364*864e5);
+    stlyToCur[ymd(startOfDay(d))] = y;
+  }
+  const wanted = new Set(ymdList);
+  for (const b of BOOKINGS){
+    if (b.cancelled || !keys.has(b.struct) || !b.stayYmds) continue;
+    if (!keys.has(b.struct)) continue;
+    const inCur  = (b.bookYmd >= pkLo  && b.bookYmd <= pkHi);
+    const inStly = (b.bookYmd >= pkSLo && b.bookYmd <= pkSHi);
+    if (!inCur && !inStly) continue;
+    for (const sy of b.stayYmds){
+      if (inCur && wanted.has(sy)) out[sy].cur++;
+      if (inStly){
+        const tgt = stlyToCur[sy];
+        if (tgt !== undefined) out[tgt].stly++;
+      }
+    }
+  }
+  return out;
+}
 function aggSellStrategy(sel, startYmdNum, rangeDays, pickupDaysAgo){
   const keys = new Set(structKeysFor(sel));
   const startDate = ymdToDate(startYmdNum);
@@ -6155,58 +6193,21 @@ function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
 }
 
 /* Effective Base Price for a date: override if present, otherwise frozen calculated. */
-/* ===== HOLIDAY-WEEKEND SPILLOVER =====
-   When an EVENT falls on a Thursday, the following Friday & Saturday inherit the
-   Thursday's STRUCTURAL Base Price (the long-weekend/bridge effect the DoW-month
-   history underprices). Rules: inherit only if HIGHER (never lowers a day) and never
-   over a manual 🖋 Base override (explicit decisions win). Toggleable & shared. */
-const SPILLOVER_KEY = 'rmes_holiday_spillover_v1';
-function newrmesSpilloverEnabled(){
-  try { const raw = localStorage.getItem(SPILLOVER_KEY); if (raw == null) return true; const o = JSON.parse(raw); return !(o && o.enabled === false); }
-  catch(e){ return true; }
-}
-function newrmesSetSpilloverEnabled(on){
-  try { localStorage.setItem(SPILLOVER_KEY, JSON.stringify({ enabled: !!on })); } catch(e){}
-}
-// Structural Base of a day = frozen (or live-computed), WITHOUT manual override/accept.
-function _newrmesStructuralBase(structKey, ymd){
-  const frozen = newrmesGetFrozenBase(structKey, ymd);
-  if (frozen != null) return frozen;
-  try { const d = fp_ymdNumToDate(ymd); if (d){ const live = newrmesCalculateBasePrice(structKey, fp_isoDate(d)); if (live != null && isFinite(live) && live > 0) return live; } } catch(e){}
-  return null;
-}
-// If ymd is a Fri/Sat whose preceding Thursday is an event, returns {value,thuYmd,event}.
-function newrmesSpilloverInfo(structKey, ymd){
-  if (!newrmesSpilloverEnabled()) return null;
-  const d = fp_ymdNumToDate(ymd); if (!d) return null;
-  const dow = d.getDay();                 // 0=Sun … 6=Sat
-  let back; if (dow === 5) back = 1; else if (dow === 6) back = 2; else return null;
-  const thu = new Date(d); thu.setDate(thu.getDate() - back);
-  if (thu.getDay() !== 4) return null;    // safety: the anchor day must be a Thursday
-  const thuYmd = thu.getFullYear()*10000 + (thu.getMonth()+1)*100 + thu.getDate();
-  const ev = (typeof EVENTS !== 'undefined' && EVENTS[thuYmd]) ? EVENTS[thuYmd] : null;
-  if (!ev) return null;                    // Thursday is not an event → no spillover
-  const thuBase = _newrmesStructuralBase(structKey, thuYmd);
-  if (thuBase == null || !isFinite(thuBase) || thuBase <= 0) return null;
-  return { value: thuBase, thuYmd: thuYmd, event: ev };
-}
-function newrmesSpilloverBase(structKey, ymd){ const i = newrmesSpilloverInfo(structKey, ymd); return i ? i.value : null; }
-
 function newrmesGetEffectiveBase(structKey, ymd){
   const ovr = newrmesGetFrozenBaseOverride(structKey, ymd);
-  if (ovr != null) return ovr;             // manual 🖋 override wins (explicit decision)
-  let base = newrmesGetFrozenBase(structKey, ymd);
-  if (base == null){
-    // Beyond the frozen window (or not yet frozen) → compute LIVE, so far-future days
-    // stay updatable until they roll into the reliable window and get frozen.
-    try {
-      const d = fp_ymdNumToDate(ymd);
-      if (d){ const live = newrmesCalculateBasePrice(structKey, fp_isoDate(d)); if (live != null && isFinite(live) && live > 0) base = live; }
-    } catch(e){}
-  }
-  // Holiday-weekend spillover (Fri/Sat after a Thursday event), only if higher.
-  try { const spill = newrmesSpilloverBase(structKey, ymd); if (spill != null && (base == null || spill > base)) base = spill; } catch(e){}
-  return base;
+  if (ovr != null) return ovr;
+  const frozen = newrmesGetFrozenBase(structKey, ymd);
+  if (frozen != null) return frozen;
+  // Beyond the frozen 90-day window (or not yet frozen) → compute LIVE, so far-future
+  // days stay updatable until they roll into the reliable window and get frozen.
+  try {
+    const d = fp_ymdNumToDate(ymd);
+    if (d){
+      const live = newrmesCalculateBasePrice(structKey, fp_isoDate(d));
+      if (live != null && isFinite(live) && live > 0) return live;
+    }
+  } catch(e){}
+  return frozen; // null
 }
 
 /* ============================================================================
@@ -12086,21 +12087,23 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   const _expMineOrigIdx = 19 + (showBeddy ? 1 : 0);
   const _expCompsetOrigIdx = _expMineOrigIdx + 1;
   if (showExp){
-    allMetrics.push({ key:'expMine',    show:true, label:'My Expedia', sub:'rank', group:'RATE SHOPPER', cssClass:'sell-tr-exp', origIdx:_expMineOrigIdx });
-    allMetrics.push({ key:'expCompset', show:true, label:'Compset',    sub:'avg',  group:'RATE SHOPPER', cssClass:'sell-tr-exp', origIdx:_expCompsetOrigIdx });
+    // UNA sola riga: mio prezzo + compset + posizione (richiesta utente).
+    allMetrics.push({ key:'expOne', show:true, label:'Rate shopper', sub:'mine · compset · pos', cssClass:'sell-tr-exp',
+                      origIdx:null, mineIdx:_expMineOrigIdx, compIdx:_expCompsetOrigIdx });
   }
   allMetrics.push(
-    { key:'pkNew',     show:true,  label:'New',    sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:8  },
-    { key:'pkCancel',  show:true,  label:'Cancel', sub:'1d',  group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:9  },
-    { key:'pkDRn',     show:true,  label:'ΔRN',    sub:'net', group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:10 },
-    { key:'pkAdr',     show:true,  label:'ADR',    sub:'€',   group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:11 },
+    // Pickup: solo il NETTO (Var RN / Var ADR). Nuove e cancellate restano nel drill-down.
+    { key:'pkNew',     show:false, origIdx:8  },
+    { key:'pkCancel',  show:false, origIdx:9  },
+    { key:'pkDRn',     show:true,  label:'Var RN',  sub:'net', group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:10 },
+    { key:'pkAdr',     show:true,  label:'Var ADR', sub:'€',   group:'PICKUP', cssClass:'sell-tr-pickup', origIdx:11 },
     { key:'stlyRn',    show:true,  label:'RN',  sub:'-364', group:'STLY',     cssClass:'sell-tr-stly',   origIdx:12 },
     { key:'stlyOcc',   show:true,  label:'OCC', sub:'%',    group:'STLY',     cssClass:'sell-tr-stly',   origIdx:13 },
     { key:'stlyAdr',   show:true,  label:'ADR', sub:'€',    group:'STLY',     cssClass:'sell-tr-stly',   origIdx:14 },
-    { key:'pkStNew',   show:true,  label:'New',    sub:'1d',  group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:15 },
-    { key:'pkStCancel',show:true,  label:'Cancel', sub:'1d',  group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:16 },
-    { key:'pkStDRn',   show:true,  label:'ΔRN',    sub:'net', group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:17 },
-    { key:'pkStAdr',   show:true,  label:'ADR',    sub:'€',   group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:18 }
+    { key:'pkStNew',   show:false, origIdx:15 },
+    { key:'pkStCancel',show:false, origIdx:16 },
+    { key:'pkStDRn',   show:true,  label:'Var RN',  sub:'net', group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:17 },
+    { key:'pkStAdr',   show:true,  label:'Var ADR', sub:'€',   group:'PK·STLY', cssClass:'sell-tr-pkstly', origIdx:18 }
   );
   if (showBeddy){
     allMetrics.push({ key:'beddy', show:true, label:'Beddy', sub:'PMS €', cssClass:'sell-tr-beddy', origIdx:19 });
@@ -12159,6 +12162,17 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   cornerTh.innerHTML = '<span style="font-size:10px;color:var(--ink-3);font-weight:500;letter-spacing:.04em;text-transform:uppercase">Metric ↓ / Date →</span>';
   trH.appendChild(cornerTh);
   const _needSet = (typeof _rmesNeedDaysSet === 'function') ? _rmesNeedDaysSet(sel) : null;
+  // Pickup ultimi 7 giorni per ogni data di soggiorno mostrata: un solo scan di BOOKINGS.
+  // Serve per l'icona "si è mosso di recente?" sopra la data.
+  let _pk7map = {};
+  try {
+    const _ymdsHead = [];
+    for (const dr of dataRows){
+      const t = (dr.children[2] ? dr.children[2].textContent.trim() : '').split('/');
+      if (t.length === 3) _ymdsHead.push(+(t[2]+t[1]+t[0]));
+    }
+    if (_ymdsHead.length && typeof pickup7dMapForStays === 'function') _pk7map = pickup7dMapForStays(sel, _ymdsHead);
+  } catch(e){ _pk7map = {}; }
   // Per ogni data row originale, prendo data + DoW dalla 3a e 5a <td>
   for (let dIdxH = 0; dIdxH < dataRows.length; dIdxH++){
     const dr = dataRows[dIdxH];
@@ -12171,8 +12185,31 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
     const isWE = (dowText === 'Ven' || dowText === 'Sab' || dowText === 'Dom' || dowText === 'Fri' || dowText === 'Sat' || dowText === 'Sun');
     const dowColor = isWE ? 'color:#c4823b;font-weight:700' : 'color:var(--ink-2);font-weight:500';
     let _ndFlag = '';
-    try { const _p = dateText.split('/'); if (_p.length === 3){ const _yn = +(_p[2]+_p[1]+_p[0]); if (_needSet && _needSet.has(_yn)){ thD.classList.add('need-day'); _ndFlag = '<span class="nd-mark" title="In your Need days watchlist (Pricing Console)">\u2691</span>'; } } } catch(e){}
-    thD.innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em">${_ndFlag}${dateText}</div>
+    let _pkFlag = '';
+    try {
+      const _p = dateText.split('/');
+      if (_p.length === 3){
+        const _yn = +(_p[2]+_p[1]+_p[0]);
+        if (_needSet && _needSet.has(_yn)){ thD.classList.add('need-day'); _ndFlag = '<span class="nd-mark" title="In your Need days watchlist (Pricing Console)">\u2691</span>'; }
+        const _pk = _pk7map[_yn];
+        if (_pk){
+          const _d = _pk.cur - _pk.stly;
+          const _tip = `Pickup · last 7 days: ${_pk.cur} RN\nLast year (same 7-day booking window): ${_pk.stly} RN\nDelta vs STLY: ${_d>=0?'+':'\u2212'}${Math.abs(_d)} RN`;
+          if (_pk.cur === 0){
+            // Nessun movimento recente: pallino spento, ma il tooltip resta consultabile.
+            _pkFlag = `<span class="sell-pk-dot pk-none" title="${escapeHtml(_tip)}">\u25cb</span>`;
+          } else if (_d > 0){
+            _pkFlag = `<span class="sell-pk-dot pk-up" title="${escapeHtml(_tip)}">\u25b2${_pk.cur}</span>`;
+          } else if (_d < 0){
+            _pkFlag = `<span class="sell-pk-dot pk-down" title="${escapeHtml(_tip)}">\u25bc${_pk.cur}</span>`;
+          } else {
+            _pkFlag = `<span class="sell-pk-dot pk-flat" title="${escapeHtml(_tip)}">\u25cf${_pk.cur}</span>`;
+          }
+        }
+      }
+    } catch(e){}
+    thD.innerHTML = `<div class="sell-pk-line">${_pkFlag}</div>
+                     <div style="font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em">${_ndFlag}${dateText}</div>
                      <div style="font-size:10.5px;${dowColor};margin-top:1px">${dowText}</div>`;
     trH.appendChild(thD);
   }
@@ -12223,6 +12260,34 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
         };
         td.appendChild(_mk(dataRows[dIdx].children[0],'sell-lu-inner',true));   // Last update (attivo)
         td.appendChild(_mk(dataRows[dIdx].children[1],'sell-rmes-inner',false)); // RMES suggerito + ✓
+        tr.appendChild(td);
+        continue;
+      }
+      if (m.key === 'expOne'){
+        // Fondo le due celle sorgente (My Expedia + Compset) in una sola.
+        // La sorgente "mine" porta il prezzo sulla 1ª riga e il rank (es. 3/8) sulla 2ª.
+        const td = document.createElement('td');
+        td.className = 'cell-mono sell-block-expedia';
+        td.style.cssText = 'background:rgba(58,107,107,.04);text-align:center;padding:3px 6px;line-height:1.25';
+        const cMine = dataRows[dIdx].children[m.mineIdx];
+        const cComp = dataRows[dIdx].children[m.compIdx];
+        const _lines = (cell)=>{
+          if (!cell) return [];
+          return (cell.innerHTML || '').split(/<br\s*\/?>/i)
+                 .map(s => s.replace(/<[^>]*>/g,'').trim()).filter(s => s.length);
+        };
+        const mine = _lines(cMine), comp = _lines(cComp);
+        const myPrice = mine[0] || '—';
+        const myRank  = mine[1] || '';
+        const csPrice = comp[0] || '—';
+        const tipParts = [];
+        if (cMine && cMine.getAttribute('title')) tipParts.push(cMine.getAttribute('title'));
+        if (cComp && cComp.getAttribute('title')) tipParts.push(cComp.getAttribute('title'));
+        if (tipParts.length) td.setAttribute('title', tipParts.join('\n'));
+        if (cMine && cMine.className) td.className += ' ' + cMine.className.replace(/sell-block-expedia/g,'').trim();
+        td.innerHTML =
+          `<div style="font-weight:700;font-size:12.5px">${myPrice}</div>` +
+          `<div style="font-size:9.5px;font-weight:400;opacity:.85;white-space:nowrap">cs ${csPrice}${myRank ? ' · ' + myRank : ''}</div>`;
         tr.appendChild(td);
         continue;
       }
@@ -12716,8 +12781,9 @@ function renderSellStrategy(sel){
     const yoyRev = r.curRev - r.stlyRev;
     const yoyRnCls  = yoyRn>0?'cell-pos':(yoyRn<0?'cell-neg':'cell-flat');
     const yoyRevCls = yoyRev>0?'cell-pos':(yoyRev<0?'cell-neg':'cell-flat');
-    const pkRnCellInner = (r.pkRows && r.pkRows.length>0)
-      ? `<span class="sell-pickup-link" data-row="${i}" data-kind="pk" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${dRn>0?'+':''}${dRn||0}</span>`
+    const _pkHasRows = (r.pkRows && r.pkRows.length>0) || (r.cancelRows && r.cancelRows.length>0);
+    const pkRnCellInner = _pkHasRows
+      ? `<span class="sell-pickup-link" data-row="${i}" data-kind="pkNet" title="Click: new + cancelled detail" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${dRn>0?'+':''}${dRn||0}</span>`
       : (dRn>0?'+':'') + (dRn||0);
     const nuoveCount = (r.pkRows||[]).length;
     const cancelCount = (r.cancelRows||[]).length;
@@ -13136,10 +13202,10 @@ function renderSellStrategy(sel){
     const pkStlyCancelCell = pkStlyCancelCount > 0
       ? `<span class="sell-pickup-link" data-row="${i}" data-kind="cancelStly" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;color:#a83b3b">−${pkStlyCancelCount}</span>`
       : `0`;
+    // Var ADR STLY = ADR del pickup NETTO (nuove − cancellate), coerente con la riga Var RN.
     let pkStlyAdrTxt = '—';
-    if (pkStlyNewCount > 0){
-      const totRev = r.pkRowsStly.reduce((s,b)=>s+b.revPerNight, 0);
-      pkStlyAdrTxt = fmtEUR(totRev / pkStlyNewCount);
+    if (isFinite(r.pkAdrStly) && r.pkRnStly !== 0){
+      pkStlyAdrTxt = fmtEUR(r.pkAdrStly);
     }
     let cellFoundation = '';
     let _fpPriceVal = null;
@@ -13151,20 +13217,11 @@ function renderSellStrategy(sel){
       // === NewRMES: la cella "Base Price" mostra il Frozen Base Price (con eventuale override) ===
       const fpRTAttr = escapeHtml(fpRT);
       const ymdNumLocal = r.ymd;
-      let nrmFrozen = null, nrmOverride = null, nrmEffective = null, nrmSource = 'base', nrmSpill = null;
+      let nrmFrozen = null, nrmOverride = null, nrmEffective = null;
       if (typeof newrmesGetFrozenBase === 'function'){
         nrmFrozen = newrmesGetFrozenBase(sel, ymdNumLocal);
         nrmOverride = (typeof newrmesGetFrozenBaseOverride === 'function') ? newrmesGetFrozenBaseOverride(sel, ymdNumLocal) : null;
         nrmEffective = (nrmOverride != null) ? nrmOverride : nrmFrozen;
-        if (nrmOverride != null){ nrmSource = 'override'; }
-        else if (typeof newrmesSpilloverInfo === 'function'){
-          // Holiday-weekend spillover: Fri/Sat after a Thursday event inherit the
-          // Thursday's structural Base (only if higher; never over a manual override).
-          try {
-            const _si = newrmesSpilloverInfo(sel, ymdNumLocal);
-            if (_si && _si.value != null && (nrmEffective == null || _si.value > nrmEffective)){ nrmEffective = _si.value; nrmSource = 'spillover'; nrmSpill = _si; }
-          } catch(e){}
-        }
       }
       let fpEffective = null;
       if (isBaseRT){
@@ -13203,25 +13260,17 @@ function renderSellStrategy(sel){
           // anchor underprices (the RMES target is computed on this Base, so fixing the Base
           // fixes the suggestion). ↺ reverts to the computed value. Other RTs inherit Base+supp.
           const _hasOvr = (nrmOverride != null);
-          const _isSpill = (nrmSource === 'spillover');
-          let cellBg     = _hasOvr ? 'rgba(217,154,78,.12)' : (_isSpill ? 'rgba(138,95,168,.12)' : 'rgba(74,124,89,.10)');
-          let cellBorder = _hasOvr ? 'rgba(184,107,31,.45)' : (_isSpill ? 'rgba(138,95,168,.50)' : 'rgba(74,124,89,.45)');
-          let textStyle  = _hasOvr ? 'color:#b86b1f;font-weight:700' : (_isSpill ? 'color:#6f4a8a;font-weight:700' : 'color:#2f5538;font-weight:700');
-          let statusIcon = _hasOvr ? '🖋 ' : (_isSpill ? '↗ ' : '✓ ');
-          let fpTip;
-          if (_hasOvr){
-            fpTip = `Base Price — MANUAL OVERRIDE\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nOverride value: €${fpEffective.toFixed(0)}\nComputed (frozen): ${nrmFrozen!=null?('€'+Math.round(nrmFrozen)):'—'}\n\nThe RMES target is computed on this Base. Click 🖋 to change it, ↺ to revert to the computed value.\nOther RTs inherit Base + monthly supplement.`;
-          } else if (_isSpill){
-            const _thu = nrmSpill ? nrmSpill.thuYmd : null;
-            const _thuTxt = _thu ? `${String(_thu).slice(6,8)}/${String(_thu).slice(4,6)}/${String(_thu).slice(0,4)}` : 'the Thursday';
-            fpTip = `Base Price — HOLIDAY-WEEKEND SPILLOVER ↗\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nInherited value: €${fpEffective.toFixed(0)}\nInherited from the event "${nrmSpill?nrmSpill.event:''}" on Thu ${_thuTxt} (its structural Base).\nOwn computed Base: ${nrmFrozen!=null?('€'+Math.round(nrmFrozen)):'—'} (lower → replaced).\n\nThe RMES target is computed on this Base. Click 🖋 to set your own value instead.\nToggle the rule in the RMES tab (Event Factor → Holiday-weekend spillover).`;
-          } else {
-            fpTip = `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nStructural Base for the day: LY median ADR × target growth, capped at the Expedia Goal Value, bounded ±50% from Anchor, ≥ floor.\n\nClick 🖋 to override the Base for THIS single day (e.g. a holiday the history underprices — the RMES target is computed on the Base). Other RTs inherit Base + monthly supplement.`;
-          }
+          let cellBg     = _hasOvr ? 'rgba(217,154,78,.12)' : 'rgba(74,124,89,.10)';
+          let cellBorder = _hasOvr ? 'rgba(184,107,31,.45)' : 'rgba(74,124,89,.45)';
+          let textStyle  = _hasOvr ? 'color:#b86b1f;font-weight:700' : 'color:#2f5538;font-weight:700';
+          let statusIcon = _hasOvr ? '🖋 ' : '✓ ';
+          const fpTip = _hasOvr
+            ? `Base Price — MANUAL OVERRIDE\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nOverride value: €${fpEffective.toFixed(0)}\nComputed (frozen): ${nrmFrozen!=null?('€'+Math.round(nrmFrozen)):'—'}\n\nThe RMES target is computed on this Base. Click 🖋 to change it, ↺ to revert to the computed value.\nOther RTs inherit Base + monthly supplement.`
+            : `Base Price ACTIVE (accepted by default)\n${fpRT} · ${pad2(r.day)}/${pad2(r.mo)}/${r.y}\n\nActive value: €${fpEffective.toFixed(0)}\n\nStructural Base for the day: LY median ADR × target growth, capped at the Expedia Goal Value, bounded ±50% from Anchor, ≥ floor.\n\nClick 🖋 to override the Base for THIS single day (e.g. a holiday the history underprices — the RMES target is computed on the Base). Other RTs inherit Base + monthly supplement.`;
           const _btnStyle = 'font-size:10px;line-height:1;border:none;background:transparent;cursor:pointer;padding:0 1px;color:inherit;opacity:.65';
           let _btns = `<button class="fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Override Base Price for this day" style="${_btnStyle}">🖋</button>`;
           if (_hasOvr) _btns += `<button class="fp-inline-reset" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Reset Base Price to the computed value" style="${_btnStyle}">↺</button>`;
-          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${_hasOvr?'override':(_isSpill?'spillover':'frozen')}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b> ${_btns}</td>`;
+          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${_hasOvr?'override':'frozen'}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b> ${_btns}</td>`;
         }
       }
     }
@@ -13458,8 +13507,8 @@ function renderSellStrategy(sel){
       <!-- Pickup STLY (4 colonne) -->
       <td class="cell-mono sell-grp-pkstly-cell ${pkStlyNewCount>0?'cell-pos':'cell-flat'}" style="background:rgba(138,138,138,.04)">${pkStlyNewCell}</td>
       <td class="cell-mono ${pkStlyCancelCount>0?'cell-neg':'cell-flat'}" style="background:rgba(138,138,138,.04);text-align:right">${pkStlyCancelCell}</td>
-      <td class="cell-mono ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</td>
-      <td class="cell-mono ${pkStlyNewCount>0?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
+      <td class="cell-mono ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${(pkStlyNewCount>0||pkStlyCancelCount>0)?`<span class="sell-pickup-link" data-row="${i}" data-kind="pkStlyNet" title="Click: new + cancelled detail (STLY)" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</span>`:`${r.pkRnStly>=0?'+':''}${r.pkRnStly}`}</td>
+      <td class="cell-mono ${pkStlyAdrTxt==='—'?'cell-flat':''}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
       ${beddyCell}
       ${expCells}
       <!-- Base Price cell (with override 🖋 / reset ↺ buttons) -->
@@ -13938,11 +13987,52 @@ function _sellBookingsForNight(r, isStly){
   }
   return out;
 }
+/* Drill "netto": la cella Var RN mostra nuove − cancellate, quindi il dettaglio
+   deve mostrare ENTRAMBE le liste, una sotto l'altra, col netto in fondo. */
+function _openSellPickupNetDrill(r, isStly){
+  const newRows = [...(isStly ? (r.pkRowsStly||[]) : (r.pkRows||[]))].sort((a,b)=> b.bookYmd - a.bookYmd);
+  const cxlRows = [...(isStly ? (r.cancelRowsStly||[]) : (r.cancelRows||[]))].sort((a,b)=> (b.cancelYmd||b.bookYmd) - (a.cancelYmd||a.bookYmd));
+  const d = new Date(r.date); if (isStly) d.setDate(d.getDate()-364);
+  const dateLbl = `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()}`;
+  const nDays = SELL_LAST_AGG.pickupDaysAgo;
+  const revNew = newRows.reduce((s,b)=>s+b.revPerNight,0);
+  const revCxl = cxlRows.reduce((s,b)=>s+b.revPerNight,0);
+  const netRn  = newRows.length - cxlRows.length;
+  const netRev = revNew - revCxl;
+  document.getElementById('modal-title').textContent =
+    (isStly ? 'Pickup STLY (net) · night ' : 'Pickup (net) · night ') + dateLbl;
+  document.getElementById('modal-sub').textContent =
+    `${newRows.length} new − ${cxlRows.length} cancelled = ${netRn>=0?'+':''}${netRn} RN · booking window: last ${nDays}d${isStly?' one year ago':''}`;
+  const tbl = (title, rows, isCxl) => {
+    let t = `<div style="font-size:12px;font-weight:700;color:${isCxl?'#a83b3b':'#2c5c3c'};margin:0 0 6px 0;text-transform:uppercase;letter-spacing:.05em">${title} · ${rows.length} RN</div>`;
+    t += `<table style="margin-bottom:18px"><thead><tr>`
+       + `<th>${isCxl?'Cancelled on':'Booked on'}</th><th>Property</th><th>Room</th><th>Arrival</th><th>Nights</th><th>Source</th><th>Channel</th><th>Guest</th><th class="num">Rev/night</th>`
+       + `</tr></thead><tbody>`;
+    for (const b of rows){
+      const dateShown = (isCxl && b.cancelYmd) ? ymdToDate(b.cancelYmd) : b.dBook;
+      const arrivo = isStly ? addDays(b.dIn, 364) : b.dIn;
+      t += `<tr><td class="num">${fmtDateIT(dateShown)}</td><td>${escapeHtml(b.struct)}</td><td>${escapeHtml(b.room)}</td>`
+         + `<td class="num">${fmtDateIT(arrivo)}</td><td class="num">${b.notti}</td><td>${escapeHtml(b.prov)}</td>`
+         + `<td>${escapeHtml(b.canale)}</td><td>${escapeHtml(b.guest||'—')}</td><td class="num">${fmtEUR(b.revPerNight)}</td></tr>`;
+    }
+    if (!rows.length) t += `<tr><td colspan="9" style="text-align:center;color:var(--ink-3);padding:20px">None</td></tr>`;
+    t += `</tbody></table>`;
+    return t;
+  };
+  document.getElementById('modal-body').innerHTML = tbl('New bookings', newRows, false) + tbl('Cancelled', cxlRows, true);
+  document.getElementById('modal-foot-l').textContent = `Net ${netRn>=0?'+':''}${netRn} RN on this night`;
+  document.getElementById('modal-foot-r').textContent = fmtEUR(netRev);
+  document.getElementById('modal').classList.add('show');
+}
 function openSellPickupDrill(rowIdx, kind){
   if (!SELL_LAST_AGG) return;
   const r = SELL_LAST_AGG.rows[rowIdx];
   if (!r) return;
   kind = kind || 'pk';
+  if (kind === 'pkNet' || kind === 'pkStlyNet'){
+    _openSellPickupNetDrill(r, kind === 'pkStlyNet');
+    return;
+  }
   let sourceRows;
   if (kind === 'cancel') sourceRows = r.cancelRows || [];
   else if (kind === 'pkStly') sourceRows = r.pkRowsStly || [];
@@ -17017,11 +17107,7 @@ function renderForecast(sel){
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetOcc > 0 ? fmtPct(totBudgetOcc,1) : '—'}</td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetAdr > 0 ? fmtEUR(totBudgetAdr) : '—'}</td>
     <td class="cell-mono ${totBudgetRevCls}" style="background:rgba(60,124,90,.04)" title="${totBudgetRevTip}"><b>${totBudgetRev > 0 ? fmtEUR(totBudgetRev) : '—'}</b></td>
-    <td class="cell-mono" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76"><b>${fmtEUR(totDiff)}</b></td>
-    <td class="cell-mono" style="background:rgba(91,138,118,.06)" title="${totDaysToEnd} days from today to end of forecast">${totDaysToEnd > 0 ? fmtEUR(totDiff/totDaysToEnd) : '—'}</td>
-    <td class="cell-mono" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7/14)}</td>
-    <td class="cell-mono cell-flat" style="background:rgba(91,138,118,.06)">${fmtEUR(totPickup7Stly/14)}</td>
-    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06)" title="Total OTB ${fmtEUR(totOtbRev)} / Total Month-1st snapshot ${fmtEUR(totAchDen)} = ${(totAch*100).toFixed(2)}% (rounded · snapshot dove disponibile, altrimenti live forecast)"><b>${Math.round((totAch||0)*100)}%</b></td>
+    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76" title="Total OTB ${fmtEUR(totOtbRev)} / Total Month-1st snapshot ${fmtEUR(totAchDen)} = ${(totAch*100).toFixed(2)}% (rounded · snapshot where available, otherwise live forecast)"><b>${Math.round((totAch||0)*100)}%</b></td>
   </tr>`;
   document.getElementById('fcst-monthly-table').innerHTML =
     '<div class="mkpi-topscroll-wrap" id="mkpi-topscroll" style="overflow-x:auto;overflow-y:hidden;height:14px"><div id="mkpi-topscroll-spacer" style="height:1px"></div></div>' +
@@ -17155,17 +17241,35 @@ function renderForecast(sel){
 function _ovGrossBadgeSpan(){
   return '<span class="ov-gross-badge" title="All revenue and ADR are shown gross of OTA commission (Booking already gross; Expedia/VRBO/Homeaway +18%, Ctrip +15%, Airbnb +15.5%; Direct/Italcamel unchanged). Applies to every year, past included." style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;background:#e8f1ea;color:#2c5c3c;border:1px solid #bcd9c4;padding:2px 8px;border-radius:10px;margin-left:10px;vertical-align:middle;font-family:\'DM Sans\',sans-serif">gross of OTA commission</span>';
 }
+/* Applica il badge a un heading (idempotente). */
+function _grossBadgeOn(el){
+  if(!el) return;
+  if(el.querySelector && el.querySelector('.ov-gross-badge')) return;
+  el.insertAdjacentHTML('beforeend', _ovGrossBadgeSpan());
+}
+/* Ogni tab che espone Revenue/ADR deve dichiarare che i valori sono al LORDO
+   della commissione OTA. Elenco centralizzato: aggiungere qui i nuovi titoli. */
+const _GROSS_BADGE_TARGETS = [
+  '#panel-fcst .section-head h2',
+  '#panel-big .section-head h2',
+  '#panel-pk .section-head h2',
+  '#panel-hist .section-head h2',
+  '#panel-otb .section-head h2',
+  '#big-bcurve-title',
+  '#big-pk4w-title',
+  '#big-smdelta-title',
+  '#big-smchannel-title',
+  '#big-pie-title',
+  '#big-pace-title'
+];
 function _ovEnsureGrossBadge(){
   if(typeof document==='undefined') return;
-  var pf=document.getElementById('panel-fcst');
-  if(pf){
-    var h2=pf.querySelector('.section-head h2');
-    if(h2 && !h2.querySelector('.ov-gross-badge')) h2.insertAdjacentHTML('beforeend', _ovGrossBadgeSpan());
+  for (const selq of _GROSS_BADGE_TARGETS){
+    try { _grossBadgeOn(document.querySelector(selq)); } catch(e){}
   }
   var sub=document.getElementById('fcst-monthly-sub');
   if(sub && sub.parentElement){
-    var h3=sub.parentElement.querySelector('h3');
-    if(h3 && !h3.querySelector('.ov-gross-badge')) h3.insertAdjacentHTML('beforeend', _ovGrossBadgeSpan());
+    try { _grossBadgeOn(sub.parentElement.querySelector('h3')); } catch(e){}
   }
 }
 function renderForecastCharts(A, ymOrder){
@@ -18004,10 +18108,6 @@ function _renderRmesEventsBox(){
       '<div style="padding:10px 14px;background:rgba(0,0,0,.02);border-bottom:1px solid var(--line)">' +
         '<div style="font-size:13px;font-weight:700;color:var(--ink-1)">\u2728 Event Factor</div>' +
         '<div style="font-size:11px;color:var(--ink-3);margin-top:2px">Premium % per event (0%% to +20%%). Applied as a final multiplier to the RMES price on dates that match the event. Sorted chronologically from today (' + _ymdLong(_todayYmd) + ') onward; past events are hidden. Weights are shared across all properties.</div>' +
-        '<label style="display:flex;align-items:flex-start;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px;color:var(--ink-2);cursor:pointer">' +
-          '<input type="checkbox" id="rmes-spillover-toggle" ' + (newrmesSpilloverEnabled()?'checked':'') + ' style="width:15px;height:15px;margin-top:1px;cursor:pointer;flex:none">' +
-          '<span><b>↗ Holiday-weekend spillover</b> — when an event falls on a <b>Thursday</b>, the following <b>Friday &amp; Saturday</b> inherit that Thursday\u2019s structural Base Price (only if higher; never over a manual 🖋 override). Fixes long-weekend dates the history underprices. Shared across all properties.</span>' +
-        '</label>' +
       '</div>' +
       '<div style="overflow-x:auto;max-height:480px;overflow-y:auto;padding:0">' +
         '<table style="border-collapse:collapse;width:100%"><thead><tr style="position:sticky;top:0;background:#fff;z-index:3">' +
@@ -18023,13 +18123,6 @@ function _renderRmesEventsBox(){
     '</div>';
   wrap.querySelectorAll('.rmes-evw-input').forEach(inp => {
     inp.addEventListener('input', () => { if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty(); });
-  });
-  const sp = document.getElementById('rmes-spillover-toggle');
-  if (sp) sp.addEventListener('change', () => {
-    if (typeof newrmesSetSpilloverEnabled === 'function') newrmesSetSpilloverEnabled(sp.checked);
-    if (typeof _invalidateRmesMapCache === 'function') { try { _invalidateRmesMapCache(); } catch(e){} }
-    if (typeof _markHeavyTabsDirty === 'function') { try { _markHeavyTabsDirty(); } catch(e){} }
-    if (typeof renderSellStrategy === 'function') { try { renderSellStrategy(CURRENT_STRUCT); } catch(e){} }
   });
   const rb = document.getElementById('rmes-evw-reset');
   if (rb) rb.addEventListener('click', () => {
@@ -18700,10 +18793,11 @@ function renderCancellations(sel){
    Periodo: rolling 12 mesi che terminano all'ULTIMO MESE CHIUSO.
    =========================================================================== */
 const BW_STATE = {
-  otb:    { yms: null },
-  cancel: { yms: null },
+  otb:    { yms: null, chans: null },
+  cancel: { yms: null, chans: null },
   adrTrend: { yms: null },
   occTrend: { yms: null },
+  pace:   { yms: null, chans: null },   // Big Picture · booking pace last 30 closed days
 };
 const BW_BUCKETS = [
   { id:'0-1',   label:'0-1 day',   min:0, max:1 },
@@ -18731,7 +18825,7 @@ function bwPeriod(){
   const endSTLY   = new Date(end);   endSTLY.setDate(endSTLY.getDate() - 365);
   return { start, end, startSTLY, endSTLY };
 }
-function aggBookingWindow(sel, kind, ymFilter){
+function aggBookingWindow(sel, kind, ymFilter, chFilter){
   const keys = new Set(structKeysFor(sel));
   const P = bwPeriod();
   const startYmd = ymd(P.start), endYmd = ymd(P.end);
@@ -18756,6 +18850,7 @@ function aggBookingWindow(sel, kind, ymFilter){
     const bIsCancel = b.cancelled === true;
     if (kind === 'cancel' && !bIsCancel) continue;
     if (kind !== 'cancel' && bIsCancel) continue;
+    if (chFilter && !chFilter.has(b.canale || '—')) continue;
     const checkInYmd = ymd(b.dIn);
     const checkInYM = b.dIn.getFullYear()*100 + (b.dIn.getMonth()+1);
     const lead = Math.max(0, Math.floor((b.dIn - b.dBook) / (1000*60*60*24)));
@@ -18800,6 +18895,8 @@ function aggBookingWindow(sel, kind, ymFilter){
   };
 }
 function renderBookingWindowChart(containerId, A, opts){
+  const _host = document.getElementById(containerId);
+  if (!_host) return;
   const W = 1100, H = 360;
   const pad = {l:50, r:60, t:18, b:60};
   const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
@@ -18888,7 +18985,7 @@ function renderBookingWindowChart(containerId, A, opts){
     lgX += 16 + (it.label.length * 6.6) + 14;
   }
   svg += '</svg>';
-  document.getElementById(containerId).innerHTML = svg;
+  _host.innerHTML = svg;
 }
 function renderBwMonthFilter(containerId, stateKey, onChange){
   const mIT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -18934,8 +19031,133 @@ function renderBwMonthFilter(containerId, stateKey, onChange){
     });
   });
 }
+/* Elenco canali presenti nei dati per la struttura selezionata, ordinati per volume.
+   Usato dai pill del filtro canale (Booking window · Cancellation window · Booking pace). */
+function _bwChannelList(sel, kind){
+  const keys = new Set(structKeysFor(sel));
+  const cnt = {};
+  for (const b of BOOKINGS){
+    if (!keys.has(b.struct)) continue;
+    const isC = b.cancelled === true;
+    if (kind === 'cancel' && !isC) continue;
+    if (kind !== 'cancel' && isC) continue;
+    const c = b.canale || '—';
+    cnt[c] = (cnt[c] || 0) + 1;
+  }
+  return Object.keys(cnt).sort((a,b)=> cnt[b]-cnt[a]);
+}
+/* Pill multi-selezione per canale. Stessa meccanica del filtro mesi:
+   nessuna selezione = All. Cliccando si aggiunge/rimuove un canale. */
+function renderBwChannelFilter(containerId, stateKey, onChange, sel, kind){
+  const cont = document.getElementById(containerId);
+  if (!cont) return;
+  const st = BW_STATE[stateKey];
+  if (!st) return;
+  const isAll = (st.chans === null);
+  const list = _bwChannelList(sel, kind);
+  let html = `<span class="bw-mlabel">Channel filter:</span>`;
+  html += `<span class="bw-mpill allnone ${isAll?'active':''}" data-act="all">All</span>`;
+  for (const c of list){
+    const active = !isAll && st.chans.has(c);
+    html += `<span class="bw-mpill ${active?'active':''}" data-ch="${escapeHtml(c)}">${escapeHtml(c)}</span>`;
+  }
+  cont.innerHTML = html;
+  cont.querySelectorAll('.bw-mpill').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.dataset.act === 'all'){
+        st.chans = null;
+      } else {
+        const c = el.dataset.ch;
+        if (st.chans === null) st.chans = new Set();
+        if (st.chans.has(c)){
+          st.chans.delete(c);
+          if (st.chans.size === 0) st.chans = null;
+        } else {
+          st.chans.add(c);
+        }
+      }
+      renderBwChannelFilter(containerId, stateKey, onChange, sel, kind);
+      onChange();
+    });
+  });
+}
+/* ===========================================================================
+   BOOKING PACE — ultimi 30 GIORNI CHIUSI di prenotazione (oggi escluso).
+   Differenza rispetto al Booking window: lì la finestra è sul CHECK-IN
+   (ultimi 12 mesi chiusi), qui è sulla DATA DI PRENOTAZIONE. Risponde a
+   "come sono entrate le prenotazioni negli ultimi 30 giorni".
+   Confronto STLY: stessa finestra spostata di -364 giorni (DoW-aligned).
+   =========================================================================== */
+function bwPacePeriod(){
+  const t = new Date(TODAY); t.setHours(0,0,0,0);
+  const end = new Date(t); end.setDate(end.getDate()-1);      // ieri = ultimo giorno chiuso
+  const start = new Date(end); start.setDate(start.getDate()-29);  // 30 giorni inclusi
+  const startSTLY = new Date(start); startSTLY.setDate(startSTLY.getDate()-364);
+  const endSTLY   = new Date(end);   endSTLY.setDate(endSTLY.getDate()-364);
+  return { start, end, startSTLY, endSTLY };
+}
+function aggBookingPace(sel, chFilter){
+  const keys = new Set(structKeysFor(sel));
+  const P = bwPacePeriod();
+  const startYmd = ymd(P.start), endYmd = ymd(P.end);
+  const startSTLYYmd = ymd(P.startSTLY), endSTLYYmd = ymd(P.endSTLY);
+  const empty = () => {
+    const o = {totN:0, totRev:0, totRn:0};
+    for (const b of BW_BUCKETS) o[b.id] = {n:0, rev:0, rn:0};
+    return o;
+  };
+  const cur = empty(), sty = empty();
+  for (const b of BOOKINGS){
+    if (!keys.has(b.struct)) continue;
+    if (b.cancelled === true) continue;
+    if (chFilter && !chFilter.has(b.canale || '—')) continue;
+    const lead = Math.max(0, Math.floor((b.dIn - b.dBook) / (1000*60*60*24)));
+    const bucket = bucketLeadTime(lead);
+    if (!bucket) continue;
+    const stayValue = b.revPerNight * b.notti;   // gross of OTA commission
+    let tgt = null;
+    if (b.bookYmd >= startYmd && b.bookYmd <= endYmd) tgt = cur;
+    else if (b.bookYmd >= startSTLYYmd && b.bookYmd <= endSTLYYmd) tgt = sty;
+    if (!tgt) continue;
+    tgt[bucket].n += 1; tgt[bucket].rev += stayValue; tgt[bucket].rn += b.notti;
+    tgt.totN += 1; tgt.totRev += stayValue; tgt.totRn += b.notti;
+  }
+  const buckets = BW_BUCKETS.map(B => {
+    const c = cur[B.id], s = sty[B.id];
+    return {
+      id: B.id, label: B.label,
+      curPct: cur.totN>0 ? c.n/cur.totN : 0,
+      curN:   c.n,
+      curAdr: c.rn>0 ? c.rev/c.rn : 0,
+      styPct: sty.totN>0 ? s.n/sty.totN : 0,
+      styN:   s.n,
+      styAdr: s.rn>0 ? s.rev/s.rn : 0,
+    };
+  });
+  return { period: P, buckets, totCur: cur.totN, totSty: sty.totN, totRnCur: cur.totRn, totRnSty: sty.totRn };
+}
+function _bigRenderPace(sel){
+  const host = document.getElementById('big-pace-chart');
+  if (!host) return;
+  const A = aggBookingPace(sel, BW_STATE.pace.chans);
+  const P = A.period;
+  const fmtD = (d) => d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const subEl = document.getElementById('big-pace-sub');
+  if (subEl){
+    let chInfo = '';
+    if (BW_STATE.pace.chans) chInfo = ` · only: ${[...BW_STATE.pace.chans].join(', ')}`;
+    subEl.innerHTML = `Bookings made ${fmtD(P.start)} → ${fmtD(P.end)} (last 30 closed days): ${A.totCur.toLocaleString('en-GB')} room-bookings, ${A.totRnCur.toLocaleString('en-GB')} RN. Last year: ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)} (${A.totSty.toLocaleString('en-GB')} bk., ${A.totRnSty.toLocaleString('en-GB')} RN).${chInfo}`;
+  }
+  renderBwChannelFilter('big-pace-chfilter', 'pace', () => _bigRenderPace(CURRENT_STRUCT), sel, 'confirmed');
+  renderBookingWindowChart('big-pace-chart', A, {
+    barCurLbl: 'Booked last 30 days',
+    barStyLbl: 'Booked last 30 days (last year)',
+    lineCurLbl: 'ADR',
+    lineStyLbl: 'ADR (last year)',
+  });
+}
 function renderBookingWindowOTB(sel){
-  const A = aggBookingWindow(sel, 'confirmed', BW_STATE.otb.yms);
+  const A = aggBookingWindow(sel, 'confirmed', BW_STATE.otb.yms, BW_STATE.otb.chans);
   const P = A.period;
   const fmtD = (d) => d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   const subEl = document.getElementById('otb-bw-sub');
@@ -18947,11 +19169,14 @@ function renderBookingWindowOTB(sel){
         const m = ym%100, y = Math.floor(ym/100);
         return `${mIT[m-1]} '${(y%100).toString().padStart(2,'0')}`;
       }).join(', ');
-      monthInfo = ` · solo: ${sel}`;
+      monthInfo = ` · only: ${sel}`;
     }
-    subEl.innerHTML = `Data ${fmtD(P.start)} → ${fmtD(P.end)} over ${A.totCur.toLocaleString('en-GB')} room-bookings. Last year: ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)} (${A.totSty.toLocaleString('en-GB')} bk.).${monthInfo}`;
+    let chInfo = '';
+    if (BW_STATE.otb.chans) chInfo = ` · channels: ${[...BW_STATE.otb.chans].join(', ')}`;
+    subEl.innerHTML = `Data ${fmtD(P.start)} → ${fmtD(P.end)} over ${A.totCur.toLocaleString('en-GB')} room-bookings. Last year: ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)} (${A.totSty.toLocaleString('en-GB')} bk.).${monthInfo}${chInfo}`;
   }
   renderBwMonthFilter('otb-bw-mfilter', 'otb', () => renderBookingWindowOTB(CURRENT_STRUCT));
+  renderBwChannelFilter('otb-bw-chfilter', 'otb', () => renderBookingWindowOTB(CURRENT_STRUCT), sel, 'confirmed');
   renderBookingWindowChart('otb-bw-chart', A, {
     barCurLbl: 'Your property',
     barStyLbl: 'Your property (last year)',
@@ -18960,7 +19185,7 @@ function renderBookingWindowOTB(sel){
   });
 }
 function renderBookingWindowCancel(sel){
-  const A = aggBookingWindow(sel, 'cancel', BW_STATE.cancel.yms);
+  const A = aggBookingWindow(sel, 'cancel', BW_STATE.cancel.yms, BW_STATE.cancel.chans);
   const P = A.period;
   const fmtD = (d) => d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
   const subEl = document.getElementById('cancel-bw-sub');
@@ -18972,11 +19197,14 @@ function renderBookingWindowCancel(sel){
         const m = ym%100, y = Math.floor(ym/100);
         return `${mIT[m-1]} '${(y%100).toString().padStart(2,'0')}`;
       }).join(', ');
-      monthInfo = ` · solo: ${sel}`;
+      monthInfo = ` · only: ${sel}`;
     }
-    subEl.innerHTML = `Data ${fmtD(P.start)} → ${fmtD(P.end)} over ${A.totCur.toLocaleString('en-GB')} cancellations. Last year: ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)} (${A.totSty.toLocaleString('en-GB')} canc.).${monthInfo}`;
+    let chInfo = '';
+    if (BW_STATE.cancel.chans) chInfo = ` · channels: ${[...BW_STATE.cancel.chans].join(', ')}`;
+    subEl.innerHTML = `Data ${fmtD(P.start)} → ${fmtD(P.end)} over ${A.totCur.toLocaleString('en-GB')} cancellations. Last year: ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)} (${A.totSty.toLocaleString('en-GB')} canc.).${monthInfo}${chInfo}`;
   }
   renderBwMonthFilter('cancel-bw-mfilter', 'cancel', () => renderBookingWindowCancel(CURRENT_STRUCT));
+  renderBwChannelFilter('cancel-bw-chfilter', 'cancel', () => renderBookingWindowCancel(CURRENT_STRUCT), sel, 'cancel');
   renderBookingWindowChart('cancel-bw-chart', A, {
     barCurLbl: 'CXLTrend',
     barStyLbl: 'CXLTrend (last year)',
@@ -19937,6 +20165,7 @@ function renderAll(){
   if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
   }
+  if (typeof _ovEnsureGrossBadge === 'function'){ try { _ovEnsureGrossBadge(); } catch(e){} }
   // Audit log: enable only after the first full render (boot + one-shot migrations done),
   // so wipes/migrations don't generate log entries.
   if (typeof _auditEnable === 'function') _auditEnable();
@@ -20356,10 +20585,18 @@ function renderBigPicture(){
     rank ? {label:'Compset rank (7d)', val:`${rank.rank}\u00b0 / ${rank.total}`, byProp: isBoth?'rate':null} : null
   ].filter(Boolean);
   const heroEl = document.getElementById('big-hero');
+  // Font-size auto-shrink: numeri lunghi (es. €330,202) non devono essere tagliati dalla card.
+  const _hvCls = (v)=>{
+    const n = String(v).replace(/<[^>]*>/g,'').trim().length;
+    if (n >= 12) return ' hv-xxl';
+    if (n >= 10) return ' hv-xl';
+    if (n >= 8)  return ' hv-l';
+    return '';
+  };
   if (heroEl) heroEl.innerHTML = heroItems.map((h,i)=>`<div class="big-hero-item"${h.tip?` title="${escapeHtml(h.tip)}" style="cursor:help"`:''}>
       <div class="big-hero-icon">${BIG_HERO_ICONS[i]||''}</div>
-      <div class="big-hero-txt" style="flex:1"><div class="big-hero-label">${h.label}${h.byProp?` <span class="big-byprop" data-bigbreakdown="${h.byProp}" style="font-size:9px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 6px;cursor:pointer;margin-left:4px;text-transform:none;letter-spacing:0">by property</span>`:''}</div>
-      <div class="big-hero-val">${h.val}</div>${h.sub?`<div class="big-hero-sub">${h.sub}</div>`:''}</div>
+      <div class="big-hero-txt" style="flex:1;min-width:0"><div class="big-hero-label">${h.label}${h.byProp?` <span class="big-byprop" data-bigbreakdown="${h.byProp}" style="font-size:9px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 6px;cursor:pointer;margin-left:4px;text-transform:none;letter-spacing:0">by property</span>`:''}</div>
+      <div class="big-hero-val${_hvCls(h.val)}" title="${escapeHtml(String(h.val).replace(/<[^>]*>/g,''))}">${h.val}</div>${h.sub?`<div class="big-hero-sub" title="${escapeHtml(String(h.sub).replace(/<[^>]*>/g,''))}">${h.sub}</div>`:''}</div>
     </div>`).join('');
   try { _bigRenderBookingCurve(sel); } catch(e){ const c=document.getElementById('big-bcurve'); if(c)c.innerHTML=''; }
   try { _bigRenderPickup4w(sel); } catch(e){ const c=document.getElementById('big-pk4w'); if(c)c.innerHTML=''; }
@@ -20425,6 +20662,8 @@ function renderBigPicture(){
     el.addEventListener('click', (ev)=>{ ev.stopPropagation(); _bigShowBreakdown(el.dataset.bigbreakdown, n); });
   });
   _bigRenderWindowPills();
+  try { _bigRenderPace(sel); } catch(e){ const c=document.getElementById('big-pace-chart'); if(c)c.innerHTML=''; }
+  if (typeof _ovEnsureGrossBadge === 'function'){ try { _ovEnsureGrossBadge(); } catch(e){} }
 }
 let _BIGPK = null;
 /* Precompute, for the 28-day pickup window, the cumulative RN picked up per STAY MONTH

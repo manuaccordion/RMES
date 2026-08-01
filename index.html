@@ -235,7 +235,16 @@ table.data thead th.ovg-start{border-left:2px solid var(--line-2)}
 .mkpi-topscroll-wrap::-webkit-scrollbar-thumb{ background:#c9bea6; border-radius:6px; border:2px solid #f4efe4 }
 .mkpi-topscroll-wrap::-webkit-scrollbar-thumb:hover{ background:#a89b7d }
 /* === Monthly KPI table: sticky first column + 2-row sticky header === */
-.mkpi-total{display:none}  /* riga totali nascosta (richiesta utente) */.mkpi-sticky-wrap{
+/* Riga totali: visibile e agganciata in basso mentre si scorre la tabella. */
+table.mkpi-sticky-table tbody tr.mkpi-total td{
+  position:sticky;
+  bottom:0;
+  z-index:4;
+  background:#f2efe6;
+  font-weight:700;
+  border-top:2px solid var(--line-2);
+}
+.mkpi-sticky-wrap{
   border:1px solid var(--line);
   border-top:1px solid var(--line);
   border-radius:0 0 6px 6px;
@@ -261,7 +270,8 @@ table.mkpi-sticky-table tbody td:first-child{
   border-right:1.5px solid var(--line-2);
 }
 table.mkpi-sticky-table tbody tr.mkpi-total td:first-child{
-  background:#f7f5ef;
+  background:#f2efe6;
+  z-index:6;
 }
 /* First cell of FIRST header row (Month, rowspan=2): sticky on both axes (top + left) with higher z-index.
    The second header row does NOT need a left-sticky cell because Month's rowspan covers it. */
@@ -539,6 +549,18 @@ table.sell-table-transposed thead .sell-tposed-datecol{
   position:sticky;top:0;z-index:5;
   white-space:nowrap;
 }
+/* Pickup indicator above the date: shows at a glance whether that stay date
+   moved in the last 7 days of booking window. Tooltip = RN + delta vs STLY. */
+table.sell-table-transposed thead .sell-pk-line{height:13px;line-height:13px;margin-bottom:1px}
+.sell-pk-dot{
+  display:inline-block;font-size:9.5px;font-weight:800;line-height:13px;
+  font-family:'DM Mono',monospace;letter-spacing:-.02em;cursor:help;
+  padding:0 4px;border-radius:7px;
+}
+.sell-pk-dot.pk-up{color:#1e6b3a;background:rgba(46,120,70,.15)}
+.sell-pk-dot.pk-down{color:#b0332f;background:rgba(176,51,47,.13)}
+.sell-pk-dot.pk-flat{color:#7a6a4a;background:rgba(122,106,74,.13)}
+.sell-pk-dot.pk-none{color:#c3bcae;background:transparent;font-weight:400}
 /* Row label cells (first column of body) */
 table.sell-table-transposed tbody th.sell-tposed-label{
   background:linear-gradient(90deg,#f4ede0,#fdfbf6);
@@ -1261,13 +1283,18 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   table.data th,table.data td{padding:5px 5px;font-size:10px}
 }
 /* ===== BIG PICTURE ===== */
-.big-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:6px 0 18px}
-.big-hero-item{display:flex;align-items:center;gap:13px;background:linear-gradient(135deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.big-hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:14px;margin:6px 0 18px}
+.big-hero-item{display:flex;align-items:center;gap:13px;background:linear-gradient(135deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:12px;padding:16px 16px;position:relative;overflow:hidden;min-width:0}
 .big-hero-icon{font-size:26px;flex-shrink:0;width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border-radius:10px;border:1px solid var(--line)}
-.big-hero-txt{min-width:0}
+.big-hero-txt{min-width:0;overflow:hidden}
 .big-hero-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);font-weight:600;margin-bottom:3px}
-.big-hero-val{font-size:25px;font-weight:800;color:var(--ink);line-height:1;font-family:'DM Mono',monospace}
-.big-hero-sub{font-size:10.5px;color:var(--ink-3);margin-top:5px;font-family:'DM Mono',monospace;font-weight:500}
+/* Value: never clipped. Long amounts (es. €330,202) shrink instead of being cut. */
+.big-hero-val{font-size:25px;font-weight:800;color:var(--ink);line-height:1.05;font-family:'DM Mono',monospace;
+  white-space:nowrap;overflow:visible;letter-spacing:-.02em;max-width:100%}
+.big-hero-val.hv-l{font-size:21px}
+.big-hero-val.hv-xl{font-size:18px}
+.big-hero-val.hv-xxl{font-size:16px}
+.big-hero-sub{font-size:10.5px;color:var(--ink-3);margin-top:5px;font-family:'DM Mono',monospace;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .big-chart-wrap{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px 6px;margin-bottom:18px}
 
 /* ============================================================
@@ -1396,7 +1423,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 .big-byprop{transition:opacity .15s}
 .big-byprop:hover{opacity:.7}
 .big-card-link:hover{opacity:.65;text-decoration:underline}
-@media(max-width:600px){.big-hero-val{font-size:24px}.big-card{padding:13px 14px}}
+@media(max-width:600px){.big-hero-val{font-size:22px}.big-hero-val.hv-l{font-size:19px}.big-hero-val.hv-xl{font-size:17px}.big-hero-val.hv-xxl{font-size:15px}.big-card{padding:13px 14px}}
 .sell-tposed-datecol.need-day{background:rgba(196,131,59,.12) !important;box-shadow:inset 0 3px 0 #c4823b}
 .sell-tposed-datecol .nd-mark{color:#c4823b;margin-right:4px;font-size:12px;vertical-align:1px}
 </style>
@@ -1620,6 +1647,35 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
+    <!-- ============ BOOKING WINDOW (spostato qui dalla tab Pickup) ============ -->
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-head">
+        <div>
+          <h3>Booking window</h3>
+          <div class="panel-sub" id="otb-bw-sub"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div id="otb-bw-mfilter" class="bw-mfilter"></div>
+          <div id="otb-bw-chfilter" class="bw-mfilter"></div>
+        </div>
+      </div>
+      <div class="panel-body" id="otb-bw-chart"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Cancellation booking window</h3>
+          <div class="panel-sub" id="cancel-bw-sub"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div id="cancel-bw-mfilter" class="bw-mfilter"></div>
+          <div id="cancel-bw-chfilter" class="bw-mfilter"></div>
+        </div>
+      </div>
+      <div class="panel-body" id="cancel-bw-chart"></div>
+    </div>
+
     <!-- Month filter: Source/Channel tables (year/month) -->
     <div class="panel" style="background:rgba(195,131,59,.04);border:1px solid rgba(195,131,59,.22);margin-top:14px">
       <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 18px">
@@ -1669,17 +1725,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body flush" style="border-top:1px solid var(--line)"><div class="pickup-grid"><table class="pickup" id="pk-sm-table"></table></div></div>
     </div>
 
-    <!-- ============ BOOKING WINDOW (reservation) — spostato da Overview ============ -->
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h3>Booking window</h3>
-          <div class="panel-sub" id="otb-bw-sub"></div>
-        </div>
-        <div id="otb-bw-mfilter" class="bw-mfilter"></div>
-      </div>
-      <div class="panel-body" id="otb-bw-chart"></div>
-    </div>
+    <!-- Booking window: spostato nella tab Overview (richiesta utente) -->
 
     <!-- ============ CANCELLATIONS (spostato dalla vecchia tab CXLTrend) ============ -->
     <div style="margin:24px 0 8px 0;padding:12px 18px;background:rgba(168,59,59,.06);border-left:4px solid #a83b3b;border-radius:4px">
@@ -1730,17 +1776,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- Booking window chart - cancellate -->
-    <div class="panel">
-      <div class="panel-head">
-        <div>
-          <h3>Cancellation booking window</h3>
-          <div class="panel-sub" id="cancel-bw-sub"></div>
-        </div>
-        <div id="cancel-bw-mfilter" class="bw-mfilter"></div>
-      </div>
-      <div class="panel-body" id="cancel-bw-chart"></div>
-    </div>
+    <!-- Cancellation booking window: spostato nella tab Overview (richiesta utente) -->
   </section>
 
   <!-- ============ SECTION 5: (rimossa - era AirDNA Demand) ============ -->
@@ -1773,6 +1809,16 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div class="big-chart-title" id="big-pie-title">Channel share — by revenue (year) vs STLY</div>
         <div id="big-pie"></div>
       </div>
+    </div>
+    <div class="panel" style="margin-top:14px">
+      <div class="panel-head">
+        <div>
+          <h3 id="big-pace-title">Booking pace &mdash; last 30 closed days</h3>
+          <div class="panel-sub" id="big-pace-sub"></div>
+        </div>
+        <div id="big-pace-chfilter" class="bw-mfilter"></div>
+      </div>
+      <div class="panel-body" id="big-pace-chart"></div>
     </div>
     <div id="big-tree"></div>
     <div id="big-grid" style="display:none"></div>
@@ -2200,7 +2246,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             </ul></li>
           <li><b>Pickup by channel — last 4 weeks, RN booked (TY vs LY)</b> (below the stay-month gap) — same 4-week window, same scrub linkage to the pickup curve, but broken down by <i>channel</i> and showing the <b>absolute revenue</b> rather than the delta: two columns per channel, <b>blue = revenue booked this year</b>, <b>purple = booked in the same window last year</b> (e.g. Booking €12k vs €7k). Channels are ordered by volume; the title shows the TY vs LY revenue totals (which reconcile to the pickup curve). Hovering the curve rebuilds this too, cumulated up to that booking-day, so you can see which channel is driving the pace — e.g. the gap is mostly Booking softening, or Direct holding up. Tooltip on each pair breaks the revenue into <b>room-nights (volume)</b> and <b>ADR (rate)</b>, TY vs LY — so you see at a glance whether the gap is a volume story or a price story.</li>
           <li><b>Hero KPI tiles</b> (top row): <b>Pickup (7d)</b> (room nights booked in the last 7 days vs the same 7 days last year) · <b>Revenue 2026 (OTB)</b> · <b>OCC 2026</b> · <b>ADR 2026</b> · <b>Compset rank (7d)</b>. Each tile shows the current-year value with the STLY comparison underneath (arrow + %). When <i>All</i> is selected, click "by property" on any tile to see a breakdown across the properties.</li>
+          <li><b>Booking pace — last 30 closed days</b> (bottom of the tab) — same chart type as the Booking window in Overview, but the window is on the <i>booking date</i>, not the check-in date: it takes the last 30 closed days (yesterday back 30 days, today excluded) and shows how those bookings came in, split by lead time bucket. Bars = share of bookings per bucket, this year vs the same 30-day window last year (−364d, DoW-aligned); lines = ADR per bucket, TY vs LY. Use it to answer "in the last month, are we picking up earlier or later than last year, and at what rate?". The <b>Channel filter</b> above the chart lets you isolate one or more channels (Booking, Expedia, Direct, Airbnb…): click a channel to add it, click again to remove it, <i>All</i> resets. The caption under the title always states the exact windows compared and the resulting bookings/RN totals.</li>
           <li><b>Property tiles</b> (below): when <i>All</i> is selected, you see 4 mini-cards side by side with revenue OTB, OCC, ADR per property.</li>
+          <li><b>Gross of OTA commission</b> — every revenue and ADR figure in this tab (hero tiles, booking curve, pickup charts, channel donut, booking pace) is shown gross of OTA commission, so channels and years compare like-for-like. Booking already arrives gross; Expedia/VRBO/Homeaway are grossed up 18%, Ctrip 15%, Airbnb 15.5%; Direct and Italcamel are left unchanged. The green <i>gross of OTA commission</i> badge next to the tab title marks this.</li>
           <li><b>Channel share donut</b>: outer ring = current year, inner ring = STLY. In <i>All</i> mode, 4 mini-donuts (one per property). The delta arrows (▲/▼) compare current share vs STLY share. <b>Channel name normalization</b>: raw channel manager labels are folded into canonical buckets so the YoY comparison actually matches. <code>BOOKINGXML</code>, <code>MOBILESITE</code> → <i>Booking</i>; <code>EXPEDIA</code>, <code>Hotels.com</code>, <code>Orbitz</code>, <code>Expedia Affilia</code> → <i>Expedia</i>; <code>CTRIPV4</code> → <i>Ctrip</i>; <code>Beddy</code>, <code>Krossbooking</code>, <code>FrontOffice</code>, <code>PrenMan</code>, <code>Booking Engine</code>, <code>walk-in</code> → <i>Direct</i> (one label for "no-OTA, booked through the property PMS"). If a property has no bookings in the dataset, the donut shows "No bookings in dataset for this property".</li>
         </ul>
       </div>
@@ -2220,9 +2268,9 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <ul style="margin:6px 0 6px 18px">
           <li><b>Date · Event · DoW</b> — the stay-date, the event name (if any), and the day of the week. <b>The orange tint is only on these 3 cells</b>: it indicates the Expedia search pressure for that day (faint = low demand, more saturated = high demand). All the other columns stay neutral so numbers are easy to read. Event names come from <code>EVENTS_CSV</code> in data.js — if you don't see them, data.js needs to be regenerated by Claude Code.</li>
           <li><b>OTB to date</b> — RN booked, OCC, ADR for that night so far.</li>
-          <li><b>Pickup Nd</b> — net pickup over the last N days: New, Cancelled, ΔRN, ADR. <b>Standard pickup convention</b> (same as Duetto, IDeaS, OTA Insight): <code>Pickup N</code> means the N days <b>before today</b> (from <code>today−N</code> to <code>today−1</code>, today excluded). Examples: <code>Pickup 1</code> = yesterday only · <code>Pickup 2</code> = 2 days ago + yesterday · <code>Pickup 7</code> = the 7 days before today. <b>Pickup 0</b> is also accepted and means "what was booked <i>today only</i>". <i>Note: the RMES <b>Daily Pickup factor</b> is the only exception — it also reads today's bookings, because it needs the most up-to-date signal for the price suggestion.</i></li>
+          <li><b>Pickup Nd</b> — net pickup over the last N days, shown as two rows only: <b>Var RN</b> (new minus cancelled) and <b>Var ADR</b> (ADR of that net pickup). Both are already net of cancellations. <b>Click Var RN</b> to open the detail, which lists <i>New bookings</i> and <i>Cancelled</i> in two separate tables with the net at the bottom. <b>Standard pickup convention</b> (same as Duetto, IDeaS, OTA Insight): <code>Pickup N</code> means the N days <b>before today</b> (from <code>today−N</code> to <code>today−1</code>, today excluded). Examples: <code>Pickup 1</code> = yesterday only · <code>Pickup 2</code> = 2 days ago + yesterday · <code>Pickup 7</code> = the 7 days before today. <b>Pickup 0</b> is also accepted and means "what was booked <i>today only</i>". <i>Note: the RMES <b>Daily Pickup factor</b> is the only exception — it also reads today's bookings, because it needs the most up-to-date signal for the price suggestion.</i></li>
           <li><b>STLY (−364d)</b> — what was on the books at the same point of the cycle last year (today−364, day-of-week aligned). Used to read the pace.</li>
-          <li><b>Pickup STLY 1d</b> — pickup last year on the same booking-day (today−364).</li>
+          <li><b>Pickup STLY</b> — same two rows (Var RN · Var ADR), for the equivalent booking window one year ago (today−364, day-of-week aligned). Var ADR here is the ADR of the net STLY pickup, so it is directly comparable with the current one. Click Var RN for the new/cancelled detail.</li>
           <li><b>Last update</b> — the price <b>currently active</b> for the day. <b>Three display modes</b> depending on the source:
             <ul style="margin:4px 0 0 18px;font-size:12.5px">
               <li><span style="color:#6a6a6a"><b>€X</b></span> in gray, no icon → Base Price as default (no action taken yet).</li>
@@ -2238,7 +2286,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             </ul>
             Click anywhere on the cell to open the full <b>calculation modal</b> with the 5 factors, LMF and Event Factor breakdown.
           </li>
-          <li><b>Rate Shopper</b> — Mine w/RMES · Mine · Compset, all in Expedia space, with the market rank (1 = cheapest in the compset). <b>Note</b>: any Expedia value &lt; 10 € is filtered out (it's a minimum-stay number leaked into the price column, not a real rate).</li>
+          <li><b>Rate shopper</b> — a single row per date: <b>my Expedia price</b> on the first line, then <code>cs &lt;compset average&gt; · &lt;position&gt;</code> on the second (position 1 = cheapest in the compset). Everything is in Expedia space, so my price and the compset are directly comparable. Hover the cell for the full tooltip (weighted vs arithmetic compset average, % difference vs mine, search pressure). <b>Note</b>: any Expedia value &lt; 10 € is filtered out (it's a minimum-stay number leaked into the price column, not a real rate).</li>
+          <li><b>Pickup marker above the date</b> — a small badge on top of each date column tells you at a glance whether that stay date <i>moved recently</i>, without opening the pickup detail. It counts the room-nights for that night booked in the <b>last 7 days</b> of booking window, and compares them with the same 7-day window a year ago (−364d). <span style="color:#1e6b3a;font-weight:700">▲n</span> = picked up more than STLY · <span style="color:#b0332f;font-weight:700">▼n</span> = less than STLY · <span style="color:#7a6a4a;font-weight:700">●n</span> = same as STLY · <span style="color:#c3bcae">○</span> = no movement at all in the last 7 days. Hover it for the exact figures: RN picked up, RN STLY, and the delta.</li>
           <li><b>Need days marker</b> ⚑ — a day you flagged in the <b>Pricing Console</b> watchlist ("Need days") shows a ⚑ and an amber header on its date column here, so the days you're watching stand out at a glance. The watchlist lives in this browser and the marker updates live when you flag/unflag from the console.</li>
         </ul>
 
@@ -2300,7 +2349,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>YTD + Forecast (live)</b> — <b>past months</b> = actuals; <b>current month</b> = actuals up to yesterday + forecast for the rest; <b>future months</b> = forecast only.</li>
           <li><b>Month-1st snapshot</b> — forecast frozen on day 1 of the month, with the live Δ% vs current forecast (how well the early forecast tracked).</li>
           <li><b>Budget</b> — budget OCC / ADR / Revenue from the budget files.</li>
-          <li><b>KPIs for achievement</b> — Diff (Forecast − OTB), €/day to close (time-aware), €/day pickup 7d (cur vs STLY), % Achievement vs Budget.</li>
+          <li><b>% Achievement</b> — OTB / Month-1st snapshot forecast (fallback: live forecast if the month has no snapshot). ≥95% green, 70–95% neutral, &lt;70% red.</li>
+          <li><b>Total row</b> — the last row of the table sums every visible month and stays <b>pinned to the bottom</b> while you scroll. OCC and ADR are recomputed on the totals (not averaged): OCC = total RN / total capacity, ADR = total revenue / total RN. The snapshot Δ% compares the aggregate live figure with the aggregate initial snapshot, and % Achievement is total OTB / total snapshot denominator.</li>
         </ul>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">🔮 How the Forecast is computed (no buttons, fully automatic)</h4>
@@ -2339,7 +2389,13 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         </div>
 
         <p style="margin-top:10px"><b>Source / Channel</b> tables below: filter with the month pills above them — yearly view by default. <b>Source</b> = booking provenance (where the guest came from); <b>Channel</b> = direct booking channel (Booking, Beddy, Expedia, …).</p>
-        <p><b>Booking window</b> chart at the bottom: rolling 12 closed months, mix of bookings and average ADR by lead-time window.</p>
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">Booking window charts (bottom of the tab)</h4>
+        <p style="margin:0 0 6px 0">Two charts, both on a rolling window of the <b>12 closed months</b> ending with the last completed month, compared with the same 12 months a year earlier:</p>
+        <ul style="margin:6px 0 6px 18px">
+          <li><b>Booking window</b> — confirmed bookings distributed by lead time (days between booking date and check-in). Bars = share of bookings per bucket, this year vs last year; lines = ADR per bucket, this year vs last year.</li>
+          <li><b>Cancellation booking window</b> — same layout for cancelled bookings: tells you at which lead time you lose reservations, and at what ADR.</li>
+        </ul>
+        <p style="margin:0 0 6px 0">Each chart has two independent filters in its header: <b>Check-in months filter</b> (which stay months to include) and <b>Channel filter</b> (Booking, Expedia, Direct, Airbnb…). Both are multi-select — click to add, click again to remove, <i>All</i> resets. The caption under the title restates the exact windows and the active filters. Revenue and ADR are gross of OTA commission.</p>
       </div>
     </details>
 
@@ -2349,6 +2405,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
         <p>Heatmap to read how booking-date and stay-date are connected. Rows = booking month, columns = stay month. Each cell = RN booked in that month for stays in that other month.</p>
         <p>Useful to see lead time at a glance and spot which months are "booking" right now for which future months.</p>
+        <p><i>The <b>Booking window</b> and <b>Cancellation booking window</b> charts now live in the <b>Overview</b> tab, where they sit next to the monthly figures they explain.</i></p>
       </div>
     </details>
 
@@ -2507,7 +2564,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">⚡ Base Price block — the structural fair price for the day</h4>
         <p>The <b>Base Price</b> is the structural starting price the RMES suggestion sits on top of. RMES never overwrites it — it can only suggest a target above or below.</p>
         <p style="margin:6px 0;padding:8px 12px;background:#eef6ee;border-left:3px solid #4a7c59;font-size:12.5px">You can <b>override the Base for a single day</b> with the <b>🖋</b> in the Base Price cell (Sell Strategy, baseRT row), and <b>↺</b> to revert to the computed value. Use it for dates the history underprices — typically <b>holidays</b> (New Year, Christmas): the anchor learns from last year's realized ADR, so if you sold a high-demand date cheap last year, the Base (and therefore the RMES target) comes out low. Raising the Base fixes the suggestion at the root, because the RMES target is computed on the Base. A manual Base override is not bound by the ±50% Monthly Anchor band (that band only limits the auto-computed Base).</p>
-        <p style="margin:6px 0;padding:8px 12px;background:#f3eef7;border-left:3px solid #8a5fa8;font-size:12.5px"><b>↗ Holiday-weekend spillover (automatic).</b> When an event falls on a <b>Thursday</b>, the following <b>Friday &amp; Saturday</b> automatically inherit that Thursday's structural Base Price — the long-weekend/bridge effect the day-of-week history underprices (e.g. New Year: 31/12 Thu → 1/1 Fri &amp; 2/1 Sat). It only ever <b>raises</b> a day (inherits only if higher) and <b>never overrides a manual 🖋</b>. Inherited days show a violet <b>↗</b> in the Base Price cell. Turn the rule on/off in the <b>RMES tab → Event Factor → Holiday-weekend spillover</b> (shared across properties).</p>
         <p><b>Rolling 90-day freeze window.</b> The Base Price is frozen only for the next <b>90 days</b> from today (the window where Expedia compset data is reliable). A day is frozen with current data when it enters that window, and then stays stable. Days <b>beyond 90</b> are not frozen: they recompute live each time (so they stay updatable as data improves), and get frozen automatically once they roll into the 90-day window. To refresh stale frozen values inside the window, use <b>🔄 Refresh frozen Base</b> in Export Pricing (your overrides and accepts are kept).</p>
         <p>The Base Price is computed in <b>4 steps</b>, in this order:</p>
         <ol style="margin:6px 0 8px 18px">
