@@ -12391,15 +12391,15 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   });
 }
 
-/* Anello di occupazione sulla cella Date della Sell Strategy.
-   Scala continua rosso -> ambra -> verde: rosso = poco venduto (spingi),
-   verde = quasi pieno. Nessuno sfondo, solo il contorno. */
+/* Colore dell'occupazione per la cella Date della Sell Strategy.
+   Colora SOLO il testo della data: rosso = poco venduto (spingi),
+   verde = quasi pieno. Tinte scelte scure abbastanza da restare leggibili. */
 function _occRingColor(occ){
   const t = Math.max(0, Math.min(1, occ));
   const stops = [
-    [0.00, [192,  57,  43]],   // rosso
-    [0.45, [214, 140,  45]],   // arancio
-    [0.70, [206, 178,  54]],   // giallo
+    [0.00, [176,  51,  47]],   // rosso
+    [0.45, [181, 116,  31]],   // arancio bruciato
+    [0.70, [138, 122,  30]],   // oliva
     [1.00, [ 44, 122,  75]],   // verde
   ];
   for (let i=0; i<stops.length-1; i++){
@@ -13395,15 +13395,15 @@ function renderSellStrategy(sel){
     // bassa (da spingere), verde = occupazione alta.
     let _rowBgStyle = '';
     const _occRow = (r.curOcc != null && isFinite(r.curOcc)) ? r.curOcc : null;
-    const _occRing = (_occRow != null && typeof _occRingColor === 'function')
-      ? ` style="box-shadow:inset 0 0 0 2px ${_occRingColor(_occRow)}"` : '';
+    const _occCol = (_occRow != null && typeof _occRingColor === 'function') ? _occRingColor(_occRow) : null;
+    const _occRing = _occCol ? ` style="color:${_occCol}"` : '';
     const _trStyle = '';
     const _searchTipVal = (function(){
       try {
         const _occTxt = (_occRow != null) ? `OCC ${(Math.round(_occRow*1000)/10).toFixed(1)}% on this night` : 'OCC not available';
         const _expRow = (typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
         const sc = (_expRow && _expRow.searchCurrent != null) ? Math.round(_expRow.searchCurrent) : null;
-        let _t = _occTxt + ' — the ring around the date follows occupancy: red = low (push it), green = nearly full';
+        let _t = _occTxt + ' — the colour of the date follows occupancy: red = low (push it), green = nearly full';
         if (sc != null){
           const lvl = expDemandLevel(sc);
           _t += ` · Expedia search pressure: ${sc.toLocaleString('en-GB')} searches${lvl ? ' · ' + lvl.label : ''}`;
@@ -13537,7 +13537,7 @@ function renderSellStrategy(sel){
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
     html += `<tr${_searchTipVal}>
-      <td class="cell-mono sell-date-cell"${_occRing}>${_pk7Flag(r.ymd)}${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
+      <td class="cell-mono sell-date-cell">${_pk7Flag(r.ymd)}<span class="sell-date-txt"${_occRing}>${pad2(r.day)}/${pad2(r.mo)}/${r.y}</span></td>
       <td${_dowInline}>${dowIT[r.dow]}</td>
       <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
       <!-- OTB -->

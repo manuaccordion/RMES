@@ -570,7 +570,8 @@ table.sell-table-transposed thead .sell-pk-line{height:13px;line-height:13px;mar
 table.sell-table tbody .sell-pk-dot{margin-right:3px;vertical-align:middle}
 /* Cella Date: l'anello colorato (inline) segnala l'occupazione del giorno.
    Nessun riempimento, così i numeri restano leggibili come nelle altre colonne. */
-table.data.sell-table tbody td.sell-date-cell{border-radius:4px}
+table.data.sell-table tbody td.sell-date-cell{white-space:nowrap}
+.sell-date-txt{font-weight:600;letter-spacing:.01em}
 /* Row label cells (first column of body) */
 table.sell-table-transposed tbody th.sell-tposed-label{
   background:linear-gradient(90deg,#f4ede0,#fdfbf6);
@@ -2386,7 +2387,14 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Look for comparable nights</b> in the past — and comparable means two things: the <b>same day of the week</b> (Saturday, because a Saturday behaves nothing like a Tuesday) and the <b>same distance from check-in</b> (42 days).</li>
           <li><b>Two groups of comparable nights</b>: every Saturday of the <b>last 90 days</b>, and every Saturday of <b>September last year</b>.</li>
           <li>On each of those nights, count <b>how many rooms had entered when there were still 42 days to go</b>. That is the pickup that is still ahead of us. Nights that sold nothing count as a zero — ignoring them would inflate the estimate.</li>
-          <li><b>Average</b> each group, then blend them. <b>How much each group counts depends on the distance</b>: close to check-in the recent nights carry almost all the weight, because what matters is how the market is moving right now; far out they count for nothing and only last year's same month matters, because what drives a night four months away is the season. The switch is gradual, and by 90 days the recent group is out completely.</li>
+          <li><b>Average</b> each group, then blend them. <b>The weight is a straight line that runs out at 90 days</b>:
+            <div style="margin:6px 0;padding:8px 12px;background:#f7f5ef;border-left:3px solid #c4823b;border-radius:0 4px 4px 0;font-family:'DM Mono',monospace;font-size:12px">weight of the recent group = 1 &minus; (days to check-in &divide; 90)&nbsp;&nbsp;<span style="opacity:.7">— never below 0</span><br>weight of last year's month = the remainder</div>
+            <table style="margin:6px 0 6px 0;font-family:'DM Mono',monospace;font-size:11.5px;border-collapse:collapse">
+              <tr style="background:#f2efe6"><th style="padding:3px 10px;text-align:left">days out</th><th style="padding:3px 10px">1</th><th style="padding:3px 10px">7</th><th style="padding:3px 10px">15</th><th style="padding:3px 10px">30</th><th style="padding:3px 10px">45</th><th style="padding:3px 10px">60</th><th style="padding:3px 10px">75</th><th style="padding:3px 10px">90+</th></tr>
+              <tr><td style="padding:3px 10px">last 90 days</td><td style="padding:3px 10px;text-align:center">99%</td><td style="padding:3px 10px;text-align:center">92%</td><td style="padding:3px 10px;text-align:center">83%</td><td style="padding:3px 10px;text-align:center">67%</td><td style="padding:3px 10px;text-align:center">50%</td><td style="padding:3px 10px;text-align:center">33%</td><td style="padding:3px 10px;text-align:center">17%</td><td style="padding:3px 10px;text-align:center">0%</td></tr>
+              <tr><td style="padding:3px 10px">same month LY</td><td style="padding:3px 10px;text-align:center">1%</td><td style="padding:3px 10px;text-align:center">8%</td><td style="padding:3px 10px;text-align:center">17%</td><td style="padding:3px 10px;text-align:center">33%</td><td style="padding:3px 10px;text-align:center">50%</td><td style="padding:3px 10px;text-align:center">67%</td><td style="padding:3px 10px;text-align:center">83%</td><td style="padding:3px 10px;text-align:center">100%</td></tr>
+            </table>
+            The two groups cross over at <b>45 days</b>. Why this shape: a week from check-in what fills the room is how the market is moving <i>right now</i>, and last September tells you nothing about it; four months out nobody is booking on today's momentum, what drives the night is the season, so only the same month last year is worth looking at. If one of the two groups has no usable nights at all, the other takes 100% of the weight.</li>
           <li><b>Ceiling</b>: rooms already sold plus expected pickup never exceed <b>100% of that room type</b>, and never exceed <b>98% of the whole property</b> for that night. If the total would go over, the excess is trimmed proportionally across room types.</li>
         </ol>
 
@@ -2394,8 +2402,19 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p style="margin:0 0 6px 0">The expected rooms are valued at the price actually earned on the very same comparable nights, at the same distance from check-in. Not the rate on the shelf — what really landed in the till, net of discounts and channel mix.</p>
         <p style="margin:0 0 6px 0">One correction applies. Nights from the last 90 days are already at today's prices, so they are used as they are. Nights from last year are a year old, so they are brought up to date with a <b>price index of the month</b>:</p>
         <p style="margin:0 0 6px 0;padding:8px 12px;background:#f7f5ef;border-left:3px solid #c4823b;border-radius:0 4px 4px 0;font-family:'DM Mono',monospace;font-size:12px">price index = ADR already on the books for that month &nbsp;÷&nbsp; ADR that was on the books for the same month one year ago (STLY)</p>
-        <p style="margin:0 0 10px 0">Same month against itself, at the same point of the booking cycle: no season mismatch and no lead-time mismatch. Two safety rails: with a thin sample the index is pulled towards 1.00 in proportion to how thin it is (full weight from 30 nights on both sides), and it is always kept inside the <b>0.85–1.20</b> band, so one odd month cannot flip the forecast. If a month has no STLY at all, the index is 1.00 and last year's ADR is used as it stands.</p>
+        <p style="margin:0 0 10px 0">Same month against itself, at the same point of the booking cycle: no season mismatch and no lead-time mismatch. Two safety rails, both explicit: <code>index = 1 + (raw &minus; 1) &times; weight</code> where <code>weight = min(1, smaller of the two night counts &divide; 30)</code>, and the result is then clipped to the <b>0.85–1.20</b> band. Example from Condotta: November came out raw at 0.693, but with only 11 nights on the thinner side the weight is 11/30 = 0.37, so the applied index is 1 + (0.693&minus;1)&times;0.37 = <b>0.887</b>. September came out raw at 1.292 with a full sample, so the weight is 1 and only the band bites: <b>1.200</b>. If a month has no STLY at all, the index is 1.00 and last year's ADR is used as it stands.</p>
 
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">The whole thing on one real night</p>
+        <div style="margin:4px 0 12px 0;padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.7">
+          Firenze &middot; Saturday 12/09/2026 &middot; Camera Matrimoniale Deluxe &middot; 42 days out<br>
+          <span style="opacity:.65">weight</span> &nbsp;= 1 &minus; 42/90 = <b>0.533</b> &rarr; recent 53.3% &middot; last year 46.7%<br>
+          <span style="opacity:.65">recent</span> &nbsp;= 2.250 RN avg over 12 Saturdays &middot; ADR &euro;248<br>
+          <span style="opacity:.65">LY Sep</span> = 2.750 RN avg over 4 Saturdays &middot; ADR &euro;243<br>
+          <span style="opacity:.65">price index Sep</span> = 1.143 (67 nights on the books, full weight)<br>
+          <b>RN</b> &nbsp;= 0.533&times;2.250 + 0.467&times;2.750 = <b>2.483</b><br>
+          <b>ADR</b> = 0.533&times;248 + 0.467&times;(243&times;1.143=278) = <b>&euro;262</b><br>
+          <span style="opacity:.65">already sold that night: 0 RN &rarr; forecast 2.483 RN &middot; &euro;651</span>
+        </div>
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Reading it well</p>
         <ul style="margin:6px 0 10px 18px">
           <li><b>Near months are solid, far months are a direction.</b> Close to check-in the sample is 16–17 comparable nights. Beyond 90 days only the same weekday of the same month last year survives, so 4–5 nights: read October onwards as a trend, not as a figure.</li>
