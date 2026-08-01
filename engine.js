@@ -12391,6 +12391,27 @@ function _sellTransposeTable(wrap, showBeddy, showExp, sel, mlosByDay){
   });
 }
 
+/* Anello di occupazione sulla cella Date della Sell Strategy.
+   Scala continua rosso -> ambra -> verde: rosso = poco venduto (spingi),
+   verde = quasi pieno. Nessuno sfondo, solo il contorno. */
+function _occRingColor(occ){
+  const t = Math.max(0, Math.min(1, occ));
+  const stops = [
+    [0.00, [192,  57,  43]],   // rosso
+    [0.45, [214, 140,  45]],   // arancio
+    [0.70, [206, 178,  54]],   // giallo
+    [1.00, [ 44, 122,  75]],   // verde
+  ];
+  for (let i=0; i<stops.length-1; i++){
+    const [p0,c0] = stops[i], [p1,c1] = stops[i+1];
+    if (t <= p1){
+      const f = (p1===p0) ? 0 : (t-p0)/(p1-p0);
+      const c = c0.map((v,j)=> Math.round(v + (c1[j]-v)*f));
+      return `rgb(${c[0]},${c[1]},${c[2]})`;
+    }
+  }
+  return 'rgb(44,122,75)';
+}
 function renderSellStrategy(sel){
   // Salva lo scroll orizzontale del wrap trasposto prima di ricostruire, così l'utente
   // resta nella stessa posizione (es. agosto) dopo un accept/override invece di tornare a oggi.
@@ -13369,27 +13390,20 @@ function renderSellStrategy(sel){
       }
       return cells;
     })();
-    // Sfondo delle 3 celle Date/DoW/Event: NON più pressione di ricerca Expedia,
-    // ma OCCUPAZIONE del giorno (richiesta utente). Verde = ancora da vendere,
-    // arancione = si sta riempiendo, rosso = quasi pieno.
+    // Date/DoW/Event: nessuno sfondo colorato (illeggibile). L'occupazione del
+    // giorno si legge SOLO dal contorno della cella Date: rosso = occupazione
+    // bassa (da spingere), verde = occupazione alta.
     let _rowBgStyle = '';
     const _occRow = (r.curOcc != null && isFinite(r.curOcc)) ? r.curOcc : null;
-    if (_occRow != null){
-      let _rgb;
-      if (_occRow >= 0.90)      _rgb = '168,59,59';    // >=90% quasi sold-out
-      else if (_occRow >= 0.75) _rgb = '196,131,59';   // 75-90% si sta chiudendo
-      else if (_occRow >= 0.50) _rgb = '196,164,59';   // 50-75% a metà
-      else                      _rgb = '74,124,89';    // <50% da spingere
-      const _alpha = (0.10 + Math.min(1, _occRow) * 0.24).toFixed(3);
-      _rowBgStyle = `background:rgba(${_rgb},${_alpha})`;
-    }
+    const _occRing = (_occRow != null && typeof _occRingColor === 'function')
+      ? ` style="box-shadow:inset 0 0 0 2px ${_occRingColor(_occRow)}"` : '';
     const _trStyle = '';
     const _searchTipVal = (function(){
       try {
         const _occTxt = (_occRow != null) ? `OCC ${(Math.round(_occRow*1000)/10).toFixed(1)}% on this night` : 'OCC not available';
         const _expRow = (typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
         const sc = (_expRow && _expRow.searchCurrent != null) ? Math.round(_expRow.searchCurrent) : null;
-        let _t = _occTxt + ' — the tint of these 3 cells follows occupancy (green = still to sell, red = nearly full)';
+        let _t = _occTxt + ' — the ring around the date follows occupancy: red = low (push it), green = nearly full';
         if (sc != null){
           const lvl = expDemandLevel(sc);
           _t += ` · Expedia search pressure: ${sc.toLocaleString('en-GB')} searches${lvl ? ' · ' + lvl.label : ''}`;
@@ -13523,9 +13537,9 @@ function renderSellStrategy(sel){
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
     html += `<tr${_searchTipVal}>
-      <td class="cell-mono"${_bgInline}>${_pk7Flag(r.ymd)}${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
+      <td class="cell-mono sell-date-cell"${_occRing}>${_pk7Flag(r.ymd)}${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
       <td${_dowInline}>${dowIT[r.dow]}</td>
-      <td class="sell-ev-col"${_bgInline}>${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
+      <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
       <!-- OTB -->
       <td class="cell-mono ${rnCmpCls} sell-grp-otb-cell">${r.curRn>0?`<span class="sell-pickup-link" data-row="${i}" data-kind="otb" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">${r.curRn}</span>`:r.curRn}</td>
       <td class="cell-mono">${fmtPct(r.curOcc,0)}</td>
