@@ -20568,7 +20568,7 @@ const BIG_CARD_THEMES = {
   rate:   {accent:'#8e5fa8', bg:'linear-gradient(135deg,#f6f0fa,#e9dcf2)', ink:'#5a3a7a', icon:'🏷️'},
   occpk:  {accent:'#1f8a8a', bg:'linear-gradient(135deg,#ebf7f7,#d4eded)', ink:'#155e5e', icon:'🛏️'}
 };
-const BIG_HERO_ICONS = ['⚡','💶','🎯','📊','🏷️','🏆'];
+const BIG_HERO_ICONS = ['⚡','💶','🎯','📊','🏷️'];   // trofeo rimosso con la tile Compset rank
 function _bigProvLabel(p){ return (p==='Non Specificato' ? 'Sito web' : p); }
 let BIG_SELECTED_DAY = null;   // ymd (number) del giorno cliccato nel grafico; null = ultimo giorno
 function _bigPickupTreeForDay(sel, dayYmd){
@@ -20940,26 +20940,29 @@ function renderBigPicture(){
     const pctTxt = (pct==null) ? '' : ` ${arrow}${Math.abs(pct).toFixed(0)}%`;
     return `STLY ${fmt(prev)}<span style="color:${col}">${pctTxt}</span>`;
   };
-  // % achievement del mese in corso: OTB / Month-1st snapshot forecast
+  // % achievement del mese in corso: OTB / forecast LIVE del mese.
+  // Lo snapshot del 1° del mese non esiste piu': il metro e' il forecast corrente.
   let _achPct = null, _achTip = '';
   try {
     const _ymNow = TODAY.getFullYear()*100 + (TODAY.getMonth()+1);
     const _Af = (typeof aggForecast==='function') ? aggForecast(sel) : null;
     const _mNow = (_Af && _Af.monthly) ? _Af.monthly[_ymNow] : null;
     if (_mNow){
-      const _snap = (typeof fp_getFcstSnapshot==='function') ? fp_getFcstSnapshot(sel, _ymNow) : null;
-      const _den = (_snap && _snap.fcstRev>0) ? _snap.fcstRev : (_mNow.fcstRev||0);
-      if (_den>0){ _achPct = (_mNow.otbRev||0)/_den; _achTip = `OTB ${fmtEUR(_mNow.otbRev||0)} / ${(_snap&&_snap.fcstRev>0)?'Month-1st snapshot':'live forecast (no snapshot)'} ${fmtEUR(_den)} = ${(_achPct*100).toFixed(1)}%`; }
+      const _den = _mNow.fcstRev || 0;
+      if (_den>0){
+        _achPct = (_mNow.otbRev||0)/_den;
+        _achTip = `OTB ${fmtEUR(_mNow.otbRev||0)} / forecast of the month ${fmtEUR(_den)} = ${(_achPct*100).toFixed(1)}%`
+                + `\nHow much of what the month is expected to close at is already on the books.`;
+      }
     }
   } catch(e){}
   const heroItems = [
     {label:`Pickup (${winLbl})`, val:`+${agg.totRn} RN`, sub: _stly(pkVs.cur, pkVs.ly, (x)=>`${x} RN`), byProp: isBoth?'pickup':null, tip: _pkTip},
     revOtb!=null ? {label:'Revenue 2026 (OTB)', val: fmtEUR(revOtb), sub:_stly(revOtb, revP, fmtEUR), byProp: isBoth?'revenue':null} : null,
-    _achPct!=null ? {label:'Achievement (curr. mo.)', val: fmtPct(_achPct,0), sub:'OTB vs Fcst snapshot', tip:_achTip} : null,
+    _achPct!=null ? {label:'Achievement (curr. mo.)', val: fmtPct(_achPct,0), sub:'OTB vs forecast', tip:_achTip} : null,
     occYear!=null ? {label:'OCC 2026', val: fmtPct(occYear,1), sub:_stly(occYear, occP, (x)=>fmtPct(x,1)), byProp: isBoth?'occ':null} : null,
-    (adrYear!=null && isFinite(adrYear)) ? {label:'ADR 2026', val: fmtEUR(adrYear), sub:_stly(adrYear, (isFinite(adrP)?adrP:null), fmtEUR), byProp: isBoth?'adr':null} : null,
-    rank ? {label:'Compset rank (7d)', val:`${rank.rank}\u00b0 / ${rank.total}`, byProp: isBoth?'rate':null} : null
-  ].filter(Boolean);
+    (adrYear!=null && isFinite(adrYear)) ? {label:'ADR 2026', val: fmtEUR(adrYear), sub:_stly(adrYear, (isFinite(adrP)?adrP:null), fmtEUR), byProp: isBoth?'adr':null} : null
+  ].filter(Boolean);   // Compset rank rimossa su richiesta: sta nel Rate Shopper
   const heroEl = document.getElementById('big-hero');
   // Font-size auto-shrink: numeri lunghi (es. €330,202) non devono essere tagliati dalla card.
   const _hvCls = (v)=>{

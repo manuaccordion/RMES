@@ -2381,33 +2381,52 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p><b>Top KPIs</b>: YTD + Forecast Revenue, Final LY 2025 reference, Δ vs Final LY, OTB already acquired.</p>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">How the forecast is built</h4>
-        <p style="margin:0 0 10px 0">In one sentence: <b>for every single night we take the rooms already sold and add the rooms we can still expect to sell, based on how nights just like that one behaved in the past.</b> The month is the sum of its nights. Nights already gone are actuals — no estimate.</p>
+        <p style="margin:0 0 10px 0">In one sentence: <b>for every single night we take the rooms already sold, subtract the ones that will cancel, and add the rooms we can still expect to sell &mdash; based on how nights just like that one behaved in the past.</b> The month is the sum of its nights. Nights already gone are actuals, not estimates.</p>
+        <p style="margin:0 0 10px 0">Everything below is computed <b>per night and per room type</b>. Take Saturday 12 September, the Deluxe rooms: today is 1 August, so that night is <b>42 days away</b>. Here is what happens, in order.</p>
 
-        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Part 1 — how many rooms (RN)</p>
-        <p style="margin:0 0 6px 0">Take a night we want to forecast, say <i>Saturday 12 September</i>, and a room type, say the Deluxe. Today is 1 August, so that night is <b>42 days away</b>.</p>
-        <ol style="margin:6px 0 10px 20px">
-          <li><b>What is already sold</b> for that night, that room type. Suppose 0 rooms.</li>
-          <li><b>Look for comparable nights</b> in the past — and comparable means two things: the <b>same day of the week</b> (Saturday, because a Saturday behaves nothing like a Tuesday) and the <b>same distance from check-in</b> (42 days).</li>
-          <li><b>Two groups of comparable nights</b>: every Saturday of the <b>last 90 days</b>, and every Saturday of <b>September last year</b>.</li>
-          <li>On each of those nights, count <b>how many rooms had entered when there were still 42 days to go</b>. That is the pickup that is still ahead of us. Nights that sold nothing count as a zero — ignoring them would inflate the estimate.</li>
-          <li><b>Average</b> each group, then blend them. <b>The weight is a straight line that runs out at 90 days</b>:
-            <div style="margin:6px 0;padding:8px 12px;background:#f7f5ef;border-left:3px solid #c4823b;border-radius:0 4px 4px 0;font-family:'DM Mono',monospace;font-size:12px">weight of the recent group = 1 &minus; (days to check-in &divide; 90)&nbsp;&nbsp;<span style="opacity:.7">— never below 0</span><br>weight of last year's month = the remainder</div>
-            <table style="margin:6px 0 6px 0;font-family:'DM Mono',monospace;font-size:11.5px;border-collapse:collapse">
-              <tr style="background:#f2efe6"><th style="padding:3px 10px;text-align:left">days out</th><th style="padding:3px 10px">1</th><th style="padding:3px 10px">7</th><th style="padding:3px 10px">15</th><th style="padding:3px 10px">30</th><th style="padding:3px 10px">45</th><th style="padding:3px 10px">60</th><th style="padding:3px 10px">75</th><th style="padding:3px 10px">90+</th></tr>
-              <tr><td style="padding:3px 10px">last 90 days</td><td style="padding:3px 10px;text-align:center">99%</td><td style="padding:3px 10px;text-align:center">92%</td><td style="padding:3px 10px;text-align:center">83%</td><td style="padding:3px 10px;text-align:center">67%</td><td style="padding:3px 10px;text-align:center">50%</td><td style="padding:3px 10px;text-align:center">33%</td><td style="padding:3px 10px;text-align:center">17%</td><td style="padding:3px 10px;text-align:center">0%</td></tr>
-              <tr><td style="padding:3px 10px">same month LY</td><td style="padding:3px 10px;text-align:center">1%</td><td style="padding:3px 10px;text-align:center">8%</td><td style="padding:3px 10px;text-align:center">17%</td><td style="padding:3px 10px;text-align:center">33%</td><td style="padding:3px 10px;text-align:center">50%</td><td style="padding:3px 10px;text-align:center">67%</td><td style="padding:3px 10px;text-align:center">83%</td><td style="padding:3px 10px;text-align:center">100%</td></tr>
-            </table>
-            The two groups cross over at <b>45 days</b>. Why this shape: a week from check-in what fills the room is how the market is moving <i>right now</i>, and last September tells you nothing about it; four months out nobody is booking on today's momentum, what drives the night is the season, so only the same month last year is worth looking at. If one of the two groups has no usable nights at all, the other takes 100% of the weight.</li>
-          <li><b>Ceiling</b>: rooms already sold plus expected pickup never exceed <b>100% of that room type</b>, and never exceed <b>98% of the whole property</b> for that night. If the total would go over, the excess is trimmed proportionally across room types.</li>
-        </ol>
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Step 1 &mdash; what is already sold</p>
+        <p style="margin:0 0 10px 0">The rooms on the books for that exact date and room type. Nothing estimated here.</p>
 
-        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Part 2 — at what price (ADR)</p>
-        <p style="margin:0 0 6px 0">The expected rooms are valued at the price actually earned on the very same comparable nights, at the same distance from check-in. Not the rate on the shelf — what really landed in the till, net of discounts and channel mix.</p>
-        <p style="margin:0 0 6px 0">One correction applies. Nights from the last 90 days are already at today's prices, so they are used as they are. Nights from last year are a year old, so they are brought up to date with a <b>price index of the month</b>:</p>
-        <p style="margin:0 0 6px 0;padding:8px 12px;background:#f7f5ef;border-left:3px solid #c4823b;border-radius:0 4px 4px 0;font-family:'DM Mono',monospace;font-size:12px">price index = ADR already on the books for that month &nbsp;÷&nbsp; ADR that was on the books for the same month one year ago (STLY)</p>
-        <p style="margin:0 0 10px 0">Same month against itself, at the same point of the booking cycle: no season mismatch and no lead-time mismatch. Two safety rails, both explicit: <code>index = 1 + (raw &minus; 1) &times; weight</code> where <code>weight = min(1, smaller of the two night counts &divide; 30)</code>, and the result is then clipped to the <b>0.85–1.20</b> band. Example from Condotta: November came out raw at 0.693, but with only 11 nights on the thinner side the weight is 11/30 = 0.37, so the applied index is 1 + (0.693&minus;1)&times;0.37 = <b>0.887</b>. September came out raw at 1.292 with a full sample, so the weight is 1 and only the band bites: <b>1.200</b>. If a month has no STLY at all, the index is 1.00 and last year's ADR is used as it stands.</p>
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Step 2 &mdash; take out what will cancel</p>
+        <p style="margin:0 0 6px 0">Some of those bookings will not make it to check-in. The further away the night, the more of them drop. The engine measures this on your own history &mdash; of the rooms on the books when there were N days to go, how many actually arrived:</p>
+        <table style="margin:6px 0 8px 0;font-family:'DM Mono',monospace;font-size:11.5px;border-collapse:collapse">
+          <tr style="background:#f2efe6"><th style="padding:3px 10px;text-align:left">days to go</th><th style="padding:3px 10px">0</th><th style="padding:3px 10px">7</th><th style="padding:3px 10px">14</th><th style="padding:3px 10px">30</th><th style="padding:3px 10px">45</th><th style="padding:3px 10px">60</th><th style="padding:3px 10px">90</th></tr>
+          <tr><td style="padding:3px 10px">survive</td><td style="padding:3px 10px;text-align:center">99%</td><td style="padding:3px 10px;text-align:center">97%</td><td style="padding:3px 10px;text-align:center">93%</td><td style="padding:3px 10px;text-align:center">90%</td><td style="padding:3px 10px;text-align:center">86%</td><td style="padding:3px 10px;text-align:center">83%</td><td style="padding:3px 10px;text-align:center">79%</td></tr>
+        </table>
+        <p style="margin:0 0 10px 0">The curve is built per property, only where there are at least 50 observations, and it can never go up as the night gets further away. Without this step the forecast would count rooms that are already lost.</p>
 
-        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">The whole thing on one real night</p>
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Step 3 &mdash; find comparable nights</p>
+        <p style="margin:0 0 6px 0">Comparable means two things at once: the <b>same day of the week</b> (a Saturday behaves nothing like a Tuesday) and the <b>same distance from check-in</b>. Two groups are collected:</p>
+        <ul style="margin:6px 0 6px 18px">
+          <li><b>Recent</b> &mdash; every Saturday of the last 90 closed days.</li>
+          <li><b>Last year</b> &mdash; every Saturday of September last year.</li>
+        </ul>
+        <p style="margin:0 0 10px 0">On each of those nights the engine counts <b>how many rooms had entered when there were still 42 days to go</b> &mdash; that is exactly the pickup still ahead of us. Nights that sold nothing count as a zero: skipping them would inflate the estimate. Then it averages each group.</p>
+
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Step 4 &mdash; weigh the two groups by distance</p>
+        <div style="margin:4px 0 6px 0;padding:8px 12px;background:#f7f5ef;border-left:3px solid #c4823b;border-radius:0 4px 4px 0;font-family:'DM Mono',monospace;font-size:12px">weight of the recent group = 1 &minus; (days to check-in &divide; 90)&nbsp;&nbsp;<span style="opacity:.7">— never below 0</span><br>weight of last year's group = the remainder</div>
+        <table style="margin:6px 0 6px 0;font-family:'DM Mono',monospace;font-size:11.5px;border-collapse:collapse">
+          <tr style="background:#f2efe6"><th style="padding:3px 10px;text-align:left">days out</th><th style="padding:3px 10px">1</th><th style="padding:3px 10px">7</th><th style="padding:3px 10px">15</th><th style="padding:3px 10px">30</th><th style="padding:3px 10px">45</th><th style="padding:3px 10px">60</th><th style="padding:3px 10px">75</th><th style="padding:3px 10px">90+</th></tr>
+          <tr><td style="padding:3px 10px">recent</td><td style="padding:3px 10px;text-align:center">99%</td><td style="padding:3px 10px;text-align:center">92%</td><td style="padding:3px 10px;text-align:center">83%</td><td style="padding:3px 10px;text-align:center">67%</td><td style="padding:3px 10px;text-align:center">50%</td><td style="padding:3px 10px;text-align:center">33%</td><td style="padding:3px 10px;text-align:center">17%</td><td style="padding:3px 10px;text-align:center">0%</td></tr>
+          <tr><td style="padding:3px 10px">last year</td><td style="padding:3px 10px;text-align:center">1%</td><td style="padding:3px 10px;text-align:center">8%</td><td style="padding:3px 10px;text-align:center">17%</td><td style="padding:3px 10px;text-align:center">33%</td><td style="padding:3px 10px;text-align:center">50%</td><td style="padding:3px 10px;text-align:center">67%</td><td style="padding:3px 10px;text-align:center">83%</td><td style="padding:3px 10px;text-align:center">100%</td></tr>
+        </table>
+        <p style="margin:0 0 10px 0">They cross over at <b>45 days</b>. The reason: a week from check-in what fills the room is how the market is moving <i>right now</i>, and last September says nothing about it; four months out nobody books on today's momentum, the season is what drives the night, so only the same month last year is worth looking at. If one group has no usable nights, the other takes 100%.</p>
+
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Step 5 &mdash; bring last year up to today's size</p>
+        <p style="margin:0 0 6px 0">Last year's group describes a property that was smaller than it is now. It gets scaled by a <b>growth factor</b>: the <i>median</i> of the month-on-month year-over-year ratios across the 12 closed months, ignoring any month whose base year was below 30% occupancy (start-up ramp), and kept between 0.85 and 1.30.</p>
+        <p style="margin:0 0 6px 0;padding:8px 12px;background:#fbfaf6;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;font-size:11.5px">Firenze 1.107 &middot; Condotta 1.174 &middot; Alfani 1.263 &middot; Enis Guesthouse 1.048</p>
+        <p style="margin:0 0 10px 0">The median, and the 30% filter, are there on purpose: a plain average over the last 12 months would read a property's opening ramp as growth and repeat it forever. The recent group is <b>not</b> scaled &mdash; it is already at today's level.</p>
+
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Step 6 &mdash; respect the ceilings</p>
+        <p style="margin:0 0 10px 0">Two limits, applied in this order: rooms sold plus expected pickup never exceed <b>100% of that room type</b>, and the whole property never exceeds <b>98% of its rooms</b> for that night. If the total would go over, the excess is trimmed proportionally across room types &mdash; so the base rate type can go above its own inventory (it absorbs demand from the others) as long as the property stays feasible.</p>
+
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Step 7 &mdash; put a price on it</p>
+        <p style="margin:0 0 6px 0">The expected rooms are valued at the ADR <b>actually earned</b> on those same comparable nights, at the same distance from check-in. Not the rate on the shelf &mdash; what really landed in the till, net of discounts and channel mix.</p>
+        <p style="margin:0 0 6px 0">The recent nights are already at today's prices and are used as they are. Last year's nights are a year old and are brought up to date with the <b>price index of the month</b>:</p>
+        <div style="margin:4px 0 6px 0;padding:8px 12px;background:#f7f5ef;border-left:3px solid #c4823b;border-radius:0 4px 4px 0;font-family:'DM Mono',monospace;font-size:12px">raw index = ADR already on the books for that month &divide; ADR that was on the books for the same month a year ago (STLY)<br>applied index = 1 + (raw &minus; 1) &times; min(1, nights &divide; 30)&nbsp;&nbsp;then clipped to <b>0.85 &ndash; 1.20</b></div>
+        <p style="margin:0 0 10px 0">Same month against itself, at the same point of the booking cycle: no season mismatch, no lead-time mismatch. The two rails matter. Condotta's November came out raw at 0.693, but with only 11 nights on the thinner side the weight is 11/30 = 0.37, so the applied index is 1 + (0.693&minus;1)&times;0.37 = <b>0.887</b>. September came out raw at 1.292 with a full sample, so only the band bit: <b>1.200</b>. The final ADR is the same weighted blend as step 4, applied to the two prices.</p>
+
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">The whole thing on one real night</p>
         <div style="margin:4px 0 12px 0;padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.7">
           Firenze &middot; Saturday 12/09/2026 &middot; Camera Matrimoniale Deluxe &middot; 42 days out<br>
           <span style="opacity:.65">weight</span> &nbsp;= 1 &minus; 42/90 = <b>0.533</b> &rarr; recent 53.3% &middot; last year 46.7%<br>
@@ -2418,11 +2437,22 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <b>ADR</b> = 0.533&times;248 + 0.467&times;(243&times;1.143=278) = <b>&euro;262</b><br>
           <span style="opacity:.65">already sold that night: 0 RN &rarr; forecast 2.483 RN &middot; &euro;651</span>
         </div>
-        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Reading it well</p>
+
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">How accurate is it, honestly</p>
+        <p style="margin:0 0 6px 0">Measured by replaying the engine at past dates and comparing with what actually happened (8 starting points, 140 month forecasts):</p>
+        <table style="margin:6px 0 8px 0;font-family:'DM Mono',monospace;font-size:11.5px;border-collapse:collapse">
+          <tr style="background:#f2efe6"><th style="padding:3px 12px;text-align:left">horizon</th><th style="padding:3px 12px">typical error</th></tr>
+          <tr><td style="padding:3px 12px">current month</td><td style="padding:3px 12px;text-align:center">6&ndash;9%</td></tr>
+          <tr><td style="padding:3px 12px">next month</td><td style="padding:3px 12px;text-align:center">10&ndash;15%</td></tr>
+          <tr><td style="padding:3px 12px">+2 months</td><td style="padding:3px 12px;text-align:center">9&ndash;13%</td></tr>
+          <tr><td style="padding:3px 12px">+3 months and beyond</td><td style="padding:3px 12px;text-align:center">15&ndash;23%</td></tr>
+        </table>
+        <p style="margin:0 0 10px 0">Overall 13.7%, against 17.9% for simply repeating last year's close. The engine is <b>not biased</b> &mdash; it is within &plusmn;2% of the truth on average, it just scatters. With 8 rooms a single 4-night booking moves a month by a point and a half, and three months out the sample is 4&ndash;5 comparable nights: that scatter is the data, not a setting. <b>Read the current month as a number and anything past +2 months as a direction.</b></p>
+
+        <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Two things to keep in mind</p>
         <ul style="margin:6px 0 10px 18px">
-          <li><b>Near months are solid, far months are a direction.</b> Close to check-in the sample is 16–17 comparable nights. Beyond 90 days only the same weekday of the same month last year survives, so 4–5 nights: read October onwards as a trend, not as a figure.</li>
           <li><b>The forecast can sit below last year</b>, and that is the point: it follows the actual pace instead of assuming last year repeats.</li>
-          <li>If a month has <i>Force OCC to budget</i> switched on, that setting wins and the target comes from the budget instead of the pickup history.</li>
+          <li>If a month has <i>Force OCC to budget</i> switched on, that setting wins over everything above and the target comes from the budget.</li>
         </ul>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Monthly KPI table — column by column</h4>
