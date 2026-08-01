@@ -16378,8 +16378,12 @@ function fcstAdrGrowth(structKey){
         campione e sullo stesso anticipo (nessun cap sul prezzo).
    Il forecast del mese e' la somma dei forecast giornalieri.
    =========================================================================== */
-const FCST_LEAD_SEASON_SWITCH = 60;   // oltre questo anticipo: solo stesso mese LY
-const FCST_MAX_OCC = 0.98;            // tetto di occupazione giornaliera
+const FCST_LEAD_RAMP = 90;            // a 90gg di anticipo il campione recente pesa 0
+const FCST_MAX_OCC_RT = 1.00;         // tetto per singola tipologia (base e derivate)
+const FCST_MAX_OCC = 0.98;            // tetto sul totale struttura
+const FCST_PRICE_IDX_FULL = 30;       // notti oltre le quali l'indice prezzo pesa 100%
+const FCST_PRICE_IDX_MIN = 0.85;      // banda di sicurezza dell'indice prezzo
+const FCST_PRICE_IDX_MAX = 1.20;
 let _FCST_DAY_IDX = {};
 function fcstDayIndex(sel){
   if (_FCST_DAY_IDX[sel]) return _FCST_DAY_IDX[sel];
@@ -16433,32 +16437,131 @@ function _fcstUpToLead(D, lead){
   if (ans < 0) return { rn: 0, rev: 0 };
   return { rn: ans+1, rev: D.cum[ans] };
 }
-function fcstSampleDates(stayYmd, lead){
+function fcstSampleDates(stayYmd){
   const d = ymdToDate(stayYmd), dow = d.getDay();
-  const out = [];
   const today0 = startOfDay(new Date(TODAY));
-  if (lead <= FCST_LEAD_SEASON_SWITCH){
-    for (let i=1; i<=90; i++){ const x = addDays(today0, -i); if (x.getDay() === dow) out.push(ymd(x)); }
-  }
+  const recent = [], lastYear = [];
+  for (let i=1; i<=90; i++){ const x = addDays(today0, -i); if (x.getDay() === dow) recent.push(ymd(x)); }
   const y0 = d.getFullYear() - 1, mo = d.getMonth();
   const last = new Date(y0, mo+1, 0).getDate();
-  for (let dd=1; dd<=last; dd++){ const x = new Date(y0, mo, dd); if (x.getDay() === dow) out.push(ymd(x)); }
-  return out;
+  for (let dd=1; dd<=last; dd++){ const x = new Date(y0, mo, dd); if (x.getDay() === dow) lastYear.push(ymd(x)); }
+  return { recent, lastYear };
 }
-function fcstPickupForDay(idx, rt, stayYmd, lead){
-  const R = idx.byRt[rt] || {};
-  let sumRn = 0, sumRev = 0, nObs = 0;
-  const dates = fcstSampleDates(stayYmd, lead);
+function _fcstGroupStat(R, idx, dates, lead){
+  let rn = 0, rev = 0, n = 0;
   for (let i=0; i<dates.length; i++){
     const sd = dates[i];
     if (sd < idx.minStay || sd >= TODAY_YMD) continue;   // solo notti chiuse, struttura gia operativa
-    nObs++;
+    n++;
     const D = R[sd];
     if (!D) continue;                                     // notte a zero = osservazione valida
     const c = _fcstUpToLead(D, lead);
-    sumRn += c.rn; sumRev += c.rev;
+    rn += c.rn; rev += c.rev;
   }
-  return { pkRn: nObs > 0 ? sumRn/nObs : 0, pkAdr: sumRn > 0 ? sumRev/sumRn : 0, nObs };
+  return { mean: n > 0 ? rn/n : null, adr: rn > 0 ? rev/rn : null, n };
+}
+/* Peso del campione RECENTE in funzione dell'anticipo: 100% a ridosso del
+   check-in (conta come si sta muovendo il mercato adesso), 0% a 90 giorni
+   (conta la stagionalita', quindi lo stesso mese dell'anno scorso). */
+function fcstRecentWeight(lead){
+  return Math.max(0, Math.min(1, 1 - lead / FCST_LEAD_RAMP));
+}
+function fcstPickupForDay(idx, rt, stayYmd, lead, priceIdx){
+  const R = idx.byRt[rt] || {};
+  const g = fcstSampleDates(stayYmd);
+  const A = _fcstGroupStat(R, idx, g.recent,   lead);   // ultimi 90 giorni, stesso DoW
+  const B = _fcstGroupStat(R, idx, g.lastYear, lead);   // stesso mese LY, stesso DoW
+  let w = fcstRecentWeight(lead);
+  if (A.mean === null) w = 0;
+  if (B.mean === null) w = 1;
+  const pkRn = (A.mean === null && B.mean === null) ? 0 : (w*(A.mean||0) + (1-w)*(B.mean||0));
+  // ADR: le osservazioni recenti sono gia ai prezzi di oggi; quelle dell'anno
+  // scorso vanno riportate a oggi con l'indice prezzo del mese.
+  const pi = (priceIdx != null && isFinite(priceIdx) && priceIdx > 0) ? priceIdx : 1;
+  const adrRec = A.adr;
+  const adrLy  = (B.adr != null) ? B.adr * pi : null;
+  let pkAdr;
+  if (adrRec != null && adrLy != null) pkAdr = w*adrRec + (1-w)*adrLy;
+  else pkAdr = (adrRec != null) ? adrRec : (adrLy != null ? adrLy : 0);
+  return { pkRn, pkAdr, nObs: A.n + B.n, nRecent: A.n, nLy: B.n, wRecent: w };
+}
+/* Indice prezzo del mese: confronta l'ADR gia a libro per quel mese con l'ADR
+   che era a libro per lo stesso mese un anno fa, allo stesso punto del ciclo
+   di prenotazione (STLY = oggi-364). Stesso mese e stesso anticipo, quindi
+   niente distorsione stagionale. Con campioni piccoli si avvicina a 1 e resta
+   dentro una banda di sicurezza. */
+function fcstPriceIndexForMonth(m){
+  const adrOtb  = m.otbRn  > 0 ? m.otbRev/m.otbRn   : 0;
+  const adrStly = m.stlyRn > 0 ? m.stlyRev/m.stlyRn : 0;
+  if (!(adrOtb > 0) || !(adrStly > 0)) return { idx: 1, raw: null, n: 0, w: 0 };
+  const raw = adrOtb / adrStly;
+  const n = Math.min(m.otbRn, m.stlyRn);
+  const w = Math.max(0, Math.min(1, n / FCST_PRICE_IDX_FULL));
+  let idx = 1 + (raw - 1) * w;
+  idx = Math.max(FCST_PRICE_IDX_MIN, Math.min(FCST_PRICE_IDX_MAX, idx));
+  return { idx, raw, n, w };
+}
+/* Calcolo giornaliero del mese per TUTTE le room type insieme.
+   Serve perche' il cap non e' piu' per singola tipologia: la camera BASE di
+   tariffa non ha tetto sul proprio inventario (assorbe la domanda delle altre),
+   ma il totale della struttura non puo' superare il 98% delle camere di quella
+   notte. Senza questo vincolo si otterrebbero occupazioni oltre il 100%. */
+function _fcstMonthDaily(sel, m, inventory, rtList, baseRT, today0){
+  const idx = fcstDayIndex(sel);
+  const pi = fcstPriceIndexForMonth(m);
+  m.priceIndex = pi;
+  const totalRooms = rtList.reduce((a,rt)=> a + (inventory[rt]||0), 0);
+  const lyAdr = {};
+  const out = {};
+  for (const rt of rtList){
+    const d = m.byRt[rt];
+    lyAdr[rt] = (d && d.finalLyRn > 0) ? d.finalLyRev/d.finalLyRn : 0;
+    out[rt] = { fcstRn:0, fcstRev:0, pkRn:0, pkRev:0, capHits:0, minObs:Infinity, daysFuture:0 };
+  }
+  for (let dd = 1; dd <= m.days; dd++){
+    const k = m.y*10000 + m.mo*100 + dd;
+    const lead = Math.round((ymdToDate(k) - today0) / 86400000);
+    const otbRn = {}, otbRev = {};
+    for (const rt of rtList){
+      const D = (idx.byRt[rt] || {})[k];
+      otbRn[rt]  = D ? D.rn  : 0;
+      otbRev[rt] = D ? D.rev : 0;
+    }
+    if (lead <= 0){
+      for (const rt of rtList){ out[rt].fcstRn += otbRn[rt]; out[rt].fcstRev += otbRev[rt]; }
+      continue;
+    }
+    const pk = {}, adr = {};
+    for (const rt of rtList){
+      const est = fcstPickupForDay(idx, rt, k, lead, pi.idx);
+      let p = est.pkRn;
+      // Cap 100% sul proprio inventario, per OGNI tipologia (base e derivate).
+      const left = Math.max(0, inventory[rt]*FCST_MAX_OCC_RT - otbRn[rt]);
+      if (p > left){ p = left; out[rt].capHits++; }
+      pk[rt] = p;
+      adr[rt] = (est.pkAdr > 0) ? est.pkAdr : (lyAdr[rt] > 0 ? lyAdr[rt] : (otbRn[rt] > 0 ? otbRev[rt]/otbRn[rt] : 0));
+      out[rt].daysFuture++;
+      if (est.nObs < out[rt].minObs) out[rt].minObs = est.nObs;
+    }
+    // Vincolo di struttura: il totale della notte non supera il 98% delle camere.
+    // Se sfora, il taglio viene ripartito in proporzione al pickup di ogni tipologia.
+    {
+      let totOtb = 0, totPk = 0;
+      for (const rt of rtList){ totOtb += otbRn[rt]; totPk += pk[rt]; }
+      const leftProp = Math.max(0, totalRooms*FCST_MAX_OCC - totOtb);
+      if (totPk > leftProp && totPk > 0){
+        const f = leftProp / totPk;
+        for (const rt of rtList){ if (pk[rt] > 0){ pk[rt] *= f; out[rt].capHits++; } }
+      }
+    }
+    for (const rt of rtList){
+      out[rt].fcstRn  += otbRn[rt] + pk[rt];
+      out[rt].fcstRev += otbRev[rt] + pk[rt]*adr[rt];
+      out[rt].pkRn    += pk[rt];
+      out[rt].pkRev   += pk[rt]*adr[rt];
+    }
+  }
+  return out;
 }
 let _FORECAST_CACHE = {};
 function aggForecast(structKey){
@@ -16790,6 +16893,9 @@ function _aggForecastImpl(structKey){
         }
       }
     }
+    const _dailyFcst = (monthState !== 'PAST' && occOverrideShare === null)
+      ? _fcstMonthDaily(sel, m, inventory, rtList, baseRT, today0)
+      : null;
     for (const rt of rtList){
       const rtData = m.byRt[rt];
       const cap = inventory[rt] * m.days;
@@ -16820,42 +16926,22 @@ function _aggForecastImpl(structKey){
         fcstRev = rtData.otbRev + pickupRn * pickupAdr;
         fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
       } else {
-        // === MODELLO GIORNALIERO: OTB del giorno + pickup atteso per DoW/anticipo ===
-        const idx = fcstDayIndex(sel);
-        const R = idx.byRt[rt] || {};
-        let dRn = 0, dRev = 0, pkTotRn = 0, pkTotRev = 0;
-        let capHits = 0, obsMin = Infinity, daysFuture = 0;
-        for (let dd = 1; dd <= m.days; dd++){
-          const k = m.y*10000 + m.mo*100 + dd;
-          const D = R[k];
-          const otbRnD  = D ? D.rn  : 0;
-          const otbRevD = D ? D.rev : 0;
-          const lead = Math.round((ymdToDate(k) - today0) / 86400000);
-          if (lead <= 0){                       // notte gia passata (o oggi): actuals
-            dRn += otbRnD; dRev += otbRevD;
-            continue;
-          }
-          daysFuture++;
-          const est = fcstPickupForDay(idx, rt, k, lead);
-          let pk = est.pkRn;
-          const roomLeft = Math.max(0, inventory[rt] * FCST_MAX_OCC - otbRnD);
-          if (pk > roomLeft){ pk = roomLeft; capHits++; }
-          let adr = est.pkAdr;
-          if (!(adr > 0)) adr = finalLyAdr > 0 ? finalLyAdr : (otbRnD > 0 ? otbRevD/otbRnD : 0);
-          dRn  += otbRnD + pk;
-          dRev += otbRevD + pk * adr;
-          pkTotRn += pk; pkTotRev += pk * adr;
-          if (est.nObs < obsMin) obsMin = est.nObs;
+        // === MODELLO GIORNALIERO (calcolato una volta per tutte le RT del mese) ===
+        const D = _dailyFcst ? _dailyFcst[rt] : null;
+        if (D){
+          fcstRn  = Math.round(D.fcstRn);
+          fcstRev = D.fcstRev;
+          fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
+          rtData.pickupExpectedRn  = D.pkRn;
+          rtData.pickupAdr         = D.pkRn > 0 ? D.pkRev/D.pkRn : 0;
+          rtData.pickupAdrSource   = 'daily_pickup';
+          rtData._capHits    = D.capHits;
+          rtData._minObs     = isFinite(D.minObs) ? D.minObs : 0;
+          rtData._daysFuture = D.daysFuture;
+        } else {
+          fcstRn = rtData.otbRn; fcstRev = rtData.otbRev;
+          fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
         }
-        fcstRn = Math.round(dRn);
-        fcstRev = dRev;
-        fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
-        rtData.pickupExpectedRn = pkTotRn;
-        rtData.pickupAdr = pkTotRn > 0 ? pkTotRev/pkTotRn : 0;
-        rtData.pickupAdrSource = 'daily_pickup';
-        rtData._capHits = capHits;
-        rtData._minObs = isFinite(obsMin) ? obsMin : 0;
-        rtData._daysFuture = daysFuture;
       }
       rtData.forecastRn = fcstRn;
       rtData.forecastRev = fcstRev;
@@ -17094,7 +17180,6 @@ function renderForecast(sel){
         <th colspan="3" class="g-25" style="background:rgba(142,95,168,.05);text-align:center" title="Same Time Last Year — what was already on the books exactly 364 days ago for this stay month (only bookings acquired by today−364).">STLY (−364d)</th>
         <th colspan="3" class="g-25" style="background:rgba(142,95,168,.10);text-align:center">Final LY 2025</th>
         <th colspan="3" class="g-26" style="background:rgba(195,131,59,.10);text-align:center" title="Past months: actuals. Current month: actuals up to yesterday + forecast from today to month-end. Future months: forecast.">YTD + Forecast (live)</th>
-        <th colspan="2" class="g-26" style="background:rgba(59,107,154,.08);text-align:center" title="Forecast saved (frozen) on the 1st day of the month. The Δ% compares the initial snapshot with the actual OTB: for past months = actual close, for the current month = OTB accumulating. Measures how well the initial forecast matches the actual close. Only for months still futuri il confronto è col forecast live.">Month-1st snapshot</th>
         <th colspan="3" class="g-25" style="background:rgba(60,124,90,.08);text-align:center">Budget</th>
         <th colspan="1" class="g-kpi" style="background:rgba(91,138,118,.10);text-align:center;border-left:2.5px solid #5b8a76">Achievement</th>
       </tr>
@@ -17103,8 +17188,6 @@ function renderForecast(sel){
         <th style="background:rgba(142,95,168,.03)">OCC%</th><th style="background:rgba(142,95,168,.03)">ADR</th><th style="background:rgba(142,95,168,.03)">Revenue</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
-        <th title="Revenue forecast saved on the 1st of the month">Rev snap</th>
-        <th title="Δ% live vs initial snapshot (positive = doing better than forecast at the start of the month)">Δ% vs snap</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
         <th title="Revenue OTB / Revenue Budget for the month.">vs Budget</th>
       </tr>
@@ -17145,31 +17228,6 @@ function renderForecast(sel){
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(m.occ,1)}</td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(m.adr)}</td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.fcstRev)}</b></td>
-      ${(() => {
-        const snap = m.snapshot || null;
-        if (!snap){
-          return `<td class="cell-mono cell-flat" style="background:rgba(59,107,154,.04);color:var(--ink-3);font-style:italic" title="No snapshot available. It will be created on the 1st of next month.">—</td>
-                  <td class="cell-mono cell-flat" style="background:rgba(59,107,154,.04);color:var(--ink-3)">—</td>`;
-        }
-        const snapDate = snap.savedAtYmd ? `${String(snap.savedAtYmd).slice(6,8)}/${String(snap.savedAtYmd).slice(4,6)}/${String(snap.savedAtYmd).slice(0,4)}` : '?';
-        const dPct = m.snapshotDeltaRevPct;
-        const dRev = m.snapshotDeltaRev;
-        let dCls = 'cell-flat';
-        if (dPct != null && isFinite(dPct)){
-          dCls = dPct >= 0.02 ? 'cell-pos' : (dPct <= -0.02 ? 'cell-neg' : 'cell-flat');
-        }
-        const dText = (dPct != null && isFinite(dPct))
-          ? `${dPct>=0?'+':''}${(dPct*100).toFixed(1)}%`
-          : '—';
-        const _cmpBase = m.snapshotCompareBase || ((m.monthState === 'FUTURE') ? 'forecast' : 'otb');
-        const _liveLbl = (_cmpBase === 'otb') ? 'actual OTB' : 'live forecast';
-        const _liveVal = (_cmpBase === 'otb') ? m.otbRev : m.fcstRev;
-        const dTip = (dRev != null && isFinite(dRev))
-          ? `Month-1st snapshot (${snapDate}): initial forecast €${snap.fcstRev.toFixed(0)} (${snap.fcstRn} RN). ${_liveLbl} now: €${Math.round(_liveVal)}. Δ ${dRev>=0?'+':''}€${Math.round(dRev)} (${dText}). ${_cmpBase==='otb' ? 'Measures how close the initial forecast is to the actual close.' : 'Future month: comparison with the live forecast.'}`
-          : `Snapshot del 1° del mese (${snapDate})`;
-        return `<td class="cell-mono cell-flat" style="background:rgba(59,107,154,.04);cursor:help" title="${dTip}">${fmtEUR(snap.fcstRev)}</td>
-                <td class="cell-mono ${dCls}" style="background:rgba(59,107,154,.04);cursor:help" title="${dTip}"><b>${dText}</b></td>`;
-      })()}
       ${(() => {
         const ymBud = m.y*100 + m.mo;
         const budRev = (typeof budgetMonthlyFor === 'function') ? budgetMonthlyFor(sel, ymBud, 'rev') : 0;
@@ -17250,8 +17308,6 @@ function renderForecast(sel){
     <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(fcstOcc,1)}</td>
     <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(fcstAdr)}</td>
     <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(totFcstRev)}</b></td>
-    <td class="cell-mono cell-flat" style="background:rgba(59,107,154,.04)" title="${totSnapAvail} months with snapshot available out of ${ymOrder.length}">${fmtEUR(totSnapRev)}</td>
-    <td class="cell-mono ${totSnapCls}" style="background:rgba(59,107,154,.04)" title="Δ live vs aggregate initial snapshot">${totSnapDelta != null ? '<b>'+(totSnapDelta>=0?'+':'')+(totSnapDelta*100).toFixed(1)+'%</b>' : '—'}</td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetOcc > 0 ? fmtPct(totBudgetOcc,1) : '—'}</td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetAdr > 0 ? fmtEUR(totBudgetAdr) : '—'}</td>
     <td class="cell-mono ${totBudgetRevCls}" style="background:rgba(60,124,90,.04)" title="${totBudgetRevTip}"><b>${totBudgetRev > 0 ? fmtEUR(totBudgetRev) : '—'}</b></td>
@@ -17263,7 +17319,7 @@ function renderForecast(sel){
       '<table class="data mkpi-sticky-table" id="mkpi-table">' + head + '<tbody>' + body + '</tbody></table>' +
     '</div>';
   // === Grafico barre raggruppate per mese: SOLO Current OTB vs STLY (richiesta utente).
-  // Final LY e Month-1st snapshot restano nella tabella sotto. ===
+  // Final LY resta nella tabella sotto. ===
   (function(){
     const host = document.getElementById('fcst-chart-monthly');
     if (!host) return;

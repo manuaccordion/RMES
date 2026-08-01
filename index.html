@@ -2377,24 +2377,38 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p><b>Top KPIs</b>: YTD + Forecast Revenue, Final LY 2025 reference, Δ vs Final LY, OTB already acquired.</p>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">How the forecast is built</h4>
-        <p style="margin:0 0 6px 0">Past nights are actuals. For every <b>future night</b> and every <b>room type</b>:</p>
-        <ol style="margin:6px 0 6px 20px">
-          <li><b>Start from the OTB of that night</b> — the room nights already sold for that exact date.</li>
-          <li><b>Estimate the pickup still to come</b> by looking at comparable nights in history: same <b>day of the week</b>, same <b>lead time</b>. Example — for Monday 3 August with 2 days to go, it looks at every Monday in the sample and counts the room nights that entered in the last 2 days before check-in.</li>
-          <li><b>The sample</b> is: same day of the week in the <b>last 90 closed days</b> + same day of the week in the <b>same month last year</b>. Beyond <b>60 days of lead time</b> only the last-year month is used — the 90-day window would be a different season and would distort the estimate. Nights that sold nothing count as zero observations, they are not skipped.</li>
-          <li><b>Take the average</b> of those observations = expected pickup in room nights.</li>
-          <li><b>Cap</b>: OTB + pickup never exceeds <b>98% of the rooms</b> available that night.</li>
-          <li><b>Price</b>: the pickup is valued at the ADR actually earned on the same sample at the same lead time. No cap on the price.</li>
+        <p style="margin:0 0 10px 0">In one sentence: <b>for every single night we take the rooms already sold and add the rooms we can still expect to sell, based on how nights just like that one behaved in the past.</b> The month is the sum of its nights. Nights already gone are actuals — no estimate.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Part 1 — how many rooms (RN)</p>
+        <p style="margin:0 0 6px 0">Take a night we want to forecast, say <i>Saturday 12 September</i>, and a room type, say the Deluxe. Today is 1 August, so that night is <b>42 days away</b>.</p>
+        <ol style="margin:6px 0 10px 20px">
+          <li><b>What is already sold</b> for that night, that room type. Suppose 0 rooms.</li>
+          <li><b>Look for comparable nights</b> in the past — and comparable means two things: the <b>same day of the week</b> (Saturday, because a Saturday behaves nothing like a Tuesday) and the <b>same distance from check-in</b> (42 days).</li>
+          <li><b>Two groups of comparable nights</b>: every Saturday of the <b>last 90 days</b>, and every Saturday of <b>September last year</b>.</li>
+          <li>On each of those nights, count <b>how many rooms had entered when there were still 42 days to go</b>. That is the pickup that is still ahead of us. Nights that sold nothing count as a zero — ignoring them would inflate the estimate.</li>
+          <li><b>Average</b> each group, then blend them. <b>How much each group counts depends on the distance</b>: close to check-in the recent nights carry almost all the weight, because what matters is how the market is moving right now; far out they count for nothing and only last year's same month matters, because what drives a night four months away is the season. The switch is gradual, and by 90 days the recent group is out completely.</li>
+          <li><b>Ceiling</b>: rooms already sold plus expected pickup never exceed <b>100% of that room type</b>, and never exceed <b>98% of the whole property</b> for that night. If the total would go over, the excess is trimmed proportionally across room types.</li>
         </ol>
-        <p style="margin:0 0 6px 0">The month is simply the sum of its nights. If a month has <i>Force OCC to budget</i> switched on, that setting wins and the target comes from the budget instead.</p>
-        <p style="margin:0 0 6px 0"><i>Reading caution</i>: at long lead times the sample is thin (only the same weekday of the same month last year, so 4–5 observations), so months 3+ months out are more of a trend than a precise number.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Part 2 — at what price (ADR)</p>
+        <p style="margin:0 0 6px 0">The expected rooms are valued at the price actually earned on the very same comparable nights, at the same distance from check-in. Not the rate on the shelf — what really landed in the till, net of discounts and channel mix.</p>
+        <p style="margin:0 0 6px 0">One correction applies. Nights from the last 90 days are already at today's prices, so they are used as they are. Nights from last year are a year old, so they are brought up to date with a <b>price index of the month</b>:</p>
+        <p style="margin:0 0 6px 0;padding:8px 12px;background:#f7f5ef;border-left:3px solid #c4823b;border-radius:0 4px 4px 0;font-family:'DM Mono',monospace;font-size:12px">price index = ADR already on the books for that month &nbsp;÷&nbsp; ADR that was on the books for the same month one year ago (STLY)</p>
+        <p style="margin:0 0 10px 0">Same month against itself, at the same point of the booking cycle: no season mismatch and no lead-time mismatch. Two safety rails: with a thin sample the index is pulled towards 1.00 in proportion to how thin it is (full weight from 30 nights on both sides), and it is always kept inside the <b>0.85–1.20</b> band, so one odd month cannot flip the forecast. If a month has no STLY at all, the index is 1.00 and last year's ADR is used as it stands.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Reading it well</p>
+        <ul style="margin:6px 0 10px 18px">
+          <li><b>Near months are solid, far months are a direction.</b> Close to check-in the sample is 16–17 comparable nights. Beyond 90 days only the same weekday of the same month last year survives, so 4–5 nights: read October onwards as a trend, not as a figure.</li>
+          <li><b>The forecast can sit below last year</b>, and that is the point: it follows the actual pace instead of assuming last year repeats.</li>
+          <li>If a month has <i>Force OCC to budget</i> switched on, that setting wins and the target comes from the budget instead of the pickup history.</li>
+        </ul>
+
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Monthly KPI table — column by column</h4>
         <ul style="margin:6px 0 6px 18px">
           <li><b>Current OTB</b> — RN, OCC, ADR, Revenue already on the books for that month.</li>
           <li><b>STLY (−364d)</b> — what was on the books exactly 364 days ago for the same stay-month. Used to read the pace.</li>
           <li><b>Final LY 2025</b> — actual close last year (reference baseline for the forecast).</li>
           <li><b>YTD + Forecast (live)</b> — <b>past months</b> = actuals; <b>current month</b> = actuals up to yesterday + forecast for the rest; <b>future months</b> = forecast only.</li>
-          <li><b>Month-1st snapshot</b> — forecast frozen on day 1 of the month, with the live Δ% vs current forecast (how well the early forecast tracked).</li>
           <li><b>Budget</b> — budget OCC / ADR / Revenue from the budget files.</li>
           <li><b>Achievement · vs Budget</b> — Revenue OTB ÷ Revenue Budget for that month. ≥95% green, 70–95% neutral, &lt;70% red. Months with no budget loaded show “—”. The header says <i>Achievement</i> once, with <i>vs Budget</i> as the sub-label.</li>
           <li><b>Total row</b> — the last row of the table sums every visible month and stays <b>pinned to the bottom</b> while you scroll. OCC and ADR are recomputed on the totals (not averaged): OCC = total RN / total capacity, ADR = total revenue / total RN. Achievement on the total row is total Revenue OTB / total Revenue Budget.</li>
@@ -2437,7 +2451,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <p style="margin-top:10px"><b>Source / Channel</b> tables below: filter with the month pills above them — yearly view by default. <b>Source</b> = booking provenance (where the guest came from); <b>Channel</b> = direct booking channel (Booking, Beddy, Expedia, …).</p>
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Revenue by month · ADR &amp; OCC trend</h4>
-        <p style="margin:0 0 6px 0"><b>Revenue by month</b> compares two series only: <b>Current OTB</b> and <b>STLY</b>, so the pace reads cleanly. Final LY and the Month-1st snapshot are still in the table above, where you can line them up against the rest.</p>
+        <p style="margin:0 0 6px 0"><b>Revenue by month</b> compares two series only: <b>Current OTB</b> and <b>STLY</b>, so the pace reads cleanly. Final LY is still in the table above, where you can line it up against the rest.</p>
         <p style="margin:0 0 6px 0"><b>ADR Trend</b> and <b>OCC Trend by lead time</b> plot OTB, Forecast and STLY over the 60 days before check-in. The curves carry <b>no printed values</b>: hover anywhere on the chart and a vertical guide with a tooltip gives you the three exact numbers for that lead time. Both have their own check-in months filter.</p>
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Booking window charts (bottom of the tab)</h4>
         <p style="margin:0 0 6px 0">Two charts, both on a rolling window of the <b>12 closed months</b> ending with the last completed month, compared with the same 12 months a year earlier:</p>
