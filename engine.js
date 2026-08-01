@@ -12719,18 +12719,17 @@ function renderSellStrategy(sel){
     : 1 + (_showAllRT ? _nonBaseRTs.length : 0));
   let html = '<table class="data sell-table"><thead>'
     + '<tr class="sell-thead-groups">'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-last" title="Last update — the price currently active for this stay-date. Click any cell to edit (single day) or right-click two cells for a range. Highlighted with gradient.">Last update<br><span class="sell-th-sub">active price</span></th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-rmes-today" title="RMES — today\'s pricing engine suggestion. Click the cell for the calculation detail. The ✓ button accepts this price as the new Last update.">RMES<br><span class="sell-th-sub">price · Δ€ · ✓ accept</span></th>'
     + '<th rowspan="2">Date</th>'
-    + '<th rowspan="2" class="sell-ev-col">Event</th>'
     + '<th rowspan="2">DoW</th>'
+    + '<th rowspan="2" class="sell-ev-col">Event</th>'
     + '<th colspan="3" class="sell-grp sell-grp-otb">OTB to date</th>'
     + '<th colspan="2" class="sell-grp sell-grp-pickup">Pickup ' + A.pickupDaysAgo + 'd</th>'
     + '<th colspan="3" class="sell-grp sell-grp-stly">STLY (-364)</th>'
     + '<th colspan="2" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
-    + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + (showExp ? '<th rowspan="2" class="sell-grp sell-grp-expedia" title="My Expedia price, the compset average and my position (1 = cheapest)">Rate shopper<br><span class="sell-th-sub">mine · compset · pos</span></th>' : '')
+    + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). Click 🖋 to override one day; ↺ to reset.">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
+    + '<th colspan="2" class="sell-grp sell-grp-pricing" title="The price you act on: what is active today and what the engine suggests.">Pricing</th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
     + '<th class="sell-grp-otb-sub" title="OTB to date · RN sold">RN</th>'
@@ -12743,6 +12742,8 @@ function renderSellStrategy(sel){
     + '<th class="sell-grp-stly-sub" title="STLY · ADR">ADR</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net RN a year ago. Click a cell for the new/cancelled detail.">Var RN</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of the net STLY pickup">Var ADR</th>'
+    + '<th class="sell-grp-rmes-last" title="Last update — the price currently active for this stay-date. Click any cell to edit (single day) or right-click two cells for a range.">Last update<br><span class="sell-th-sub">active price</span></th>'
+    + '<th class="sell-grp-rmes-today" title="RMES — today\'s pricing engine suggestion. Click the cell for the calculation detail. The ✓ button accepts this price as the new Last update.">RMES<br><span class="sell-th-sub">price · Δ€ · ✓</span></th>'
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;
   if (typeof computeRMESPriceMap === 'function' && sel !== 'both'){
@@ -13368,23 +13369,32 @@ function renderSellStrategy(sel){
       }
       return cells;
     })();
-    // Background della riga basato sulla pressione di ricerca Expedia (più ricerche = arancione più forte)
+    // Sfondo delle 3 celle Date/DoW/Event: NON più pressione di ricerca Expedia,
+    // ma OCCUPAZIONE del giorno (richiesta utente). Verde = ancora da vendere,
+    // arancione = si sta riempiendo, rosso = quasi pieno.
     let _rowBgStyle = '';
-    try {
-      const _expRow = (typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
-      const _searchCur = (_expRow && _expRow.searchCurrent != null && isFinite(_expRow.searchCurrent)) ? _expRow.searchCurrent : null;
-      if (_searchCur != null && typeof _searchPressureBg === 'function'){
-        _rowBgStyle = _searchPressureBg(_searchCur);
-      }
-    } catch(e){}
-    const _trStyle = _rowBgStyle ? ` style="${_rowBgStyle}"` : '';
+    const _occRow = (r.curOcc != null && isFinite(r.curOcc)) ? r.curOcc : null;
+    if (_occRow != null){
+      let _rgb;
+      if (_occRow >= 0.90)      _rgb = '168,59,59';    // >=90% quasi sold-out
+      else if (_occRow >= 0.75) _rgb = '196,131,59';   // 75-90% si sta chiudendo
+      else if (_occRow >= 0.50) _rgb = '196,164,59';   // 50-75% a metà
+      else                      _rgb = '74,124,89';    // <50% da spingere
+      const _alpha = (0.10 + Math.min(1, _occRow) * 0.24).toFixed(3);
+      _rowBgStyle = `background:rgba(${_rgb},${_alpha})`;
+    }
+    const _trStyle = '';
     const _searchTipVal = (function(){
       try {
+        const _occTxt = (_occRow != null) ? `OCC ${(Math.round(_occRow*1000)/10).toFixed(1)}% on this night` : 'OCC not available';
         const _expRow = (typeof expContext === 'function') ? expContext(r.ymd, sel) : null;
         const sc = (_expRow && _expRow.searchCurrent != null) ? Math.round(_expRow.searchCurrent) : null;
-        if (sc == null) return '';
-        const lvl = expDemandLevel(sc);
-        return ` title="Expedia search pressure for this day: ${sc.toLocaleString('en-GB')} searches · ${lvl ? lvl.label : ''}"`;
+        let _t = _occTxt + ' — the tint of these 3 cells follows occupancy (green = still to sell, red = nearly full)';
+        if (sc != null){
+          const lvl = expDemandLevel(sc);
+          _t += ` · Expedia search pressure: ${sc.toLocaleString('en-GB')} searches${lvl ? ' · ' + lvl.label : ''}`;
+        }
+        return ` title="${escapeHtml(_t)}"`;
       } catch(e){ return ''; }
     })();
     // Build dateBg style: combine _rowBgStyle (search pressure) with weekend dateStyle for the DoW cell
@@ -13513,10 +13523,9 @@ function renderSellStrategy(sel){
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
     html += `<tr${_searchTipVal}>
-      ${_luTdHtml}${_rmesTdHtml}
       <td class="cell-mono"${_bgInline}>${_pk7Flag(r.ymd)}${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
-      <td class="sell-ev-col"${_bgInline}>${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
       <td${_dowInline}>${dowIT[r.dow]}</td>
+      <td class="sell-ev-col"${_bgInline}>${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
       <!-- OTB -->
       <td class="cell-mono ${rnCmpCls} sell-grp-otb-cell">${r.curRn>0?`<span class="sell-pickup-link" data-row="${i}" data-kind="otb" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">${r.curRn}</span>`:r.curRn}</td>
       <td class="cell-mono">${fmtPct(r.curOcc,0)}</td>
@@ -13531,10 +13540,12 @@ function renderSellStrategy(sel){
       <!-- Pickup STLY: solo il netto -->
       <td class="cell-mono sell-grp-pkstly-cell ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${(pkStlyNewCount>0||pkStlyCancelCount>0)?`<span class="sell-pickup-link" data-row="${i}" data-kind="pkStlyNet" title="Click: new + cancelled detail (STLY)" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</span>`:`${r.pkRnStly>=0?'+':''}${r.pkRnStly}`}</td>
       <td class="cell-mono ${pkStlyAdrTxt==='—'?'cell-flat':''}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
-      ${beddyCell}
       ${expCells}
+      ${beddyCell}
       <!-- Base Price cell (with override 🖋 / reset ↺ buttons) -->
       ${cellFoundation}
+      <!-- Pricing: Last update + RMES, affiancati in fondo (richiesta utente) -->
+      ${_luTdHtml}${_rmesTdHtml}
     </tr>`;
   }
   const totDRev = T.pkRev;
@@ -13559,12 +13570,9 @@ function renderSellStrategy(sel){
   }
   const totPkStlyAdr = totPkStlyNew > 0 ? totPkStlyNewRev / totPkStlyNew : NaN;
   html += `<tr class="total">
-    <!-- LAST UPDATE & RMES placeholders (per date — totals row N/A) -->
-    <td class="cell-flat sell-lu-cell" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
-    <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
     <td class="cell-mono">Total</td>
-    <td class="sell-ev-col"></td>
     <td>${A.rangeDays}d</td>
+    <td class="sell-ev-col"></td>
     <!-- OTB (RN, OCC, ADR — niente Revenue) -->
     <td class="cell-mono ${totRnCmpCls}">${T.curRn}</td>
     <td class="cell-mono">${fmtPct(T.curOcc,1)}</td>
@@ -13579,10 +13587,13 @@ function renderSellStrategy(sel){
     <!-- Pickup STLY: solo il netto -->
     <td class="cell-mono ${T.pkRnStly>=0?'cell-pos':'cell-neg'}" style="background:rgba(138,138,138,.04)">${T.pkRnStly>=0?'+':''}${T.pkRnStly}</td>
     <td class="cell-mono ${isFinite(totPkStlyAdr)?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${isFinite(totPkStlyAdr)?fmtEUR(totPkStlyAdr):'—'}</td>
-    ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
     ${showExp ? '<td class="cell-flat" style="background:rgba(58,107,107,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
+    ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
     <!-- Base Price -->
     <td class="cell-flat" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
+    <!-- Pricing -->
+    <td class="cell-flat sell-lu-cell" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
+    <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
   html += '</tbody></table>';
   document.getElementById('sell-table-wrap').innerHTML = html;
