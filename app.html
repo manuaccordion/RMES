@@ -1193,29 +1193,36 @@ function mobBookingPaceHTML(sel){
   }
   if (!A.totCur && !A.totSty) return out + '<div class="bp-empty">No bookings in this window.</div>';
   const B = A.buckets;
-  const TY='#2f7fb5', LY='#7a4d96';
+  const LY='#b8b1a5';
   const maxPct = Math.max(0.05, ...B.map(b=>Math.max(b.curPct,b.styPct)));
-  const W=340,H=150,pl=6,pr=6,pt=16,pb=26,pw=W-pl-pr,ph=H-pt-pb;
+  // Colore = rango della fascia: più scuro, più pesa. Stessa scala del desktop.
+  const cMax = Math.max(...B.map(b=>b.curPct), 0.0001);
+  const cMin = Math.min(...B.map(b=>b.curPct));
+  const heatOf = p => (typeof _bwHeat==='function') ? _bwHeat(cMax===cMin?1:(p-cMin)/(cMax-cMin)) : '#2f7fb5';
+  const ranked = B.map((b,i)=>({i,p:b.curPct})).sort((a,b)=>b.p-a.p);
+  const rankOf={}; ranked.forEach((r,k)=>{ rankOf[r.i]=k+1; });
+  const W=340,H=160,pl=6,pr=6,pt=18,pb=34,pw=W-pl-pr,ph=H-pt-pb;
   const slot=pw/B.length, gw=Math.min(slot*0.78,40), bw=(gw-3)/2, yB=pt+ph;
   const cx=i=>pl+(i+0.5)*slot, hOf=v=>(v/maxPct)*ph;
   let g=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;font-family:'IBM Plex Mono',monospace">`;
   g+=`<line x1="${pl}" y1="${yB.toFixed(1)}" x2="${pl+pw}" y2="${yB.toFixed(1)}" stroke="#E1EEF3"/>`;
   B.forEach((b,i)=>{
     const c=cx(i), th=b.curPct>0?Math.max(1.5,hOf(b.curPct)):0, lh=b.styPct>0?Math.max(1.5,hOf(b.styPct)):0;
-    const xt=c-bw-1, xl=c+1;
-    if(th) g+=`<rect x="${xt.toFixed(1)}" y="${(yB-th).toFixed(1)}" width="${bw.toFixed(1)}" height="${th.toFixed(1)}" rx="2" fill="${TY}"/>`;
-    if(lh) g+=`<rect x="${xl.toFixed(1)}" y="${(yB-lh).toFixed(1)}" width="${bw.toFixed(1)}" height="${lh.toFixed(1)}" rx="2" fill="${LY}"/>`;
-    if(b.curPct>0) g+=`<text x="${(xt+bw/2).toFixed(1)}" y="${(yB-th-2).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="${TY}">${Math.round(b.curPct*100)}</text>`;
-    if(b.styPct>0) g+=`<text x="${(xl+bw/2).toFixed(1)}" y="${(yB-lh-2).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="${LY}">${Math.round(b.styPct*100)}</text>`;
+    const xt=c-bw-1, xl=c+1, fill=heatOf(b.curPct);
+    if(th) g+=`<rect x="${xt.toFixed(1)}" y="${(yB-th).toFixed(1)}" width="${bw.toFixed(1)}" height="${th.toFixed(1)}" rx="2" fill="${fill}"/>`;
+    if(lh) g+=`<rect x="${xl.toFixed(1)}" y="${(yB-lh).toFixed(1)}" width="${bw.toFixed(1)}" height="${lh.toFixed(1)}" rx="2" fill="${LY}" opacity=".8"/>`;
+    if(b.curPct>0) g+=`<text x="${(xt+bw/2).toFixed(1)}" y="${(yB-th-3).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="${fill}">${Math.round(b.curPct*100)}%</text>`;
+    if(b.styPct>0) g+=`<text x="${(xl+bw/2).toFixed(1)}" y="${(yB-lh-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#9c948a">${Math.round(b.styPct*100)}%</text>`;
     g+=`<text x="${c.toFixed(1)}" y="${(yB+12).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="#5a6b72">${b.label.replace(' days','').replace(' day','')}</text>`;
+    g+=`<text x="${c.toFixed(1)}" y="${(yB+21).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" fill="${fill}">#${rankOf[i]}</text>`;
     const adrT=b.curAdr>0?Math.round(b.curAdr):null, adrL=b.styAdr>0?Math.round(b.styAdr):null;
-    if(adrT!=null) g+=`<text x="${c.toFixed(1)}" y="${(yB+22).toFixed(1)}" text-anchor="middle" font-size="7" fill="#9aa6ab">\u20ac${adrT}${adrL!=null?' / '+adrL:''}</text>`;
+    if(adrT!=null) g+=`<text x="${c.toFixed(1)}" y="${(yB+30).toFixed(1)}" text-anchor="middle" font-size="7" fill="#9aa6ab">\u20ac${adrT}${adrL!=null?'/'+adrL:''}</text>`;
   });
-  g+=`<text x="${pl}" y="9" font-size="8" fill="#9aa6ab">% of bookings by lead time \u00b7 \u20ac = ADR TY / LY</text></svg>`;
+  g+=`<text x="${pl}" y="10" font-size="8" fill="#9aa6ab">% of bookings by lead time \u00b7 darker = bigger share \u00b7 \u20ac = ADR TY/LY</text></svg>`;
   out += `<div class="bp-chans">${g}</div>`;
-  out += `<div class="bp-legend"><span class="bp-li"><i style="background:${TY};width:10px;height:10px;border-radius:2px;display:inline-block"></i>Booked ${fmtD(P.start)}\u2013${fmtD(P.end)} (${A.totCur} bk.)</span>`
-      +  `<span class="bp-li"><i style="background:${LY};width:10px;height:10px;border-radius:2px;display:inline-block"></i>Same window LY (${A.totSty} bk.)</span></div>`;
-  out += `<div class="bp-note">${A.totRnCur} RN this year vs ${A.totRnSty} RN last year \u00b7 revenue gross of OTA commission</div>`;
+  out += `<div class="bp-legend"><span class="bp-li"><i style="background:${heatOf(cMax)};width:10px;height:10px;border-radius:2px;display:inline-block"></i>Booked ${fmtD(P.start)}\u2013${fmtD(P.end)}</span>`
+      +  `<span class="bp-li"><i style="background:${LY};width:10px;height:10px;border-radius:2px;display:inline-block"></i>Same window last year</span></div>`;
+  out += `<div class="bp-note">Top window: <b>${B[ranked[0].i].label}</b> with ${Math.round(ranked[0].p*100)}% of bookings \u00b7 revenue gross of OTA commission</div>`;
   return out;
 }
 function mobWirePaceFilter(){

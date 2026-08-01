@@ -18894,11 +18894,32 @@ function aggBookingWindow(sel, kind, ymFilter, chFilter){
     totSty: sty.totN,
   };
 }
+/* Scala colore per "rango": più alta è la quota di prenotazioni della fascia,
+   più intenso il colore. t=1 → fascia col peso maggiore, t=0 → la più leggera. */
+function _bwHeat(t){
+  const stops = [
+    [0.00, [214, 228, 243]],
+    [0.35, [141, 183, 226]],
+    [0.65, [ 52, 124, 200]],
+    [0.85, [ 22,  78, 150]],
+    [1.00, [ 12,  46,  96]],
+  ];
+  t = Math.max(0, Math.min(1, t));
+  for (let i=0; i<stops.length-1; i++){
+    const [p0,c0] = stops[i], [p1,c1] = stops[i+1];
+    if (t <= p1){
+      const f = (p1===p0) ? 0 : (t-p0)/(p1-p0);
+      const c = c0.map((v,j)=> Math.round(v + (c1[j]-v)*f));
+      return `rgb(${c[0]},${c[1]},${c[2]})`;
+    }
+  }
+  return 'rgb(12,46,96)';
+}
 function renderBookingWindowChart(containerId, A, opts){
   const _host = document.getElementById(containerId);
   if (!_host) return;
   const W = 1100, H = 360;
-  const pad = {l:50, r:60, t:18, b:60};
+  const pad = {l:50, r:60, t:26, b:60};
   const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
   const bw = A.buckets;
   const maxPct = Math.max(0.05, ...bw.map(b=>Math.max(b.curPct, b.styPct)));
@@ -18908,10 +18929,15 @@ function renderBookingWindowChart(containerId, A, opts){
   const slotW = cw / bw.length;
   const barW = slotW * 0.30;
   const groupW = barW * 2 + 4;
-  const colorBarCur = '#2266cc';
-  const colorBarSty = '#83b4e9';
+  const colorBarSty = '#c9c2b6';
   const colorLineCur = '#e85a2c';
   const colorLineSty = '#f3c63a';
+  // Rango delle fasce sulla quota di quest'anno: serve solo al colore.
+  const curMax = Math.max(...bw.map(b=>b.curPct), 0.0001);
+  const curMin = Math.min(...bw.map(b=>b.curPct));
+  const heatOf = (p)=> _bwHeat(curMax===curMin ? 1 : (p-curMin)/(curMax-curMin));
+  const ranked = bw.map((b,i)=>({i, p:b.curPct})).sort((a,b)=>b.p-a.p);
+  const rankOf = {}; ranked.forEach((r,k)=>{ rankOf[r.i] = k+1; });
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="max-width:100%;display:block">`;
   for (let i=0; i<=5; i++){
     const y = pad.t + ch * i / 5;
@@ -18921,7 +18947,7 @@ function renderBookingWindowChart(containerId, A, opts){
     svg += `<text x="${pad.l-8}" y="${y+3}" font-size="10" fill="#888" text-anchor="end" font-family="DM Mono">${(valPct*100).toFixed(0)}%</text>`;
     svg += `<text x="${W-pad.r+8}" y="${y+3}" font-size="10" fill="#888" text-anchor="start" font-family="DM Mono">${valAdr.toLocaleString('en-GB')}</text>`;
   }
-  svg += `<text x="${pad.l-38}" y="${pad.t+ch/2}" font-size="10" fill="#666" text-anchor="middle" font-family="DM Mono" transform="rotate(-90 ${pad.l-38} ${pad.t+ch/2})">Bookings (in %)</text>`;
+  svg += `<text x="${pad.l-38}" y="${pad.t+ch/2}" font-size="10" fill="#666" text-anchor="middle" font-family="DM Mono" transform="rotate(-90 ${pad.l-38} ${pad.t+ch/2})">Share of bookings (%)</text>`;
   svg += `<text x="${W-pad.r+45}" y="${pad.t+ch/2}" font-size="10" fill="#666" text-anchor="middle" font-family="DM Mono" transform="rotate(-90 ${W-pad.r+45} ${pad.t+ch/2})">ADR (€)</text>`;
   for (let i=0; i<bw.length; i++){
     const b = bw[i];
@@ -18930,23 +18956,34 @@ function renderBookingWindowChart(containerId, A, opts){
     const xSty = xCur + barW + 4;
     const hCur = ch * (b.curPct / niceMaxPct);
     const hSty = ch * (b.styPct / niceMaxPct);
-    svg += `<rect x="${xCur}" y="${pad.t+ch-hCur}" width="${barW}" height="${hCur}" fill="${colorBarCur}" opacity="0.95" pointer-events="none"/>`;
-    svg += `<rect x="${xSty}" y="${pad.t+ch-hSty}" width="${barW}" height="${hSty}" fill="${colorBarSty}" opacity="0.95" pointer-events="none"/>`;
+    const fill = heatOf(b.curPct);
+    svg += `<rect x="${xCur}" y="${pad.t+ch-hCur}" width="${barW}" height="${hCur}" fill="${fill}" pointer-events="none"/>`;
+    svg += `<rect x="${xSty}" y="${pad.t+ch-hSty}" width="${barW}" height="${hSty}" fill="${colorBarSty}" opacity="0.75" pointer-events="none"/>`;
+    // Percentuali stampate sopra le barre: è il numero che conta, non il volume.
+    if (b.curPct > 0){
+      svg += `<text x="${xCur+barW/2}" y="${pad.t+ch-hCur-5}" font-size="11.5" font-weight="700" fill="${fill}" text-anchor="middle" font-family="DM Mono" pointer-events="none">${Math.round(b.curPct*100)}%</text>`;
+    }
+    if (b.styPct > 0){
+      svg += `<text x="${xSty+barW/2}" y="${pad.t+ch-hSty-5}" font-size="9.5" fill="#8d8578" text-anchor="middle" font-family="DM Mono" pointer-events="none">${Math.round(b.styPct*100)}%</text>`;
+    }
     svg += `<text x="${cx}" y="${pad.t+ch+18}" font-size="10" fill="#444" text-anchor="middle" font-family="DM Sans" pointer-events="none">${b.label}</text>`;
-    const tipLines = [
-      `${b.label}`,
-      ``,
-      `This year: ${(b.curPct*100).toFixed(1)}% (${b.curN} bk.) · ADR ${Math.round(b.curAdr).toLocaleString('en-GB')}€`,
-      `Last year: ${(b.styPct*100).toFixed(1)}% (${b.styN} bk.) · ADR ${Math.round(b.styAdr).toLocaleString('en-GB')}€`,
-    ];
+    svg += `<text x="${cx}" y="${pad.t+ch+31}" font-size="8.5" fill="${fill}" font-weight="700" text-anchor="middle" font-family="DM Mono" pointer-events="none">#${rankOf[i]}</text>`;
     const dPct = (b.curPct - b.styPct)*100;
     const dAdr = b.curAdr - b.styAdr;
+    const tipLines = [
+      `${b.label} · rank #${rankOf[i]} of ${bw.length} this year`,
+      ``,
+      `This year: ${(b.curPct*100).toFixed(1)}% of bookings · ADR ${Math.round(b.curAdr).toLocaleString('en-GB')}€`,
+      `Last year: ${(b.styPct*100).toFixed(1)}% of bookings · ADR ${Math.round(b.styAdr).toLocaleString('en-GB')}€`,
+    ];
     if (b.styN > 0){
       tipLines.push('');
-      tipLines.push(`Δ %prenot.: ${dPct>=0?'+':''}${dPct.toFixed(1)} pp`);
+      tipLines.push(`Δ share: ${dPct>=0?'+':''}${dPct.toFixed(1)} pp`);
       if (b.curAdr > 0 && b.styAdr > 0){
         tipLines.push(`Δ ADR: ${dAdr>=0?'+':''}${Math.round(dAdr).toLocaleString('en-GB')}€ (${dAdr>=0?'+':''}${(dAdr/b.styAdr*100).toFixed(0)}%)`);
       }
+      tipLines.push('');
+      tipLines.push(`Sample size: ${b.curN} bookings this year, ${b.styN} last year`);
     }
     svg += `<rect x="${pad.l + slotW*i}" y="${pad.t}" width="${slotW}" height="${ch}" fill="rgba(0,0,0,0)" class="bw-hover-zone"><title>${tipLines.join('\n')}</title></rect>`;
   }
@@ -18968,13 +19005,18 @@ function renderBookingWindowChart(containerId, A, opts){
   svg += pathFor('curAdr', colorLineCur);
   svg += pathFor('styAdr', colorLineSty);
   const lgY = 6;
+  let lgX = pad.l + 8;
+  // Swatch a gradiente: ricorda che il colore della barra codifica il rango.
+  svg += `<defs><linearGradient id="bwLg${containerId}" x1="0" y1="0" x2="1" y2="0">`
+      +  `<stop offset="0%" stop-color="${_bwHeat(0)}"/><stop offset="100%" stop-color="${_bwHeat(1)}"/></linearGradient></defs>`;
+  svg += `<rect x="${lgX}" y="${lgY}" width="26" height="11" fill="url(#bwLg${containerId})"/>`;
+  svg += `<text x="${lgX+31}" y="${lgY+10}" font-size="10.5" fill="#333" font-family="DM Sans">${opts.barCurLbl} — darker = bigger share</text>`;
+  lgX += 31 + (opts.barCurLbl.length + 26) * 6.6 + 14;
   const lg = [
-    {label: opts.barCurLbl,  color: colorBarCur,  shape: 'rect'},
     {label: opts.barStyLbl,  color: colorBarSty,  shape: 'rect'},
     {label: opts.lineCurLbl, color: colorLineCur, shape: 'circle'},
     {label: opts.lineStyLbl, color: colorLineSty, shape: 'circle'},
   ];
-  let lgX = pad.l + 8;
   for (const it of lg){
     if (it.shape === 'rect'){
       svg += `<rect x="${lgX}" y="${lgY}" width="11" height="11" fill="${it.color}"/>`;
@@ -19146,7 +19188,7 @@ function _bigRenderPace(sel){
   if (subEl){
     let chInfo = '';
     if (BW_STATE.pace.chans) chInfo = ` · only: ${[...BW_STATE.pace.chans].join(', ')}`;
-    subEl.innerHTML = `Bookings made ${fmtD(P.start)} → ${fmtD(P.end)} (last 30 closed days): ${A.totCur.toLocaleString('en-GB')} room-bookings, ${A.totRnCur.toLocaleString('en-GB')} RN. Last year: ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)} (${A.totSty.toLocaleString('en-GB')} bk., ${A.totRnSty.toLocaleString('en-GB')} RN).${chInfo}`;
+    subEl.innerHTML = `Share of bookings by lead time · booked ${fmtD(P.start)} → ${fmtD(P.end)} (last 30 closed days) vs ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)}.${chInfo}`;
   }
   renderBwChannelFilter('big-pace-chfilter', 'pace', () => _bigRenderPace(CURRENT_STRUCT), sel, 'confirmed');
   renderBookingWindowChart('big-pace-chart', A, {
@@ -19173,7 +19215,7 @@ function renderBookingWindowOTB(sel){
     }
     let chInfo = '';
     if (BW_STATE.otb.chans) chInfo = ` · channels: ${[...BW_STATE.otb.chans].join(', ')}`;
-    subEl.innerHTML = `Data ${fmtD(P.start)} → ${fmtD(P.end)} over ${A.totCur.toLocaleString('en-GB')} room-bookings. Last year: ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)} (${A.totSty.toLocaleString('en-GB')} bk.).${monthInfo}${chInfo}`;
+    subEl.innerHTML = `Share of bookings by lead time · ${fmtD(P.start)} → ${fmtD(P.end)} vs ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)}.${monthInfo}${chInfo}`;
   }
   renderBwMonthFilter('otb-bw-mfilter', 'otb', () => renderBookingWindowOTB(CURRENT_STRUCT));
   renderBwChannelFilter('otb-bw-chfilter', 'otb', () => renderBookingWindowOTB(CURRENT_STRUCT), sel, 'confirmed');
@@ -19201,7 +19243,7 @@ function renderBookingWindowCancel(sel){
     }
     let chInfo = '';
     if (BW_STATE.cancel.chans) chInfo = ` · channels: ${[...BW_STATE.cancel.chans].join(', ')}`;
-    subEl.innerHTML = `Data ${fmtD(P.start)} → ${fmtD(P.end)} over ${A.totCur.toLocaleString('en-GB')} cancellations. Last year: ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)} (${A.totSty.toLocaleString('en-GB')} canc.).${monthInfo}${chInfo}`;
+    subEl.innerHTML = `Share of cancellations by lead time · ${fmtD(P.start)} → ${fmtD(P.end)} vs ${fmtD(P.startSTLY)} → ${fmtD(P.endSTLY)}.${monthInfo}${chInfo}`;
   }
   renderBwMonthFilter('cancel-bw-mfilter', 'cancel', () => renderBookingWindowCancel(CURRENT_STRUCT));
   renderBwChannelFilter('cancel-bw-chfilter', 'cancel', () => renderBookingWindowCancel(CURRENT_STRUCT), sel, 'cancel');
