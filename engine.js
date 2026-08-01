@@ -3393,40 +3393,54 @@ function renderPickup(sel){
   }
   const monLabIT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   function smLabel(monthKey){
+    if (monthKey === '__ALL__') return 'All stay months';
     const [y, m] = monthKey.split('-');
     return monLabIT[parseInt(m,10)-1] + ' ' + y;
   }
   const smAxisLabeled = A.smAxis.map(smLabel);
+  /* Stay Month x Week — versione leggibile.
+     Prima: 2 colonne per settimana (2026 | STLY) con celle heat quasi indistinguibili.
+     Ora: 1 colonna per settimana con RN di quest'anno in evidenza e il delta vs STLY
+     sotto, colorato. Il click apre lo stesso drill di prima (modalita' "cur"). */
   function buildMatrixSM(axis, dataC, dataP){
     if (!axis.length) return '<thead><tr><th>No data</th></tr></thead>';
-    let maxRn = 1;
-    for (const k of axis) for (const c of dataC[k]) if (c.rn>maxRn) maxRn = c.rn;
-    let head = `<thead><tr><th rowspan="2">Stay month</th>`;
+    const smCell = (c, p, key, wIdx, isTot) => {
+      const rn = c ? c.rn : 0, rnP = p ? p.rn : 0, d = rn - rnP;
+      const cls = isTot ? ' class="pk-sm-tot"' : '';
+      if (rn === 0 && rnP === 0) return `<td${cls}><span class="pk-sm-zero">\u00b7</span></td>`;
+      const dCls = d > 0 ? 'up' : (d < 0 ? 'down' : 'flat');
+      const dTxt = d > 0 ? '+' + d : (d < 0 ? '\u2212' + Math.abs(d) : '0');
+      const tip = `${smLabel(key)} \u00b7 ${isTot ? 'total of the 4 weeks' : 'week ' + (wIdx+1)}\n`
+                + `2026: ${rn} RN\nSTLY: ${rnP} RN\nDelta: ${dTxt} RN`
+                + (rn > 0 ? '\n\nClick for the booking detail' : '');
+      const inner = rn > 0
+        ? `<span class="pk-cell pk-sm-cell" data-dim="sm" data-key="${escapeHtml(key)}" data-week="${wIdx}" data-mode="${isTot?'cur-tot':'cur'}" title="${escapeHtml(tip)}">`
+          + `<span class="pk-sm-rn">${rn}</span><span class="pk-sm-d ${dCls}">${dTxt}</span></span>`
+        : `<span class="pk-sm-cell nolink" title="${escapeHtml(tip)}"><span class="pk-sm-rn dim">0</span><span class="pk-sm-d ${dCls}">${dTxt}</span></span>`;
+      return `<td${cls}>${inner}</td>`;
+    };
+    let head = `<thead><tr><th style="text-align:left">Stay month</th>`;
     for (let i=0;i<A.weeks.length;i++){
-      head += `<th colspan="2">W${i+1} · ${pad2(A.weeks[i].start.getDate())}/${pad2(A.weeks[i].start.getMonth()+1)}–${pad2(A.weeks[i].end.getDate())}/${pad2(A.weeks[i].end.getMonth()+1)}</th>`;
+      head += `<th><div class="pk-sm-wk">W${i+1}</div><div class="pk-sm-wkd">${pad2(A.weeks[i].start.getDate())}/${pad2(A.weeks[i].start.getMonth()+1)}\u2013${pad2(A.weeks[i].end.getDate())}/${pad2(A.weeks[i].end.getMonth()+1)}</div></th>`;
     }
-    head += '<th colspan="2" class="pk-tot-cur">Total</th></tr><tr>';
-    for (let i=0;i<A.weeks.length;i++){
-      head += '<th class="pk-cur">2026</th><th class="pk-stly">STLY</th>';
-    }
-    head += '<th class="pk-tot-cur">2026</th><th class="pk-tot-stly">STLY</th></tr></thead>';
+    head += `<th class="pk-sm-tot"><div class="pk-sm-wk">Total</div><div class="pk-sm-wkd">4 weeks</div></th></tr>`;
+    head += `<tr class="pk-sm-legendrow"><th style="text-align:left">RN 2026 \u00b7 \u0394 vs STLY</th>`;
+    for (let i=0;i<A.weeks.length;i++) head += '<th></th>';
+    head += '<th class="pk-sm-tot"></th></tr></thead>';
     let body = '';
     for (const k of axis){
-      let row = `<tr><td>${escapeHtml(smLabel(k))}</td>`;
+      let row = `<tr><td class="pk-sm-lab">${escapeHtml(smLabel(k))}</td>`;
       let totC={bk:0,rn:0,rev:0}, totP={bk:0,rn:0,rev:0};
       for (let i=0;i<A.weeks.length;i++){
         const c = dataC[k][i], p = dataP[k][i];
         totC.bk+=c.bk; totC.rn+=c.rn; totC.rev+=c.rev;
         totP.bk+=p.bk; totP.rn+=p.rn; totP.rev+=p.rev;
-        row += pkCellHtml(c, maxRn, 'sm', k, i, 'cur', false, 'pk-cur');
-        row += pkCellHtml(p, maxRn, 'sm', k, i, 'stly', true, 'pk-stly');
+        row += smCell(c, p, k, i, false);
       }
-      row += pkCellHtml(totC, maxRn*4, 'sm', k, -1, 'cur-tot', false, 'pk-tot-cur');
-      row += pkCellHtml(totP, maxRn*4, 'sm', k, -1, 'stly-tot', true, 'pk-tot-stly');
-      row += '</tr>';
-      body += row;
+      row += smCell(totC, totP, k, -1, true);
+      body += row + '</tr>';
     }
-    let trow = `<tr class="total"><td>Total</td>`;
+    let trow = `<tr class="total"><td class="pk-sm-lab">Total</td>`;
     let gC={bk:0,rn:0,rev:0}, gP={bk:0,rn:0,rev:0};
     for (let i=0;i<A.weeks.length;i++){
       let cAgg={bk:0,rn:0,rev:0,rows:[]}, pAgg={bk:0,rn:0,rev:0,rows:[]};
@@ -3437,11 +3451,9 @@ function renderPickup(sel){
       }
       gC.bk+=cAgg.bk; gC.rn+=cAgg.rn; gC.rev+=cAgg.rev;
       gP.bk+=pAgg.bk; gP.rn+=pAgg.rn; gP.rev+=pAgg.rev;
-      trow += pkCellHtml(cAgg, maxRn*axis.length, 'sm', '__ALL__', i, 'cur', false, 'pk-cur');
-      trow += pkCellHtml(pAgg, maxRn*axis.length, 'sm', '__ALL__', i, 'stly', true, 'pk-stly');
+      trow += smCell(cAgg, pAgg, '__ALL__', i, false);
     }
-    trow += pkCellHtml(gC, maxRn*axis.length*4, 'sm', '__ALL__', -1, 'cur-tot', false, 'pk-tot-cur');
-    trow += pkCellHtml(gP, maxRn*axis.length*4, 'sm', '__ALL__', -1, 'stly-tot', true, 'pk-tot-stly');
+    trow += smCell(gC, gP, '__ALL__', -1, true);
     trow += '</tr>';
     return head + '<tbody>' + body + trow + '</tbody>';
   }
@@ -11051,14 +11063,11 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       {
         const _floor = (typeof fp_getFloor === 'function') ? fp_getFloor(structKey) : null;
         const _base = (typeof fp_getBasePrice === 'function') ? fp_getBasePrice(structKey) : null;
-        const _cap = (typeof getRmesCap === 'function') ? getRmesCap(structKey) : null;
+        // Cap tile rimossa: il cap ±30% non è più applicato al suggerimento.
         rmesSection += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:14px 0 8px">Thresholds</div>';
         rmesSection += '<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">';
         rmesSection += '<div style="flex:1;min-width:90px;padding:8px 12px;background:#fafafa;border:1px solid #eee;border-radius:4px"><div style="font-size:10px;color:#999;text-transform:uppercase">Floor rate</div><div style="font-family:\'DM Mono\',monospace;font-weight:700;color:#a83b3b">'+fmt(_floor)+'</div></div>';
         rmesSection += '<div style="flex:1;min-width:90px;padding:8px 12px;background:#fafafa;border:1px solid #eee;border-radius:4px"><div style="font-size:10px;color:#999;text-transform:uppercase">Base rate</div><div style="font-family:\'DM Mono\',monospace;font-weight:700;color:#555">'+fmt(_base)+'</div></div>';
-        if (_cap != null){
-          rmesSection += '<div style="flex:1;min-width:90px;padding:8px 12px;background:#fafafa;border:1px solid #eee;border-radius:4px"><div style="font-size:10px;color:#999;text-transform:uppercase">Cap ±</div><div style="font-family:\'DM Mono\',monospace;font-weight:700;color:#555">'+(_cap*100).toFixed(0)+'%</div></div>';
-        }
         rmesSection += '</div>';
       }
       {
@@ -11936,14 +11945,14 @@ function _sellCompRank(structKey, iso, myExpedia){
 function _preserveSellHorizontalScroll(fn){
   let saved = 0;
   try {
-    const w = document.querySelector('.sell-tposed-scroll-wrap');
+    const w = document.querySelector('.sell-tposed-scroll-wrap, #sell-table-wrap');
     if (w) saved = w.scrollLeft || 0;
   } catch(e){}
   try { fn(); } catch(e){ throw e; }
   // Dopo il render: aspetta un frame perché il DOM si stabilizzi, poi riapplica scrollLeft
   requestAnimationFrame(() => {
     try {
-      const w = document.querySelector('.sell-tposed-scroll-wrap');
+      const w = document.querySelector('.sell-tposed-scroll-wrap, #sell-table-wrap');
       const tw = document.querySelector('.sell-tposed-scroll-top');
       if (w) w.scrollLeft = saved;
       if (tw) tw.scrollLeft = saved;
@@ -12389,7 +12398,7 @@ function renderSellStrategy(sel){
   let _savedSellScrollLeft = 0;
   const _sameStruct = (typeof _lastSellStruct !== 'undefined') && (_lastSellStruct === sel);
   try {
-    const _w = document.querySelector('.sell-tposed-scroll-wrap');
+    const _w = document.querySelector('.sell-tposed-scroll-wrap, #sell-table-wrap');
     if (_w && _sameStruct) _savedSellScrollLeft = _w.scrollLeft || 0;
   } catch(e){}
   _lastSellStruct = sel;
@@ -12716,32 +12725,24 @@ function renderSellStrategy(sel){
     + '<th rowspan="2" class="sell-ev-col">Event</th>'
     + '<th rowspan="2">DoW</th>'
     + '<th colspan="3" class="sell-grp sell-grp-otb">OTB to date</th>'
-    + '<th colspan="4" class="sell-grp sell-grp-pickup">Pickup ' + A.pickupDaysAgo + 'd</th>'
+    + '<th colspan="2" class="sell-grp sell-grp-pickup">Pickup ' + A.pickupDaysAgo + 'd</th>'
     + '<th colspan="3" class="sell-grp sell-grp-stly">STLY (-364)</th>'
-    + '<th colspan="4" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
+    + '<th colspan="2" class="sell-grp sell-grp-pkstly">Pickup STLY ' + A.pickupDaysAgo + 'd</th>'
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
-    + (showExp ? '<th colspan="2" class="sell-grp sell-grp-expedia">Rate Shopper</th>' : '')
+    + (showExp ? '<th rowspan="2" class="sell-grp sell-grp-expedia" title="My Expedia price, the compset average and my position (1 = cheapest)">Rate shopper<br><span class="sell-th-sub">mine · compset · pos</span></th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). Click 🖋 to override one day; ↺ to reset.">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
     + '<th class="sell-grp-otb-sub" title="OTB to date · RN sold">RN</th>'
     + '<th class="sell-grp-otb-sub" title="OTB to date · OCC%">OCC</th>'
     + '<th class="sell-grp-otb-sub" title="OTB to date · ADR">ADR</th>'
-    + '<th class="sell-grp-pickup-sub" title="Pickup · new room-bookings (click for detail)">New</th>'
-    + '<th class="sell-grp-pickup-sub" title="Pickup · room-bookings cancelled (click for detail)">Cancel.</th>'
-    + '<th class="sell-grp-pickup-sub" title="Pickup · net ΔRN = new − cancelled">ΔRN</th>'
-    + '<th class="sell-grp-pickup-sub" title="Pickup · ADR of new bookings">ADR</th>'
+    + '<th class="sell-grp-pickup-sub" title="Pickup · net RN = new − cancelled. Click a cell for the new/cancelled detail.">Var RN</th>'
+    + '<th class="sell-grp-pickup-sub" title="Pickup · ADR of the net pickup">Var ADR</th>'
     + '<th class="sell-grp-stly-sub" title="STLY (-364d) · RN">RN</th>'
     + '<th class="sell-grp-stly-sub" title="STLY · OCC%">OCC</th>'
     + '<th class="sell-grp-stly-sub" title="STLY · ADR">ADR</th>'
-    + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · new room-bookings a year ago (clickable)">New</th>'
-    + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · room-bookings cancelled a year ago (clickable)">Cancel.</th>'
-    + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net ΔRN STLY">ΔRN</th>'
-    + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of new STLY bookings">ADR</th>'
-    + (showExp
-       ? '<th class="sell-grp-expedia-sub" title="My current Expedia price, with the market position vs compset (1 = cheapest)">Mine</th>'
-         + '<th class="sell-grp-expedia-sub" title="Weighted Expedia compset average (weights only, no offset) — in Expedia space, to compare with my Expedia price">Compset</th>'
-       : '')
+    + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net RN a year ago. Click a cell for the new/cancelled detail.">Var RN</th>'
+    + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of the net STLY pickup">Var ADR</th>'
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;
   if (typeof computeRMESPriceMap === 'function' && sel !== 'both'){
@@ -12765,6 +12766,23 @@ function renderSellStrategy(sel){
     try { _rmesMapForAlignment = computeRMESPriceMap(sel, _tdN, _rangeForAlign); }
     catch(e){ _rmesMapForAlignment = null; }
   }
+  // Marker pickup ultimi 7 giorni per ogni data di soggiorno: un solo scan di BOOKINGS.
+  let _pk7map = {};
+  try {
+    if (typeof pickup7dMapForStays === 'function') _pk7map = pickup7dMapForStays(sel, A.rows.map(r=>r.ymd));
+  } catch(e){ _pk7map = {}; }
+  const _pk7Flag = (ymdNum)=>{
+    const p = _pk7map[ymdNum];
+    if (!p) return '';
+    const d = p.cur - p.stly;
+    const tip = `Pickup · last 7 days: ${p.cur} RN\nLast year (same 7-day booking window): ${p.stly} RN\nDelta vs STLY: ${d>=0?'+':'\u2212'}${Math.abs(d)} RN`;
+    let cls, txt;
+    if (p.cur === 0){ cls='pk-none'; txt='\u25cb'; }
+    else if (d > 0){ cls='pk-up';   txt='\u25b2'+p.cur; }
+    else if (d < 0){ cls='pk-down'; txt='\u25bc'+p.cur; }
+    else { cls='pk-flat'; txt='\u25cf'+p.cur; }
+    return `<span class="sell-pk-dot ${cls}" title="${escapeHtml(tip)}">${txt}</span> `;
+  };
   for (let i=0; i<A.rows.length; i++){
     const r = A.rows[i];
     const isWE = (r.dow===5 || r.dow===6 || r.dow===0);
@@ -12868,10 +12886,18 @@ function renderSellStrategy(sel){
         }
         // Compset cell (unchanged)
         const compsetCell = `<td class="cell-mono ${diffCls}" style="background:rgba(58,107,107,.04)" title="${avgTooltip}">${avgTxt}${avgBadge}<br><span style="font-size:9px;font-weight:400">${diffTxt}</span></td>`;
-        // Order: Mine → Compset (Mine w/RMES rimosso su richiesta utente)
-        expCells = myCellWithRank + compsetCell;
+        // UNA sola colonna: mio prezzo (1ª riga) + compset e posizione (2ª riga).
+        let _posMine = '';
+        {
+          const rkM = _sellCompRank(sel, r.ymd.toString().slice(0,4)+'-'+r.ymd.toString().slice(4,6)+'-'+r.ymd.toString().slice(6,8), myP);
+          if (rkM) _posMine = rkM.rank + '/' + rkM.total;
+        }
+        const _rsTip = myTooltip + (_posMine ? ' · position ' + _posMine + ' (1 = cheapest)' : '') + ' — ' + avgTooltip;
+        expCells = `<td class="cell-mono sell-block-expedia ${diffCls}" style="background:rgba(58,107,107,.04);text-align:center;line-height:1.25" title="${escapeHtml(_rsTip)}">`
+                 + `<div style="font-weight:700">${myTxt}</div>`
+                 + `<div style="font-size:9.5px;font-weight:400;opacity:.85;white-space:nowrap">cs ${avgTxt}${_posMine ? ' · ' + _posMine : ''}</div></td>`;
       } else {
-        expCells = `<td class="cell-mono cell-flat sell-block-expedia" style="background:rgba(58,107,107,.04);text-align:center">—</td><td class="cell-mono cell-flat sell-block-expedia" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
+        expCells = `<td class="cell-mono cell-flat sell-block-expedia" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
       }
     }
     let cellMercato = '';
@@ -13488,26 +13514,22 @@ function renderSellStrategy(sel){
       })();
     html += `<tr${_searchTipVal}>
       ${_luTdHtml}${_rmesTdHtml}
-      <td class="cell-mono"${_bgInline}>${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
+      <td class="cell-mono"${_bgInline}>${_pk7Flag(r.ymd)}${pad2(r.day)}/${pad2(r.mo)}/${r.y}</td>
       <td class="sell-ev-col"${_bgInline}>${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
       <td${_dowInline}>${dowIT[r.dow]}</td>
       <!-- OTB -->
       <td class="cell-mono ${rnCmpCls} sell-grp-otb-cell">${r.curRn>0?`<span class="sell-pickup-link" data-row="${i}" data-kind="otb" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">${r.curRn}</span>`:r.curRn}</td>
       <td class="cell-mono">${fmtPct(r.curOcc,0)}</td>
       <td class="cell-mono ${adrCmpCls}">${isFinite(r.curAdr)?fmtEUR(r.curAdr):'—'}</td>
-      <!-- Pickup OTB (4 colonne, niente ΔRev) -->
-      <td class="cell-mono sell-grp-pickup-cell ${nuoveCount>0?'cell-pos':'cell-flat'}">${nuoveCellInner}</td>
-      <td class="cell-mono cell-flat" style="text-align:right">${cancelCellInner}</td>
-      <td class="cell-mono ${pkRnCls}">${pkRnCellInner}</td>
+      <!-- Pickup OTB: solo il netto (Var RN / Var ADR); nuove e cancellate nel drill -->
+      <td class="cell-mono sell-grp-pickup-cell ${pkRnCls}">${pkRnCellInner}</td>
       <td class="cell-mono">${pkAdrTxt}</td>
       <!-- STLY (RN, OCC, ADR — no Revenue) -->
       <td class="cell-mono cell-flat sell-grp-stly-cell">${r.stlyRn>0?`<span class="sell-pickup-link" data-row="${i}" data-kind="otbStly" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px">${r.stlyRn}</span>`:r.stlyRn}</td>
       <td class="cell-mono cell-flat">${fmtPct(r.stlyOcc,0)}</td>
       <td class="cell-mono cell-flat">${isFinite(r.stlyAdr)?fmtEUR(r.stlyAdr):'—'}</td>
-      <!-- Pickup STLY (4 colonne) -->
-      <td class="cell-mono sell-grp-pkstly-cell ${pkStlyNewCount>0?'cell-pos':'cell-flat'}" style="background:rgba(138,138,138,.04)">${pkStlyNewCell}</td>
-      <td class="cell-mono ${pkStlyCancelCount>0?'cell-neg':'cell-flat'}" style="background:rgba(138,138,138,.04);text-align:right">${pkStlyCancelCell}</td>
-      <td class="cell-mono ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${(pkStlyNewCount>0||pkStlyCancelCount>0)?`<span class="sell-pickup-link" data-row="${i}" data-kind="pkStlyNet" title="Click: new + cancelled detail (STLY)" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</span>`:`${r.pkRnStly>=0?'+':''}${r.pkRnStly}`}</td>
+      <!-- Pickup STLY: solo il netto -->
+      <td class="cell-mono sell-grp-pkstly-cell ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${(pkStlyNewCount>0||pkStlyCancelCount>0)?`<span class="sell-pickup-link" data-row="${i}" data-kind="pkStlyNet" title="Click: new + cancelled detail (STLY)" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</span>`:`${r.pkRnStly>=0?'+':''}${r.pkRnStly}`}</td>
       <td class="cell-mono ${pkStlyAdrTxt==='—'?'cell-flat':''}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
       ${beddyCell}
       ${expCells}
@@ -13547,22 +13569,18 @@ function renderSellStrategy(sel){
     <td class="cell-mono ${totRnCmpCls}">${T.curRn}</td>
     <td class="cell-mono">${fmtPct(T.curOcc,1)}</td>
     <td class="cell-mono ${totAdrCmpCls}">${isFinite(T.curAdr)?fmtEUR(T.curAdr):'—'}</td>
-    <!-- Pickup OTB (4 colonne) -->
-    <td class="cell-mono cell-pos">${totNewN>0?'+'+totNewN:'0'}</td>
-    <td class="cell-mono cell-flat" style="text-align:right;color:#a83b3b">${totCancelN>0?'-'+totCancelN:'0'}</td>
+    <!-- Pickup OTB: solo il netto -->
     <td class="cell-mono ${totDRn>=0?'cell-pos':'cell-neg'}">${totDRn>=0?'+':''}${totDRn}</td>
     <td class="cell-mono">${isFinite(T.pkAdr)?fmtEUR(T.pkAdr):'—'}</td>
     <!-- STLY (RN, OCC, ADR — niente Revenue) -->
     <td class="cell-mono cell-flat">${T.stlyRn}</td>
     <td class="cell-mono cell-flat">${fmtPct(T.stlyOcc,1)}</td>
     <td class="cell-mono cell-flat">${isFinite(T.stlyAdr)?fmtEUR(T.stlyAdr):'—'}</td>
-    <!-- Pickup STLY (4 colonne) -->
-    <td class="cell-mono ${totPkStlyNew>0?'cell-pos':'cell-flat'}" style="background:rgba(138,138,138,.04)">${totPkStlyNew>0?'+'+totPkStlyNew:'0'}</td>
-    <td class="cell-mono ${totPkStlyCancel>0?'cell-neg':'cell-flat'}" style="background:rgba(138,138,138,.04);text-align:right">${totPkStlyCancel>0?'-'+totPkStlyCancel:'0'}</td>
+    <!-- Pickup STLY: solo il netto -->
     <td class="cell-mono ${T.pkRnStly>=0?'cell-pos':'cell-neg'}" style="background:rgba(138,138,138,.04)">${T.pkRnStly>=0?'+':''}${T.pkRnStly}</td>
     <td class="cell-mono ${isFinite(totPkStlyAdr)?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${isFinite(totPkStlyAdr)?fmtEUR(totPkStlyAdr):'—'}</td>
     ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
-    ${showExp ? '<td class="cell-flat" colspan="2" style="background:rgba(58,107,107,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
+    ${showExp ? '<td class="cell-flat" style="background:rgba(58,107,107,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
     <!-- Base Price -->
     <td class="cell-flat" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
@@ -13590,14 +13608,14 @@ function renderSellStrategy(sel){
     }catch(e){}
     return 1;
   });
-  try { _sellTransposeTable(document.getElementById('sell-table-wrap'), showBeddy, showExp, sel, _mlosByDay); }
-  catch(e){ console.error('[sell] transpose failed', e); }
+  // Orientamento classico ripristinato su richiesta: giorni in RIGA, KPI in COLONNA.
+  // _sellTransposeTable() resta nel motore ma non viene più invocata.
   // Ripristina lo scroll orizzontale (vedi save all'inizio della funzione) — così l'utente
   // resta sulla data che stava modificando invece di tornare a oggi dopo un accept/override.
   if (_savedSellScrollLeft > 0){
     requestAnimationFrame(() => {
       try {
-        const _w = document.querySelector('.sell-tposed-scroll-wrap');
+        const _w = document.querySelector('.sell-tposed-scroll-wrap, #sell-table-wrap');
         const _tw = document.querySelector('.sell-tposed-scroll-top');
         if (_w) _w.scrollLeft = _savedSellScrollLeft;
         if (_tw) _tw.scrollLeft = _savedSellScrollLeft;
@@ -16820,12 +16838,16 @@ function _aggForecastImpl(structKey){
     // 1-week pickup windows (was 14 days → now 7, as requested)
     m.eurPerDayPickup7 = m.pickupCurRev / 7;
     m.eurPerDayPickupStly7 = m.pickupStlyRev / 7;
-    // Achievement = Current OTB / Month-1st snapshot forecast (= il forecast salvato il 1° del mese).
-    // Mostra quanto stai onorando il forecast iniziale del mese. Senza snapshot, fallback su fcstRev live (= il forecast attuale).
-    const _achDen = (m.snapshot && m.snapshot.fcstRev > 0) ? m.snapshot.fcstRev : m.fcstRev;
+    // Achievement = Revenue OTB / Revenue Budget (richiesta utente).
+    // Prima era OTB / snapshot del 1° del mese: ora il metro è il budget.
+    let _achDen = 0;
+    try {
+      if (typeof budgetMonthlyFor === 'function') _achDen = budgetMonthlyFor(structKey, m.y*100 + m.mo, 'rev') || 0;
+    } catch(e){ _achDen = 0; }
+    m.budgetRev = _achDen;
     m.achievement = _achDen > 0 ? m.otbRev / _achDen : 0;
     m.achievementDen = _achDen;
-    m.achievementDenSource = (m.snapshot && m.snapshot.fcstRev > 0) ? 'snapshot' : 'live';
+    m.achievementDenSource = 'budget';
     if (monthState === 'CURRENT' || monthState === 'FUTURE'){
       if (typeof fp_maybeAutoSaveSnapshot === 'function'){
         const snapData = {
@@ -16958,7 +16980,7 @@ function renderForecast(sel){
         <th title="Revenue forecast saved on the 1st of the month">Rev snap</th>
         <th title="Δ% live vs initial snapshot (positive = doing better than forecast at the start of the month)">Δ% vs snap</th>
         <th>OCC%</th><th>ADR</th><th>Revenue</th>
-        <th title="OTB / Month-1st snapshot forecast (= forecast salvato il 1° del mese). Se il mese non ha snapshot, fallback su forecast live.">% Achievement</th>
+        <th title="Revenue OTB / Revenue Budget for the month.">vs Budget</th>
       </tr>
     </thead>`;
   let body = '';
@@ -17034,7 +17056,7 @@ function renderForecast(sel){
                 <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${budAdr > 0 ? fmtEUR(budAdr) : '—'}</td>
                 <td class="cell-mono ${revCls}" style="background:rgba(60,124,90,.04)" title="${revTip}"><b>${budRev > 0 ? fmtEUR(budRev) : '—'}</b></td>`;
       })()}
-      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76" title="OTB ${fmtEUR(m.otbRev)} / ${m.achievementDenSource === 'snapshot' ? 'Month-1st snapshot' : 'live forecast (no snapshot)'} ${fmtEUR(m.achievementDen)} = ${(m.achievement*100).toFixed(2)}% (≥95% verde, 70-95% neutro, <70% rosso)"><b>${Math.round((m.achievement||0)*100)}%</b></td>
+      <td class="cell-mono ${achCls}" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76" title="${m.achievementDen > 0 ? `Revenue OTB ${fmtEUR(m.otbRev)} / Revenue Budget ${fmtEUR(m.achievementDen)} = ${(m.achievement*100).toFixed(2)}% (≥95% green, 70-95% neutral, <70% red)` : 'No budget set for this month'}"><b>${m.achievementDen > 0 ? Math.round((m.achievement||0)*100)+'%' : '—'}</b></td>
     </tr>`;
   }
   const totDiff = totFcstRev - totOtbRev;
@@ -17107,22 +17129,21 @@ function renderForecast(sel){
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetOcc > 0 ? fmtPct(totBudgetOcc,1) : '—'}</td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetAdr > 0 ? fmtEUR(totBudgetAdr) : '—'}</td>
     <td class="cell-mono ${totBudgetRevCls}" style="background:rgba(60,124,90,.04)" title="${totBudgetRevTip}"><b>${totBudgetRev > 0 ? fmtEUR(totBudgetRev) : '—'}</b></td>
-    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76" title="Total OTB ${fmtEUR(totOtbRev)} / Total Month-1st snapshot ${fmtEUR(totAchDen)} = ${(totAch*100).toFixed(2)}% (rounded · snapshot where available, otherwise live forecast)"><b>${Math.round((totAch||0)*100)}%</b></td>
+    <td class="cell-mono ${totAch >= 0.95 ? 'cell-pos' : (totAch >= 0.70 ? '' : 'cell-neg')}" style="background:rgba(91,138,118,.06);border-left:2.5px solid #5b8a76" title="Total Revenue OTB ${fmtEUR(totOtbRev)} / Total Revenue Budget ${fmtEUR(totAchDen)} = ${(totAch*100).toFixed(2)}%"><b>${totAchDen > 0 ? Math.round((totAch||0)*100)+'%' : '—'}</b></td>
   </tr>`;
   document.getElementById('fcst-monthly-table').innerHTML =
     '<div class="mkpi-topscroll-wrap" id="mkpi-topscroll" style="overflow-x:auto;overflow-y:hidden;height:14px"><div id="mkpi-topscroll-spacer" style="height:1px"></div></div>' +
     '<div class="mkpi-sticky-wrap" id="mkpi-mainwrap" style="max-height:calc(100vh - 200px);min-height:340px;overflow:auto;position:relative">' +
       '<table class="data mkpi-sticky-table" id="mkpi-table">' + head + '<tbody>' + body + '</tbody></table>' +
     '</div>';
-  // === Grafico barre raggruppate per mese: Current OTB · STLY · Final LY · Month-1st snapshot ===
+  // === Grafico barre raggruppate per mese: SOLO Current OTB vs STLY (richiesta utente).
+  // Final LY e Month-1st snapshot restano nella tabella sotto. ===
   (function(){
     const host = document.getElementById('fcst-chart-monthly');
     if (!host) return;
     const series = [
       { label:'Current OTB', color:'#4a7c59', get:m=>m.otbRev||0 },
       { label:'STLY',        color:'#8e5fa8', get:m=>m.stlyRev||0 },
-      { label:'Final LY',    color:'#9aa7b3', get:m=>m.finalLyRev||0 },
-      { label:'Month-1st',   color:'#3b5a78', get:m=>(m.snapshot&&m.snapshot.fcstRev>0)?m.snapshot.fcstRev:(m.fcstRev||0) },
     ];
     const months = ymOrder.map(ym=>M[ym]).filter(Boolean);
     if (!months.length){ host.innerHTML=''; return; }
@@ -18915,6 +18936,27 @@ function _bwHeat(t){
   }
   return 'rgb(12,46,96)';
 }
+/* Rampa calda per l'anno scorso: stesso principio (scuro = quota maggiore),
+   tinta diversa per non confondere le due annate. */
+function _bwHeatLY(t){
+  const stops = [
+    [0.00, [239, 228, 210]],
+    [0.35, [222, 195, 148]],
+    [0.65, [196, 149,  75]],
+    [0.85, [156, 108,  42]],
+    [1.00, [110,  73,  24]],
+  ];
+  t = Math.max(0, Math.min(1, t));
+  for (let i=0; i<stops.length-1; i++){
+    const [p0,c0] = stops[i], [p1,c1] = stops[i+1];
+    if (t <= p1){
+      const f = (p1===p0) ? 0 : (t-p0)/(p1-p0);
+      const c = c0.map((v,j)=> Math.round(v + (c1[j]-v)*f));
+      return `rgb(${c[0]},${c[1]},${c[2]})`;
+    }
+  }
+  return 'rgb(110,73,24)';
+}
 function renderBookingWindowChart(containerId, A, opts){
   const _host = document.getElementById(containerId);
   if (!_host) return;
@@ -18929,7 +18971,6 @@ function renderBookingWindowChart(containerId, A, opts){
   const slotW = cw / bw.length;
   const barW = slotW * 0.30;
   const groupW = barW * 2 + 4;
-  const colorBarSty = '#c9c2b6';
   const colorLineCur = '#e85a2c';
   const colorLineSty = '#f3c63a';
   // Rango delle fasce sulla quota di quest'anno: serve solo al colore.
@@ -18938,6 +18979,13 @@ function renderBookingWindowChart(containerId, A, opts){
   const heatOf = (p)=> _bwHeat(curMax===curMin ? 1 : (p-curMin)/(curMax-curMin));
   const ranked = bw.map((b,i)=>({i, p:b.curPct})).sort((a,b)=>b.p-a.p);
   const rankOf = {}; ranked.forEach((r,k)=>{ rankOf[r.i] = k+1; });
+  // Stessa logica per l'anno scorso, su una rampa calda: si legge il rango LY
+  // senza confonderlo con quello di quest'anno.
+  const styMax = Math.max(...bw.map(b=>b.styPct), 0.0001);
+  const styMin = Math.min(...bw.map(b=>b.styPct));
+  const heatSty = (p)=> _bwHeatLY(styMax===styMin ? 1 : (p-styMin)/(styMax-styMin));
+  const rankedSty = bw.map((b,i)=>({i, p:b.styPct})).sort((a,b)=>b.p-a.p);
+  const rankStyOf = {}; rankedSty.forEach((r,k)=>{ rankStyOf[r.i] = k+1; });
   let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="max-width:100%;display:block">`;
   for (let i=0; i<=5; i++){
     const y = pad.t + ch * i / 5;
@@ -18957,21 +19005,25 @@ function renderBookingWindowChart(containerId, A, opts){
     const hCur = ch * (b.curPct / niceMaxPct);
     const hSty = ch * (b.styPct / niceMaxPct);
     const fill = heatOf(b.curPct);
+    const fillSty = heatSty(b.styPct);
     svg += `<rect x="${xCur}" y="${pad.t+ch-hCur}" width="${barW}" height="${hCur}" fill="${fill}" pointer-events="none"/>`;
-    svg += `<rect x="${xSty}" y="${pad.t+ch-hSty}" width="${barW}" height="${hSty}" fill="${colorBarSty}" opacity="0.75" pointer-events="none"/>`;
+    svg += `<rect x="${xSty}" y="${pad.t+ch-hSty}" width="${barW}" height="${hSty}" fill="${fillSty}" pointer-events="none"/>`;
     // Percentuali stampate sopra le barre: è il numero che conta, non il volume.
     if (b.curPct > 0){
       svg += `<text x="${xCur+barW/2}" y="${pad.t+ch-hCur-5}" font-size="11.5" font-weight="700" fill="${fill}" text-anchor="middle" font-family="DM Mono" pointer-events="none">${Math.round(b.curPct*100)}%</text>`;
     }
     if (b.styPct > 0){
-      svg += `<text x="${xSty+barW/2}" y="${pad.t+ch-hSty-5}" font-size="9.5" fill="#8d8578" text-anchor="middle" font-family="DM Mono" pointer-events="none">${Math.round(b.styPct*100)}%</text>`;
+      svg += `<text x="${xSty+barW/2}" y="${pad.t+ch-hSty-5}" font-size="9.5" fill="${fillSty}" font-weight="600" text-anchor="middle" font-family="DM Mono" pointer-events="none">${Math.round(b.styPct*100)}%</text>`;
     }
     svg += `<text x="${cx}" y="${pad.t+ch+18}" font-size="10" fill="#444" text-anchor="middle" font-family="DM Sans" pointer-events="none">${b.label}</text>`;
-    svg += `<text x="${cx}" y="${pad.t+ch+31}" font-size="8.5" fill="${fill}" font-weight="700" text-anchor="middle" font-family="DM Mono" pointer-events="none">#${rankOf[i]}</text>`;
+    svg += `<text x="${cx}" y="${pad.t+ch+31}" font-size="8.5" text-anchor="middle" font-family="DM Mono" pointer-events="none">`
+        +  `<tspan fill="${fill}" font-weight="700">#${rankOf[i]}</tspan>`
+        +  `<tspan fill="#b3ab9d"> · </tspan>`
+        +  `<tspan fill="${fillSty}" font-weight="700">#${rankStyOf[i]}</tspan></text>`;
     const dPct = (b.curPct - b.styPct)*100;
     const dAdr = b.curAdr - b.styAdr;
     const tipLines = [
-      `${b.label} · rank #${rankOf[i]} of ${bw.length} this year`,
+      `${b.label} · rank #${rankOf[i]} of ${bw.length} this year (#${rankStyOf[i]} last year)`,
       ``,
       `This year: ${(b.curPct*100).toFixed(1)}% of bookings · ADR ${Math.round(b.curAdr).toLocaleString('en-GB')}€`,
       `Last year: ${(b.styPct*100).toFixed(1)}% of bookings · ADR ${Math.round(b.styAdr).toLocaleString('en-GB')}€`,
@@ -19012,8 +19064,12 @@ function renderBookingWindowChart(containerId, A, opts){
   svg += `<rect x="${lgX}" y="${lgY}" width="26" height="11" fill="url(#bwLg${containerId})"/>`;
   svg += `<text x="${lgX+31}" y="${lgY+10}" font-size="10.5" fill="#333" font-family="DM Sans">${opts.barCurLbl} — darker = bigger share</text>`;
   lgX += 31 + (opts.barCurLbl.length + 26) * 6.6 + 14;
+  svg += `<defs><linearGradient id="bwLgLY${containerId}" x1="0" y1="0" x2="1" y2="0">`
+      +  `<stop offset="0%" stop-color="${_bwHeatLY(0)}"/><stop offset="100%" stop-color="${_bwHeatLY(1)}"/></linearGradient></defs>`;
+  svg += `<rect x="${lgX}" y="${lgY}" width="26" height="11" fill="url(#bwLgLY${containerId})"/>`;
+  svg += `<text x="${lgX+31}" y="${lgY+10}" font-size="10.5" fill="#333" font-family="DM Sans">${opts.barStyLbl} — same colour rule</text>`;
+  lgX += 31 + (opts.barStyLbl.length + 20) * 6.6 + 14;
   const lg = [
-    {label: opts.barStyLbl,  color: colorBarSty,  shape: 'rect'},
     {label: opts.lineCurLbl, color: colorLineCur, shape: 'circle'},
     {label: opts.lineStyLbl, color: colorLineSty, shape: 'circle'},
   ];
@@ -19485,28 +19541,8 @@ function _renderTrendChart(containerId, metric /* 'adr' | 'occ' */, sel, yms){
   if (finalStly && pickVal(finalStly) != null){
     svg += `<circle cx="${xPx(0).toFixed(1)}" cy="${yPx(pickVal(finalStly)).toFixed(1)}" r="3" fill="#888" opacity="0.6"/>`;
   }
-  // Final value labels on right
-  // Etichette di fine linea (OTB/FCST/STLY) con ANTI-SOVRAPPOSIZIONE: le ordino per y
-  // e forzo una distanza minima verticale, così i numeri non si accavallano.
-  (function(){
-    const items = [
-      { val: pickVal(finalOtb),  color:'#3b6b9a', lbl:'OTB'  },
-      { val: pickVal(finalFc),   color:'#c4823b', lbl:'FCST' },
-      { val: pickVal(finalStly), color:'#888',    lbl:'STLY' },
-    ].filter(it => it.val != null && isFinite(it.val))
-     .map(it => ({ val:it.val, color:it.color, lbl:it.lbl, y: yPx(it.val) }))
-     .sort((a,b)=> a.y - b.y);
-    const GAP = 12, maxY = H - PAD_B - 2, minY = 10;
-    for (let i=1; i<items.length; i++){ if (items[i].y - items[i-1].y < GAP) items[i].y = items[i-1].y + GAP; }
-    if (items.length && items[items.length-1].y > maxY){
-      items[items.length-1].y = maxY;
-      for (let i=items.length-2; i>=0; i--){ if (items[i].y > items[i+1].y - GAP) items[i].y = items[i+1].y - GAP; }
-    }
-    if (items.length && items[0].y < minY){ items[0].y = minY; for (let i=1;i<items.length;i++){ if (items[i].y < items[i-1].y + GAP) items[i].y = items[i-1].y + GAP; } }
-    for (const it of items){
-      svg += `<text x="${(W - PAD_R - 4).toFixed(1)}" y="${it.y.toFixed(1)}" text-anchor="end" font-size="10" font-weight="700" fill="${it.color}" font-family="DM Mono,monospace">${fmtVal(it.val)} ${it.lbl}</text>`;
-    }
-  })();
+  // Etichette di fine linea rimosse su richiesta: si accavallavano e sporcavano la lettura.
+  // I valori restano disponibili passando il mouse sul grafico (guida verticale + tooltip).
   // Hover layer: vertical guide + 3 dots + transparent overlay (wired after insert)
   const cid = containerId;
   svg += `<line id="${cid}-guide" x1="0" y1="${PAD_T}" x2="0" y2="${(H-PAD_B).toFixed(1)}" stroke="#bbb" stroke-width="1" opacity="0"/>`;
