@@ -5277,7 +5277,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -16342,6 +16342,110 @@ function fcstAdrGrowth(structKey){
   const growth = (lyAdr>0 && curAdr>0) ? curAdr/lyAdr : 1.0;
   return { growth, curAdr, lyAdr, curRn, lyRn };
 }
+/* ===========================================================================
+   FORECAST GIORNALIERO BASATO SUL PICKUP
+   ---------------------------------------------------------------------------
+   Sostituisce il vecchio modello "RN anno scorso × share YoY", che estrapolava
+   la rampa di avviamento delle strutture e ignorava l'OTB reale.
+
+   Per ogni NOTTE futura e per ogni room type:
+     1. parto dalle RN gia a libro su quella notte (OTB giornaliero)
+     2. stimo il pickup ancora da incassare guardando lo storico di notti
+        confrontabili: stesso GIORNO DELLA SETTIMANA, stesso ANTICIPO.
+        Campione = notti chiuse con lo stesso DoW negli ultimi 90 giorni
+        + stesso DoW nello stesso mese dell'anno scorso.
+        Oltre i 60 giorni di anticipo si usa SOLO lo stesso mese LY: il
+        campione a 90 giorni sarebbe di un'altra stagione e falserebbe la stima.
+     3. su ogni notte del campione conto le RN entrate con anticipo <= quello
+        della notte da prevedere, e ne faccio la MEDIA (le notti a zero contano
+        come osservazioni: saltarle gonfierebbe la stima).
+     4. cap: OTB + pickup non supera il 98% delle camere di quel giorno.
+     5. il pickup viene valorizzato con l'ADR realmente incassato sullo stesso
+        campione e sullo stesso anticipo (nessun cap sul prezzo).
+   Il forecast del mese e' la somma dei forecast giornalieri.
+   =========================================================================== */
+const FCST_LEAD_SEASON_SWITCH = 60;   // oltre questo anticipo: solo stesso mese LY
+const FCST_MAX_OCC = 0.98;            // tetto di occupazione giornaliera
+let _FCST_DAY_IDX = {};
+function fcstDayIndex(sel){
+  if (_FCST_DAY_IDX[sel]) return _FCST_DAY_IDX[sel];
+  const keys = new Set(structKeysFor(sel));
+  const useIdx = !!(typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]);
+  const list = useIdx ? _BOOKINGS_BY_STRUCT[sel] : BOOKINGS;
+  const byRt = {};
+  let minStay = 99999999;
+  for (const b of list){
+    if (b.cancelled) continue;
+    if (!useIdx && !keys.has(b.struct)) continue;
+    if (b.virtualRoom) continue;               // doppione tecnico: revenue si, RN no
+    if (b.bookYmd > TODAY_YMD) continue;
+    const rt = b.room;
+    if (!rt) continue;
+    const bookD = startOfDay(b.dBook);
+    let cur = startOfDay(b.dIn);
+    const end = startOfDay(b.dOut);
+    while (cur < end){
+      const k = ymd(cur);
+      if (k < minStay) minStay = k;
+      const lead = Math.round((cur - bookD) / 86400000);
+      let R = byRt[rt]; if (!R) R = byRt[rt] = {};
+      let D = R[k]; if (!D) D = R[k] = { leads: [], revs: [] };
+      D.leads.push(lead < 0 ? 0 : lead);
+      D.revs.push(b.revPerNight);
+      cur = addDays(cur, 1);
+    }
+  }
+  // ordino per anticipo e precalcolo i cumulati: cosi il conteggio "RN con
+  // anticipo <= L" e' una ricerca binaria invece di una scansione.
+  for (const rt in byRt){
+    const R = byRt[rt];
+    for (const k in R){
+      const D = R[k];
+      const ord = D.leads.map((_,i)=>i).sort((a,b)=> D.leads[a]-D.leads[b]);
+      const L = new Array(ord.length), C = new Array(ord.length);
+      let acc = 0;
+      for (let i=0;i<ord.length;i++){ L[i] = D.leads[ord[i]]; acc += D.revs[ord[i]]; C[i] = acc; }
+      R[k] = { leads: L, cum: C, rn: L.length, rev: acc };
+    }
+  }
+  const out = { byRt, minStay: (minStay === 99999999 ? TODAY_YMD : minStay) };
+  _FCST_DAY_IDX[sel] = out;
+  return out;
+}
+function _fcstUpToLead(D, lead){
+  const L = D.leads;
+  let lo = 0, hi = L.length - 1, ans = -1;
+  while (lo <= hi){ const mid = (lo+hi) >> 1; if (L[mid] <= lead){ ans = mid; lo = mid+1; } else hi = mid-1; }
+  if (ans < 0) return { rn: 0, rev: 0 };
+  return { rn: ans+1, rev: D.cum[ans] };
+}
+function fcstSampleDates(stayYmd, lead){
+  const d = ymdToDate(stayYmd), dow = d.getDay();
+  const out = [];
+  const today0 = startOfDay(new Date(TODAY));
+  if (lead <= FCST_LEAD_SEASON_SWITCH){
+    for (let i=1; i<=90; i++){ const x = addDays(today0, -i); if (x.getDay() === dow) out.push(ymd(x)); }
+  }
+  const y0 = d.getFullYear() - 1, mo = d.getMonth();
+  const last = new Date(y0, mo+1, 0).getDate();
+  for (let dd=1; dd<=last; dd++){ const x = new Date(y0, mo, dd); if (x.getDay() === dow) out.push(ymd(x)); }
+  return out;
+}
+function fcstPickupForDay(idx, rt, stayYmd, lead){
+  const R = idx.byRt[rt] || {};
+  let sumRn = 0, sumRev = 0, nObs = 0;
+  const dates = fcstSampleDates(stayYmd, lead);
+  for (let i=0; i<dates.length; i++){
+    const sd = dates[i];
+    if (sd < idx.minStay || sd >= TODAY_YMD) continue;   // solo notti chiuse, struttura gia operativa
+    nObs++;
+    const D = R[sd];
+    if (!D) continue;                                     // notte a zero = osservazione valida
+    const c = _fcstUpToLead(D, lead);
+    sumRn += c.rn; sumRev += c.rev;
+  }
+  return { pkRn: nObs > 0 ? sumRn/nObs : 0, pkAdr: sumRn > 0 ? sumRev/sumRn : 0, nObs };
+}
 let _FORECAST_CACHE = {};
 function aggForecast(structKey){
   if (_FORECAST_CACHE[structKey]) return _FORECAST_CACHE[structKey];
@@ -16684,63 +16788,60 @@ function _aggForecastImpl(structKey){
         fcstRn = rtData.otbRn;
         fcstRev = rtData.otbRev;
         fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
-      } else if (monthState === 'CURRENT'){
-        const todayDay = today0.getDate();
-        const daysRemaining = Math.max(0, m.days - todayDay + 1);
-        const daysPast = m.days - daysRemaining;
-        const mmKey_cur = pad2(m.mo);
-        const shareInfo_cur = (typeof fcstShareForMonth === 'function')
-          ? fcstShareForMonth(floorShare.share, monthShareMap, mmKey_cur)
-          : { share: floorShare.share, source: 'globale' };
-        const shareCapped_month_cur = Math.max(0.70, Math.min(1.30, shareInfo_cur.share));
-        rtData._shareSource = shareInfo_cur.source;
-        rtData._shareValue = shareCapped_month_cur;
-        const lyRnProRata = rtData.finalLyRn * (daysRemaining / m.days);
-        const futureBase = lyRnProRata * shareCapped_month_cur;
-        const otbFutureRn = rtData.otbRn - rtData.actualPastRn;
-        const otbFutureRev = rtData.otbRev - rtData.actualPastRev;
-        let futureForecastRn = Math.max(otbFutureRn, futureBase);
-        const capResidual = inventory[rt] * daysRemaining * 0.98;
-        futureForecastRn = Math.min(Math.max(capResidual, otbFutureRn), futureForecastRn);
-        futureForecastRn = Math.min(inventory[rt] * daysRemaining, futureForecastRn);
-        const pickupExpectedRn = Math.max(0, futureForecastRn - otbFutureRn);
-        const rmesAdr = _rmesAdrPickupForMonth(m.y, m.mo, rt);
-        const fallbackAdr = finalLyAdr > 0 ? finalLyAdr * effectiveAdrMult : 0;
-        const pickupAdr = (rmesAdr != null && rmesAdr > 0) ? rmesAdr : fallbackAdr;
-        rtData.pickupAdrSource = (rmesAdr != null && rmesAdr > 0) ? 'rmes' : 'ly_growth';
-        rtData.pickupAdr = pickupAdr;
-        const pickupRev = pickupExpectedRn * pickupAdr;
-        const futureRev = otbFutureRev + pickupRev;
-        fcstRn = Math.round(rtData.actualPastRn + futureForecastRn);
-        fcstRev = rtData.actualPastRev + futureRev;
-        fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
-      } else {
-        let targetRn;
-        const mmKey = pad2(m.mo);
-        const shareInfo_fut = (typeof fcstShareForMonth === 'function')
-          ? fcstShareForMonth(floorShare.share, monthShareMap, mmKey)
-          : { share: floorShare.share, source: 'globale' };
-        const shareCapped_month_fut = Math.max(0.70, Math.min(1.30, shareInfo_fut.share));
-        rtData._shareSource = shareInfo_fut.source;
-        rtData._shareValue = shareCapped_month_fut;
-        if (occOverrideShare !== null){
-          targetRn = occOverrideShare[rt];
-        } else {
-          targetRn = rtData.finalLyRn * shareCapped_month_fut;
-        }
+      } else if (occOverrideShare !== null){
+        // Override esplicito: l'utente ha chiesto di forzare l'OCC di budget su questo mese.
+        // In quel caso il target lo detta il budget, non il pickup storico.
+        let targetRn = occOverrideShare[rt];
         fcstRn = Math.max(rtData.otbRn, targetRn);
         fcstRn = Math.min(Math.max(capMaxOcc, rtData.otbRn), fcstRn);
         fcstRn = Math.min(cap, fcstRn);
         fcstRn = Math.round(fcstRn);
         const pickupRn = Math.max(0, fcstRn - rtData.otbRn);
-        const rmesAdr = _rmesAdrPickupForMonth(m.y, m.mo, rt);
         const fallbackAdr = finalLyAdr > 0 ? finalLyAdr * effectiveAdrMult : 0;
+        const rmesAdr = _rmesAdrPickupForMonth(m.y, m.mo, rt);
         const pickupAdr = (rmesAdr != null && rmesAdr > 0) ? rmesAdr : fallbackAdr;
-        rtData.pickupAdrSource = (rmesAdr != null && rmesAdr > 0) ? 'rmes' : 'ly_growth';
+        rtData.pickupAdrSource = 'occ_budget_override';
         rtData.pickupAdr = pickupAdr;
-        const pickupRev = pickupRn * pickupAdr;
-        fcstRev = rtData.otbRev + pickupRev;
+        rtData.pickupExpectedRn = pickupRn;
+        fcstRev = rtData.otbRev + pickupRn * pickupAdr;
         fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
+      } else {
+        // === MODELLO GIORNALIERO: OTB del giorno + pickup atteso per DoW/anticipo ===
+        const idx = fcstDayIndex(sel);
+        const R = idx.byRt[rt] || {};
+        let dRn = 0, dRev = 0, pkTotRn = 0, pkTotRev = 0;
+        let capHits = 0, obsMin = Infinity, daysFuture = 0;
+        for (let dd = 1; dd <= m.days; dd++){
+          const k = m.y*10000 + m.mo*100 + dd;
+          const D = R[k];
+          const otbRnD  = D ? D.rn  : 0;
+          const otbRevD = D ? D.rev : 0;
+          const lead = Math.round((ymdToDate(k) - today0) / 86400000);
+          if (lead <= 0){                       // notte gia passata (o oggi): actuals
+            dRn += otbRnD; dRev += otbRevD;
+            continue;
+          }
+          daysFuture++;
+          const est = fcstPickupForDay(idx, rt, k, lead);
+          let pk = est.pkRn;
+          const roomLeft = Math.max(0, inventory[rt] * FCST_MAX_OCC - otbRnD);
+          if (pk > roomLeft){ pk = roomLeft; capHits++; }
+          let adr = est.pkAdr;
+          if (!(adr > 0)) adr = finalLyAdr > 0 ? finalLyAdr : (otbRnD > 0 ? otbRevD/otbRnD : 0);
+          dRn  += otbRnD + pk;
+          dRev += otbRevD + pk * adr;
+          pkTotRn += pk; pkTotRev += pk * adr;
+          if (est.nObs < obsMin) obsMin = est.nObs;
+        }
+        fcstRn = Math.round(dRn);
+        fcstRev = dRev;
+        fcstAdr = fcstRn > 0 ? fcstRev/fcstRn : 0;
+        rtData.pickupExpectedRn = pkTotRn;
+        rtData.pickupAdr = pkTotRn > 0 ? pkTotRev/pkTotRn : 0;
+        rtData.pickupAdrSource = 'daily_pickup';
+        rtData._capHits = capHits;
+        rtData._minObs = isFinite(obsMin) ? obsMin : 0;
+        rtData._daysFuture = daysFuture;
       }
       rtData.forecastRn = fcstRn;
       rtData.forecastRev = fcstRev;

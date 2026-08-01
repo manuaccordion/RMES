@@ -2368,11 +2368,23 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <div style="margin:0 0 14px 0;padding:12px 14px;background:#f5f9f5;border-left:4px solid #4a7c59;border-radius:0 6px 6px 0">
           <p style="margin:0 0 6px 0;font-weight:700;color:#2c5c3c">📖 In 30 seconds — what this tab is for</p>
-          <p style="margin:0;font-size:13px">One row per month, 16 months forward. <b>Where you see how the year is shaping up: budget vs forecast vs OTB.</b> The forecast is automatic — no buttons. It uses last year as a baseline, then adjusts for current pace, current OCC vs LY, and the price you have loaded for future days.</p>
+          <p style="margin:0;font-size:13px">One row per month, 16 months forward. <b>Where you see how the year is shaping up: budget vs forecast vs OTB.</b> The forecast is automatic — no buttons. It is built <b>night by night</b> from what is already on the books plus the pickup you can still expect, then summed into months.</p>
         </div>
 
         <p><b>Top KPIs</b>: YTD + Forecast Revenue, Final LY 2025 reference, Δ vs Final LY, OTB already acquired.</p>
 
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">How the forecast is built</h4>
+        <p style="margin:0 0 6px 0">Past nights are actuals. For every <b>future night</b> and every <b>room type</b>:</p>
+        <ol style="margin:6px 0 6px 20px">
+          <li><b>Start from the OTB of that night</b> — the room nights already sold for that exact date.</li>
+          <li><b>Estimate the pickup still to come</b> by looking at comparable nights in history: same <b>day of the week</b>, same <b>lead time</b>. Example — for Monday 3 August with 2 days to go, it looks at every Monday in the sample and counts the room nights that entered in the last 2 days before check-in.</li>
+          <li><b>The sample</b> is: same day of the week in the <b>last 90 closed days</b> + same day of the week in the <b>same month last year</b>. Beyond <b>60 days of lead time</b> only the last-year month is used — the 90-day window would be a different season and would distort the estimate. Nights that sold nothing count as zero observations, they are not skipped.</li>
+          <li><b>Take the average</b> of those observations = expected pickup in room nights.</li>
+          <li><b>Cap</b>: OTB + pickup never exceeds <b>98% of the rooms</b> available that night.</li>
+          <li><b>Price</b>: the pickup is valued at the ADR actually earned on the same sample at the same lead time. No cap on the price.</li>
+        </ol>
+        <p style="margin:0 0 6px 0">The month is simply the sum of its nights. If a month has <i>Force OCC to budget</i> switched on, that setting wins and the target comes from the budget instead.</p>
+        <p style="margin:0 0 6px 0"><i>Reading caution</i>: at long lead times the sample is thin (only the same weekday of the same month last year, so 4–5 observations), so months 3+ months out are more of a trend than a precise number.</p>
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Monthly KPI table — column by column</h4>
         <ul style="margin:6px 0 6px 18px">
           <li><b>Current OTB</b> — RN, OCC, ADR, Revenue already on the books for that month.</li>
