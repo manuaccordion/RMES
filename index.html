@@ -113,6 +113,35 @@ a.chip .dot{background:#0C1421}
 .struct-pill[data-s="nazionale"] .pdot{background:var(--c-naz)}
 .struct-pill[data-s="portenuove"] .pdot{background:var(--c-por)}
 .struct-pill[data-s="both"] .pdot{background:linear-gradient(90deg,var(--c-fs),var(--c-c16))}
+/* Menu strutture a due livelli: gestione (sopra) + strutture della gestione (sotto) */
+.struct-nav{display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.struct-pill[data-g="blerina"] .pdot{background:linear-gradient(135deg,var(--c-fs),var(--c-c16))}
+.struct-pill[data-g="francesca"] .pdot{background:var(--c-alf)}
+.struct-pill[data-g="enis"] .pdot{background:var(--c-dav)}
+.struct-pill[data-g="both"] .pdot{background:linear-gradient(90deg,var(--c-fs),var(--c-alf),var(--c-dav))}
+.struct-subpills{display:inline-flex;gap:4px;align-items:center;padding-left:14px;flex-wrap:wrap}
+.struct-subpills:empty{display:none}
+.struct-subpills::before{
+  content:'';width:12px;height:12px;margin-right:2px;
+  border-left:1.5px solid var(--line-2);border-bottom:1.5px solid var(--line-2);
+  border-radius:0 0 0 4px;position:relative;top:-4px;
+}
+.struct-subpill{
+  border:1px solid var(--line);background:var(--surface);
+  padding:5px 13px;border-radius:999px;
+  font-size:12px;font-weight:500;color:var(--ink-2);
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  transition:all .16s ease;
+}
+.struct-subpill .pdot{width:7px;height:7px;border-radius:50%;background:#ccc}
+.struct-subpill[data-s="firenze"] .pdot{background:var(--c-fs)}
+.struct-subpill[data-s="condotta"] .pdot{background:var(--c-c16)}
+.struct-subpill[data-s="portenuove"] .pdot{background:var(--c-por)}
+.struct-subpill[data-s="nazionale"] .pdot{background:var(--c-naz)}
+.struct-subpill[data-s="blerina"] .pdot{background:linear-gradient(135deg,var(--c-fs),var(--c-c16))}
+.struct-subpill:hover{color:var(--ink);border-color:var(--line-2)}
+.struct-subpill.active{background:var(--sel);color:#fff;border-color:var(--sel);font-weight:600}
+.struct-subpill.active .pdot{box-shadow:0 0 0 2px rgba(255,255,255,.3)}
 .struct-pill:hover{color:var(--ink)}
 .struct-pill.active{background:var(--sel);color:#fff;box-shadow:0 1px 5px rgba(15,159,194,.30)}
 .struct-pill.active .pdot{box-shadow:0 0 0 2px rgba(255,255,255,.25)}
@@ -431,7 +460,13 @@ table.data.sell-table .sell-grp-expedia-sub:not(:first-of-type){border-left:1px 
 table.data.sell-table tbody td.sell-block-fp{font-size:12px;font-family:'DM Mono',monospace}
 /* Colonna Foundation nascosta: il calcolo Foundation resta visibile cliccando la cella RMES (dettaglio 6-step + moltiplicatori). */
 table.data.sell-table thead th.sell-grp-fp, table.data.sell-table tbody td.sell-block-fp{display:none}
-/* Pricing group: raggruppa Last update + RMES in un'unica intestazione in fondo */
+/* Gruppo RMES: prezzo suggerito + minimum stay consigliato, in fondo alla tabella */
+table.data.sell-table thead th.sell-grp-mlos{
+  background:rgba(107,91,63,.10);color:#4a3f2c;font-weight:600;
+}
+table.data.sell-table tbody td.sell-mlos-cell{background:rgba(107,91,63,.05)}
+table.data.sell-table tbody td.sell-mlos-cell b{color:var(--accent)}
+table.data.sell-table tbody td.sell-mlos-cell.cell-flat{color:#cfc7b8}
 table.data.sell-table thead th.sell-grp-pricing{
   background:linear-gradient(180deg,rgba(74,124,89,.20),rgba(195,131,59,.20));
   color:#3b4a2c;border-left:3px solid #4a7c59;font-weight:700;
@@ -1489,14 +1524,14 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   <!-- ============ STRUCT SELECTOR ============ -->
   <div class="struct-selector">
     <span class="struct-label">Property</span>
-    <div class="struct-pills" role="tablist">
-      <button class="struct-pill active" data-s="firenze" role="tab"><span class="pdot"></span>Firenze Suite</button>
-      <button class="struct-pill" data-s="condotta" role="tab"><span class="pdot"></span>Condotta 16</button>
-      <button class="struct-pill" data-s="alfani" role="tab"><span class="pdot"></span>Palazzo Alfani</button>
-      <button class="struct-pill" data-s="davids" role="tab"><span class="pdot"></span>Enis Guesthouse</button>
-      <button class="struct-pill" data-s="nazionale" role="tab"><span class="pdot"></span>Nazionale 35</button>
-      <button class="struct-pill" data-s="portenuove" role="tab"><span class="pdot"></span>Porte Nuove</button>
-      <button class="struct-pill" data-s="both" role="tab"><span class="pdot"></span>All</button>
+    <div class="struct-nav">
+      <div class="struct-pills" role="tablist" id="mgmt-pills">
+        <button class="struct-pill active" data-g="blerina" role="tab"><span class="pdot"></span>Blerina</button>
+        <button class="struct-pill" data-g="francesca" role="tab"><span class="pdot"></span>Francesca</button>
+        <button class="struct-pill" data-g="enis" role="tab"><span class="pdot"></span>Enis</button>
+        <button class="struct-pill" data-g="both" role="tab"><span class="pdot"></span>All</button>
+      </div>
+      <div class="struct-subpills" id="struct-subpills" role="tablist"></div>
     </div>
   </div>
 
@@ -1919,7 +1954,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:12px">
           <span class="mono" style="font-size:10px;color:#3b6b9a;text-transform:uppercase;letter-spacing:.06em;font-weight:700">Base Price approval</span>
           <span id="sell-fp-baseRT-label" style="font-size:11px;color:#666;font-style:italic"></span>
-          <span style="font-size:10.5px;color:#888;font-style:italic;margin-left:auto">💡 Click a Last update cell to override one day · Right-click (or Shift+click) two cells to override a range</span>
+          <span style="font-size:10.5px;color:#888;font-style:italic;margin-left:auto">💡 Set a date range above, then Accept RMES / Override / Reset · ✓ inside a Pricing cell accepts a single day</span>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12px;margin-top:9px">
           <span class="mono" style="font-size:10px;color:#3b6b9a;text-transform:uppercase;letter-spacing:.06em;font-weight:600">Range:</span>
@@ -2252,6 +2287,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <div class="panel" style="background:#fafaf8;border:1px solid var(--line);margin-bottom:18px">
       <div class="panel-body" style="padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
         <span style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Quick index</span>
+        <a href="#instr-menu"   style="font-size:12px;color:#c4823b;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">◆ Property menu</a>
         <a href="#instr-big"    style="font-size:12px;color:#8e5fa8;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">★ Big Picture</a>
         <a href="#instr-sell"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">① Sell Strategy</a>
         <a href="#instr-otb"    style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">② Overview</a>
@@ -2264,6 +2300,28 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <a href="#instr-glossario" style="font-size:12px;color:#5a3a14;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">📚 Glossary</a>
       </div>
     </div>
+
+    <!-- PROPERTY MENU -->
+    <details id="instr-menu" class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14"><span style="color:#c4823b">◆</span> Property menu &mdash; managements and properties</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p style="margin:0 0 8px 0">The 6 properties are split across <b>3 managements</b>. The top row of the header selects the management; a second row appears underneath only when that management holds more than one property.</p>
+        <table style="margin:8px 0 10px 0;font-size:12.5px;border-collapse:collapse">
+          <tr style="background:#f2efe6"><th style="padding:5px 12px;text-align:left">Management</th><th style="padding:5px 12px;text-align:left">Properties</th><th style="padding:5px 12px;text-align:left">Rooms</th></tr>
+          <tr><td style="padding:5px 12px"><b>Blerina</b></td><td style="padding:5px 12px">Firenze Suite &middot; Condotta 16 &middot; Porte Nuove &middot; Nazionale 35</td><td style="padding:5px 12px">20</td></tr>
+          <tr><td style="padding:5px 12px"><b>Francesca</b></td><td style="padding:5px 12px">Palazzo Alfani</td><td style="padding:5px 12px">9</td></tr>
+          <tr><td style="padding:5px 12px"><b>Enis</b></td><td style="padding:5px 12px">Enis Guesthouse</td><td style="padding:5px 12px">3</td></tr>
+          <tr><td style="padding:5px 12px"><b>All</b></td><td style="padding:5px 12px">everything, across all three managements</td><td style="padding:5px 12px">32</td></tr>
+        </table>
+        <ul style="margin:6px 0 8px 18px">
+          <li><b>Blerina</b> opens a second row: <i>All Blerina</i> (the four properties added together) plus each property on its own. Picking a single property keeps <i>Blerina</i> highlighted above, so you always know where you are.</li>
+          <li><b>Francesca</b> and <b>Enis</b> go straight to their single property &mdash; no second row, because there would be nothing to choose.</li>
+          <li><b>All</b> aggregates the whole portfolio.</li>
+        </ul>
+        <p style="margin:0 0 8px 0">An aggregate selection &mdash; <i>All Blerina</i> or <i>All</i> &mdash; behaves the same way everywhere: revenue and room nights are summed across the properties it covers, while OCC and ADR are <b>recomputed on the totals</b>, never averaged. OCC = total room nights &divide; total capacity; ADR = total revenue &divide; total room nights. Budget and forecast are the sum of the properties in the selection, and in tables broken down by room type the property name is prefixed (<i>Firenze Suite &middot; Suite</i>) so that identical room names from different properties stay apart.</p>
+        <p style="margin:0;font-size:12.5px;color:#666"><i>A few tabs only make sense on a single property &mdash; RMES settings, Base Price approval, the pricing console. On an aggregate selection they ask you to pick one property first.</i></p>
+      </div>
+    </details>
 
     <!-- ★ BIG PICTURE -->
     <details id="instr-big" open class="panel" style="margin-bottom:14px;border-left:3px solid #8e5fa8">
@@ -2303,21 +2361,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <p style="margin:0;font-size:13px">One row per stay-date, looking forward. <b>This is where you decide the price to load on Beddy.</b> For every day you see: how it's booking, what the engine suggests, what is the price currently active, and a quick action to accept the suggestion or override it.</p>
         </div>
 
-        <p><b>Columns, left to right</b>: Date · DoW · Event · OTB to date · Pickup · STLY · Pickup STLY · Rate shopper · Beddy · Base Price · <b>Pricing</b> (Last update + RMES side by side, at the far right — you read the day from left to right and end on the decision).</p>
+        <p><b>Columns, left to right</b>: Date · DoW · Event · OTB to date · Pickup · STLY · Pickup STLY · Rate shopper · Beddy · Base Price · <b>RMES</b> (Pricing + Min stay, at the far right — you read the day from left to right and end on the decision).</p>
         <ul style="margin:6px 0 6px 18px">
           <li><b>Date · DoW · Event</b> — the stay-date, the day of the week, and the event name (if any). These 3 cells look like every other column: no coloured fill. The occupancy of the night is shown by a thin <b>ring around the Date cell only</b>, on a continuous scale: <span style="box-shadow:inset 0 0 0 2px rgb(192,57,43);padding:2px 7px;border-radius:4px">red = low</span> (rooms to push) → <span style="box-shadow:inset 0 0 0 2px rgb(214,140,45);padding:2px 7px;border-radius:4px">orange</span> → <span style="box-shadow:inset 0 0 0 2px rgb(206,178,54);padding:2px 7px;border-radius:4px">yellow</span> → <span style="box-shadow:inset 0 0 0 2px rgb(44,122,75);padding:2px 7px;border-radius:4px">green = nearly full</span>. Hover the row for the exact OCC and the Expedia search pressure for that day. Event names come from <code>EVENTS_CSV</code> in data.js — if you don't see them, data.js needs to be regenerated by Claude Code.</li>
           <li><b>OTB to date</b> — RN booked, OCC, ADR for that night so far.</li>
           <li><b>Pickup Nd</b> — net pickup over the last N days, shown as two columns only: <b>Var RN</b> (new minus cancelled) and <b>Var ADR</b> (ADR of that net pickup). Both are already net of cancellations. <b>Click Var RN</b> to open the detail, which lists <i>New bookings</i> and <i>Cancelled</i> in two separate tables with the net at the bottom. <b>Standard pickup convention</b> (same as Duetto, IDeaS, OTA Insight): <code>Pickup N</code> means the N days <b>before today</b> (from <code>today−N</code> to <code>today−1</code>, today excluded). Examples: <code>Pickup 1</code> = yesterday only · <code>Pickup 2</code> = 2 days ago + yesterday · <code>Pickup 7</code> = the 7 days before today. <b>Pickup 0</b> is also accepted and means "what was booked <i>today only</i>". <i>Note: the RMES <b>Daily Pickup factor</b> is the only exception — it also reads today's bookings, because it needs the most up-to-date signal for the price suggestion.</i></li>
           <li><b>STLY (−364d)</b> — what was on the books at the same point of the cycle last year (today−364, day-of-week aligned). Used to read the pace.</li>
           <li><b>Pickup STLY</b> — same two columns (Var RN · Var ADR), for the equivalent booking window one year ago (today−364, day-of-week aligned). Var ADR here is the ADR of the net STLY pickup, so it is directly comparable with the current one. Click Var RN for the new/cancelled detail.</li>
-          <li><b>Last update</b> — the price <b>currently active</b> for the day. <b>Three display modes</b> depending on the source:
-            <ul style="margin:4px 0 0 18px;font-size:12.5px">
-              <li><span style="color:#6a6a6a"><b>€X</b></span> in gray, no icon → Base Price as default (no action taken yet).</li>
-              <li><span style="color:#2c5c3c;font-weight:700">✓ €X</span> in green → an RMES suggestion was accepted. Hover the cell to see when.</li>
-              <li><span style="color:#b86b1f;font-weight:700">🖋 €X</span> in orange → a manual override is active. Hover the cell to see when it was set.</li>
-            </ul>
-          </li>
-          <li><b>RMES</b> — today's pricing engine target. <b>Three display modes</b>:
+          <li><b>RMES · Min stay</b> — the suggested <b>minimum stay</b> for that date. <b>2</b> means hold a 2-night minimum, a faint dot means no restriction. The rule: never a minimum within 7 days of arrival, never if the following night is already full, otherwise 2 nights when occupancy — this year or the same date last year — is at 90% or above. For Porte Nuove and Nazionale a 2-night minimum also kicks in when the Base Price has dropped to the floor rate.</li>
+          <li><b>RMES · Pricing</b> — today's pricing engine target. <b>Three display modes</b>:
             <ul style="margin:4px 0 0 18px;font-size:12.5px">
               <li><span style="color:#a83b3b;font-weight:700">↓ €target</span> or <span style="color:#1e6b4a;font-weight:700">↑ €target</span> + ✓ button → the engine suggests a new price (lower or higher). Click ✓ to accept and apply. <b>The cell colour intensity shows the size of the move vs the active price at a glance</b>: a pale tint is a small nudge, a strong tint is a big move — the intensity scales freely with the size of the change (no threshold). Hover to read the exact % vs active.</li>
               <li><span style="color:#2c5c3c;font-weight:700">✓ in line</span> in green → your active price is already in tune with the engine (within ±2% of the target, or you've moved past the target in the same direction the engine wanted).</li>
@@ -2338,7 +2390,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>↺ Remove 🖋 only</b> — removes <b>just the manual override 🖋</b> on every day in the range, keeping any accepted ✓ and Base underneath. Each day reverts to what it showed <b>before</b> the override (its accepted price if there was one, otherwise its Base Price). Use this to undo a range override without losing legitimate prior pricing (e.g. holidays).</li>
           <li><b>↺ Reset</b> — wipes Base override, manual override 🖋 and accepted ✓ on every day in the range. Last update goes back to the Base Price (black, no icon).</li>
         </ul>
-        <p style="margin:6px 0;font-size:12.5px;color:#555">For a single day you can also click a <b>Last update</b> cell directly (override one day), or the <b>✓</b> button in the RMES cell (accept one day). Right-click or Shift+click two Last update cells to override a range inline.</p>
+        <p style="margin:6px 0;font-size:12.5px;color:#555">For a single day, click the <b>✓</b> button inside the Pricing cell to accept that day's suggestion. The <i>Last update</i> column is gone — the active price is no longer edited by hand day by day — but the concept still exists behind the scenes: it is what the RMES delta (Δ€) is measured against, and it is still what the range buttons above write to.</p>
 
         <div style="margin-top:14px;padding:12px 14px;background:#fafaf8;border-left:3px solid #c4823b;font-size:13px;line-height:1.6">
           <p style="margin:0 0 8px 0"><b>How RMES decides what to suggest (the "in line" rule)</b></p>
@@ -3021,9 +3073,10 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 <script src="engine.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
-  document.querySelectorAll('.struct-pill').forEach(p=>{
-    p.addEventListener('click', ()=> setStructure(p.dataset.s));
+  document.querySelectorAll('#mgmt-pills .struct-pill').forEach(p=>{
+    p.addEventListener('click', ()=> setManagement(p.dataset.g));
   });
+  if (typeof renderStructSubpills === 'function') renderStructSubpills();
   document.querySelectorAll('.tab').forEach(t=>{
     t.addEventListener('click', ()=> setTab(t.dataset.tab));
   });

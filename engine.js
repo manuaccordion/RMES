@@ -1563,7 +1563,7 @@ function fp_postLoadHook(){
   try {
     if (typeof _invalidatePaceAggCache === 'function') _invalidatePaceAggCache();
     if (typeof fp_computeStruct === 'function' && typeof BOOKINGS !== 'undefined' && BOOKINGS.length > 0){
-      const _bootStruct = (typeof CURRENT_STRUCT !== 'undefined' && CURRENT_STRUCT && CURRENT_STRUCT !== 'both') ? CURRENT_STRUCT : 'firenze';
+      const _bootStruct = (typeof CURRENT_STRUCT !== 'undefined' && CURRENT_STRUCT && !isAggSel(CURRENT_STRUCT)) ? CURRENT_STRUCT : 'firenze';
       console.log('[Foundation] Pre-computing prices for ' + _bootStruct + ' (on-demand mode)…');
       const t0 = performance.now();
       fp_computeStruct(_bootStruct);
@@ -1596,15 +1596,46 @@ function fp_postLoadHook(){
   }
 }
 /* -------- FILTER HELPERS -------- */
-let CURRENT_STRUCT = 'firenze';   // 'firenze' | 'condotta' | 'alfani' | 'both'
+let CURRENT_STRUCT = 'firenze';   // struttura singola | gruppo gestione | 'both'
+/* ---------------------------------------------------------------------------
+   GESTIONI (menu a due livelli)
+   Le 6 strutture sono divise fra 3 gestioni. Il menu in alto mostra le gestioni;
+   selezionando una gestione con piu' strutture compare il sotto-menu con le
+   singole strutture piu' l'aggregato della gestione.
+   Una chiave-gestione (es. 'blerina') si comporta come 'both' ma limitata ai
+   suoi membri.
+   --------------------------------------------------------------------------- */
+const STRUCT_GROUPS = {
+  blerina:   { label: 'Blerina',   members: ['firenze','condotta','portenuove','nazionale'] },
+  francesca: { label: 'Francesca', members: ['alfani'] },
+  enis:      { label: 'Enis',      members: ['davids'] },
+};
+function isStructGroup(sel){ return !!(sel && STRUCT_GROUPS[sel]); }
+/* Aggregato = 'both' (tutte) oppure una gestione multi-struttura. */
+function isAggSel(sel){
+  if (sel === 'both') return true;
+  return isStructGroup(sel) && STRUCT_GROUPS[sel].members.length > 1;
+}
+/* Strutture singole coperte dalla selezione. */
+function structIdsFor(sel){
+  if (isStructGroup(sel)) return STRUCT_GROUPS[sel].members.slice();
+  if (sel && !isAggSel(sel) && CFG.structures[sel]) return [sel];
+  return Object.keys(CFG.structures);
+}
+/* Gestione a cui appartiene una struttura singola. */
+function groupOfStruct(sel){
+  for (const g in STRUCT_GROUPS) if (STRUCT_GROUPS[g].members.indexOf(sel) >= 0) return g;
+  return null;
+}
 function structKeysFor(sel){
-  if (sel && sel !== 'both' && CFG.structures[sel]) return [CFG.structures[sel].key];
+  if (isStructGroup(sel)) return structIdsFor(sel).map(id => CFG.structures[id].key);
+  if (sel && !isAggSel(sel) && CFG.structures[sel]) return [CFG.structures[sel].key];
   return Object.values(CFG.structures).map(s => s.key);
 }
 function structRoomsFor(sel){
-  if (sel && sel !== 'both' && CFG.structures[sel]) return CFG.structures[sel].rooms;
+  if (sel && !isAggSel(sel) && CFG.structures[sel]) return CFG.structures[sel].rooms;
   const out = {};
-  for (const _sk in CFG.structures){ Object.assign(out, CFG.structures[_sk].rooms); }
+  for (const _sk of structIdsFor(sel)){ Object.assign(out, CFG.structures[_sk].rooms); }
   return out;
 }
 /* Inventario time-aware per Palazzo Alfani:
@@ -1622,9 +1653,9 @@ function structRoomsForAt(sel, ymdNum){
   return CFG.structures.alfani.rooms;  // post-split (current)
 }
 function structRoomsTotal(sel){
-  if (sel && sel !== 'both' && CFG.structures[sel]) return CFG.structures[sel].roomsTotal;
+  if (sel && !isAggSel(sel) && CFG.structures[sel]) return CFG.structures[sel].roomsTotal;
   let tot = 0;
-  for (const _sk in CFG.structures){ tot += (CFG.structures[_sk].roomsTotal || 0); }
+  for (const _sk of structIdsFor(sel)){ tot += (CFG.structures[_sk].roomsTotal || 0); }
   return tot;
 }
 /* Budget helpers — fiscal year May 2026 -> Apr 2027.
@@ -1693,7 +1724,7 @@ function _forecastBudget(sel, ym, metric){
 }
 function budgetMonthlyFor(sel, ym, metric){
   metric = metric || 'rev';
-  if (sel==='both'){
+  if (isAggSel(sel)){
     const fF = CFG.structures.firenze.budgetByMonth[ym];
     const fC = CFG.structures.condotta.budgetByMonth[ym];
     const fA = CFG.structures.alfani.budgetByMonth[ym];
@@ -1725,7 +1756,13 @@ function budgetMonthlyFor(sel, ym, metric){
   return f[metric] || 0;
 }
 function budgetTotalFor(sel){
-  if (sel==='both') return CFG.structures.firenze.budgetTotal + CFG.structures.condotta.budgetTotal + CFG.structures.alfani.budgetTotal;
+  if (isAggSel(sel)){
+    // Somma dei budget delle sole strutture coperte dalla selezione
+    // (prima erano cablate firenze+condotta+alfani: sbagliato per le gestioni).
+    let _t = 0;
+    for (const _id of structIdsFor(sel)) _t += (CFG.structures[_id].budgetTotal || 0);
+    return _t;
+  }
   if (sel==='davids' || (CFG.structures[sel] && CFG.structures[sel].budgetIsForecast)){
     let tot = 0;
     let ym = CFG.fiscal.startYM;
@@ -1797,7 +1834,7 @@ function _computeRtRatiosFromLY(sel, ym){
   return ratios;
 }
 function budgetAdrByRT(sel, ym, rt){
-  if (sel === 'both') return 0;  // budget per RT solo a livello struttura singola
+  if (isAggSel(sel)) return 0;  // budget per RT solo a livello struttura singola
   const cacheKey = `${sel}:${ym}:${rt}`;
   if (_budgetRtCache[cacheKey] !== undefined) return _budgetRtCache[cacheKey];
   const adrStruct = budgetMonthlyFor(sel, ym, 'adr');
@@ -1829,8 +1866,9 @@ function fiscalMonths(){
   return out;
 }
 function structLabel(sel){
-  if (sel==='both') return 'All properties';
-  return CFG.structures[sel].label;
+  if (isStructGroup(sel)) return STRUCT_GROUPS[sel].label + ' (all)';
+  if (isAggSel(sel)) return 'All properties';
+  return (CFG.structures[sel] && CFG.structures[sel].label) || String(sel);
 }
 function filteredBookings(sel){
   const keys = new Set(structKeysFor(sel));
@@ -1962,7 +2000,7 @@ function _bookingCurveDataImpl(sel){
     return tot;
   }
   let forecastTotal = 0;
-  if (sel === 'both'){
+  if (isAggSel(sel)){
     for (const sk of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
       forecastTotal += _structForecastTotal(sk);
     }
@@ -4638,7 +4676,7 @@ function saveRmesWeights(){
 }
 function getCurrentWeights(){
   const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'condotta';
-  if (sel === 'both'){
+  if (isAggSel(sel)){
     const out = Object.assign({}, SELL_RMES_W_DEFAULT);
     for (const k of Object.keys(out)){
       out[k] = (SELL_RMES_W_ALL.firenze[k] + SELL_RMES_W_ALL.condotta[k] + SELL_RMES_W_ALL.alfani[k]) / 3;
@@ -4881,7 +4919,7 @@ function resetRmesThresholds(structKey){
 }
 function getCurrentThresholds(){
   const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'condotta';
-  if (sel === 'both') return RMES_TH_ALL.condotta;
+  if (isAggSel(sel)) return RMES_TH_ALL.condotta;
   return RMES_TH_ALL[sel] || RMES_TH_ALL.condotta;
 }
 /* Vincola input nel range valido */
@@ -5476,7 +5514,7 @@ function _listEventLabels(){
 
 function computeRMESPriceMap(sel, startYmd, rangeDays){
   const out = {};
-  if (sel === 'both') return out;  // RMES non significativo aggregato
+  if (isAggSel(sel)) return out;  // RMES non significativo aggregato
   const _rmKey = sel + '|' + startYmd + '|' + rangeDays;
   if (_RMESMAP_TICK && _RMESMAP_TICK[_rmKey] !== undefined) return _RMESMAP_TICK[_rmKey];
   const _structFloor = (typeof fp_getFloor === 'function') ? fp_getFloor(sel) : 0;
@@ -6302,7 +6340,7 @@ function _auditCaptureSnapshot(structKey, ymd){
    reset_override | accept_range | override_range | reset_override_range. */
 function logDecision(structKey, ymd, action, chosenPrice){
   if (_AUDIT_SUPPRESS) return;
-  if (!structKey || structKey === 'both' || !ymd) return;
+  if (!structKey || isAggSel(structKey) || !ymd) return;
   try {
     const snap = _auditCaptureSnapshot(structKey, ymd);
     const cp = (chosenPrice != null && isFinite(chosenPrice)) ? Math.round(chosenPrice) : null;
@@ -6416,7 +6454,7 @@ function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
    ============================================================ */
 function _rmesSuggestedForDay(structKey, ymdN, rt){
   if (!structKey || !ymdN || !rt) return null;
-  if (structKey === 'both') return null;
+  if (isAggSel(structKey)) return null;
   // Trova quanti giorni mancano dal target (per range minimo cache)
   const _td = new Date(TODAY); _td.setHours(0,0,0,0);
   const _tdN = _td.getFullYear()*10000 + (_td.getMonth()+1)*100 + _td.getDate();
@@ -10487,7 +10525,7 @@ function fp_isStructComputed(sk){
   return !!(typeof FOUNDATION_PRICES !== 'undefined' && FOUNDATION_PRICES && FOUNDATION_PRICES[sk] && Object.keys(FOUNDATION_PRICES[sk]).length > 0);
 }
 function fp_ensureStruct(sk){
-  if (sk === 'both'){
+  if (isAggSel(sk)){
     for (const k of ['firenze','condotta','alfani','davids','nazionale','portenuove']) if (!fp_isStructComputed(k)) fp_computeStruct(k);
     return;
   }
@@ -12427,7 +12465,7 @@ function renderSellStrategy(sel){
   if (chipEl) chipEl.textContent = structLabel(sel);
   const _cfBtn = document.getElementById('sell-compute-foundation');
   if (_cfBtn){
-    const _isComp = (sel === 'both')
+    const _isComp = (isAggSel(sel))
       ? ['firenze','condotta','alfani','davids','nazionale','portenuove'].every(function(k){ return fp_isStructComputed(k); })
       : fp_isStructComputed(sel);
     if (_isComp){
@@ -12514,7 +12552,7 @@ function renderSellStrategy(sel){
   let _suppData = null;
   let _inventoryByRT = null;
   let _rtCheapToExp = null;  // ordine: cheap → expensive (la prima è la base)
-  if (sel !== 'both' && typeof aggPricingDaily === 'function'){
+  if (!isAggSel(sel) && typeof aggPricingDaily === 'function'){
     try {
       const Apri = aggPricingDaily(sel, SELL_START_YMD, 1);
       _suppData = {
@@ -12565,7 +12603,7 @@ function renderSellStrategy(sel){
     const _sd = startD ? ymd(startD) : 0, _ed = endD ? ymd(endD) : 99999999;
     for (const b of BOOKINGS){
       if (b.cancelled || !b.cleaning) continue;
-      if (sel !== 'both' && b.structKey !== sel) continue;
+      if (!isAggSel(sel) && b.structKey !== sel) continue;
       if (!b.dIn) continue;
       const _din = ymd(b.dIn);
       if (_din >= _sd && _din <= _ed) curCleaning += b.cleaning;
@@ -12750,7 +12788,7 @@ function renderSellStrategy(sel){
     + (showExp ? '<th rowspan="2" class="sell-grp sell-grp-expedia" title="My Expedia price, the compset average and my position (1 = cheapest)">Rate shopper<br><span class="sell-th-sub">mine · compset · pos</span></th>' : '')
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). Click 🖋 to override one day; ↺ to reset.">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
-    + '<th colspan="2" class="sell-grp sell-grp-pricing" title="The price you act on: what is active today and what the engine suggests.">Pricing</th>'
+    + '<th colspan="2" class="sell-grp sell-grp-pricing" title="What the engine suggests for this date: price and minimum stay.">RMES</th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
     + '<th class="sell-grp-otb-sub" title="OTB to date · RN sold">RN</th>'
@@ -12763,11 +12801,11 @@ function renderSellStrategy(sel){
     + '<th class="sell-grp-stly-sub" title="STLY · ADR">ADR</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net RN a year ago. Click a cell for the new/cancelled detail.">Var RN</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of the net STLY pickup">Var ADR</th>'
-    + '<th class="sell-grp-rmes-last" title="Last update — the price currently active for this stay-date. Click any cell to edit (single day) or right-click two cells for a range.">Last update<br><span class="sell-th-sub">active price</span></th>'
-    + '<th class="sell-grp-rmes-today" title="RMES — today\'s pricing engine suggestion. Click the cell for the calculation detail. The ✓ button accepts this price as the new Last update.">RMES<br><span class="sell-th-sub">price · Δ€ · ✓</span></th>'
+    + '<th class="sell-grp-rmes-today" title="Suggested price. Click the cell for the calculation detail. The \u2713 button accepts it as the active price.">Pricing<br><span class="sell-th-sub">price \u00b7 \u0394\u20ac \u00b7 \u2713</span></th>'
+    + '<th class="sell-grp-mlos" title="Suggested minimum stay for this date. 2 = hold a 2-night minimum, blank = no restriction.">Min stay<br><span class="sell-th-sub">nights</span></th>'
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;
-  if (typeof computeRMESPriceMap === 'function' && sel !== 'both'){
+  if (typeof computeRMESPriceMap === 'function' && !isAggSel(sel)){
     // Usa SEMPRE (todayN, range): stessa chiave cache di _rmesCollectRows e modal
     // → la mappa è UNA SOLA per turno di render → numeri coincidenti ovunque.
     const _td = new Date(TODAY); _td.setHours(0,0,0,0);
@@ -12805,6 +12843,29 @@ function renderSellStrategy(sel){
     else { cls='pk-flat'; txt='\u25cf'+p.cur; }
     return `<span class="sell-pk-dot ${cls}" title="${escapeHtml(tip)}">${txt}</span>`;
   };
+  // MLOS consigliato per-giorno: alimenta la colonna "Min stay" del gruppo RMES.
+  // Regola: 1 notte entro 7 giorni dall'arrivo, 1 se il giorno dopo e' gia' pieno,
+  // altrimenti 2 se OCC attuale o storica >= 90% (o prezzo al floor, solo appartamenti).
+  const _isApt = (sel==='nazionale'||sel==='portenuove');   // solo questi hanno la regola floor→2
+  const _mlosByDay = (A && A.rows ? A.rows : []).map((r,i)=>{
+    if(!r || !r.date) return 1;
+    try{
+      const _t0=new Date(TODAY); _t0.setHours(0,0,0,0);
+      const _dd=new Date(r.date.getFullYear(),r.date.getMonth(),r.date.getDate());
+      if(Math.round((_dd-_t0)/86400000)<7) return 1;                 // 7 giorni prima → 1
+      const nx=A.rows[i+1];
+      if(nx && nx.curOcc>=0.999) return 1;                            // giorno dopo al 100% → 1
+      let atFloor=false;
+      if(_isApt){                                                     // floor→2 solo per gli appartamenti
+        const iso=r.date.getFullYear()+'-'+String(r.date.getMonth()+1).padStart(2,'0')+'-'+String(r.date.getDate()).padStart(2,'0');
+        const floor=(typeof fp_getFloor==='function')?fp_getFloor(sel):0;
+        const bp=(typeof newrmesCalculateBasePrice==='function')?newrmesCalculateBasePrice(sel,iso):0;
+        atFloor=floor>0 && bp>0 && bp<=floor+1;
+      }
+      if(atFloor || (r.curOcc||0)>=0.9 || (r.stlyOcc||0)>=0.9) return 2;  // 90% attuale o storica (tutte le strutture)
+    }catch(e){}
+    return 1;
+  });
   for (let i=0; i<A.rows.length; i++){
     const r = A.rows[i];
     const isWE = (r.dow===5 || r.dow===6 || r.dow===0);
@@ -13424,6 +13485,15 @@ function renderSellStrategy(sel){
       _dowInline = dateStyle;  // ' style="..."' or ''
     }
         // Compute LAST UPDATE and RMES cells as "card" style (richiesta utente)
+    // Cella "Min stay": minimum stay consigliato per quella data.
+    // 1 notte = nessuna restrizione → cella vuota, per non aggiungere rumore.
+    const _mlosTdHtml = (function(){
+      const v = (_mlosByDay && _mlosByDay[i]) ? _mlosByDay[i] : 1;
+      if (v >= 2){
+        return `<td class="cell-mono sell-mlos-cell" style="text-align:center" title="Suggested minimum stay: ${v} nights"><b>${v}</b></td>`;
+      }
+      return `<td class="cell-mono sell-mlos-cell cell-flat" style="text-align:center" title="No minimum stay suggested for this date">·</td>`;
+    })();
     const _luTdHtml = (function(){
         const baseRTKey = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
         if (!baseRTKey) return '<td class="cell-mono cell-flat" style="background:rgba(195,131,59,.03);text-align:center">—</td>';
@@ -13558,8 +13628,8 @@ function renderSellStrategy(sel){
       ${beddyCell}
       <!-- Base Price cell (with override 🖋 / reset ↺ buttons) -->
       ${cellFoundation}
-      <!-- Pricing: Last update + RMES, affiancati in fondo (richiesta utente) -->
-      ${_luTdHtml}${_rmesTdHtml}
+      <!-- RMES: prezzo suggerito + minimum stay consigliato -->
+      ${_rmesTdHtml}${_mlosTdHtml}
     </tr>`;
   }
   const totDRev = T.pkRev;
@@ -13605,34 +13675,12 @@ function renderSellStrategy(sel){
     ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
     <!-- Base Price -->
     <td class="cell-flat" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
-    <!-- Pricing -->
-    <td class="cell-flat sell-lu-cell" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
+    <!-- RMES -->
+    <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
   html += '</tbody></table>';
   document.getElementById('sell-table-wrap').innerHTML = html;
-  // === Trasposizione tabella (date in COLONNE, metriche in RIGHE) — richiesta utente ===
-  // MLOS per-giorno (solo Porte Nuove/Nazionale) — calcolato qui dove ci sono A e sel
-  const _isApt = (sel==='nazionale'||sel==='portenuove');   // solo questi hanno la regola floor→2
-  const _mlosByDay = (A && A.rows ? A.rows : []).map((r,i)=>{
-    if(!r || !r.date) return 1;
-    try{
-      const _t0=new Date(TODAY); _t0.setHours(0,0,0,0);
-      const _dd=new Date(r.date.getFullYear(),r.date.getMonth(),r.date.getDate());
-      if(Math.round((_dd-_t0)/86400000)<7) return 1;                 // 7 giorni prima → 1
-      const nx=A.rows[i+1];
-      if(nx && nx.curOcc>=0.999) return 1;                            // giorno dopo al 100% → 1
-      let atFloor=false;
-      if(_isApt){                                                     // floor→2 solo per gli appartamenti
-        const iso=r.date.getFullYear()+'-'+String(r.date.getMonth()+1).padStart(2,'0')+'-'+String(r.date.getDate()).padStart(2,'0');
-        const floor=(typeof fp_getFloor==='function')?fp_getFloor(sel):0;
-        const bp=(typeof newrmesCalculateBasePrice==='function')?newrmesCalculateBasePrice(sel,iso):0;
-        atFloor=floor>0 && bp>0 && bp<=floor+1;
-      }
-      if(atFloor || (r.curOcc||0)>=0.9 || (r.stlyOcc||0)>=0.9) return 2;  // 90% attuale o storica (tutte le strutture)
-    }catch(e){}
-    return 1;
-  });
   // Orientamento classico ripristinato su richiesta: giorni in RIGA, KPI in COLONNA.
   // _sellTransposeTable() resta nel motore ma non viene più invocata.
   // Ripristina lo scroll orizzontale (vedi save all'inizio della funzione) — così l'utente
@@ -13658,7 +13706,7 @@ function renderSellStrategy(sel){
     const all = fp_getOverrides();
     const today = new Date(TODAY); today.setHours(0,0,0,0);
     const todayYmd = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
-    const structKeysCheck = sel === 'both' ? ['firenze','condotta','alfani','davids','nazionale','portenuove'] : [sel];
+    const structKeysCheck = isAggSel(sel) ? structIdsFor(sel) : [sel];
     let totDelta = 0, nValid = 0, nVintoOvr = 0, nVintoRMES = 0;
     for (const sk of structKeysCheck){
       const o = all[sk]; if (!o) continue;
@@ -13726,7 +13774,7 @@ function renderSellStrategy(sel){
       const newPrice = +btn.dataset.rmesPrice;
       if (!ymdN || !isFinite(ymdN) || !isFinite(newPrice) || newPrice <= 0) return;
       const sk = CURRENT_STRUCT;
-      if (!sk || sk === 'both') { alert('Select a property first.'); return; }
+      if (!sk || isAggSel(sk)) { alert('Select a property first.'); return; }
       const ymdStr = String(ymdN);
       const dateLbl = ymdStr.slice(6,8) + '/' + ymdStr.slice(4,6) + '/' + ymdStr.slice(0,4);
       if (!confirm('Accept RMES suggestion of €' + newPrice + ' for ' + dateLbl + '?')) return;
@@ -13896,7 +13944,7 @@ function renderSellStrategy(sel){
     if (!barEl) return;
     const baseRT = _suppData ? _suppData.baseRT : null;
     const isFilterCompatible = (!_rtFilter) || (_rtFilter === baseRT);
-    if (sel === 'both' || !baseRT || !isFilterCompatible){
+    if (isAggSel(sel) || !baseRT || !isFilterCompatible){
       barEl.style.display = 'none';
       return;
     }
@@ -14191,7 +14239,7 @@ function renderPickupByMonth(sel){
   if (!wrapEl) return;
   const filterWrap = document.getElementById('pkmonth-filter-wrap');
   if (filterWrap){
-    if (sel === 'both'){
+    if (isAggSel(sel)){
       filterWrap.style.display = 'flex';
       const filters = [
         { key:'both',     label:'All (aggregato)', color:'#5e4a32' },
@@ -14260,7 +14308,7 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
     if (!map[mk]) map[mk] = {rn:0, rev:0, dayPicks:{}};
     map[mk].dayPicks[ymdN] = (map[mk].dayPicks[ymdN] || 0) + rn;
   }
-  const isAgg = (sel === 'both');
+  const isAgg = (isAggSel(sel));
   const _structFullToShort = {};
   _structFullToShort[CFG.structures.firenze.key]  = 'firenze';
   _structFullToShort[CFG.structures.condotta.key] = 'condotta';
@@ -14384,8 +14432,8 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
     condotta: { cur: '#3d7a4b', sty: '#85a78d' },
     alfani:   { cur: '#8e5fa8', sty: '#b698c6' },
   };
-  const barColorCur = (sel !== 'both' && STRUCT_COLORS[sel]) ? STRUCT_COLORS[sel].cur : '#3b6b6b';
-  const barColorSty = (sel !== 'both' && STRUCT_COLORS[sel]) ? STRUCT_COLORS[sel].sty : '#8e7a5e';
+  const barColorCur = (!isAggSel(sel) && STRUCT_COLORS[sel]) ? STRUCT_COLORS[sel].cur : '#3b6b6b';
+  const barColorSty = (!isAggSel(sel) && STRUCT_COLORS[sel]) ? STRUCT_COLORS[sel].sty : '#8e7a5e';
   for (let i = 0; i < N; i++){
     const d = data[i];
     const cx = xCenter(i);
@@ -14453,7 +14501,7 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
   svg += `</svg>`;
   wrapEl.innerHTML = svg;
   if (legendEl){
-    const structLbl = (sel === 'both') ? 'All properties (aggregato)'
+    const structLbl = (isAggSel(sel)) ? 'All properties (aggregato)'
                     : (sel === 'firenze') ? 'Firenze Suite'
                     : (sel === 'condotta') ? 'Condotta 16'
                     : (sel === 'alfani') ? 'Palazzo Alfani' : (sel === 'davids') ? "Enis Guesthouse" : ((CFG.structures[sel] && CFG.structures[sel].label) || sel);
@@ -14947,7 +14995,7 @@ function priceVsSoldHTML(newPrice, soldAdr, compact){
 }
 let _APD_CACHE = {};  // cache di aggPricingDaily, invalidata al reload dati (_invalidatePaceAggCache)
 function aggPricingDaily(sel, startYmdNum, rangeDays){
-  if (sel === 'both'){
+  if (isAggSel(sel)){
     return { isBoth:true, perStruct:{
       firenze:  aggPricingDaily('firenze', startYmdNum, rangeDays),
       condotta: aggPricingDaily('condotta', startYmdNum, rangeDays),
@@ -15484,7 +15532,7 @@ function renderPricing(sel){
       renderPricing(CURRENT_STRUCT);
     });
   }
-  if (sel === 'both'){ renderPricingBoth(); return; }
+  if (isAggSel(sel)){ renderPricingBoth(); return; }
   const A = aggPricingDaily(sel, PRI_START_YMD, PRI_RANGE_DAYS);
   const Y = A.yearTotals;
   const _rmesMap = (typeof computeRMESPriceMap === 'function')
@@ -16001,7 +16049,7 @@ function renderPricingChart(){
   }
   let allSeries = [];
   let dateRows = [];
-  if (CURRENT_STRUCT === 'both'){
+  if (isAggSel(CURRENT_STRUCT)){
     const aFs  = aggPricingDaily('firenze', PRI_START_YMD, PRI_RANGE_DAYS);
     const aC16 = aggPricingDaily('condotta', PRI_START_YMD, PRI_RANGE_DAYS);
     const aAlf = aggPricingDaily('alfani', PRI_START_YMD, PRI_RANGE_DAYS);
@@ -16676,14 +16724,66 @@ function fcstSurvivalAt(sel, lead){
   return S[Math.min(FCST_SURV_MAXLEAD, Math.round(lead))];
 }
 let _FORECAST_CACHE = {};
+/* Per una selezione aggregata (All o una gestione) il forecast e' la SOMMA dei
+   forecast delle strutture che la compongono. Prima veniva calcolato su una
+   struttura sola ('condotta'), quindi "All" mostrava i numeri di Condotta. */
+function _aggForecastSum(structKey){
+  const ids = structIdsFor(structKey);
+  const parts = ids.map(id => ({ id, A: aggForecast(id) }));
+  const monthly = {};
+  let totRooms = 0;
+  for (const p of parts) totRooms += (p.A.totRooms || 0);
+  const NUM = ['fcstRn','fcstRev','finalLyRn','finalLyRev','otbRn','otbRev','stlyRn','stlyRev',
+               'budgetRev','achievementDen','actualPastRn','actualPastRev'];
+  for (const p of parts){
+    const lbl = (CFG.structures[p.id] && CFG.structures[p.id].label) || p.id;
+    for (const ym in p.A.monthly){
+      const src = p.A.monthly[ym];
+      let dst = monthly[ym];
+      if (!dst){
+        dst = monthly[ym] = { y: src.y, mo: src.mo, days: src.days, monthState: src.monthState, byRt: {} };
+        for (const k of NUM) dst[k] = 0;
+      }
+      for (const k of NUM) dst[k] += (src[k] || 0);
+      // Room type con lo stesso nome in strutture diverse: prefisso col nome struttura.
+      for (const rt in src.byRt) dst.byRt[lbl + ' · ' + rt] = src.byRt[rt];
+    }
+  }
+  for (const ym in monthly){
+    const m = monthly[ym];
+    const cap = totRooms * m.days;
+    m.occ         = cap > 0 ? m.fcstRn/cap : 0;
+    m.adr         = m.fcstRn > 0 ? m.fcstRev/m.fcstRn : 0;
+    m.finalLyOcc  = cap > 0 ? m.finalLyRn/cap : 0;
+    m.finalLyAdr  = m.finalLyRn > 0 ? m.finalLyRev/m.finalLyRn : 0;
+    m.otbOcc      = cap > 0 ? m.otbRn/cap : 0;
+    m.otbAdr      = m.otbRn > 0 ? m.otbRev/m.otbRn : 0;
+    m.stlyOcc     = cap > 0 ? m.stlyRn/cap : 0;
+    m.stlyAdr     = m.stlyRn > 0 ? m.stlyRev/m.stlyRn : 0;
+    m.achievement = m.achievementDen > 0 ? m.otbRev/m.achievementDen : 0;
+    m.achievementDenSource = 'budget';
+    m.snapshot = null;
+  }
+  const first = parts.length ? parts[0].A : null;
+  return {
+    sel: structKey,
+    inventory: {}, rtList: Object.keys((monthly[Object.keys(monthly)[0]]||{byRt:{}}).byRt),
+    baseRT: null, totRooms,
+    mix: first ? first.mix : null, pace: first ? first.pace : null,
+    supp: first ? first.supp : null, airdna: fcstAirdnaMap(),
+    floorShare: null, shareCapped: null, adrGrowth: null, adrGrowthCapped: null,
+    monthly, horizon: 365, easterCorrectionApplied: false,
+    isAggregate: true, members: ids,
+  };
+}
 function aggForecast(structKey){
   if (_FORECAST_CACHE[structKey]) return _FORECAST_CACHE[structKey];
-  const r = _aggForecastImpl(structKey);
+  const r = isAggSel(structKey) ? _aggForecastSum(structKey) : _aggForecastImpl(structKey);
   _FORECAST_CACHE[structKey] = r;
   return r;
 }
 function _aggForecastImpl(structKey){
-  const sel = (structKey === 'both') ? 'condotta' : structKey;
+  const sel = (isAggSel(structKey)) ? 'condotta' : structKey;
   const inventory = fcstRoomsByRT(sel);
   const rtList = Object.keys(inventory);
   const totRooms = Object.values(inventory).reduce((s,v)=>s+v, 0);
@@ -17903,7 +18003,7 @@ function renderRateShopper(){
    ============================================================ */
 let RMES_TAB_STRUCT = 'condotta';  // default
 function renderRMESConfigTab(){
-  if (typeof CURRENT_STRUCT !== 'undefined' && CURRENT_STRUCT !== 'both'){
+  if (typeof CURRENT_STRUCT !== 'undefined' && !isAggSel(CURRENT_STRUCT)){
     RMES_TAB_STRUCT = CURRENT_STRUCT;
   }
   const sel = RMES_TAB_STRUCT;
@@ -18083,7 +18183,7 @@ function _rmesTabApplyWeights(sel){
   });
   SELL_RMES_W_ALL[sel] = newW;
   saveRmesWeights();
-  if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === sel || CURRENT_STRUCT === 'both')){
+  if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === sel || isAggSel(CURRENT_STRUCT))){
     renderSellStrategy(CURRENT_STRUCT);
   }
 }
@@ -18615,7 +18715,7 @@ function _renderRmesCompsetBox(sel){
       if (v > 100) v = 100;
       inp.value = v;
       if (typeof setWeight === 'function') setWeight(structKey, name, v / 100);
-      if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === structKey || CURRENT_STRUCT === 'both')){
+      if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === structKey || isAggSel(CURRENT_STRUCT))){
         renderSellStrategy(CURRENT_STRUCT);
       }
       if (typeof renderRateShopper === 'function') renderRateShopper();
@@ -19629,7 +19729,7 @@ function _trendBookingsForMonths(sel, yms, isStly){
   const TODAY_LY = new Date(TODAY); TODAY_LY.setFullYear(TODAY.getFullYear() - 1);
   const TODAY_LY_N = TODAY_LY.getFullYear()*10000 + (TODAY_LY.getMonth()+1)*100 + TODAY_LY.getDate();
   for (const b of BOOKINGS){
-    if (sel !== 'both' && b.structKey !== sel) continue;
+    if (!isAggSel(sel) && b.structKey !== sel) continue;
     if (b.dCancel) continue;  // solo confermati
     if (!b.dIn || !b.dBook) continue;
     // Per ogni notte del soggiorno
@@ -19693,7 +19793,7 @@ function _trendCapacity(sel, yms){
   if (!yms || yms.size === 0) return 1;
   let cap = 0;
   const rooms = structRoomsFor(sel);
-  const roomCount = sel === 'both' ? 27 : Object.values(rooms).reduce((s,n) => s+n, 0);
+  const roomCount = isAggSel(sel) ? structRoomsTotal(sel) : Object.values(rooms).reduce((s,n) => s+n, 0);
   for (const ym of yms){
     const y = Math.floor(ym/100), m = ym%100;
     const daysInMonth = new Date(y, m, 0).getDate();
@@ -20546,13 +20646,54 @@ function renderAll(){
   // so wipes/migrations don't generate log entries.
   if (typeof _auditEnable === 'function') _auditEnable();
 }
+/* ---------------------------------------------------------------------------
+   MENU A DUE LIVELLI
+   Livello 1 (gestione): Blerina · Francesca · Enis · All
+   Livello 2 (solo per gestioni con piu' strutture): l'aggregato della gestione
+   piu' le singole strutture.
+   Le gestioni con una sola struttura puntano direttamente a quella: niente
+   sotto-menu inutile.
+   --------------------------------------------------------------------------- */
+function _mgmtOf(sel){
+  if (sel === 'both') return 'both';
+  if (isStructGroup(sel)) return sel;
+  return groupOfStruct(sel) || 'both';
+}
+function renderStructSubpills(){
+  const host = document.getElementById('struct-subpills');
+  if (!host) return;
+  const mgmt = _mgmtOf(CURRENT_STRUCT);
+  const grp = STRUCT_GROUPS[mgmt];
+  // Sotto-menu solo se la gestione ha piu' di una struttura
+  if (!grp || grp.members.length < 2){ host.innerHTML = ''; return; }
+  const items = [{ s: mgmt, label: 'All ' + grp.label }]
+    .concat(grp.members.map(id => ({ s: id, label: CFG.structures[id].label })));
+  host.innerHTML = items.map(it =>
+    `<button class="struct-subpill${CURRENT_STRUCT===it.s?' active':''}" data-s="${it.s}" role="tab"><span class="pdot"></span>${escapeHtml(it.label)}</button>`
+  ).join('');
+  host.querySelectorAll('.struct-subpill').forEach(b=>{
+    b.addEventListener('click', ()=> setStructure(b.dataset.s));
+  });
+}
+function _syncStructPills(){
+  const mgmt = _mgmtOf(CURRENT_STRUCT);
+  document.querySelectorAll('#mgmt-pills .struct-pill').forEach(p=>{
+    p.classList.toggle('active', p.dataset.g === mgmt);
+  });
+  renderStructSubpills();
+}
+/* Click sul livello 1: una gestione con una sola struttura seleziona
+   direttamente quella, altrimenti si seleziona l'aggregato della gestione. */
+function setManagement(g){
+  let target = g;
+  if (STRUCT_GROUPS[g] && STRUCT_GROUPS[g].members.length === 1) target = STRUCT_GROUPS[g].members[0];
+  setStructure(target);
+}
 function setStructure(sel){
-  if (CURRENT_STRUCT === sel) return;
+  if (CURRENT_STRUCT === sel){ _syncStructPills(); return; }
   CURRENT_STRUCT = sel;
   if (typeof BIG_SELECTED_DAY !== 'undefined') BIG_SELECTED_DAY = null;
-  document.querySelectorAll('.struct-pill').forEach(p=>{
-    p.classList.toggle('active', p.dataset.s===sel);
-  });
+  _syncStructPills();
   renderAll();
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }
@@ -20821,7 +20962,7 @@ function _bigCompsetRankOne(sk, horizonDays){
   return { rank: Math.round(rankSum/rankCnt), total: totalComp, gapPct: gapCnt? gapSum/gapCnt : null };
 }
 function _bigCompsetRank(sel, horizonDays){
-  if (sel !== 'both') return _bigCompsetRankOne(sel, horizonDays);
+  if (!isAggSel(sel)) return _bigCompsetRankOne(sel, horizonDays);
   const keys = ['firenze','condotta','alfani','davids','nazionale','portenuove'];
   let rankSum=0, totSum=0, gapSum=0, n=0, gn=0;
   for (const k of keys){
@@ -20918,7 +21059,7 @@ function renderBigPicture(){
   const n = 7;   // Big Picture hero pickup KPI fixed at 7 days vs LY
   const winLbl = (n===7?'7d':'1d');
   const agg = _bigPickupAgg(sel, n);
-  const isBoth = (sel === 'both');
+  const isBoth = (isAggSel(sel));
   let revOtb=null, occYear=null, adrYear=null, revP=null, occP=null, adrP=null;
   try { const A = aggOTBYearly(sel); if (A && A.tot){ revOtb=A.tot.revC; occYear=A.tot.occC; adrYear=A.tot.adrC; revP=A.tot.revP; occP=A.tot.occP; adrP=A.tot.adrP; } } catch(e){}
   const rank = _bigCompsetRank(sel, 7);
@@ -21528,7 +21669,7 @@ function _bigRenderChart(sel){
     const base = 'Pickup — room nights booked per day (last 7 days)';
     const allActive = (BIG_SELECTED_DAY==='all');
     const allBtn = `<span data-bigallpick="1" style="font-size:10px;font-weight:700;border-radius:8px;padding:1px 8px;cursor:pointer;margin-left:8px;${allActive?'background:var(--accent);color:#fff':'background:rgba(0,0,0,.05);color:var(--ink-2);border:1px solid var(--line)'}">${allActive?'✓ all 7 days':'all 7 days'}</span>`;
-    const propBadge = (sel==='both') ? ` <span class="big-byprop" data-bigbreakdown="pickup" style="font-size:10px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>` : '';
+    const propBadge = (isAggSel(sel)) ? ` <span class="big-byprop" data-bigbreakdown="pickup" style="font-size:10px;font-weight:700;color:var(--accent);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;cursor:pointer;margin-left:6px">by property</span>` : '';
     titleEl.innerHTML = base + allBtn + propBadge;
   }
   const days = _bigPickupByDay(sel, 7);
@@ -21571,7 +21712,7 @@ function _bigRenderPie(sel){
   if (!host) return;
   if (titleEl){
     const base = 'Channel share — by revenue (year) · inner = STLY';
-    titleEl.innerHTML = (sel==='both')
+    titleEl.innerHTML = (isAggSel(sel))
       ? `${base} · <span style="font-size:10px;font-weight:700;color:var(--ink-3);background:rgba(0,0,0,.04);border:1px solid var(--line);border-radius:8px;padding:1px 7px;margin-left:6px">per property</span>`
       : base;
   }
@@ -21625,7 +21766,7 @@ function _bigRenderPie(sel){
     </div>`;
   }
 
-  if (sel === 'both'){
+  if (isAggSel(sel)){
     // one mini-donut per property (dynamic from CFG)
     const structs = Object.keys(CFG.structures).map(function(k){
       return { k:k, label: CFG.structures[k].label, color: CFG.structures[k].color };
