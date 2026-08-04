@@ -2001,7 +2001,7 @@ function _bookingCurveDataImpl(sel){
   }
   let forecastTotal = 0;
   if (isAggSel(sel)){
-    for (const sk of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
+    for (const sk of structIdsFor(sel)){          // solo le strutture della selezione
       forecastTotal += _structForecastTotal(sk);
     }
   } else {
@@ -14515,7 +14515,7 @@ renderPickupByMonth._renderOne = function(sel, wrapId, legendId){
   }
 };
 let PIRAMIDE_DAYS = 90;
-let PIRAMIDE_STRUCTS = {firenze: true, condotta: true, alfani: true, davids: true};
+let PIRAMIDE_STRUCTS = {firenze: true, condotta: true, alfani: true, davids: true, nazionale: true, portenuove: true};
 function renderPiramide(){
   const wrapEl = document.getElementById('piramide-chart-wrap');
   const legendEl = document.getElementById('piramide-legend');
@@ -14539,13 +14539,15 @@ function renderPiramide(){
     });
   }
   if (labelEl) labelEl.textContent = `${DAYS} days`;
+  // Solo le strutture della selezione corrente (gestione o All).
+  const _pirIds = structIdsFor(typeof CURRENT_STRUCT !== 'undefined' ? CURRENT_STRUCT : 'both');
+  const _pirOn  = (k) => PIRAMIDE_STRUCTS[k] && _pirIds.indexOf(k) >= 0;
   if (structPillsEl){
-    const sd = [
-      {key:'firenze',  label:'Firenze',  color:'#3b6b9a'},
-      {key:'condotta', label:'Condotta', color:'#3d7a4b'},
-      {key:'alfani',   label:'Alfani',   color:'#8e5fa8'},
-      {key:'davids',   label:'Enis',     color:'#b0332f'},
-    ];
+    const _PIR_LBL = {firenze:'Firenze', condotta:'Condotta', alfani:'Alfani', davids:'Enis',
+                      nazionale:'Nazionale', portenuove:'Porte Nuove'};
+    const _PIR_COL = {firenze:'#3b6b9a', condotta:'#3d7a4b', alfani:'#8e5fa8', davids:'#b0332f',
+                      nazionale:'#c4823b', portenuove:'#1f8a8a'};
+    const sd = _pirIds.map(k => ({ key:k, label:_PIR_LBL[k]||k, color:_PIR_COL[k]||'#666' }));
     structPillsEl.innerHTML = sd.map(s => {
       const on = PIRAMIDE_STRUCTS[s.key];
       return `<button class="rt-pill ${on?'':'off'}" data-pstruct="${s.key}" style="${on?'border-color:'+s.color+';color:'+s.color+';font-weight:600':''}">${s.label}</button>`;
@@ -14554,7 +14556,7 @@ function renderPiramide(){
       btn.addEventListener('click', () => {
         const k = btn.dataset.pstruct;
         PIRAMIDE_STRUCTS[k] = !PIRAMIDE_STRUCTS[k];
-        if (!PIRAMIDE_STRUCTS.firenze && !PIRAMIDE_STRUCTS.condotta && !PIRAMIDE_STRUCTS.alfani && !PIRAMIDE_STRUCTS.davids){
+        if (!_pirIds.some(x => PIRAMIDE_STRUCTS[x])){   // almeno una struttura sempre attiva
           PIRAMIDE_STRUCTS[k] = true;
         }
         renderPiramide();
@@ -14758,10 +14760,12 @@ function renderPiramide(){
     }
     return s;
   }
-  if (PIRAMIDE_STRUCTS.alfani)   svg += buildLine('alfani',   '#8e5fa8', 2);  // viola
-  if (PIRAMIDE_STRUCTS.firenze)  svg += buildLine('firenze',  '#3b6b9a', 2);  // blu
-  if (PIRAMIDE_STRUCTS.condotta) svg += buildLine('condotta', '#3d7a4b', 2);  // green
-  if (PIRAMIDE_STRUCTS.davids)   svg += buildLine('davids',   '#b0332f', 2);  // red (Enis)
+  if (_pirOn('alfani'))     svg += buildLine('alfani',     '#8e5fa8', 2);
+  if (_pirOn('firenze'))    svg += buildLine('firenze',    '#3b6b9a', 2);
+  if (_pirOn('condotta'))   svg += buildLine('condotta',   '#3d7a4b', 2);
+  if (_pirOn('davids'))     svg += buildLine('davids',     '#b0332f', 2);
+  if (_pirOn('nazionale'))  svg += buildLine('nazionale',  '#c4823b', 2);
+  if (_pirOn('portenuove')) svg += buildLine('portenuove', '#1f8a8a', 2);
   for (const t of xTicks){
     svg += `<line x1="${t.x}" y1="${MARGIN.top + innerH}" x2="${t.x}" y2="${MARGIN.top + innerH + 4}" stroke="var(--ink-3)" stroke-width="1"/>`;
     svg += `<text x="${t.x}" y="${MARGIN.top + innerH + 16}" text-anchor="middle" fill="var(--ink-3)" font-size="10">${t.label}</text>`;
@@ -14775,10 +14779,11 @@ function renderPiramide(){
     const dowIT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][p.dow];
     let tip = `${dowIT} ${dateLabel}\n`;
     tip += '─────────────────\n';
-    if (PIRAMIDE_STRUCTS.firenze  && p.firenze  != null) tip += `Firenze Suite:    €${Math.round(p.firenze)}\n`;
-    if (PIRAMIDE_STRUCTS.condotta && p.condotta != null) tip += `Condotta 16:      €${Math.round(p.condotta)}\n`;
-    if (PIRAMIDE_STRUCTS.alfani   && p.alfani   != null) tip += `Palazzo Alfani:   €${Math.round(p.alfani)}\n`;
-    if (PIRAMIDE_STRUCTS.davids   && p.davids   != null) tip += `Enis Guesthouse:  €${Math.round(p.davids)}\n`;
+    for (const _k of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
+      if (!_pirOn(_k) || p[_k] == null) continue;
+      const _lbl = (CFG.structures[_k] && CFG.structures[_k].label) || _k;
+      tip += `${(_lbl + ':').padEnd(18)}€${Math.round(p[_k])}\n`;
+    }
     if (p.compMin != null){
       tip += '─────────────────\n';
       tip += `Compset: ${p.compN} competitor\n`;
@@ -14857,10 +14862,14 @@ function renderPiramide(){
     s2 += `</svg>`;
     searchEl.innerHTML = s2;
   }
+  // Legenda dinamica: una voce per ogni struttura effettivamente disegnata.
+  const _PIR_COL2 = {firenze:'#3b6b9a', condotta:'#3d7a4b', alfani:'#8e5fa8', davids:'#b0332f',
+                     nazionale:'#c4823b', portenuove:'#1f8a8a'};
+  const _legStructs = _pirIds.filter(k => _pirOn(k)).map(k =>
+    `<span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:${_PIR_COL2[k]||'#666'}"></span>${escapeHtml((CFG.structures[k]&&CFG.structures[k].label)||k)} (price Expedia)</span>`
+  ).join('\n    ');
   legendEl.innerHTML = `
-    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#3d7a4b"></span>Condotta 16 (price Expedia)</span>
-    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#8e5fa8"></span>Palazzo Alfani (price Expedia)</span>
-    <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:#3b6b9a"></span>Firenze Suite (price Expedia)</span>
+    ${_legStructs}
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:12px;background:rgba(245,158,90,.30);border:1px solid rgba(195,100,30,.40)"></span>Compset range (min-max competitor)</span>
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:18px;height:2px;background:rgba(195,100,30,.45);border-top:1px dashed rgba(195,100,30,.7)"></span>Compset median</span>
     <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:9px;height:9px;background:rgba(168,59,59,.7)"></span>Search intensity (dark = peak)</span>
@@ -17848,13 +17857,15 @@ function renderRateShopper(){
   const wrap = document.getElementById('rate-tables-wrap');
   if (!wrap) return;
   const _rsCompField = { firenze:'competitors_firenze', condotta:'competitors', alfani:'competitors_alfani', davids:'competitors_davids', nazionale:'competitors_nazionale', portenuove:'competitors_portenuove' };
-  const structDefs = Object.keys(CFG.structures).map(function(k){
+  // Solo le strutture coperte dalla selezione corrente (gestione o All).
+  const _rsIds = structIdsFor(typeof CURRENT_STRUCT !== 'undefined' ? CURRENT_STRUCT : 'both');
+  const structDefs = _rsIds.map(function(k){
     return { key:k, label: CFG.structures[k].label, compMap: (EXPEDIA_DATA && EXPEDIA_DATA[_rsCompField[k]]) || null, color: CFG.structures[k].color };
   });
   const pillsEl = document.getElementById('rate-struct-pills');
   if (pillsEl){
     const opts = [{ v: 'all', label: 'All', color: '#6b5b3f' }].concat(
-      Object.keys(CFG.structures).map(function(k){
+      _rsIds.map(function(k){
         return { v: k, label: CFG.structures[k].label, color: CFG.structures[k].color };
       })
     );
@@ -20785,7 +20796,14 @@ const BIG_STRUCTS = Object.keys(CFG.structures).map(function(k){
   return { k:k, name: CFG.structures[k].label, color: CFG.structures[k].color };
 });
 function _bigStructKey(slug){ return CFG.structures[slug] ? CFG.structures[slug].key : slug; }
+/* Le schede "by property" devono mostrare SOLO le strutture della selezione:
+   su una gestione si vedono i suoi membri, su All tutte. */
+function _bigStructsFor(sel){
+  const ids = structIdsFor(sel);
+  return ids.map(k => ({ k:k, name: CFG.structures[k].label, color: CFG.structures[k].color }));
+}
 function _bigBreakdownData(kind, nDays, forceWindow){
+  const BIG_STRUCTS = _bigStructsFor(typeof CURRENT_STRUCT !== 'undefined' ? CURRENT_STRUCT : 'both');
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   if (kind === 'pickup'){
     let lo, hi, lbl;
@@ -21767,8 +21785,8 @@ function _bigRenderPie(sel){
   }
 
   if (isAggSel(sel)){
-    // one mini-donut per property (dynamic from CFG)
-    const structs = Object.keys(CFG.structures).map(function(k){
+    // un mini-donut per struttura, ma SOLO quelle coperte dalla selezione
+    const structs = structIdsFor(sel).map(function(k){
       return { k:k, label: CFG.structures[k].label, color: CFG.structures[k].color };
     });
     const cards = structs.map(s => buildOneDonut(s.k, s.label, s.color)).join('');
