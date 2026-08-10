@@ -6250,11 +6250,45 @@ HMMZP2W2AA,20/10/2025,,Airbnb,,Cupola,,17/02/2026,21/02/2026,4,397.57,Nazionale 
 HMWHKYA5YE,25/10/2025,,Airbnb,,Uffizi,,18/02/2026,20/02/2026,2,239,Nazionale 35 Apartments,Confermate,0,Airbnb,40
 HMPH328FXT,28/01/2026,,Airbnb,,Ponte Vecchio,,16/02/2026,19/02/2026,3,184.62,Porte Nuove Apartments,Confermate,0,Airbnb,40
 HM4X4JYRHR,20/10/2025,,Airbnb,,Uffizi,,13/02/2026,18/02/2026,5,526.95,Nazionale 35 Apartments,Confermate,0,Airbnb,40
+8201F3208B,04/07/2026 05:07,10/08/2026 10:17,Booking,Monica Oliveros,Trilocale,Non rimborsabile,15/08/2026,16/08/2026,1,288.62,Condotta 16,Confermate,0,OTA,0
+88AF682738,10/08/2026 08:49,10/08/2026 10:12,Booking,Trevor Rowe,Trilocale,Flessibile,18/09/2026,23/09/2026,5,2315.59,Condotta 16,Confermate,0,OTA,0
+97E2386ED8,06/06/2026 01:54,10/08/2026 10:09,Booking,Donna Roy,Trilocale,Flessibile,19/09/2026,22/09/2026,3,1425.43,Condotta 16,Confermate,0,OTA,0
+4D72FFA7B5,10/08/2026 02:49,,Expedia,LYDIA HYLTON,Bilocale,Flessibile,13/09/2026,16/09/2026,3,873.63,Condotta 16,Confermate,0,OTA,0
+E434B056A5,09/08/2026 11:02,10/08/2026 01:56,Booking,JI YEON KIM,Bilocale,Flessibile,02/10/2026,05/10/2026,3,1384.46,Condotta 16,Cancellate,0,OTA,0
+667A090817,10/08/2026 01:54,,Beddy,Carolina Love,Trilocale,Non rimborsabile,08/10/2026,11/10/2026,3,1287.9,Condotta 16,Confermate,0,Sito web,0
+BB75EF0C80,09/08/2026 23:46,,Booking,Julie Schroeder,Bilocale,Non rimborsabile,11/09/2026,13/09/2026,2,711.73,Condotta 16,Confermate,0,OTA,0
+38DE87F613,09/08/2026 22:37,09/08/2026 23:35,Booking,Andrew Murphy,Camera Matrimoniale Deluxe,Flessibile,09/08/2026,10/08/2026,1,132.16,Firenze Suite,Cancellate,0,OTA,0
+E4D7407B85,09/08/2026 17:05,,Booking,Yeung Cheuk Him,Palazzo Pitti,Non rimborsabile,05/10/2026,09/10/2026,4,518.67,Porte Nuove Apartments,Confermate,0,OTA,0
+9862E60733,09/08/2026 16:08,,Booking,Julia Peierl,Bilocale,Non rimborsabile,23/08/2026,24/08/2026,1,160.12,Condotta 16,Confermate,0,OTA,0
+F6F538B081,24/03/2026 21:34,09/08/2026 14:01,Booking,Peggy Steinhardt,Suite con Terrazza,Flessibile,20/08/2026,26/08/2026,6,1374.24,Firenze Suite,Cancellate,0,OTA,0
+A4E8A82FF9,31/07/2026 05:22,09/08/2026 09:24,Booking,Guo Chenjuan,Trilocale,Flessibile,11/08/2026,13/08/2026,2,545.34,Condotta 16,Confermate,0,OTA,0
+98BD20C137,09/08/2026 04:34,,Ctrip,YUXIN DAI,Trilocale,Flessibile,01/10/2026,03/10/2026,2,949.52,Condotta 16,Confermate,0,OTA,0
+D6541CCEC8,24/06/2026 06:05,09/08/2026 03:58,Booking,Yonghee Lee,Trilocale,Non rimborsabile,26/11/2026,28/11/2026,2,517.58,Condotta 16,Confermate,0,OTA,0
+DD7F0B892E,08/08/2026 23:43,,Booking,Melissa Zuarri Cott,Bilocale,Flessibile,28/08/2026,31/08/2026,3,600.6,Condotta 16,Confermate,0,OTA,0
+96217ED294,08/08/2026 16:39,,Airbnb,בר יצהרי,Cupola,Flessibile,10/11/2026,11/11/2026,1,114,Nazionale 35 Apartments,Confermate,0,OTA,0
+0C22F0B1F9,08/08/2026 15:10,,Ctrip,QIYING SU,Suite con Terrazza,Flessibile,21/10/2026,28/10/2026,7,2463.37,Firenze Suite,Confermate,0,OTA,0
+8854E4A286,29/07/2026 06:24,08/08/2026 11:05,Ctrip,JINGWEN GUO,Suite,Flessibile,09/02/2027,11/02/2027,2,344.14,Firenze Suite,Cancellate,0,OTA,0
+090D0AC8ED,22/07/2026 20:30,08/08/2026 10:43,Ctrip,XIANG LI,Camera Matrimoniale Deluxe,Non rimborsabile,09/08/2026,10/08/2026,1,112.78,Firenze Suite,Confermate,0,OTA,0
+4C3DE5A725,13/07/2026 03:29,08/08/2026 10:43,Expedia,Ehren Devoe,Camera Matrimoniale Deluxe,Non rimborsabile,08/08/2026,10/08/2026,2,234.32,Firenze Suite,Confermate,0,OTA,0
+40F5041A3F,03/07/2026 03:07,08/08/2026 10:28,Expedia,Chris Phan,Suite con Terrazza,Non rimborsabile,22/08/2026,24/08/2026,2,362.26,Firenze Suite,Confermate,0,OTA,0
+D6E6E80AF3,18/04/2026 04:09,08/08/2026 10:12,Booking,susanto sjamsuddin;ana mariyani;darrell rafael,Bilocale,Flessibile,24/12/2026,27/12/2026,3,517.32,Condotta 16,Cancellate,0,OTA,0
+354693D7D8,18/04/2026 04:12,08/08/2026 10:12,Booking,Kristina irijani;zidan waleed theyab;wiwik supriyanti;lisa nur apipi,Trilocale,Flessibile,24/12/2026,27/12/2026,3,732.99,Condotta 16,Cancellate,0,OTA,0
+536867432D,08/08/2026 07:31,,Airbnb,Daniela Turres Benyeman,Palazzo Vecchio,Flessibile,24/09/2026,25/09/2026,1,128.7,Porte Nuove Apartments,Confermate,0,OTA,0
+EC28BE827A,07/08/2026 18:35,,Airbnb,Quentin Coutou,Cupola,Flessibile,04/03/2027,05/03/2027,1,126,Nazionale 35 Apartments,Confermate,0,OTA,0
+60F7D8AC19,07/08/2026 13:53,,Ctrip,GLORIA TIMONE,Bilocale,Non rimborsabile,19/08/2026,21/08/2026,2,248.98,Condotta 16,Confermate,0,OTA,0
+622ECEE6EA,07/08/2026 13:27,,Booking,Laura Sinibaldi,Palazzo Pitti,Non rimborsabile,12/09/2026,13/09/2026,1,132.26,Porte Nuove Apartments,Confermate,0,OTA,0
+9F2684A400,07/08/2026 12:30,,Booking,Inbal Doron,Trilocale,Flessibile,23/09/2026,25/09/2026,2,1063.06,Condotta 16,Confermate,0,OTA,0
+058D2C61D3,05/08/2026 17:26,07/08/2026 12:04,Ctrip,QIUQUAN DENG,Camera Matrimoniale Deluxe,Non rimborsabile,11/08/2026,13/08/2026,2,279.22,Firenze Suite,Confermate,0,OTA,0
+F860162980,26/01/2026 14:36,07/08/2026 12:04,Beddy,NEIL HAFFNER,Camera Matrimoniale Deluxe,Flessibile,11/08/2026,13/08/2026,2,298,Firenze Suite,Confermate,0,Sito web,0
+4BC0B76F37,07/08/2026 11:39,07/08/2026 11:40,Beddy,rami polatsek,Suite,Flessibile,08/08/2026,12/08/2026,4,578,Firenze Suite,Confermate,0,Non Specificato,0
+02DF61B595,26/07/2026 16:36,07/08/2026 11:40,Expedia,WANRU FENG,Suite,Non rimborsabile,12/08/2026,15/08/2026,3,440.92,Firenze Suite,Confermate,0,OTA,0
+7F3B1238CE,07/07/2026 21:52,07/08/2026 11:39,Booking,Minic Ana,Suite,Non rimborsabile,11/08/2026,14/08/2026,3,518.86,Firenze Suite,Confermate,0,OTA,0
+9CF662F5D1,19/07/2026 20:21,07/08/2026 11:39,Ctrip,RUIEN XU,Suite,Non rimborsabile,14/08/2026,16/08/2026,2,339.33,Firenze Suite,Confermate,0,OTA,0
+5CB812140F,11/07/2026 11:33,07/08/2026 11:36,Ctrip,JIAYI TAO,Suite,Flessibile,08/08/2026,10/08/2026,2,308.46,Firenze Suite,Confermate,0,OTA,0
+F2A74422EC,24/07/2026 03:54,07/08/2026 10:53,Beddy,Aaron Teeter,Suite con Terrazza,Flessibile,11/09/2026,14/09/2026,3,1034,Firenze Suite,Cancellate,0,Sito web,0
 513435A2E4,27/06/2026 19:14,07/08/2026 08:50,Booking,Chariton Palaiologk,Camera Matrimoniale Deluxe,Non rimborsabile,16/08/2026,17/08/2026,1,142.43,Firenze Suite,Confermate,0,OTA,0
 27DABA935D,07/08/2026 03:40,07/08/2026 08:49,Ctrip,MINGYU ZHAO,Camera Matrimoniale Deluxe,Non rimborsabile,16/08/2026,17/08/2026,1,117.12,Firenze Suite,Confermate,0,OTA,0
 5DC9D93872,27/07/2026 15:55,07/08/2026 08:49,Expedia,LEI ZHU,Camera Matrimoniale Deluxe,Flessibile,13/08/2026,14/08/2026,1,128.16,Firenze Suite,Confermate,0,OTA,0
-058D2C61D3,05/08/2026 17:26,07/08/2026 08:49,Ctrip,QIUQUAN DENG,Camera Matrimoniale Deluxe,Non rimborsabile,11/08/2026,13/08/2026,2,279.22,Firenze Suite,Confermate,0,OTA,0
-4C3DE5A725,13/07/2026 03:29,07/08/2026 08:49,Expedia,Ehren Devoe,Camera Matrimoniale Deluxe,Non rimborsabile,08/08/2026,10/08/2026,2,234.32,Firenze Suite,Confermate,0,OTA,0
 9FDDAE6EAA,07/08/2026 06:47,,Booking,Yu Duan,Trilocale,Flessibile,01/10/2026,03/10/2026,2,1042.66,Condotta 16,Confermate,0,OTA,0
 AEF6026A02,07/08/2026 03:34,,Ctrip,HONGLIANG WANG,Suite,Non rimborsabile,16/08/2026,17/08/2026,1,134.46,Firenze Suite,Confermate,0,OTA,0
 FEB6E405BC,07/08/2026 03:25,,Ctrip,JINGJING CHANG,Suite,Non rimborsabile,16/08/2026,17/08/2026,1,152.31,Firenze Suite,Confermate,0,OTA,0
@@ -6312,13 +6346,10 @@ F3BFE7E6BE,02/08/2026 10:32,,Booking,Tong Wu,Trilocale,Non rimborsabile,13/08/20
 01D35A5192,01/08/2026 19:52,,Expedia,JUWON KIM,Trilocale,Flessibile,26/08/2026,30/08/2026,4,962.48,Condotta 16,Confermate,0,OTA,0
 25F81B2586,01/08/2026 18:11,,Beddy,Junhang Chen,Camera Matrimoniale Deluxe,Flessibile,03/08/2026,04/08/2026,1,110,Firenze Suite,Confermate,0,Non Specificato,0
 FACA793E50,01/08/2026 16:36,,Airbnb,Amelie Duhamel,Palazzo Vecchio,Flessibile,18/09/2026,21/09/2026,3,312.3,Porte Nuove Apartments,Confermate,0,OTA,0
-090D0AC8ED,22/07/2026 20:30,01/08/2026 08:57,Ctrip,XIANG LI,Camera Matrimoniale Deluxe,Non rimborsabile,09/08/2026,10/08/2026,1,112.78,Firenze Suite,Confermate,0,OTA,0
 A6CC65E6EA,14/07/2026 15:51,01/08/2026 08:56,Ctrip,Bo ZHANG,Camera Matrimoniale Deluxe,Non rimborsabile,05/08/2026,11/08/2026,6,837.53,Firenze Suite,Confermate,0,OTA,0
 1562275397,28/07/2026 01:53,01/08/2026 08:55,Expedia,Kseniia Isakova,Camera Matrimoniale Deluxe,Flessibile,04/08/2026,06/08/2026,2,229.54,Firenze Suite,Confermate,0,OTA,0
-5CB812140F,11/07/2026 11:33,01/08/2026 08:54,Ctrip,JIAYI TAO,Suite,Flessibile,08/08/2026,10/08/2026,2,308.46,Firenze Suite,Confermate,0,OTA,0
 17F181FD9E,11/06/2026 22:12,01/08/2026 08:54,Beddy,rami polatsek,Suite,Non rimborsabile,06/08/2026,08/08/2026,2,335.5,Firenze Suite,Confermate,0,Sito web,0
 5E12C85E78,23/07/2026 09:49,01/08/2026 08:53,Ctrip,YINGYING LI,Suite,Flessibile,05/08/2026,06/08/2026,1,159.54,Firenze Suite,Confermate,0,OTA,0
-F860162980,26/01/2026 14:36,01/08/2026 08:52,Beddy,NEIL HAFFNER,Camera Matrimoniale Deluxe,Flessibile,11/08/2026,13/08/2026,2,298,Firenze Suite,Confermate,0,Sito web,0
 1F901B7F5C,01/08/2026 04:49,01/08/2026 06:36,Airbnb,Daniel Claro,Ponte Vecchio,Flessibile,05/10/2026,08/10/2026,3,407,Porte Nuove Apartments,Cancellate,0,OTA,0
 B70CA4CD41,01/08/2026 03:25,,Ctrip,RUIKE WU,Bilocale,Flessibile,05/08/2026,09/08/2026,4,597.62,Condotta 16,Confermate,0,OTA,0
 1AC57CD316,31/07/2026 22:35,,Beddy,Diana Worsley,Camera Matrimoniale Deluxe,Non rimborsabile,03/09/2026,07/09/2026,4,948.6,Firenze Suite,Confermate,0,Sito web,0
@@ -6338,7 +6369,6 @@ E7109259ED,22/07/2026 12:49,31/07/2026 12:53,Ctrip,CHEN LIFENG,"Camera Matrimoni
 5F3BAD33EA,31/07/2026 08:38,31/07/2026 10:38,Expedia,Aidan Rando,Trilocale,Flessibile,10/01/2027,12/01/2027,2,552.14,Condotta 16,Confermate,0,OTA,0
 EC67A78292,31/07/2026 10:23,,Expedia,Cosimo Rando,Bilocale,Flessibile,10/01/2027,12/01/2027,2,352.24,Condotta 16,Confermate,0,OTA,0
 D789F72356,31/07/2026 10:17,,Expedia,Vanessa Rando,Trilocale,Flessibile,10/01/2027,12/01/2027,2,552.14,Condotta 16,Confermate,0,OTA,0
-A4E8A82FF9,31/07/2026 05:22,,Booking,Guo Chenjuan,Trilocale,Flessibile,11/08/2026,13/08/2026,2,545.34,Condotta 16,Confermate,0,OTA,0
 5CAD91983B,10/06/2026 06:53,31/07/2026 03:17,Booking,Vera MA,Bilocale,Flessibile,29/09/2026,01/10/2026,2,761,Condotta 16,Confermate,0,OTA,0
 3DCE9DB339,30/07/2026 23:37,,Beddy,ASCONCHILO Clementine,Suite con Terrazza,Flessibile,02/08/2026,03/08/2026,1,240,Firenze Suite,Confermate,0,Sito web,0
 E4F4AF1FBB,30/07/2026 18:55,,Booking,JULIANA SANTOS,Attico,Flessibile,16/09/2026,21/09/2026,5,2815.92,Condotta 16,Confermate,0,OTA,0
@@ -6352,7 +6382,6 @@ C65615CFA2,29/07/2026 17:23,,Airbnb,병관 김,Uffizi,Flessibile,20/11/2026,22/1
 C510D96403,29/07/2026 17:21,,Booking,Ayidana Duosibo,Palazzo Vecchio,Non rimborsabile,17/10/2026,19/10/2026,2,216.32,Porte Nuove Apartments,Confermate,0,OTA,0
 1BCFFC64A1,16/05/2026 15:55,29/07/2026 09:06,Airbnb,Rose Ewald,Uffizi,Flessibile,13/10/2026,15/10/2026,2,488.85,Nazionale 35 Apartments,Confermate,0,OTA,40
 CA110651AE,28/07/2026 18:46,29/07/2026 06:26,Expedia,JINGWEN GUO,Suite,Flessibile,09/02/2027,11/02/2027,2,351.68,Firenze Suite,Cancellate,0,OTA,0
-8854E4A286,29/07/2026 06:24,,Ctrip,JINGWEN GUO,Suite,Flessibile,09/02/2027,11/02/2027,2,344.14,Firenze Suite,Confermate,0,OTA,0
 59BF689120,29/07/2026 05:47,,Beddy,Arya Sahabi,Camera Matrimoniale Deluxe,Flessibile,02/09/2026,05/09/2026,3,779,Firenze Suite,Confermate,0,Sito web,0
 D8D16ABAAC,28/07/2026 12:31,,Booking,Tuula Haines,Bilocale,Non rimborsabile,29/08/2026,02/09/2026,4,793.55,Condotta 16,Confermate,0,OTA,0
 D450A90112,28/07/2026 09:43,,Airbnb,Zoie So,Cupola,Flessibile,24/10/2026,26/10/2026,2,302,Nazionale 35 Apartments,Confermate,0,OTA,0
@@ -6366,8 +6395,6 @@ DA5789D458,27/07/2026 15:55,,Expedia,WEI CHEN,Camera Matrimoniale Deluxe,Flessib
 31D110CB81,22/07/2026 04:18,27/07/2026 14:49,Booking,Aria Afrashteh,Camera Matrimoniale Deluxe,Non rimborsabile,30/07/2026,02/08/2026,3,376.42,Firenze Suite,Confermate,0,OTA,0
 D0E915DA7D,27/07/2026 13:02,,Expedia,Gina Mullen,Suite con Terrazza,Flessibile,15/03/2027,18/03/2027,3,748.44,Firenze Suite,Confermate,0,OTA,0
 CDCAF151F8,27/07/2026 13:02,,Expedia,Gina Mullen,Suite con Terrazza,Flessibile,15/03/2027,18/03/2027,3,748.44,Firenze Suite,Confermate,0,OTA,0
-02DF61B595,26/07/2026 16:36,27/07/2026 11:56,Expedia,WANRU FENG,Suite,Non rimborsabile,12/08/2026,15/08/2026,3,440.92,Firenze Suite,Confermate,0,OTA,0
-9CF662F5D1,19/07/2026 20:21,27/07/2026 11:56,Ctrip,RUIEN XU,Suite,Non rimborsabile,14/08/2026,16/08/2026,2,339.33,Firenze Suite,Confermate,0,OTA,0
 6DA3C0E262,27/07/2026 10:10,,Booking,Katarzyna Maksyjan,Camera Matrimoniale Deluxe,Flessibile,28/07/2026,29/07/2026,1,141.3,Firenze Suite,Confermate,0,OTA,0
 C3A66648E1,26/07/2026 22:24,,Booking,Lili Waldinger,Trilocale,Flessibile,28/07/2026,30/07/2026,2,629.04,Condotta 16,Confermate,0,OTA,0
 ED36D3D659,26/07/2026 19:25,,Airbnb,诗琪 冯,Uffizi,Flessibile,01/08/2026,02/08/2026,1,156,Nazionale 35 Apartments,Confermate,0,OTA,0
@@ -6418,7 +6445,6 @@ B34112379D,25/05/2026 16:16,24/07/2026 08:50,Expedia,KECHENG YE,Camera Matrimoni
 2599B54704,28/06/2026 12:52,24/07/2026 08:50,Booking,Heidi Guerra,Camera Matrimoniale Deluxe,Non rimborsabile,24/07/2026,26/07/2026,2,361.16,Firenze Suite,Confermate,0,OTA,0
 C083F3E2DD,24/07/2026 05:44,,Booking,Julie Arnold,Trilocale,Flessibile,10/09/2026,15/09/2026,5,2203.25,Condotta 16,Confermate,0,OTA,0
 95DC70466A,24/07/2026 05:30,,Beddy,Kyren Bueckert,Suite con Terrazza,Flessibile,12/09/2026,17/09/2026,5,1685,Firenze Suite,Confermate,0,Sito web,0
-F2A74422EC,24/07/2026 03:54,,Beddy,Aaron Teeter,Suite con Terrazza,Flessibile,11/09/2026,14/09/2026,3,1034,Firenze Suite,Confermate,0,Sito web,0
 84F3FA5A3F,24/07/2026 00:37,,Expedia,Carmelo Pio Guidara,Suite,Flessibile,04/08/2026,05/08/2026,1,132.04,Firenze Suite,Confermate,0,OTA,0
 6D5F1DF516,23/07/2026 21:01,,Booking,Stefan Duda,Palazzo Vecchio,Non rimborsabile,08/10/2026,10/10/2026,2,216.32,Porte Nuove Apartments,Confermate,0,OTA,0
 09AC557815,23/07/2026 15:21,,Ctrip,SHOUDU XIE,Camera Matrimoniale Deluxe,Flessibile,28/09/2026,01/10/2026,3,819.32,Firenze Suite,Confermate,0,OTA,0
@@ -6620,7 +6646,6 @@ F25E63B27A,08/07/2026 09:22,,Airbnb,翼 左,Uffizi,Flessibile,26/07/2026,28/07/2
 4EAB6A6560,08/07/2026 09:18,,Airbnb,萱 周,Uffizi,Flessibile,30/08/2026,01/09/2026,2,238.2,Nazionale 35 Apartments,Confermate,0,OTA,30
 A049D96B90,07/07/2026 23:13,,Airbnb,Kangheng Wang,Ponte Vecchio,Flessibile,31/07/2026,03/08/2026,3,339.7,Porte Nuove Apartments,Confermate,0,OTA,40
 303AEDB995,07/07/2026 22:39,,Expedia,Suliman Almuqbel,Bilocale,Non rimborsabile,15/07/2026,16/07/2026,1,156.24,Condotta 16,Confermate,0,OTA,0
-7F3B1238CE,07/07/2026 21:52,,Booking,Minic Ana,Suite,Non rimborsabile,11/08/2026,14/08/2026,3,518.86,Firenze Suite,Confermate,0,OTA,0
 8DE5298565,07/07/2026 21:15,,Booking,NETA FRIDMAN ZOHAR,Trilocale,Flessibile,19/08/2026,20/08/2026,1,290.88,Condotta 16,Confermate,0,OTA,0
 6FE119704D,07/07/2026 20:53,,Booking,Nand Rosiers,Palazzo Vecchio,Non rimborsabile,02/08/2026,04/08/2026,2,145.34,Porte Nuove Apartments,Confermate,0,OTA,0
 B735C1CA2A,07/07/2026 18:50,,Expedia,Kenneth Mather,Camera Matrimoniale Deluxe,Flessibile,26/09/2026,29/09/2026,3,693.28,Firenze Suite,Confermate,0,OTA,0
@@ -6653,7 +6678,6 @@ F0646F653D,04/07/2026 14:28,04/07/2026 14:43,Beddy,Vasile Codreanu,Trilocale,Non
 7B1882A182,04/07/2026 08:43,04/07/2026 08:49,Booking,BAK JIYONG,Bilocale,Non rimborsabile,14/07/2026,16/07/2026,2,389.1,Condotta 16,Cancellate,0,OTA,0
 86A2F7A542,04/07/2026 08:40,,Airbnb,Drew Ableman,Uffizi,Flessibile,20/10/2026,23/10/2026,3,588.5,Nazionale 35 Apartments,Confermate,0,OTA,40
 D2CFC78D2B,04/07/2026 07:13,,Booking,Vittorio Ghiglino,Trilocale,Flessibile,05/10/2026,07/10/2026,2,1069.74,Condotta 16,Confermate,0,OTA,0
-8201F3208B,04/07/2026 05:07,,Booking,Monica Oliveros,Trilocale,Non rimborsabile,15/08/2026,16/08/2026,1,288.62,Condotta 16,Confermate,0,OTA,0
 BD72295A24,03/07/2026 22:10,,Booking,TIMOTHY Stadler,Bilocale,Non rimborsabile,09/09/2026,12/09/2026,3,905.46,Condotta 16,Confermate,0,OTA,0
 A300231B61,03/07/2026 20:52,,Airbnb,Dovid Bernstein,Uffizi,Flessibile,06/08/2026,09/08/2026,3,446,Nazionale 35 Apartments,Confermate,0,OTA,40
 82775776F7,03/07/2026 20:19,,Airbnb,Lori Okun,Ponte Vecchio,Flessibile,25/09/2026,30/09/2026,5,671.75,Porte Nuove Apartments,Confermate,0,OTA,40
@@ -6662,13 +6686,11 @@ C4DD8623A8,03/07/2026 17:30,,Booking,Agustina Cettour,Trilocale,Flessibile,14/08
 C929DCB976,06/06/2026 16:57,03/07/2026 10:07,Booking,Chen Ying,Camera Matrimoniale Deluxe,Non rimborsabile,06/07/2026,07/07/2026,1,172.95,Firenze Suite,Confermate,0,OTA,0
 DCB557FAE9,01/06/2026 07:11,03/07/2026 09:51,Booking,Harriet Alexander-Bates,Trilocale,Non rimborsabile,05/07/2026,08/07/2026,3,549.09,Condotta 16,Confermate,0,OTA,0
 DC4D89E3EE,02/06/2026 00:22,03/07/2026 09:50,Booking,Amanda Farmer,Trilocale,Flessibile,04/07/2026,07/07/2026,3,1037.55,Condotta 16,Confermate,0,OTA,0
-40F5041A3F,03/07/2026 03:07,03/07/2026 03:52,Expedia,Chris Phan,Suite con Terrazza,Non rimborsabile,22/08/2026,24/08/2026,2,362.26,Firenze Suite,Confermate,0,OTA,0
 BD229E5669,02/07/2026 22:47,,Airbnb,Jordan Jackson,Ponte Vecchio,Flessibile,10/07/2026,12/07/2026,2,200.2,Porte Nuove Apartments,Confermate,0,OTA,40
 016CB8249E,27/06/2026 13:40,02/07/2026 19:31,Booking,Khatia mestvirishvili,Bilocale,Non rimborsabile,06/07/2026,07/07/2026,1,214.9,Condotta 16,Confermate,0,OTA,0
 FE3E7F025C,02/07/2026 18:02,,Booking,Keith Jones,Attico,Non rimborsabile,02/10/2026,06/10/2026,4,2099.23,Condotta 16,Confermate,0,OTA,0
 ED756C1E35,02/07/2026 15:50,,Booking,Carolina Russ,Trilocale,Non rimborsabile,09/09/2026,10/09/2026,1,470.73,Condotta 16,Confermate,0,OTA,0
 38B2A0C2E2,02/07/2026 12:56,,Expedia,Claus Campeotto,Attico,Non rimborsabile,15/07/2026,19/07/2026,4,1365.11,Condotta 16,Confermate,0,OTA,0
-354693D7D8,18/04/2026 04:12,02/07/2026 11:34,Booking,Kristina irijani;zidan waleed theyab;wiwik supriyanti;lisa nur apipi,Trilocale,Flessibile,24/12/2026,27/12/2026,3,732.99,Condotta 16,Confermate,0,OTA,0
 182185C395,02/07/2026 04:33,,Airbnb,Mary Catherine Polatty,Cupola,Flessibile,09/10/2026,11/10/2026,2,418.1,Nazionale 35 Apartments,Confermate,0,OTA,40
 BE5038ECDD,01/07/2026 23:53,02/07/2026 00:03,Expedia,PINGYANG WANG,Suite con Terrazza,Non rimborsabile,10/07/2026,11/07/2026,1,212.26,Firenze Suite,Confermate,0,OTA,0
 A21355D036,22/06/2026 18:37,01/07/2026 22:46,Expedia,SHUANG XIAO,Suite con Terrazza,Non rimborsabile,13/07/2026,18/07/2026,5,1189.18,Firenze Suite,Confermate,0,OTA,0
@@ -6725,7 +6747,6 @@ A04A9411E4,24/06/2026 18:28,,Airbnb,Takashi Isshiki,Cupola,Flessibile,26/08/2026
 461C9B1E1E,15/06/2026 11:55,24/06/2026 14:38,Booking,Niki Kalavrezou,Bilocale,Non rimborsabile,25/06/2026,29/06/2026,4,1066.2,Condotta 16,Confermate,0,OTA,0
 82FB308D69,24/06/2026 13:59,,Airbnb,Elena Khazieva,Cupola,Flessibile,15/07/2026,16/07/2026,1,199,Nazionale 35 Apartments,Confermate,0,OTA,40
 FD069FFB5C,24/06/2026 06:15,,Booking,STEPHANIE Zuzack,Trilocale,Flessibile,13/07/2026,15/07/2026,2,628.99,Condotta 16,Confermate,0,OTA,0
-D6541CCEC8,24/06/2026 06:05,,Booking,Yonghee Lee,Trilocale,Non rimborsabile,18/08/2026,20/08/2026,2,470.5,Condotta 16,Confermate,0,OTA,0
 E7BDD0C8C5,13/04/2026 17:18,23/06/2026 21:58,Beddy,Hannah Yi,Camera Matrimoniale Deluxe,Flessibile,24/06/2026,28/06/2026,4,996,Firenze Suite,Confermate,0,Sito web,0
 CEAF3D8D16,07/06/2026 16:13,23/06/2026 21:58,Booking,Sara Melly,Camera Matrimoniale Deluxe,Flessibile,23/06/2026,30/06/2026,7,1592.18,Firenze Suite,Confermate,0,OTA,0
 8E2B673810,23/06/2026 21:03,,Booking,Karina Sabac,Camera Matrimoniale Deluxe,Non rimborsabile,14/07/2026,16/07/2026,2,313.35,Firenze Suite,Confermate,0,OTA,0
@@ -6831,7 +6852,6 @@ F767E0D337,07/06/2026 21:14,,Booking,Bernhard Hohenegger,Trilocale,Flessibile,12
 3B147CABF8,15/05/2026 09:24,07/06/2026 09:25,Booking,Robert Mieczyslaw Wyslocki,"Suite, Camera Matrimoniale Deluxe","Non rimborsabile, Non rimborsabile",05/06/2026,07/06/2026,2,1157.08,Firenze Suite,Confermate,0,OTA,0
 EA54A17AE7,27/04/2026 07:03,06/06/2026 13:51,Beddy,ANIRUDH PAREKH,Trilocale,Non rimborsabile,09/06/2026,12/06/2026,3,888.69,Condotta 16,Confermate,0,Sito web,0
 6AEC8F8D2C,13/05/2026 09:42,06/06/2026 13:51,Booking,Abdulaziz Albaqami,Trilocale,Non rimborsabile,06/06/2026,09/06/2026,3,1176.15,Condotta 16,Confermate,0,OTA,0
-97E2386ED8,06/06/2026 01:54,,Booking,Donna Roy,Trilocale,Flessibile,19/09/2026,22/09/2026,3,1425.43,Condotta 16,Confermate,0,OTA,0
 03DBA38677,25/02/2026 07:38,06/06/2026 00:02,Booking,Zi Yuan Ong,Suite,Flessibile,12/06/2026,15/06/2026,3,1319.22,Firenze Suite,Cancellate,0,OTA,0
 EC1046969C,05/06/2026 16:42,05/06/2026 19:24,Booking,Sura Majed,Trilocale,Flessibile,26/06/2026,27/06/2026,1,453.78,Condotta 16,Cancellate,0,OTA,0
 13515C440B,05/06/2026 16:26,,Airbnb,明學 謝,Cupola,Flessibile,30/09/2026,03/10/2026,3,616.65,Nazionale 35 Apartments,Confermate,0,OTA,40
@@ -7137,7 +7157,6 @@ D0DA1F6DC7,14/03/2026 22:36,19/04/2026 14:30,Booking,Eric Kramer,Trilocale,Non r
 BC77896527,09/04/2026 17:03,18/04/2026 22:08,Booking,Akaki Gubelidze,"Trilocale, Bilocale","Flessibile, Flessibile",06/05/2026,13/05/2026,7,4702.63,Condotta 16,Cancellate,0,OTA,0
 EBF895A6F7,18/04/2026 17:29,,Booking,Aseem Gupta,Attico,Flessibile,12/10/2026,15/10/2026,3,1777.14,Condotta 16,Confermate,0,OTA,0
 8DEE29083D,08/04/2026 10:55,18/04/2026 13:00,Booking,Erell Dana,Trilocale,Flessibile,22/05/2026,23/05/2026,1,482.28,Condotta 16,Cancellate,0,OTA,0
-D6E6E80AF3,18/04/2026 04:09,,Booking,susanto sjamsuddin;ana mariyani;darrell rafael,Bilocale,Flessibile,24/12/2026,27/12/2026,3,517.32,Condotta 16,Confermate,0,OTA,0
 5AD5615F05,17/04/2026 17:20,,Booking,matteo cosentino,Trilocale,Non rimborsabile,18/04/2026,19/04/2026,1,335.61,Condotta 16,Confermate,0,OTA,0
 5D9B4EA175,15/03/2026 10:36,17/04/2026 15:37,Booking,Erly Novita,Trilocale,Flessibile,18/04/2026,20/04/2026,2,839.93,Condotta 16,Confermate,0,OTA,0
 7F0CDB86C6,22/03/2026 10:21,17/04/2026 13:49,Booking,Claus Myllerup,Suite con Terrazza,Flessibile,19/04/2026,23/04/2026,4,865.36,Firenze Suite,Confermate,0,OTA,0
@@ -7288,7 +7307,6 @@ C520F46E69,02/03/2026 23:59,25/03/2026 15:01,Booking,Aliya Amin,Trilocale,Flessi
 38C1DE2FF6,25/03/2026 08:45,,Airbnb,Elisa Birchen,Ponte Vecchio,Flessibile,07/07/2026,09/07/2026,2,220.5,Porte Nuove Apartments,Confermate,0,OTA,40
 602B29B9E8,25/03/2026 08:44,,Airbnb,Jake Denton,Palazzo Pitti,Flessibile,07/07/2026,09/07/2026,2,201.5,Porte Nuove Apartments,Confermate,0,OTA,40
 92B2C70078,24/03/2026 23:36,,Booking,Liana Cheaga,Trilocale,Non rimborsabile,05/04/2026,07/04/2026,2,776.12,Condotta 16,Confermate,0,OTA,0
-F6F538B081,24/03/2026 21:34,,Booking,Peggy Steinhardt,Suite con Terrazza,Flessibile,20/08/2026,26/08/2026,6,1374.24,Firenze Suite,Confermate,0,OTA,0
 77EDFC13CD,24/03/2026 18:41,,Beddy,Amici Lapo,Suite con Terrazza,Non rimborsabile,03/04/2026,04/04/2026,1,180,Firenze Suite,Confermate,0,Non Specificato,0
 50DC94C445,24/03/2026 18:40,,Beddy,Amici Lapo,Suite,Non rimborsabile,02/04/2026,03/04/2026,1,180,Firenze Suite,Confermate,0,Non Specificato,0
 30117B3A90,19/03/2026 21:48,24/03/2026 18:37,Booking,Peter Frost,Trilocale,Flessibile,16/04/2026,17/04/2026,1,335.06,Condotta 16,Cancellate,0,OTA,0
@@ -8858,12 +8876,15 @@ CD943C5C97,27/07/2025 11:32,,Booking,HANJIE WANG,Deluxe,Tariffa Rimborsabile - P
 2286,18/07/2026 04:05:21,,Booking,Rodriguez Sheyla,Verde,Verde - Non Rimborsabile OTA,26/10/2026,28/10/2026,2,200.86,Florence David's Apartament,Confermate,24,Booking,0
 2305,27/07/2026 11:54:06,,Booking,Hazell Sofie,Blu,Blu - Standard,22/10/2026,26/10/2026,4,539.08,Florence David's Apartament,Confermate,48,Booking,0
 2307,29/07/2026 03:58:00,,Expedia,Sydney Mariah Treves,Verde,Verde - Standard,20/10/2026,26/10/2026,6,718.78,Florence David's Apartament,Confermate,72,Expedia,0
+2331,09/08/2026 15:19:52,,Booking,FRANCL Nadège,Verde,Verde - Min Stay 5 notti,12/10/2026,19/10/2026,7,1046.97,Florence David's Apartament,Confermate,84,Booking,0
 2278,13/07/2026 01:36:00,,Expedia,ALAN BOWERMAN,Blu,Blu - Standard,06/10/2026,10/10/2026,4,760.65,Florence David's Apartament,Confermate,48,Expedia,0
 2277,13/07/2026 00:40:00,13/07/2026,Expedia,ALAN BOWERMAN,Blu,Blu - Standard,06/10/2026,10/10/2026,4,760.65,Florence David's Apartament,Cancellate,48,Expedia,0
 2311,30/07/2026 12:01:38,,Ctrip,XIA QIMAN,Blu,Blu - Standard,01/10/2026,04/10/2026,3,570.62,Florence David's Apartament,Confermate,36,Ctrip,0
+2329,09/08/2026 04:11:50,,Booking,Sari Letícia Maffi,Senape,Senape - Non Rimborsabile OTA,30/09/2026,03/10/2026,3,555.73,Florence David's Apartament,Confermate,36,Booking,0
 2321,04/08/2026 12:58:00,,Expedia,Reimundo Agostini Troche,Verde,Verde,27/09/2026,03/10/2026,6,778.23,Florence David's Apartament,Confermate,72,Expedia,0
 2324,06/08/2026 04:12:00,,Expedia,Ashley Haubenschild,Verde,Verde - Non Rimborsabile OTA,23/09/2026,24/09/2026,1,158.18,Florence David's Apartament,Confermate,12,Expedia,0
 2293,21/07/2026 10:41:31,,Booking,Liao Hsuan-Tzu,Blu,Blu - Standard,23/09/2026,26/09/2026,3,480.43,Florence David's Apartament,Confermate,36,Booking,0
+2326,07/08/2026 18:10:15,,Ctrip,Zhu Peiyuan,Senape,Senape - Non Rimborsabile OTA,22/09/2026,24/09/2026,2,301.03,Florence David's Apartament,Confermate,24,Ctrip,0
 2323,06/08/2026 05:03:19,,Airbnb,Miguel Preciado,Blu,Blu - Standard,22/09/2026,23/09/2026,1,123.2,Florence David's Apartament,Confermate,0,Airbnb,0
 2322,04/08/2026 16:22:30,,Booking Engine,TATSUHIRO TSUKAMOTO,Blu,Blu - Non Rimborsabile BE,20/09/2026,22/09/2026,2,299.7,Florence David's Apartament,Confermate,24,Booking Engine,0
 2306,27/07/2026 14:56:06,,Ctrip,GRACHEV MARK,Blu,Blu - Non Rimborsabile OTA,19/09/2026,20/09/2026,1,157.02,Florence David's Apartament,Confermate,12,Ctrip,0
@@ -8872,9 +8893,11 @@ CD943C5C97,27/07/2025 11:32,,Booking,HANJIE WANG,Deluxe,Tariffa Rimborsabile - P
 2296,23/07/2026 23:16:00,,Expedia,Kurtis Palmer,Senape,Senape - Standard,18/09/2026,21/09/2026,3,487.26,Florence David's Apartament,Confermate,36,Expedia,0
 2270,08/07/2026 21:46:00,,Expedia,Chloe Haller-Kaplan,Verde,Verde - Standard,17/09/2026,18/09/2026,1,187.84,Florence David's Apartament,Confermate,12,Expedia,0
 2289,18/07/2026 03:32:00,,Expedia,Julio Valdiviezo Wong,Blu,Blu - Standard,16/09/2026,19/09/2026,3,421.23,Florence David's Apartament,Confermate,36,Expedia,0
+2332,09/08/2026 22:44:00,,Expedia,Jovito Jr Pamarang,Senape,Senape - Non Rimborsabile OTA,14/09/2026,17/09/2026,3,431.83,Florence David's Apartament,Confermate,36,Expedia,0
 2319,02/08/2026 17:20:40,,Booking,duval AURORE,Verde,Verde - Non Rimborsabile OTA,13/09/2026,17/09/2026,4,669.43,Florence David's Apartament,Confermate,48,Booking,0
 2316,02/08/2026 06:52:02,,Ctrip,NAVARRO CARLOS NELSON II,Blu,Blu - Non Rimborsabile OTA,13/09/2026,16/09/2026,3,395.58,Florence David's Apartament,Confermate,36,Ctrip,0
 2303,27/07/2026 00:52:00,,Expedia,Thanh Huy Ngo,Senape,Senape - Non Rimborsabile OTA,11/09/2026,13/09/2026,2,354.09,Florence David's Apartament,Confermate,36,Expedia,0
+2327,07/08/2026 21:59:36,,Ctrip,TSYBINA SVITLANA,Blu,Blu - Non Rimborsabile OTA,09/09/2026,12/09/2026,3,390.38,Florence David's Apartament,Confermate,36,Ctrip,0
 2314,01/08/2026 17:48:00,,Expedia,Carlos espinoza,Senape,Senape - Non Rimborsabile OTA,07/09/2026,10/09/2026,3,410.07,Florence David's Apartament,Confermate,36,Expedia,0
 2304,27/07/2026 04:59:00,,Expedia,Diana Facciotti,Verde,Verde - Standard,07/09/2026,09/09/2026,2,289.19,Florence David's Apartament,Confermate,24,Expedia,0
 2325,06/08/2026 08:43:37,,Airbnb,Ganesh Kariganuru Mahabalesh,Senape,Senape - Standard,06/09/2026,07/09/2026,1,89.74,Florence David's Apartament,Confermate,0,Airbnb,0
@@ -8904,7 +8927,9 @@ CD943C5C97,27/07/2025 11:32,,Booking,HANJIE WANG,Deluxe,Tariffa Rimborsabile - P
 2247,22/06/2026 19:48:07,,Booking,BANTOUVAS GEORGIOS,Verde,Verde - Non Rimborsabile OTA,13/08/2026,17/08/2026,4,336.08,Florence David's Apartament,Confermate,48,Booking,0
 2240,22/06/2026 14:49:09,,Booking,Piñeiro Agustín,Blu,Blu - Non Rimborsabile OTA,12/08/2026,15/08/2026,3,214.91,Florence David's Apartament,Confermate,36,Booking,0
 2275,10/07/2026 16:21:58,,Airbnb,혜미 김,Verde,Verde - Standard,11/08/2026,13/08/2026,2,142.21,Florence David's Apartament,Confermate,0,Airbnb,0
+2330,09/08/2026 13:53:17,,Booking,Khosravi Haana,Senape,Senape - Standard,10/08/2026,12/08/2026,2,159.24,Florence David's Apartament,Confermate,24,Booking,0
 2246,22/06/2026 19:46:18,,Booking,Cavazzi Ilaria,Blu,Blu - Non Rimborsabile OTA,10/08/2026,12/08/2026,2,134.44,Florence David's Apartament,Confermate,24,Booking,0
+2328,08/08/2026 13:43:10,,Airbnb,Ana María Umaña,Senape,Senape - Standard,09/08/2026,10/08/2026,1,58.56,Florence David's Apartament,Confermate,0,Airbnb,0
 2266,05/07/2026 19:48:02,,Booking,QUENOUILLERE Pierre,Verde,Verde - Non Rimborsabile OTA,09/08/2026,11/08/2026,2,178.04,Florence David's Apartament,Confermate,24,Booking,0
 2283,17/07/2026 00:01:06,,Airbnb,Edouard Briais,Blu,Blu - Standard,08/08/2026,09/08/2026,1,79.09,Florence David's Apartament,Confermate,0,Airbnb,0
 2318,02/08/2026 14:42:10,,FrontOffice,Mariam,Verde,Verde - Standard,06/08/2026,09/08/2026,3,258,Florence David's Apartament,Confermate,36,FrontOffice,0
