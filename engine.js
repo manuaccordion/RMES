@@ -6096,7 +6096,23 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const rmesDeltaByRT = {};      // delta RMES vs reference, in €
       // "Base strutturale" = il Base congelato + foundation override, MA NON l'override modale finale (fp_getOverride).
       // Su questo si calcola il target RMES "vero" che resta indipendente dalle decisioni dell'utente.
-      const _basePure = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : basePrice;
+      let _basePure = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : basePrice;
+      // ANCORAGGIO SU VENDITA RECENTE: se quella notte e' stata venduta negli
+      // ultimi LAST_SOLD_FRESH_DAYS giorni, il suggerimento parte da QUEL prezzo
+      // e non dal Base Price. Motivo: e' il prezzo che il mercato ha appena
+      // pagato per quella data, quindi e' un'informazione piu' forte della stima
+      // strutturale. Nota: una vendita e' un fatto di mercato, non una decisione
+      // dell'utente, quindi non innesca il ciclo "accetto -> il target sale ->
+      // riaccetto" che il Base puro serve a evitare.
+      let _anchorSold = null;
+      if (typeof lastSoldForStay === 'function'){
+        const _lsA = lastSoldForStay(sel, r.ymd);
+        if (_lsA && _lsA.price > 0){
+          const _ageA = Math.round((new Date(TODAY).setHours(0,0,0,0) - ymdToDate(_lsA.bookYmd).getTime()) / 86400000);
+          if (_ageA >= 0 && _ageA <= LAST_SOLD_FRESH_DAYS) _anchorSold = _lsA.price;
+        }
+      }
+      if (_anchorSold != null) _basePure = _anchorSold;
       const _basePureValid = (_basePure != null && isFinite(_basePure) && _basePure > 0);
       for (const rt of _rtList){
         let baseRT = basePrice;  // default per baseRT (riferimento corrente)
@@ -6131,7 +6147,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           // Cap ±20% RIMOSSO. Solo Floor.
           let _atCapB = null;
           if (_priceOnBase < _structFloor){ _priceOnBase = _structFloor; _atCapB = 'floor'; }
-          rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB };
+          rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB, anchorSold: _anchorSold };
         } else {
           rmesTargetOnBaseByRT[rt] = { price: priceSuggested, atCap: null };
         }
