@@ -2292,6 +2292,7 @@ function aggRoomType(sel){
         adrC: v.rnC>0?v.revC/v.rnC:NaN,
         adrP: v.rnP>0?v.revP/v.rnP:NaN,
         rnC:v.rnC, rnP:v.rnP, revC:v.revC, revP:v.revP,
+        capC, capP,   // servono per ricalcolare i totali sui soli mesi selezionati
       });
       totC.rn += v.rnC; totC.rev += v.revC; totC.cap += capC;
       totP.rn += v.rnP; totP.rev += v.revP; totP.cap += capP;
@@ -3065,6 +3066,35 @@ function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<
    ============================================================ */
 const RT_PALETTE = ['#2563eb','#dc2626','#16a34a','#ea580c','#7c3aed','#0891b2','#ca8a04','#be185d'];
 let RT_VISIBLE = null;  // Set or null (null = all)
+/* Filtro mesi della tabella "Monthly table by Room Type": null = tutti i mesi.
+   Il totale in fondo si ricalcola SOLO sui mesi selezionati (RN e capacita'
+   risommate, non medie di medie). */
+let RT_MONTHS = null;
+function renderRtMonthFilter(A, sel){
+  const host = document.getElementById('rt-month-filter');
+  if (!host) return;
+  const isAll = (RT_MONTHS === null);
+  let h = `<span class="bw-mlabel">Months:</span>`;
+  h += `<span class="bw-mpill allnone ${isAll?'active':''}" data-rtm="__all">All</span>`;
+  for (let m=1; m<=12; m++){
+    const on = !isAll && RT_MONTHS.has(m);
+    h += `<span class="bw-mpill ${on?'active':''}" data-rtm="${m}">${CFG.monthsIT[m-1]}</span>`;
+  }
+  host.innerHTML = h;
+  host.querySelectorAll('.bw-mpill').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const v = el.dataset.rtm;
+      if (v === '__all'){ RT_MONTHS = null; }
+      else {
+        const m = +v;
+        if (RT_MONTHS === null) RT_MONTHS = new Set();
+        if (RT_MONTHS.has(m)){ RT_MONTHS.delete(m); if (!RT_MONTHS.size) RT_MONTHS = null; }
+        else RT_MONTHS.add(m);
+      }
+      renderRT(CURRENT_STRUCT);
+    });
+  });
+}
 function renderRT(sel){
   const A = aggRoomType(sel);
   if (!A.rtList.length){
@@ -3125,9 +3155,12 @@ function renderRT(sel){
   }).join('') + '<span class="lg"><span class="swatch dashed"></span>STLY</span>';
   document.getElementById('rt-legend-adr').innerHTML = document.getElementById('rt-legend-occ').innerHTML;
   const cols = visList;
+  renderRtMonthFilter(A, sel);
+  const monthsSel = [];
+  for (let m=1;m<=12;m++){ if (RT_MONTHS === null || RT_MONTHS.has(m)) monthsSel.push(m); }
   let head = `<thead>
     <tr>
-      <th rowspan="2">Month</th>
+      <th rowspan="2" class="rt-corner">Month</th>
       ${cols.map((rt,i)=>`<th colspan="4" class="group rt-block-start" style="color:${RT_PALETTE[A.rtList.indexOf(rt)%RT_PALETTE.length]};text-align:center">${escapeHtml(rt)}</th>`).join('')}
     </tr>
     <tr>
@@ -3135,8 +3168,8 @@ function renderRT(sel){
     </tr>
   </thead>`;
   const body = [];
-  for (let m=1;m<=12;m++){
-    let r = `<tr><td>${CFG.monthsITLong[m-1]}</td>`;
+  for (const m of monthsSel){
+    let r = `<tr><td class="rt-month-cell">${CFG.monthsITLong[m-1]}</td>`;
     for (const rt of cols){
       const md = A.rtData[rt].months[m-1];
       r += `
@@ -3148,14 +3181,25 @@ function renderRT(sel){
     r += '</tr>';
     body.push(r);
   }
-  let trow = '<tr class="total"><td>Year</td>';
+  // Totale sui SOLI mesi selezionati: RN, revenue e capacita' risommati.
+  const _totLbl = (RT_MONTHS === null)
+    ? 'Year'
+    : (monthsSel.length === 1 ? CFG.monthsIT[monthsSel[0]-1] : monthsSel.length + ' months');
+  let trow = `<tr class="total"><td class="rt-month-cell" title="${RT_MONTHS===null?'All 12 months':'Selected months: '+monthsSel.map(m=>CFG.monthsIT[m-1]).join(', ')}">${_totLbl}</td>`;
   for (const rt of cols){
-    const d = A.rtData[rt];
+    let rnC=0, revC=0, capC=0, rnP=0, revP=0, capP=0;
+    for (const m of monthsSel){
+      const md = A.rtData[rt].months[m-1];
+      rnC += md.rnC; revC += md.revC; capC += (md.capC||0);
+      rnP += md.rnP; revP += md.revP; capP += (md.capP||0);
+    }
+    const occC = capC>0 ? rnC/capC : 0, occP = capP>0 ? rnP/capP : 0;
+    const adrC = rnC>0 ? revC/rnC : NaN, adrP = rnP>0 ? revP/rnP : NaN;
     trow += `
-      <td class="cell-mono rt-block-start">${fmtPct(d.occC,1)}</td>
-      <td class="cell-mono">${fmtAdr(d.adrC)}</td>
-      <td class="cell-mono cell-flat cell-divider">${fmtPct(d.occP,1)}</td>
-      <td class="cell-mono cell-flat">${fmtAdr(d.adrP)}</td>`;
+      <td class="cell-mono rt-block-start">${fmtPct(occC,1)}</td>
+      <td class="cell-mono">${fmtAdr(adrC)}</td>
+      <td class="cell-mono cell-flat cell-divider">${fmtPct(occP,1)}</td>
+      <td class="cell-mono cell-flat">${fmtAdr(adrP)}</td>`;
   }
   trow+='</tr>';
   document.getElementById('rt-monthly').innerHTML = head + '<tbody>' + body.join('') + trow + '</tbody>';
@@ -10868,7 +10912,12 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   h += '<div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:4px">RMES · calculation detail</div>';
   h += '<div style="font-size:16px;font-weight:700">' + dateLbl + ' (' + dowLbl + ') · ' + rt + ' · ' + structLbl + '</div>';
   h += '</div>';
+  h += '<div style="display:flex;align-items:center;gap:10px">';
+  // Scorciatoia al dettaglio del Base Price: il RMES parte da li', deve essere
+  // raggiungibile da qui senza passare dalla tab Export Pricing.
+  h += '<button id="fp-detail-basecalc" title="Open the step-by-step Base Price calculation for this date" style="font-size:11.5px;font-weight:600;padding:6px 12px;border:1px solid #c4823b;background:#fdf6ec;color:#7a4f1c;border-radius:6px;cursor:pointer;font-family:\'DM Sans\',sans-serif;white-space:nowrap">\u26a1 Base Price detail</button>';
   h += '<button onclick="document.getElementById(\'fp-detail-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
+  h += '</div>';
   h += '</div>';
   h += '<div style="padding:18px 22px">';
   if (d.longHorizon){
@@ -11454,6 +11503,18 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       }
       const modal = document.getElementById('fp-detail-modal');
       if (modal) modal.remove();
+    };
+  }
+  // Apre il dettaglio del calcolo Base Price per la stessa data/room type.
+  const _btnBaseCalc = document.getElementById('fp-detail-basecalc');
+  if (_btnBaseCalc){
+    _btnBaseCalc.onclick = (ev) => {
+      ev.stopPropagation();
+      const m = document.getElementById('fp-detail-modal');
+      if (m) m.remove();
+      if (typeof fp_showFoundationOnlyModal === 'function'){
+        fp_showFoundationOnlyModal(structKey, rt, dateISO);
+      }
     };
   }
 }

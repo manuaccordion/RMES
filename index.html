@@ -461,6 +461,26 @@ table.data.sell-table tbody td.sell-block-fp{font-size:12px;font-family:'DM Mono
 /* Colonna Foundation nascosta: il calcolo Foundation resta visibile cliccando la cella RMES (dettaglio 6-step + moltiplicatori). */
 table.data.sell-table thead th.sell-grp-fp, table.data.sell-table tbody td.sell-block-fp{display:none}
 /* Gruppo RMES: prezzo suggerito + minimum stay consigliato, in fondo alla tabella */
+/* ---- OCC by Room Type: intestazioni e colonna mese sempre visibili ----
+   Scorrendo in basso resta il nome della camera, scorrendo a destra resta il mese. */
+.rt-sticky-wrap{max-height:70vh;overflow:auto}
+table.rt-sticky-table{border-collapse:separate;border-spacing:0}
+table.rt-sticky-table thead th{position:sticky;z-index:3;background:#f2efe6}
+table.rt-sticky-table thead tr:first-child th{top:0;height:34px}
+table.rt-sticky-table thead tr:nth-child(2) th{top:34px}
+table.rt-sticky-table thead th.rt-corner{
+  left:0;z-index:6;background:#efeade;border-right:2px solid var(--line-2);
+}
+table.rt-sticky-table tbody td.rt-month-cell{
+  position:sticky;left:0;z-index:2;background:var(--surface);
+  font-weight:600;white-space:nowrap;border-right:2px solid var(--line-2);
+}
+table.rt-sticky-table tbody tr:nth-child(even) td.rt-month-cell{background:#faf8f3}
+table.rt-sticky-table tbody tr.total td{
+  position:sticky;bottom:0;z-index:4;background:#f2efe6;font-weight:700;
+  border-top:2px solid var(--line-2);
+}
+table.rt-sticky-table tbody tr.total td.rt-month-cell{z-index:5;background:#efeade}
 /* Colonna "Last sold": ultimo prezzo realmente incassato per quella notte */
 table.data.sell-table thead th.sell-grp-sold{
   background:rgba(46,120,70,.12);color:#1e5c38;font-weight:700;border-left:3px solid #2c7a4b;
@@ -1639,13 +1659,16 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div>
           <h3>Monthly table by Room Type</h3>
         </div>
-        <div class="head-actions">
-          <span class="struct-label">Filter room type</span>
-          <div class="rt-filter" id="rt-filter"></div>
+        <div class="head-actions" style="flex-direction:column;align-items:flex-end;gap:7px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="struct-label">Filter room type</span>
+            <div class="rt-filter" id="rt-filter"></div>
+          </div>
+          <div id="rt-month-filter" class="bw-mfilter"></div>
         </div>
       </div>
       <div class="panel-body flush">
-        <div class="table-wrap"><table class="data" id="rt-monthly"></table></div>
+        <div class="table-wrap rt-sticky-wrap"><table class="data rt-sticky-table" id="rt-monthly"></table></div>
       </div>
     </div>
   </section>
@@ -2383,6 +2406,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Last sold</b> &mdash; the price of the <b>most recent booking that covers this night</b>, on the base room type, <b>gross of OTA commission</b> (Booking and Direct as they arrive; Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%), so the number is comparable with your shelf price whatever the channel. Under the price you see when it was booked and through which channel; hover for the full detail. Blank means <b>this night has never been sold</b> on the base room type &mdash; there is no sold price, and none is invented.
             <br><span style="color:#2c7a4b;font-weight:700">&#10003;</span> <b>marked green</b> = the sale happened in the <b>last 21 days</b>, so it is the freshest market signal available and <b>the RMES starts from this price</b> instead of the Base Price. Older sales are shown faded: they stay as information only, because a price from two months ago says little about what the date is worth today. An explicit decision of yours &mdash; a manual override or an accepted RMES &mdash; still wins if it is more recent than the sale.</li>
           <li><b>RMES · Min stay</b> — the suggested <b>minimum stay</b> for that date. <b>2</b> means hold a 2-night minimum, a faint dot means no restriction. The rule: never a minimum within 7 days of arrival, never if the following night is already full, otherwise 2 nights when occupancy — this year or the same date last year — is at 90% or above. For Porte Nuove and Nazionale a 2-night minimum also kicks in when the Base Price has dropped to the floor rate.</li>
+          <li><b>Base Price detail from the RMES popup</b> &mdash; clicking a Pricing cell opens the RMES calculation. In its top-right corner the <b>&#9889; Base Price detail</b> button opens the step-by-step Base Price calculation for the same date and room type (LY median ADR, target growth, Goal Value cap, Anchor guard-rail, Floor). The RMES starts from that number, so you can now check it without leaving the tab.</li>
           <li><b>RMES · Pricing</b> — today's pricing engine target. <b>Three display modes</b>:
             <ul style="margin:4px 0 0 18px;font-size:12.5px">
               <li><span style="color:#a83b3b;font-weight:700">↓ €target</span> or <span style="color:#1e6b4a;font-weight:700">↑ €target</span> + ✓ button → the engine suggests a new price (lower or higher). Click ✓ to accept and apply. <b>The cell colour intensity shows the size of the move vs the active price at a glance</b>: a pale tint is a small nudge, a strong tint is a big move — the intensity scales freely with the size of the change (no threshold). Hover to read the exact % vs active.</li>
@@ -2606,6 +2630,13 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">⑤ OCC by Room Type</summary>
       <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
         <p>OCC broken down by Room Type. Used to spot RTs that book early vs late and the actual price/RT mix.</p>
+        <h4 style="margin:12px 0 6px 0;color:#5a3a14">Monthly table by Room Type</h4>
+        <ul style="margin:6px 0 8px 18px">
+          <li><b>Headers and month column stay put.</b> Scrolling down keeps the room-type names in view, scrolling right keeps the month column visible, and the total row is pinned to the bottom &mdash; so you never lose track of which figure belongs to which room and which month.</li>
+          <li><b>Month filter.</b> Click the month pills above the table to keep only the months you care about; click again to remove, <i>All</i> resets. The rows shrink to the chosen months.</li>
+          <li><b>The total follows your selection.</b> With <i>All</i> the last row reads <b>Year</b>; with a selection it reads <i>Jul</i> or <i>3 months</i> and recomputes on those months only. It is a real recomputation, not an average of averages: room nights, revenue and capacity are re-summed, then OCC = room nights &divide; capacity and ADR = revenue &divide; room nights. Hover the label to see which months are in.</li>
+          <li><b>Filter room type</b> works alongside: hide a room type and it disappears from both the charts and the table.</li>
+        </ul>
       </div>
     </details>
 
