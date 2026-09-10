@@ -960,10 +960,12 @@ const CFG = {
 /* David's: budget = forecast (LY × growth). Vedi _davidsBudgetForecast(). */
 const _DAVIDS_BUDGET_GROWTH = 1.08;
 const PACE_WEEK_WEIGHTS = [0.10, 0.20, 0.30, 0.40];
-/* B·Pace Trend — segnale su DUE settimane (smussa il rumore sulle strutture piccole):
-   W4 (ultimi 7gg, più recente) pesa 60%, W3 (i 7gg precedenti) pesa 40%.
-   weekArr[3] = W4, weekArr[2] = W3 (vedi getPickupWeeks: index 3 = settimana più recente). */
-const PACE_BLEND = { w4: 0.60, w3: 0.40 };
+/* B·Pace Trend — segnale sull'ULTIMA SETTIMANA soltanto (richiesta utente).
+   W4 = ultimi 7 giorni, pesa 100%; W3 (i 7 giorni precedenti) non entra piu'.
+   Il pace deve dire come si sta muovendo il mercato ADESSO: includere la
+   settimana precedente diluiva il segnale e ritardava la reazione.
+   weekArr[3] = W4, weekArr[2] = W3 (vedi getPickupWeeks: index 3 = piu' recente). */
+const PACE_BLEND = { w4: 1.00, w3: 0.00 };
 function _paceBlendRn(weekArr){
   if (!weekArr) return 0;
   const w4 = (weekArr[3] && isFinite(weekArr[3].rn)) ? weekArr[3].rn : 0;
@@ -1558,6 +1560,24 @@ function fp_postLoadHook(){
       console.log('[NewRMES] Wipe v5 complete. 5-factor weights active.');
     }
   } catch(e){ console.error('[NewRMES] wipe v5 failed', e); }
+
+  /* --- ONE-SHOT WIPE v6: finestra di congelamento Base Price 90 → 30 giorni ---
+     Motivo: con la finestra a 90 giorni un giorno veniva congelato quando era
+     ancora a 3 mesi di distanza, e restava fermo su dati vecchi di due mesi.
+     Con la finestra a 30 il Base Price resta LIVE piu' a lungo e si blocca solo
+     nell'ultimo mese. I giorni gia' congelati sotto il vecchio regime porterebbero
+     pero' prezzi calcolati mesi fa: qui si azzera il Frozen Base cosi ogni data
+     riparte pulita. Overrides manuali e RMES accettati NON vengono toccati:
+     stanno in chiavi separate e restano validi. */
+  try {
+    const WIPE6_FLAG = 'rmes_refreeze_base_30d_v6';
+    if (!localStorage.getItem(WIPE6_FLAG)){
+      console.log('[NewRMES] Wipe v6: freeze window 90d → 30d, re-freezing Base Price…');
+      try { localStorage.removeItem('rmes_frozen_base_v1'); } catch(e){}
+      try { localStorage.setItem(WIPE6_FLAG, '1'); } catch(e){}
+      console.log('[NewRMES] Wipe v6 complete. Base Price frozen only within ' + BASE_FREEZE_WINDOW_DAYS + ' days; beyond that it recomputes live.');
+    }
+  } catch(e){ console.error('[NewRMES] wipe v6 failed', e); }
 
 
   try {
@@ -5297,7 +5317,7 @@ function _getPaceAggBoth(){
   if (_PACE_AGG_BOTH_CACHE) return _PACE_AGG_BOTH_CACHE;
   if (typeof aggPickup !== 'function') return null;
   const pkAgg = aggPickup('both');
-  // B·Pace su DUE settimane: blend W4×0.60 + W3×0.40 (vedi _paceBlendRn).
+  // B·Pace: solo l'ultima settimana (W4 al 100%, vedi _paceBlendRn).
   // Smussa il rumore del pace sulle strutture con poche camere.
   const byStayMonth = {};  // ym → { rawMult, ratio, pickupCur, pickupStly }
   if (pkAgg && pkAgg.sm && pkAgg.smS){
@@ -5315,7 +5335,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -5603,7 +5623,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
   if (typeof aggPickup === 'function'){
     const pkAgg = aggPickup(sel);
     let curRn = 0, stlyRn = 0;
-    // B·Pace su DUE settimane: blend W4×0.60 + W3×0.40 (vedi _paceBlendRn).
+    // B·Pace: solo l'ultima settimana (W4 al 100%, vedi _paceBlendRn).
     for (const rt of pkAgg.rtAxis){
       const rtCur  = _paceBlendRn(pkAgg.rt[rt]);
       const rtStly = _paceBlendRn(pkAgg.rtS[rt]);
@@ -5619,7 +5639,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     if (pkAgg.sm && pkAgg.smS){
       const allMonths = new Set([...Object.keys(pkAgg.sm), ...Object.keys(pkAgg.smS)]);
       for (const ym of allMonths){
-        // B·Pace su DUE settimane: blend W4×0.60 + W3×0.40 (vedi _paceBlendRn).
+        // B·Pace: solo l'ultima settimana (W4 al 100%, vedi _paceBlendRn).
         const mCur  = _paceBlendRn(pkAgg.sm[ym]);
         const mStly = _paceBlendRn(pkAgg.smS[ym]);
         if (mStly > 0 && mCur > 0){
@@ -5643,7 +5663,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       return verbose ? {
         mult: st.rawMult, naReason: null, state: 'mese_w4', rawMult: st.rawMult,
         pickupCur: st.pickupCur, pickupStly: st.pickupStly,
-        source: 'pace 2-week blend (W4×0.60 + W3×0.40) for stay month ' + ym + ' (' + (+st.pickupCur).toFixed(1) + ' RN cur vs ' + (+st.pickupStly).toFixed(1) + ' RN STLY)'
+        source: 'pace of the last 7 days for stay month ' + ym + ' (' + (+st.pickupCur).toFixed(1) + ' RN cur vs ' + (+st.pickupStly).toFixed(1) + ' RN STLY)'
       } : st.rawMult;
     }
     // FALLBACK 1: aggregate (P̄) cross-property — usa il pace W4 di tutte le strutture per il mese.
@@ -5653,7 +5673,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       return verbose ? {
         mult: aggForMonth.rawMult, naReason: null, state: 'fallback_aggregate', rawMult: aggForMonth.rawMult,
         ratio: aggForMonth.ratio, pickupCur: aggForMonth.pickupCur, pickupStly: aggForMonth.pickupStly,
-        source: 'aggregate pace 2-week blend of all properties for stay month ' + ym + ' (' + (+aggForMonth.pickupCur).toFixed(1) + ' RN cur vs ' + (+aggForMonth.pickupStly).toFixed(1) + ' RN STLY)',
+        source: 'aggregate pace of the last 7 days across all properties for stay month ' + ym + ' (' + (+aggForMonth.pickupCur).toFixed(1) + ' RN cur vs ' + (+aggForMonth.pickupStly).toFixed(1) + ' RN STLY)',
         fromAggregate: true
       } : aggForMonth.rawMult;
     }
@@ -6140,7 +6160,15 @@ const FP_BASE_RATE_OVERRIDES_KEY = 'rmes_base_rate_overrides_v1';  // manual fin
      storage: { struct: { ymd: { delta, date } } }
 */
 const NEWRMES_FROZEN_BASE_KEY = 'rmes_frozen_base_v1';
-const BASE_FREEZE_WINDOW_DAYS = 90;   // freeze only the reliable-Expedia window; beyond → live/updatable
+/* Finestra di congelamento del Base Price.
+   Entro questi giorni dall'oggi il Base Price viene calcolato UNA volta e poi
+   tenuto stabile (le colleghe non vedono il prezzo strutturale muoversi sotto i
+   piedi mentre lavorano su una data vicina). Oltre la finestra il Base Price e'
+   ricalcolato LIVE a ogni apertura, cosi assorbe i dati nuovi (prenotazioni,
+   compset, eventi) fino a quando la data non entra nella finestra.
+   30 giorni: il prezzo resta aggiornato piu' a lungo e si blocca solo nell'ultimo
+   mese, quando le decisioni diventano operative. */
+const BASE_FREEZE_WINDOW_DAYS = 30;
 const NEWRMES_FROZEN_BASE_OVR_KEY = 'rmes_frozen_base_override_v1';
 const NEWRMES_ACCEPTED_KEY = 'rmes_accepted_v1';
 
@@ -6486,6 +6514,56 @@ function _rmesSuggestedForDay(structKey, ymdN, rt){
 
 /* Current reference = the MOST RECENT explicit decision for the day (override 🖋 vs accept ✓),
    resolved by timestamp; otherwise the effective Base Price. */
+/* ===========================================================================
+   ULTIMO PREZZO VENDUTO (gross of OTA commission)
+   ---------------------------------------------------------------------------
+   Per ogni notte di soggiorno: il prezzo della prenotazione entrata PIU' DI
+   RECENTE (data di prenotazione piu' alta) che copre quella notte, sulla
+   baseRT della struttura.
+   Il prezzo e' `revPerNight`, cioe' gia' AL LORDO della commissione OTA con la
+   stessa regola usata per il revenue in Overview: Booking e Direct restano come
+   sono, Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%. Cosi il numero e'
+   confrontabile con il prezzo a scaffale, indipendentemente dal canale.
+   Se quella notte non e' mai stata venduta sulla baseRT → null.
+   =========================================================================== */
+/* Una vendita e' un segnale di mercato valido solo se recente: oltre questa
+   soglia il prezzo non ancora piu' il suggerimento, resta solo informazione. */
+const LAST_SOLD_FRESH_DAYS = 21;
+let _LAST_SOLD_CACHE = {};
+function lastSoldIndex(structKey){
+  if (_LAST_SOLD_CACHE[structKey]) return _LAST_SOLD_CACHE[structKey];
+  const cfg = CFG.structures[structKey];
+  const out = {};
+  if (!cfg){ _LAST_SOLD_CACHE[structKey] = out; return out; }
+  const baseRT = cfg.baseRT;
+  const srKey = structKey + '|' + baseRT;
+  const useIdx = !!(_BOOKINGS_BY_SR && _BOOKINGS_BY_SR[srKey]);
+  const list = useIdx ? _BOOKINGS_BY_SR[srKey] : BOOKINGS;
+  for (let i=0; i<list.length; i++){
+    const b = list[i];
+    if (b.cancelled || !b.stayYmds) continue;
+    if (!useIdx){
+      if (b.struct !== cfg.key) continue;
+      if (b.room !== baseRT) continue;
+    }
+    const price = b.revPerNight;                 // gia' lordo commissione OTA
+    if (!(price > 0) || !isFinite(price)) continue;
+    for (let j=0; j<b.stayYmds.length; j++){
+      const k = b.stayYmds[j];
+      const cur = out[k];
+      // vince la prenotazione entrata piu' di recente; a parita', il prezzo piu' alto
+      if (!cur || b.bookYmd > cur.bookYmd || (b.bookYmd === cur.bookYmd && price > cur.price)){
+        out[k] = { price: price, bookYmd: b.bookYmd, canale: b.canale || '—', room: baseRT, notti: b.notti };
+      }
+    }
+  }
+  _LAST_SOLD_CACHE[structKey] = out;
+  return out;
+}
+function lastSoldForStay(structKey, ymdNum){
+  const idx = lastSoldIndex(structKey);
+  return idx[ymdNum] || null;
+}
 function newrmesGetCurrentReference(structKey, ymd){
   // MOST-RECENT-WINS: confrontiamo il timestamp dell'override 🖋 e dell'accept ✓ e vince il più
   // recente. NON si cancella più l'uno quando si setta l'altro (evita tombstone che si scontrano
@@ -6514,10 +6592,53 @@ function newrmesGetCurrentReference(structKey, ymd){
     accPrice = +accMeta.price;
     accTs = accMeta.ts ? (Date.parse(accMeta.ts) || 0) : 0;
   }
-  if (ovrPrice != null && accPrice != null) return (accTs > ovrTs) ? accPrice : ovrPrice;
-  if (ovrPrice != null) return ovrPrice;
-  if (accPrice != null) return accPrice;
+  // Ultimo venduto RECENTE: se quella notte e' stata venduta negli ultimi
+  // LAST_SOLD_FRESH_DAYS giorni, quel prezzo e' il segnale di mercato piu'
+  // attuale che abbiamo e diventa il riferimento. Vendite piu' vecchie NON
+  // ancorano nulla (restano solo informazione nella colonna "Last sold"):
+  // un prezzo di due mesi fa non dice cosa vale la data oggi.
+  let soldPrice = null, soldTs = 0;
+  const _ls = (typeof lastSoldForStay === 'function') ? lastSoldForStay(structKey, ymd) : null;
+  if (_ls && _ls.price > 0){
+    const _ageDays = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(_ls.bookYmd)) / 86400000);
+    if (_ageDays >= 0 && _ageDays <= LAST_SOLD_FRESH_DAYS){
+      soldPrice = _ls.price;
+      soldTs = ymdToDate(_ls.bookYmd).getTime();
+    }
+  }
+  // "Ultimo che decide vince": fra override manuale, RMES accettato e vendita
+  // recente prevale il piu' recente dei tre.
+  let best = null, bestTs = -1;
+  if (ovrPrice  != null && ovrTs  >= bestTs){ best = ovrPrice;  bestTs = ovrTs;  }
+  if (accPrice  != null && accTs  >  bestTs){ best = accPrice;  bestTs = accTs;  }
+  if (soldPrice != null && soldTs >  bestTs){ best = soldPrice; bestTs = soldTs; }
+  if (best != null) return best;
   return newrmesGetEffectiveBase(structKey, ymd);
+}
+/* Sorgente del riferimento, per i tooltip: dice DA DOVE arriva il prezzo attivo. */
+function newrmesGetReferenceSource(structKey, ymd){
+  const _ls = (typeof lastSoldForStay === 'function') ? lastSoldForStay(structKey, ymd) : null;
+  let soldTs = -1, soldPrice = null;
+  if (_ls && _ls.price > 0){
+    const _age = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(_ls.bookYmd)) / 86400000);
+    if (_age >= 0 && _age <= LAST_SOLD_FRESH_DAYS){ soldTs = ymdToDate(_ls.bookYmd).getTime(); soldPrice = _ls.price; }
+  }
+  let ovrTs = -1, accTs = -1;
+  try {
+    const baseRT = (CFG.structures[structKey] && CFG.structures[structKey].baseRT) || null;
+    const d = fp_ymdNumToDate(ymd);
+    if (baseRT && d && typeof fp_getOverride === 'function'){
+      const o = fp_getOverride(structKey, fp_isoDate(d), baseRT);
+      if (o && o.price > 0) ovrTs = o.savedAt ? (Date.parse(o.savedAt)||0) : 0;
+    }
+  } catch(e){}
+  const am = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(structKey, ymd) : null;
+  if (am && am.price != null) accTs = am.ts ? (Date.parse(am.ts)||0) : 0;
+  const mx = Math.max(ovrTs, accTs, soldTs);
+  if (mx < 0) return { source:'base', label:'Base Price (accepted by default)' };
+  if (soldTs === mx) return { source:'sold', label:'Last sold price — booked ' + _ls.canale + ' on ' + fmtDateIT(ymdToDate(_ls.bookYmd)), price: soldPrice };
+  if (accTs === mx)  return { source:'accepted', label:'Accepted RMES' };
+  return { source:'override', label:'Manual override' };
 }
 
 /* === FROZEN BASE PRICE CALCULATION (4 steps) ===
@@ -8159,7 +8280,7 @@ async function _assistantCallLLM(query, parsed, priorHistory){
   const system =
 `You are the revenue-management assistant embedded in the "Revenue Intelligence Manu&Enis" dashboard for 4 properties in Florence: Firenze Suite, Condotta 16, Palazzo Alfani, Enis Guesthouse. Today is ${todayISO}.
 
-How RMES works: the suggested daily price = Base Price × Composite × (1 + LMF%) × Event, then floored at the property's Floor Rate. The Composite is the weighted sum of 5 factors — A·Daily Pickup, B·Pace Trend (2-week blend), C·Online Pricing (vs Expedia compset), D·Demand (Expedia searches), E·AirDNA Market — each individually capped, with the composite capped at ±30% by default vs the Base Price. D·Demand is automatically muted on dates that have an Event weight set (to avoid double-counting). RMES outputs a single flexible, room-only rate; non-refundable is derived downstream.
+How RMES works: the suggested daily price = Base Price × Composite × (1 + LMF%) × Event, then floored at the property's Floor Rate. The Composite is the weighted sum of 5 factors — A·Daily Pickup, B·Pace Trend (last 7 days), C·Online Pricing (vs Expedia compset), D·Demand (Expedia searches), E·AirDNA Market — each individually capped, with the composite capped at ±30% by default vs the Base Price. D·Demand is automatically muted on dates that have an Event weight set (to avoid double-counting). RMES outputs a single flexible, room-only rate; non-refundable is derived downstream.
 
 Rules:
 - The CONTEXT below contains the AUTHORITATIVE figures already computed by the dashboard (OTB, STLY, Final LY, forecast). TREAT THEM AS COMPLETE AND CORRECT. Never ask the user to provide data that is already in the context, and never tell them to share OTA detail or last-year data — you already have OTB, STLY and Final LY.
@@ -8730,7 +8851,7 @@ function renderRmesBreakdown(){
     { t:'DoW',              al:'right', tip:'Day of week' },
     { t:'Last update',      al:'right', tip:'Price currently active for this stay-date (= the reference the new RMES suggestion is built on). Equals the Base Price if RMES has never been accepted, or the most recent accepted RMES otherwise.' },
     { t:'A·Pickup',         al:'right', tip:'A · Daily Pickup — single-factor deviation %, weighted. Activates only if new bookings came in for this stay-date in the window "yesterday + today" (2 calendar days). If 0 bookings → expands to "today and the 7 previous days" (8 calendar days). NOTE: this is the only place in the dashboard where today is included in pickup — the Sell Strategy "Pickup Nd" column and the Big Picture pickup chart instead use the standard rule (today excluded). When activated, the % depends on the fill rate (≤20% → 0%, 21–50% → +5%, 51–70% → +10%, 71–90% → +15%, >90% → +20%). Never negative.' },
-    { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %. Compares the booking pace of the last 2 weeks vs the same 2 weeks last year, weighting the most recent week 60% and the previous week 40% (smooths noise on small properties).' },
+    { t:'B·Pace',           al:'right', tip:'B · Pace Trend — single-factor deviation %. Compares the booking pace of the LAST 7 DAYS with the same 7 days last year (room nights picked up for that stay month).' },
     { t:'C·Online',         al:'right', tip:'C · Online Pricing — my Beddy-eq vs Weighted Expedia Compset (no offsets), single-factor dev %, weighted.' },
     { t:'D·Demand',         al:'right', tip:'D · Demand (Expedia) — Expedia search volume vs the month median, single-factor dev %, weighted.' },
     { t:'E·AirDNA',         al:'right', tip:'E · AirDNA Market — market booked listings (Florence) compared to MY OCC on the same day. Headroom signal: positive when the market is fuller than us (we have margin to raise), negative when we are fuller than the market (no extra push). Deadband ±5%, slope 0.80.' },
@@ -8828,7 +8949,7 @@ function renderRmesBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (last 2 weeks booking pace vs LY, W4×60% + W3×40%) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>E·AirDNA</b> (market booked vs my OCC, headroom signal) · <b>Composite</b> (Σ weight×dev; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (last 7 days booking pace vs the same 7 days LY) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>E·AirDNA</b> (market booked vs my OCC, headroom signal) · <b>Composite</b> (Σ weight×dev; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -8893,11 +9014,11 @@ function _rmesExportCSV(){
 }
 
 /* Rolling frozen-base window maintenance:
-   - days in [today, today+90] (BASE_FREEZE_WINDOW_DAYS): FROZEN. Any not-yet-frozen
-     day in the window is frozen now with current (reliable-Expedia) data; already
-     frozen days are kept stable.
-   - days beyond today+90: frozen entries are DELETED → they recompute live each time
-     (updatable) until they roll into the 90-day window.
+   - days in [today, today+BASE_FREEZE_WINDOW_DAYS]: FROZEN. Any not-yet-frozen
+     day in the window is frozen now with current data; already frozen days are
+     kept stable.
+   - days beyond the window: frozen entries are DELETED → they recompute live each
+     time (updatable) until they roll into the window.
    Past frozen days are left as history. Returns days newly frozen. */
 function newrmesMaintainFrozenWindow(structKey){
   const today = new Date(TODAY); today.setHours(0,0,0,0);
@@ -10875,7 +10996,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '</div>';
       const factors = [
         {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'recent bookings (window "1d" = yesterday + today, fallback "7d" = today and 7 previous days) for this stay-date × fill rate scale. Never negative.'},
-        {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'last 2 weeks booking pace for the stay month vs same 2 weeks last year (W4×60% + W3×40%). Fallbacks: aggregate cross-property → annual property → neutralized.'},
+        {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'booking pace of the last 7 days for the stay month vs the same 7 days last year. Fallbacks: aggregate cross-property → annual property → neutralized.'},
         {key:'comp_mult',  naKey:'comp',  code:'C', name:'Online Pricing',   color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)'},
         {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'},
         {key:'mkt_mult',   naKey:'mkt',   code:'E', name:'AirDNA Market',    color:'#c4823b', desc:'AirDNA Booked Listings vs MY OCC on the same day. Headroom signal: market more booked than me = raise; my OCC ahead of market = no push.'}
@@ -10930,18 +11051,18 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           h += '</b></div>';
           h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Applied dev: '+_fpct((mults.occ_mult-1),1)+'</div>';
         } else if (code === 'B'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — the last 2 weeks are used, weighting the most recent week 60% and the previous week 40% (smooths noise on small properties). Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
+          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — only the LAST 7 DAYS count, so the factor follows current momentum. Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
           const pi = dbg.paceInfo || {};
           if (pi.pickupCur != null && pi.pickupStly != null){
-            h += '<div>Pace last 2 weeks: <b>'+(+pi.pickupCur).toFixed(1)+' RN</b> now vs <b>'+(+pi.pickupStly).toFixed(1)+' RN</b> same period last year <span style="color:#999">(weighted room nights, W4×60% + W3×40%)</span></div>';
+            h += '<div>Pace last 7 days: <b>'+(+pi.pickupCur).toFixed(1)+' RN</b> now vs <b>'+(+pi.pickupStly).toFixed(1)+' RN</b> same 7 days last year</div>';
             if (pi.ratio != null){
-              h += '<div style="margin-top:3px">Pace ratio (2-week blend): <b>'+pi.ratio.toFixed(3)+'</b> → dev <b>'+_fpct(pi.ratio-1,1)+'</b></div>';
+              h += '<div style="margin-top:3px">Pace ratio (last 7 days): <b>'+pi.ratio.toFixed(3)+'</b> → dev <b>'+_fpct(pi.ratio-1,1)+'</b></div>';
             } else if (pi.pickupStly > 0){
               const ratio = pi.pickupCur / pi.pickupStly;
               h += '<div>Pace ratio: <b>'+ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(ratio-1,1)+'</b></div>';
             }
           }
-          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Decision state: <b style="color:#8e5fa8">'+(({'mese_w4':'2-week pace (month)','fallback_aggregate':'aggregate fallback (P̄)','fallback_annuale_struct':'annual fallback (property)','neutralizzato_no_dati':'neutralized — no data','fallback':'fallback'}[pi.state]) || pi.state || '—')+'</b></div>';
+          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Decision state: <b style="color:#8e5fa8">'+(({'mese_w4':'last-7-days pace (month)','fallback_aggregate':'aggregate fallback (P̄)','fallback_annuale_struct':'annual fallback (property)','neutralizzato_no_dati':'neutralized — no data','fallback':'fallback'}[pi.state]) || pi.state || '—')+'</b></div>';
           if (pi.source){
             h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">'+pi.source+'</div>';
           }
@@ -12064,14 +12185,14 @@ function rmesFactorNote(code, mults, structKey){
     h += L('Threshold matched: <b>'+band+'</b>');
     h += Fin('Applied dev: <b>'+fpct(mults.occ_mult-1)+'</b>');
   } else if (code === 'B'){
-    h += How('How fast this stay-month is booking vs the same 2 weeks last year, weighting the most recent week <b>60%</b> and the previous one <b>40%</b>. Above 1 = faster than LY \u2192 push up; below 1 \u2192 push down.');
+    h += How('How fast this stay-month is booking vs the same <b>7 days</b> last year. Only the last week counts, so the factor follows current momentum. Above 1 = faster than LY \u2192 push up; below 1 \u2192 push down.');
     var pi = dbg.paceInfo || {};
     if (pi.pickupCur != null && pi.pickupStly != null){
-      h += L('Pace last 2 weeks: <b>'+(+pi.pickupCur).toFixed(1)+' RN</b> vs <b>'+(+pi.pickupStly).toFixed(1)+' RN</b> STLY');
+      h += L('Pace last 7 days: <b>'+(+pi.pickupCur).toFixed(1)+' RN</b> vs <b>'+(+pi.pickupStly).toFixed(1)+' RN</b> STLY');
       var ratio = (pi.ratio != null) ? pi.ratio : (pi.pickupStly>0 ? pi.pickupCur/pi.pickupStly : null);
       if (ratio != null) h += L('Pace ratio: <b>'+ratio.toFixed(3)+'</b> \u2192 raw dev <b>'+fpct(ratio-1)+'</b>');
     }
-    var stMap = {mese_w4:'2-week pace (month)', fallback_aggregate:'aggregate fallback', fallback_annuale_struct:'annual fallback (property)', neutralizzato_no_dati:'neutralized \u2014 no data', fallback:'fallback'};
+    var stMap = {mese_w4:'last-7-days pace (month)', fallback_aggregate:'aggregate fallback', fallback_annuale_struct:'annual fallback (property)', neutralizzato_no_dati:'neutralized \u2014 no data', fallback:'fallback'};
     h += L('State: <b>'+((stMap[pi.state]) || pi.state || '\u2014')+'</b>');
     h += Fin('Applied dev: <b>'+fpct(mults.pace_mult-1)+'</b>');
   } else if (code === 'C'){
@@ -12788,6 +12909,7 @@ function renderSellStrategy(sel){
     + (showExp ? '<th rowspan="2" class="sell-grp sell-grp-expedia" title="My Expedia price, the compset average and my position (1 = cheapest)">Rate shopper<br><span class="sell-th-sub">mine · compset · pos</span></th>' : '')
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). Click 🖋 to override one day; ↺ to reset.">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-sold" title="Last sold price — the rate of the most recent booking that covers this night, on the base room type, gross of OTA commission (Booking and Direct as they are; Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%). Blank = this night has never been sold on the base room type.">Last sold<br><span class="sell-th-sub">gross · base RT</span></th>'
     + '<th colspan="2" class="sell-grp sell-grp-pricing" title="What the engine suggests for this date: price and minimum stay.">RMES</th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
@@ -13485,6 +13607,32 @@ function renderSellStrategy(sel){
       _dowInline = dateStyle;  // ' style="..."' or ''
     }
         // Compute LAST UPDATE and RMES cells as "card" style (richiesta utente)
+    // Cella "Last sold": ultimo prezzo realmente venduto per quella notte (lordo OTA).
+    const _soldTdHtml = (function(){
+      const ls = (typeof lastSoldForStay === 'function') ? lastSoldForStay(sel, r.ymd) : null;
+      const _refSrc = (typeof newrmesGetReferenceSource === 'function') ? newrmesGetReferenceSource(sel, r.ymd) : null;
+      const _isAnchor = !!(_refSrc && _refSrc.source === 'sold');
+      if (!ls){
+        return `<td class="cell-mono sell-sold-cell cell-flat" style="text-align:center" title="This night has never been sold on the base room type">—</td>`;
+      }
+      const _bs = String(ls.bookYmd);
+      const _bd = _bs.slice(6,8) + '/' + _bs.slice(4,6) + '/' + _bs.slice(0,4);
+      const _ageD = Math.round((ymdToDate(r.ymd) - ymdToDate(ls.bookYmd)) / 86400000);
+      const _age = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(ls.bookYmd)) / 86400000);
+      const tip = `Last sold: ${fmtEUR(ls.price)} (gross of OTA commission)\n`
+                + `Booked on ${_bd} via ${ls.canale}${_age > 0 ? ' — ' + _age + ' days ago' : ''}\n`
+                + `Room type: ${ls.room}\n`
+                + `Booked ${_ageD} days before check-in`
+                + (_isAnchor
+                    ? `\n\n\u2713 Sold within the last ${LAST_SOLD_FRESH_DAYS} days: this is the price the RMES starts from.`
+                    : `\n\nOlder than ${LAST_SOLD_FRESH_DAYS} days: shown for information only, the RMES starts from the Base Price.`);
+      // Piu' vecchia e' la vendita, meno il prezzo dice del mercato di oggi.
+      const _dim = _isAnchor ? '' : (_age > 60 ? ';opacity:.55' : ';opacity:.75');
+      const _mark = _isAnchor ? '<span style="color:#2c7a4b;font-weight:700">\u2713</span> ' : '';
+      return `<td class="cell-mono sell-sold-cell${_isAnchor ? ' sold-anchor' : ''}" style="text-align:center${_dim}" title="${escapeHtml(tip)}">`
+           + `<div style="font-weight:700">${_mark}${fmtEUR(ls.price)}</div>`
+           + `<div style="font-size:9px;font-weight:400;opacity:.8;white-space:nowrap">${_bd.slice(0,5)} \u00b7 ${escapeHtml(String(ls.canale).slice(0,7))}</div></td>`;
+    })();
     // Cella "Min stay": minimum stay consigliato per quella data.
     // 1 notte = nessuna restrizione → cella vuota, per non aggiungere rumore.
     const _mlosTdHtml = (function(){
@@ -13628,6 +13776,7 @@ function renderSellStrategy(sel){
       ${beddyCell}
       <!-- Base Price cell (with override 🖋 / reset ↺ buttons) -->
       ${cellFoundation}
+      ${_soldTdHtml}
       <!-- RMES: prezzo suggerito + minimum stay consigliato -->
       ${_rmesTdHtml}${_mlosTdHtml}
     </tr>`;
@@ -13675,7 +13824,8 @@ function renderSellStrategy(sel){
     ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
     <!-- Base Price -->
     <td class="cell-flat" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
-    <!-- RMES -->
+    <!-- Last sold + RMES -->
+    <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
@@ -18094,7 +18244,7 @@ function _renderRmesWeightsBox(sel){
   const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
   const factors = [
     { key:'occ',    letter:'A', label:'Daily Pickup',       color:'#3b6b9a', desc:'recent pickup × fill rate (window "1d" = yesterday + today, fallback "7d")' },
-    { key:'pace',   letter:'B', label:'Pace Trend',         color:'#8e5fa8', desc:'last 2 weeks pace of stay month vs STLY, W4×60% + W3×40% (fallback: aggregate / annual / neutralized)' },
+    { key:'pace',   letter:'B', label:'Pace Trend',         color:'#8e5fa8', desc:'last 7 days pace of stay month vs the same 7 days STLY (fallback: aggregate / annual / neutralized)' },
     { key:'comp',   letter:'C', label:'Online Pricing',     color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)' },
     { key:'airdna', letter:'D', label:'Demand (Expedia)',   color:'#a83b3b', desc:'Expedia searches vs month median' },
     { key:'mkt',    letter:'E', label:'AirDNA Market',      color:'#c4823b', desc:'AirDNA Booked Listings vs market average (booking density of Florence rentals)' },

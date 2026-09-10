@@ -461,6 +461,18 @@ table.data.sell-table tbody td.sell-block-fp{font-size:12px;font-family:'DM Mono
 /* Colonna Foundation nascosta: il calcolo Foundation resta visibile cliccando la cella RMES (dettaglio 6-step + moltiplicatori). */
 table.data.sell-table thead th.sell-grp-fp, table.data.sell-table tbody td.sell-block-fp{display:none}
 /* Gruppo RMES: prezzo suggerito + minimum stay consigliato, in fondo alla tabella */
+/* Colonna "Last sold": ultimo prezzo realmente incassato per quella notte */
+table.data.sell-table thead th.sell-grp-sold{
+  background:rgba(46,120,70,.12);color:#1e5c38;font-weight:700;border-left:3px solid #2c7a4b;
+}
+table.data.sell-table tbody td.sell-sold-cell{
+  background:rgba(46,120,70,.04);border-left:3px solid rgba(44,122,75,.35);line-height:1.25;
+}
+table.data.sell-table tbody td.sell-sold-cell.cell-flat{color:#c9c2b6}
+/* Vendita recente = il RMES parte da qui */
+table.data.sell-table tbody td.sell-sold-cell.sold-anchor{
+  background:rgba(46,120,70,.11);border-left:3px solid #2c7a4b;
+}
 table.data.sell-table thead th.sell-grp-mlos{
   background:rgba(107,91,63,.10);color:#4a3f2c;font-weight:600;
 }
@@ -2368,6 +2380,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Pickup Nd</b> — net pickup over the last N days, shown as two columns only: <b>Var RN</b> (new minus cancelled) and <b>Var ADR</b> (ADR of that net pickup). Both are already net of cancellations. <b>Click Var RN</b> to open the detail, which lists <i>New bookings</i> and <i>Cancelled</i> in two separate tables with the net at the bottom. <b>Standard pickup convention</b> (same as Duetto, IDeaS, OTA Insight): <code>Pickup N</code> means the N days <b>before today</b> (from <code>today−N</code> to <code>today−1</code>, today excluded). Examples: <code>Pickup 1</code> = yesterday only · <code>Pickup 2</code> = 2 days ago + yesterday · <code>Pickup 7</code> = the 7 days before today. <b>Pickup 0</b> is also accepted and means "what was booked <i>today only</i>". <i>Note: the RMES <b>Daily Pickup factor</b> is the only exception — it also reads today's bookings, because it needs the most up-to-date signal for the price suggestion.</i></li>
           <li><b>STLY (−364d)</b> — what was on the books at the same point of the cycle last year (today−364, day-of-week aligned). Used to read the pace.</li>
           <li><b>Pickup STLY</b> — same two columns (Var RN · Var ADR), for the equivalent booking window one year ago (today−364, day-of-week aligned). Var ADR here is the ADR of the net STLY pickup, so it is directly comparable with the current one. Click Var RN for the new/cancelled detail.</li>
+          <li><b>Last sold</b> &mdash; the price of the <b>most recent booking that covers this night</b>, on the base room type, <b>gross of OTA commission</b> (Booking and Direct as they arrive; Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%), so the number is comparable with your shelf price whatever the channel. Under the price you see when it was booked and through which channel; hover for the full detail. Blank means <b>this night has never been sold</b> on the base room type &mdash; there is no sold price, and none is invented.
+            <br><span style="color:#2c7a4b;font-weight:700">&#10003;</span> <b>marked green</b> = the sale happened in the <b>last 21 days</b>, so it is the freshest market signal available and <b>the RMES starts from this price</b> instead of the Base Price. Older sales are shown faded: they stay as information only, because a price from two months ago says little about what the date is worth today. An explicit decision of yours &mdash; a manual override or an accepted RMES &mdash; still wins if it is more recent than the sale.</li>
           <li><b>RMES · Min stay</b> — the suggested <b>minimum stay</b> for that date. <b>2</b> means hold a 2-night minimum, a faint dot means no restriction. The rule: never a minimum within 7 days of arrival, never if the following night is already full, otherwise 2 nights when occupancy — this year or the same date last year — is at 90% or above. For Porte Nuove and Nazionale a 2-night minimum also kicks in when the Base Price has dropped to the floor rate.</li>
           <li><b>RMES · Pricing</b> — today's pricing engine target. <b>Three display modes</b>:
             <ul style="margin:4px 0 0 18px;font-size:12.5px">
@@ -2647,16 +2661,16 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <div style="margin:10px 0;padding:12px 14px;background:#f1edf5;border-radius:6px;font-size:13px;line-height:1.65">
           <p style="margin:0 0 6px 0;font-weight:700;color:#8e5fa8">B · Pace Trend <span style="color:#888;font-weight:400">— "are we booking faster or slower than last year?"</span></p>
-          <p style="margin:0 0 6px 0"><b>What it measures.</b> The booking pace of the month of stay over the <b>last 2 weeks</b>, compared to the same 2 weeks last year (STLY = same time last year, day-of-week aligned). It looks at the <b>real room-nights picked up</b>, not the prices. The two weeks are <b>blended</b>: the most recent week (W4) weighs <b>60%</b> and the previous week (W3) weighs <b>40%</b>. Using two weeks instead of one smooths the noise on small properties (Enis Guesthouse, Condotta 16), where a single quiet week can otherwise swing the factor hard.</p>
+          <p style="margin:0 0 6px 0"><b>What it measures.</b> The booking pace of the month of stay over the <b>last 7 days</b>, compared to the same 7 days last year (STLY = same time last year, day-of-week aligned). It looks at the <b>real room-nights picked up</b>, not the prices. <b>Only the last week counts</b> (100%): the factor has to say how the market is moving <i>right now</i>, and averaging in the previous week diluted the signal and delayed the reaction. The trade-off is accepted knowingly &mdash; on small properties a single quiet week moves this factor more than it used to, so check the room-night counts in the tooltip before acting on an extreme reading.</p>
           <p style="margin:0 0 6px 0">Formula: <code>blended_RN = 0.60 × W4 + 0.40 × W3</code> for both current year and LY (W4 = last 7 days, W3 = the 7 days before that). Then <code>pace_ratio = blended_now / blended_LY</code> and <code>raw_dev = pace_ratio − 1</code>, clamped at ±50%.</p>
           <p style="margin:0 0 6px 0"><b>Decision states</b>:</p>
           <ul style="margin:0 0 6px 18px;font-size:12.5px;color:#444">
-            <li><b>2-week pace (month)</b>: the property has fresh 2-week pace data for the target stay month. The pace ratio is applied directly to user-configured thresholds.</li>
-            <li><b>Aggregate fallback (P̄)</b>: no pace data for this property/month → use the <b>aggregate 2-week pace of all 4 properties</b> (same Florence market). A small <b>P̄</b> badge appears in the RMES cell to flag this.</li>
+            <li><b>Last-7-days pace (month)</b>: the property has pace data for the last 7 days on the target stay month. The pace ratio is applied directly to user-configured thresholds.</li>
+            <li><b>Aggregate fallback (P̄)</b>: no pace data for this property/month → use the <b>aggregate last-7-days pace of all properties</b> (same Florence market). A small <b>P̄</b> badge appears in the RMES cell to flag this.</li>
             <li><b>Annual fallback (property)</b>: not even aggregate available → use the property's annual pace as proxy. If extreme (>±15%), neutralized for safety.</li>
             <li><b>Neutralized — no data</b>: no pace data anywhere → factor goes n/a, weight redistributed to the other active factors.</li>
           </ul>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, target month June 2026.</b> Last week (W4) picked up 8 RN, the week before (W3) 6 RN → blended now = 0.60×8 + 0.40×6 = 7.2 RN. Same 2 weeks last year: W4 7 RN, W3 5 RN → blended LY = 0.60×7 + 0.40×5 = 6.2 RN. Ratio = 7.2 / 6.2 = 1.16 → raw dev = +16%. State = "2-week pace (month)". Applied to composite: 0.20 × +16% = +3.2 percentage points.</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Firenze, target month June 2026.</b> The last 7 days picked up 8 RN. The same 7 days last year picked up 7 RN. Ratio = 8 / 7 = 1.14 → raw dev = +14%. State = "last-7-days pace (month)". Applied to composite: 0.20 × +14% = +2.8 percentage points.</p>
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#ecf3ee;border-radius:6px;font-size:13px;line-height:1.65">
@@ -2734,7 +2748,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">⚡ Base Price block — the structural fair price for the day</h4>
         <p>The <b>Base Price</b> is the structural starting price the RMES suggestion sits on top of. RMES never overwrites it — it can only suggest a target above or below.</p>
         <p style="margin:6px 0;padding:8px 12px;background:#eef6ee;border-left:3px solid #4a7c59;font-size:12.5px">You can <b>override the Base for a single day</b> with the <b>🖋</b> in the Base Price cell (Sell Strategy, baseRT row), and <b>↺</b> to revert to the computed value. Use it for dates the history underprices — typically <b>holidays</b> (New Year, Christmas): the anchor learns from last year's realized ADR, so if you sold a high-demand date cheap last year, the Base (and therefore the RMES target) comes out low. Raising the Base fixes the suggestion at the root, because the RMES target is computed on the Base. A manual Base override is not bound by the ±50% Monthly Anchor band (that band only limits the auto-computed Base).</p>
-        <p><b>Rolling 90-day freeze window.</b> The Base Price is frozen only for the next <b>90 days</b> from today (the window where Expedia compset data is reliable). A day is frozen with current data when it enters that window, and then stays stable. Days <b>beyond 90</b> are not frozen: they recompute live each time (so they stay updatable as data improves), and get frozen automatically once they roll into the 90-day window. To refresh stale frozen values inside the window, use <b>🔄 Refresh frozen Base</b> in Export Pricing (your overrides and accepts are kept).</p>
+        <p><b>Rolling 30-day freeze window.</b> The Base Price is frozen only for the next <b>30 days</b> from today. A day is frozen with current data when it enters that window, and then stays stable &mdash; so nobody sees the structural price shift under their feet while working on a date that is about to sell. Days <b>beyond 30</b> are not frozen: they <b>recompute live every time you open the dashboard</b>, absorbing new bookings, new compset readings and new events, and get frozen automatically once they roll into the window. To refresh stale frozen values inside the window, use <b>🔄 Refresh frozen Base</b> in Export Pricing (your overrides and accepts are kept).</p>
+        <p style="font-size:12.5px;color:#666"><i>This window used to be 90 days. It was shortened because a day frozen three months out kept a price computed on data that was two months old by the time it mattered. With 30 days the price stays current for longer and only locks in the last month, when decisions become operational.</i></p>
         <p>The Base Price is computed in <b>4 steps</b>, in this order:</p>
         <ol style="margin:6px 0 8px 18px">
           <li><b>Historical ADR (LY median, base room type)</b> — for the target date the system computes <b>two medians</b> and takes the <b>higher of the two</b>:
@@ -2836,7 +2851,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li>This day has the event "Pre Festa della Repubblica" with a weight set (+3%), so <b>D · Demand is muted</b> and the four active factors share the weight at <b>25% each</b>:
               <ul style="margin:4px 0 4px 14px">
                 <li>A · Daily Pickup: 3 bookings entered in the primary window (yesterday + today), fill rate 100% → <b>+20%</b>. Weighted: 0.25 × 20% = +5 pp.</li>
-                <li>B · Pace Trend: 2-week blend ratio 0.92 → <b>−8%</b>. Weighted: 0.25 × −8% = −2 pp.</li>
+                <li>B · Pace Trend: last-7-days ratio 0.92 → <b>−8%</b>. Weighted: 0.25 × −8% = −2 pp.</li>
                 <li>C · Online Pricing: my Beddy_eq vs compset → <b>−20%</b>. Weighted: 0.25 × −20% = −5 pp.</li>
                 <li>D · Demand Expedia: <b>muted</b> (event weight set) → weight redistributed, 0 pp.</li>
                 <li>E · AirDNA Market: market running ahead of us → <b>+10%</b>. Weighted: 0.25 × +10% = +2.5 pp.</li>
