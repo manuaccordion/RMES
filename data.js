@@ -6250,6 +6250,19 @@ HMMZP2W2AA,20/10/2025,,Airbnb,,Cupola,,17/02/2026,21/02/2026,4,397.57,Nazionale 
 HMWHKYA5YE,25/10/2025,,Airbnb,,Uffizi,,18/02/2026,20/02/2026,2,239,Nazionale 35 Apartments,Confermate,0,Airbnb,40
 HMPH328FXT,28/01/2026,,Airbnb,,Ponte Vecchio,,16/02/2026,19/02/2026,3,184.62,Porte Nuove Apartments,Confermate,0,Airbnb,40
 HM4X4JYRHR,20/10/2025,,Airbnb,,Uffizi,,13/02/2026,18/02/2026,5,526.95,Nazionale 35 Apartments,Confermate,0,Airbnb,40
+44071F5E15,09/09/2026 13:45,10/09/2026 17:21,Booking,Gulsah Yudu,Suite,Flessibile,18/09/2026,21/09/2026,3,1270.57,Firenze Suite,Cancellate,0,OTA,0
+E4F4AF1FBB,30/07/2026 18:55,10/09/2026 11:59,Booking,JULIANA SANTOS,Attico,Flessibile,16/09/2026,21/09/2026,5,2815.92,Condotta 16,Confermate,0,OTA,0
+20CAD30393,15/08/2026 23:55,10/09/2026 09:25,Booking,Avi Shaked,"Suite con Terrazza, Suite, Suite, Camera Matrimoniale Deluxe","Flessibile, Flessibile, Flessibile, Flessibile",10/09/2026,14/09/2026,4,5674.61,Firenze Suite,Confermate,0,OTA,0
+E42F027893,18/08/2026 20:38,10/09/2026 08:58,Expedia,Alex Telo,Suite con Terrazza,Flessibile,14/09/2026,16/09/2026,2,705.67,Firenze Suite,Confermate,0,OTA,0
+95DC70466A,24/07/2026 05:30,10/09/2026 08:58,Beddy,Kyren Bueckert,Suite con Terrazza,Flessibile,12/09/2026,17/09/2026,5,1685,Firenze Suite,Confermate,0,Sito web,0
+A795E0CAA2,16/08/2026 22:26,10/09/2026 08:58,Ctrip,JIE LIN,Suite con Terrazza,Non rimborsabile,10/09/2026,12/09/2026,2,648.89,Firenze Suite,Confermate,0,OTA,0
+B421D7BF11,10/09/2026 04:00,,Booking,Anisha Jangi,Trilocale,Flessibile,29/12/2026,01/01/2027,3,1339.49,Condotta 16,Confermate,0,OTA,0
+F168758E03,10/09/2026 03:55,,Booking,Michael Nauman,Bilocale,Non rimborsabile,19/10/2026,22/10/2026,3,771.15,Condotta 16,Confermate,0,OTA,0
+484E874248,18/08/2026 17:38,09/09/2026 09:45,Booking,Alan DenAdel,Camera Matrimoniale Deluxe,Non rimborsabile,11/09/2026,14/09/2026,3,970.31,Firenze Suite,Confermate,0,OTA,0
+3BB81F83EA,09/09/2026 00:11,,Airbnb,Simon Phillimore,Uffizi,Flessibile,22/11/2026,24/11/2026,2,268,Nazionale 35 Apartments,Confermate,0,OTA,0
+3E433E8E1E,08/09/2026 23:41,,Booking,Vanesa Tassara,Palazzo Pitti,Non rimborsabile,15/10/2026,17/10/2026,2,287.91,Porte Nuove Apartments,Confermate,0,OTA,0
+6758D43A3F,08/09/2026 22:14,,Airbnb,Sreya Vaddireddy,Cupola,Flessibile,25/09/2026,26/09/2026,1,191.7,Nazionale 35 Apartments,Confermate,0,OTA,0
+FE38F5B98B,08/09/2026 21:09,,Booking,Olga Ovsiannikova,Bilocale,Flessibile,20/09/2026,24/09/2026,4,1235.53,Condotta 16,Confermate,0,OTA,0
 49CC110EB4,24/08/2026 21:49,08/09/2026 20:12,Ctrip,CHENGYUE RUAN,Suite con Terrazza,Flessibile,03/10/2026,05/10/2026,2,697.9,Firenze Suite,Cancellate,0,OTA,0
 CCA00618ED,08/09/2026 16:21,,Beddy,Karen Bridgeman,Camera Matrimoniale Deluxe,Più Stai Più Risparmi,11/11/2026,23/11/2026,12,1432.25,Firenze Suite,Confermate,0,Sito web,0
 0D3C7890FC,08/09/2026 15:23,,Beddy,Niveen Daood,Bilocale,Flessibile,09/09/2026,10/09/2026,1,279,Condotta 16,Confermate,0,Non Specificato,0
@@ -6263,12 +6276,10 @@ AE767E3AB0,07/09/2026 23:52,,Booking,Ian Ferguson,Camera Matrimoniale Deluxe,Fle
 D897650F10,07/09/2026 22:19,,Airbnb,Claudia Mertens,Cupola,Flessibile,13/01/2027,14/01/2027,1,143,Nazionale 35 Apartments,Confermate,0,OTA,0
 8AFC3A2BA1,07/09/2026 18:55,,Booking,Tania Hara,Trilocale,Non rimborsabile,07/11/2026,09/11/2026,2,549.77,Condotta 16,Confermate,0,OTA,0
 79DDA263DF,28/07/2026 09:03,07/09/2026 14:12,Ctrip,LAAM KWOK,Camera Matrimoniale Deluxe,Non rimborsabile,09/09/2026,12/09/2026,3,713.96,Firenze Suite,Confermate,0,OTA,0
-20CAD30393,15/08/2026 23:55,07/09/2026 14:12,Booking,Avi Shaked,"Suite con Terrazza, Suite, Suite, Camera Matrimoniale Deluxe","Flessibile, Flessibile, Flessibile, Flessibile",10/09/2026,14/09/2026,4,5674.61,Firenze Suite,Confermate,0,OTA,0
 6E2D5E36BC,14/08/2026 08:56,07/09/2026 14:11,Ctrip,XIAODONG TANG,Camera Matrimoniale Deluxe,Non rimborsabile,08/09/2026,10/09/2026,2,421.61,Firenze Suite,Confermate,0,OTA,0
 B8A49F205C,07/09/2026 14:08,07/09/2026 14:09,Expedia,PEIYUAN DAI,Suite,Flessibile,08/09/2026,10/09/2026,2,334.75,Firenze Suite,Confermate,0,OTA,0
 AE464F2134,07/09/2026 09:36,07/09/2026 14:08,Expedia,Ramzi Fadel,Camera Matrimoniale Deluxe,Flessibile,07/09/2026,10/09/2026,3,486.33,Firenze Suite,Confermate,0,OTA,0
 AF4C8A5D27,07/09/2026 13:25,,Booking,Olga Dretakis,Suite,Flessibile,07/10/2026,08/10/2026,1,440.86,Firenze Suite,Confermate,0,OTA,0
-484E874248,18/08/2026 17:38,07/09/2026 13:12,Booking,Alan DenAdel,Camera Matrimoniale Deluxe,Non rimborsabile,11/09/2026,14/09/2026,3,970.31,Firenze Suite,Confermate,0,OTA,0
 E8B68E0289,07/09/2026 12:50,,Booking,Olga Dretakis,Suite con Terrazza,Flessibile,05/10/2026,07/10/2026,2,958.58,Firenze Suite,Confermate,0,OTA,0
 5CAD91983B,10/06/2026 06:53,07/09/2026 11:53,Booking,Vera MA,Bilocale,Flessibile,29/09/2026,01/10/2026,2,761,Condotta 16,Cancellate,0,OTA,0
 ADBA3097FA,01/09/2026 08:34,07/09/2026 11:25,Airbnb,현아 김,Uffizi,Flessibile,02/03/2027,03/03/2027,1,145,Nazionale 35 Apartments,Cancellate,0,OTA,0
@@ -6289,7 +6300,6 @@ AA80B60A7C,06/09/2026 18:44,,Booking,Ekaterina Nikulina,Bilocale,Non rimborsabil
 CAF0547706,06/09/2026 14:15,06/09/2026 16:28,Expedia,Louisa McCall,Bilocale,Flessibile,25/09/2026,29/09/2026,4,1123.95,Condotta 16,Cancellate,0,OTA,0
 7E95A5BF18,06/09/2026 16:19,,Booking,Yelena Serebrenik,Attico,Flessibile,06/09/2026,08/09/2026,2,680.5,Condotta 16,Confermate,0,OTA,0
 985C20D38F,06/09/2026 15:54,,Expedia,Natalie Hughes,Bilocale,Flessibile,14/11/2026,17/11/2026,3,480.6,Condotta 16,Confermate,0,OTA,0
-E4F4AF1FBB,30/07/2026 18:55,06/09/2026 14:45,Booking,JULIANA SANTOS,Attico,Flessibile,16/09/2026,21/09/2026,5,2815.92,Condotta 16,Confermate,0,OTA,0
 894C1A07D7,06/09/2026 13:25,,Airbnb,Trixia Noriega,Palazzo Pitti,Flessibile,24/09/2026,26/09/2026,2,272.7,Porte Nuove Apartments,Confermate,0,OTA,0
 6F6FE15233,25/08/2026 22:30,06/09/2026 12:54,Booking,Henri Aaron DAHAN,Camera Matrimoniale Deluxe,Non rimborsabile,06/09/2026,08/09/2026,2,438.49,Firenze Suite,Confermate,0,OTA,0
 DBCD68E55A,16/08/2026 11:48,06/09/2026 11:20,Booking,carla cossu,Trilocale,Flessibile,21/09/2026,23/09/2026,2,898.91,Condotta 16,Cancellate,0,OTA,0
@@ -6482,7 +6492,6 @@ FA397EF396,19/08/2026 06:19,,Airbnb,Eddy Solís,Ponte Vecchio,Flessibile,14/09/2
 00970368CA,19/08/2026 05:08,,Airbnb,MaKenzie Penn,Uffizi,Flessibile,24/09/2026,25/09/2026,1,188,Nazionale 35 Apartments,Confermate,0,OTA,0
 85C3C2DA70,19/08/2026 04:04,,Expedia,Gayle Connell,Trilocale,Flessibile,14/10/2026,17/10/2026,3,1346.64,Condotta 16,Confermate,0,OTA,0
 CD640A4294,19/08/2026 03:23,,Airbnb,Kamal Logue,Cupola,Flessibile,03/09/2026,04/09/2026,1,171,Nazionale 35 Apartments,Confermate,0,OTA,0
-E42F027893,18/08/2026 20:38,,Expedia,Alex Telo,Suite con Terrazza,Flessibile,14/09/2026,16/09/2026,2,705.67,Firenze Suite,Confermate,0,OTA,0
 B4934F9D5A,01/02/2026 20:03,18/08/2026 13:54,Booking,gal aspis,Trilocale,Flessibile,16/09/2026,17/09/2026,1,466.09,Condotta 16,Confermate,0,OTA,0
 4820066AF1,18/08/2026 06:51,,Ctrip,JING JING MO,Camera Matrimoniale Deluxe,Non rimborsabile,01/10/2026,04/10/2026,3,800.71,Firenze Suite,Confermate,0,OTA,0
 4ACB4A87B8,18/08/2026 03:23,,Airbnb,Molly Carlson,Uffizi,Flessibile,04/10/2026,06/10/2026,2,451,Nazionale 35 Apartments,Confermate,0,OTA,0
@@ -6502,7 +6511,6 @@ E0BAC1CBB0,19/07/2026 17:04,17/08/2026 09:03,Booking,Dyon Matron,Suite,Non rimbo
 D0E915DA7D,27/07/2026 13:02,17/08/2026 04:22,Expedia,Gina Mullen,Suite con Terrazza,Flessibile,15/03/2027,18/03/2027,3,748.44,Firenze Suite,Cancellate,0,OTA,0
 CDCAF151F8,27/07/2026 13:02,17/08/2026 04:22,Expedia,Gina Mullen,Suite con Terrazza,Flessibile,15/03/2027,18/03/2027,3,748.44,Firenze Suite,Cancellate,0,OTA,0
 225D934895,14/08/2026 14:45,17/08/2026 04:07,Booking,Gracie Howlett,Trilocale,Flessibile,30/03/2027,04/04/2027,5,1933.81,Condotta 16,Cancellate,0,OTA,0
-A795E0CAA2,16/08/2026 22:26,,Ctrip,JIE LIN,Suite con Terrazza,Non rimborsabile,10/09/2026,12/09/2026,2,648.89,Firenze Suite,Confermate,0,OTA,0
 5B45DB0E52,16/08/2026 21:31,,Beddy,Nicole Johnson,Suite,Flessibile,30/11/2026,03/12/2026,3,577,Firenze Suite,Confermate,0,Sito web,0
 AEE884072D,16/08/2026 15:47,,Airbnb,Andrew Moore,Cupola,Flessibile,26/08/2026,27/08/2026,1,132,Nazionale 35 Apartments,Confermate,0,OTA,0
 F0152491C4,16/08/2026 14:19,,Airbnb,창현 박,Cupola,Flessibile,28/04/2027,30/04/2027,2,330,Nazionale 35 Apartments,Confermate,0,OTA,0
@@ -6709,7 +6717,6 @@ AF4C2F92CB,24/07/2026 10:59,,Airbnb,Caroline Sjöqvist,Uffizi,Flessibile,23/10/2
 B34112379D,25/05/2026 16:16,24/07/2026 08:50,Expedia,KECHENG YE,Camera Matrimoniale Deluxe,Miglior tariffa garantita PKG,24/07/2026,26/07/2026,2,384.49,Firenze Suite,Confermate,0,OTA,0
 2599B54704,28/06/2026 12:52,24/07/2026 08:50,Booking,Heidi Guerra,Camera Matrimoniale Deluxe,Non rimborsabile,24/07/2026,26/07/2026,2,361.16,Firenze Suite,Confermate,0,OTA,0
 C083F3E2DD,24/07/2026 05:44,,Booking,Julie Arnold,Trilocale,Flessibile,10/09/2026,15/09/2026,5,2203.25,Condotta 16,Confermate,0,OTA,0
-95DC70466A,24/07/2026 05:30,,Beddy,Kyren Bueckert,Suite con Terrazza,Flessibile,12/09/2026,17/09/2026,5,1685,Firenze Suite,Confermate,0,Sito web,0
 84F3FA5A3F,24/07/2026 00:37,,Expedia,Carmelo Pio Guidara,Suite,Flessibile,04/08/2026,05/08/2026,1,132.04,Firenze Suite,Confermate,0,OTA,0
 6D5F1DF516,23/07/2026 21:01,,Booking,Stefan Duda,Palazzo Vecchio,Non rimborsabile,08/10/2026,10/10/2026,2,216.32,Porte Nuove Apartments,Confermate,0,OTA,0
 D69F8C794E,23/07/2026 11:46,,Booking,Dworniczak Lukasz,Trilocale,Flessibile,26/11/2026,01/12/2026,5,1265.86,Condotta 16,Confermate,0,OTA,0
@@ -8088,8 +8095,30 @@ F5BC62D98A,05/10/2025 21:26,,Booking,Marcus Campos,"Trilocale, Trilocale","Fless
 F5F8252A14,30/09/2025 13:58,,Booking,Valentina Preda,Bilocale,Non rimborsabile,17/02/2026,20/02/2026,3,504,Condotta 16,Confermate,0,OTA,0
 367A8D0906,16/06/2025 08:58,,Booking,Masahiko Kato,Bilocale,Non rimborsabile,02/01/2026,05/01/2026,3,719.22,Condotta 16,Confermate,0,OTA,0
 DF14FBB4D6,15/03/2025 10:56,,Beddy,Colm Devine,Trilocale,Flessibile,12/08/2028,13/08/2028,1,330,Condotta 16,Confermate,0,Non Specificato,0
-F2E568365F,07/09/2026 10:43,,Booking,Ibrahim Yildiz,Deluxe,Tariffa Esclusiva,09/09/2026,11/09/2026,2,949.32,Palazzo Alfani,Confermate,0,OTA,0
-978B4AB9D2,07/09/2026 06:01,,Expedia,Amy Dubin Fine,Deluxe,Flessibile pacchetto,13/06/2027,17/06/2027,4,1703.96,Palazzo Alfani,Confermate,0,OTA,0
+91229D8E09,22/08/2026 16:22,10/09/2026 15:25,Ctrip,LIN CHEN,Classic,Tariffa Rimborsabile - Pernottamento,09/10/2026,14/10/2026,5,1307.26,Palazzo Alfani,Confermate,0,OTA,0
+67F80AD5E8,25/08/2026 14:47,10/09/2026 15:24,Ctrip,QIN YANG,Classic,Tariffa Rimborsabile - Pernottamento,12/10/2026,14/10/2026,2,502.25,Palazzo Alfani,Confermate,0,OTA,0
+AA3D841744,19/03/2026 03:25,10/09/2026 15:24,Beddy,FRANCIS MANLEY,Classic,Tariffa Rimborsabile - Pernottamento,08/10/2026,12/10/2026,4,1400,Palazzo Alfani,Confermate,0,Sito web,0
+74236D954F,22/07/2026 08:10,10/09/2026 15:22,Ctrip,GUIYI PAN,Superior,Tariffa Rimborsabile - Pernottamento,10/10/2026,13/10/2026,3,1053.87,Palazzo Alfani,Confermate,0,OTA,0
+D6C38CCD7E,14/07/2026 08:28,10/09/2026 14:49,Ctrip,YI ZHOU,Superior,Tariffa Rimborsabile - Pernottamento,08/10/2026,10/10/2026,2,652.77,Palazzo Alfani,Confermate,0,OTA,0
+46BA504545,10/09/2026 08:39,10/09/2026 10:59,Booking,Xiao Jie,Classic,Tariffa Rimborsabile - Pernottamento,28/12/2026,30/12/2026,2,659.2,Palazzo Alfani,Confermate,0,OTA,0
+9B595D1071,10/09/2026 09:59,,Ctrip,SHUTING YANG,Superior,Tariffa Esclusiva,23/09/2026,25/09/2026,2,629.98,Palazzo Alfani,Confermate,0,OTA,0
+978B4AB9D2,07/09/2026 06:01,10/09/2026 06:20,Expedia,Amy Dubin Fine,Deluxe,Flessibile pacchetto,12/06/2027,18/06/2027,6,2555.94,Palazzo Alfani,Confermate,0,OTA,0
+1A8EA2E8FB,25/08/2026 10:47,09/09/2026 17:20,Expedia,Xuanhao Li,Superior,Flessibile pacchetto,23/09/2026,25/09/2026,2,539.86,Palazzo Alfani,Confermate,0,OTA,0
+958A83BBEA,26/05/2026 16:53,09/09/2026 17:19,Ctrip,YUXUAN LIN,Superior,Tariffa Rimborsabile - Pernottamento,25/09/2026,26/09/2026,1,325.1,Palazzo Alfani,Confermate,0,OTA,0
+3171239DA1,08/06/2026 10:38,09/09/2026 17:19,Beddy,Nancy Schulman Soiefer,Superior,Tariffa Rimborsabile con Colazione inclusa,25/09/2026,26/09/2026,1,362.9,Palazzo Alfani,Confermate,0,Non Specificato,0
+5B129C4850,28/08/2026 09:23,09/09/2026 17:18,Ctrip,LANGWEN CAI,Junior suite,Tariffa Rimborsabile - Pernottamento,25/09/2026,26/09/2026,1,311.7,Palazzo Alfani,Confermate,0,OTA,0
+4EC81131F0,11/08/2026 16:24,09/09/2026 17:18,Expedia,shuang ma,Junior suite,Flessibile pacchetto,23/09/2026,25/09/2026,2,524.58,Palazzo Alfani,Confermate,0,OTA,0
+5C44AA0F7D,03/09/2026 08:25,09/09/2026 17:18,Ctrip,QIAOZHI XU,Superior,Tariffa Rimborsabile - Pernottamento,23/09/2026,25/09/2026,2,621.16,Palazzo Alfani,Confermate,0,OTA,0
+2F87C0D985,09/09/2026 15:29,,Booking,Lu Yixian,Classic,Tariffa Rimborsabile - Pernottamento,10/02/2027,12/02/2027,2,549.38,Palazzo Alfani,Confermate,0,OTA,0
+2ACE74A01E,09/08/2026 15:25,09/09/2026 15:27,Ctrip,ZHEN LI,Superior,Tariffa Rimborsabile - Pernottamento,23/09/2026,24/09/2026,1,315.16,Palazzo Alfani,Cancellate,0,OTA,0
+8138F743F5,09/09/2026 15:05,,Beddy,Mary Ann Sack,"Junior suite, Classic, Classic","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",06/04/2027,09/04/2027,3,2488.05,Palazzo Alfani,Confermate,0,Non Specificato,0
+D6BE0CA4FD,20/08/2026 09:05,08/09/2026 15:13,Ctrip,SIHAN CHEN,Superior,Tariffa Rimborsabile - Pernottamento,14/10/2026,16/10/2026,2,478.4,Palazzo Alfani,Confermate,0,OTA,0
+DBFDA92B96,21/08/2026 07:11,08/09/2026 15:12,Ctrip,WANSHA CAO,Superior,Tariffa Rimborsabile - Pernottamento,20/10/2026,23/10/2026,3,696.84,Palazzo Alfani,Confermate,0,OTA,0
+03A1C676C7,07/08/2026 14:14,08/09/2026 15:12,Booking,Bonnie Miller,Classic,Tariffa Rimborsabile - Pernottamento,15/10/2026,21/10/2026,6,2446.86,Palazzo Alfani,Confermate,0,OTA,0
+96BF9F7CF8,14/08/2026 08:28,08/09/2026 14:16,Ctrip,YITONG SHI,Classic,Tariffa Rimborsabile - Pernottamento,13/10/2026,16/10/2026,3,886.39,Palazzo Alfani,Confermate,0,OTA,0
+F451AC94AB,11/08/2026 09:37,08/09/2026 14:11,Ctrip,YANNAN LIU,Classic,Tariffa Non Rimborsabile - Pernottamento,14/10/2026,16/10/2026,2,539.32,Palazzo Alfani,Confermate,0,OTA,0
+410FBE4FB2,31/08/2026 14:55,08/09/2026 09:27,Ctrip,YINGYING GU,Classic,Tariffa Rimborsabile - Pernottamento,27/09/2026,29/09/2026,2,651.07,Palazzo Alfani,Cancellate,0,OTA,0
+F2E568365F,07/09/2026 10:43,,Booking,IBRAHIM YILDIZ,Deluxe,Tariffa Esclusiva,09/09/2026,11/09/2026,2,977.32,Palazzo Alfani,Confermate,28,OTA,0
 AC714D1284,06/09/2026 18:57,,Beddy,David Burtin,Junior suite,Vantaggio Soggiorno Prolungato Con Colazione inclusa,07/11/2026,14/11/2026,7,1348.95,Palazzo Alfani,Confermate,0,Sito web,0
 684A6E43E8,29/04/2026 03:01,05/09/2026 13:39,Booking,VANESSA VILLANUEVA,Classic,Tariffa Non Rimborsabile - Pernottamento,05/09/2026,09/09/2026,4,1773.64,Palazzo Alfani,Confermate,28,OTA,0
 D24F3CD6E7,04/09/2026 23:28,,Ctrip,ZHUOTING ZHANG,Classic,Tariffa Non Rimborsabile - Pernottamento,20/09/2026,22/09/2026,2,540.07,Palazzo Alfani,Confermate,0,OTA,0
@@ -8104,14 +8133,12 @@ C47693E26E,02/09/2026 15:05,03/09/2026 16:25,Beddy,KYLE RACHEL FOX,Junior suite,
 944C2F23D5,03/09/2026 07:26,03/09/2026 12:51,Ctrip,LINGSHU ZHANG,Junior suite,Tariffa Rimborsabile - Pernottamento,05/10/2026,07/10/2026,2,564.7,Palazzo Alfani,Cancellate,0,OTA,0
 7D8E4128E7,03/09/2026 07:26,03/09/2026 12:51,Ctrip,LINGSHU ZHANG,Superior,Tariffa Rimborsabile - Pernottamento,04/10/2026,05/10/2026,1,283.22,Palazzo Alfani,Cancellate,0,OTA,0
 B75F61D29E,03/09/2026 12:03,,Ctrip,JOHN ZHONG,Deluxe,Tariffa Esclusiva,04/09/2026,05/09/2026,1,320.78,Palazzo Alfani,Confermate,14,OTA,0
-5C44AA0F7D,03/09/2026 08:25,,Ctrip,QIAOZHI XU,Junior suite,Tariffa Rimborsabile - Pernottamento,23/09/2026,25/09/2026,2,621.16,Palazzo Alfani,Confermate,0,OTA,0
 B0DD97ED49,03/09/2026 02:07,,Expedia,Ankin Nigoghosian,Deluxe,Tariffa Rimborsabile - Pernottamento,29/10/2026,31/10/2026,2,868.47,Palazzo Alfani,Confermate,0,OTA,0
 3BA87C3FBC,23/08/2026 19:50,02/09/2026 23:24,Booking,VINAYAK BHARTIA,"Superior, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",21/10/2026,23/10/2026,2,1406.48,Palazzo Alfani,Cancellate,0,OTA,0
-E87292C167,01/09/2026 22:06,,Ctrip,ALEKSANDR FILIMONOV,Classic,Tariffa Rimborsabile - Pernottamento,09/09/2026,10/09/2026,1,235.87,Palazzo Alfani,Confermate,0,OTA,0
+E87292C167,01/09/2026 22:06,,Ctrip,ALEKSANDR FILIMONOV,Classic,Tariffa Rimborsabile - Pernottamento,09/09/2026,10/09/2026,1,256.87,Palazzo Alfani,Confermate,21,OTA,0
 4D54B892FF,01/09/2026 14:59,,Booking,wu jia,Superior,Tariffa Rimborsabile - Pernottamento,17/09/2026,19/09/2026,2,807.98,Palazzo Alfani,Confermate,28,OTA,0
 803D8610E4,31/08/2026 19:18,,Ctrip,JING XU,Classic,Tariffa Non Rimborsabile - Pernottamento,23/09/2026,25/09/2026,2,576.62,Palazzo Alfani,Confermate,0,OTA,0
 E347CC46E5,31/08/2026 15:25,,Ctrip,YIREN PENG,Superior,Tariffa Non Rimborsabile - Pernottamento,05/10/2026,07/10/2026,2,570.41,Palazzo Alfani,Confermate,0,OTA,0
-410FBE4FB2,31/08/2026 14:55,,Ctrip,YINGYING GU,Classic,Tariffa Rimborsabile - Pernottamento,27/09/2026,29/09/2026,2,651.07,Palazzo Alfani,Confermate,0,OTA,0
 E766094E62,30/08/2026 15:48,30/08/2026 18:57,Ctrip,THUY LINH NGUYỄN,Classic,Tariffa Esclusiva,01/09/2026,03/09/2026,2,518.86,Palazzo Alfani,Confermate,28,OTA,0
 7607328E2C,22/08/2026 13:24,30/08/2026 18:57,Ctrip,YAN ZHOU,Classic,Tariffa Rimborsabile - Pernottamento,30/08/2026,02/09/2026,3,570.43,Palazzo Alfani,Confermate,42,OTA,0
 4A7BDA0D06,22/08/2026 00:43,30/08/2026 18:57,Expedia,JING ZHANG,Classic,Tariffa Esclusiva,30/08/2026,01/09/2026,2,341.51,Palazzo Alfani,Confermate,42,OTA,0
@@ -8131,10 +8158,8 @@ FF0EB44414,11/08/2026 21:04,29/08/2026 02:06,Expedia,Regina Mariel Saldana Herre
 5C2C71C086,28/08/2026 17:21,28/08/2026 18:20,Ctrip,CHUCHU LI,Superior,Tariffa Non Rimborsabile - Pernottamento,26/10/2026,28/10/2026,2,493.76,Palazzo Alfani,Confermate,0,OTA,0
 E9F748E3F8,27/08/2026 15:57,28/08/2026 11:06,Ctrip,YAO LI,Superior,Tariffa Non Rimborsabile - Pernottamento,12/09/2026,14/09/2026,2,620.16,Palazzo Alfani,Confermate,0,OTA,0
 C259CCCC84,26/08/2026 18:36,28/08/2026 09:24,Ctrip,LANGWEN CAI,Superior,Tariffa Rimborsabile - Pernottamento,25/09/2026,26/09/2026,1,341.07,Palazzo Alfani,Cancellate,0,OTA,0
-5B129C4850,28/08/2026 09:23,,Ctrip,LANGWEN CAI,Junior suite,Tariffa Rimborsabile - Pernottamento,25/09/2026,26/09/2026,1,311.7,Palazzo Alfani,Confermate,0,OTA,0
 EF479FB163,27/08/2026 14:29,27/08/2026 14:34,Booking,Jiang Ruizi,Junior suite,Tariffa Rimborsabile - Pernottamento,25/09/2026,26/09/2026,1,351.55,Palazzo Alfani,Cancellate,0,OTA,0
 8A621018DD,27/08/2026 14:13,,Beddy,Jeremy Pincus,Deluxe,Tariffa Rimborsabile - Pernottamento,20/06/2027,23/06/2027,3,1527,Palazzo Alfani,Confermate,0,Sito web,0
-1A8EA2E8FB,25/08/2026 10:47,27/08/2026 12:41,Expedia,Xuanhao Li,Superior,Flessibile pacchetto,23/09/2026,25/09/2026,2,539.86,Palazzo Alfani,Confermate,0,OTA,0
 ABE7CC06D4,24/07/2026 10:33,27/08/2026 12:40,Ctrip,HUAZHE ZHANG,Superior,Tariffa Rimborsabile - Pernottamento,26/09/2026,27/09/2026,1,272.02,Palazzo Alfani,Confermate,0,OTA,0
 BC294BD4FB,06/07/2026 14:59,27/08/2026 12:40,Expedia,Rebecca Barmore,Classic,Tariffa Rimborsabile - Pernottamento,23/09/2026,27/09/2026,4,1320.42,Palazzo Alfani,Confermate,0,OTA,0
 EF5885DAF1,07/08/2026 16:24,27/08/2026 12:21,Ctrip,YAO LI,Classic,Tariffa Rimborsabile - Pernottamento,12/09/2026,14/09/2026,2,632.05,Palazzo Alfani,Cancellate,0,OTA,0
@@ -8149,26 +8174,21 @@ C2A1324AA7,17/08/2026 02:01,26/08/2026 15:17,Booking,TYLER JONES,Superior,Tariff
 FFD2D46477,19/08/2026 21:11,26/08/2026 15:17,Booking,AWILDA MARQUEZ,Superior,Tariffa Non Rimborsabile - Pernottamento,16/09/2026,18/09/2026,2,599.23,Palazzo Alfani,Confermate,0,OTA,0
 FEDC97C557,16/08/2026 01:53,26/08/2026 15:08,Expedia,Sara Star Lehmer,Superior,Tariffa Non Rimborsabile - Pernottamento,11/09/2026,13/09/2026,2,592.7,Palazzo Alfani,Confermate,0,OTA,0
 CF5D938347,12/08/2026 13:26,26/08/2026 15:08,Ctrip,YAN ZHU,Superior,Tariffa Rimborsabile - Pernottamento,09/09/2026,11/09/2026,2,635.88,Palazzo Alfani,Confermate,28,OTA,0
-F7CDBEBDB2,24/07/2026 23:52,26/08/2026 15:08,Beddy,Jacquelynn Tang,Superior,Tariffa Rimborsabile con Colazione inclusa,09/09/2026,12/09/2026,3,977,Palazzo Alfani,Confermate,0,Sito web,0
+F7CDBEBDB2,24/07/2026 23:52,26/08/2026 15:08,Beddy,Jacquelynn Tang,Superior,Tariffa Rimborsabile con Colazione inclusa,09/09/2026,12/09/2026,3,1019,Palazzo Alfani,Confermate,42,Sito web,0
 058FBC3E2B,22/07/2026 03:19,26/08/2026 15:02,Ctrip,SENTAO XU,Superior,Tariffa Non Rimborsabile - Pernottamento,26/09/2026,27/09/2026,1,272.35,Palazzo Alfani,Confermate,0,OTA,0
-3171239DA1,08/06/2026 10:38,26/08/2026 14:58,Beddy,Nancy Schulman Soiefer,Superior,Tariffa Rimborsabile con Colazione inclusa,25/09/2026,26/09/2026,1,362.9,Palazzo Alfani,Confermate,0,Non Specificato,0
 48BBF61A7A,10/08/2026 17:37,26/08/2026 14:58,Beddy,Angela Blum,Superior,Tariffa Non Rimborsabile - Pernottamento,24/09/2026,25/09/2026,1,355.5,Palazzo Alfani,Confermate,0,Sito web,0
 AE4DB2C19C,07/06/2026 23:57,26/08/2026 13:41,Beddy,L Fernando Arteaga Ros,Superior,Tariffa Esclusiva,12/06/2026,15/06/2026,3,950.35,Palazzo Alfani,Cancellate,49,Sito web,0
 DBC202B078,14/10/2025 01:57,26/08/2026 13:35,Expedia,Joshua Deacon,CAMERA VIRTUALE PER SPOSTAMENTI,Tariffa Rimborsabile - Pernottamento,15/05/2026,19/05/2026,4,500,Palazzo Alfani,Confermate,0,OTA,0
 C25F4D8BB2,14/04/2026 06:54,26/08/2026 09:56,Booking,Michele Turchiarelli,"Superior, Classic","Tariffa Esclusiva, Tariffa Esclusiva",24/04/2026,27/04/2026,3,2171.93,Palazzo Alfani,Confermate,21,OTA,0
-F451AC94AB,11/08/2026 09:37,25/08/2026 22:55,Ctrip,YANNAN LIU,Classic,Tariffa Non Rimborsabile - Pernottamento,14/10/2026,16/10/2026,2,539.32,Palazzo Alfani,Confermate,0,OTA,0
-03A1C676C7,07/08/2026 14:14,25/08/2026 22:53,Booking,Bonnie Miller,Superior,Tariffa Rimborsabile - Pernottamento,15/10/2026,21/10/2026,6,2446.86,Palazzo Alfani,Confermate,0,OTA,0
 E9F1882437,07/08/2026 14:04,25/08/2026 22:52,Booking,Bonnie Miller,Superior,Tariffa Rimborsabile - Pernottamento,15/10/2026,21/10/2026,6,2409.24,Palazzo Alfani,Confermate,0,OTA,0
 12F3B5A393,25/08/2026 20:11,25/08/2026 22:50,Booking,MITCHELL WALIER,Superior,Tariffa Non Rimborsabile - Pernottamento,11/10/2026,14/10/2026,3,925,Palazzo Alfani,Confermate,0,OTA,0
 E3F9AAC0EC,25/08/2026 20:11,25/08/2026 22:50,Booking,MITCHELL WALIER,Superior,Tariffa Non Rimborsabile - Pernottamento,11/10/2026,14/10/2026,3,1056.22,Palazzo Alfani,Confermate,0,OTA,0
 0DE20C0039,24/08/2026 18:02,25/08/2026 22:50,Beddy,POPKO CARPINELLO,"Superior, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",13/10/2026,16/10/2026,3,1822.12,Palazzo Alfani,Confermate,0,Non Specificato,0
 9A209C4E06,25/08/2026 15:48,,Expedia,Fengru Qiao,Junior suite,Flessibile pacchetto,11/10/2026,13/10/2026,2,456.69,Palazzo Alfani,Confermate,0,OTA,0
-67F80AD5E8,25/08/2026 14:47,,Ctrip,QIN YANG,Classic,Tariffa Rimborsabile - Pernottamento,12/10/2026,14/10/2026,2,502.25,Palazzo Alfani,Confermate,0,OTA,0
 77C5DB79A0,21/06/2026 23:21,25/08/2026 14:13,Beddy,Kelly Kaspersion,"Superior, Classic","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",25/08/2026,28/08/2026,3,1629,Palazzo Alfani,Confermate,105,Sito web,0
 0981E82E61,25/08/2026 13:37,,Ctrip,YI REN,Superior,Tariffa Non Rimborsabile - Pernottamento,29/09/2026,30/09/2026,1,255.68,Palazzo Alfani,Confermate,0,OTA,0
 132FDF37CA,12/08/2026 15:04,24/08/2026 12:05,Booking,Muyun Zeng,Classic,Tariffa Non Rimborsabile - Pernottamento,22/08/2026,26/08/2026,4,869.55,Palazzo Alfani,Confermate,56,OTA,0
 E0C8FBA2DC,03/08/2026 04:11,24/08/2026 05:54,Beddy,Victor Ly,Superior,Tariffa Rimborsabile - Pernottamento,29/08/2026,31/08/2026,2,613,Palazzo Alfani,Cancellate,0,Sito web,0
-91229D8E09,22/08/2026 16:22,23/08/2026 19:55,Ctrip,LIN CHEN,Classic,Tariffa Rimborsabile - Pernottamento,09/10/2026,14/10/2026,5,1307.26,Palazzo Alfani,Confermate,0,OTA,0
 F4F440C7CB,20/08/2026 21:57,23/08/2026 19:55,Beddy,Sofie Seidenzahl,Classic,Tariffa Non Rimborsabile - Pernottamento,10/10/2026,12/10/2026,2,611.1,Palazzo Alfani,Confermate,0,Sito web,0
 7E25FA3D23,13/08/2026 11:33,23/08/2026 19:54,Ctrip,MENG ZHAO,Classic,Tariffa Rimborsabile - Pernottamento,06/10/2026,08/10/2026,2,596.72,Palazzo Alfani,Confermate,0,OTA,0
 7051A4D7BA,21/08/2026 04:39,23/08/2026 19:54,Booking,Martin Rodney,Superior,Tariffa Rimborsabile - Pernottamento,06/10/2026,08/10/2026,2,691.3,Palazzo Alfani,Confermate,0,OTA,0
@@ -8191,9 +8211,7 @@ E232351016,17/08/2026 23:13,21/08/2026 10:34,Ctrip,ALEXANDER BILYUGA,Superior,Ta
 CC411F495D,17/08/2026 18:17,21/08/2026 10:31,Expedia,ILLI LACHHAB,Classic,Tariffa Esclusiva,24/08/2026,28/08/2026,4,767.23,Palazzo Alfani,Confermate,140,OTA,0
 65BA60BB85,30/07/2026 20:58,21/08/2026 10:27,Booking,Luca Barozzi,Classic,Tariffa Rimborsabile - Pernottamento,22/08/2026,24/08/2026,2,567.88,Palazzo Alfani,Confermate,42,OTA,0
 6A5CC31E63,11/08/2026 17:42,21/08/2026 10:27,Expedia,RUI SU,Classic,Tariffa Esclusiva,22/08/2026,25/08/2026,3,536.6,Palazzo Alfani,Confermate,63,OTA,0
-DBFDA92B96,21/08/2026 07:11,,Ctrip,WANSHA CAO,Superior,Tariffa Rimborsabile - Pernottamento,20/10/2026,23/10/2026,3,696.84,Palazzo Alfani,Confermate,0,OTA,0
 2DC82AA22A,20/08/2026 22:11,,Ctrip,KYUNGCHAN NAM,Deluxe,Tariffa Non Rimborsabile - Pernottamento,27/01/2027,30/01/2027,3,839.28,Palazzo Alfani,Confermate,0,OTA,0
-D6BE0CA4FD,20/08/2026 09:05,,Ctrip,SIHAN CHEN,Junior suite,Tariffa Rimborsabile - Pernottamento,14/10/2026,16/10/2026,2,478.4,Palazzo Alfani,Confermate,0,OTA,0
 77707902C9,17/08/2026 17:38,20/08/2026 08:47,Booking,JENNIFER SUN YOUNG PARK,Deluxe,Tariffa Esclusiva,20/08/2026,21/08/2026,1,207.3,Palazzo Alfani,Confermate,14,OTA,0
 37E723355A,15/08/2026 16:40,19/08/2026 04:27,Ctrip,YAWEN ZHU,Classic,Tariffa Rimborsabile - Pernottamento,13/10/2026,15/10/2026,2,487.58,Palazzo Alfani,Cancellate,0,OTA,0
 3F6260CE21,18/08/2026 20:24,,Booking,Dr Esmaiel Alsaffar,Classic,Tariffa Rimborsabile - Pernottamento,16/09/2026,19/09/2026,3,1010.81,Palazzo Alfani,Confermate,0,OTA,0
@@ -8216,11 +8234,10 @@ C43890CF00,16/08/2026 08:14,,Ctrip,ZE LI,Superior,Tariffa Non Rimborsabile - Per
 BEC0DF5194,15/08/2026 16:41,,Ctrip,YIXING LIU,Junior suite,Tariffa Rimborsabile - Pernottamento,09/02/2027,11/02/2027,2,351.44,Palazzo Alfani,Confermate,0,OTA,0
 FBBDA9FBC4,03/07/2026 03:08,15/08/2026 16:41,Ctrip,YAWEN ZHU,Junior suite,Tariffa Rimborsabile - Pernottamento,13/10/2026,15/10/2026,2,626.02,Palazzo Alfani,Cancellate,0,OTA,0
 B128E5E670,14/08/2026 17:40,,Booking,Kesary Orly,Classic,Tariffa Rimborsabile - Pernottamento,06/09/2026,08/09/2026,2,752.82,Palazzo Alfani,Confermate,56,OTA,0
-96BF9F7CF8,14/08/2026 08:28,,Ctrip,YITONG SHI,Classic,Tariffa Rimborsabile - Pernottamento,13/10/2026,16/10/2026,3,886.39,Palazzo Alfani,Confermate,0,OTA,0
 0171A89358,13/08/2026 22:49,,Beddy,MARIA MERCEDES CASAL,Classic,Vantaggio Soggiorno Prolungato,10/09/2026,17/09/2026,7,2047.05,Palazzo Alfani,Confermate,98,Non Specificato,0
 73746A6351,10/08/2026 10:28,13/08/2026 20:36,Ctrip,takumi hoshi,Classic,Tariffa Non Rimborsabile - Pernottamento,12/09/2026,16/09/2026,4,1095.71,Palazzo Alfani,Confermate,0,OTA,0
-13D79539EF,15/07/2026 05:45,13/08/2026 20:35,Booking,RAUL CASTILLO,Classic,Tariffa Non Rimborsabile - Pernottamento,09/09/2026,12/09/2026,3,874.93,Palazzo Alfani,Confermate,0,OTA,0
-7376AA5D17,06/05/2026 19:14,13/08/2026 20:35,Beddy,Alan Stratton,"Classic, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",15/09/2026,25/09/2026,7,1767.61,Palazzo Alfani,Confermate,0,Non Specificato,0
+13D79539EF,15/07/2026 05:45,13/08/2026 20:35,Booking,RAUL SERGIO CASTILLO,Classic,Tariffa Non Rimborsabile - Pernottamento,09/09/2026,12/09/2026,3,916.93,Palazzo Alfani,Confermate,42,OTA,0
+7376AA5D17,06/05/2026 19:14,13/08/2026 20:35,Beddy,Alan Stratton,"Classic, Superior","Tariffa Rimborsabile - Pernottamento, Tariffa Rimborsabile - Pernottamento",15/09/2026,25/09/2026,7,1865.61,Palazzo Alfani,Confermate,98,Non Specificato,0
 DAFE905CBB,04/07/2026 10:32,13/08/2026 14:21,Ctrip,Zhaojie Zeng,Classic,Tariffa Rimborsabile - Pernottamento,14/08/2026,17/08/2026,3,680.02,Palazzo Alfani,Confermate,63,OTA,0
 3A55E313FF,19/07/2026 22:19,13/08/2026 14:21,Beddy,Karen Dahmen,Superior,Tariffa Non Rimborsabile - Pernottamento,13/08/2026,16/08/2026,3,733.2,Palazzo Alfani,Confermate,42,Sito web,0
 F2C7D05359,13/08/2026 08:23,,Ctrip,LINGHUI SHAO,Superior,Tariffa Non Rimborsabile - Pernottamento,14/09/2026,16/09/2026,2,525.56,Palazzo Alfani,Confermate,0,OTA,0
@@ -8231,10 +8248,7 @@ CD89FB0EFB,13/08/2026 06:38,,Beddy,Whitney Fain,Deluxe,Tariffa Rimborsabile - Pe
 18B68F2B5A,02/08/2026 17:58,11/08/2026 18:07,Beddy,Xingjie Shen,Superior,Tariffa Esclusiva,09/08/2026,11/08/2026,2,725.35,Palazzo Alfani,Confermate,28,Sito web,0
 A1C9C6550D,18/04/2026 09:04,11/08/2026 17:42,Ctrip,Rui Su,Classic,Tariffa Rimborsabile - Pernottamento,22/08/2026,24/08/2026,2,458.32,Palazzo Alfani,Cancellate,0,OTA,0
 C3F4710532,29/07/2026 07:03,11/08/2026 17:42,Ctrip,RUI SU,Classic,Tariffa Rimborsabile - Pernottamento,24/08/2026,25/08/2026,1,193,Palazzo Alfani,Cancellate,0,OTA,0
-4EC81131F0,11/08/2026 16:24,11/08/2026 16:49,Expedia,shuang ma,Superior,Flessibile pacchetto,23/09/2026,25/09/2026,2,524.58,Palazzo Alfani,Confermate,0,OTA,0
 D8ED1FCD99,10/08/2026 18:25,11/08/2026 16:48,Beddy,Filippo Grippaldi,Deluxe,Tariffa Rimborsabile - Pernottamento,24/09/2026,26/09/2026,2,655.2,Palazzo Alfani,Confermate,0,Non Specificato,0
-958A83BBEA,26/05/2026 16:53,11/08/2026 16:47,Ctrip,YUXUAN LIN,Superior,Tariffa Rimborsabile - Pernottamento,25/09/2026,26/09/2026,1,325.1,Palazzo Alfani,Confermate,0,OTA,0
-2ACE74A01E,09/08/2026 15:25,11/08/2026 16:46,Ctrip,ZHEN LI,Superior,Tariffa Rimborsabile - Pernottamento,23/09/2026,24/09/2026,1,315.16,Palazzo Alfani,Confermate,0,OTA,0
 451839EEEF,16/01/2026 07:54,11/08/2026 16:05,Ctrip,Kok Chuan Tee,Classic,Tariffa Rimborsabile - Pernottamento,02/10/2026,05/10/2026,3,963.33,Palazzo Alfani,Confermate,0,OTA,0
 B7B6E4400D,07/02/2026 13:12,11/08/2026 16:04,Beddy,Tanya DI LORENZO,Classic,Tariffa Rimborsabile con Colazione inclusa,02/10/2026,05/10/2026,3,1128.6,Palazzo Alfani,Confermate,0,Sito web,0
 A065148D5B,11/08/2026 12:58,,Ctrip,YITAO DU,Junior suite,Tariffa Rimborsabile - Pernottamento,18/08/2026,22/08/2026,4,851.19,Palazzo Alfani,Confermate,84,OTA,0
@@ -8272,8 +8286,6 @@ B034151B05,02/08/2026 19:13,,Expedia,LYNNE DO,Deluxe,Flessibile pacchetto,23/06/
 410EB58A0B,02/08/2026 11:41,,Ctrip,ZHOU ZHANG,Classic,Vantaggio Soggiorno Prolungato,14/09/2026,19/09/2026,5,1289.54,Palazzo Alfani,Confermate,0,OTA,0
 EDB64E9555,20/06/2026 05:34,02/08/2026 11:25,Ctrip,JIANG WANG,Superior,Tariffa Rimborsabile - Pernottamento,19/08/2026,20/08/2026,1,208.94,Palazzo Alfani,Cancellate,0,OTA,0
 E50353E38A,04/07/2026 02:54,02/08/2026 02:37,Expedia,amy donabedian,Classic,Tariffa Rimborsabile - Pernottamento,16/10/2026,23/10/2026,7,2905.31,Palazzo Alfani,Confermate,0,OTA,0
-D6C38CCD7E,14/07/2026 08:28,02/08/2026 02:36,Ctrip,YI ZHOU,Superior,Tariffa Rimborsabile - Pernottamento,08/10/2026,10/10/2026,2,652.77,Palazzo Alfani,Confermate,0,OTA,0
-74236D954F,22/07/2026 08:10,02/08/2026 02:35,Ctrip,GUIYI PAN,Superior,Tariffa Rimborsabile - Pernottamento,10/10/2026,13/10/2026,3,1053.87,Palazzo Alfani,Confermate,0,OTA,0
 F2914C1CF9,29/07/2026 18:15,02/08/2026 02:35,Beddy,Laura Postolis,"Superior, Superior","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",08/10/2026,11/10/2026,3,2542.2,Palazzo Alfani,Confermate,0,Sito web,0
 2AEDFAF495,26/07/2026 14:36,02/08/2026 01:01,Expedia,Xingjie Shen,Superior,Tariffa Rimborsabile - Pernottamento,09/08/2026,11/08/2026,2,564.27,Palazzo Alfani,Cancellate,0,OTA,0
 631125B14A,01/08/2026 20:42,,Expedia,Alfredo Oscar Marr,Superior,Tariffa Non Rimborsabile - Pernottamento,28/11/2026,30/11/2026,2,384.96,Palazzo Alfani,Confermate,0,OTA,0
@@ -8285,7 +8297,7 @@ F2914C1CF9,29/07/2026 18:15,02/08/2026 02:35,Beddy,Laura Postolis,"Superior, Sup
 1CAA596DC1,19/07/2026 16:10,31/07/2026 16:12,Ctrip,XIAOHUI LIU,Junior suite,Tariffa Rimborsabile - Pernottamento,10/08/2026,12/08/2026,2,400.67,Palazzo Alfani,Cancellate,0,OTA,0
 ABA9597957,16/06/2026 14:22,31/07/2026 15:16,Ctrip,MIN HU,Deluxe,Tariffa Rimborsabile - Pernottamento,01/08/2026,03/08/2026,2,688.05,Palazzo Alfani,Confermate,56,OTA,0
 844774B90E,27/07/2026 07:47,31/07/2026 15:16,Ctrip,YIHAO ZHAO,Superior,Tariffa Esclusiva,02/08/2026,04/08/2026,2,489.86,Palazzo Alfani,Confermate,42,OTA,0
-BFD26940E4,23/06/2026 03:23,31/07/2026 13:17,Ctrip,JIANWEN CHEN,Junior suite,Vantaggio Soggiorno Prolungato,10/09/2026,15/09/2026,5,1462.66,Palazzo Alfani,Confermate,0,OTA,0
+BFD26940E4,23/06/2026 03:23,31/07/2026 13:17,Ctrip,JIANWEN CHEN,Junior suite,Vantaggio Soggiorno Prolungato,10/09/2026,15/09/2026,5,1567.66,Palazzo Alfani,Confermate,105,OTA,0
 44F8D43C22,13/07/2026 08:36,31/07/2026 13:16,Ctrip,WEI YU,Superior,Tariffa Non Rimborsabile - Pernottamento,13/09/2026,16/09/2026,3,835.94,Palazzo Alfani,Confermate,0,OTA,0
 495C04B91E,15/07/2026 08:07,31/07/2026 13:16,Booking,Jackson Avery,Superior,Tariffa Rimborsabile - Pernottamento,13/09/2026,15/09/2026,2,791.28,Palazzo Alfani,Confermate,0,OTA,0
 A38A06C1F2,29/04/2026 02:52,31/07/2026 13:16,Booking,Randy Davison,Superior,Tariffa Non Rimborsabile - Pernottamento,05/09/2026,09/09/2026,4,1741.36,Palazzo Alfani,Confermate,56,OTA,0
@@ -8359,7 +8371,7 @@ E06EF02B6A,20/07/2026 17:07,20/07/2026 17:09,Ctrip,FANLONG ZENG,Superior,Tariffa
 920E7DA869,20/06/2026 04:50,20/07/2026 11:02,Ctrip,ZHI ZHOU,Superior,Tariffa Rimborsabile - Pernottamento,07/08/2026,09/08/2026,2,509.39,Palazzo Alfani,Confermate,56,OTA,0
 836217BB78,18/06/2026 11:10,20/07/2026 08:41,Ctrip,XIAOYAN SUN,Classic,Tariffa Rimborsabile - Pernottamento,28/07/2026,30/07/2026,2,446.38,Palazzo Alfani,Cancellate,0,OTA,0
 7DCFC1AFA2,20/07/2026 03:03,,Ctrip,XIAOYING ZHENG,Junior suite,Tariffa Rimborsabile - Pernottamento,02/08/2026,04/08/2026,2,442.69,Palazzo Alfani,Confermate,42,OTA,0
-D0DC06D1DC,19/07/2026 14:07,,Expedia,Anthony Boyd,Deluxe,Tariffa Rimborsabile - Pernottamento,15/09/2026,17/09/2026,2,1100.44,Palazzo Alfani,Confermate,0,OTA,0
+D0DC06D1DC,19/07/2026 14:07,,Expedia,Anthony Boyd,Deluxe,Tariffa Rimborsabile - Pernottamento,15/09/2026,17/09/2026,2,1170.44,Palazzo Alfani,Confermate,70,OTA,0
 59E25EA154,26/05/2026 08:57,18/07/2026 12:19,Ctrip,YAN ZHU,Superior,Tariffa Rimborsabile - Pernottamento,13/08/2026,17/08/2026,4,1043.79,Palazzo Alfani,Confermate,112,OTA,0
 850509075F,18/07/2026 04:14,18/07/2026 12:18,Ctrip,ZHICHAO YANG,Superior,Tariffa Rimborsabile - Pernottamento,17/08/2026,19/08/2026,2,428.98,Palazzo Alfani,Confermate,28,OTA,0
 3ECBA351B9,18/02/2026 19:36,18/07/2026 10:50,Expedia,Casey Vaught,Superior,Non rimborsabile pacchetto,21/07/2026,25/07/2026,4,906.78,Palazzo Alfani,Confermate,56,OTA,0
@@ -8861,7 +8873,6 @@ B12B435829,23/03/2026 22:21,,Ctrip,WENDI LIU,Junior suite,Tariffa Esclusiva,03/0
 3DDFE19FA2,16/02/2026 22:44,22/03/2026 19:58,Booking,PARTH KAMLESH DANDIWALA NIRALI MANOJ DAMANIA ISHVI DANDIWALA,Classic,Tariffa Rimborsabile - Pernottamento,28/06/2026,30/06/2026,2,679.53,Palazzo Alfani,Cancellate,0,OTA,0
 33211A8786,28/02/2026 19:28,22/03/2026 18:36,Ctrip,HUAN ZHANG,Classic,Tariffa Non Rimborsabile - Pernottamento,23/03/2026,25/03/2026,2,383.88,Palazzo Alfani,Confermate,42,OTA,0
 D8A9B254D0,22/03/2026 17:38,,Ctrip,JUNQI HAN,Junior suite,Tariffa Rimborsabile - Pernottamento,06/04/2026,07/04/2026,1,235.75,Palazzo Alfani,Confermate,14,OTA,0
-AA3D841744,19/03/2026 03:25,22/03/2026 17:02,Beddy,FRANCIS MANLEY,Classic,Tariffa Rimborsabile - Pernottamento,08/10/2026,12/10/2026,4,1400,Palazzo Alfani,Confermate,0,Sito web,0
 517D866764,10/03/2026 13:27,22/03/2026 16:58,Ctrip,YINGQI MAO,Classic,Tariffa Non Rimborsabile - Pernottamento,03/06/2026,05/06/2026,2,530.84,Palazzo Alfani,Confermate,28,OTA,0
 CBD8483BD2,15/02/2026 20:46,22/03/2026 16:58,Booking,OTO SERGIO SILVA DE ARAUJO JUNIOR,Classic,Tariffa Non Rimborsabile - Pernottamento,05/06/2026,08/06/2026,3,1149.03,Palazzo Alfani,Confermate,63,OTA,0
 9B56513DD5,22/03/2026 07:27,22/03/2026 15:03,Booking,Natasha Bezuidenhout,Superior,Tariffa Rimborsabile - Pernottamento,04/04/2026,08/04/2026,4,1523.88,Palazzo Alfani,Cancellate,0,OTA,0
@@ -9212,6 +9223,7 @@ CD943C5C97,27/07/2025 11:32,,Booking,HANJIE WANG,Deluxe,Tariffa Rimborsabile - P
 2312,30/07/2026 19:06:43,,Ctrip,Ko Man Chi Daphne,Blu,Blu - Non Rimborsabile OTA,24/11/2026,26/11/2026,2,124.05,Florence David's Apartament,Confermate,24,Ctrip,0
 2356,31/08/2026 17:13:01,,Ctrip,Ko Daphne,Blu,Blu - Non Rimborsabile OTA,23/11/2026,24/11/2026,1,63.33,Florence David's Apartament,Confermate,12,Ctrip,0
 2299,25/07/2026 18:31:56,,Airbnb,Sara Rosa Isabel Avila Castro,Blu,Blu - Standard,17/11/2026,19/11/2026,2,136.04,Florence David's Apartament,Confermate,0,Airbnb,0
+2368,08/09/2026 14:20:18,,Airbnb,Mustafa Kalkan,Senape,Senape - Standard,01/11/2026,02/11/2026,1,90.67,Florence David's Apartament,Confermate,0,Airbnb,0
 2362,04/09/2026 18:29:09,,Booking,tubio martinez maria del mar,Senape,Senape - Standard,29/10/2026,31/10/2026,2,295.57,Florence David's Apartament,Confermate,36,Booking,0
 2336,15/08/2026 19:33:25,,Booking,Vázquez Alejandra,Verde,Verde - Standard,29/10/2026,31/10/2026,2,260.96,Florence David's Apartament,Confermate,24,Booking,0
 2264,03/07/2026 06:55:00,,Expedia,Ronna Macarilay,Blu,Blu - Standard,29/10/2026,01/11/2026,3,320.8,Florence David's Apartament,Confermate,36,Expedia,0
@@ -9222,6 +9234,7 @@ CD943C5C97,27/07/2025 11:32,,Booking,HANJIE WANG,Deluxe,Tariffa Rimborsabile - P
 2347,21/08/2026 19:20:40,,Booking,Graham Conor,Senape,Senape - Non Rimborsabile OTA,24/10/2026,27/10/2026,3,418.21,Florence David's Apartament,Confermate,18,Booking,0
 2363,06/09/2026 19:05:13,,Booking,Silva Camila,Blu,Blu - Non Rimborsabile OTA,22/10/2026,24/10/2026,2,262.47,Florence David's Apartament,Confermate,24,Booking,0
 2305,27/07/2026 11:54:06,04/09/2026,Booking,Hazell Sofie,Blu,Blu - Standard,22/10/2026,26/10/2026,4,539.08,Florence David's Apartament,Cancellate,0,Booking,0
+2367,08/09/2026 10:20:47,,Booking,Yuchen Ye,Blu,Blu - Non Rimborsabile OTA,20/10/2026,22/10/2026,2,254.43,Florence David's Apartament,Confermate,24,Booking,0
 2307,29/07/2026 03:58:00,,Expedia,Sydney Mariah Treves,Verde,Verde - Standard,20/10/2026,26/10/2026,6,718.78,Florence David's Apartament,Confermate,72,Expedia,0
 2360,02/09/2026 22:48:11,,Booking,Wright Charley,Blu,Blu - Non Rimborsabile OTA,17/10/2026,20/10/2026,3,422.33,Florence David's Apartament,Confermate,36,Booking,0
 2344,17/08/2026 22:55:00,,Expedia,Tonya Womack,Blu,Blu - Non Rimborsabile OTA,14/10/2026,17/10/2026,3,323.03,Florence David's Apartament,Confermate,36,Expedia,0
@@ -9233,8 +9246,9 @@ CD943C5C97,27/07/2025 11:32,,Booking,HANJIE WANG,Deluxe,Tariffa Rimborsabile - P
 2354,30/08/2026 15:03:00,,Expedia,David Schnathorst,Senape,Senape - Non Rimborsabile OTA,05/10/2026,08/10/2026,3,434.37,Florence David's Apartament,Confermate,36,Expedia,0
 2361,04/09/2026 13:45:00,,Hotels.com,Nina Langton,Blu,Blu - Non Rimborsabile OTA,04/10/2026,07/10/2026,3,434.35,Florence David's Apartament,Confermate,36,Hotels.com,0
 2335,15/08/2026 10:31:58,,Booking,godfrey diana,Verde,Verde - Non Rimborsabile OTA,04/10/2026,07/10/2026,3,457.35,Florence David's Apartament,Confermate,36,Booking,0
+2369,09/09/2026 19:11:22,,Booking,Lladoc Maria Judith,Verde,Verde - Standard,03/10/2026,04/10/2026,1,198.95,Florence David's Apartament,Confermate,12,Booking,0
 2346,20/08/2026 19:27:34,,Booking,Jiang Yuwei,Senape,Senape - Standard,03/10/2026,05/10/2026,2,436.06,Florence David's Apartament,Confermate,24,Booking,0
-2311,30/07/2026 12:01:38,,Ctrip,XIA QIMAN,Blu,Blu - Standard,01/10/2026,04/10/2026,3,570.62,Florence David's Apartament,Confermate,36,Ctrip,0
+2311,30/07/2026 12:01:38,10/09/2026,Ctrip,XIA QIMAN,Blu,Blu - Standard,01/10/2026,04/10/2026,3,570.62,Florence David's Apartament,Cancellate,0,Ctrip,0
 2353,28/08/2026 14:39:59,,Airbnb,Jennifer Chiles,Blu,Blu - Standard,30/09/2026,01/10/2026,1,146.02,Florence David's Apartament,Confermate,0,Airbnb,0
 2329,09/08/2026 04:11:50,,Booking,Sari Letícia Maffi,Senape,Senape - Non Rimborsabile OTA,30/09/2026,03/10/2026,3,555.73,Florence David's Apartament,Confermate,36,Booking,0
 2343,17/08/2026 15:44:00,,Expedia,Pratik Satrawala,Blu,Blu - Non Rimborsabile OTA,28/09/2026,30/09/2026,2,302.12,Florence David's Apartament,Confermate,24,Expedia,0
@@ -9256,14 +9270,17 @@ CD943C5C97,27/07/2025 11:32,,Booking,HANJIE WANG,Deluxe,Tariffa Rimborsabile - P
 2269,07/07/2026 20:21:00,,Expedia,Elizabeth Gardner,Verde,Verde - Standard,19/09/2026,21/09/2026,2,377.53,Florence David's Apartament,Confermate,24,Expedia,0
 2297,24/07/2026 02:54:00,,Expedia,Jorge Garcia,Verde,Verde - Non Rimborsabile OTA,18/09/2026,19/09/2026,1,136.41,Florence David's Apartament,Confermate,12,Expedia,0
 2296,23/07/2026 23:16:00,,Expedia,Kurtis Palmer,Senape,Senape - Standard,18/09/2026,21/09/2026,3,487.26,Florence David's Apartament,Confermate,36,Expedia,0
+2370,10/09/2026 03:08:09,,Booking,Groot Erwin,Senape,Senape - Non Rimborsabile OTA,17/09/2026,18/09/2026,1,144.47,Florence David's Apartament,Confermate,12,Booking,0
 2270,08/07/2026 21:46:00,,Expedia,Chloe Haller-Kaplan,Verde,Verde - Standard,17/09/2026,18/09/2026,1,187.84,Florence David's Apartament,Confermate,12,Expedia,0
 2289,18/07/2026 03:32:00,,Expedia,Julio Valdiviezo Wong,Blu,Blu - Standard,16/09/2026,19/09/2026,3,421.23,Florence David's Apartament,Confermate,36,Expedia,0
 2332,09/08/2026 22:44:00,,Expedia,Jovito Jr Pamarang,Senape,Senape - Non Rimborsabile OTA,14/09/2026,17/09/2026,3,431.83,Florence David's Apartament,Confermate,36,Expedia,0
 2319,02/08/2026 17:20:40,,Booking,duval AURORE,Verde,Verde - Non Rimborsabile OTA,13/09/2026,17/09/2026,4,669.43,Florence David's Apartament,Confermate,48,Booking,0
 2316,02/08/2026 06:52:02,,Ctrip,NAVARRO CARLOS NELSON II,Blu,Blu - Non Rimborsabile OTA,13/09/2026,16/09/2026,3,395.58,Florence David's Apartament,Confermate,36,Ctrip,0
+2366,08/09/2026 08:06:13,,Airbnb,Franco Suarez,Blu,Blu - Standard,12/09/2026,13/09/2026,1,138.41,Florence David's Apartament,Confermate,0,Airbnb,0
 2303,27/07/2026 00:52:00,,Expedia,Thanh Huy Ngo,Senape,Senape - Non Rimborsabile OTA,11/09/2026,13/09/2026,2,354.09,Florence David's Apartament,Confermate,36,Expedia,0
+2371,10/09/2026 03:50:36,,Booking,Pederiva Audrey,Senape,Senape - Standard,10/09/2026,11/09/2026,1,141.3,Florence David's Apartament,Confermate,6,Booking,0
 2357,31/08/2026 19:44:09,,Booking,Sabri Sami,Verde,Verde - Non Rimborsabile OTA,10/09/2026,12/09/2026,2,353.02,Florence David's Apartament,Confermate,24,Booking,0
-2355,30/08/2026 18:42:38,,Ctrip,nakazawa taira,Verde,Verde - Non Rimborsabile OTA,09/09/2026,10/09/2026,1,144.01,Florence David's Apartament,Confermate,12,Ctrip,0
+2355,30/08/2026 18:42:38,,Ctrip,nakazawa taira,Verde,Verde - Non Rimborsabile OTA,09/09/2026,10/09/2026,1,144.01,Florence David's Apartament,Confermate,6,Ctrip,0
 2327,07/08/2026 21:59:36,,Ctrip,TSYBINA SVITLANA,Blu,Blu - Non Rimborsabile OTA,09/09/2026,12/09/2026,3,390.38,Florence David's Apartament,Confermate,36,Ctrip,0
 2314,01/08/2026 17:48:00,,Expedia,Carlos espinoza,Senape,Senape - Non Rimborsabile OTA,07/09/2026,10/09/2026,3,410.07,Florence David's Apartament,Confermate,36,Expedia,0
 2304,27/07/2026 04:59:00,,Expedia,Diana Facciotti,Verde,Verde - Standard,07/09/2026,09/09/2026,2,289.19,Florence David's Apartament,Confermate,24,Expedia,0
@@ -33202,180 +33219,178 @@ const EVENTS_CSV = `Date,Event
    Letto al boot via loadAirdna(AIRDNA_CSV). Sostituire interamente a ogni nuovo export. */
 const AIRDNA_CSV = `
 "Date","Booked Listings","Daily Rate"
-"2026-09-08","4852","206"
-"2026-09-09","4958","208"
-"2026-09-10","5114","212"
-"2026-09-11","5149","216"
-"2026-09-12","5164","219"
-"2026-09-13","4681","212"
-"2026-09-14","4638","211"
-"2026-09-15","4715","210"
-"2026-09-16","4853","212"
-"2026-09-17","5048","213"
-"2026-09-18","5233","220"
-"2026-09-19","5320","224"
-"2026-09-20","4845","217"
-"2026-09-21","4862","215"
-"2026-09-22","4851","215"
-"2026-09-23","4918","213"
-"2026-09-24","4983","218"
-"2026-09-25","5080","223"
-"2026-09-26","5197","223"
-"2026-09-27","4826","218"
-"2026-09-28","4889","217"
-"2026-09-29","4959","216"
-"2026-09-30","5018","220"
-"2026-10-01","5244","220"
-"2026-10-02","5349","226"
-"2026-10-03","5258","224"
-"2026-10-04","4541","215"
-"2026-10-05","4211","212"
-"2026-10-06","4169","210"
-"2026-10-07","4117","213"
-"2026-10-08","4120","213"
-"2026-10-09","4048","215"
-"2026-10-10","4037","216"
-"2026-10-11","3648","207"
-"2026-10-12","3498","204"
-"2026-10-13","3501","203"
-"2026-10-14","3430","202"
-"2026-10-15","3503","204"
-"2026-10-16","3452","205"
-"2026-10-17","3366","206"
-"2026-10-18","2978","199"
-"2026-10-19","2862","196"
-"2026-10-20","2828","198"
-"2026-10-21","2712","195"
-"2026-10-22","2647","194"
-"2026-10-23","2560","199"
-"2026-10-24","2523","200"
-"2026-10-25","2244","193"
-"2026-10-26","2167","185"
-"2026-10-27","2044","184"
-"2026-10-28","1898","182"
-"2026-10-29","1841","184"
-"2026-10-30","1729","185"
-"2026-10-31","1567","184"
-"2026-11-01","1353","168"
-"2026-11-02","1234","164"
-"2026-11-03","1184","154"
-"2026-11-04","1154","151"
-"2026-11-05","1170","150"
-"2026-11-06","1208","154"
-"2026-11-07","1200","157"
-"2026-11-08","1044","147"
-"2026-11-09","990","145"
-"2026-11-10","947","143"
-"2026-11-11","924","143"
-"2026-11-12","918","141"
-"2026-11-13","954","146"
-"2026-11-14","931","147"
-"2026-11-15","787","142"
-"2026-11-16","734","137"
-"2026-11-17","708","135"
-"2026-11-18","713","140"
-"2026-11-19","749","143"
-"2026-11-20","831","152"
-"2026-11-21","894","164"
-"2026-11-22","870","161"
-"2026-11-23","856","166"
-"2026-11-24","843","167"
-"2026-11-25","825","166"
-"2026-11-26","952","166"
-"2026-11-27","1447","179"
-"2026-11-28","1796","181"
-"2026-11-29","1440","174"
-"2026-11-30","736","157"
-"2026-12-01","541","140"
-"2026-12-02","509","141"
-"2026-12-03","500","139"
-"2026-12-04","560","147"
-"2026-12-05","659","157"
-"2026-12-06","633","154"
-"2026-12-07","564","149"
+"2026-09-10","5240","212"
+"2026-09-11","5250","215"
+"2026-09-12","5263","218"
+"2026-09-13","4753","212"
+"2026-09-14","4708","209"
+"2026-09-15","4774","208"
+"2026-09-16","4910","210"
+"2026-09-17","5108","213"
+"2026-09-18","5307","220"
+"2026-09-19","5406","224"
+"2026-09-20","4913","218"
+"2026-09-21","4933","214"
+"2026-09-22","4921","214"
+"2026-09-23","4994","215"
+"2026-09-24","5061","220"
+"2026-09-25","5178","224"
+"2026-09-26","5305","224"
+"2026-09-27","4906","217"
+"2026-09-28","4959","218"
+"2026-09-29","5038","215"
+"2026-09-30","5099","220"
+"2026-10-01","5335","222"
+"2026-10-02","5453","227"
+"2026-10-03","5389","225"
+"2026-10-04","4660","216"
+"2026-10-05","4323","214"
+"2026-10-06","4302","210"
+"2026-10-07","4239","213"
+"2026-10-08","4251","213"
+"2026-10-09","4172","218"
+"2026-10-10","4154","216"
+"2026-10-11","3760","207"
+"2026-10-12","3598","204"
+"2026-10-13","3598","202"
+"2026-10-14","3528","202"
+"2026-10-15","3616","203"
+"2026-10-16","3571","205"
+"2026-10-17","3484","209"
+"2026-10-18","3074","198"
+"2026-10-19","2957","198"
+"2026-10-20","2921","198"
+"2026-10-21","2818","197"
+"2026-10-22","2744","195"
+"2026-10-23","2650","199"
+"2026-10-24","2640","201"
+"2026-10-25","2347","194"
+"2026-10-26","2259","187"
+"2026-10-27","2122","183"
+"2026-10-28","1983","182"
+"2026-10-29","1905","184"
+"2026-10-30","1795","185"
+"2026-10-31","1638","184"
+"2026-11-01","1397","168"
+"2026-11-02","1261","165"
+"2026-11-03","1212","154"
+"2026-11-04","1178","151"
+"2026-11-05","1197","152"
+"2026-11-06","1243","157"
+"2026-11-07","1244","158"
+"2026-11-08","1083","150"
+"2026-11-09","1019","148"
+"2026-11-10","975","144"
+"2026-11-11","959","143"
+"2026-11-12","955","142"
+"2026-11-13","1001","148"
+"2026-11-14","970","149"
+"2026-11-15","807","143"
+"2026-11-16","763","139"
+"2026-11-17","736","136"
+"2026-11-18","741","141"
+"2026-11-19","779","144"
+"2026-11-20","858","153"
+"2026-11-21","932","166"
+"2026-11-22","909","166"
+"2026-11-23","892","169"
+"2026-11-24","888","169"
+"2026-11-25","863","168"
+"2026-11-26","983","169"
+"2026-11-27","1488","179"
+"2026-11-28","1839","180"
+"2026-11-29","1481","174"
+"2026-11-30","749","157"
+"2026-12-01","544","140"
+"2026-12-02","516","141"
+"2026-12-03","511","141"
+"2026-12-04","579","147"
+"2026-12-05","688","157"
+"2026-12-06","651","153"
+"2026-12-07","573","148"
 "2026-12-08","433","141"
-"2026-12-09","403","139"
-"2026-12-10","391","140"
-"2026-12-11","439","148"
-"2026-12-12","436","149"
-"2026-12-13","389","149"
-"2026-12-14","389","142"
-"2026-12-15","374","137"
-"2026-12-16","372","139"
-"2026-12-17","382","151"
-"2026-12-18","405","160"
-"2026-12-19","449","179"
-"2026-12-20","462","175"
-"2026-12-21","494","178"
-"2026-12-22","539","177"
-"2026-12-23","607","177"
-"2026-12-24","714","177"
-"2026-12-25","726","182"
-"2026-12-26","834","179"
-"2026-12-27","853","184"
-"2026-12-28","861","179"
-"2026-12-29","865","178"
-"2026-12-30","918","174"
-"2026-12-31","965","177"
-"2027-01-01","886","181"
-"2027-01-02","712","179"
-"2027-01-03","533","168"
-"2027-01-04","449","160"
-"2027-01-05","405","159"
-"2027-01-06","369","160"
-"2027-01-07","349","153"
-"2027-01-08","347","159"
-"2027-01-09","322","157"
-"2027-01-10","274","150"
-"2027-01-11","354","160"
-"2027-01-12","364","159"
-"2027-01-13","369","164"
-"2027-01-14","332","159"
-"2027-01-15","278","157"
-"2027-01-16","265","153"
-"2027-01-17","255","154"
-"2027-01-18","243","147"
-"2027-01-19","260","158"
-"2027-01-20","254","152"
-"2027-01-21","255","155"
-"2027-01-22","248","153"
-"2027-01-23","257","154"
-"2027-01-24","230","149"
-"2027-01-25","228","146"
-"2027-01-26","228","150"
+"2026-12-09","405","139"
+"2026-12-10","398","140"
+"2026-12-11","448","148"
+"2026-12-12","445","151"
+"2026-12-13","397","151"
+"2026-12-14","395","143"
+"2026-12-15","377","139"
+"2026-12-16","369","140"
+"2026-12-17","383","150"
+"2026-12-18","410","162"
+"2026-12-19","457","176"
+"2026-12-20","466","173"
+"2026-12-21","505","177"
+"2026-12-22","554","177"
+"2026-12-23","632","177"
+"2026-12-24","745","177"
+"2026-12-25","755","182"
+"2026-12-26","860","181"
+"2026-12-27","878","185"
+"2026-12-28","891","181"
+"2026-12-29","889","178"
+"2026-12-30","950","175"
+"2026-12-31","998","176"
+"2027-01-01","912","180"
+"2027-01-02","735","180"
+"2027-01-03","552","170"
+"2027-01-04","465","162"
+"2027-01-05","416","159"
+"2027-01-06","374","160"
+"2027-01-07","354","153"
+"2027-01-08","348","157"
+"2027-01-09","330","157"
+"2027-01-10","286","150"
+"2027-01-11","370","160"
+"2027-01-12","387","164"
+"2027-01-13","382","164"
+"2027-01-14","335","160"
+"2027-01-15","279","157"
+"2027-01-16","264","151"
+"2027-01-17","256","153"
+"2027-01-18","248","145"
+"2027-01-19","266","158"
+"2027-01-20","257","148"
+"2027-01-21","259","155"
+"2027-01-22","252","153"
+"2027-01-23","258","153"
+"2027-01-24","235","149"
+"2027-01-25","232","145"
+"2027-01-26","230","149"
 "2027-01-27","226","150"
-"2027-01-28","229","157"
-"2027-01-29","215","155"
-"2027-01-30","220","154"
-"2027-01-31","205","145"
-"2027-02-01","202","136"
-"2027-02-02","201","137"
-"2027-02-03","194","132"
-"2027-02-04","205","143"
-"2027-02-05","247","144"
-"2027-02-06","277","148"
-"2027-02-07","257","142"
+"2027-01-28","226","155"
+"2027-01-29","216","155"
+"2027-01-30","219","154"
+"2027-01-31","207","148"
+"2027-02-01","203","137"
+"2027-02-02","202","138"
+"2027-02-03","197","132"
+"2027-02-04","211","144"
+"2027-02-05","257","144"
+"2027-02-06","285","150"
+"2027-02-07","265","146"
 "2027-02-08","242","140"
-"2027-02-09","228","138"
-"2027-02-10","209","141"
-"2027-02-11","222","141"
-"2027-02-12","240","145"
-"2027-02-13","235","154"
-"2027-02-14","224","149"
-"2027-02-15","203","149"
-"2027-02-16","208","144"
-"2027-02-17","197","141"
-"2027-02-18","193","136"
-"2027-02-19","198","139"
-"2027-02-20","205","145"
-"2027-02-21","186","137"
-"2027-02-22","176","136"
-"2027-02-23","164","131"
-"2027-02-24","152","136"
-"2027-02-25","160","145"
-"2027-02-26","162","155"
-"2027-02-27","172","158"
-"2027-02-28","152","145"
+"2027-02-09","232","138"
+"2027-02-10","213","141"
+"2027-02-11","222","138"
+"2027-02-12","242","144"
+"2027-02-13","241","154"
+"2027-02-14","232","148"
+"2027-02-15","208","147"
+"2027-02-16","208","141"
+"2027-02-17","202","138"
+"2027-02-18","199","136"
+"2027-02-19","203","141"
+"2027-02-20","209","145"
+"2027-02-21","187","137"
+"2027-02-22","177","131"
+"2027-02-23","165","128"
+"2027-02-24","156","133"
+"2027-02-25","162","143"
+"2027-02-26","168","157"
+"2027-02-27","178","159"
+"2027-02-28","155","146"
 `;
 const BEDDY_DATA = {
  "asOf": "2026-05-12",
