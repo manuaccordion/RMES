@@ -1785,6 +1785,17 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-body" id="cancel-bw-chart"></div>
     </div>
 
+    <!-- ============ ANNI CHIUSI (2023 · 2024) ============ -->
+    <div class="panel" style="background:none;border:none;padding:0;margin-top:16px">
+      <div class="panel-head" style="padding-left:0">
+        <div>
+          <h3 id="ov-closed-title">Closed years</h3>
+          <div class="panel-sub">Final OCC, ADR and Revenue of the years already closed — only for properties that were operating</div>
+        </div>
+      </div>
+    </div>
+    <div id="ov-closed-years"></div>
+
     <!-- Month filter: Source/Channel tables (year/month) -->
     <div class="panel" style="background:rgba(195,131,59,.04);border:1px solid rgba(195,131,59,.22);margin-top:14px">
       <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:12px 18px">
@@ -2595,6 +2606,10 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Revenue by month · ADR &amp; OCC trend</h4>
         <p style="margin:0 0 6px 0"><b>Revenue by month</b> compares two series only: <b>Current OTB</b> and <b>STLY</b>, so the pace reads cleanly. Final LY is still in the table above, where you can line it up against the rest.</p>
         <p style="margin:0 0 6px 0"><b>ADR Trend</b> and <b>OCC Trend by lead time</b> plot OTB, Forecast and STLY over the 60 days before check-in. The curves carry <b>no printed values</b>: hover anywhere on the chart and a vertical guide with a tooltip gives you the three exact numbers for that lead time. Both have their own check-in months filter.</p>
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">Closed years (2023 · 2024)</h4>
+        <p style="margin:0 0 6px 0">At the bottom of the tab, one card per year already closed, with the three figures that matter: <b>OCC</b>, <b>ADR</b> and <b>Revenue</b>, gross of OTA commission like everywhere else in this tab. On an aggregate selection each card also breaks the year down property by property.</p>
+        <p style="margin:0 0 6px 0"><b>Occupancy is computed only on the months a property was actually operating</b>, not on the calendar year. The properties did not all open at the same time: Palazzo Alfani has a full 2023, Condotta 16 starts in May 2024, Firenze Suite in April 2024. Spreading their room nights over twelve months would be misleading &mdash; Condotta 2024 would read 41% instead of the real <b>61.7%</b> over May–December. The card shows the opening month next to each property, and <i>full year</i> when there is nothing to qualify.</p>
+        <p style="margin:0 0 10px 0">Properties with fewer than <b>30 room nights</b> in a year are left out entirely: Enis Guesthouse, Nazionale 35 and Porte Nuove have only a handful of December 2024 nights, and no meaningful occupancy can be computed from those.</p>
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">Booking window charts (bottom of the tab)</h4>
         <p style="margin:0 0 6px 0">Two charts, both on a rolling window of the <b>12 closed months</b> ending with the last completed month, compared with the same 12 months a year earlier:</p>
         <ul style="margin:6px 0 6px 18px">

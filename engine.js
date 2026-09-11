@@ -17561,6 +17561,129 @@ function _ovNetTip(net, rn){
   net = net || 0; var adr = rn>0 ? net/rn : 0;
   return 'Before gross-up (net of OTA commission): ADR ' + (adr>0?fmtEUR(adr):'—') + ' · Revenue ' + fmtEUR(net);
 }
+/* ===========================================================================
+   ANNI CHIUSI (2023 · 2024) — KPI storici in fondo a Overview
+   ---------------------------------------------------------------------------
+   Le strutture non hanno tutte la stessa anzianita': Alfani ha il 2023 intero,
+   Condotta parte da maggio 2024, Firenze da aprile 2024, mentre Enis, Nazionale
+   e Porte Nuove nel 2024 hanno solo pochissime notti di dicembre (apertura).
+   Per questo la capacita' NON si calcola sull'anno solare intero ma solo sui
+   MESI IN CUI LA STRUTTURA ERA OPERATIVA (dal primo mese con vendite fino a
+   dicembre): altrimenti Condotta 2024 risulterebbe al 41% invece del ~63% reale.
+   Le strutture sotto la soglia minima di notti vengono escluse: con 3 notti non
+   si calcola un'occupazione.
+   Revenue e ADR sono al LORDO della commissione OTA, come nel resto della tab.
+   =========================================================================== */
+const CLOSED_YEARS = [2023, 2024];
+const CLOSED_YEAR_MIN_RN = 30;      // sotto questa soglia la struttura non fa testo
+function aggClosedYear(sel, year){
+  const ids = (typeof structIdsFor === 'function') ? structIdsFor(sel) : [sel];
+  const rows = [];
+  let tRn = 0, tRev = 0, tCap = 0;
+  for (const id of ids){
+    const cfg = CFG.structures[id];
+    if (!cfg) continue;
+    const months = new Array(13).fill(null).map(()=>({rn:0, rev:0}));
+    const useIdx = !!(typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[id]);
+    const list = useIdx ? _BOOKINGS_BY_STRUCT[id] : BOOKINGS;
+    for (let i=0; i<list.length; i++){
+      const b = list[i];
+      if (b.cancelled || !b.stayYmds) continue;
+      if (!useIdx && b.struct !== cfg.key) continue;
+      for (let j=0; j<b.stayYmds.length; j++){
+        const k = b.stayYmds[j];
+        if (Math.floor(k/10000) !== year) continue;
+        const m = Math.floor(k/100) % 100;
+        months[m].rn++; months[m].rev += b.revPerNight;   // gross of OTA commission
+      }
+    }
+    let rn = 0, rev = 0, firstM = 0, lastM = 0;
+    for (let m=1; m<=12; m++){
+      rn += months[m].rn; rev += months[m].rev;
+      if (months[m].rn > 0){ if (!firstM) firstM = m; lastM = m; }
+    }
+    if (rn < CLOSED_YEAR_MIN_RN || !firstM) continue;      // struttura non operativa quell'anno
+    const rooms = cfg.roomsTotal || 0;
+    let cap = 0;
+    for (let m=firstM; m<=12; m++) cap += rooms * daysInMonth(year, m);
+    rows.push({
+      id, label: cfg.label, color: cfg.color, rooms,
+      rn, rev, cap,
+      occ: cap>0 ? rn/cap : 0,
+      adr: rn>0 ? rev/rn : 0,
+      firstM, lastM,
+      partial: firstM > 1,
+    });
+    tRn += rn; tRev += rev; tCap += cap;
+  }
+  return {
+    year, rows,
+    rn: tRn, rev: tRev, cap: tCap,
+    occ: tCap>0 ? tRn/tCap : 0,
+    adr: tRn>0 ? tRev/tRn : 0,
+    hasData: rows.length > 0,
+  };
+}
+function renderClosedYears(sel){
+  const host = document.getElementById('ov-closed-years');
+  if (!host) return;
+  const data = CLOSED_YEARS.map(y => aggClosedYear(sel, y)).filter(d => d.hasData);
+  if (!data.length){
+    host.innerHTML = '<div class="panel"><div class="panel-body" style="color:var(--ink-3);font-size:12.5px;font-style:italic">No closed-year history for this selection.</div></div>';
+    return;
+  }
+  const MON = CFG.monthsIT;
+  const card = (d) => {
+    const partialNote = d.rows.filter(r=>r.partial);
+    const subNote = partialNote.length
+      ? ' · ' + partialNote.map(r=>r.label.split(' ')[0] + ' from ' + MON[r.firstM-1]).join(', ')
+      : '';
+    const tip = `Year ${d.year} · ${fmtNum(d.rn)} room nights over ${fmtNum(d.cap)} available\n`
+              + `Occupancy is computed only on the months each property was actually operating.\n`
+              + `Revenue and ADR are gross of OTA commission.`;
+    const perProp = d.rows.map(r => `
+      <tr>
+        <td style="padding:3px 8px 3px 0;white-space:nowrap"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${r.color};margin-right:6px"></span>${escapeHtml(r.label)}</td>
+        <td class="cell-mono" style="padding:3px 8px;text-align:right">${fmtPct(r.occ,1)}</td>
+        <td class="cell-mono" style="padding:3px 8px;text-align:right">${fmtEUR(r.adr)}</td>
+        <td class="cell-mono" style="padding:3px 0 3px 8px;text-align:right;font-weight:600">${fmtEUR(r.rev)}</td>
+        <td class="cell-mono" style="padding:3px 0 3px 10px;text-align:right;color:var(--ink-3);font-size:10.5px;white-space:nowrap">${r.partial ? MON[r.firstM-1]+'–'+MON[11] : 'full year'}</td>
+      </tr>`).join('');
+    return `<div class="panel" style="flex:1;min-width:300px">
+      <div class="panel-head"><div>
+        <h3>${d.year}${_ovGrossBadgeSpan ? '' : ''}</h3>
+        <div class="panel-sub" title="${escapeHtml(tip)}" style="cursor:help">${d.rows.length} propert${d.rows.length>1?'ies':'y'} · ${fmtNum(d.rn)} RN${subNote}</div>
+      </div></div>
+      <div class="panel-body">
+        <div class="big-hero" style="grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 12px 0">
+          <div class="big-hero-item" style="padding:12px 14px">
+            <div class="big-hero-txt"><div class="big-hero-label">OCC</div>
+            <div class="big-hero-val" style="font-size:21px">${fmtPct(d.occ,1)}</div></div>
+          </div>
+          <div class="big-hero-item" style="padding:12px 14px">
+            <div class="big-hero-txt"><div class="big-hero-label">ADR</div>
+            <div class="big-hero-val" style="font-size:21px">${fmtEUR(d.adr)}</div></div>
+          </div>
+          <div class="big-hero-item" style="padding:12px 14px">
+            <div class="big-hero-txt"><div class="big-hero-label">Revenue</div>
+            <div class="big-hero-val" style="font-size:${String(fmtEUR(d.rev)).length>=9?'17':'21'}px">${fmtEUR(d.rev)}</div></div>
+          </div>
+        </div>
+        ${d.rows.length > 1 ? `<table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="border-bottom:1px solid var(--line)">
+            <th style="text-align:left;padding:3px 8px 5px 0;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3)">Property</th>
+            <th style="text-align:right;padding:3px 8px 5px;font-size:10px;text-transform:uppercase;color:var(--ink-3)">OCC</th>
+            <th style="text-align:right;padding:3px 8px 5px;font-size:10px;text-transform:uppercase;color:var(--ink-3)">ADR</th>
+            <th style="text-align:right;padding:3px 0 5px 8px;font-size:10px;text-transform:uppercase;color:var(--ink-3)">Revenue</th>
+            <th style="text-align:right;padding:3px 0 5px 10px;font-size:10px;text-transform:uppercase;color:var(--ink-3)">Open</th>
+          </tr></thead>
+          <tbody>${perProp}</tbody>
+        </table>` : ''}
+      </div>
+    </div>`;
+  };
+  host.innerHTML = `<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">${data.map(card).join('')}</div>`;
+}
 function renderForecast(sel){
   const A = aggForecast(sel);
   const M = A.monthly;
@@ -17915,7 +18038,8 @@ const _GROSS_BADGE_TARGETS = [
   '#big-smdelta-title',
   '#big-smchannel-title',
   '#big-pie-title',
-  '#big-pace-title'
+  '#big-pace-title',
+  '#ov-closed-title'
 ];
 function _ovEnsureGrossBadge(){
   if(typeof document==='undefined') return;
@@ -20879,6 +21003,7 @@ function renderAll(){
   if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
   }
+  try { renderClosedYears(CURRENT_STRUCT); } catch(e){ console.error('[Overview] closed years', e); }
   if (typeof _ovEnsureGrossBadge === 'function'){ try { _ovEnsureGrossBadge(); } catch(e){} }
   // Audit log: enable only after the first full render (boot + one-shot migrations done),
   // so wipes/migrations don't generate log entries.
