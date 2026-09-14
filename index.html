@@ -460,7 +460,7 @@ table.data.sell-table .sell-grp-expedia-sub:not(:first-of-type){border-left:1px 
 table.data.sell-table tbody td.sell-block-fp{font-size:12px;font-family:'DM Mono',monospace}
 /* Colonna Foundation nascosta: il calcolo Foundation resta visibile cliccando la cella RMES (dettaglio 6-step + moltiplicatori). */
 table.data.sell-table thead th.sell-grp-fp, table.data.sell-table tbody td.sell-block-fp{display:none}
-/* Gruppo RMES: prezzo suggerito + minimum stay consigliato, in fondo alla tabella */
+/* RMES group: suggested price + suggested minimum stay, at the far right of the table */
 /* ---- OCC by Room Type: intestazioni e colonna mese sempre visibili ----
    Scorrendo in basso resta il nome della camera, scorrendo a destra resta il mese. */
 .rt-sticky-wrap{max-height:70vh;overflow:auto}
@@ -481,7 +481,7 @@ table.rt-sticky-table tbody tr.total td{
   border-top:2px solid var(--line-2);
 }
 table.rt-sticky-table tbody tr.total td.rt-month-cell{z-index:5;background:#efeade}
-/* Colonna "Last sold": ultimo prezzo realmente incassato per quella notte */
+/* "Last sold" column: the price actually earned on that night */
 table.data.sell-table thead th.sell-grp-sold{
   background:rgba(46,120,70,.12);color:#1e5c38;font-weight:700;border-left:3px solid #2c7a4b;
 }
@@ -2477,7 +2477,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li>You override 🖋 with €230 → Last update becomes <b style="color:#b86b1f">🖋 €230</b> in orange. The RMES target stays €260 (computed on Base €283, not on your override). Since you have already lowered past the target (230 ≤ 260) and the engine wanted to go down, the cell shows <b>✓ in line</b>. RMES will not insist to lower further — your decision is downstream of its suggestion.</li>
             <li>You override 🖋 with €300 → Last update becomes <b style="color:#b86b1f">🖋 €300</b> in orange. The target is still €260 (direction: down). Your override €300 is above the target, so RMES still wants you to lower. The cell shows <b>↓ €260</b> with a tooltip explaining "your override is above the target". You decide whether to follow or to keep your €300.</li>
           </ol>
-          <p style="margin:0"><b>Why this design</b>: the target depends only on the market and the structural Base Price — never on your past decisions. This avoids the "loop" risk (if RMES suggested based on your last override, after a few iterations it could drift very far). The Monthly Anchor ±50% band and the Floor Rate make sure the target stays in a sane range whatever the market does.</p>
+          <p style="margin:0"><b>Why this design</b>: the target depends only on the market and the structural Base Price — never on your past decisions. This avoids the "loop" risk (if RMES suggested based on your last override, after a few iterations it could drift very far). The Floor keeps the target in a sane range whatever the market does: nothing can go below the higher of your annual Floor Rate and the historical p15.</p>
         </div>
 
         <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12px"><b>How to read a row at a glance.</b> Look first at the <b>Last update</b> column to know the price active right now (Base Price by default, accepted ✓, or override 🖋). When both an accept and an override exist for the same day, the <b>most recent decision wins</b> (whichever you did last). Then look at the <b>RMES</b> column for the engine's verdict: either a target to consider (↓/↑) or "✓ in line" if your decision is already in tune.</p>
@@ -2694,7 +2694,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li><b>Base Price</b> — the structural fair price for that day (built once from history + market + the property anchor). It is the default active price unless you act.</li>
             <li><b>RMES suggestion</b> — the daily target, computed as <code>Base Price × Composite × (1 + LMF%) × Event Factor</code>, where <b>Composite</b> is the weighted average of the 5 RMES factors. RMES <b>compares</b> the target to the price you currently have loaded and either insists (↓/↑) or shows ✓ in line.</li>
           </ol>
-          <p style="margin:0;font-size:13px;color:#666">The final price is always bounded by the <b>Floor Rate</b> (hard minimum) and the Base Price stays within <b>±50% of the Monthly Anchor</b> (sanity rail = true ADR LY of the base RT for that month). The only mechanism that can lower the price close-in is the LMF.</p>
+          <p style="margin:0;font-size:13px;color:#666">The final price is always bounded by the <b>Floor</b> (hard minimum = the higher of your annual Floor Rate and the historical p15). The only mechanism that can lower the price close-in is the LMF.</p>
         </div>
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">Block ① — Weights of the 5 RMES factors</h4>
@@ -2808,7 +2808,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">⚡ Base Price block — the structural fair price for the day</h4>
         <p>The <b>Base Price</b> is the structural starting price the RMES suggestion sits on top of. RMES never overwrites it — it can only suggest a target above or below.</p>
-        <p style="margin:6px 0;padding:8px 12px;background:#eef6ee;border-left:3px solid #4a7c59;font-size:12.5px">You can <b>override the Base for a single day</b> with the <b>🖋</b> in the Base Price cell (Sell Strategy, baseRT row), and <b>↺</b> to revert to the computed value. Use it for dates the history underprices — typically <b>holidays</b> (New Year, Christmas): the anchor learns from last year's realized ADR, so if you sold a high-demand date cheap last year, the Base (and therefore the RMES target) comes out low. Raising the Base fixes the suggestion at the root, because the RMES target is computed on the Base. A manual Base override is not bound by the ±50% Monthly Anchor band (that band only limits the auto-computed Base).</p>
+        <p style="margin:6px 0;padding:8px 12px;background:#eef6ee;border-left:3px solid #4a7c59;font-size:12.5px">You can <b>override the Base for a single day</b> with the <b>🖋</b> in the Base Price cell (Sell Strategy, baseRT row), and <b>↺</b> to revert to the computed value. Use it for dates the history underprices — typically <b>holidays</b> (New Year, Christmas): the anchor learns from last year's realized ADR, so if you sold a high-demand date cheap last year, the Base (and therefore the RMES target) comes out low. Raising the Base fixes the suggestion at the root, because the RMES target is computed on the Base. A manual Base override is not bound by the compset ceiling either — that only limits the auto-computed Base.</p>
         <p><b>Rolling 30-day freeze window.</b> The Base Price is frozen only for the next <b>30 days</b> from today. A day is frozen with current data when it enters that window, and then stays stable &mdash; so nobody sees the structural price shift under their feet while working on a date that is about to sell. Days <b>beyond 30</b> are not frozen: they <b>recompute live every time you open the dashboard</b>, absorbing new bookings, new compset readings and new events, and get frozen automatically once they roll into the window. To refresh stale frozen values inside the window, use <b>🔄 Refresh frozen Base</b> in Export Pricing (your overrides and accepts are kept).</p>
         <p style="font-size:12.5px;color:#666"><i>This window used to be 90 days. It was shortened because a day frozen three months out kept a price computed on data that was two months old by the time it mattered. With 30 days the price stays current for longer and only locks in the last month, when decisions become operational.</i></p>
         <p style="margin:0 0 10px 0"><b>In one sentence:</b> the Base Price is the rate to load on Beddy for a given night. It starts from what you <b>actually earned</b> on comparable nights, applies the growth you decided, never exceeds the online positioning you want to hold, and never falls below a minimum.</p>
@@ -2880,7 +2880,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li><b>LY median ADR Thursdays May</b> across May 2024 + May 2025, base RT only, net of OTA → median = <b>€269</b>.</li>
             <li><b>Target growth May = +5%</b> → 269 × 1.05 = <b>€282.45</b>.</li>
             <li><b>Expedia Goal Value</b> for that date = €310 (weighted compset with offsets). 282.45 &lt; 310 → cap not triggered. Stays €282.45.</li>
-            <li><b>Monthly Anchor guard-rail</b>: Anchor May = €255 → ±50% range = [127.50, 382.50]. 282.45 is inside → guard-rail not triggered.</li>
             <li><b>Floor Rate</b> = €150. 282.45 &gt; 150 → floor not triggered.</li>
           </ol>
           <p style="margin:6px 0 0 0">Final Base Price = <b>€282</b> (rounded). This number is now frozen for 28/05/2026 and used as the reference for every RMES calculation that day, until you manually clear the freeze.</p>
@@ -2987,7 +2986,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>× growth</b> — monthly target growth % applied at Step 2.</li>
           <li><b>after growth</b> — ADR used × (1 + growth%).</li>
           <li><b>Goal Value cap</b> — weighted compset price with offsets (your desired online positioning). <b>red ✓cap</b> = "after growth" was above Goal Value, capped down. <b>⚠</b> = cap disabled for sanity (fewer than 2 competitors visible, or Goal &lt; Floor); the Base Price flows through to the next step. Hover the cell for the exact reason.</li>
-          <li><b>Anchor ±50%</b> — ±50% range around the <b>Monthly Anchor</b> (= true ADR LY of the base RT for that month, 2 years aggregated; fallback to annual Anchor Price if no data). <b>↓max</b> = capped at +50%; <b>↑min</b> = lifted to −50%. Hover the cell to see the Monthly Anchor used and its source (LY data with N RN, or annual fallback).</li>
           <li><b>Floor</b> — the property Floor Rate (hard minimum). <b>✓</b> = the Floor lifted the price (final &lt; Floor before clamping).</li>
           <li><b>→ Base Price</b> — the final number, frozen and stored.</li>
           <li><b>⚑ Flags</b> — special situations needing attention (🔴 alert / 🟡 warn). · (centered) = no flag, clean run. Hover the icon to read all flags for the day with the explanation. See dedicated section below.</li>
@@ -3077,7 +3075,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Base Price</dt>
           <dd style="margin:2px 0 8px 18px">Structural price per stay-date, frozen, computed once. Source of the RMES suggestion.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Monthly Anchor</dt>
-          <dd style="margin:2px 0 8px 18px">True ADR earned on the base RT in a given month, computed from the last 2 years of bookings (net of OTA markup). Used as guard-rail: the Base Price stays within ±50% of the Monthly Anchor. One value per property × per month.</dd>
+          <dd style="margin:2px 0 8px 18px">True ADR earned on the base RT in a given month, computed from the last 2 years of bookings (net of OTA markup). Used as the <b>fallback base</b> when a date has no LY history at all. The old ±50% guard-rail built on it has been removed. One value per property × per month.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Annual Anchor Price (fallback)</dt>
           <dd style="margin:2px 0 8px 18px">Single annual reference number per property (Firenze 220 · Condotta 280 · Alfani 270 · Enis 145). Used as guard-rail only when no LY booking data exists for the target month. Configurable in the RMES tab.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RMES delta</dt>
