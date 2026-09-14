@@ -4382,7 +4382,10 @@ function expToBeddyFlex(expediaPrice, structKey, dateISO){
   if (dateISO && structKey && typeof fp_expediaRoomSupplement === 'function'){
     try { suppl = fp_expediaRoomSupplement(structKey, dateISO) || 0; } catch(e){ suppl = 0; }
   }
-  const beddy = expediaPrice / (markup * 0.90);
+  // Il fattore 0.90 ("sconto non rimborsabile") e' stato rimosso su richiesta:
+  // la conversione usa il solo markup Expedia, cosi il compset resta confrontabile
+  // con il prezzo-Beddy senza uno sconto forfettario non piu' rappresentativo.
+  const beddy = expediaPrice / markup;
   return Math.max(0, beddy - suppl);
 }
 let _EXP_SUPP_AGG_CACHE = {};  // cache per-struttura dei campi struttura-level usati da fp_expediaRoomSupplement
@@ -4418,7 +4421,7 @@ function fp_expToBeddyDivisor(structKey){
   const markupPct = (typeof fp_getChannelMarkups === 'function')
                   ? fp_getChannelMarkups().expedia
                   : ((typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(structKey) : 17);
-  return (1 + markupPct/100) * 0.90;
+  return (1 + markupPct/100);   // niente piu' fattore 0.90
 }
 function expContext(ymdNum, structSel){
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return null;
@@ -9496,6 +9499,118 @@ function fp_setChannelMarkup(kind, pct){
   obj[kind] = +pct;
   try { localStorage.setItem(FP_CHANNEL_MARKUP_KEY, JSON.stringify(obj)); } catch(e){}
 }
+/* ===========================================================================
+   DIAGNOSTICA MIX CANALE (tab RMES)
+   ---------------------------------------------------------------------------
+   La mediana che alimenta il Base Price non sa nulla di COME era composto il
+   mix di canali: se un mese e' stato venduto quasi tutto su Booking, la mediana
+   e' di fatto la mediana di Booking. Questa tabella lo rende visibile, mese per
+   mese: quota di ogni canale, prezzo-Beddy mediano di ciascuno e numerosita'.
+   Serve a capire dove il diretto e' davvero sottoprezzato e dove invece la
+   differenza e' solo un campione troppo piccolo per dire qualcosa.
+   =========================================================================== */
+const CHMIX_MIN_OBS = 4;      // sotto questo numero il dato per canale non fa testo
+let CHMIX_YEARS = null;       // null = ultimi 2 anni chiusi
+function _chmixMedian(a){ if(!a.length) return null; const x=[...a].sort((p,q)=>p-q); return x[Math.floor(x.length/2)]; }
+function aggChannelMix(sel, years){
+  const cfg = CFG.structures[sel];
+  if (!cfg) return null;
+  const RT = cfg.baseRT;
+  const yrs = years && years.length ? years : [TODAY.getFullYear()-2, TODAY.getFullYear()-1];
+  const months = [];
+  for (let m=1;m<=12;m++) months.push({ mo:m, byCh:{}, all:[] });
+  const useIdx = !!(typeof _BOOKINGS_BY_SR !== 'undefined' && _BOOKINGS_BY_SR && _BOOKINGS_BY_SR[sel+'|'+RT]);
+  const list = useIdx ? _BOOKINGS_BY_SR[sel+'|'+RT] : BOOKINGS;
+  for (let i=0;i<list.length;i++){
+    const b = list[i];
+    if (b.stato !== 'Confermate' || !b.stayYmds) continue;
+    if (!useIdx && (b.struct !== cfg.key || b.room !== RT)) continue;
+    for (let j=0;j<b.stayYmds.length;j++){
+      const k = b.stayYmds[j];
+      const y = Math.floor(k/10000), m = Math.floor(k/100)%100;
+      if (yrs.indexOf(y) < 0) continue;
+      const ch = b.canale || '—';
+      const M = months[m-1];
+      const price = (b.revPerNightCaricato != null) ? b.revPerNightCaricato : b.revPerNight;
+      (M.byCh[ch] = M.byCh[ch] || []).push(price);
+      M.all.push(price);
+      break;   // una prenotazione conta una volta per mese
+    }
+  }
+  const chSet = {};
+  for (const M of months) for (const c in M.byCh) chSet[c] = (chSet[c]||0) + M.byCh[c].length;
+  const channels = Object.keys(chSet).sort((a,b)=> chSet[b]-chSet[a]);
+  for (const M of months){
+    M.n = M.all.length;
+    M.median = _chmixMedian(M.all);
+    M.stats = {};
+    for (const c of channels){
+      const arr = M.byCh[c] || [];
+      M.stats[c] = { n: arr.length, share: M.n>0 ? arr.length/M.n : 0, median: arr.length>=CHMIX_MIN_OBS ? _chmixMedian(arr) : null };
+    }
+  }
+  return { sel, RT, years: yrs, channels, months, label: cfg.label };
+}
+function renderChannelMix(sel){
+  const host = document.getElementById('chmix-table');
+  if (!host) return;
+  if (isAggSel(sel)){
+    host.innerHTML = '';
+    const sub0 = document.getElementById('chmix-sub');
+    if (sub0) sub0.innerHTML = '<i>Select a single property to see its channel mix.</i>';
+    return;
+  }
+  const A = aggChannelMix(sel, CHMIX_YEARS);
+  if (!A){ host.innerHTML=''; return; }
+  const sub = document.getElementById('chmix-sub');
+  if (sub) sub.innerHTML = `Base room type <b>${escapeHtml(A.RT)}</b> · nights of ${A.years.join(' + ')} · prices are <b>Beddy-equivalent</b> (what you would load), median per channel. A channel with fewer than ${CHMIX_MIN_OBS} bookings in a month shows no price: the sample is too small to mean anything.`;
+  const DIR = 'Direct';
+  let head = `<thead><tr><th rowspan="2" style="text-align:left">Month</th><th rowspan="2">Obs</th><th rowspan="2">Median<br><span class="sell-th-sub">all channels</span></th>`;
+  for (const c of A.channels) head += `<th colspan="2" style="text-align:center;border-left:2px solid var(--line-2)">${escapeHtml(c)}</th>`;
+  head += `<th rowspan="2" title="Direct median vs Booking median, in Beddy-equivalent terms. Negative = your direct price sits below Booking's.">Direct<br><span class="sell-th-sub">vs Booking</span></th></tr><tr>`;
+  for (const c of A.channels) head += `<th style="border-left:2px solid var(--line-2)">share</th><th>median</th>`;
+  head += `</tr></thead>`;
+  let body = '';
+  for (const M of A.months){
+    if (!M.n) continue;
+    body += `<tr><td style="font-weight:600">${CFG.monthsITLong[M.mo-1]}</td>`
+         +  `<td class="cell-mono ${M.n<8?'cell-flat':''}">${M.n}</td>`
+         +  `<td class="cell-mono" style="font-weight:700">${M.median!=null?fmtEUR(M.median):'—'}</td>`;
+    for (const c of A.channels){
+      const st = M.stats[c];
+      const dom = st.share >= 0.70;
+      body += `<td class="cell-mono ${st.n?'':'cell-flat'}" style="border-left:2px solid var(--line-2)${dom?';background:rgba(196,131,59,.12);font-weight:700':''}"${dom?' title="This channel alone makes up '+Math.round(st.share*100)+'% of the month: the overall median is essentially this channel\'s median."':''}>${st.n?Math.round(st.share*100)+'%':'—'}</td>`
+           +  `<td class="cell-mono ${st.median==null?'cell-flat':''}"${st.n&&st.median==null?' title="Only '+st.n+' booking'+(st.n>1?'s':'')+' — too few to compute a meaningful median"':''}>${st.median!=null?fmtEUR(st.median):(st.n?'('+st.n+')':'—')}</td>`;
+    }
+    const mD = M.stats[DIR] ? M.stats[DIR].median : null;
+    const mB = M.stats['Booking'] ? M.stats['Booking'].median : null;
+    let gapTxt = '—', gapCls = 'cell-flat';
+    if (mD != null && mB != null){
+      const g = (mD/mB - 1) * 100;
+      gapTxt = (g>=0?'+':'') + Math.round(g) + '%';
+      gapCls = g >= 0 ? 'cell-pos' : 'cell-neg';
+    }
+    body += `<td class="cell-mono ${gapCls}" style="font-weight:700">${gapTxt}</td></tr>`;
+  }
+  host.innerHTML = head + '<tbody>' + body + '</tbody>';
+  // pill anni
+  const fh = document.getElementById('chmix-filter');
+  if (fh){
+    const yNow = TODAY.getFullYear();
+    const opts = [[yNow-2, yNow-1], [yNow-1], [yNow-2]];
+    fh.innerHTML = '<span class="bw-mlabel">Years:</span>' + opts.map(o=>{
+      const on = (CHMIX_YEARS===null && o.length===2) || (CHMIX_YEARS && CHMIX_YEARS.join()===o.join());
+      return `<span class="bw-mpill ${on?'active':''}" data-chy="${o.join(',')}">${o.join('+')}</span>`;
+    }).join('');
+    fh.querySelectorAll('.bw-mpill').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const v = el.dataset.chy.split(',').map(Number);
+        CHMIX_YEARS = (v.length===2) ? null : v;
+        renderChannelMix(CURRENT_STRUCT);
+      });
+    });
+  }
+}
 function fp_markupForChannel(canale){
   const c = (canale || '').toLowerCase();
   // Canale diretto = nessun markup: il prezzo che arriva e' gia' quello finale.
@@ -13387,7 +13502,7 @@ function renderSellStrategy(sel){
         const expBeddyEq = exp2.myPriceBeddy;
         stepSorgente = `[1] SORGENTE: My Expedia price\n` +
                        `    Price visible on Expedia: ${fmtEUR(expRaw)}\n` +
-                       `    Conversione a Beddy_eq: ${fmtEUR(expRaw)} ÷ markup Expedia ÷ 0.90 (sconto non rimb.) = ${fmtEUR(expBeddyEq)}\n`;
+                       `    Conversione a Beddy_eq: ${fmtEUR(expRaw)} ÷ markup Expedia = ${fmtEUR(expBeddyEq)}\n`;
         if (baseSuppApplied > 0 && expedia_rt_shown){
           const isHigh = _suppData && _suppData.highSeason.has(r.mo);
           const stagionLbl = isHigh ? 'alta' : 'bassa';
@@ -13400,7 +13515,7 @@ function renderSellStrategy(sel){
         const csBeddyEq = exp2.compsetAvgBeddy;
         stepSorgente = `[1] SOURCE: Expedia compset (no own price available)\n` +
                        `    Expedia compset average: ${fmtEUR(csRaw)}\n` +
-                       `    Conversione a Beddy eq.: ${fmtEUR(csRaw)} ÷ markup Expedia ÷ 0.90 = ${fmtEUR(csBeddyEq)}\n`;
+                       `    Conversione a Beddy eq.: ${fmtEUR(csRaw)} ÷ markup Expedia = ${fmtEUR(csBeddyEq)}\n`;
         if (baseSuppApplied > 0 && expedia_rt_shown){
           const isHigh = _suppData && _suppData.highSeason.has(r.mo);
           const stagionLbl = isHigh ? 'alta' : 'bassa';
@@ -15945,7 +16060,7 @@ function renderPricing(sel){
     }
     html += '</tr>';
     if (isBase && (sel === 'condotta' || sel === 'alfani')){
-      html += `<tr style="background:rgba(58,107,107,.04)"><td class="cell-mono pri-rt-name-col" style="background:rgba(58,107,107,.08);position:sticky;left:0;z-index:2;font-weight:500;border-right:2px solid #3b6b6b;font-size:10px;color:#3b6b6b" title="Base room price on Expedia, converted to flexible Beddy (= expedia_price ÷ Expedia markup ÷ 0.90)">📊 My price (Beddy eq.)</td>`;
+      html += `<tr style="background:rgba(58,107,107,.04)"><td class="cell-mono pri-rt-name-col" style="background:rgba(58,107,107,.08);position:sticky;left:0;z-index:2;font-weight:500;border-right:2px solid #3b6b6b;font-size:10px;color:#3b6b6b" title="Base room price on Expedia, converted to flexible Beddy (= expedia_price ÷ Expedia markup)">📊 My price (Beddy eq.)</td>`;
       for (const r of A.rows){
         const exp = expContext(r.ymd, sel);
         const isWE = (r.dow===5 || r.dow===6 || r.dow===0);
@@ -18430,6 +18545,7 @@ function renderRMESConfigTab(){
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
   if (typeof _renderRmesPromosBox === 'function') _renderRmesPromosBox(sel);
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
+  if (typeof renderChannelMix === 'function'){ try { renderChannelMix(sel); } catch(e){ console.error('[chmix]', e); } }
   _rmesTabClearDirty();
   const applyAllBtn = document.getElementById('rmes-tab-apply-all');
   if (applyAllBtn && !applyAllBtn._wired){

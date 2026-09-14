@@ -2204,6 +2204,20 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
+    <!-- ============ DIAGNOSTICA MIX CANALE ============ -->
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-head">
+        <div>
+          <h3>Channel mix &amp; price by channel</h3>
+          <div class="panel-sub" id="chmix-sub"></div>
+        </div>
+        <div id="chmix-filter" class="bw-mfilter"></div>
+      </div>
+      <div class="panel-body flush">
+        <div class="table-wrap"><table class="data" id="chmix-table"></table></div>
+      </div>
+    </div>
+
 <!-- Bottone APPLICA unico (pesi + soglie) sticky in basso -->
     <div style="position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg) 0%,var(--bg) 70%,transparent 100%);padding:16px 0 12px 0;margin-top:18px;z-index:10;border-top:1px solid var(--line)">
       <div style="display:flex;align-items:center;gap:14px;justify-content:flex-end;padding:0 4px;flex-wrap:wrap">
@@ -2722,8 +2736,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <div style="margin:10px 0;padding:12px 14px;background:#ecf3ee;border-radius:6px;font-size:13px;line-height:1.65">
           <p style="margin:0 0 6px 0;font-weight:700;color:#1e6b4a">C · Online Pricing <span style="color:#888;font-weight:400">— "am I priced too high or too low vs my visible competitors?"</span></p>
           <p style="margin:0 0 6px 0"><b>What it measures.</b> My current Expedia price vs the <b>Weighted Expedia Compset</b> (= weighted average of competitor prices on Expedia, with the per-competitor weights configured in Rate Shopper / RMES, but <b>without</b> the offset). All prices are converted to Beddy-equivalent first so the comparison is apples-to-apples.</p>
-          <p style="margin:0 0 6px 0">Formula: <code>my_BeddyEq = my_Expedia / (1 + Expedia_markup) / (1 − channel_commission)</code> (typically ÷1.17 ÷ 0.90 for Expedia in Italy). Then <code>raw_inverted_dev = −(my_BeddyEq / weighted_compset_BeddyEq − 1)</code>. The <b>minus sign</b> is intentional: if I am cheaper than the compset, the ratio is &lt; 1 and the dev is positive (= raise me); if I am more expensive, the ratio is &gt; 1 and the dev is negative (= lower me).</p>
-          <p style="margin:0;color:#666;font-size:12px"><b>Example — Alfani, single day.</b> My Expedia price: €350. My Beddy-eq: 350 ÷ 1.17 ÷ 0.90 = €332. Weighted Expedia Compset (Beddy-eq): €277. Ratio: 332 / 277 = 1.20. Raw inverted dev: −(1.20 − 1) = −20%. Clamped at −50%. Applied to composite: 0.20 × −20% = −4 percentage points. The market is calling me to lower.</p>
+          <p style="margin:0 0 6px 0">Formula: <code>my_BeddyEq = my_Expedia / (1 + Expedia_markup)</code> (÷1.17 with the default markup). <i>The old extra ÷0.90 &mdash; a flat &ldquo;non-refundable discount&rdquo; assumption &mdash; has been removed: the conversion now uses the channel markup only.</i> Then <code>raw_inverted_dev = −(my_BeddyEq / weighted_compset_BeddyEq − 1)</code>. The <b>minus sign</b> is intentional: if I am cheaper than the compset, the ratio is &lt; 1 and the dev is positive (= raise me); if I am more expensive, the ratio is &gt; 1 and the dev is negative (= lower me).</p>
+          <p style="margin:0;color:#666;font-size:12px"><b>Example — Alfani, single day.</b> My Expedia price: €350. My Beddy-eq: 350 ÷ 1.17 = €299. Weighted Expedia Compset (Beddy-eq): €277. Ratio: 332 / 277 = 1.20. Raw inverted dev: −(1.20 − 1) = −20%. Clamped at −50%. Applied to composite: 0.20 × −20% = −4 percentage points. The market is calling me to lower.</p>
         </div>
 
         <div style="margin:10px 0;padding:12px 14px;background:#f5ecec;border-radius:6px;font-size:13px;line-height:1.65">
@@ -2887,6 +2901,16 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Expedia Goal Value</b> (weights + offsets) — caps the Base Price at step 3. Represents "where I want to be positioned" online. An offset of −10€ on a competitor means "I want to stay 10€ below this competitor".</li>
         </ul>
 
+        <h4 style="margin:18px 0 6px 0;color:#5a3a14">Channel mix &amp; price by channel (bottom of the tab)</h4>
+        <p style="margin:0 0 6px 0">The median that feeds the Base Price knows <b>nothing about how the mix of channels was made up</b>. If a month sold almost entirely through Booking, the median is in practice Booking's median. This table makes that visible, month by month, on the base room type.</p>
+        <ul style="margin:6px 0 8px 18px">
+          <li>For each channel: <b>share</b> of the month's bookings and <b>median price in Beddy-equivalent terms</b> &mdash; what you would have had to load to end up at that price.</li>
+          <li>A share of <b>70% or more is highlighted in orange</b>: that channel alone is deciding the month's median.</li>
+          <li>A channel with fewer than 4 bookings in a month shows <b>(n)</b> instead of a price. The sample is too small for a median to mean anything, and reading one would be worse than reading nothing.</li>
+          <li>The last column is the gap between <b>Direct and Booking</b> medians. Negative means your direct price is sitting <i>below</i> Booking's in loaded terms &mdash; the case worth investigating, since direct should be at least as profitable.</li>
+          <li>The year pills switch between the last two closed years together or one at a time.</li>
+        </ul>
+        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>Read it as a diagnostic, not as an instruction. The gaps swing in both directions across months and are often driven by a handful of bookings, so a mechanical rule like &ldquo;raise the Booking markup&rdquo; would just as often push the wrong way. Use it to spot the months where the imbalance is large <b>and</b> the sample is solid.</i></p>
         <h4 style="margin:18px 0 6px 0;color:#5a3a14">"Apply changes" button</h4>
         <p>Changes to weights / Base Price / event weights are saved <b>only when you click "Apply changes"</b> at the bottom of the tab. The Daily Pickup thresholds (Block ②) and the per-event weights save immediately with their own buttons. Switch property to edit the others (each property is independent for everything except event weights).</p>
 
