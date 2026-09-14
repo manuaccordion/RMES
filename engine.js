@@ -1212,7 +1212,12 @@ function loadData(csvText){
   for (const _sk in CFG.structures){ _keyToShort[CFG.structures[_sk].key] = _sk; }
   function _markupForCanaleFast(canale){
     const c = (canale || '').toLowerCase();
-    if (c === 'beddy' || c === 'diretto' || c === '—' || c === '' || c.indexOf('diret') !== -1 ||
+    // Stessa regola di fp_markupForChannel: le due DEVONO restare allineate,
+    // altrimenti salvando le impostazioni markup i valori cambiano da soli.
+    // Nota: 'direct' NON contiene 'diret', va elencato a parte.
+    if (c === 'beddy' || c === 'direct' || c === 'diretto' || c === '—' || c === '' ||
+        c.indexOf('direct') !== -1 || c.indexOf('diretto') !== -1 ||
+        c.indexOf('krossbooking') !== -1 || c.indexOf('walk') !== -1 ||
         c.indexOf('sito web') !== -1 || c.indexOf('front') !== -1 || c.indexOf('booking engine') !== -1){
       return 0;
     }
@@ -9493,9 +9498,16 @@ function fp_setChannelMarkup(kind, pct){
 }
 function fp_markupForChannel(canale){
   const c = (canale || '').toLowerCase();
-  if (c === 'beddy' || c === 'diretto' || c === '—' || c === '' || c.indexOf('diret') !== -1 ||
+  // Canale diretto = nessun markup: il prezzo che arriva e' gia' quello finale.
+  // ATTENZIONE: il canale normalizzato e' "Direct" (inglese). Il vecchio test
+  // cercava 'diret', che intercetta l'italiano "diretto" ma NON "direct"
+  // ('direct' non contiene 'diret'): 1.800 prenotazioni dirette finivano nel
+  // ramo finale e prendevano il markup Expedia del 17%.
+  if (c === 'beddy' || c === 'direct' || c === 'diretto' || c === '—' || c === '' ||
+      c.indexOf('direct') !== -1 || c.indexOf('diretto') !== -1 ||
+      c.indexOf('krossbooking') !== -1 || c.indexOf('walk') !== -1 ||
       c.indexOf('sito web') !== -1 || c.indexOf('front') !== -1 || c.indexOf('booking engine') !== -1){
-    return 0;  // canale diretto: nessun markup OTA
+    return 0;
   }
   const m = fp_getChannelMarkups();
   if (c.indexOf('booking') !== -1) return m.booking;       // Booking.com
