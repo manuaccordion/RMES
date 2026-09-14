@@ -2201,6 +2201,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="rmes-box-body">
         <div id="fp-tab-wrap"></div>
         <div id="rmes-lmf-wrap" style="margin-top:14px"></div>
+        <div id="rmes-special-wrap" style="margin-top:14px"></div>
       </div>
     </div>
 
@@ -2431,7 +2432,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li><b>Last sold</b> &mdash; the price of the <b>most recent booking that covers this night</b>, on the base room type, <b>gross of OTA commission</b> (Booking and Direct as they arrive; Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%), so the number is comparable with your shelf price whatever the channel. Under the price you see when it was booked and through which channel; hover for the full detail. Blank means <b>this night has never been sold</b> on the base room type &mdash; there is no sold price, and none is invented.
             <br><span style="color:#2c7a4b;font-weight:700">&#10003;</span> <b>marked green</b> = the sale happened in the <b>last 21 days</b>, so it is the freshest market signal available and <b>the RMES starts from this price</b> instead of the Base Price. Older sales are shown faded: they stay as information only, because a price from two months ago says little about what the date is worth today. An explicit decision of yours &mdash; a manual override or an accepted RMES &mdash; still wins if it is more recent than the sale.</li>
           <li><b>RMES · Min stay</b> — the suggested <b>minimum stay</b> for that date. <b>2</b> means hold a 2-night minimum, a faint dot means no restriction. The rule: never a minimum within 7 days of arrival, never if the following night is already full, otherwise 2 nights when occupancy — this year or the same date last year — is at 90% or above. For Porte Nuove and Nazionale a 2-night minimum also kicks in when the Base Price has dropped to the floor rate.</li>
-          <li><b>Base Price detail from the RMES popup</b> &mdash; clicking a Pricing cell opens the RMES calculation. In its top-right corner the <b>&#9889; Base Price detail</b> button opens the step-by-step Base Price calculation for the same date and room type (LY median ADR, target growth, Goal Value cap, Anchor guard-rail, Floor). The RMES starts from that number, so you can now check it without leaving the tab.</li>
+          <li><b>Base Price detail from the RMES popup</b> &mdash; clicking a Pricing cell opens the RMES calculation. In its top-right corner the <b>&#9889; Base Price detail</b> button opens the step-by-step Base Price calculation for the same date and room type (LY median ADR, target growth, Goal Value cap, Floor). The RMES starts from that number, so you can now check it without leaving the tab.</li>
           <li><b>RMES · Pricing</b> — today's pricing engine target. <b>Three display modes</b>:
             <ul style="margin:4px 0 0 18px;font-size:12.5px">
               <li><span style="color:#a83b3b;font-weight:700">↓ €target</span> or <span style="color:#1e6b4a;font-weight:700">↑ €target</span> + ✓ button → the engine suggests a new price (lower or higher). Click ✓ to accept and apply. <b>The cell colour intensity shows the size of the move vs the active price at a glance</b>: a pale tint is a small nudge, a strong tint is a big move — the intensity scales freely with the size of the change (no threshold). Hover to read the exact % vs active.</li>
@@ -2457,7 +2458,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <div style="margin-top:14px;padding:12px 14px;background:#fafaf8;border-left:3px solid #c4823b;font-size:13px;line-height:1.6">
           <p style="margin:0 0 8px 0"><b>How RMES decides what to suggest (the "in line" rule)</b></p>
-          <p style="margin:0 0 8px 0">RMES <b>always</b> computes the target price on the <b>structural Base Price</b>, never on your override or your last accept. This way the engine has a stable reference and cannot drift down (or up) in a loop just because you set a low (or high) price manually. Two guard-rails are always active: the Base Price stays within <b>±50% of the Monthly Anchor</b> (= true ADR LY of the base RT for that month), and nothing can ever drop below the <b>Floor Rate</b>.</p>
+          <p style="margin:0 0 8px 0">RMES <b>always</b> computes the target price on the <b>structural Base Price</b>, never on your override or your last accept. This way the engine has a stable reference and cannot drift down (or up) in a loop just because you set a low (or high) price manually. One guard-rail is always active: nothing can ever drop below the <b>Floor</b>, which is the higher of your annual Floor Rate and the historical p15.</p>
           <p style="margin:0 0 8px 0">After computing the target, RMES compares it with the price you currently have loaded (the <b>Last update</b>) and decides whether to <b>insist</b> or <b>stay silent</b>:</p>
           <ul style="margin:6px 0 8px 18px">
             <li><b>Insists</b> (shows ↓ €target or ↑ €target with a ✓ button) — your active price is on the "wrong side" of the target. The market signal is still calling for the move.</li>
@@ -2810,29 +2811,57 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <p style="margin:6px 0;padding:8px 12px;background:#eef6ee;border-left:3px solid #4a7c59;font-size:12.5px">You can <b>override the Base for a single day</b> with the <b>🖋</b> in the Base Price cell (Sell Strategy, baseRT row), and <b>↺</b> to revert to the computed value. Use it for dates the history underprices — typically <b>holidays</b> (New Year, Christmas): the anchor learns from last year's realized ADR, so if you sold a high-demand date cheap last year, the Base (and therefore the RMES target) comes out low. Raising the Base fixes the suggestion at the root, because the RMES target is computed on the Base. A manual Base override is not bound by the ±50% Monthly Anchor band (that band only limits the auto-computed Base).</p>
         <p><b>Rolling 30-day freeze window.</b> The Base Price is frozen only for the next <b>30 days</b> from today. A day is frozen with current data when it enters that window, and then stays stable &mdash; so nobody sees the structural price shift under their feet while working on a date that is about to sell. Days <b>beyond 30</b> are not frozen: they <b>recompute live every time you open the dashboard</b>, absorbing new bookings, new compset readings and new events, and get frozen automatically once they roll into the window. To refresh stale frozen values inside the window, use <b>🔄 Refresh frozen Base</b> in Export Pricing (your overrides and accepts are kept).</p>
         <p style="font-size:12.5px;color:#666"><i>This window used to be 90 days. It was shortened because a day frozen three months out kept a price computed on data that was two months old by the time it mattered. With 30 days the price stays current for longer and only locks in the last month, when decisions become operational.</i></p>
-        <p>The Base Price is computed in <b>4 steps</b>, in this order:</p>
-        <ol style="margin:6px 0 8px 18px">
-          <li><b>Historical ADR (LY median, base room type)</b> — for the target date the system computes <b>two medians</b> and takes the <b>higher of the two</b>:
-            <ul style="margin:4px 0 4px 18px;font-size:12.5px">
-              <li><b>Method 1 — Same-day-LY</b>: same day-and-month across the last two years (e.g. for 31/12/2026 → look at 31/12/2024 + 31/12/2025). Requires <b>≥ 2 bookings</b> to be considered (low threshold by design: smaller properties like Enis Guesthouse have only 3 rooms, so even on special days the same-day sample is small). Catches the premium of fixed special days (NYE, 15/8, holidays) that don't show up well in a weekday average.</li>
-              <li><b>Method 2 — Weekday-and-month</b>: same day-of-week and same month, last two years (e.g. for a Thursday in May → all Thursdays of May 2024+2025). Wider sample, smooths short-term noise. If fewer than 3 bookings on the exact weekday → widens to <b>all days of the month</b>.</li>
-            </ul>
-            The system then uses <b>max(Method 1, Method 2)</b>. If only one is available, it uses that one. The result is the median of the winning method, taking the median of the bookings (not days) in that subset — robust to one-off outliers. Every booking is counted <b>net of OTA markup</b> (Booking/Expedia/Airbnb divided by their markup, Direct/Beddy as-is) so all channels are compared in Beddy-equivalent. The Export Pricing tab shows both medians and which one won.
-          </li>
-          <li><b>× target growth</b> — anchor multiplied by (1 + the month's target growth %). Default +5% across all months, configurable in the RMES tab.</li>
-          <li><b>Expedia Goal Value cap (with sanity check)</b> — the result is capped at the <b>Goal Value</b> (weighted compset price WITH per-competitor offsets = your desired online positioning). The Base Price can <b>never exceed</b> the Goal Value <i>when the Goal Value is reliable</i>. Reliability has 2 requirements:
-            <ul style="margin:4px 0 4px 18px;font-size:12.5px">
-              <li><b>At least 2 competitors visible</b> on Expedia for that day. With only 1 competitor the Goal Value is statistical noise (could be a leak, an outlier, or a single offer at an unusual price), not a real online-positioning signal.</li>
-              <li><b>Goal Value ≥ Floor Rate</b> of the property. A Goal below the property's hard minimum cannot be a sensible target — it almost always means the visible competitor prices are anomalously low (e.g. minimum-stay leaks).</li>
-            </ul>
-            <p style="margin:4px 0">When either check fails, the <b>cap is skipped for that day</b> and the Base Price flows through to the Monthly Anchor guard-rail. In the Export Pricing breakdown the Goal Value cell shows ⚠ next to the price; the tooltip explains the reason ("only 1 competitor visible" or "Goal Value below Floor Rate").</p>
-          </li>
-          <li><b>Monthly Anchor guard-rail (±50%)</b> — bounded within ±50% of the <b>Monthly Anchor</b>, to avoid wild swings whatever the history says. <i>See next section for how the Monthly Anchor is built.</i></li>
-          <li><b>Floor</b> — never below the property <b>Floor Rate</b> (the hard minimum).</li>
-        </ol>
+        <p style="margin:0 0 10px 0"><b>In one sentence:</b> the Base Price is the rate to load on Beddy for a given night. It starts from what you <b>actually earned</b> on comparable nights, applies the growth you decided, never exceeds the online positioning you want to hold, and never falls below a minimum.</p>
 
-        <h4 style="margin:14px 0 6px 0;color:#5a3a14">📊 Monthly Anchor — the new dynamic guard-rail</h4>
-        <p>The <b>Monthly Anchor</b> is the dynamic guard-rail of the Base Price. It is recomputed <b>per property × per month</b>:</p>
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Step 1 &mdash; What comparable nights actually earned</p>
+        <p style="margin:0 0 6px 0">The engine collects the bookings of the <b>two previous years</b>, base room type only, and takes the <b>median</b>. Each booking counts once, and every price is brought back to the <i>Beddy price</i>: what the guest paid, minus the channel markup, so a Booking sale and a direct sale are comparable.</p>
+        <p style="margin:0 0 6px 0">Which nights count as &ldquo;comparable&rdquo; depends on the kind of date:</p>
+        <ul style="margin:6px 0 8px 18px">
+          <li><b>Ordinary day</b> &rarr; the <b>same weekday of the same month</b>. For a Tuesday in March: every Tuesday of March in the two previous years. Fewer than 3 observations and it widens to the whole month.</li>
+          <li><b>Holiday or bridge</b> &rarr; the <b>same calendar day</b>. 25 December counts as 25 December, not as &ldquo;a Thursday in December&rdquo;. Two observations are enough; if there aren't even two, it falls back to the weekday.</li>
+          <li><b>Easter</b> &rarr; it moves every year, so the comparison is with <b>Easter of the previous years</b>, lining up Good Friday with Good Friday and so on.</li>
+        </ul>
+        <p style="margin:0 0 10px 0">Holidays are also <b>excluded from ordinary days</b>: an average Wednesday in December does not inherit the Christmas premium. Holidays and bridges are managed in the RMES tab, in the <b>Special dates</b> panel; bridges are proposed automatically (holiday on Tuesday &rarr; the Monday before, on Thursday &rarr; the Friday after) and a bridge uses the history of the holiday it hangs off.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Step 2 &mdash; How much you want to grow</p>
+        <p style="margin:0 0 10px 0">The median is multiplied by the month's <b>target growth</b>: a percentage you set, different for every property and every month. It can be negative if you would rather come down on a weak month.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Step 3 &mdash; Never above your online positioning</p>
+        <p style="margin:0 0 6px 0">The price cannot exceed the <b>Goal Value</b>, that is where you want to sit against your competitors. It is built in three moves:</p>
+        <div style="margin:4px 0 8px 0;padding:8px 12px;background:#f7f5ef;border-left:3px solid #c4823b;border-radius:0 4px 4px 0;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.7">
+          weighted average of competitors <b>on Expedia</b> &nbsp;&rarr;&nbsp; &euro;404<br>
+          + your positioning offsets &nbsp;&rarr;&nbsp; &euro;404 = where you want to sit on Expedia<br>
+          &divide; <b>your</b> Expedia markup (&times;1.17) &nbsp;&rarr;&nbsp; <b>&euro;345 to load on Beddy</b>
+        </div>
+        <p style="margin:0 0 6px 0">The comparison happens <b>on Expedia</b>: your shelf price against theirs. Competitors' markups are unknown and not needed &mdash; your own markup only enters at the end, to work out what to load. The cap is a <b>hard ceiling</b>: the Base Price is a starting point, the room to go up is what the RMES is for.</p>
+        <p style="margin:0 0 10px 0"><b>The cap only applies within 6 months.</b> Beyond that, published prices are placeholders nobody has revised yet: at 9&ndash;12 months out fewer than one competitor is visible, and on Palazzo Alfani the cap used to decide 73% of the dates at 6&ndash;9 months. Past the horizon, history alone drives the price. The cap is also skipped whenever fewer than 2 competitors are visible for that day.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Step 4 &mdash; Never below the minimum</p>
+        <p style="margin:0 0 6px 0">The floor is the <b>higher</b> of two numbers:</p>
+        <ul style="margin:6px 0 8px 18px">
+          <li><b>Annual Floor Rate</b> &mdash; the minimum you set for the property, the same all year.</li>
+          <li><b>Historical p15</b> &mdash; the 15th percentile of the same group of nights used in Step 1: the price below which you sold only 15% of the time. It needs at least 8 observations, otherwise it is not used.</li>
+        </ul>
+        <p style="margin:0 0 10px 0">The p15 lifts the floor by itself in high season and on holidays, while the annual Floor is the safety net when history is thin. On Firenze: on 15 May the p15 is &euro;222 and wins, on 15 January it is &euro;82 and the annual floor of &euro;150 wins.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">A full worked example</p>
+        <div style="margin:4px 0 12px 0;padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.8">
+          Firenze Suite &middot; 5 December 2026 &middot; Camera Matrimoniale Deluxe<br>
+          <span style="opacity:.65">1.</span> median of the Saturdays of December 2024+2025 &nbsp;&rarr;&nbsp; <b>&euro;137</b><br>
+          <span style="opacity:.65">2.</span> &times; December target growth +5% &nbsp;&rarr;&nbsp; <b>&euro;144</b><br>
+          <span style="opacity:.65">3.</span> Goal Value &euro;210 &mdash; does not bite, &euro;144 is already below<br>
+          <span style="opacity:.65">4.</span> Floor: annual &euro;150 vs historical p15 &euro;93 &nbsp;&rarr;&nbsp; <b>&euro;150</b> wins<br>
+          <b>Base Price = &euro;150</b> &nbsp;<span style="opacity:.65">(the Floor decided this one)</span><br>
+          <span style="opacity:.65">the guest will see: Beddy/direct &euro;150 &middot; Airbnb &euro;165 &middot; Booking &euro;169 &middot; Expedia &euro;176</span>
+        </div>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">When it is recalculated</p>
+        <p style="margin:0 0 6px 0">The Base Price is <b>frozen for the next 30 days</b>: a date enters the window, locks with the data available at that moment and stops moving, so nobody sees the price shift under their feet while working on it. <b>Beyond 30 days it is recalculated every time</b> the dashboard opens, absorbing new bookings, new compset readings and new events. The window rolls forward every day.</p>
+        <p style="margin:0 0 10px 0">The logic behind it: far from the date the structural estimate keeps <i>improving</i>, so it should keep updating; close to the date what matters is stability and attribution &mdash; if the Base kept moving while you sell, you could no longer tell whether a price change came from demand or from a recomputation. In short: <b>the Base Price updates while you are still deciding, and stops once you are selling.</b></p>
+        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>The Base Price is <b>accepted by default</b>: if you do nothing, it is the active price. You can always override it by hand with 🖋 for a single day or for a period.</i></p>
+
+        <h4 style="margin:14px 0 6px 0;color:#5a3a14">📊 Monthly Anchor — fallback when there is no history</h4>
+        <p><i>The ±50% Monthly Anchor guard-rail has been removed: measured over 365 days it acted on 1% of the dates and moved average prices by +0.0% to +0.3% — noise, not protection. The Monthly Anchor survives only as the <b>fallback base</b> for dates with no LY history at all.</i> It is recomputed <b>per property × per month</b>:</p>
         <ol style="margin:6px 0 8px 18px;font-size:13px">
           <li>Take every booking confirmed in the <b>last 2 years</b> (e.g. for 2026 → use 2024 + 2025).</li>
           <li>Keep only stay-dates that fall in the <b>target month</b> (e.g. July).</li>
@@ -2840,7 +2869,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <li>Convert every booking revenue <b>net of OTA markup</b> (÷1.17 Expedia, ÷1.13 Booking, ÷1.10 Airbnb; Direct/Beddy as-is) — same conversion used elsewhere.</li>
           <li>Monthly Anchor = <b>total Beddy-eq revenue / total room-nights</b>. This is the <b>true ADR</b> earned on that base RT in that month over the last 2 years.</li>
         </ol>
-        <p>The Base Price ±50% guard-rail then uses this Monthly Anchor as center: for example if Firenze's Monthly Anchor in July is €280, the Base Price for any July day stays within <b>€140 – €420</b>.</p>
+        <p>When a date has no LY history at all, the Monthly Anchor takes the place of the median as the starting point. With the current data this never happens, but it keeps the engine from returning nothing.</p>
         <p><b>Why this design</b>: the band of the Base Price tracks the actual seasonality of the property. <b>High-season months get more head-room</b> to push up, <b>low-season months get a tighter ceiling</b> — the Base Price becomes naturally <b>seasonal</b>.</p>
         <p><b>Fallback if no LY data for the month</b>: if zero bookings on the base RT existed in the target month across both LY years (e.g. a brand-new property, or a closed month), the system falls back to the <b>annual Anchor Price</b> configured in the RMES tab. The Export Pricing → Base Price breakdown will show the source explicitly: "Monthly Anchor (LY history, N RN)" or "Monthly Anchor (annual fallback)".</p>
 

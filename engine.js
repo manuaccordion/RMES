@@ -1199,7 +1199,13 @@ function loadData(csvText){
   RAW = [];
   BOOKINGS = [];
   // === Cache pre-loop: evito 26k+ chiamate ripetute a fp_getChannelMarkups() / structRoomsFor() ===
-  const _markups = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups() : {expedia:17,booking:13,airbnb:10};
+  // Markup PER STRUTTURA, precaricati una volta sola (evita 26k+ letture da storage).
+  const _markupsByStruct = {};
+  for (const sk of Object.keys(CFG.structures)){
+    _markupsByStruct[sk] = (typeof fp_getChannelMarkups === 'function')
+      ? fp_getChannelMarkups(sk) : {expedia:17,booking:13,airbnb:10};
+  }
+  const _markups = _markupsByStruct.firenze || {expedia:17,booking:13,airbnb:10};   // fallback
   const _structRoomsCache = {};
   for (const sk of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
     if (typeof structRoomsFor === 'function'){
@@ -1210,7 +1216,8 @@ function loadData(csvText){
   // qualsiasi struttura registrata (incl. nazionale/portenuove) viene accettata.
   const _keyToShort = {};
   for (const _sk in CFG.structures){ _keyToShort[CFG.structures[_sk].key] = _sk; }
-  function _markupForCanaleFast(canale){
+  function _markupForCanaleFast(canale, structShort){
+    const _m = (structShort && _markupsByStruct[structShort]) ? _markupsByStruct[structShort] : _markups;
     const c = (canale || '').toLowerCase();
     // Stessa regola di fp_markupForChannel: le due DEVONO restare allineate,
     // altrimenti salvando le impostazioni markup i valori cambiano da soli.
@@ -1221,9 +1228,9 @@ function loadData(csvText){
         c.indexOf('sito web') !== -1 || c.indexOf('front') !== -1 || c.indexOf('booking engine') !== -1){
       return 0;
     }
-    if (c.indexOf('booking') !== -1) return _markups.booking;
-    if (c.indexOf('airbnb') !== -1 || c.indexOf('vrbo') !== -1) return _markups.airbnb;
-    return _markups.expedia;
+    if (c.indexOf('booking') !== -1) return _m.booking;
+    if (c.indexOf('airbnb') !== -1 || c.indexOf('vrbo') !== -1) return _m.airbnb;
+    return _m.expedia;
   }
   for (const r of all){
     const stato = r['Stato'];
@@ -1278,7 +1285,7 @@ function loadData(csvText){
     const hasFlex = tariffaLower.includes('flessibile') || tariffaLower.includes('standard rate');
     const isNonRefundable = hasNonRimb && !hasFlex;
     const isDirect = (canale === 'Direct' || canale === 'Beddy' || canale === 'Diretto' || canale === '—' || canale === '');
-    const _markupPct = _markupForCanaleFast(canale);
+    const _markupPct = _markupForCanaleFast(canale, _structKeyForRooms);
     const channelMarkup = isDirect ? 0 : (_markupPct / 100);
     const revPerRoomNightCaricato = revPerRoomNightGross / (1 + channelMarkup);
     RAW.push(r);
@@ -4375,7 +4382,7 @@ function expYmdKey(ymdNum){
 function expToBeddyFlex(expediaPrice, structKey, dateISO){
   if (expediaPrice == null || !isFinite(expediaPrice)) return null;
   const markupPct = (typeof fp_getChannelMarkups === 'function')
-                  ? fp_getChannelMarkups().expedia
+                  ? fp_getChannelMarkups(structKey).expedia
                   : ((structKey && typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(structKey) : 17);
   const markup = 1 + markupPct / 100;
   let suppl = 0;
@@ -4419,7 +4426,7 @@ function fp_expediaRoomSupplement(structKey, dateISO){
 }
 function fp_expToBeddyDivisor(structKey){
   const markupPct = (typeof fp_getChannelMarkups === 'function')
-                  ? fp_getChannelMarkups().expedia
+                  ? fp_getChannelMarkups(structKey).expedia
                   : ((typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(structKey) : 17);
   return (1 + markupPct/100);   // niente piu' fattore 0.90
 }
@@ -5387,7 +5394,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -6211,6 +6218,49 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
    ============================================================ */
 const FP_TARGET_GROWTH_KEY = 'rmes_target_growth_v1';
 const FP_FLOOR_KEY = 'rmes_floor_v1';
+/* Sotto questo numero di osservazioni il p15 non fa testo e vale solo il floor annuale. */
+const FP_FLOOR_HIST_MIN_OBS = 8;
+/* ORIZZONTE DEL CAP COMPSET — non e' un numero fisso, lo dicono i dati.
+   Il cap ha senso dove si vende davvero: se l'80% delle prenotazioni di una
+   struttura entra entro N giorni dall'arrivo, oltre N il prezzo online conta
+   poco (sono tariffe provvisorie che nessuno ha ancora rivisto) e non deve
+   vincolare il Base Price. Sotto N invece il posizionamento e' reale e il
+   tetto serve.
+   N = 80esimo percentile del lead time sugli ultimi 12 mesi di soggiorno,
+   calcolato PER STRUTTURA. Limitato fra 30 e 365 giorni per sicurezza. */
+const FP_CAP_HORIZON_PCTL = 0.80;
+const FP_CAP_HORIZON_MIN = 30, FP_CAP_HORIZON_MAX = 365;
+let _CAP_HORIZON_CACHE = {};
+function fpCapHorizonDays(structKey){
+  if (_CAP_HORIZON_CACHE[structKey] != null) return _CAP_HORIZON_CACHE[structKey];
+  let out = 180;
+  try {
+    const cfg = CFG.structures[structKey];
+    const useIdx = !!(typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]);
+    const list = useIdx ? _BOOKINGS_BY_STRUCT[structKey] : BOOKINGS;
+    const today0 = startOfDay(new Date(TODAY));
+    const fromY = ymd(addDays(today0, -365)), toY = ymd(today0);
+    const leads = [];
+    for (let i=0; i<list.length; i++){
+      const b = list[i];
+      if (b.cancelled || !b.stayYmds) continue;
+      if (!useIdx && cfg && b.struct !== cfg.key) continue;
+      for (let j=0; j<b.stayYmds.length; j++){
+        const k = b.stayYmds[j];
+        if (k < fromY || k > toY) continue;
+        const l = Math.round((ymdToDate(k) - ymdToDate(b.bookYmd)) / 86400000);
+        if (l >= 0) leads.push(l);
+      }
+    }
+    if (leads.length >= 100){
+      leads.sort((a,b)=>a-b);
+      out = leads[Math.floor((leads.length-1) * FP_CAP_HORIZON_PCTL)];
+    }
+  } catch(e){}
+  out = Math.max(FP_CAP_HORIZON_MIN, Math.min(FP_CAP_HORIZON_MAX, out));
+  _CAP_HORIZON_CACHE[structKey] = out;
+  return out;
+}
 const FP_COMPSET_OFFSETS_KEY = 'rmes_compset_offsets_v1';  // SOLO offset (pesi vengono da rmes_compset_weights_v1 = box ③ esistente)
 const FP_BASE_PRICE_KEY = 'rmes_base_price_v1';  // Base price annuale per struttura (= Anchor Price nel nuovo sistema)
 const FP_BASE_RATE_OVERRIDES_KEY = 'rmes_base_rate_overrides_v1';  // manual final-price override 🖋 (Last update cell). Synced via Firebase (in SYNC_KEYS + CELL_MERGE_KEYS).
@@ -6743,20 +6793,32 @@ function newrmesCalculateBasePrice(structKey, isoDate){
       const c = compsetWeightedAvg(structKey, isoDate, /*applyOffset=*/true);
       const goalValue = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : (isFinite(c) ? c : null);
       const nComp = (c && typeof c === 'object' && isFinite(c.n)) ? c.n : 0;
-      const reliable = (goalValue != null && goalValue > 0 && nComp >= 2 && goalValue >= floor);
+      // Il cap vale solo entro l'orizzonte in cui i prezzi online sono reali.
+      const _leadC = Math.round((ymdToDate(+isoDate.replace(/-/g,'')) - startOfDay(new Date(TODAY))) / 86400000);
+      const _withinHorizon = (_leadC <= fpCapHorizonDays(structKey));
+      const reliable = (goalValue != null && goalValue > 0 && nComp >= 2 && goalValue >= floor && _withinHorizon);
       if (reliable && price > goalValue) price = goalValue;
     } catch(e){}
   }
-  // Anchor Mensile guard-rail: ±50% dall'Anchor Mensile (non più annuale)
-  const _easterDay = !!(anchor && anchor.easterAligned);
-  const minAnchor = monthlyAnchor * 0.5;
-  const maxAnchor = monthlyAnchor * 1.5;
-  if (price < minAnchor) price = minAnchor;
-  // Giorni pasquali (settimana santa): l'anchor storico è legittimamente alto (premio Pasqua),
-  // quindi NON cappo l'upside col guard-rail mensile normale. Restano Floor e Goal Value cap.
-  if (!_easterDay && price > maxAnchor) price = maxAnchor;
-  // Step 5: Floor (hard minimum)
-  if (price < floor) price = floor;
+  /* GUARD-RAIL ANCHOR RIMOSSO.
+     Era una banda ±50% attorno all'Anchor Mensile. Due motivi per toglierlo:
+     - l'Anchor Mensile nasce dagli STESSI dati che producono la mediana, quindi
+       controllava il prezzo con un metro derivato da cio' che lo aveva generato;
+     - misurato su 365 giorni scattava sull'1% delle date e spostava la media
+       dei prezzi fra +0.0% e +0.3%: rumore, non protezione.
+     Restano i due limiti che contano davvero: il cap del compset (tetto) e il
+     Floor Rate (minimo). L'Anchor Mensile resta usato SOLO come base di
+     ripiego quando per quella data non c'e' storico. */
+  /* Step 5: FLOOR = il piu' ALTO fra due pavimenti.
+     - floor annuale: il minimo che decidi tu per la struttura, valido tutto l'anno
+     - floor storico: il 15esimo percentile dello stesso pool che ha prodotto la
+       mediana, cioe' il prezzo sotto il quale hai venduto poco in quel periodo.
+     Il secondo si alza da solo in alta stagione e sulle feste, il primo fa da
+     rete quando lo storico e' debole o assente. */
+  const floorHist = (anchor && anchor.adrP15 != null && anchor.adrP15 > 0 && anchor.adrP15N >= FP_FLOOR_HIST_MIN_OBS)
+    ? anchor.adrP15 : null;
+  const floorEff = (floorHist != null) ? Math.max(floor, floorHist) : floor;
+  if (price < floorEff) price = floorEff;
   return Math.round(price);
 }
 
@@ -6782,38 +6844,48 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
   let price = afterGrowth;
   // Goal Value cap (with sanity check)
   let goalValue = null;
-  let goalN = 0, goalNames = null;
+  let goalN = 0, goalNames = null, _goalParts = null;
   if (typeof compsetWeightedAvg === 'function'){
     try {
       const c = compsetWeightedAvg(structKey, isoDate, /*applyOffset=*/true);
       goalValue = (c && typeof c === 'object' && isFinite(c.avg)) ? c.avg : null;
-      if (c && typeof c === 'object'){ goalN = c.n || 0; goalNames = c.contributingNames || null; }
+      if (c && typeof c === 'object'){ goalN = c.n || 0; goalNames = c.contributingNames || null; _goalParts = c; }
     } catch(e){}
   }
   let cappedByGoal = false;
   // Cap affidabile? n≥2 competitor visibili AND Goal Value ≥ Floor
-  const goalReliable = (goalValue != null && goalValue > 0 && goalN >= 2 && goalValue >= floor);
+  const _leadDays = Math.round((ymdToDate(+isoDate.replace(/-/g,'')) - startOfDay(new Date(TODAY))) / 86400000);
+  const _capHorizon = fpCapHorizonDays(structKey);
+  const _capWithinHorizon = (_leadDays <= _capHorizon);
+  const goalReliable = (goalValue != null && goalValue > 0 && goalN >= 2 && goalValue >= floor && _capWithinHorizon);
   let goalUnreliableReason = null;
   if (goalValue != null && goalValue > 0 && !goalReliable){
-    if (goalN < 2) goalUnreliableReason = 'only ' + goalN + ' competitor(s) visible (need ≥2)';
+    if (!_capWithinHorizon) goalUnreliableReason = 'the date is ' + _leadDays + ' days away, beyond this property\'s ' + _capHorizon + '-day selling horizon (80% of its bookings arrive within that window). Further out, published prices are placeholders and must not cap the Base Price';
+    else if (goalN < 2) goalUnreliableReason = 'only ' + goalN + ' competitor(s) visible (need ≥2)';
     else if (goalValue < floor) goalUnreliableReason = 'Goal Value (€'+Math.round(goalValue)+') below Floor Rate (€'+floor+')';
   }
   if (goalReliable && price > goalValue){ price = goalValue; cappedByGoal = true; }
-  // Anchor Mensile guard-rail ±50% (upside NON applicato nei giorni pasquali)
+  // Guard-rail Anchor rimosso (vedi nota in newrmesCalculateBasePrice).
   const _easterDay = !!(anchor && anchor.easterAligned);
-  const minAnchor = monthlyAnchor * 0.5;
-  const maxAnchor = monthlyAnchor * 1.5;
-  let guardRail = null;
-  if (price < minAnchor){ price = minAnchor; guardRail = 'min'; }
-  else if (!_easterDay && price > maxAnchor){ price = maxAnchor; guardRail = 'max'; }
+  const minAnchor = null, maxAnchor = null;
+  const guardRail = null;
   // Floor
+  // Floor = max(floor annuale, p15 storico). Vedi nota in newrmesCalculateBasePrice.
+  const floorHist = (anchor && anchor.adrP15 != null && anchor.adrP15 > 0 && anchor.adrP15N >= FP_FLOOR_HIST_MIN_OBS)
+    ? Math.round(anchor.adrP15) : null;
+  const floorEff = (floorHist != null) ? Math.max(floor, floorHist) : floor;
+  const floorSource = (floorHist != null && floorHist > floor) ? 'historical' : 'annual';
   let flooredBy = false;
-  if (price < floor){ price = floor; flooredBy = true; }
+  if (price < floorEff){ price = floorEff; flooredBy = true; }
   return {
     isoDate,
     easterAligned: _easterDay,
     lyMedianADR: adrLY > 0 ? Math.round(adrLY) : null,
     lyObs: anchor ? anchor.nObs : 0,
+    lyFallbackUsed: anchor ? anchor.fallbackUsed : null,
+    lySpecial: anchor ? anchor.special : null,
+    lySpecialKind: anchor ? anchor.specialKind : null,
+    lySpecialFellBack: anchor ? !!anchor.specialFellBack : false,
     lyFallback: anchor ? anchor.fallbackUsed : 'none',
     lyAdrMin: anchor ? anchor.adrMin : null,
     lyAdrMax: anchor ? anchor.adrMax : null,
@@ -6830,18 +6902,29 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
     afterGrowth: Math.round(afterGrowth),
     goalValue: goalValue != null ? Math.round(goalValue) : null,
     goalN, goalNames,
+    // Scomposizione leggibile del Goal Value (vedi compsetWeightedAvg)
+    goalExpedia: _goalParts ? _goalParts.avgExpedia : null,
+    goalOffset:  _goalParts ? _goalParts.avgOffset  : null,
+    goalTarget:  _goalParts ? _goalParts.targetExpedia : null,
+    goalDivisor: _goalParts ? _goalParts.divisor : null,
+    goalSumW:    _goalParts ? _goalParts.sumW : null,
     goalReliable,
+    capLeadDays: _leadDays,
+    capWithinHorizon: _capWithinHorizon,
+    capHorizonDays: _capHorizon,
     goalUnreliableReason,
     cappedByGoal,
     monthlyAnchor: Math.round(monthlyAnchor),
     monthlyAnchorSource: anchorSource,  // 'ly_history' | 'annual_fallback'
     monthlyAnchorRn: anchorMonthlyRn,
     annualAnchor,  // Anchor Price annuale dalla tab RMES (per riferimento)
-    minAnchor: Math.round(minAnchor),
-    maxAnchor: Math.round(maxAnchor),
+    minAnchor: null,
+    maxAnchor: null,
     guardRail,
     floor,
     flooredBy,
+    floorHist, floorEff, floorSource,
+    floorHistN: anchor ? anchor.adrP15N : 0,
     finalBase: Math.round(price),
     flags: _bpComputeFlags({
       lyMedianADR: adrLY,
@@ -6902,16 +6985,7 @@ function _bpComputeFlags(c){
       });
     }
   }
-  // F4 — Monthly Anchor MAX strozza forte (>€30 cut)
-  // Segnale: il prezzo ADR storico è molto sopra il Monthly Anchor, il guard-rail taglia
-  // Potenziale opportunità persa — valuta override manuale per quel giorno
-  if (c.guardRail === 'max' && c.afterGrowth - c.maxAnchor > 30){
-    flags.push({
-      code: 'anchor_max_strangle',
-      severity: 'alert',
-      message: 'The Monthly Anchor MAX guard-rail cut the price by €'+Math.round(c.afterGrowth - c.maxAnchor)+' (from €'+Math.round(c.afterGrowth)+' to €'+c.maxAnchor+'). The ADR for this day is much higher than the seasonal average. If the day really sells at this premium, use a manual Base Price override to break free from the seasonal band.'
-    });
-  }
+  // F4 rimosso insieme al guard-rail Anchor.
   return flags;
 }
 
@@ -7024,8 +7098,8 @@ function renderBasePriceBreakdown(){
     { t:'× growth', al:'right', tip:'Step 2 — monthly target growth % applied to the ADR' },
     { t:'= after growth', al:'right', tip:'ADR × (1 + growth%)' },
     { t:'Goal Value (cap)', al:'right', tip:'Step 3 — Expedia Goal Value: weighted compset WITH offsets. Maximum cap on the Base Price. ⚠ = cap disabled for sanity (fewer than 2 competitors visible, or Goal < Floor).' },
-    { t:'Anchor ±50%', al:'right', tip:'Step 4 — guard-rail: result bounded within ±50% of the Monthly Anchor (true ADR LY of the base RT for that month).' },
-    { t:'Floor', al:'right', tip:'Step 5 — Floor Rate: the absolute minimum' },
+
+    { t:'Floor', al:'right', tip:'Step 4 — Floor: the higher of your annual Floor Rate and the historical p15 (the 15th percentile of the same pool that produced the median). The historical one lifts the floor by itself in high season and on holidays.' },
     { t:'→ Base Price', al:'right', tip:'Final frozen Base Price for the day' },
     { t:'⚑', al:'center', tip:'Flags — special situations worth noting. Hover the icon to see all flags for the day. No flag = clean run, the number is fully reliable.' },
   ];
@@ -7077,7 +7151,15 @@ function renderBasePriceBreakdown(){
     let goalTip;
     if (r.goalValue != null){
       if (r.goalReliable){
-        goalTip = 'Expedia Goal Value = €'+r.goalValue+' (weighted compset WITH offsets, '+r.goalN+' competitors).'
+        goalTip = 'Expedia Goal Value = €'+r.goalValue+'.'
+          + (r.goalExpedia != null
+              ? '\n\nHow it is built: the weighted average of the '+r.goalN+' visible competitors ON EXPEDIA is €'+Math.round(r.goalExpedia)
+                + ', your positioning offsets add €'+(r.goalOffset>=0?'+':'')+Math.round(r.goalOffset)
+                + ' → target Expedia price €'+Math.round(r.goalTarget)
+                + '. Divided by YOUR Expedia markup (×'+(r.goalDivisor||1).toFixed(2)+') that means loading €'+r.goalValue+' on Beddy.'
+                + '\n\nThe comparison happens on Expedia — your shelf price against theirs. Their markup is unknown and never used.'
+                + '\nWeights sum to '+(r.goalSumW||0).toFixed(2)+' across '+r.goalN+' competitors.'
+              : ' (weighted compset WITH offsets, '+r.goalN+' competitors).')
           + (r.cappedByGoal
               ? '\n\n✓cap (red): the price after growth (€'+r.afterGrowth+') was ABOVE the Goal Value, so it was capped DOWN to €'+r.goalValue+'.'
               : '\n\nNot capping here: the price after growth (€'+r.afterGrowth+') is already at or below the Goal Value, so it passes through unchanged.');
@@ -7089,28 +7171,17 @@ function renderBasePriceBreakdown(){
     } else {
       goalTip = 'No valid compset for this date (no competitor prices visible, or only your own properties). No Goal Value cap applied.';
     }
-    // --- Tooltip guard-rail (Monthly Anchor based) ---
-    const _anchorSrcLbl = (r.monthlyAnchorSource === 'ly_history')
-      ? 'Monthly Anchor €'+r.monthlyAnchor+' (true ADR LY 2 yrs, baseRT, '+r.monthlyAnchorRn+' RN)'
-      : 'Monthly Anchor €'+r.monthlyAnchor+' (annual fallback: no LY data for this month)';
-    let grTip;
-    if (r.guardRail === 'max'){
-      grTip = '↓ max: the price exceeded the upper guard-rail (' + _anchorSrcLbl + ' +50% = €'+r.maxAnchor+'), so it was pulled DOWN to €'+r.maxAnchor+'.';
-    } else if (r.guardRail === 'min'){
-      grTip = '↑ min: the price was below the lower guard-rail (' + _anchorSrcLbl + ' −50% = €'+r.minAnchor+'), so it was pushed UP to €'+r.minAnchor+'.';
-    } else {
-      grTip = 'Within the ±50% band (€'+r.minAnchor+' – €'+r.maxAnchor+' around the Monthly Anchor €'+r.monthlyAnchor+'). No adjustment.\\n\\nSource: ' + _anchorSrcLbl;
-    }
-    // --- Tooltip floor ---
-    const floorTip = r.flooredBy
-      ? ('Floor applied: the price was below the Floor Rate (€'+r.floor+'), so it was raised to the floor.')
-      : ('Above the Floor Rate (€'+r.floor+'). No adjustment.');
-
-    const goalTxt = r.goalValue != null
-      ? ('€'+r.goalValue + (r.cappedByGoal ? ' ✓cap' : (r.goalReliable ? '' : ' ⚠')))
-      : '—';
-    const grTxt = r.guardRail ? (r.guardRail==='min'?'↑ min':'↓ max') : '–';
-    const floorTxt = r.flooredBy ? ('€'+r.floor+' ✓') : ('€'+r.floor);
+    const floorTxt = (r.flooredBy ? ('€'+r.floorEff+' ✓') : ('€'+r.floorEff))
+                   + (r.floorSource === 'historical' ? ' p15' : '');
+    const floorTip = 'Floor = the HIGHER of two minimums.'
+      + '\n\n• Annual Floor Rate (set by you): €'+r.floor
+      + '\n• Historical p15: ' + (r.floorHist != null
+          ? '€'+r.floorHist+'  (15th percentile of the '+r.floorHistN+' observations that produced the median — you sold below this price only 15% of the time)'
+          : 'not available (fewer than 8 observations)')
+      + '\n\nApplied: €'+r.floorEff+' ('+(r.floorSource === 'historical' ? 'historical p15 — it lifts the floor by itself in high season and on holidays' : 'annual floor rate')+')'
+      + (r.flooredBy
+          ? '\n\n✓ The floor ACTED: the price was below it and has been raised to €'+r.floorEff+'.'
+          : '\n\nThe floor did not act: the price is already above it.');
     const lyTxt = r.lyMedianADR != null ? ('€'+r.lyMedianADR) : '—';
     const adrUsedTxt = '€'+r.adrUsed + (r.adrUsedFromAnchor ? ' (anchor)' : '');
     h += '<tr style="border-bottom:1px solid #f0eee9">';
@@ -7124,7 +7195,6 @@ function renderBasePriceBreakdown(){
     h += `<td style="padding:6px 9px;text-align:right;color:#888;border-bottom:1px solid #f0eee9">+${r.targetGrowth}%</td>`;
     h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:#888;border-bottom:1px solid #f0eee9">€${r.afterGrowth}</td>`;
     h += `<td title="${escapeHtml(goalTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;cursor:help;color:${r.cappedByGoal?'#a83b3b':'#888'};border-bottom:1px solid #f0eee9">${goalTxt}</td>`;
-    h += `<td title="${escapeHtml(grTip)}" style="padding:6px 9px;text-align:right;color:${r.guardRail?'#a83b3b':'#999'};cursor:help;border-bottom:1px solid #f0eee9">${grTxt}</td>`;
     h += `<td title="${escapeHtml(floorTip)}" style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;color:${r.flooredBy?'#a83b3b':'#999'};cursor:help;border-bottom:1px solid #f0eee9">${floorTxt}</td>`;
     h += `<td style="padding:6px 9px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:#2c5c3c;border-bottom:1px solid #f0eee9">€${r.finalBase}</td>`;
     // Flags column
@@ -9484,18 +9554,35 @@ const FP_CHANNEL_MARKUP_DEFAULTS = {
   booking: 13,   // Booking
   airbnb: 10     // Airbnb / VRBO
 };
-function fp_getChannelMarkups(){
+/* Markup PER STRUTTURA. Il markup e' una caratteristica della singola proprieta'
+   (su Beddy lo imposti struttura per struttura), non del gruppo: Condotta ha
+   Booking attorno al 20% mentre Firenze e Alfani stanno sul 13%.
+   Formato in storage:  { "<struct>": {expedia, booking, airbnb}, ... }
+   Retrocompatibile: se trova il vecchio formato piatto {expedia, booking, airbnb}
+   lo usa come valore di partenza per TUTTE le strutture. */
+function fp_getChannelMarkups(structKey){
   let obj = {};
   try { const raw = localStorage.getItem(FP_CHANNEL_MARKUP_KEY); if (raw) obj = JSON.parse(raw) || {}; } catch(e){}
-  return {
-    expedia: (obj.expedia != null && isFinite(obj.expedia)) ? +obj.expedia : FP_CHANNEL_MARKUP_DEFAULTS.expedia,
-    booking: (obj.booking != null && isFinite(obj.booking)) ? +obj.booking : FP_CHANNEL_MARKUP_DEFAULTS.booking,
-    airbnb:  (obj.airbnb  != null && isFinite(obj.airbnb))  ? +obj.airbnb  : FP_CHANNEL_MARKUP_DEFAULTS.airbnb
+  const legacy = (obj.expedia != null || obj.booking != null || obj.airbnb != null) ? obj : null;
+  const sk = structKey || (typeof CURRENT_STRUCT !== 'undefined' ? CURRENT_STRUCT : null);
+  const per = (sk && obj[sk] && typeof obj[sk] === 'object') ? obj[sk] : null;
+  const pick = (kind) => {
+    if (per && per[kind] != null && isFinite(per[kind])) return +per[kind];
+    if (legacy && legacy[kind] != null && isFinite(legacy[kind])) return +legacy[kind];
+    return FP_CHANNEL_MARKUP_DEFAULTS[kind];
   };
+  return { expedia: pick('expedia'), booking: pick('booking'), airbnb: pick('airbnb') };
 }
-function fp_setChannelMarkup(kind, pct){
+function fp_setChannelMarkup(kind, pct, structKey){
   let obj = {};
   try { const raw = localStorage.getItem(FP_CHANNEL_MARKUP_KEY); if (raw) obj = JSON.parse(raw) || {}; } catch(e){}
+  const sk = structKey || (typeof CURRENT_STRUCT !== 'undefined' ? CURRENT_STRUCT : null);
+  if (sk && CFG.structures[sk]){
+    if (!obj[sk] || typeof obj[sk] !== 'object') obj[sk] = {};
+    obj[sk][kind] = +pct;
+    try { localStorage.setItem(FP_CHANNEL_MARKUP_KEY, JSON.stringify(obj)); } catch(e){}
+    return;
+  }
   obj[kind] = +pct;
   try { localStorage.setItem(FP_CHANNEL_MARKUP_KEY, JSON.stringify(obj)); } catch(e){}
 }
@@ -9611,7 +9698,7 @@ function renderChannelMix(sel){
     });
   }
 }
-function fp_markupForChannel(canale){
+function fp_markupForChannel(canale, structKey){
   const c = (canale || '').toLowerCase();
   // Canale diretto = nessun markup: il prezzo che arriva e' gia' quello finale.
   // ATTENZIONE: il canale normalizzato e' "Direct" (inglese). Il vecchio test
@@ -9624,7 +9711,7 @@ function fp_markupForChannel(canale){
       c.indexOf('sito web') !== -1 || c.indexOf('front') !== -1 || c.indexOf('booking engine') !== -1){
     return 0;
   }
-  const m = fp_getChannelMarkups();
+  const m = fp_getChannelMarkups(structKey);
   if (c.indexOf('booking') !== -1) return m.booking;       // Booking.com
   if (c.indexOf('airbnb') !== -1 || c.indexOf('vrbo') !== -1) return m.airbnb;  // Airbnb/VRBO
   return m.expedia;  // Expedia + tutti gli altri OTA non specificati
@@ -9650,7 +9737,7 @@ function fp_recalcMarkupOnBookings(){
   for (const b of BOOKINGS){
     if (!b.structKey) continue;
     const markupPct = (typeof fp_markupForChannel === 'function')
-                    ? fp_markupForChannel(b.canale)
+                    ? fp_markupForChannel(b.canale, b.structKey)
                     : fp_getOtaMarkup(b.structKey);
     const newMarkup = markupPct / 100;
     b.channelMarkup = newMarkup;
@@ -10182,6 +10269,153 @@ function _easterEquivYmd(year, offset){
   const dd=new Date(sun.getFullYear(),sun.getMonth(),sun.getDate()+offset);
   return ymd(dd);
 }
+/* ===========================================================================
+   DATE SPECIALI — feste fisse e ponti (configurabili nella tab RMES)
+   ---------------------------------------------------------------------------
+   Una data speciale non si comporta come il suo giorno della settimana: il
+   25 dicembre vale come 25 dicembre, non come "un giovedi' di dicembre".
+   Per queste date il calcolo storico usa come priorita' lo STESSO GIORNO di
+   calendario degli anni precedenti; solo se non ci sono abbastanza osservazioni
+   ripiega sul giorno-settimana dello stesso mese.
+   In piu' le date speciali degli anni precedenti vengono ESCLUSE dai pool dei
+   giorni normali, cosi un lunedi' qualunque di dicembre non eredita il premio
+   di Natale.
+
+   Due formati ammessi, entrambi modificabili dall'utente:
+     "MM-DD"       ricorrente ogni anno   → es. "12-25" Natale
+     "YYYY-MM-DD"  una tantum             → es. "2026-12-24" ponte
+   Pasqua NON sta in lista: si muove ogni anno ed e' calcolata dal computus.
+   =========================================================================== */
+const FP_SPECIAL_DAYS_KEY = 'rmes_special_days_v1';
+const FP_SPECIAL_DAYS_DEFAULT = [
+  { d: '01-01', label: 'Capodanno' },
+  { d: '01-06', label: 'Epifania' },
+  { d: '04-25', label: 'Liberazione' },
+  { d: '05-01', label: 'Festa del lavoro' },
+  { d: '06-02', label: 'Festa della Repubblica' },
+  { d: '08-15', label: 'Ferragosto' },
+  { d: '12-08', label: 'Immacolata' },
+  { d: '12-24', label: 'Vigilia di Natale' },
+  { d: '12-25', label: 'Natale' },
+  { d: '12-26', label: 'Santo Stefano' },
+  { d: '12-31', label: 'San Silvestro' },
+];
+let _SPECIAL_DAYS_CACHE = null;
+function fpGetSpecialDays(){
+  if (_SPECIAL_DAYS_CACHE) return _SPECIAL_DAYS_CACHE;
+  let list = null;
+  try {
+    const raw = localStorage.getItem(FP_SPECIAL_DAYS_KEY);
+    if (raw){
+      const p = JSON.parse(raw);
+      if (Array.isArray(p)) list = p.filter(x => x && typeof x.d === 'string');
+    }
+  } catch(e){}
+  if (!list) list = FP_SPECIAL_DAYS_DEFAULT.slice();
+  _SPECIAL_DAYS_CACHE = list;
+  return list;
+}
+function fpSetSpecialDays(list){
+  try { localStorage.setItem(FP_SPECIAL_DAYS_KEY, JSON.stringify(list || [])); } catch(e){}
+  _SPECIAL_DAYS_CACHE = null;
+  if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {};
+  if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {};
+}
+/* La data e' speciale? Ritorna {kind:'holiday'|'easter', label, key} oppure null.
+   key identifica il "tipo" di ricorrenza, serve a ritrovare la stessa festa
+   negli anni precedenti. */
+function fpSpecialDayInfo(dateObj){
+  const eo = _easterOffset(dateObj);
+  if (eo != null){
+    const nm = ['Giovedi santo','Venerdi santo','Sabato santo','Pasqua'][eo+3] || 'Pasqua';
+    return { kind: 'easter', label: nm, key: 'easter:' + eo, easterOffset: eo };
+  }
+  const mm = pad2(dateObj.getMonth()+1), dd = pad2(dateObj.getDate());
+  const md = mm + '-' + dd;
+  const full = dateObj.getFullYear() + '-' + md;
+  for (const it of fpGetSpecialDays()){
+    if (it.d === md)   return { kind: 'holiday', label: it.label || md, key: 'md:' + md, md: md, of: it.of || null };
+    if (it.d === full) return { kind: 'holiday', label: it.label || full, key: 'exact:' + full, exact: full, md: md, of: it.of || null };
+  }
+  return null;
+}
+/* Tutte le date speciali di un anno, come insieme di ymd numerici.
+   Serve per ESCLUDERLE dai pool dei giorni normali. */
+function fpSpecialYmdsOfYear(year){
+  const out = new Set();
+  for (const k of _easterWindowYmds(year)) out.add(k);
+  for (const it of fpGetSpecialDays()){
+    const p = String(it.d).split('-');
+    if (p.length === 2){
+      out.add(year*10000 + (+p[0])*100 + (+p[1]));
+    } else if (p.length === 3 && +p[0] === year){
+      out.add((+p[0])*10000 + (+p[1])*100 + (+p[2]));
+    }
+  }
+  return out;
+}
+/* La stessa ricorrenza in un altro anno. Per Pasqua usa l'offset dal computus,
+   per le feste fisse lo stesso giorno di calendario. Le date "una tantum"
+   (formato completo) non hanno equivalente negli altri anni → null. */
+function fpSpecialEquivYmd(info, year){
+  if (!info) return null;
+  if (info.kind === 'easter') return _easterEquivYmd(year, info.easterOffset);
+  // PONTE: non ha un equivalente proprio negli anni passati (il 1 giugno 2025
+  // non era un ponte). Eredita quindi la FESTA a cui e' attaccato: un lunedi'
+  // di ponte si comporta come la festa, non come un lunedi' qualunque.
+  if (info.of){
+    const q = String(info.of).split('-');
+    if (q.length === 2) return year*10000 + (+q[0])*100 + (+q[1]);
+  }
+  if (info.exact) return null;    // data una tantum senza festa collegata
+  const p = String(info.md).split('-');
+  return year*10000 + (+p[0])*100 + (+p[1]);
+}
+/* ---------------------------------------------------------------------------
+   PONTI — proposta automatica
+   Un ponte e' il giorno lavorativo incastrato fra una festa e il weekend:
+     festa di MARTEDI    → il lunedi' prima e' ponte
+     festa di GIOVEDI    → il venerdi' dopo e' ponte
+   Non si propongono ponti attorno a feste di lunedi'/venerdi' (gia' attaccate
+   al weekend) ne' di mercoledi' (due giorni di ponte non sono la norma).
+   La proposta NON e' automatica in senso stretto: viene mostrata all'utente
+   nella tab RMES e diventa effettiva solo quando la conferma, cosi la lista
+   resta una cosa sola e leggibile.
+   --------------------------------------------------------------------------- */
+function fpProposeBridges(year){
+  const out = [];
+  const already = new Set();
+  for (const it of fpGetSpecialDays()){
+    const p = String(it.d).split('-');
+    if (p.length === 2) already.add(year*10000 + (+p[0])*100 + (+p[1]));
+    else if (p.length === 3 && +p[0] === year) already.add((+p[0])*10000 + (+p[1])*100 + (+p[2]));
+  }
+  const holidays = [];
+  for (const it of fpGetSpecialDays()){
+    const p = String(it.d).split('-');
+    if (p.length === 2) holidays.push({ mo:+p[0], dd:+p[1], label: it.label || it.d });
+    else if (p.length === 3 && +p[0] === year) holidays.push({ mo:+p[1], dd:+p[2], label: it.label || it.d });
+  }
+  for (const h of holidays){
+    const d = new Date(year, h.mo-1, h.dd);
+    const dow = d.getDay();
+    let bridge = null, why = null;
+    if (dow === 2){ bridge = new Date(year, h.mo-1, h.dd-1); why = h.label + ' falls on Tuesday → Monday before'; }
+    else if (dow === 4){ bridge = new Date(year, h.mo-1, h.dd+1); why = h.label + ' falls on Thursday → Friday after'; }
+    if (!bridge) continue;
+    const k = ymd(bridge);
+    if (already.has(k)) continue;                 // gia' festa di per se'
+    if (fpSpecialDayInfo(bridge)) continue;       // gia' speciale (es. cade in settimana santa)
+    out.push({
+      d: bridge.getFullYear() + '-' + pad2(bridge.getMonth()+1) + '-' + pad2(bridge.getDate()),
+      label: 'Ponte ' + h.label,
+      of: pad2(h.mo) + '-' + pad2(h.dd),   // festa a cui il ponte e' attaccato
+      why,
+    });
+  }
+  out.sort((a,b)=> a.d < b.d ? -1 : 1);
+  return out;
+}
 function fp_computeAnchorLY(structKey, rt, targetDateISO){
   if (!targetDateISO) return null;
   const _td = new Date(targetDateISO + 'T00:00:00');
@@ -10202,17 +10436,17 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   const targetDay = td.getDate();
   const targetDow = td.getDay();
   const structName = fp_structName(structKey);
-  // Anni di riferimento: i 2 anni precedenti alla data di soggiorno (rollforward).
-  // Per il 2026 → [2024,2025] (invariato vs prima); per il 2027 → [2025,2026] (usa i dati recenti).
+  const _dowN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const _monN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  // Anni di riferimento: i 2 precedenti alla data di soggiorno.
   const targetYear = td.getFullYear();
   const yearsToCheck = [targetYear - 2, targetYear - 1];
   const yearsLabel = yearsToCheck.join('+');
-  // Pasqua: se la data è nella settimana santa (Gio→Dom), userò le date pasquali equivalenti
-  // degli anni di riferimento; e in ogni caso escludo le date pasquali degli anni di riferimento
-  // dai pool "stesso giorno/settimana+mese" (così i giorni normali non vengono gonfiati da Pasqua).
-  const _tEasterOff = _easterOffset(td);
-  const _priorEasterYmds = new Set();
-  for (const y of yearsToCheck){ for (const kk of _easterWindowYmds(y)) _priorEasterYmds.add(kk); }
+  // Date speciali (Pasqua + feste/ponti configurati) degli anni di riferimento:
+  // vanno escluse dai pool dei giorni normali.
+  const _specialPrior = new Set();
+  for (const y of yearsToCheck){ for (const k of fpSpecialYmdsOfYear(y)) _specialPrior.add(k); }
+  const special = fpSpecialDayInfo(td);
 
   // Helper: raccoglie ADR osservati su un set di giorni permessi
   function _gather(allowedDays){
@@ -10265,122 +10499,103 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
     return { adrObs: adrObs, rnByDay: rnByDay };
   }
 
-  // === Method 0: Easter-aligned (settimana santa) ===
-  // Se la data è Gio–Dom di Pasqua, confronta con le date pasquali EQUIVALENTI degli anni
-  // di riferimento (stesso offset dalla Domenica di Pasqua), non con lo stesso giorno di calendario.
-  if (_tEasterOff != null){
-    const easterDays = new Set();
-    for (const y of yearsToCheck){ easterDays.add(_easterEquivYmd(y, _tEasterOff)); }
-    const eRes = _gather(easterDays);
-    if (eRes.adrObs.length >= 2){
-      const arr = eRes.adrObs.slice().sort(function(a,b){return a-b;});
-      const medEaster = arr[Math.floor(arr.length/2)];
-      const rnVals = Object.values(eRes.rnByDay).sort(function(a,b){return a-b;});
-      const medRN = rnVals.length ? rnVals[Math.floor(rnVals.length/2)] : 0;
-      const _dowN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-      const _offN = { '-3':'Maundy Thursday','-2':'Good Friday','-1':'Holy Saturday','0':'Easter Sunday' };
-      return {
-        medianADR: medEaster, medianRN: medRN, nObs: eRes.adrObs.length, fallbackUsed: 'easter',
-        easterAligned: true,
-        adrMin: Math.round(arr[0]), adrMax: Math.round(arr[arr.length-1]),
-        setDesc: (_offN[String(_tEasterOff)] || 'Holy Week') + ' — Easter-aligned vs ' + yearsLabel + ' (moved to match Easter week, not the calendar date)',
-        dowName: _dowN[targetDow], monthName: '',
-        _medianSameDay: null, _nObsSameDay: 0, _medianDow: null, _nObsDow: 0, _dowFallback: 'easter'
-      };
-    }
-    // se pochi dati pasquali, prosegue coi metodi normali (sotto)
-  }
 
-  // === Method 1: Same-day-LY (stesso giorno+mese, anni LY) ===
-  // Es. 31/12/2026 → guarda 31/12/2024 + 31/12/2025.
-  // Cattura il premium dei giorni fissi speciali (NYE, Ferragosto, festività).
-  const sameDayDays = new Set();
-  for (const y of yearsToCheck){
-    const _k = ymd(new Date(y, targetMonth-1, targetDay));
-    if (!_priorEasterYmds.has(_k)) sameDayDays.add(_k);
-  }
-  const sameDayRes = _gather(sameDayDays);
-  let medianSameDay = null;
-  // Soglia minima same-day-LY: ≥2 osservazioni (Enis ha 3 camere → 31/12 può avere
-  // solo 2-3 obs LY anche su giorni speciali; con ≥3 il segnale veniva perso).
-  if (sameDayRes.adrObs.length >= 2){
-    const arr = sameDayRes.adrObs.slice().sort(function(a,b){return a-b;});
-    medianSameDay = arr[Math.floor(arr.length/2)];
-  }
+  // ===================== REGOLA DI SCELTA DEL METODO =====================
+  // Data SPECIALE (festa fissa, ponte o settimana santa):
+  //   priorita' allo STESSO GIORNO negli anni precedenti, bastano 2 osservazioni.
+  //   Se non bastano → giorno-settimana dello stesso mese.
+  // Data NORMALE:
+  //   SOLO giorno-settimana dello stesso mese. Nessun max() fra metodi diversi:
+  //   prendere il massimo di due stime alza il prezzo per costruzione.
+  // =======================================================================
+  const SPECIAL_MIN_OBS = 2;
 
-  // === Method 2: Weekday+Month (logica originale) ===
-  const targetDays = new Set();
-  for (const y of yearsToCheck){
-    const monthEnd = new Date(y, targetMonth, 0);
-    for (let d = new Date(y, targetMonth-1, 1); d <= monthEnd; d.setDate(d.getDate()+1)){
-      if (d.getDay() === targetDow){ const _k=ymd(d); if(!_priorEasterYmds.has(_k)) targetDays.add(_k); }
-    }
-  }
-  if (targetDays.size === 0){
-    return { medianADR: medianSameDay, medianRN: null, nObs: medianSameDay != null ? sameDayRes.adrObs.length : 0, fallbackUsed: medianSameDay != null ? 'dayMatch' : 'none' };
-  }
-  let dowRes = _gather(targetDays);
-  let fallbackUsed = 'none';
-  if (dowRes.adrObs.length < 3){
-    const wideDays = new Set();
+  // --- Pool giorno-settimana dello stesso mese (con fallback a tutto il mese) ---
+  function _weekdayPool(){
+    const days = new Set();
     for (const y of yearsToCheck){
-      const me = new Date(y, targetMonth, 0);
-      for (let d = new Date(y, targetMonth-1, 1); d <= me; d.setDate(d.getDate()+1)){
-        const _k=ymd(d); if(!_priorEasterYmds.has(_k)) wideDays.add(_k);
+      const monthEnd = new Date(y, targetMonth, 0);
+      for (let d = new Date(y, targetMonth-1, 1); d <= monthEnd; d.setDate(d.getDate()+1)){
+        if (d.getDay() !== targetDow) continue;
+        const k = ymd(d);
+        if (_specialPrior.has(k)) continue;      // niente feste nei giorni normali
+        days.add(k);
       }
     }
-    dowRes = _gather(wideDays);
-    fallbackUsed = 'monthWide';
+    let res = _gather(days), used = 'weekday';
+    if (res.adrObs.length < 3){
+      const wide = new Set();
+      for (const y of yearsToCheck){
+        const me = new Date(y, targetMonth, 0);
+        for (let d = new Date(y, targetMonth-1, 1); d <= me; d.setDate(d.getDate()+1)){
+          const k = ymd(d);
+          if (_specialPrior.has(k)) continue;
+          wide.add(k);
+        }
+      }
+      res = _gather(wide); used = 'monthWide';
+    }
+    return { res, used };
   }
-  let medianDow = null;
-  if (dowRes.adrObs.length > 0){
-    const arr = dowRes.adrObs.slice().sort(function(a,b){return a-b;});
-    medianDow = arr[Math.floor(arr.length/2)];
+  const _med = (a) => { if (!a.length) return null; const x = a.slice().sort((p,q)=>p-q); return x[Math.floor(x.length/2)]; };
+  const _pctOf = (a, p) => { if (!a.length) return null; const x = a.slice().sort((q,r)=>q-r); return x[Math.floor((x.length-1)*p)]; };
+
+  let medianADR = null, methodUsed = null, obsUsed = 0, setDesc = '', rnByDay = null;
+  let specialMedian = null, specialObs = 0, specialFellBack = false, _lastAdr = [];
+
+  if (special){
+    const days = new Set();
+    for (const y of yearsToCheck){
+      const k = fpSpecialEquivYmd(special, y);
+      if (k != null) days.add(k);
+    }
+    const r = _gather(days);
+    specialObs = r.adrObs.length;
+    if (specialObs >= SPECIAL_MIN_OBS){
+      specialMedian = _med(r.adrObs);
+      medianADR = specialMedian; obsUsed = specialObs; rnByDay = r.rnByDay; _lastAdr = r.adrObs;
+      methodUsed = (special.kind === 'easter') ? 'easter' : 'holiday';
+      setDesc = special.label + ' ' + yearsLabel + (special.kind === 'easter' ? ' (Easter-aligned)' : ' (same calendar day)');
+    } else {
+      specialFellBack = true;
+    }
   }
-
-  // === MAX between same-day and weekday+month ===
-  // Catturo il segnale più alto: o il giorno è speciale (NYE/festa) o il weekday+mese è alto.
-  // Se manca una delle due, uso l'altra. Se mancano entrambe, null.
-  let finalMedian = null, methodUsed = 'none';
-  if (medianSameDay != null && medianDow != null){
-    if (medianSameDay >= medianDow){ finalMedian = medianSameDay; methodUsed = 'dayMatch'; }
-    else { finalMedian = medianDow; methodUsed = fallbackUsed === 'monthWide' ? 'monthWide' : 'weekday'; }
-  } else if (medianSameDay != null){
-    finalMedian = medianSameDay; methodUsed = 'dayMatch';
-  } else if (medianDow != null){
-    finalMedian = medianDow; methodUsed = fallbackUsed === 'monthWide' ? 'monthWide' : 'weekday';
+  if (medianADR == null){
+    const w = _weekdayPool();
+    medianADR = _med(w.res.adrObs);
+    obsUsed = w.res.adrObs.length;
+    rnByDay = w.res.rnByDay; _lastAdr = w.res.adrObs;
+    methodUsed = w.used;
+    setDesc = (w.used === 'monthWide')
+      ? ('every day of ' + _monN[targetMonth-1] + ' ' + yearsLabel + ' (weekday sample too small)')
+      : ('every ' + _dowN[targetDow] + ' of ' + _monN[targetMonth-1] + ' ' + yearsLabel);
   }
-
-  if (finalMedian == null){
-    return { medianADR: null, medianRN: null, nObs: 0, fallbackUsed: fallbackUsed };
+  if (medianADR == null){
+    return { medianADR: null, medianRN: null, nObs: 0, fallbackUsed: 'none',
+             special: special ? special.label : null, specialKind: special ? special.kind : null };
   }
-
-  // Stat finali: uso il dataset del metodo vincente
-  const winningObs = (methodUsed === 'dayMatch') ? sameDayRes.adrObs : dowRes.adrObs;
-  const winningRnByDay = (methodUsed === 'dayMatch') ? sameDayRes.rnByDay : dowRes.rnByDay;
-  const adrs = winningObs.slice().sort(function(a,b){return a-b;});
-  const rnVals = Object.values(winningRnByDay).sort(function(a,b){return a-b;});
-  const medianRN = rnVals.length > 0 ? rnVals[Math.floor(rnVals.length/2)] : 0;
-  const _dowNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const _monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
-  let setDesc;
-  if (methodUsed === 'dayMatch') setDesc = (targetDay + ' ' + _monthNames[targetMonth] + ' ' + yearsLabel + ' (same-day match)');
-  else if (methodUsed === 'monthWide') setDesc = ('all days of ' + _monthNames[targetMonth] + ' ' + yearsLabel);
-  else setDesc = ('every ' + _dowNames[targetDow] + ' of ' + _monthNames[targetMonth] + ' ' + yearsLabel);
-
+  const rnVals = Object.keys(rnByDay || {}).map(k => rnByDay[k]);
+  const medianRN = _med(rnVals);
   return {
-    medianADR: finalMedian, medianRN: medianRN, nObs: winningObs.length, fallbackUsed: methodUsed,
-    adrMin: adrs.length ? Math.round(adrs[0]) : null,
-    adrMax: adrs.length ? Math.round(adrs[adrs.length-1]) : null,
-    setDesc: setDesc,
-    dowName: _dowNames[targetDow],
-    monthName: _monthNames[targetMonth],
-    // Diagnostica per il modal/tooltip
-    _medianSameDay: medianSameDay != null ? Math.round(medianSameDay) : null,
-    _nObsSameDay: sameDayRes.adrObs.length,
-    _medianDow: medianDow != null ? Math.round(medianDow) : null,
-    _nObsDow: dowRes.adrObs.length,
-    _dowFallback: fallbackUsed
+    medianADR, medianRN, nObs: obsUsed,
+    fallbackUsed: methodUsed,
+    // Diagnostica trasparente: cosa e' stato usato e perche'.
+    special: special ? special.label : null,
+    specialKind: special ? special.kind : null,
+    specialObs, specialMedian,
+    specialFellBack,          // true = era speciale ma non c'erano abbastanza dati
+    easterAligned: !!(special && special.kind === 'easter' && methodUsed === 'easter'),
+    setDesc,
+    dowName: _dowN[targetDow], monthName: _monN[targetMonth-1],
+    adrMin: _lastAdr.length ? Math.min.apply(null, _lastAdr) : null,
+    adrMax: _lastAdr.length ? Math.max.apply(null, _lastAdr) : null,
+    /* FLOOR STORICO = 15esimo percentile dello STESSO pool che produce la mediana.
+       Non il minimo: il minimo e' il valore piu' estremo del campione e basta una
+       singola vendita scontata (last minute, non rimborsabile, soggiorno lungo)
+       per trascinarlo giu'. Il p15 dice "sotto questo prezzo ho venduto poco" e
+       segue la stagione invece degli outlier. */
+    adrP15: _pctOf(_lastAdr, 0.15),
+    adrP15N: _lastAdr.length,
   };
 }
 
@@ -10403,7 +10618,7 @@ function fp_computeMonthlyAnchor(structKey, month){
   const todayY = (typeof TODAY !== 'undefined' ? TODAY : new Date()).getFullYear();
   const yearsLY = [todayY - 1, todayY - 2];  // es. nel 2026 → [2025, 2024]
   const structName = (typeof fp_structName === 'function') ? fp_structName(structKey) : structKey;
-  const channelMk = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups() : { expedia: 17, booking: 13, airbnb: 10 };
+  const channelMk = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups(structKey) : { expedia: 17, booking: 13, airbnb: 10 };
   let totRevBeddyEq = 0, totRn = 0, nBookings = 0;
   for (const b of BOOKINGS){
     if (b.cancelled) continue;
@@ -11004,7 +11219,7 @@ function fp_showFoundationApprovalPopup(structKey, rt, dateISO, fpCalcFromCell, 
   if (btnDetail){
     btnDetail.onclick = () => {
       popup.remove();
-      if (typeof fp_showFoundationOnlyModal === 'function') fp_showFoundationOnlyModal(structKey, rt, dateISO);
+      if (typeof fp_showBasePriceModal === 'function') fp_showBasePriceModal(structKey, rt, dateISO);
     };
   }
 }
@@ -11541,7 +11756,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
   const _btn6step = document.getElementById('fp-show-6step');
   if (_btn6step){
     _btn6step.onclick = function(){
-      if (typeof fp_showFoundationOnlyModal === 'function') fp_showFoundationOnlyModal(structKey, rt, dateISO);
+      if (typeof fp_showBasePriceModal === 'function') fp_showBasePriceModal(structKey, rt, dateISO);
     };
   }
   const finalInp = document.getElementById('fp-final-input');
@@ -11655,8 +11870,8 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       ev.stopPropagation();
       const m = document.getElementById('fp-detail-modal');
       if (m) m.remove();
-      if (typeof fp_showFoundationOnlyModal === 'function'){
-        fp_showFoundationOnlyModal(structKey, rt, dateISO);
+      if (typeof fp_showBasePriceModal === 'function'){
+        fp_showBasePriceModal(structKey, rt, dateISO);
       }
     };
   }
@@ -11666,6 +11881,105 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
    del popup approvazione, o dal bottone "Mostra calcolo Foundation" della modale RMES.
    Mostra: Ancora storica, Target Revenue, RN attese, Cap mercato, Floor + Base lift, Re-target.
    NON mostra i 5 fattori RMES (per quelli c'è fp_showDetailModal). */
+/* ===========================================================================
+   DETTAGLIO BASE PRICE — motore reale (NewRMES, 4 passi)
+   ---------------------------------------------------------------------------
+   Sostituisce la vecchia modale "Foundation" a 6 passi, che mostrava un calcolo
+   DIVERSO da quello che produce davvero il prezzo in Sell Strategy (fino al 53%
+   di scarto). Qui i numeri sono esattamente quelli di newrmesCalculateBasePrice.
+   =========================================================================== */
+function fp_showBasePriceModal(structKey, rt, dateISO){
+  // chiudo sia una eventuale copia di questa modale sia la modale RMES sottostante
+  const oldSelf = document.getElementById('fp-baseprice-modal');
+  if (oldSelf) oldSelf.remove();
+  const oldRmes = document.getElementById('fp-detail-modal');
+  if (oldRmes) oldRmes.remove();
+  const v = (typeof newrmesCalculateBasePriceVerbose === 'function')
+    ? newrmesCalculateBasePriceVerbose(structKey, dateISO) : null;
+  if (!v){ return; }
+  const d = new Date(dateISO + 'T00:00:00');
+  const DOW = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const eur = (x) => (x == null || !isFinite(x)) ? '—' : ('€' + Math.round(x));
+  const row = (label, value, note, strong) => '<tr>'
+    + '<td style="padding:5px 8px 5px 0;color:#555;font-size:12.5px">' + label
+    + (note ? '<div style="font-size:10.5px;color:#999;margin-top:1px">' + note + '</div>' : '') + '</td>'
+    + '<td style="padding:5px 0;text-align:right;font-family:\'DM Mono\',monospace;font-size:13px;'
+    + (strong ? 'font-weight:700' : '') + '">' + value + '</td></tr>';
+  const sec = (n, title, colour) => '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;'
+    + 'letter-spacing:.05em;color:' + colour + ';margin:16px 0 6px">' + n + ' ' + title + '</div>';
+
+  let h = '<div class="fp-modal-bg" id="fp-baseprice-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto" onclick="if(event.target===this){this.remove()}">';
+  h += '<div style="background:#fff;border-radius:10px;max-width:660px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)" onclick="event.stopPropagation()">';
+  h += '<div style="padding:16px 22px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:flex-start">';
+  h += '<div><div style="font-size:11.5px;font-weight:700;color:#c4823b;text-transform:uppercase;letter-spacing:.06em">⚡ Base Price · calculation detail</div>';
+  h += '<div style="font-size:16px;font-weight:700;margin-top:3px">' + d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear()
+     + ' (' + DOW[d.getDay()] + ') · ' + escapeHtml(rt || v.baseRT || '') + ' · ' + escapeHtml(structLabel(structKey)) + '</div></div>';
+  h += '<button onclick="document.getElementById(\'fp-baseprice-modal\').remove()" style="font-size:20px;background:transparent;border:0;cursor:pointer;color:#888;padding:0 8px">×</button>';
+  h += '</div><div style="padding:6px 22px 20px">';
+
+  // ① storico
+  h += sec('①', 'Historical median', '#c4823b');
+  h += '<table style="width:100%;border-collapse:collapse">';
+  const methodLbl = { easter:'Easter-aligned', holiday:'Same calendar day (holiday/bridge)',
+                      weekday:'Same weekday of the same month', monthWide:'Whole month (weekday sample too small)' };
+  h += row('Median Beddy price', '<b>' + eur(v.lyMedianADR) + '</b>', escapeHtml(v.lySetDesc || ''), true);
+  h += row('Method used', escapeHtml(methodLbl[v.lyFallbackUsed] || v.lyFallbackUsed || '—'),
+           v.lySpecial ? ('special date: ' + escapeHtml(v.lySpecial)) : null);
+  h += row('Observations', v.lyObs != null ? v.lyObs : '—', 'bookings in the winning pool');
+  if (v.adrUsed !== v.lyMedianADR) h += row('ADR used', eur(v.adrUsed), v.adrUsedFromAnchor ? 'no LY history → Monthly Anchor used' : 'raised by the 70% anchor protection');
+  h += '</table>';
+
+  // ② growth
+  h += sec('②', 'Target growth', '#3d7a4b');
+  h += '<table style="width:100%;border-collapse:collapse">';
+  h += row('Growth for this month', (v.targetGrowth >= 0 ? '+' : '') + v.targetGrowth + '%');
+  h += row('After growth', '<b>' + eur(v.afterGrowth) + '</b>', null, true);
+  h += '</table>';
+
+  // ③ cap
+  h += sec('③', 'Compset ceiling (Expedia)', '#3a6b6b');
+  h += '<table style="width:100%;border-collapse:collapse">';
+  if (v.goalValue != null && v.goalExpedia != null){
+    h += row('Competitors on Expedia', eur(v.goalExpedia), v.goalN + ' visible · weights sum ' + (v.goalSumW||0).toFixed(2));
+    h += row('Your positioning offsets', (v.goalOffset >= 0 ? '+' : '') + eur(Math.abs(v.goalOffset)).replace('€','') + ' €');
+    h += row('Target price on Expedia', eur(v.goalTarget));
+    h += row('÷ your Expedia markup', '×' + (v.goalDivisor||1).toFixed(2), 'competitors\' markup is unknown and never used');
+    h += row('Goal Value (to load)', '<b>' + eur(v.goalValue) + '</b>', null, true);
+  }
+  h += row('Selling horizon', v.capHorizonDays + ' days',
+           '80% of this property\'s bookings arrive within this window · this date is ' + v.capLeadDays + ' days away');
+  h += row('Ceiling applied?', v.cappedByGoal
+      ? '<span style="color:#a83b3b;font-weight:700">YES → ' + eur(v.goalValue) + '</span>'
+      : '<span style="color:#999">no</span>',
+      v.cappedByGoal ? 'the price after growth was above the Goal Value'
+                     : escapeHtml(v.goalUnreliableReason || 'the price is already at or below the ceiling'));
+  h += '</table>';
+
+  // ④ floor
+  h += sec('④', 'Floor', '#8e5fa8');
+  h += '<table style="width:100%;border-collapse:collapse">';
+  h += row('Annual Floor Rate', eur(v.floor), 'set by you, same all year');
+  h += row('Historical p15', v.floorHist != null ? eur(v.floorHist) : '—',
+           v.floorHist != null ? ('you sold below this only 15% of the time · ' + v.floorHistN + ' observations')
+                               : ('fewer than ' + (typeof FP_FLOOR_HIST_MIN_OBS !== 'undefined' ? FP_FLOOR_HIST_MIN_OBS : 8) + ' observations, not used'));
+  h += row('Floor applied', '<b>' + eur(v.floorEff) + '</b>',
+           v.floorSource === 'historical' ? 'the historical p15 wins' : 'the annual floor wins', true);
+  h += row('Did it act?', v.flooredBy
+      ? '<span style="color:#a83b3b;font-weight:700">YES → raised to ' + eur(v.floorEff) + '</span>'
+      : '<span style="color:#999">no</span>');
+  h += '</table>';
+
+  h += '<div style="margin-top:18px;padding:14px 18px;background:#fdf6ec;border:1px solid #e8c89a;border-radius:8px;display:flex;justify-content:space-between;align-items:center">';
+  h += '<div style="font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#7a4f1c">Base Price</div>';
+  h += '<div style="font-size:26px;font-weight:800;font-family:\'DM Mono\',monospace;color:#7a4f1c">' + eur(v.finalBase) + '</div>';
+  h += '</div>';
+  h += '<div style="margin-top:8px;font-size:11px;color:#999;text-align:center">This is the rate to load on Beddy. The OTAs add their markup on top.</div>';
+  h += '</div></div></div>';
+
+  const el = document.createElement('div');
+  el.innerHTML = h;
+  document.body.appendChild(el.firstChild);
+}
 function fp_showFoundationOnlyModal(structKey, rt, dateISO){
   const existing = document.getElementById('fp-fnd-only-modal');
   if (existing) existing.remove();
@@ -11840,7 +12154,8 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<div class="panel-sub"><b>Annual Anchor Price</b>: a fallback value (net Beddy_eq) used as guard-rail of the Base Price <b>only when LY data for the target month is missing</b>. In normal conditions the guard-rail uses the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month, computed dynamically from the last 2 years. Default Firenze 220 / Condotta 280 / Alfani 270 / David\'s 145. <b>Floor</b>: the absolute minimum below which the Base Price never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. <b>Price elasticity</b>: the estimate used in override simulations (RMES modal). E.g. 1.0 = if I lower the price -10%, I sell +10% RN. Default 1.0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Used as guard-rail only when LY data for the target month is missing. Normally the Monthly Anchor (computed from last 2 years data) is used instead."><b style="color:#7a4f1c">Annual Anchor (fallback)</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
-  h += '<label style="font-size:12px;color:var(--ink-2)"><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="10" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
+  h += '<label style="font-size:12px;color:var(--ink-2)" title="Annual minimum for this property. The effective floor on each date is the HIGHER of this and the historical p15 of that period."><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="10" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
+  h += '<span id="fp-floor-p15" style="font-size:11px;color:var(--ink-3);font-family:\'DM Mono\',monospace"></span>';
   h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#3a6b6b">Markup Expedia/altri</b>: <input type="number" id="fp-mk-expedia" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #3a6b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef6f6"> %</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Booking.com markup for channel history"><b style="color:#1e4a6b">Markup Booking</b>: <input type="number" id="fp-mk-booking" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #1e4a6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef4fa"> %</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Airbnb/VRBO markup for channel history"><b style="color:#a83b6b">Markup Airbnb/VRBO</b>: <input type="number" id="fp-mk-airbnb" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #a83b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#faeef4"> %</label>';
@@ -11878,7 +12193,38 @@ function fp_renderFoundationConfigBox(structKey){
   }
   document.getElementById('fp-base-input').value = fp_getBasePrice(structKey);
   document.getElementById('fp-floor-input').value = fp_getFloor(structKey);
-  const _mk = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups() : {expedia:17,booking:13,airbnb:10};
+  // Accanto al floor annuale: il p15 storico mese per mese, per vedere quando
+  // e' lui a comandare. Il floor effettivo e' sempre il piu' alto dei due.
+  (function(){
+    const el = document.getElementById('fp-floor-p15');
+    if (!el) return;
+    const ann = fp_getFloor(structKey);
+    const rt = (CFG.structures[structKey] || {}).baseRT;
+    if (!rt){ el.textContent = ''; return; }
+    const y = TODAY.getFullYear() + 1;
+    const parts = [];
+    let nHigher = 0;
+    for (let mo=1; mo<=12; mo++){
+      const vals = [];
+      for (let d=1; d<=7; d++){
+        try {
+          const a = fp_computeAnchorLY(structKey, rt, y+'-'+pad2(mo)+'-'+pad2(d));
+          if (a && a.adrP15 != null && a.adrP15N >= FP_FLOOR_HIST_MIN_OBS) vals.push(a.adrP15);
+        } catch(e){}
+      }
+      if (!vals.length){ parts.push(CFG.monthsIT[mo-1]+' —'); continue; }
+      const v = Math.round(vals.reduce((x,z)=>x+z,0)/vals.length);
+      if (v > ann) nHigher++;
+      parts.push(CFG.monthsIT[mo-1]+' '+v+(v > ann ? '*' : ''));
+    }
+    el.innerHTML = '<span title="' + escapeHtml(
+        'Historical p15 = the 15th percentile of the same pool that produces the median: the price below which you sold only 15% of the time.\n'
+      + 'The floor actually applied on a date is the HIGHER of the annual Floor Rate and this value.\n'
+      + '* = that month the historical p15 is above your annual floor, so it takes over.\n\n'
+      + parts.join('  ·  ')) + '" style="cursor:help;border-bottom:1px dotted var(--line-2)">'
+      + 'historical p15 takes over in <b>' + nHigher + '/12</b> months \u2139</span>';
+  })();
+  const _mk = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups(structKey) : {expedia:17,booking:13,airbnb:10};
   const _mkE = document.getElementById('fp-mk-expedia'); if (_mkE) _mkE.value = _mk.expedia;
   const _mkB = document.getElementById('fp-mk-booking'); if (_mkB) _mkB.value = _mk.booking;
   const _mkA = document.getElementById('fp-mk-airbnb');  if (_mkA) _mkA.value = _mk.airbnb;
@@ -12207,9 +12553,10 @@ function fp_renderFoundationConfigBox(structKey){
     const _mkBokVal = parseFloat((document.getElementById('fp-mk-booking')||{}).value);
     const _mkAirVal = parseFloat((document.getElementById('fp-mk-airbnb')||{}).value);
     let _mkChanged = false;
-    if (isFinite(_mkExpVal) && _mkExpVal >= 0 && _mkExpVal <= 50){ fp_setChannelMarkup('expedia', _mkExpVal); _mkChanged = true; }
-    if (isFinite(_mkBokVal) && _mkBokVal >= 0 && _mkBokVal <= 50){ fp_setChannelMarkup('booking', _mkBokVal); _mkChanged = true; }
-    if (isFinite(_mkAirVal) && _mkAirVal >= 0 && _mkAirVal <= 50){ fp_setChannelMarkup('airbnb', _mkAirVal); _mkChanged = true; }
+    // I markup si salvano sulla STRUTTURA selezionata.
+    if (isFinite(_mkExpVal) && _mkExpVal >= 0 && _mkExpVal <= 50){ fp_setChannelMarkup('expedia', _mkExpVal, structKey); _mkChanged = true; }
+    if (isFinite(_mkBokVal) && _mkBokVal >= 0 && _mkBokVal <= 50){ fp_setChannelMarkup('booking', _mkBokVal, structKey); _mkChanged = true; }
+    if (isFinite(_mkAirVal) && _mkAirVal >= 0 && _mkAirVal <= 50){ fp_setChannelMarkup('airbnb', _mkAirVal, structKey); _mkChanged = true; }
     if (_mkChanged && typeof fp_recalcMarkupOnBookings === 'function') fp_recalcMarkupOnBookings();
     const elVal = parseFloat((document.getElementById('fp-elasticity-input')||{}).value);
     if (isFinite(elVal) && elVal >= 0 && elVal <= 3) fp_setElasticity(structKey, elVal);
@@ -18302,7 +18649,13 @@ function compsetWeightedAvg(struct, isoKey, applyOffset, opts){
   // perché in entrambi i casi vogliamo confrontare in spazio Beddy. Solo rawExpedia lo salta.
   const wantDivisor = !opts.rawExpedia;
   const divisor = (wantDivisor && typeof fp_expToBeddyDivisor === 'function') ? fp_expToBeddyDivisor(struct) : null;
-  let total = 0, n = 0;
+  /* Il confronto col compset avviene SU EXPEDIA: il mio prezzo esposto contro il
+     loro prezzo esposto. Non serve (ne' e' possibile) conoscere il markup dei
+     competitor. Anche gli offset di posizionamento sono in spazio Expedia:
+     "voglio stare 50 euro sotto quel competitor" si legge sulla vetrina.
+     Solo ALLA FINE divido per il MIO markup, per sapere quanto devo caricare
+     su Beddy per arrivare a quel livello su Expedia. */
+  let sumPrice = 0, sumOffset = 0, sumW = 0, n = 0;
   const names = [];
   for (const name in compMap){
     if (myStructKeys.has(name)) continue;  // escludo mie strutture mutuali
@@ -18310,26 +18663,36 @@ function compsetWeightedAvg(struct, isoKey, applyOffset, opts){
     if (p == null || !isFinite(p) || p < 10) continue;  // < 10€ = MLOS leaked, not a price
     const w = getWeight(struct, name);
     if (w <= 0) continue;  // peso 0 = competitor escluso, non conta nemmeno nel divisore
-    let priceToUse = p;
-    if (divisor){
-      priceToUse = p / divisor;  // porto in spazio Beddy-eq
-      if (applyOffset){
-        // Goal Value: aggiungo l'offset di posizionamento del competitor
-        let offset = 0;
-        try {
-          const cfg = (typeof fp_getCompsetConfig === 'function') ? fp_getCompsetConfig(struct, name) : null;
-          if (cfg && typeof cfg.offset === 'number') offset = cfg.offset;
-        } catch(e){}
-        priceToUse = priceToUse + offset;
-      }
+    let offset = 0;
+    if (applyOffset && wantDivisor){
+      try {
+        const cfg = (typeof fp_getCompsetConfig === 'function') ? fp_getCompsetConfig(struct, name) : null;
+        if (cfg && typeof cfg.offset === 'number') offset = cfg.offset;
+      } catch(e){}
     }
-    total += priceToUse * w;
+    sumPrice  += p * w;
+    sumOffset += offset * w;
+    sumW += w;
     n += 1;
     names.push(name);
   }
-  if (n === 0) return {avg: null, n: 0};
-  const unit = opts.rawExpedia ? 'expedia_lordo' : 'beddy_eq';
-  return {avg: total / n, n, contributingNames: names, unit, withOffset: !!applyOffset};
+  if (n === 0 || sumW <= 0) return {avg: null, n: 0};
+  // MEDIA PESATA VERA: divido per la somma dei pesi, non per il numero di
+  // competitor. Prima un peso 0.9 abbassava il prezzo del 10% invece di pesare
+  // il 90% nella media, e il Goal Value usciva sistematicamente troppo basso.
+  const avgExpedia = sumPrice / sumW;                 // livello di mercato su Expedia
+  const avgOffset  = sumOffset / sumW;                // posizionamento voluto, su Expedia
+  const targetExpedia = avgExpedia + avgOffset;       // dove voglio stare io su Expedia
+  const avg = divisor ? (targetExpedia / divisor) : targetExpedia;   // quanto caricare su Beddy
+  const unit = opts.rawExpedia ? 'expedia_lordo' : 'beddy_da_caricare';
+  return {
+    avg, n, contributingNames: names, unit, withOffset: !!applyOffset,
+    sumW,                       // somma dei pesi usata come denominatore
+    avgExpedia,                 // media pesata dei competitor, su Expedia
+    avgOffset,                  // offset medio pesato
+    targetExpedia,              // il prezzo che voglio esporre su Expedia
+    divisor,                    // il MIO markup Expedia
+  };
 }
 function renderRateShopper(){
   const wrap = document.getElementById('rate-tables-wrap');
@@ -18542,6 +18905,7 @@ function renderRMESConfigTab(){
   _renderRmesThresholdsBox(sel);
   if (typeof _renderRmesPickupThresholdsBox === 'function') _renderRmesPickupThresholdsBox(sel);
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
+  if (typeof _renderRmesSpecialBox === 'function') _renderRmesSpecialBox();
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
   if (typeof _renderRmesPromosBox === 'function') _renderRmesPromosBox(sel);
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
@@ -18860,6 +19224,125 @@ function _rmesTabApplyAll(){
   return true;
 }
 /* === ③ PESI COMPETITOR === */
+/* === PANNELLO DATE SPECIALI (feste fisse + ponti) ===
+   Vale per TUTTE le strutture: le feste non cambiano da proprieta' a proprieta'.
+   Pasqua non e' in lista, si sposta ogni anno ed e' calcolata dal computus. */
+function _renderRmesSpecialBox(){
+  const wrap = document.getElementById('rmes-special-wrap');
+  if (!wrap) return;
+  const list = fpGetSpecialDays();
+  const yNow = TODAY.getFullYear();
+  const DOWIT = ['dom','lun','mar','mer','gio','ven','sab'];
+  const _fmt = (d) => {
+    const p = String(d).split('-');
+    if (p.length === 2) return pad2(+p[1]) + '/' + pad2(+p[0]);
+    return pad2(+p[2]) + '/' + pad2(+p[1]) + '/' + p[0];
+  };
+  const _dowOf = (d, y) => {
+    const p = String(d).split('-');
+    const dt = (p.length === 2) ? new Date(y, +p[0]-1, +p[1]) : new Date(+p[0], +p[1]-1, +p[2]);
+    return DOWIT[dt.getDay()];
+  };
+  const rows = list.map((it, i) => {
+    const recurring = String(it.d).split('-').length === 2;
+    return `<tr>
+      <td style="padding:4px 8px"><input type="text" data-sd-idx="${i}" data-sd-f="d" value="${escapeHtml(it.d)}" style="width:92px;padding:4px 7px;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;font-size:12px;text-align:center"></td>
+      <td style="padding:4px 8px"><input type="text" data-sd-idx="${i}" data-sd-f="label" value="${escapeHtml(it.label||'')}" style="width:180px;padding:4px 7px;border:1px solid var(--line);border-radius:4px;font-size:12px"></td>
+      <td class="cell-mono" style="padding:4px 8px;color:var(--ink-3);font-size:11px;white-space:nowrap">${_fmt(it.d)} · ${_dowOf(it.d, yNow)} ${yNow}</td>
+      <td class="cell-mono" style="padding:4px 8px;font-size:10.5px;color:var(--ink-3)">${recurring ? 'ogni anno' : 'una tantum'}</td>
+      <td style="padding:4px 8px;text-align:right"><button data-sd-del="${i}" title="Remove this date" style="border:1px solid var(--line);background:var(--surface);color:#a83b3b;border-radius:4px;padding:2px 8px;cursor:pointer;font-size:12px">\u2715</button></td>
+    </tr>`;
+  }).join('');
+  // Ponti proposti per l'anno in corso e il prossimo, non ancora in lista
+  let bridges = [];
+  try { bridges = fpProposeBridges(yNow).concat(fpProposeBridges(yNow+1)); } catch(e){}
+  const already = new Set(list.map(x => String(x.d)));
+  bridges = bridges.filter(b => !already.has(b.d));
+  const bridgeHtml = bridges.length
+    ? bridges.map(b => `<span class="sd-bridge" data-sd-add="${b.d}" data-sd-lab="${escapeHtml(b.label)}" data-sd-of="${escapeHtml(b.of||'')}" title="${escapeHtml(b.why)} \u2014 click to add"
+        style="display:inline-flex;align-items:center;gap:6px;border:1px dashed #c4823b;background:#fdf6ec;color:#7a4f1c;border-radius:14px;padding:4px 11px;font-size:11.5px;font-weight:600;cursor:pointer;margin:0 6px 6px 0">
+        + ${_fmt(b.d)} \u00b7 ${escapeHtml(b.label)}</span>`).join('')
+    : '<span style="font-size:12px;color:var(--ink-3);font-style:italic">No bridge to propose for ' + yNow + '\u2013' + (yNow+1) + '.</span>';
+
+  wrap.innerHTML = `<div class="panel">
+    <div class="panel-head"><div>
+      <h3>\u2691 Special dates \u2014 holidays and bridges</h3>
+      <div class="panel-sub">On these dates the historical anchor uses the <b>same calendar day</b> of the previous years (2 observations are enough) instead of the weekday average, and these dates are excluded from the pools of ordinary days. Shared by all properties. Easter is not listed: it moves every year and is computed automatically.</div>
+    </div></div>
+    <div class="panel-body">
+      <table class="data" style="width:auto">
+        <thead><tr>
+          <th style="text-align:left">Date</th><th style="text-align:left">Name</th>
+          <th style="text-align:left">This year</th><th style="text-align:left">Type</th><th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <button id="sd-add" style="border:1px solid #3d7a4b;background:#fff;color:#3d7a4b;border-radius:5px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:600">+ Add date</button>
+        <span style="font-size:11px;color:var(--ink-3)">Format: <code>MM-DD</code> every year \u00b7 <code>YYYY-MM-DD</code> one-off</span>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:7px">Suggested bridges</div>
+        <div style="font-size:11.5px;color:var(--ink-3);margin-bottom:8px">A holiday on Tuesday makes the Monday before a bridge; on Thursday, the Friday after. Click to add.</div>
+        <div>${bridgeHtml}</div>
+      </div>
+      <div style="margin-top:12px;text-align:right">
+        <button id="sd-save" style="border:0;background:#3d7a4b;color:#fff;border-radius:5px;padding:7px 18px;cursor:pointer;font-size:12.5px;font-weight:700">Apply changes</button>
+        <span id="sd-msg" style="margin-left:10px;font-size:12px"></span>
+      </div>
+    </div>
+  </div>`;
+
+  const _read = () => {
+    const out = [];
+    wrap.querySelectorAll('input[data-sd-f="d"]').forEach(inp => {
+      const i = inp.dataset.sdIdx;
+      const lab = wrap.querySelector('input[data-sd-idx="'+i+'"][data-sd-f="label"]');
+      const d = (inp.value||'').trim();
+      if (!d) return;
+      const prev = list[+i];
+      const e = { d, label: (lab && lab.value.trim()) || d };
+      if (prev && prev.of) e.of = prev.of;     // non perdere il legame ponte→festa
+      out.push(e);
+    });
+    return out;
+  };
+  const _valid = (d) => /^\d{2}-\d{2}$/.test(d) || /^\d{4}-\d{2}-\d{2}$/.test(d);
+  wrap.querySelectorAll('[data-sd-del]').forEach(b => {
+    b.addEventListener('click', () => {
+      const cur = _read(); cur.splice(+b.dataset.sdDel, 1);
+      fpSetSpecialDays(cur); _renderRmesSpecialBox();
+    });
+  });
+  wrap.querySelectorAll('[data-sd-add]').forEach(b => {
+    b.addEventListener('click', () => {
+      const cur = _read();
+      const e = { d: b.dataset.sdAdd, label: b.dataset.sdLab };
+      if (b.dataset.sdOf) e.of = b.dataset.sdOf;
+      cur.push(e);
+      cur.sort((x,y)=> String(x.d).slice(-5) < String(y.d).slice(-5) ? -1 : 1);
+      fpSetSpecialDays(cur); _renderRmesSpecialBox();
+    });
+  });
+  const addBtn = wrap.querySelector('#sd-add');
+  if (addBtn) addBtn.addEventListener('click', () => {
+    const cur = _read(); cur.push({ d: '01-01', label: 'New date' });
+    fpSetSpecialDays(cur); _renderRmesSpecialBox();
+  });
+  const saveBtn = wrap.querySelector('#sd-save');
+  if (saveBtn) saveBtn.addEventListener('click', () => {
+    const cur = _read();
+    const bad = cur.filter(x => !_valid(x.d));
+    const msg = wrap.querySelector('#sd-msg');
+    if (bad.length){
+      if (msg){ msg.textContent = 'Invalid format: ' + bad.map(x=>x.d).join(', '); msg.style.color = '#a83b3b'; }
+      return;
+    }
+    fpSetSpecialDays(cur);
+    if (msg){ msg.textContent = 'Saved \u2014 Base Price recalculated'; msg.style.color = '#3d7a4b'; }
+    if (typeof renderAll === 'function') setTimeout(renderAll, 60);
+  });
+}
 function _renderRmesLmfBox(sel){
   const wrap = document.getElementById('rmes-lmf-wrap');
   if (!wrap) return;
