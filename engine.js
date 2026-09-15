@@ -5632,6 +5632,8 @@ const RMES_SIG_DEFAULT = {
                            // misurato dai dati resta visibile come suggerimento.
     halfLifeDays: 7,       // peso per recenza: una vendita di 7 giorni fa vale meta' di una di oggi.
                            // 0 = disattiva (tutte le vendite della finestra pesano uguale)
+    nightHalfLife: 3,      // peso per DISTANZA dalla notte: sulla notte esatta vale 1,
+                           // a 3 notti di distanza meta'. 0 = tutte le notti pesano uguale
   },
   smoothing: {
     on: true,
@@ -5817,16 +5819,25 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
   /* Somma il pickup su una finestra di notti attorno alla data: allargare
      l'intorno e' l'unico modo per avere conteggi utilizzabili su strutture
      da 3-9 camere. */
+  /* Allargare l'intorno e' l'unico modo per avere conteggi utilizzabili su
+     strutture da 3-9 camere, ma una prenotazione sulla NOTTE ESATTA dice molto
+     di piu' di una a sette notti di distanza: il peso decade con la distanza,
+     con la stessa logica della recenza (mezza vita in notti). */
   function _pkWindow(map, stayYmd){
     const SP = Math.max(0, +_SIGC.pickup.spreadNights || 0);
+    const NHL = +_SIGC.pickup.nightHalfLife || 0;
     const base = ymdToDate(stayYmd);
-    const out = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0 };
+    const out = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0, nExact:0 };
     for (let d=-SP; d<=SP; d++){
       const e = map[ymd(addDays(base, d))];
       if (!e) continue;
-      out.n += e.n; out.w += (e.w||0); out.rev += e.rev; out.nr += e.nr; out.nrW += (e.nrW||0);
+      const dw = (NHL > 0) ? Math.pow(0.5, Math.abs(d) / NHL) : 1;
+      if (d === 0) out.nExact += e.n;
+      out.n += e.n; out.rev += e.rev; out.nr += e.nr;
+      out.w   += (e.w   || 0) * dw;
+      out.nrW += (e.nrW || 0) * dw;
       for (const rt in e.byRt)  out.byRt[rt]  = (out.byRt[rt]||0)  + e.byRt[rt];
-      for (const rt in e.byRtW) out.byRtW[rt] = (out.byRtW[rt]||0) + e.byRtW[rt];
+      for (const rt in e.byRtW) out.byRtW[rt] = (out.byRtW[rt]||0) + e.byRtW[rt] * dw;
     }
     return out;
   }
@@ -5862,8 +5873,12 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     info.good = good;
     if (cur.n){
       const W = (cur.w > 0) ? cur.w : cur.n;
-      info.share = W > 0 ? ((cur.byRtW && cur.byRtW[rt] != null ? cur.byRtW[rt] : (cur.byRt[rt]||0)) / W) : 0;
-      info.quality = good > 0 && info.share > 0 ? good / (info.share * W) : 1;
+      const onRt = (cur.byRtW && cur.byRtW[rt] != null) ? cur.byRtW[rt] : (cur.byRt[rt] || 0);
+      info.weight = W;            // massa pesata per recenza e distanza dalla notte
+      info.onRt = onRt;           // di cui su questa camera
+      info.nExact = cur.nExact || 0;
+      info.share = W > 0 ? onRt / W : 0;
+      info.quality = onRt > 0 ? good / onRt : 1;
     }
     // Riferimento: stesso punto un anno fa
     const sc = _SIGC.stly || {};
@@ -19779,6 +19794,7 @@ function _renderRmesSignalsBox(sel){
       <label title="Maximum push when the pickup is entirely on this room type and at full price">max push ${num('pickup','devFull',c.pickup.devFull,0,0.30,0.01,'')}</label>
       <label title="Discount of the non-refundable rate as configured on Beddy. A non-refundable sale means the price was accepted at less than face value.">non-refund. ${num('pickup','nrDiscount',c.pickup.nrDiscount,0,0.4,0.01,'')}</label>
       <label title="A booking made today says the price is accepted NOW; one from two weeks ago was about a different price. With a half-life of H days the weight halves every H days, so the signal fades instead of dropping off a cliff at the end of the window. 0 = off.">half-life ${num('pickup','halfLifeDays',c.pickup.halfLifeDays,0,30,1,'days')}</label>
+      <label title="A booking on the exact night says far more than one seven nights away. With a half-life of N nights the weight halves every N nights of distance. 0 = every night in the spread counts the same.">night half-life ${num('pickup','nightHalfLife',c.pickup.nightHalfLife,0,14,1,'nights')}</label>
     </div>
     <div style="margin-top:7px;font-size:11px;color:var(--ink-3)">
       Measured from your bookings: <b>${nrM.discount!=null?('−'+Math.round(nrM.discount*100)+'%'):'—'}</b>
