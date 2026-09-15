@@ -6282,7 +6282,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       occ_mult = 1 + _pickupSignal.dev;
       A_idx = _pickupSignal.fillRate;  // fill rate strutturale (info di contesto)
     }
-    // Salvo info debug per il modal (usate da _buildFactorDetail code='A')
+    // Debug del pickup, usato dai tooltip
     const _A_pickupDbg = {
       source: _pickupSignal.source,
       pickupCount: _pickupSignal.pickupCount || 0,
@@ -6294,9 +6294,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     // B · ADR rimosso nella migrazione 4-fattori. Mantengo le variabili a neutro per non rompere il codice a valle.
     // Il peso del fattore "price" viene azzerato dalla migrazione dei pesi (rmes_factors_v4_migration_2026_05_28).
     let price_mult = 1, B_idx = null, _B_dev_signed = 0, _B_case = 'removed', _B_naReason = 'B·ADR factor removed in 4-factor migration';
-    const _paceResult = _paceMultForRow(r, true);  // chiedo modalità verbosa per flag n/d
-    const pace_mult = (typeof _paceResult === 'object' && _paceResult !== null) ? _paceResult.mult : _paceResult;
-    const _C_naReason = (typeof _paceResult === 'object' && _paceResult !== null) ? _paceResult.naReason : null;
+    /* Il vecchio fattore Pace non serve piu': il confronto con l'anno scorso vive
+       dentro il segnale pickup, sulla stessa notte invece che sul mese. Tenuto a
+       neutro per non toccare il codice a valle che legge ancora questi nomi. */
+    const pace_mult = 1;
+    const _C_naReason = 'pace is now part of the pickup signal';
     let budget_mult = 1, D_budget_idx = null;
     if (_sourceExpediaBeddyEq != null){
       const adrBudgetStruct = (typeof budgetMonthlyFor === 'function') ? budgetMonthlyFor(sel, ym, 'adr') : 0;
@@ -6592,8 +6594,6 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         multFinale: mfin_rt,
         _rawSumDev: _mfin_rt_raw - 1,
         _hitCap: _capRT.hitCap,
-        _paceFromAggregate: (_paceResult && _paceResult.fromAggregate === true),
-        _paceState: (_paceResult && _paceResult.state) ? _paceResult.state : null,
         mkt_mult,
         _naReasons: {
           occ: _A_naReason,
@@ -6611,7 +6611,6 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           pickupDbg: _A_pickupDbg,  // info pickup recente per modal Daily Pickup
           adrCur: r.curAdr, adrStly: r.stlyAdr, priceIdx: B_idx, priceCase: _B_case, priceDevSigned: _B_dev_signed,
           targetGrowthMo: (typeof fp_getTargetGrowth === 'function') ? fp_getTargetGrowth(sel, r.mo) : null,
-          paceInfo: (typeof _paceResult === 'object' && _paceResult !== null) ? _paceResult : null,
           myExpedia: (exp2 && exp2.myPriceExpedia != null) ? exp2.myPriceExpedia : null,
           myBeddy: _D_myBeddy,
           compsetBeddy: _D_compsetBeddy,
@@ -7010,17 +7009,19 @@ function _auditCaptureSnapshot(structKey, ymd){
           const entry = map && map[ymd];
           const m = entry && entry.multsByRT && entry.multsByRT[baseRT];
           if (m){
-            const na = m._naReasons || {};
-            const wd = (k)=> (m._weightsApplied && m._weightsApplied[k] != null && m[k+'_mult'] != null && na[k]==null)
-                              ? (m._weightsApplied[k] * (m[k+'_mult'] - 1) * 100) : null;
-            snap.composite       = (m.multFinale != null) ? +m.multFinale.toFixed(4) : null;
-            snap.dev_pickup_pct  = wd('occ');   // A
-            snap.dev_pace_pct    = wd('pace');  // B
-            snap.dev_online_pct  = wd('comp');  // C
-            snap.dev_demand_pct  = wd('air');   // D
-            snap.dev_airdna_pct  = wd('mkt');   // E
-            // D·Demand muted because of an event weight on this date?
-            snap.d_demand_off_event = !!(na.air && /event/i.test(na.air));
+            snap.composite = (m.multFinale != null) ? +m.multFinale.toFixed(4) : null;
+          }
+          // Segnali attuali: pickup (il motore) + i due freni.
+          const _sg = entry && entry._sigDbg;
+          if (_sg){
+            snap.dev_pickup_pct  = (_sg.A && _sg.A.dev != null) ? +(_sg.A.dev*100).toFixed(2) : null;
+            snap.pickup_good     = (_sg.A && _sg.A.good != null) ? +_sg.A.good.toFixed(3) : null;
+            snap.pickup_days     = (_sg.A && _sg.A.pickupDays != null) ? _sg.A.pickupDays : null;
+            snap.pickup_vs_ly    = (_sg.A && _sg.A.stlyState) ? _sg.A.stlyState : null;
+            snap.market_gap_pct  = (_sg.market && _sg.market.gap != null) ? +(_sg.market.gap*100).toFixed(1) : null;
+            snap.market_action   = (_sg.market && _sg.market.action) || null;
+            snap.airdna_hold     = !!(_sg.airdna && (_sg.airdna.weak || _sg.airdna.strong));
+            snap.in_horizon      = (_sg.inHorizon != null) ? _sg.inHorizon : null;
           }
           // LMF for the day (same lookup the modal uses): OCC × days-to-arrival matrix.
           if (entry && typeof fp_lmfLookup === 'function'){
@@ -11577,110 +11578,6 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       const _fn = (v, d) => (v == null || !isFinite(v)) ? '—' : (Math.round(v * Math.pow(10, d||0)) / Math.pow(10, d||0)).toFixed(d||0);
       const _fpct = (v, d) => (v == null || !isFinite(v)) ? '—' : ((v >= 0 ? '+' : '') + (v * 100).toFixed(d||1) + '%');
       const _fmt2 = (v) => (v == null || !isFinite(v)) ? '—' : '€' + v.toFixed(0);
-      function _buildFactorDetail(code){
-        let h = '<div style="padding:8px 14px 10px 14px;background:#fbfaf7;border-left:3px solid #d4cdb8;font-family:\'DM Mono\',monospace;font-size:11px;line-height:1.7;color:#333">';
-        if (code === 'A'){
-          // A · Daily Pickup — pickup recente (ieri+oggi, fallback 7g) + scala fill rate
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Activated only when new bookings come in for this stay-date. <b>Primary window</b>: yesterday + today (2 calendar days = "1d"). If zero, <b>fallback window</b>: today and the 7 previous days (8 calendar days = "7d"). If still zero → 0% (no signal). When activated, the % depends on the fill rate.</div>';
-          const pkDbg = dbg.pickupDbg || {};
-          const rnCur = pkDbg.curRn || dbg.rnCur || 0;
-          const capCur = pkDbg.cap || dbg.capCur || 0;
-          const fillRate = capCur > 0 ? (rnCur / capCur) : 0;
-          const pkCount = pkDbg.pickupCount || 0;
-          const pkSource = pkDbg.source || 'no_recent_pickup';
-          h += '<div>Recent pickup: <b>';
-          if (pkSource === 'recent_1g') h += pkCount + ' booking(s) in the primary window (yesterday + today = 2 calendar days)';
-          else if (pkSource === 'recent_7g') h += pkCount + ' booking(s) in the fallback window (8 calendar days) <span style="color:#999">(none in the primary yesterday+today window)</span>';
-          else if (pkSource === 'no_recent_pickup') h += '0 bookings in the fallback window (8 calendar days) → factor stays at 0%';
-          else if (pkSource === 'no_capacity') h += '— (no capacity data)';
-          h += '</b></div>';
-          h += '<div>Bookings on books (OTB): <b>'+rnCur+' RN</b> on <b>'+capCur+' rooms</b> · Fill rate: <b>'+(fillRate*100).toFixed(1)+'%</b></div>';
-          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Threshold matched: <b style="color:#3b6b9a">';
-          if (pkSource === 'no_recent_pickup'){
-            h += 'No signal → +0%';
-          } else if (pkSource === 'no_capacity'){
-            h += '— (no capacity)';
-          } else {
-            // Soglie configurate per struttura
-            const _thr = (typeof _rmesPickupGet === 'function') ? _rmesPickupGet(d.structKey) : [
-              {upTo:0.20,dev:0},{upTo:0.50,dev:0.05},{upTo:0.70,dev:0.10},{upTo:0.90,dev:0.15},{upTo:1.00,dev:0.20}
-            ];
-            for (let i = 0; i < _thr.length; i++){
-              const t = _thr[i];
-              const prevUpTo = (i === 0) ? 0 : _thr[i-1].upTo;
-              if (fillRate <= t.upTo + 0.0001){
-                let rangeLabel;
-                if (i === 0) rangeLabel = 'Fill ≤ ' + Math.round(t.upTo * 100) + '%';
-                else if (i === _thr.length - 1) rangeLabel = 'Fill > ' + Math.round(prevUpTo * 100) + '%';
-                else rangeLabel = 'Fill ' + (Math.round(prevUpTo * 100) + 1) + '–' + Math.round(t.upTo * 100) + '%';
-                const sign = (t.dev || 0) >= 0 ? '+' : '';
-                h += rangeLabel + ' → ' + sign + Math.round((t.dev || 0) * 100) + '%';
-                break;
-              }
-            }
-          }
-          h += '</b></div>';
-          h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:3px">Applied dev: '+_fpct((mults.occ_mult-1),1)+'</div>';
-        } else if (code === 'B'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">How fast this month is booking vs last year — only the LAST 7 DAYS count, so the factor follows current momentum. Below 1 = booking slower than last year &rarr; lower price; above 1 = faster &rarr; higher price.</div>';
-          const pi = dbg.paceInfo || {};
-          if (pi.pickupCur != null && pi.pickupStly != null){
-            h += '<div>Pace last 7 days: <b>'+(+pi.pickupCur).toFixed(1)+' RN</b> now vs <b>'+(+pi.pickupStly).toFixed(1)+' RN</b> same 7 days last year</div>';
-            if (pi.ratio != null){
-              h += '<div style="margin-top:3px">Pace ratio (last 7 days): <b>'+pi.ratio.toFixed(3)+'</b> → dev <b>'+_fpct(pi.ratio-1,1)+'</b></div>';
-            } else if (pi.pickupStly > 0){
-              const ratio = pi.pickupCur / pi.pickupStly;
-              h += '<div>Pace ratio: <b>'+ratio.toFixed(3)+'</b> · Raw dev: <b>'+_fpct(ratio-1,1)+'</b></div>';
-            }
-          }
-          h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Decision state: <b style="color:#8e5fa8">'+(({'mese_w4':'last-7-days pace (month)','fallback_aggregate':'aggregate fallback (P̄)','fallback_annuale_struct':'annual fallback (property)','neutralizzato_no_dati':'neutralized — no data','fallback':'fallback'}[pi.state]) || pi.state || '—')+'</b></div>';
-          if (pi.source){
-            h += '<div style="color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic;margin-top:2px">'+pi.source+'</div>';
-          }
-          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-clamp): '+_fpct((mults.pace_mult-1),1)+'</div>';
-        } else if (code === 'C'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>−(my_BeddyEq / weighted_compset_BeddyEq − 1)</code> · both in Beddy_eq · uses the <b>Weighted Expedia Compset</b> (weights only, <b>no</b> offset). If my price is above the weighted compset, the factor pushes down; if below, it pushes up.</div>';
-          h += '<div>My Expedia price (gross): <b>'+_fmt2(dbg.myExpedia)+'</b> → Beddy_eq: <b>'+_fmt2(dbg.myBeddy)+'</b></div>';
-          h += '<div>Weighted Expedia Compset (Beddy_eq): <b>'+_fmt2(dbg.compsetBeddy)+'</b> &nbsp;<span style="color:#888">('+(dbg.compsetSource||'—')+')</span></div>';
-          if (dbg.myBeddy != null && dbg.compsetBeddy != null && dbg.compsetBeddy > 0){
-            const ratio = dbg.myBeddy / dbg.compsetBeddy;
-            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">My/compset ratio: <b>'+ratio.toFixed(3)+'</b> · Raw inverted dev: <b>'+_fpct(-(ratio-1),1)+'</b></div>';
-          }
-          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-thresholds + clamp ±50%): '+_fpct((mults.comp_mult-1),1)+'</div>';
-        } else if (code === 'D'){
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>(search_cur − month_median) / month_median</code>. More searches than usual on Expedia for this date = stronger demand signal.</div>';
-          h += '<div>Expedia searches today: <b>'+(dbg.searchCur != null ? dbg.searchCur.toLocaleString('en-GB') : '—')+'</b></div>';
-          h += '<div>Month search median: <b>'+(dbg.searchP50Mo != null ? Math.round(dbg.searchP50Mo).toLocaleString('en-GB') : '—')+'</b></div>';
-          if (dbg.searchDev != null){
-            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Raw dev: <b>'+_fpct(dbg.searchDev,1)+'</b></div>';
-          }
-          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-thresholds + clamp ±50%): '+_fpct((mults.air_mult-1),1)+'</div>';
-        } else if (code === 'E'){
-          // E · AirDNA Market — market booking density vs my OCC
-          const airdnaListings = (dbg && dbg.airdnaListings != null) ? dbg.airdnaListings : null;
-          const myOcc = (dbg && dbg.occCur != null) ? dbg.occCur : null;
-          h += '<div style="color:#666;margin-bottom:4px;font-family:\'DM Sans\',sans-serif">Formula: <code>raw_dev = (market_idx − my_OCC) × 0.80</code> with a ±5% deadband. Positive when the market is more booked than us (we have headroom to raise); negative when we are more booked than the market (no extra push needed). Capped ±50%.</div>';
-          if (airdnaListings != null){
-            h += '<div>Market booked: <b>'+(airdnaListings*100).toFixed(1)+'%</b> (AirDNA, ' + Math.round(airdnaListings*2948) + ' / 2,948 listings)</div>';
-          } else {
-            h += '<div>Market booked: <b>—</b> (no AirDNA data for this day)</div>';
-          }
-          if (myOcc != null){
-            h += '<div>My OCC (OTB): <b>'+(myOcc*100).toFixed(1)+'%</b></div>';
-          }
-          if (airdnaListings != null && myOcc != null){
-            const gap = airdnaListings - myOcc;
-            const gapAbs = Math.abs(gap);
-            const within = gapAbs < 0.05;
-            h += '<div style="margin-top:4px;padding-top:4px;border-top:1px dashed #ccc">Gap (market − me): <b>'+(gap>=0?'+':'')+(gap*100).toFixed(1)+'%</b>'+(within?' <span style="color:#888;font-size:10.5px;font-style:italic">(inside ±5% deadband → neutralized)</span>':'')+'</div>';
-            const rawDev = within ? 0 : gap * 0.80;
-            h += '<div>Raw dev (gap × 0.80): <b>'+_fpct(rawDev,1)+'</b></div>';
-          }
-          h += '<div style="margin-top:4px;color:#888;font-family:\'DM Sans\',sans-serif;font-size:10.5px;font-style:italic">Applied dev (post-thresholds + clamp ±50%): '+_fpct((mults.mkt_mult-1),1)+'</div>';
-        }
-        h += '</div>';
-        return h;
-      }
       /* ===== TABELLA SEGNALI — rispecchia il motore attuale =====
          Niente piu' cinque fattori con i pesi: il pickup muove il prezzo, mercato
          e AirDNA possono solo trattenerlo. Ogni riga dice cosa ha fatto e perche'. */
