@@ -5654,6 +5654,8 @@ const RMES_SIG_DEFAULT = {
   },
   stly: {
     on: true,
+    compareRevenue: true,  // confronto con l'anno scorso basato sul RICAVO entrato
+                           // invece che sul numero di notti. false = torna alle notti.
     tolerance: 0.40,       // entro ±40% dall'anno scorso si e' in linea
     adjust: 0.05,          // correzione massima verso il basso
   },
@@ -5811,6 +5813,8 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       if (b.isNonRefundable){ e.nr++; e.nrW += wt; }
       e.byRt[b.room]  = (e.byRt[b.room]  || 0) + 1;
       e.byRtW[b.room] = (e.byRtW[b.room] || 0) + wt;
+      if (!e.revRt) e.revRt = {};
+      e.revRt[b.room] = (e.revRt[b.room] || 0) + wt * (b.revPerNightCaricato || 0);
       e.days[b.bookYmd] = 1;
       if (!e.daysRt[b.room]) e.daysRt[b.room] = {};
       e.daysRt[b.room][b.bookYmd] = 1;
@@ -5848,7 +5852,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     const SP = Math.max(0, +_SIGC.pickup.spreadNights || 0);
     const NHL = +_SIGC.pickup.nightHalfLife || 0;
     const base = ymdToDate(stayYmd);
-    const out = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0, nExact:0, days:{}, daysRt:{} };
+    const out = { n:0, w:0, byRt:{}, byRtW:{}, revRt:{}, rev:0, nr:0, nrW:0, nExact:0, days:{}, daysRt:{} };
     for (let d=-SP; d<=SP; d++){
       const e = map[ymd(addDays(base, d))];
       if (!e) continue;
@@ -5859,6 +5863,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       out.nrW += (e.nrW || 0) * dw;
       for (const rt in e.byRt)  out.byRt[rt]  = (out.byRt[rt]||0)  + e.byRt[rt];
       for (const rt in e.byRtW) out.byRtW[rt] = (out.byRtW[rt]||0) + e.byRtW[rt] * dw;
+      for (const rt in (e.revRt||{})) out.revRt[rt] = (out.revRt[rt]||0) + e.revRt[rt] * dw;
       for (const dd in (e.days||{})) out.days[dd] = 1;
       for (const rt in (e.daysRt||{})){
         if (!out.daysRt[rt]) out.daysRt[rt] = {};
@@ -5894,6 +5899,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const nrShare = W > 0 ? ((pk.nrW || pk.nr) / W) : 0;
       return onRt * (1 - nrShare * _nrDisc);
     };
+    /* RICAVO entrato su questa camera, stessi pesi delle notti. Serve per il
+       confronto con l'anno scorso: notti contro notti ignora il prezzo, e se
+       alzi le tariffe leggerebbe il calo di notti come debolezza. Il ricavo
+       tiene conto di entrambe le cose. */
+    const revOf = (pk) => (pk && pk.revRt && pk.revRt[rt]) ? pk.revRt[rt] : 0;
     const _WD = _pkWindowDaysFor(r.ymd);
     const _IDXW = _buildPkIndex(_WD);
     info.windowDays = _WD;
@@ -5930,9 +5940,10 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     }
     // Riferimento: stesso punto un anno fa
     const sc = _SIGC.stly || {};
-    let goodLy = null;
+    let goodLy = null, prevForRev = null;
     if (sc.on !== false){
       const prev = _pkWindow(_IDXW.stly, r.ymd);
+      prevForRev = prev;
       if (prev && prev.n) goodLy = goodOf(prev);
       else if (prev) goodLy = 0;
       info.goodLy = goodLy;
@@ -5975,8 +5986,14 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       info.dev = _pushFor(good, info);
       return info;
     }
-    const ratio = good / goodLy;
+    /* Confronto su RICAVO se c'e', altrimenti sulle notti. Cosi meno notti a
+       prezzo piu' alto, con lo stesso incasso, danno rapporto 1 e segnale neutro. */
+    const revNow = revOf(cur), revLy = revOf(prevForRev);
+    const useRev = (_SIGC.stly.compareRevenue !== false) && revNow > 0 && revLy > 0;
+    const ratio = useRev ? (revNow / revLy) : (good / goodLy);
     info.stlyRatio = ratio;
+    info.stlyBasis = useRev ? 'revenue' : 'room nights';
+    info.revNow = revNow; info.revLy = revLy;
     if (ratio > 1 + tol){
       info.stlyState = 'ahead';
       info.dev = _pushFor(good, info);
@@ -14923,7 +14940,33 @@ function renderSellStrategy(sel){
           ? (_diffPctVsRef > 0 ? '\nRMES suggests to RAISE the price ↑ ('+_pctTxt+')' : '\nRMES suggests to LOWER the price ↓ ('+_pctTxt+')')
           : '\nRMES is in line with your active price (±2%)';
         const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${dirHint}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
-        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
+        /* SUPPLEMENTI SUGGERITI PER LE ALTRE TIPOLOGIE.
+           Il motore calcola gia' un segnale per ogni camera: se il pickup e' entrato
+           sulla Suite, la Suite sale e la camera base no. Finora quel risultato
+           restava invisibile perche' la colonna mostra un numero solo.
+           Qui mostro lo SCARTO suggerito rispetto alla camera base, non il prezzo
+           finale: e' il modo in cui i prezzi vengono davvero caricati. */
+        let _suppTip = '';
+        try {
+          const pr = mapEntry.pricesByRT || {};
+          const pBase = pr[baseRTKey];
+          if (pBase > 0){
+            const rows = [];
+            for (const rt in pr){
+              if (rt === baseRTKey || !(pr[rt] > 0)) continue;
+              // Supplemento in EURO: e' cosi' che i prezzi vengono caricati.
+              const diff = Math.round(pr[rt] - pBase);
+              rows.push('  ' + rt + ': ' + (diff >= 0 ? '+' : '\u2212') + '\u20ac' + Math.abs(diff));
+            }
+            if (rows.length){
+              _suppTip = '\n\nSuggested supplement over ' + baseRTKey + ' (\u20ac' + Math.round(pBase) + '):\n'
+                       + rows.join('\n')
+                       + '\n(each room type has its own pickup signal: a booking on one of them'
+                       + '\ndoes not move the others)';
+            }
+          }
+        } catch(e){}
+        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip + _suppTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
     /* Evidenzia la riga se su questa notte e' entrato pickup negli ultimi 3 giorni
        (oggi incluso): sono le date che si sono mosse adesso e su cui vale la pena
