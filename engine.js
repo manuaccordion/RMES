@@ -819,7 +819,7 @@ function rmesCloudOnRemoteUpdate(){
   try {
     if (typeof CURRENT_TAB !== 'undefined'){
       if (CURRENT_TAB === 'sell' && typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
-      else if (CURRENT_TAB === 'baseprice' && typeof renderBasePriceBreakdown === 'function') { renderBasePriceBreakdown(); if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown(); }
+      else if (CURRENT_TAB === 'baseprice' && typeof renderPriceChain === 'function') { renderPriceChain(); }
       else if (CURRENT_TAB === 'pri' && typeof renderRMESTab === 'function') renderRMESTab();
       else if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function') renderCheckUpdates();
     }
@@ -7572,7 +7572,158 @@ function _bpComputeFlags(c){
 
 const BP_BREAKDOWN_STATE = { struct: 'all', from: null, to: null };
 
-function renderBasePriceBreakdown(){
+/* ===========================================================================
+   CATENA GIORNALIERA DEL PREZZO
+   ---------------------------------------------------------------------------
+   Sostituisce le due tabelle separate (Base Price breakdown + RMES breakdown):
+   erano lo stesso percorso spezzato in due, e per seguire una data bisognava
+   incrociarle a mano. Qui ogni riga e' una notte e le colonne sono i passaggi,
+   nell'ordine in cui avvengono.
+   =========================================================================== */
+let _CHAIN_WIRED = false;
+function renderPriceChain(){
+  const wrap = document.getElementById('chain-table-wrap');
+  if (!wrap) return;
+  if (!_CHAIN_WIRED){ _CHAIN_WIRED = true; try { _chainSetupControls(); } catch(e){ console.error('chain controls', e); } }
+  const sel = (BP_BREAKDOWN_STATE.struct === 'all') ? null : BP_BREAKDOWN_STATE.struct;
+  const structs = sel ? [sel] : ((typeof structIdsFor === 'function') ? structIdsFor('both') : Object.keys(CFG.structures));
+  const from = BP_BREAKDOWN_STATE.from, to = BP_BREAKDOWN_STATE.to;
+  if (!from || !to){ wrap.innerHTML = '<div style="padding:16px;color:var(--ink-3);font-size:12.5px">Pick a date range and press Apply.</div>'; return; }
+  const t0 = startOfDay(new Date(TODAY));
+  const rows = [];
+  for (const id of structs){
+    const cfg = CFG.structures[id]; if (!cfg) continue;
+    let map = null;
+    try {
+      const d0 = new Date(from + 'T00:00:00');
+      const days = Math.round((new Date(to + 'T00:00:00') - d0) / 86400000) + 1;
+      map = computeRMESPriceMap(id, ymd(d0), Math.max(1, days));
+    } catch(e){}
+    for (let d = new Date(from + 'T00:00:00'); d <= new Date(to + 'T00:00:00'); d.setDate(d.getDate()+1)){
+      const k = ymd(d), iso = fp_isoDate(d);
+      let v = null; try { v = newrmesCalculateBasePriceVerbose(id, iso); } catch(e){}
+      if (!v) continue;
+      const e = map ? map[k] : null;
+      const sg = e ? e._sigDbg : null;
+      rows.push({ id, label: cfg.label, k, d: new Date(d), v, e, sg,
+                  lead: Math.round((ymdToDate(k) - t0) / 86400000) });
+    }
+  }
+  if (!rows.length){ wrap.innerHTML = '<div style="padding:16px;color:var(--ink-3);font-size:12.5px">No data for this range.</div>'; return; }
+  _CHAIN_ROWS = rows;
+
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const eur = x => (x == null || !isFinite(x)) ? '—' : ('€' + Math.round(x));
+  const pc  = x => (x == null || !isFinite(x)) ? '—' : ((x >= 0 ? '+' : '') + (x*100).toFixed(1) + '%');
+  const th = (t, tip, w) => '<th title="' + escapeHtml(tip) + '" style="padding:7px 8px;text-align:right;white-space:nowrap;cursor:help;'
+    + 'font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#5a4a34;background:#f2efe6;position:sticky;top:0;z-index:2'
+    + (w ? ';border-left:2px solid #d8d0bd' : '') + '">' + t + '</th>';
+  const td = (t, tip, style) => '<td title="' + escapeHtml(tip || '') + '" style="padding:5px 8px;text-align:right;white-space:nowrap;'
+    + "font-family:'DM Mono',monospace;font-size:11.5px;border-bottom:1px solid #f0eee9;" + (tip ? 'cursor:help;' : '') + (style || '') + '">' + t + '</td>';
+
+  let h = '<table style="width:100%;border-collapse:collapse;font-size:11.5px">';
+  h += '<thead><tr>';
+  h += '<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#5a4a34;background:#f2efe6;position:sticky;top:0;z-index:2">Date</th>';
+  if (!sel) h += '<th style="padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;color:#5a4a34;background:#f2efe6;position:sticky;top:0;z-index:2">Property</th>';
+  h += th('Lead', 'Days from today to the stay date. It decides whether the compset ceiling and the RMES apply at all.');
+  h += th('History', 'Step 1 — median of what comparable nights actually earned, in Beddy price. Hover a cell for the set used.', true);
+  h += th('obs', 'How many bookings that median rests on.');
+  h += th('Growth', 'Step 2 — the median after the target growth of that month.');
+  h += th('Ceiling', 'Step 3 — Goal Value: the weighted compset on Expedia plus your offsets, divided by your Expedia markup. Only applies inside the selling horizon and with at least 2 competitors visible.');
+  h += th('Floor', 'Step 4 — the higher of your annual Floor Rate and the historical p15.');
+  h += th('BASE', 'The Base Price: the structural starting point. Accepted by default.', true);
+  h += th('Pickup', 'RMES — the pickup signal: good bookings on this room type in the window, compared with the same point last year (on revenue).', true);
+  h += th('Market', 'RMES — the market guard-rail: it never moves the price, it can only block a move that would take you further from the compset.');
+  h += th('AirDNA', 'RMES — the market check: holds an increase back when the market is quiet, a decrease when it is busy.');
+  h += th('Signal', 'The combined RMES effect, after the guard-rails and the daily step limit.');
+  h += th('SUGGESTED', 'The price to load on Beddy: Base Price × signal, then LMF and Event Factor.', true);
+  h += '</tr></thead><tbody>';
+
+  for (const r of rows){
+    const v = r.v, sg = r.sg, e = r.e;
+    const A = sg ? sg.A : null;
+    const inH = sg ? sg.inHorizon : null;
+    h += '<tr>';
+    h += '<td style="padding:5px 8px;white-space:nowrap;border-bottom:1px solid #f0eee9;font-family:\'DM Mono\',monospace;font-size:11.5px">'
+       + pad2(r.d.getDate()) + '/' + pad2(r.d.getMonth()+1) + ' <span style="color:#999">' + DOW[r.d.getDay()] + '</span></td>';
+    if (!sel) h += '<td style="padding:5px 8px;border-bottom:1px solid #f0eee9;font-size:11px;color:#666">' + escapeHtml(r.label) + '</td>';
+    h += td(r.lead + 'd', inH === false ? 'Beyond the ' + sg.horizon + '-day selling horizon: the RMES stays out and the Base Price stands.' : '',
+            inH === false ? 'color:#b0a89a' : '');
+    h += td(eur(v.lyMedianADR), (v.lySetDesc || '') + (v.lySpecial ? '\nSpecial date: ' + v.lySpecial : ''));
+    h += td(v.lyObs != null ? v.lyObs : '—', 'Bookings behind the median.', 'color:#999');
+    h += td(eur(v.afterGrowth), 'Target growth for this month: ' + (v.targetGrowth >= 0 ? '+' : '') + v.targetGrowth + '%');
+    h += td(v.goalValue != null ? (eur(v.goalValue) + (v.cappedByGoal ? ' ✂' : '')) : '—',
+            v.goalValue != null
+              ? ((v.goalExpedia != null ? 'Competitors on Expedia €' + Math.round(v.goalExpedia) + ' + your offsets €' + Math.round(v.goalOffset) + ' = €' + Math.round(v.goalTarget) + ' target, ÷ your markup → €' + v.goalValue + '\n' : '')
+                 + (v.cappedByGoal ? 'The ceiling ACTED: the price was above it.' : 'Did not bite. ' + (v.goalUnreliableReason || '')))
+              : 'No compset for this day.',
+            v.cappedByGoal ? 'color:#a83b3b;font-weight:700' : 'color:#999');
+    h += td(eur(v.floorEff) + (v.flooredBy ? ' ↑' : ''),
+            'Annual floor €' + v.floor + ' · historical p15 ' + (v.floorHist != null ? '€' + v.floorHist : 'n/a')
+            + '\nApplied: €' + v.floorEff + ' (' + v.floorSource + ')' + (v.flooredBy ? '\nThe floor ACTED.' : ''),
+            v.flooredBy ? 'color:#a83b3b;font-weight:700' : 'color:#999');
+    h += td('<b>' + eur(v.finalBase) + '</b>', 'The structural starting point for this night.', 'border-left:2px solid #f0eae0');
+    // RMES
+    if (!sg){
+      h += td('—','','color:#ccc') + td('—','','color:#ccc') + td('—','','color:#ccc') + td('—','','color:#ccc') + td('—','','color:#ccc');
+    } else {
+      const aTip = inH === false ? 'Out of the selling horizon.'
+        : (A && A.n ? (A.good != null ? A.good.toFixed(2) + ' good bookings on this room type' : '')
+              + (A.pickupDays ? ' over ' + A.pickupDays + ' different day(s) → max push ' + Math.round((A.maxPush||0)*100) + '%' : '')
+              + (A.goodLy != null ? '\nLast year at the same point: ' + A.goodLy.toFixed(2) : '')
+              + (A.stlyRatio != null ? ' (ratio ' + A.stlyRatio.toFixed(2) + (A.stlyBasis ? ' on ' + A.stlyBasis : '') + ')' : '')
+              + '\n→ ' + (A.stlyState || '')
+            : 'No booking came in for this night in the window.' + (A && A.notes && A.notes.length ? '\n' + A.notes.join('\n') : ''));
+      h += td(A ? pc(A.dev) : '—', aTip, (A && A.dev > 0) ? 'color:#1e6b4a' : ((A && A.dev < 0) ? 'color:#a83b3b' : 'color:#999'));
+      const M = sg.market || {};
+      h += td(M.gap != null ? pc(M.gap) : '—',
+              (M.gap != null ? 'Your price vs the weighted compset.\n' : '') + (M.blocked || M.action || ''),
+              M.blocked ? 'color:#7a4f1c;font-weight:700' : 'color:#999');
+      const AD = sg.airdna || {};
+      h += td(AD.weak ? 'hold' : (AD.strong ? 'hold' : '—'),
+              !AD.hasData ? 'No AirDNA data for this day: it does nothing.' : (AD.weak ? 'Market quiet: the increase did not go through.' : (AD.strong ? 'Market busy: the decrease did not go through.' : 'It is not holding anything back.')),
+              (AD.weak || AD.strong) ? 'color:#7a4f1c;font-weight:700' : 'color:#999');
+      const dev = e && e.multFinale != null ? (e.multFinale - 1) : null;
+      h += td(dev != null ? pc(dev) : '—',
+              (sg.smoothing && sg.smoothing.limited) ? 'Capped by the daily step limit (raw signal ' + pc(sg.totDev) + ').' : '',
+              dev > 0 ? 'color:#1e6b4a;font-weight:700' : (dev < 0 ? 'color:#a83b3b;font-weight:700' : 'color:#999'));
+      h += td('<b>' + eur(e ? e.price : null) + '</b>',
+              'The price to load on Beddy.', 'border-left:2px solid #f0eae0;background:#fdfbf7');
+    }
+    h += '</tr>';
+  }
+  h += '</tbody></table>';
+  wrap.innerHTML = h;
+}
+let _CHAIN_ROWS = [];
+function _chainExportCSV(){
+  const H = ['property','date','dow','lead_days','ly_median','obs','set_used','after_growth','target_growth_pct',
+             'goal_value','capped_by_goal','floor_annual','floor_p15','floor_applied','floor_source','floored',
+             'base_price','in_horizon','pickup_good','pickup_days','max_push','good_ly','stly_ratio','stly_basis',
+             'stly_state','pickup_dev','market_gap','market_action','airdna','signal_total','suggested_price'];
+  const lines = [H.join(',')];
+  const q = x => (x == null ? '' : ('"' + String(x).replace(/"/g,'""') + '"'));
+  for (const r of _CHAIN_ROWS){
+    const v = r.v, sg = r.sg, e = r.e, A = sg ? sg.A : null;
+    lines.push([q(r.label), q(fp_isoDate(r.d)), q(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][r.d.getDay()]), r.lead,
+      v.lyMedianADR, v.lyObs, q(v.lySetDesc), v.afterGrowth, v.targetGrowth,
+      v.goalValue, v.cappedByGoal ? 'yes':'no', v.floor, v.floorHist, v.floorEff, q(v.floorSource), v.flooredBy?'yes':'no',
+      v.finalBase, sg ? (sg.inHorizon?'yes':'no') : '',
+      A && A.good != null ? A.good.toFixed(3) : '', A ? (A.pickupDays||'') : '', A && A.maxPush != null ? A.maxPush.toFixed(3) : '',
+      A && A.goodLy != null ? A.goodLy.toFixed(3) : '', A && A.stlyRatio != null ? A.stlyRatio.toFixed(3) : '',
+      q(A ? A.stlyBasis : ''), q(A ? A.stlyState : ''), A && A.dev != null ? A.dev.toFixed(4) : '',
+      sg && sg.market && sg.market.gap != null ? sg.market.gap.toFixed(4) : '', q(sg && sg.market ? sg.market.action : ''),
+      sg && sg.airdna ? (sg.airdna.weak||sg.airdna.strong ? 'hold' : 'no') : '',
+      e && e.multFinale != null ? (e.multFinale-1).toFixed(4) : '', e ? Math.round(e.price) : ''
+    ].join(','));
+  }
+  const blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'price_chain_' + fp_isoDate(new Date(TODAY)).replace(/-/g,'') + '.csv';
+  a.click();
+}
+function _chainSetupControls(){
   const wrap = document.getElementById('bp-table-wrap');
   if (!wrap) return;
   // Pills struttura
@@ -7592,8 +7743,7 @@ function renderBasePriceBreakdown(){
       const b = e.target.closest('button[data-bpfilter]');
       if (!b) return;
       BP_BREAKDOWN_STATE.struct = b.dataset.bpfilter;
-      renderBasePriceBreakdown();
-      if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown();
+      renderPriceChain();
     });
   }
   if (pillsEl){
@@ -7617,9 +7767,84 @@ function renderBasePriceBreakdown(){
   const applyBtn = document.getElementById('bp-apply');
   if (applyBtn && !applyBtn.dataset.wired){
     applyBtn.dataset.wired = '1';
-    applyBtn.addEventListener('click', () => { renderBasePriceBreakdown(); if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown(); });
+    applyBtn.addEventListener('click', () => { renderPriceChain(); });
   }
-  const exportBtn = document.getElementById('bp-export');
+  const exportBtn = document.getElementById('chain-export');
+  if (exportBtn && !exportBtn.dataset.wired){
+    exportBtn.dataset.wired = '1';
+    exportBtn.addEventListener('click', () => _chainExportCSV());
+  }
+  const refreezeBtn = document.getElementById('bp-refreeze');
+  if (refreezeBtn && !refreezeBtn.dataset.wired){
+    refreezeBtn.dataset.wired = '1';
+    refreezeBtn.addEventListener('click', () => {
+      const structs = (BP_BREAKDOWN_STATE.struct === 'all') ? ['firenze','condotta','alfani','davids','nazionale','portenuove'] : [BP_BREAKDOWN_STATE.struct];
+      const fI = document.getElementById('bp-date-from'), tI = document.getElementById('bp-date-to');
+      const f = fI ? fI.value : '', t = tI ? tI.value : '';
+      if (!f || !t) return;
+      const scope = (BP_BREAKDOWN_STATE.struct === 'all') ? 'all 4 properties' : BP_BREAKDOWN_STATE.struct;
+      if (!confirm('Recompute and overwrite the frozen Base Price for ' + scope + ' from ' + f + ' to ' + t + '?\n\nThis refreshes the structural base to the current data + config (fixes stale values like 220 vs 268). Your manual overrides and accepted RMES are kept.')) return;
+      const n = (typeof newrmesRefreezeRange === 'function') ? newrmesRefreezeRange(structs, f, t) : 0;
+      renderPriceChain();
+      try { alert('Refreshed the frozen Base Price for ' + n + ' day(s). RMES "Last update" now matches the breakdown for days with no override/accept.'); } catch(e){}
+    });
+  }
+  const fromISO = fromInp ? fromInp.value : today.toISOString().slice(0,10);
+  const toISO = toInp ? toInp.value : new Date(today.getTime()+120*86400000).toISOString().slice(0,10);
+  const dFrom = new Date(fromISO + 'T00:00:00');
+  const dTo = new Date(toISO + 'T00:00:00');
+  if (isNaN(dFrom.getTime()) || isNaN(dTo.getTime()) || dTo < dFrom){
+    wrap.innerHTML = '<div style="padding:20px;color:#a83b3b">Invalid date range.</div>';
+    return;
+  }
+}
+function renderBasePriceBreakdown(){
+  const wrap = document.getElementById('bp-table-wrap');
+  if (!wrap) return;
+  // Pills struttura
+  const pillsEl = document.getElementById('bp-struct-pills');
+  const structOpts = [
+    { v:'all', label:'All', color:'#6b5b3f' },
+    { v:'firenze', label:'Firenze Suite', color:'#3b6b9a' },
+    { v:'condotta', label:'Condotta 16', color:'#3d7a4b' },
+    { v:'alfani', label:'Palazzo Alfani', color:'#8e5fa8' },
+    { v:'davids', label:'Enis Guesthouse', color:'#c0392b' },
+    { v:'nazionale', label:'Nazionale 35', color:'#d18b2c' },
+    { v:'portenuove', label:'Porte Nuove', color:'#3f7d78' },
+  ];
+  if (pillsEl && !pillsEl.dataset.wired){
+    pillsEl.dataset.wired = '1';
+    pillsEl.addEventListener('click', function(e){
+      const b = e.target.closest('button[data-bpfilter]');
+      if (!b) return;
+      BP_BREAKDOWN_STATE.struct = b.dataset.bpfilter;
+      renderPriceChain();
+    });
+  }
+  if (pillsEl){
+    pillsEl.innerHTML = structOpts.map(o => {
+      const on = (BP_BREAKDOWN_STATE.struct === o.v);
+      return `<button class="rt-pill ${on?'':'off'}" data-bpfilter="${o.v}" style="${on?'border-color:'+o.color+';color:'+o.color+';font-weight:600':''}">${o.label}</button>`;
+    }).join('');
+  }
+  // Date defaults: oggi → +120 giorni
+  const fromInp = document.getElementById('bp-date-from');
+  const toInp = document.getElementById('bp-date-to');
+  const today = new Date(TODAY); today.setHours(0,0,0,0);
+  if (fromInp && !fromInp.value){
+    fromInp.value = today.toISOString().slice(0,10);
+  }
+  if (toInp && !toInp.value){
+    const t2 = new Date(today.getTime() + 120*86400000);
+    toInp.value = t2.toISOString().slice(0,10);
+  }
+  // wire apply/export una volta
+  const applyBtn = document.getElementById('bp-apply');
+  if (applyBtn && !applyBtn.dataset.wired){
+    applyBtn.dataset.wired = '1';
+    applyBtn.addEventListener('click', () => { renderPriceChain(); });
+  }
+  const exportBtn = document.getElementById('chain-export');
   if (exportBtn && !exportBtn.dataset.wired){
     exportBtn.dataset.wired = '1';
     exportBtn.addEventListener('click', () => _bpExportCSV());
@@ -7635,8 +7860,7 @@ function renderBasePriceBreakdown(){
       const scope = (BP_BREAKDOWN_STATE.struct === 'all') ? 'all 4 properties' : BP_BREAKDOWN_STATE.struct;
       if (!confirm('Recompute and overwrite the frozen Base Price for ' + scope + ' from ' + f + ' to ' + t + '?\n\nThis refreshes the structural base to the current data + config (fixes stale values like 220 vs 268). Your manual overrides and accepted RMES are kept.')) return;
       const n = (typeof newrmesRefreezeRange === 'function') ? newrmesRefreezeRange(structs, f, t) : 0;
-      renderBasePriceBreakdown();
-      if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown();
+      renderPriceChain();
       try { alert('Refreshed the frozen Base Price for ' + n + ' day(s). RMES "Last update" now matches the breakdown for days with no override/accept.'); } catch(e){}
     });
   }
@@ -23736,7 +23960,7 @@ function setTab(name){
     try { renderForecast(CURRENT_STRUCT); _FCST_DIRTY = false; } catch(e){ console.error('renderForecast', e); }
   }
   if (name === 'baseprice' && _TAB_DIRTY.baseprice && typeof renderBasePriceBreakdown === 'function'){
-    try { renderBasePriceBreakdown(); if (typeof renderRmesBreakdown === 'function') renderRmesBreakdown(); _TAB_DIRTY.baseprice = false; } catch(e){ console.error('renderBasePriceBreakdown', e); }
+    try { renderPriceChain(); _TAB_DIRTY.baseprice = false; } catch(e){ console.error('renderPriceChain', e); }
   }
   if (name === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
