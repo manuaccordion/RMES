@@ -5642,7 +5642,7 @@ const RMES_SIG_DEFAULT = {
   stly: {
     on: true,
     tolerance: 0.40,       // entro ±40% dall'anno scorso si e' in linea
-    adjust: 0.03,          // correzione quando si e' nettamente sotto o sopra
+    adjust: 0.05,          // correzione massima verso il basso
   },
   market: {
     on: true,
@@ -5854,6 +5854,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
        non rimborsabile -> x0.9          · altra camera    -> 0
      La discesa e' piu' prudente della salita: il confronto con l'anno scorso e'
      instabile (p10-p90 da 0.33 a 3.67), quindi si scende a passi piu' corti. */
+  let _mktGapForPickup = null;   // impostato per ogni riga prima di chiamare _signalPickup
   function _signalPickup(r, rt){
     const cfg = _SIGC.pickup;
     const info = { on: !!cfg.on, dev: 0, n: 0, good: 0, goodLy: null, share: null,
@@ -5899,13 +5900,23 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     const tol = +sc.tolerance || 0.40;
     const down = Math.abs(+sc.adjust || 0.03);     // passo di discesa, piu' corto
     if (good <= 0.001 && goodLy <= 0.001){
+      /* Ferma quest'anno e ferma l'anno scorso: di per se' non dice nulla.
+         MA se in piu' siamo sopra la banda di mercato, i due fatti insieme una
+         spiegazione ce l'hanno: non si vende perche' costiamo troppo. In quel
+         caso si scende del passo pieno. */
+      if (_mktGapForPickup != null && _mktGapForPickup > (+(_SIGC.market||{}).band || 0.20)){
+        info.stlyState = 'quiet and expensive';
+        info.dev = -Math.abs(+sc.adjust || 0.05);
+        info.notes.push('nothing booked, and we are ' + Math.round(_mktGapForPickup*100) + '% above the market');
+        return info;
+      }
       info.stlyState = 'both quiet';
       info.notes.push('nothing booked this year nor last year at this point — no signal');
       info.dev = 0;
       return info;
     }
     if (good <= 0.001){
-      // Ferma quest'anno, ma l'anno scorso stava andando → segnale negativo
+      // Ferma quest'anno, ma l'anno scorso stava andando → segnale negativo pieno
       info.stlyState = 'behind';
       info.dev = -down * Math.min(1, goodLy);
       info.notes.push('nothing booked this year while last year had ' + goodLy.toFixed(2) + ' at this point');
@@ -5923,8 +5934,13 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       info.stlyState = 'ahead';
       info.dev = devFull * Math.min(1, good);
     } else if (ratio < 1 - tol){
+      /* Quanto siamo indietro in termini RELATIVI, non come differenza assoluta.
+         Con la differenza il segnale saturava: a 5 prenotazioni di distanza
+         dall'anno scorso, una prenotazione nuova non cambiava nulla perche'
+         restava comunque oltre la soglia. Con il rapporto ogni prenotazione
+         sposta l'ago, e la discesa si attenua man mano che si recupera. */
       info.stlyState = 'behind';
-      info.dev = -down * Math.min(1, goodLy - good);
+      info.dev = -down * Math.min(1, (1 - ratio) / Math.max(0.01, tol + (1 - tol)));
     } else {
       info.stlyState = 'inline';
       // In linea con l'anno scorso: il prezzo di allora era accettato, si conferma
@@ -6227,10 +6243,20 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     }
     let comp_mult = 1;
     let _C_compAvg = null, _C_compSource = '', _E_naReason = null;
-    let _D_myBeddy = null, _D_compsetBeddy = null;
+    let _D_myBeddy = null, _D_compsetBeddy = null, _D_myRtShown = null, _D_mySupp = 0;
     if (exp2 && exp2.myPriceExpedia != null){
       const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
-      _D_myBeddy = exp2.myPriceExpedia / fp_expToBeddyDivisor(sel);
+      /* Il prezzo che Expedia espone e' quello della camera piu' ECONOMICA ancora
+         disponibile, che nei giorni in cui la camera base e' esaurita e' una
+         tipologia superiore. Confrontarlo cosi' com'e' col compset farebbe
+         sembrare che siamo sopra mercato quando invece e' solo cambiata la camera
+         in vetrina. Lo riporto quindi in spazio camera-base togliendo il
+         supplemento della tipologia mostrata, con la stessa regola gia' usata
+         altrove nel motore. */
+      _D_myRtShown = _cheapestAvailableRT(r);
+      _D_mySupp = (_D_myRtShown && _suppData && _D_myRtShown !== _suppData.baseRT)
+        ? _supplementForRT(_D_myRtShown, r.mo) * 0.5 : 0;
+      _D_myBeddy = (exp2.myPriceExpedia / fp_expToBeddyDivisor(sel)) - _D_mySupp;
       if (typeof compsetWeightedAvg === 'function'){
         const w = compsetWeightedAvg(sel, isoK, /*applyOffset=*/false);
         if (w && w.avg != null && w.avg > 0){
@@ -6335,7 +6361,21 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
        Il pickup muove il prezzo, il mercato e AirDNA possono solo trattenerlo.
        Ogni componente resta leggibile e spegnibile dalle impostazioni. */
     const _sigBaseRT = ((CFG.structures[sel] || {}).baseRT) || _rtList[0];
-    const _sigA = _signalPickup(r, _sigBaseRT);
+    /* ORIZZONTE DI VENDITA — il RMES si muove solo dove le prenotazioni entrano.
+       Se l'80% delle prenotazioni di una struttura arriva entro N giorni, oltre N
+       il prezzo incide poco: muoverlo la' non serve, e una data ferma a 8 mesi non
+       e' un segnale ma la normalita'. Fuori dall'orizzonte il prezzo resta il Base
+       Price. Stessa soglia gia' usata per il tetto del compset: una regola sola. */
+    const _horizon = (typeof fpCapHorizonDays === 'function') ? fpCapHorizonDays(sel) : 180;
+    const _leadRmes = Math.round((ymdToDate(r.ymd) - startOfDay(new Date(TODAY))) / 86400000);
+    const _inHorizon = (_leadRmes <= _horizon);
+    // il gap di mercato serve gia' dentro il segnale pickup (caso "ferma e cara")
+    _mktGapForPickup = (_D_myBeddy != null && _D_compsetBeddy != null && _D_compsetBeddy > 0)
+      ? (_D_myBeddy / _D_compsetBeddy - 1) : null;
+    const _sigA = _inHorizon ? _signalPickup(r, _sigBaseRT)
+                             : { on:true, dev:0, n:0, good:0, goodLy:null, share:null, quality:null,
+                                 stlyRatio:null, stlyState:'out of horizon',
+                                 notes:['the date is ' + _leadRmes + ' days away, beyond the ' + _horizon + '-day selling horizon'] };
     /* ===== IL PICKUP E' L'UNICO MOTORE =====
        Mercato e AirDNA NON sommano e NON sottraggono: sono guard-rail, cioe'
        possono solo FERMARE un movimento che il pickup ha gia' chiesto.
@@ -6344,7 +6384,9 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
        sistema non inventa un movimento — te lo segnala e basta. */
     const _mk = _SIGC.market;
     let _mktDev = 0;                              // resta sempre 0: il mercato non muove
-    const _mktInfo = { on: !!_mk.on, gap: null, action: 'none', veto: null, blocked: null };
+    const _mktInfo = { on: !!_mk.on, gap: null, action: 'none', veto: null, blocked: null,
+                       myRtShown: _D_myRtShown, suppRemoved: _D_mySupp,
+                       myBeddy: _D_myBeddy, compsetBeddy: _D_compsetBeddy };
     if (_mk.on && _D_myBeddy != null && _D_compsetBeddy != null && _D_compsetBeddy > 0){
       const gap = _D_myBeddy / _D_compsetBeddy - 1;
       _mktInfo.gap = gap;
@@ -6445,6 +6487,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     }
     const _multFinaleRaw = 1 + _totDevSmoothed;
     const _sigDbg = { A: _sigA, market: _mktInfo, airdna: _adInfo, nrDiscount: _nrDisc,
+                      horizon: _horizon, lead: _leadRmes, inHorizon: _inHorizon,
                       totDev: _totDev, totDevApplied: _totDevSmoothed, smoothing: _smoothInfo };
     const _capStruct = (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.25;
     const _cappedStruct = applyTotalCap(_multFinaleRaw - 1, _capStruct);
@@ -6456,7 +6499,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const budget_rt = budget_mult; // Budget struttura
       // Ogni tipologia ha il SUO segnale di pickup: se le prenotazioni sono
       // entrate su un'altra camera, questa non deve alzare il prezzo.
-      const _sigA_rt = _signalPickup(r, rt);
+      const _sigA_rt = _inHorizon ? _signalPickup(r, rt) : { dev: 0 };
       let _devRt = _sigA_rt.dev;                 // solo il pickup muove
       if (_mk.on && _mktInfo.gap != null){
         const bandRt = +_mk.band || 0.20;
@@ -12016,16 +12059,28 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         else if (!A.n) aDet = 'No bookings came in for this date in the window — nothing to read.';
         else {
           aDet = '<b>'+A.n+'</b> booking'+(A.n===1?'':'s')+' in the window'
-               + (A.weight!=null ? ' (weight '+A.weight.toFixed(2)+' after the recency fade)' : '')
-               + '<br>' + Math.round((A.share||0)*100) + '% of them on <b>'+escapeHtml(rt)+'</b>'
-               + ' · price quality ' + Math.round((A.quality||1)*100) + '% '
-               + '<span style="color:#999">(non-refundable sales count for less)</span>';
+               + (A.weight!=null ? ', worth <b>'+A.weight.toFixed(2)+'</b> once faded by age and by distance from the night' : '')
+               + (A.onRt!=null ? '<br><b>'+A.onRt.toFixed(2)+'</b> of that is on <b>'+escapeHtml(rt)+'</b>' : '')
+               + (A.quality!=null ? ' · price quality '+Math.round(A.quality*100)+'% <span style="color:#999">(non-refundable sales count for less)</span>' : '')
+               + (A.good!=null ? '<br>&rarr; <b>'+A.good.toFixed(2)+'</b> good bookings' : '');
+          // Il confronto con l'anno scorso e' cio' che rende il segnale bidirezionale:
+          // va mostrato con i due numeri, non solo con l'etichetta.
           if (A.stlyState && A.stlyState !== 'off'){
-            const stMap = { ahead:'ahead of last year', behind:'behind last year', inline:'in line with last year', 'n/a':'no comparable pickup last year' };
-            aDet += '<br>Versus last year: <b>'+(stMap[A.stlyState]||A.stlyState)+'</b>'
-                 + (A.stlyRatio!=null ? ' ('+A.stlyRatio.toFixed(2)+'×)' : '');
+            const stMap = { ahead:'ahead of last year', behind:'behind last year',
+                            inline:'in line with last year', 'both quiet':'quiet this year and last year',
+                            'quiet and expensive':'quiet, and above the market',
+                            'out of horizon':'beyond the selling horizon', 'n/a':'no reference from last year' };
+            aDet += '<br>Last year at this same point: <b>'+(A.goodLy!=null?A.goodLy.toFixed(2):'—')+'</b>'
+                 + (A.good!=null&&A.goodLy!=null ? ' vs <b>'+A.good.toFixed(2)+'</b> now' : '')
+                 + (A.stlyRatio!=null ? ' ('+A.stlyRatio.toFixed(2)+'&times;)' : '')
+                 + '<br>&rarr; <b>'+(stMap[A.stlyState]||A.stlyState)+'</b>';
           }
           if (A.notes && A.notes.length) aDet += '<br><span style="color:#b0332f">'+escapeHtml(A.notes.join(' · '))+'</span>';
+        }
+        if (_sg.inHorizon === false){
+          aDet = 'This date is <b>'+_sg.lead+' days away</b>, beyond the <b>'+_sg.horizon+'-day selling horizon</b> of this property '
+               + '<span style="color:#999">(80% of its bookings arrive inside that window)</span>.'
+               + '<br>Out there the price has little effect and a quiet date is normal, not a signal, so the RMES stays out and the Base Price stands.';
         }
         rmesSection += rowSig('A', '#2c7a4b', 'Pickup', A.dev ? pc(A.dev) : '—',
           (A.dev||0) > 0 ? '#1e6b4a' : ((A.dev||0) < 0 ? '#a83b3b' : '#999'), aDet);
@@ -12040,7 +12095,12 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
           'none': 'Switched off in the RMES settings.'
         };
         let mDet = actMap[M.action] || M.action || '—';
-        if (M.gap != null) mDet = 'Your price is <b>'+pc(M.gap)+'</b> versus the weighted compset.<br>' + mDet;
+        if (M.gap != null){
+          mDet = 'Your price is <b>'+pc(M.gap)+'</b> versus the weighted compset'
+               + (M.myBeddy!=null&&M.compsetBeddy!=null ? ' ('+fmtEUR(M.myBeddy)+' vs '+fmtEUR(M.compsetBeddy)+')' : '')
+               + (M.suppRemoved ? '<br><span style="color:#999">Expedia is showing '+escapeHtml(M.myRtShown||'')+' today, so '+fmtEUR(M.suppRemoved)+' of supplement was removed to compare like with like</span>' : '')
+               + '<br>' + mDet;
+        }
         const mDev = (_sg.totDev || 0) - (A.dev || 0);
         rmesSection += rowSig('B', '#3a6b6b', 'Market guard-rail',
           Math.abs(mDev) > 0.001 ? pc(mDev) : '—',

@@ -2720,14 +2720,31 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <tr style="background:#f2efe6"><th style="text-align:left;padding:4px 12px 4px 0">Situation</th><th style="text-align:left;padding:4px 12px">What the engine does</th></tr>
           <tr><td style="padding:4px 12px 4px 0">more than last year</td><td style="padding:4px 12px;color:#1e6b4a"><b>raise</b>, up to +10%</td></tr>
           <tr><td style="padding:4px 12px 4px 0">in line with last year (±40%)</td><td style="padding:4px 12px">half push &mdash; last year's price was accepted</td></tr>
-          <tr><td style="padding:4px 12px 4px 0">less than last year</td><td style="padding:4px 12px;color:#a83b3b"><b>lower</b>, in shorter steps</td></tr>
-          <tr><td style="padding:4px 12px 4px 0">nothing now, but last year there was</td><td style="padding:4px 12px;color:#a83b3b"><b>lower</b></td></tr>
-          <tr><td style="padding:4px 12px 4px 0">nothing now, nothing last year either</td><td style="padding:4px 12px;color:#888">no signal &mdash; the price does not move</td></tr>
+          <tr><td style="padding:4px 12px 4px 0">less than last year</td><td style="padding:4px 12px;color:#a83b3b"><b>lower</b>, up to &minus;5%</td></tr>
+          <tr><td style="padding:4px 12px 4px 0">nothing now, but last year there was</td><td style="padding:4px 12px;color:#a83b3b"><b>lower</b>, up to &minus;5%</td></tr>
+          <tr><td style="padding:4px 12px 4px 0">nothing now, nothing last year, and above the market</td><td style="padding:4px 12px;color:#a83b3b"><b>lower</b> &mdash; it is not selling because it costs too much</td></tr>
+          <tr><td style="padding:4px 12px 4px 0">nothing now, nothing last year, price in line</td><td style="padding:4px 12px;color:#888">no signal &mdash; the price does not move</td></tr>
         </table>
+        <p style="margin:0 0 8px 0;font-size:12.5px;color:#666"><i>Up to +10% on the way up, up to &minus;5% on the way down. Raising when things go well is low risk; lowering by mistake means giving money away, so the downward step is shorter.</i></p>
         <p style="margin:0 0 10px 0">The last two rows are the point: <b>an empty date is only meaningful next to last year</b>. A quiet date that was quiet last year too says nothing. A quiet date that was filling up last year says a lot. Going down uses shorter steps than going up, because the year-on-year comparison is noisy and being wrong on the way down costs more.</p>
         <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>Even with the distance weighting, the signal still leans on a few nights around the date rather than on that night alone. Read it as a signal about a <b>short period</b>, with the target night weighing the most.</i></p>
 
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">The selling horizon &mdash; where the RMES works at all</p>
+        <p style="margin:0 0 6px 0">The RMES only moves prices <b>inside the window where bookings actually arrive</b>: the number of days within which 80% of that property's bookings come in, measured from its own history.</p>
+        <table style="margin:6px 0 8px 0;font-size:12.5px;border-collapse:collapse">
+          <tr style="background:#f2efe6"><th style="text-align:left;padding:4px 14px 4px 0">Property</th><th style="text-align:left;padding:4px 12px">Selling horizon</th></tr>
+          <tr><td style="padding:3px 14px 3px 0">Firenze Suite</td><td style="padding:3px 12px">55 days</td></tr>
+          <tr><td style="padding:3px 14px 3px 0">Condotta 16</td><td style="padding:3px 12px">52 days</td></tr>
+          <tr><td style="padding:3px 14px 3px 0">Palazzo Alfani</td><td style="padding:3px 12px">109 days</td></tr>
+          <tr><td style="padding:3px 14px 3px 0">Enis Guesthouse</td><td style="padding:3px 12px">60 days</td></tr>
+        </table>
+        <p style="margin:0 0 10px 0">Beyond it the price has little effect on whether the date sells, and &mdash; more importantly &mdash; <b>a quiet date out there is normal, not a signal</b>. Inside the window a quiet date means something; at eight months out it means nothing. So beyond the horizon the RMES stays out and the Base Price stands. The same threshold already governs the compset ceiling: <b>one rule, one number per property</b>.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">When a date is quiet <i>and</i> expensive</p>
+        <p style="margin:0 0 10px 0">Nothing booked this year and nothing last year is normally no signal at all. But if on top of that you are <b>above the market band</b>, the two facts together do have an explanation: it is not selling because it costs too much. In that case the price comes down by the full step. On Palazzo Alfani this covers 26 dates; on Firenze Suite and Enis Guesthouse it never happens, because they sit below the market.</p>
+
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">B &mdash; Market: a guard-rail, never a driver</p>
+        <p style="margin:0 0 6px 0;font-size:12.5px;color:#666"><i>What Expedia shows is the cheapest room type still available, which on a day when the base room is sold out is a more expensive one. Comparing that figure as-is would make you look above the market when all that changed is the room in the window, so its supplement is removed first and the comparison is made on the base room type.</i></p>
         <p style="margin:0 0 10px 0">It compares your price with the weighted Expedia compset. It <b>never moves the price on its own</b>: if the pickup says nothing, nothing happens, however far you are from the market. What it does is <b>block a move that would take you further away</b>: no raising when you are already above the band, no lowering when you are already below it. Inside the band (±20% by default) it stays out of the way.</p>
 
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">C &mdash; AirDNA: a check, never a formula</p>
