@@ -5624,7 +5624,20 @@ const SMOOTH_MAX_PREV_DEV = 0.60;
 const RMES_SIG_DEFAULT = {
   pickup: {
     on: true,
-    windowDays: 14,        // finestra di prenotazione guardata
+    /* FINESTRA DI 7 GIORNI, ovunque.
+       Testate 7 / 14 / adattiva 7-14 / adattiva 7-21 sullo stesso motore, con il
+       backtest: 7 giorni vince (5 gruppi su 9 con il segnale che funziona, contro
+       2 di 14 giorni e 3 dell'adattiva). Con il resto del motore diventato piu'
+       preciso, una finestra larga diluisce: le prenotazioni di due settimane fa
+       portano rumore, non informazione.
+       I due campi restano per poter tornare a una finestra adattiva senza
+       riscrivere nulla: oggi sono uguali, quindi la soglia non ha effetto. */
+    windowDays: 7,         // finestra vicino alla data
+    windowDaysFar: 7,      // finestra lontano dalla data (uguale = nessuna adattivita')
+    windowSwitchLead: 30,  // soglia in giorni fra le due
+    continuityDays: 4,     // giorni DIVERSI con pickup per raddoppiare la spinta massima:
+                           // 1 giorno -> +10%, 4 o piu' -> +20%. Distingue "vende ogni
+                           // giorno" da "ha preso tre prenotazioni tutte lo stesso giorno" 
     spreadNights: 7,       // notti attorno alla data (allarga il campione)
     devFull: 0.10,         // spinta massima: una prenotazione recente, a prezzo pieno,
                            // su questa camera vale gia' la spinta intera
@@ -5769,19 +5782,21 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
      tiene quante prenotazioni sono entrate nella finestra, su quale tipologia,
      a che prezzo e se non rimborsabili. Serve anche la versione STLY (-364). */
   const _SIGC = rmesSignalsCfg(sel);
-  const _pkRich = {}, _pkRichStly = {};
-  {
+  /* Due indici, uno per ciascuna ampiezza di finestra: quella corta per le date
+     vicine, quella lunga per le lontane. Costruirne due e' piu' semplice e piu'
+     veloce che tenere il dettaglio giorno per giorno e filtrarlo a ogni lettura. */
+  const _WIN_NEAR = Math.max(1, +_SIGC.pickup.windowDays || 7);
+  const _WIN_FAR  = Math.max(_WIN_NEAR, +_SIGC.pickup.windowDaysFar || 14);
+  const _PK = {};          // ampiezza → { cur, stly }
+  function _buildPkIndex(W){
+    if (_PK[W]) return _PK[W];
+    const cur = {}, stly = {};
     const keys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
     const t0 = new Date(TODAY); t0.setHours(0,0,0,0);
-    const W = Math.max(1, +_SIGC.pickup.windowDays || 14);
     const from = ymd(addDays(t0, -W)), to = ymd(t0);
     const fromS = ymd(addDays(t0, -W-364)), toS = ymd(addDays(t0, -364));
     const list = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]) || BOOKINGS;
     const useIdx = !!_BOOKINGS_BY_STRUCT;
-    /* Peso per recenza: una prenotazione entrata oggi dice che il prezzo e'
-       accettato ADESSO; una di due settimane fa parlava di un altro prezzo.
-       Con mezza vita di H giorni il peso dimezza ogni H giorni, cosi il segnale
-       si spegne da solo invece di cadere di colpo alla fine della finestra. */
     const HL = +_SIGC.pickup.halfLifeDays || 0;
     const wOf = (bookYmd, refYmd) => {
       if (HL <= 0) return 1;
@@ -5790,12 +5805,15 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     };
     const add = (tgt, k, b, refYmd) => {
       let e = tgt[k];
-      if (!e) e = tgt[k] = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0 };
+      if (!e) e = tgt[k] = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0, days:{}, daysRt:{} };
       const wt = wOf(b.bookYmd, refYmd);
       e.n++; e.w += wt; e.rev += b.revPerNight;
       if (b.isNonRefundable){ e.nr++; e.nrW += wt; }
       e.byRt[b.room]  = (e.byRt[b.room]  || 0) + 1;
       e.byRtW[b.room] = (e.byRtW[b.room] || 0) + wt;
+      e.days[b.bookYmd] = 1;
+      if (!e.daysRt[b.room]) e.daysRt[b.room] = {};
+      e.daysRt[b.room][b.bookYmd] = 1;
     };
     for (let i=0;i<list.length;i++){
       const b = list[i];
@@ -5805,14 +5823,12 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const inStly = (b.bookYmd >= fromS && b.bookYmd <= toS);
       if (!inCur && !inStly) continue;
       for (let j=0;j<b.stayYmds.length;j++){
-        if (inCur)  add(_pkRich, b.stayYmds[j], b, to);
-        /* L'indice STLY va indicizzato sulla data EQUIVALENTE DI QUEST'ANNO
-           (+364 giorni), perche' la lettura avviene con la data corrente.
-           Indicizzandolo sulla data reale dell'anno scorso le due mappe non si
-           incontravano mai e il confronto storico restava sempre muto. */
-        if (inStly) add(_pkRichStly, ymd(addDays(ymdToDate(b.stayYmds[j]), 364)), b, toS);
+        if (inCur)  add(cur,  b.stayYmds[j], b, to);
+        if (inStly) add(stly, ymd(addDays(ymdToDate(b.stayYmds[j]), 364)), b, toS);
       }
     }
+    _PK[W] = { cur, stly };
+    return _PK[W];
   }
   const _nrDisc = (_SIGC.pickup.nrDiscount != null && isFinite(_SIGC.pickup.nrDiscount))
     ? +_SIGC.pickup.nrDiscount : rmesNonRefDiscount(sel);
@@ -5823,11 +5839,16 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
      strutture da 3-9 camere, ma una prenotazione sulla NOTTE ESATTA dice molto
      di piu' di una a sette notti di distanza: il peso decade con la distanza,
      con la stessa logica della recenza (mezza vita in notti). */
+  function _pkWindowDaysFor(stayYmd){
+    const c = _SIGC.pickup;
+    const lead = Math.round((ymdToDate(stayYmd) - startOfDay(new Date(TODAY))) / 86400000);
+    return (lead <= (+c.windowSwitchLead || 30)) ? (+c.windowDays || 7) : (+c.windowDaysFar || 14);
+  }
   function _pkWindow(map, stayYmd){
     const SP = Math.max(0, +_SIGC.pickup.spreadNights || 0);
     const NHL = +_SIGC.pickup.nightHalfLife || 0;
     const base = ymdToDate(stayYmd);
-    const out = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0, nExact:0 };
+    const out = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0, nExact:0, days:{}, daysRt:{} };
     for (let d=-SP; d<=SP; d++){
       const e = map[ymd(addDays(base, d))];
       if (!e) continue;
@@ -5838,6 +5859,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       out.nrW += (e.nrW || 0) * dw;
       for (const rt in e.byRt)  out.byRt[rt]  = (out.byRt[rt]||0)  + e.byRt[rt];
       for (const rt in e.byRtW) out.byRtW[rt] = (out.byRtW[rt]||0) + e.byRtW[rt] * dw;
+      for (const dd in (e.days||{})) out.days[dd] = 1;
+      for (const rt in (e.daysRt||{})){
+        if (!out.daysRt[rt]) out.daysRt[rt] = {};
+        for (const dd in e.daysRt[rt]) out.daysRt[rt][dd] = 1;
+      }
     }
     return out;
   }
@@ -5868,10 +5894,31 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const nrShare = W > 0 ? ((pk.nrW || pk.nr) / W) : 0;
       return onRt * (1 - nrShare * _nrDisc);
     };
-    const cur = _pkWindow(_pkRich, r.ymd);
+    const _WD = _pkWindowDaysFor(r.ymd);
+    const _IDXW = _buildPkIndex(_WD);
+    info.windowDays = _WD;
+    const cur = _pkWindow(_IDXW.cur, r.ymd);
     info.n = cur.n;
     const good = goodOf(cur);
     info.good = good;
+    /* SPINTA MASSIMA VARIABILE.
+       Tre prenotazioni tutte entrate lo stesso giorno e tre entrate in tre giorni
+       diversi dicono cose diverse: la seconda e' domanda che continua, e merita
+       di piu'. Il tetto quindi si apre con i GIORNI DIVERSI in cui e' entrato
+       qualcosa su questa camera: 1 giorno -> +10%, continuityDays o piu' -> +20%.
+       Nessuna memoria di stato: tutto resta calcolato sul Base Price, e due
+       giornate identiche danno sempre lo stesso risultato. */
+    const _daysRt = (cur.daysRt && cur.daysRt[rt]) ? Object.keys(cur.daysRt[rt]).length : 0;
+    info.pickupDays = _daysRt;
+    const _cDays = Math.max(1, +cfg.continuityDays || 4);
+    const _contBonus = Math.min(1, Math.max(0, (_daysRt - 1) / (_cDays - 1)));
+    const _maxPush = devFull * (1 + _contBonus);
+    info.maxPush = _maxPush;
+    function _pushFor(g, nfo){
+      const v = Math.min(_maxPush, devFull * g);
+      if (nfo && _daysRt >= 2) nfo.notes.push('bookings came in on ' + _daysRt + ' different days \u2014 max push raised to ' + Math.round(_maxPush*100) + '%');
+      return v;
+    }
     if (cur.n){
       const W = (cur.w > 0) ? cur.w : cur.n;
       const onRt = (cur.byRtW && cur.byRtW[rt] != null) ? cur.byRtW[rt] : (cur.byRt[rt] || 0);
@@ -5885,14 +5932,14 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     const sc = _SIGC.stly || {};
     let goodLy = null;
     if (sc.on !== false){
-      const prev = _pkWindow(_pkRichStly, r.ymd);
+      const prev = _pkWindow(_IDXW.stly, r.ymd);
       if (prev && prev.n) goodLy = goodOf(prev);
       else if (prev) goodLy = 0;
       info.goodLy = goodLy;
     }
     if (goodLy == null){
       // Nessun riferimento storico: si puo' solo prendere atto di cio' che entra.
-      info.dev = devFull * Math.min(1, good);
+      info.dev = _pushFor(good, info);
       if (good <= 0.001) info.notes.push('no recent booking on this room type');
       info.stlyState = 'n/a';
       return info;
@@ -5925,14 +5972,14 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     if (goodLy <= 0.001){
       // Entra ora, l'anno scorso niente → segnale pieno
       info.stlyState = 'ahead';
-      info.dev = devFull * Math.min(1, good);
+      info.dev = _pushFor(good, info);
       return info;
     }
     const ratio = good / goodLy;
     info.stlyRatio = ratio;
     if (ratio > 1 + tol){
       info.stlyState = 'ahead';
-      info.dev = devFull * Math.min(1, good);
+      info.dev = _pushFor(good, info);
     } else if (ratio < 1 - tol){
       /* Quanto siamo indietro in termini RELATIVI, non come differenza assoluta.
          Con la differenza il segnale saturava: a 5 prenotazioni di distanza
@@ -5945,7 +5992,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       info.stlyState = 'inline';
       // In linea con l'anno scorso: il prezzo di allora era accettato, si conferma
       // senza spingere. Meta' spinta, cosi il pickup non passa inosservato.
-      info.dev = (devFull / 2) * Math.min(1, good);
+      info.dev = _pushFor(good, info) / 2;
     }
     return info;
   }
@@ -19849,7 +19896,8 @@ function _renderRmesSignalsBox(sel){
       <span style="font-size:11px;color:var(--ink-3)">what is actually being booked for this date</span>
     </div>`,
     `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
-      <label title="How far back to look for bookings">window ${num('pickup','windowDays',c.pickup.windowDays,1,60,1,'days')}</label>
+      <label title="How far back to look for bookings. Tested 7 / 14 / adaptive on the backtest: 7 wins — with the rest of the engine sharper, a wider window just dilutes the signal.">window ${num('pickup','windowDays',c.pickup.windowDays,1,60,1,'days')}</label>
+      <label title="Different days on which something came in, needed to double the maximum push: 1 day gives +10%, this many or more gives +20%. Tells 'it sells every day' apart from 'it took three bookings all at once'.">continuity ${num('pickup','continuityDays',c.pickup.continuityDays,1,14,1,'days')}</label>
       <label title="Nights around the date included in the count. Widening is the only way to get usable counts on 3-9 room properties.">spread ±${num('pickup','spreadNights',c.pickup.spreadNights,0,21,1,'nights')}</label>
       <label title="Maximum push when the pickup is entirely on this room type and at full price">max push ${num('pickup','devFull',c.pickup.devFull,0,0.30,0.01,'')}</label>
       <label title="Discount of the non-refundable rate as configured on Beddy. A non-refundable sale means the price was accepted at less than face value.">non-refund. ${num('pickup','nrDiscount',c.pickup.nrDiscount,0,0.4,0.01,'')}</label>

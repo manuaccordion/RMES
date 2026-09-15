@@ -2707,7 +2707,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">A &mdash; Pickup: what is actually being booked</p>
         <p style="margin:0 0 6px 0">The engine counts the bookings that came in for this night, and weighs each one:</p>
-        <p style="margin:0 0 6px 0">The weight is the product of <b>three things</b>:</p>
+        <p style="margin:0 0 6px 0">The engine looks at the bookings that came in over the <b>last 7 days</b>. Seven was chosen against 14 and against an adaptive window by replaying the engine on past dates: with the rest of the engine sharper, a wider window only dilutes &mdash; bookings from two weeks ago carry noise, not information.</p>
+        <p style="margin:0 0 6px 0">The weight of each booking is the product of <b>three things</b>:</p>
         <table style="margin:6px 0 10px 0;font-size:12.5px;border-collapse:collapse">
           <tr><td style="padding:3px 16px 3px 0"><b>when</b> it came in</td><td style="padding:3px 0;font-family:'DM Mono',monospace">today 1.00 &middot; 7 days ago 0.50 &middot; 14 days ago 0.25</td></tr>
           <tr><td style="padding:3px 16px 3px 0"><b>how close</b> the night is</td><td style="padding:3px 0;font-family:'DM Mono',monospace">exact night 1.00 &middot; 3 nights 0.50 &middot; 6 nights 0.25</td></tr>
@@ -2715,6 +2716,14 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         </table>
         <p style="margin:0 0 6px 0">And it counts <b>only if it is on the room type in question</b>: a booking on a Suite says nothing about the price of the base room.</p>
         <p style="margin:0 0 6px 0">The two half-lives answer different questions with the same shape. The one on <b>time</b> says a booking made this morning speaks about today's price, while one from two weeks ago spoke about a different price. The one on <b>distance</b> exists because with 3 to 9 rooms a single night rarely has enough bookings to read on its own: the count is widened to &plusmn;7 nights to get usable numbers, but a booking on the exact night is worth five times one at the edge of the window.</p>
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Selling every day is worth more than one busy day</p>
+        <p style="margin:0 0 6px 0">Three bookings that all arrived today and three that arrived on three different days are not the same thing: the second is demand that <b>keeps coming</b>, and it deserves more room. So the <b>maximum push opens up with the number of different days</b> on which something came in for that room type:</p>
+        <table style="margin:6px 0 8px 0;font-size:12.5px;border-collapse:collapse">
+          <tr><td style="padding:3px 16px 3px 0">bookings on 1 day</td><td style="padding:3px 0;font-family:'DM Mono',monospace">max +10%</td></tr>
+          <tr><td style="padding:3px 16px 3px 0">on 2&ndash;3 different days</td><td style="padding:3px 0;font-family:'DM Mono',monospace">max +13% to +17%</td></tr>
+          <tr><td style="padding:3px 16px 3px 0">on 4 or more different days</td><td style="padding:3px 0;font-family:'DM Mono',monospace">max +20%</td></tr>
+        </table>
+        <p style="margin:0 0 10px 0">Three bookings all today land at &euro;271 in our worked example; the same three spread over three days land at &euro;287. <b>No memory of state is involved</b>: everything is still computed on the Base Price, so two identical days always give the same answer and the price cannot drift upward on its own.</p>
         <p style="margin:0 0 6px 0">That total is then compared with <b>the same point last year</b>, and this is what makes the signal work in both directions:</p>
         <table style="margin:6px 0 10px 0;font-size:12.5px;border-collapse:collapse">
           <tr style="background:#f2efe6"><th style="text-align:left;padding:4px 12px 4px 0">Situation</th><th style="text-align:left;padding:4px 12px">What the engine does</th></tr>
