@@ -5394,7 +5394,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; if (typeof _NR_DISCOUNT_CACHE !== 'undefined') _NR_DISCOUNT_CACHE = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -5484,11 +5484,16 @@ function _pickupDevFromFillCfg(structKey, fillRate){
   // Fallback: ultima riga
   return thr[thr.length-1].dev || 0;
 }
+/* Event Factor: SOLO IN AUMENTO. Un evento che conosciamo e' un'occasione per
+   alzare; non deve mai essere un motivo per abbassare — se una data va male,
+   a farla scendere ci pensano il pickup e il guard-rail di mercato, che
+   guardano cosa sta succedendo davvero. Valori negativi vengono ignorati. */
 function _getEventBoost(ymd){
   if (typeof EVENTS === 'undefined' || !EVENTS[ymd]) return 1.0;
   const label = EVENTS[ymd]; if (!label) return 1.0;
   const weights = _getEventWeights();
   const pct = weights[label]; if (pct == null || !isFinite(+pct)) return 1.0;
+  if (+pct <= 0) return 1.0;
   return 1 + (+pct)/100;
 }
 
@@ -5591,6 +5596,147 @@ function _listEventLabels(){
   return Array.from(s).sort((a,b)=>a.localeCompare(b));
 }
 
+/* ===========================================================================
+   SEGNALI RMES — configurazione
+   ---------------------------------------------------------------------------
+   Il Base Price da' il punto di partenza. Il RMES lo muove in base a UN segnale
+   centrale — il pickup reale — piu' due controlli che possono trattenerlo.
+   Niente pesi da tarare: ogni componente e' una regola leggibile, e ognuna si
+   puo' spegnere.
+
+   A · PICKUP (il motore)
+     · composizione: quanto del pickup e' entrato sulla tipologia in esame
+     · qualita': a che prezzo e' entrato (il non rimborsabile vale meno)
+     · confronto STLY: semaforo a 3 stati, non moltiplicatore — il rapporto
+       oscilla da 0.33 a 3.67 fra p10 e p90, troppo instabile per essere una misura
+
+   B · MERCATO (guard-rail, non motore)
+     Interviene solo se sei fuori dalla banda attorno al compset pesato, e
+     corregge un passo alla volta. Non insegue il mercato ogni giorno.
+
+   C · AIRDNA (validazione)
+     Non moltiplica: trattiene un aumento se il mercato prenota poco.
+   =========================================================================== */
+const RMES_SIG_KEY = 'rmes_signals_v2';
+/* Oltre questo scostamento dal Base, il suggerimento di ieri non e' credibile
+   e viene ignorato dal limite giornaliero (snapshot corrotto o di altro formato). */
+const SMOOTH_MAX_PREV_DEV = 0.60;
+const RMES_SIG_DEFAULT = {
+  pickup: {
+    on: true,
+    windowDays: 14,        // finestra di prenotazione guardata
+    spreadNights: 7,       // notti attorno alla data (allarga il campione)
+    devFull: 0.10,         // spinta massima: una prenotazione recente, a prezzo pieno,
+                           // su questa camera vale gia' la spinta intera
+    nrDiscount: 0.10,      // sconto non rimborsabile impostato su Beddy (10%). Il valore
+                           // misurato dai dati resta visibile come suggerimento.
+    halfLifeDays: 7,       // peso per recenza: una vendita di 7 giorni fa vale meta' di una di oggi.
+                           // 0 = disattiva (tutte le vendite della finestra pesano uguale)
+  },
+  smoothing: {
+    on: true,
+    maxDailyStep: 0.05,    // il suggerimento non si sposta piu' di questo rispetto a ieri
+  },
+  stly: {
+    on: true,
+    tolerance: 0.40,       // entro ±40% dall'anno scorso si e' in linea
+    adjust: 0.03,          // correzione quando si e' nettamente sotto o sopra
+  },
+  market: {
+    on: true,
+    band: 0.20,            // entro ±20% dal compset non si tocca niente
+  },
+  airdna: {
+    on: true,
+  },
+};
+let _RMES_SIG_CACHE = null;
+function rmesSignalsCfg(structKey){
+  if (!_RMES_SIG_CACHE){
+    let obj = {};
+    try { const raw = localStorage.getItem(RMES_SIG_KEY); if (raw) obj = JSON.parse(raw) || {}; } catch(e){}
+    _RMES_SIG_CACHE = obj;
+  }
+  const per = _RMES_SIG_CACHE[structKey] || {};
+  const out = {};
+  for (const grp in RMES_SIG_DEFAULT){
+    out[grp] = Object.assign({}, RMES_SIG_DEFAULT[grp], per[grp] || {});
+  }
+  return out;
+}
+function rmesSignalsSet(structKey, cfg){
+  if (!_RMES_SIG_CACHE){
+    let obj = {};
+    try { const raw = localStorage.getItem(RMES_SIG_KEY); if (raw) obj = JSON.parse(raw) || {}; } catch(e){}
+    _RMES_SIG_CACHE = obj;
+  }
+  _RMES_SIG_CACHE[structKey] = cfg;
+  try { localStorage.setItem(RMES_SIG_KEY, JSON.stringify(_RMES_SIG_CACHE)); } catch(e){}
+  if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+}
+/* SCONTO NON RIMBORSABILE MISURATO DAI DATI.
+   Metodo: accoppio ogni vendita non rimborsabile con la vendita flessibile piu'
+   vicina NEL TEMPO sulla stessa notte, stessa camera, stesso canale — al massimo
+   NR_PAIR_MAX_GAP giorni di distanza fra le due prenotazioni.
+   L'accoppiamento stretto e' essenziale: confrontando vendite di periodi diversi
+   si misura come sono cambiati i prezzi, non lo sconto. Con coppie larghe usciva
+   -11/-14%, con coppie strette esce -9/-10%, cioe' il 10% realmente impostato.
+   Il confronto e' in prezzo-Beddy (netto markup), lo spazio in cui lo sconto vive.
+   Questo valore NON guida il motore: e' un suggerimento accanto al valore
+   configurato, per accorgersi se la realta' si scosta dall'impostazione. */
+const NR_PAIR_MAX_GAP = 7;      // giorni fra le due prenotazioni
+const NR_MIN_PAIRS = 30;        // sotto questa soglia il dato e' debole
+let _NR_DISCOUNT_CACHE = {};
+function rmesNonRefMeasured(structKey){
+  if (_NR_DISCOUNT_CACHE[structKey] !== undefined) return _NR_DISCOUNT_CACHE[structKey];
+  let out = { discount: null, n: 0, weak: true };
+  try {
+    const cfg = CFG.structures[structKey];
+    const useIdx = !!(typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]);
+    const list = useIdx ? _BOOKINGS_BY_STRUCT[structKey] : BOOKINGS;
+    const groups = {};
+    for (let i=0;i<list.length;i++){
+      const b = list[i];
+      if (b.cancelled || !b.stayYmds) continue;
+      if (!useIdx && cfg && b.struct !== cfg.key) continue;
+      for (let j=0;j<b.stayYmds.length;j++){
+        const k = b.stayYmds[j] + '|' + b.room + '|' + b.canale;
+        (groups[k] = groups[k] || []).push(b);
+      }
+    }
+    const ratios = [];
+    for (const k in groups){
+      const a = groups[k];
+      const nr = a.filter(x=>x.isNonRefundable), fx = a.filter(x=>!x.isNonRefundable);
+      if (!nr.length || !fx.length) continue;
+      for (const n of nr){
+        let best = null, bd = 1e9;
+        for (const f of fx){
+          const g = Math.abs(Math.round((ymdToDate(f.bookYmd) - ymdToDate(n.bookYmd)) / 86400000));
+          if (g < bd){ bd = g; best = f; }
+        }
+        if (!best || bd > NR_PAIR_MAX_GAP) continue;
+        if (!(best.revPerNightCaricato > 0)) continue;
+        ratios.push(n.revPerNightCaricato / best.revPerNightCaricato);
+      }
+    }
+    if (ratios.length){
+      ratios.sort((a,b)=>a-b);
+      const med = ratios[Math.floor(ratios.length/2)];
+      out = { discount: Math.max(0, Math.min(0.40, 1 - med)), n: ratios.length, weak: ratios.length < NR_MIN_PAIRS };
+    }
+  } catch(e){}
+  _NR_DISCOUNT_CACHE[structKey] = out;
+  return out;
+}
+/* Valore USATO dal motore: quello configurato. Il misurato resta informativo. */
+function rmesNonRefDiscount(structKey){
+  const cfg = (typeof rmesSignalsCfg === 'function') ? rmesSignalsCfg(structKey) : null;
+  const v = cfg && cfg.pickup ? cfg.pickup.nrDiscount : null;
+  if (v != null && isFinite(v) && v >= 0 && v < 0.5) return +v;
+  const m = rmesNonRefMeasured(structKey);
+  return (m.discount != null && !m.weak) ? m.discount : 0.10;
+}
 function computeRMESPriceMap(sel, startYmd, rangeDays){
   const out = {};
   if (isAggSel(sel)) return out;  // RMES non significativo aggregato
@@ -5617,6 +5763,162 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
   // per questa stay-date, e oggi è il giorno più informativo).
   // Finestra primaria "1d" = [today-1, today] (= ieri + oggi). Se 0 booking, allargo
   // a "7d" = [today-7, today] (oggi compreso, 8 giorni). Se ancora 0 → segnale 0%.
+  /* Indice pickup ARRICCHITO per il nuovo segnale A: per ogni notte di soggiorno
+     tiene quante prenotazioni sono entrate nella finestra, su quale tipologia,
+     a che prezzo e se non rimborsabili. Serve anche la versione STLY (-364). */
+  const _SIGC = rmesSignalsCfg(sel);
+  const _pkRich = {}, _pkRichStly = {};
+  {
+    const keys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
+    const t0 = new Date(TODAY); t0.setHours(0,0,0,0);
+    const W = Math.max(1, +_SIGC.pickup.windowDays || 14);
+    const from = ymd(addDays(t0, -W)), to = ymd(t0);
+    const fromS = ymd(addDays(t0, -W-364)), toS = ymd(addDays(t0, -364));
+    const list = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]) || BOOKINGS;
+    const useIdx = !!_BOOKINGS_BY_STRUCT;
+    /* Peso per recenza: una prenotazione entrata oggi dice che il prezzo e'
+       accettato ADESSO; una di due settimane fa parlava di un altro prezzo.
+       Con mezza vita di H giorni il peso dimezza ogni H giorni, cosi il segnale
+       si spegne da solo invece di cadere di colpo alla fine della finestra. */
+    const HL = +_SIGC.pickup.halfLifeDays || 0;
+    const wOf = (bookYmd, refYmd) => {
+      if (HL <= 0) return 1;
+      const age = Math.max(0, Math.round((ymdToDate(refYmd) - ymdToDate(bookYmd)) / 86400000));
+      return Math.pow(0.5, age / HL);
+    };
+    const add = (tgt, k, b, refYmd) => {
+      let e = tgt[k];
+      if (!e) e = tgt[k] = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0 };
+      const wt = wOf(b.bookYmd, refYmd);
+      e.n++; e.w += wt; e.rev += b.revPerNight;
+      if (b.isNonRefundable){ e.nr++; e.nrW += wt; }
+      e.byRt[b.room]  = (e.byRt[b.room]  || 0) + 1;
+      e.byRtW[b.room] = (e.byRtW[b.room] || 0) + wt;
+    };
+    for (let i=0;i<list.length;i++){
+      const b = list[i];
+      if (b.cancelled || !b.stayYmds) continue;
+      if (!useIdx && !keys.has(b.struct)) continue;
+      const inCur  = (b.bookYmd >= from  && b.bookYmd <= to);
+      const inStly = (b.bookYmd >= fromS && b.bookYmd <= toS);
+      if (!inCur && !inStly) continue;
+      for (let j=0;j<b.stayYmds.length;j++){
+        if (inCur)  add(_pkRich, b.stayYmds[j], b, to);
+        /* L'indice STLY va indicizzato sulla data EQUIVALENTE DI QUEST'ANNO
+           (+364 giorni), perche' la lettura avviene con la data corrente.
+           Indicizzandolo sulla data reale dell'anno scorso le due mappe non si
+           incontravano mai e il confronto storico restava sempre muto. */
+        if (inStly) add(_pkRichStly, ymd(addDays(ymdToDate(b.stayYmds[j]), 364)), b, toS);
+      }
+    }
+  }
+  const _nrDisc = (_SIGC.pickup.nrDiscount != null && isFinite(_SIGC.pickup.nrDiscount))
+    ? +_SIGC.pickup.nrDiscount : rmesNonRefDiscount(sel);
+  /* Somma il pickup su una finestra di notti attorno alla data: allargare
+     l'intorno e' l'unico modo per avere conteggi utilizzabili su strutture
+     da 3-9 camere. */
+  function _pkWindow(map, stayYmd){
+    const SP = Math.max(0, +_SIGC.pickup.spreadNights || 0);
+    const base = ymdToDate(stayYmd);
+    const out = { n:0, w:0, byRt:{}, byRtW:{}, rev:0, nr:0, nrW:0 };
+    for (let d=-SP; d<=SP; d++){
+      const e = map[ymd(addDays(base, d))];
+      if (!e) continue;
+      out.n += e.n; out.w += (e.w||0); out.rev += e.rev; out.nr += e.nr; out.nrW += (e.nrW||0);
+      for (const rt in e.byRt)  out.byRt[rt]  = (out.byRt[rt]||0)  + e.byRt[rt];
+      for (const rt in e.byRtW) out.byRtW[rt] = (out.byRtW[rt]||0) + e.byRtW[rt];
+    }
+    return out;
+  }
+  /* SEGNALE A — il motore. Ritorna dev (frazione) e le parti, per il tooltip. */
+  /* SEGNALE PICKUP — simmetrico.
+     Confronta le prenotazioni BUONE entrate su questa camera con quelle entrate
+     nello stesso punto un anno fa. Piu' dell'anno scorso → alza; meno → abbassa.
+     Il punto che rende il segnale bidirezionale: l'ASSENZA di pickup e' un dato
+     solo se l'anno scorso in quel momento qualcosa era entrato. Una data ferma
+     che anche l'anno scorso era ferma non dice nulla; una data ferma che l'anno
+     scorso stava andando dice parecchio.
+     Ogni prenotazione vale  peso-recenza x qualita-prezzo :
+       oggi, prezzo pieno, questa camera -> 1 · 7 giorni fa -> 0.5
+       non rimborsabile -> x0.9          · altra camera    -> 0
+     La discesa e' piu' prudente della salita: il confronto con l'anno scorso e'
+     instabile (p10-p90 da 0.33 a 3.67), quindi si scende a passi piu' corti. */
+  function _signalPickup(r, rt){
+    const cfg = _SIGC.pickup;
+    const info = { on: !!cfg.on, dev: 0, n: 0, good: 0, goodLy: null, share: null,
+                   quality: null, stlyRatio: null, stlyState: 'off', notes: [] };
+    if (!cfg.on){ info.notes.push('pickup signal off'); return info; }
+    const devFull = +cfg.devFull || 0.10;
+    const goodOf = (pk) => {
+      if (!pk || !pk.n) return 0;
+      const W = (pk.w > 0) ? pk.w : pk.n;
+      const onRt = (pk.byRtW && pk.byRtW[rt] != null) ? pk.byRtW[rt] : (pk.byRt[rt] || 0);
+      const nrShare = W > 0 ? ((pk.nrW || pk.nr) / W) : 0;
+      return onRt * (1 - nrShare * _nrDisc);
+    };
+    const cur = _pkWindow(_pkRich, r.ymd);
+    info.n = cur.n;
+    const good = goodOf(cur);
+    info.good = good;
+    if (cur.n){
+      const W = (cur.w > 0) ? cur.w : cur.n;
+      info.share = W > 0 ? ((cur.byRtW && cur.byRtW[rt] != null ? cur.byRtW[rt] : (cur.byRt[rt]||0)) / W) : 0;
+      info.quality = good > 0 && info.share > 0 ? good / (info.share * W) : 1;
+    }
+    // Riferimento: stesso punto un anno fa
+    const sc = _SIGC.stly || {};
+    let goodLy = null;
+    if (sc.on !== false){
+      const prev = _pkWindow(_pkRichStly, r.ymd);
+      if (prev && prev.n) goodLy = goodOf(prev);
+      else if (prev) goodLy = 0;
+      info.goodLy = goodLy;
+    }
+    if (goodLy == null){
+      // Nessun riferimento storico: si puo' solo prendere atto di cio' che entra.
+      info.dev = devFull * Math.min(1, good);
+      if (good <= 0.001) info.notes.push('no recent booking on this room type');
+      info.stlyState = 'n/a';
+      return info;
+    }
+    const tol = +sc.tolerance || 0.40;
+    const down = Math.abs(+sc.adjust || 0.03);     // passo di discesa, piu' corto
+    if (good <= 0.001 && goodLy <= 0.001){
+      info.stlyState = 'both quiet';
+      info.notes.push('nothing booked this year nor last year at this point — no signal');
+      info.dev = 0;
+      return info;
+    }
+    if (good <= 0.001){
+      // Ferma quest'anno, ma l'anno scorso stava andando → segnale negativo
+      info.stlyState = 'behind';
+      info.dev = -down * Math.min(1, goodLy);
+      info.notes.push('nothing booked this year while last year had ' + goodLy.toFixed(2) + ' at this point');
+      return info;
+    }
+    if (goodLy <= 0.001){
+      // Entra ora, l'anno scorso niente → segnale pieno
+      info.stlyState = 'ahead';
+      info.dev = devFull * Math.min(1, good);
+      return info;
+    }
+    const ratio = good / goodLy;
+    info.stlyRatio = ratio;
+    if (ratio > 1 + tol){
+      info.stlyState = 'ahead';
+      info.dev = devFull * Math.min(1, good);
+    } else if (ratio < 1 - tol){
+      info.stlyState = 'behind';
+      info.dev = -down * Math.min(1, goodLy - good);
+    } else {
+      info.stlyState = 'inline';
+      // In linea con l'anno scorso: il prezzo di allora era accettato, si conferma
+      // senza spingere. Meta' spinta, cosi il pickup non passa inosservato.
+      info.dev = (devFull / 2) * Math.min(1, good);
+    }
+    return info;
+  }
+
   const _pickupByStayDate = {};  // ymd → { recent1g, recent7g }
   {
     const _structKeys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
@@ -6014,7 +6316,121 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       };
     }
     const _wNorm = _normalizeWeights();
-    const _multFinaleRaw = _wNorm.occ*occ_mult + _wNorm.price*price_mult + _wNorm.pace*pace_mult + _wNorm.budget*budget_mult + _wNorm.comp*comp_mult + _wNorm.air*air_mult + (_wNorm.mkt||0)*mkt_mult;
+    /* ===== NUOVA COMPOSIZIONE — niente somma pesata =====
+       Il pickup muove il prezzo, il mercato e AirDNA possono solo trattenerlo.
+       Ogni componente resta leggibile e spegnibile dalle impostazioni. */
+    const _sigBaseRT = ((CFG.structures[sel] || {}).baseRT) || _rtList[0];
+    const _sigA = _signalPickup(r, _sigBaseRT);
+    /* ===== IL PICKUP E' L'UNICO MOTORE =====
+       Mercato e AirDNA NON sommano e NON sottraggono: sono guard-rail, cioe'
+       possono solo FERMARE un movimento che il pickup ha gia' chiesto.
+       Senza pickup il prezzo non si muove, qualunque cosa dica il compset.
+       Conseguenza voluta: se sei fuori mercato ma quella data e' ferma, il
+       sistema non inventa un movimento — te lo segnala e basta. */
+    const _mk = _SIGC.market;
+    let _mktDev = 0;                              // resta sempre 0: il mercato non muove
+    const _mktInfo = { on: !!_mk.on, gap: null, action: 'none', veto: null, blocked: null };
+    if (_mk.on && _D_myBeddy != null && _D_compsetBeddy != null && _D_compsetBeddy > 0){
+      const gap = _D_myBeddy / _D_compsetBeddy - 1;
+      _mktInfo.gap = gap;
+      const band = +_mk.band || 0.20;
+      if (gap < -band){
+        _mktInfo.action = 'below band';
+      } else if (gap > band){
+        /* Troppo alto → scendo, MA non se la data sta gia' andando bene.
+           Il veto guarda l'occupazione contro l'anno scorso: e' l'informazione
+           che c'e' sempre. Il pickup, quando esiste, puo' solo rafforzare o
+           annullare il veto; la sua assenza NON vale come segnale negativo,
+           altrimenti una data a 90 giorni verrebbe abbassata solo perche' in
+           questi 14 giorni non e' entrato nulla — cioe' inseguendo il mercato,
+           che e' proprio cio' che questo guard-rail deve evitare. */
+        _mktInfo.action = 'above band';
+      } else {
+        _mktInfo.action = 'inside band';
+      }
+    } else if (_mk.on){
+      _mktInfo.action = 'no compset';
+    }
+    /* Il guard-rail di mercato FERMA il pickup quando lo spingerebbe ancora
+       piu' lontano dal mercato: non alzare se sei gia' sopra la banda, non
+       abbassare se sei gia' sotto. Nella direzione del rientro lascia passare. */
+    let _devAfterMarket = _sigA.dev;
+    if (_mk.on && _mktInfo.gap != null){
+      const band = +_mk.band || 0.20;
+      if (_sigA.dev > 0 && _mktInfo.gap > band){
+        _devAfterMarket = 0;
+        _mktInfo.blocked = 'increase blocked: already above the market band';
+      } else if (_sigA.dev < 0 && _mktInfo.gap < -band){
+        _devAfterMarket = 0;
+        _mktInfo.blocked = 'decrease blocked: already below the market band';
+      }
+    }
+    // C · AirDNA: non moltiplica, trattiene gli aumenti quando il mercato e' fermo
+    /* AirDNA: anche lui solo guard-rail, e SIMMETRICO.
+       Mercato fermo  → non alzare.   Mercato forte → non abbassare.
+       Non spinge mai in nessuna direzione. */
+    const _ad = _SIGC.airdna;
+    const _adInfo = { on: !!_ad.on, weak: false, strong: false, held: 0, hasData: false };
+    let _totDev = _devAfterMarket;
+    if (_ad.on){
+      /* ATTENZIONE AI NOMI LEGACY: air_mult e' il vecchio fattore RICERCHE EXPEDIA
+         (quello che abbiamo tolto), mentre AirDNA e' mkt_mult con _mkt_naReason.
+         Agganciarsi alla variabile sbagliata bloccava ogni aumento usando un
+         segnale che non doveva nemmeno esistere piu'.
+         E si agisce SOLO con dati veri: l'assenza di dati non e' un segnale
+         negativo e non deve trattenere nulla. */
+      const _adHas = (_mkt_naReason == null && mkt_mult != null && isFinite(mkt_mult));
+      _adInfo.hasData = !!_adHas;
+      if (_adHas){
+        const weak = (mkt_mult < 1 - 0.001), strong = (mkt_mult > 1 + 0.001);
+        if (weak && _totDev > 0){ _adInfo.weak = true; _adInfo.held = _totDev; _totDev = 0; }
+        else if (strong && _totDev < 0){ _adInfo.strong = true; _adInfo.held = _totDev; _totDev = 0; }
+      }
+    }
+    /* LIMITE DI VARIAZIONE GIORNALIERA
+       Il suggerimento non si sposta di piu' di maxDailyStep rispetto a quello di
+       ieri. Senza questo il prezzo puo' saltare del 30% da un giorno all'altro
+       quando un pezzo del motore entra o esce, e chi lo guarda ogni mattina non
+       riesce piu' a seguirlo. Non e' un cap sul livello: il suggerimento arriva
+       comunque dove deve, solo in piu' passi. */
+    let _totDevSmoothed = _totDev, _smoothInfo = { on: false, from: null, limited: false };
+    // Il Base strutturale serve gia' qui per convertire il suggerimento di ieri
+    // in uno scostamento confrontabile (piu' avanti viene ricalcolato per ogni
+    // room type, ma a questo punto del flusso non e' ancora in scope).
+    const _baseForSmooth = (typeof newrmesGetEffectiveBase === 'function')
+      ? newrmesGetEffectiveBase(sel, r.ymd) : null;
+    const _baseSmoothOk = (_baseForSmooth != null && isFinite(_baseForSmooth) && _baseForSmooth > 0);
+    {
+      const sm = _SIGC.smoothing || {};
+      if (sm.on && _baseSmoothOk){
+        const prev = (typeof newrmesGetLastSuggestion === 'function')
+          ? newrmesGetLastSuggestion(sel, r.ymd) : null;
+        /* Lo snapshot di ieri va usato SOLO se plausibile. Uno snapshot corrotto
+           o di un formato vecchio (visto: 27 euro contro un Base di 180) farebbe
+           credere che ieri lo scostamento fosse -85%, e il limite "un passo al
+           giorno" produrrebbe proprio il salto che deve impedire. */
+        const prevDevRaw = (prev != null && prev > 0) ? (prev / _baseForSmooth - 1) : null;
+        const prevOk = (prevDevRaw != null && Math.abs(prevDevRaw) <= SMOOTH_MAX_PREV_DEV);
+        if (prevOk){
+          const step = +sm.maxDailyStep || 0.05;
+          _smoothInfo = { on: true, from: prev, limited: false };
+          let v = _totDev;
+          if (_totDev > prevDevRaw + step){ v = prevDevRaw + step; _smoothInfo.limited = 'up'; }
+          else if (_totDev < prevDevRaw - step){ v = prevDevRaw - step; _smoothInfo.limited = 'down'; }
+          /* Lo smoothing puo' RALLENTARE un movimento, mai CREARNE uno che
+             nessun segnale ha chiesto: il risultato resta fra 0 e il dev grezzo. */
+          const lo = Math.min(0, _totDev), hi = Math.max(0, _totDev);
+          _totDevSmoothed = Math.max(lo, Math.min(hi, v));
+          if (_totDevSmoothed === _totDev) _smoothInfo.limited = false;
+        } else {
+          _smoothInfo = { on: true, from: null, limited: false,
+                          ignored: (prevDevRaw != null ? 'previous suggestion out of plausible range' : null) };
+        }
+      }
+    }
+    const _multFinaleRaw = 1 + _totDevSmoothed;
+    const _sigDbg = { A: _sigA, market: _mktInfo, airdna: _adInfo, nrDiscount: _nrDisc,
+                      totDev: _totDev, totDevApplied: _totDevSmoothed, smoothing: _smoothInfo };
     const _capStruct = (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.25;
     const _cappedStruct = applyTotalCap(_multFinaleRaw - 1, _capStruct);
     const multFinale = _cappedStruct.mult;
@@ -6023,7 +6439,29 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const price_rt = price_mult;   // ADR struttura del giorno
       const pace_rt = pace_mult;     // Pace mese di stay (struttura)
       const budget_rt = budget_mult; // Budget struttura
-      const _mfin_rt_raw = _wNorm.occ*occ_rt + _wNorm.price*price_rt + _wNorm.pace*pace_rt + _wNorm.budget*budget_rt + _wNorm.comp*comp_mult + _wNorm.air*air_mult + (_wNorm.mkt||0)*mkt_mult;
+      // Ogni tipologia ha il SUO segnale di pickup: se le prenotazioni sono
+      // entrate su un'altra camera, questa non deve alzare il prezzo.
+      const _sigA_rt = _signalPickup(r, rt);
+      let _devRt = _sigA_rt.dev;                 // solo il pickup muove
+      if (_mk.on && _mktInfo.gap != null){
+        const bandRt = +_mk.band || 0.20;
+        if (_devRt > 0 && _mktInfo.gap > bandRt) _devRt = 0;
+        else if (_devRt < 0 && _mktInfo.gap < -bandRt) _devRt = 0;
+      }
+      if (_ad.on && _adInfo.hasData){
+        if (mkt_mult < 1 - 0.001 && _devRt > 0) _devRt = 0;
+        else if (mkt_mult > 1 + 0.001 && _devRt < 0) _devRt = 0;
+      }
+      if (_smoothInfo.on && _smoothInfo.from != null && _baseSmoothOk){
+        const prevDevRt = _smoothInfo.from / _baseForSmooth - 1;
+        const stepRt = +(_SIGC.smoothing.maxDailyStep) || 0.05;
+        const rawRt = _devRt;
+        if (_devRt > prevDevRt + stepRt) _devRt = prevDevRt + stepRt;
+        else if (_devRt < prevDevRt - stepRt) _devRt = prevDevRt - stepRt;
+        // mai oltre cio' che i segnali hanno chiesto (vedi nota sopra)
+        _devRt = Math.max(Math.min(0, rawRt), Math.min(Math.max(0, rawRt), _devRt));
+      }
+      const _mfin_rt_raw = 1 + _devRt;
       const _capRT = applyTotalCap(_mfin_rt_raw - 1, _capStruct);
       const mfin_rt = _capRT.mult;
       _mults_byRT[rt] = {
@@ -6183,6 +6621,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         cap: r.cap,
         curOcc: r.cap > 0 ? r.curRn / r.cap : 0,
         multsByRT: _mults_byRT,
+        _sigDbg,                 // diagnostica dei nuovi segnali (pickup/mercato/airdna)
         pricesByRT,
         rmesSuggestedByRT,
         rmesTargetOnBaseByRT,
@@ -6664,14 +7103,34 @@ function lastSoldIndex(structKey){
       if (b.struct !== cfg.key) continue;
       if (b.room !== baseRT) continue;
     }
-    const price = b.revPerNight;                 // gia' lordo commissione OTA
+    /* Il RMES suggerisce la tariffa FLESSIBILE della CAMERA BASE da caricare su
+       BEDDY. Una vendita non e' direttamente quel numero: va riportata in quello
+       spazio, altrimenti si ancora il suggerimento a una grandezza diversa.
+         camera base   → gia' filtrata sopra (b.room !== baseRT scartato)
+         prezzo-Beddy  → revPerNightCaricato, cioe' il lordo diviso il markup
+                          del canale: e' quanto era caricato per produrre quella
+                          vendita
+         flessibile    → se la vendita e' non rimborsabile e' entrata scontata,
+                          quindi il corrispondente flessibile e' piu' alto e va
+                          ricostruito dividendo per (1 - sconto misurato) */
+    const priceGross = b.revPerNight;
+    let price = b.revPerNightCaricato;           // prezzo-Beddy (netto markup canale)
     if (!(price > 0) || !isFinite(price)) continue;
+    let nrAdj = 1;
+    if (b.isNonRefundable){
+      const disc = (typeof rmesNonRefDiscount === 'function') ? rmesNonRefDiscount(structKey) : 0.10;
+      nrAdj = 1 / Math.max(0.5, 1 - disc);       // da non rimborsabile a flessibile
+      price = price * nrAdj;
+    }
     for (let j=0; j<b.stayYmds.length; j++){
       const k = b.stayYmds[j];
       const cur = out[k];
       // vince la prenotazione entrata piu' di recente; a parita', il prezzo piu' alto
       if (!cur || b.bookYmd > cur.bookYmd || (b.bookYmd === cur.bookYmd && price > cur.price)){
-        out[k] = { price: price, bookYmd: b.bookYmd, canale: b.canale || '—', room: baseRT, notti: b.notti };
+        out[k] = { price: price, priceGross: priceGross, bookYmd: b.bookYmd,
+                   canale: b.canale || '—', room: baseRT, notti: b.notti,
+                   nonRefundable: !!b.isNonRefundable, nrAdj: nrAdj,
+                   markup: b.channelMarkup || 0 };
       }
     }
   }
@@ -9087,7 +9546,7 @@ function renderRmesBreakdown(){
   }
   h += '</tbody></table></div>';
   h += '<div style="font-size:10.5px;color:#999;margin-top:10px;line-height:1.5">';
-  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · single-factor weighted dev% for <b>A·Pickup</b> (Daily Pickup, fill-rate based) · <b>B·Pace</b> (last 7 days booking pace vs the same 7 days LY) · <b>C·Online</b> (my Beddy-eq vs Weighted Expedia Compset) · <b>D·Demand</b> (Expedia searches vs month median) · <b>E·AirDNA</b> (market booked vs my OCC, headroom signal) · <b>Composite</b> (Σ weight×dev; hover for the breakdown) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
+  h += 'Hover any number to see how it was obtained. Columns left→right: <b>Last update</b> (current reference price for the day) · <b>A·Pickup</b> (what is actually being booked for this date: how much of it is on this room type, at what price quality, and how it compares with last year) · <b>B·Market</b> (guard-rail: only steps in when you are outside the band around the weighted compset, one step at a time) · <b>C·AirDNA</b> (a check, not a formula: holds increases back when the market is quiet) · <b>Combined</b> (the three above; there are no weights) · <b>LMF</b> (Last-Minute Factor, the only mechanism that can lower the price close-in) · <b>Event</b> · <b>RMES suggested</b> (target price computed on the structural Base Price; ⚠ = clamped to the Floor Rate) · <b>RMES applied</b> (price actually loaded for the day: Base Price, accepted RMES ✓, or manual override 🖋).';
   h += '</div>';
   wrap.innerHTML = h;
 }
@@ -11517,67 +11976,80 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         h += '</div>';
         return h;
       }
-      rmesSection += '<div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">RMES factors (property level)</div>';
+      /* ===== TABELLA SEGNALI — rispecchia il motore attuale =====
+         Niente piu' cinque fattori con i pesi: il pickup muove il prezzo, mercato
+         e AirDNA possono solo trattenerlo. Ogni riga dice cosa ha fatto e perche'. */
       var _notaRTLbl = _isBaseRT ? (rt + ' is the baseRT') : ('for ' + rt + ' = Base_baseRT + monthly supplement');
-      rmesSection += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:14px 0 8px">Market Factors</div>';
-      rmesSection += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">';
-      rmesSection += '<thead style="background:#f8f8f5"><tr>';
-      rmesSection += '<th style="padding:6px 10px;text-align:left;font-size:10.5px;color:#666">Factor</th>';
-      rmesSection += '<th style="padding:6px 10px;text-align:right;font-size:10.5px;color:#666;width:70px">Weight</th>';
-      rmesSection += '<th style="padding:6px 10px;text-align:right;font-size:10.5px;color:#666;width:85px">Dev %</th>';
-      rmesSection += '</tr></thead><tbody>';
-      const wApp = mults._weightsApplied || {};
-      const wBase = (typeof SELL_RMES_W_ALL !== 'undefined' && SELL_RMES_W_ALL[d.structKey])
-                  ? SELL_RMES_W_ALL[d.structKey]
-                  : (typeof SELL_RMES_W_DEFAULT !== 'undefined' ? SELL_RMES_W_DEFAULT : {});
-      const wMapKey = { occ:'occ', price:'price', pace:'pace', comp:'comp', air:'airdna', mkt:'mkt' };
-      for (const f of factors){
-        const m = mults[f.key];
-        const naReason = naReasons[f.naKey];
-        const wK = wMapKey[f.naKey];
-        const wAppV = (wApp[f.naKey] != null) ? wApp[f.naKey] : (wBase[wK] || 0);
-        const wBaseV = wBase[wK] || 0;
-        const wPct = (wAppV * 100);
-        const wBasePct = (wBaseV * 100);
-        const factorCell = '<td style="padding:5px 10px;border-bottom:1px solid #eee"><span style="background:'+f.color+';color:#fff;padding:2px 6px;border-radius:3px;font-family:\'DM Mono\',monospace;font-weight:700;font-size:11px;margin-right:6px">'+f.code+'</span>·'+f.name+'</td>';
-        if (m == null || !isFinite(m) || naReason){
-          const reasonTxt = naReason || 'no data';
-          rmesSection += '<tr style="background:#fafafa">' + factorCell;
-          rmesSection += '<td style="padding:5px 10px;border-bottom:1px solid #eee;text-align:right;color:#bbb;font-family:\'DM Mono\',monospace;font-size:11px;text-decoration:line-through">'+wBasePct.toFixed(0)+'%</td>';
-          rmesSection += '<td style="padding:5px 10px;border-bottom:1px solid #eee;text-align:right;color:#bbb;font-size:11px">—</td>';
-          rmesSection += '</tr>';
-          rmesSection += '<tr style="background:#fafafa"><td colspan="3" style="padding:0;border-bottom:1px solid #eee">';
-          rmesSection += '<details style="padding:0 10px"><summary style="cursor:pointer;padding:4px 0;font-size:10.5px;color:#999;font-weight:600;list-style:none;user-select:none">▸ Detail (missing data)</summary>';
-          rmesSection += _buildFactorDetail(f.code);
-          rmesSection += '<div style="padding:6px 14px 10px;background:#fbf6f6;border-left:3px solid #d4a8a8;font-size:10.5px;color:#a83b3b;font-family:\'DM Sans\',sans-serif;font-style:italic">Reason: '+reasonTxt+'. This factor weight has been redistributed to the other active factors.</div>';
-          rmesSection += '</details></td></tr>';
-          continue;
+      const _sg = (dayData && dayData._sigDbg) || null;   // diagnostica dei segnali, vive sulla entry del giorno
+      rmesSection += '<div style="font-size:11px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">RMES signals</div>';
+      if (!_sg){
+        rmesSection += '<div style="font-size:12px;color:#999;font-style:italic;margin-bottom:10px">Signal detail not available for this date.</div>';
+      } else {
+        const pc = (x) => (x >= 0 ? '+' : '') + (x*100).toFixed(1) + '%';
+        const rowSig = (code, colour, name, verdict, verdictCol, detail) =>
+          '<tr><td style="padding:7px 10px;border-bottom:1px solid #eee;vertical-align:top">'
+          + '<span style="background:'+colour+';color:#fff;padding:2px 6px;border-radius:3px;font-family:\'DM Mono\',monospace;font-weight:700;font-size:11px;margin-right:6px">'+code+'</span>'
+          + '<b>'+name+'</b>'
+          + '<div style="font-size:11px;color:#777;margin-top:3px;line-height:1.5">'+detail+'</div></td>'
+          + '<td style="padding:7px 10px;border-bottom:1px solid #eee;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700;color:'+verdictCol+';white-space:nowrap;vertical-align:top">'+verdict+'</td></tr>';
+        rmesSection += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:10px">';
+        rmesSection += '<thead style="background:#f8f8f5"><tr><th style="padding:6px 10px;text-align:left;font-size:10.5px;color:#666">Signal</th><th style="padding:6px 10px;text-align:right;font-size:10.5px;color:#666;width:90px">Effect</th></tr></thead><tbody>';
+        // A · pickup
+        const A = _sg.A || {};
+        let aDet;
+        if (!A.on) aDet = 'Switched off in the RMES settings.';
+        else if (!A.n) aDet = 'No bookings came in for this date in the window — nothing to read.';
+        else {
+          aDet = '<b>'+A.n+'</b> booking'+(A.n===1?'':'s')+' in the window'
+               + (A.weight!=null ? ' (weight '+A.weight.toFixed(2)+' after the recency fade)' : '')
+               + '<br>' + Math.round((A.share||0)*100) + '% of them on <b>'+escapeHtml(rt)+'</b>'
+               + ' · price quality ' + Math.round((A.quality||1)*100) + '% '
+               + '<span style="color:#999">(non-refundable sales count for less)</span>';
+          if (A.stlyState && A.stlyState !== 'off'){
+            const stMap = { ahead:'ahead of last year', behind:'behind last year', inline:'in line with last year', 'n/a':'no comparable pickup last year' };
+            aDet += '<br>Versus last year: <b>'+(stMap[A.stlyState]||A.stlyState)+'</b>'
+                 + (A.stlyRatio!=null ? ' ('+A.stlyRatio.toFixed(2)+'×)' : '');
+          }
+          if (A.notes && A.notes.length) aDet += '<br><span style="color:#b0332f">'+escapeHtml(A.notes.join(' · '))+'</span>';
         }
-        const devPct = (m - 1) * 100;
-        const arrow = m > 1.001 ? '↑' : (m < 0.999 ? '↓' : '·');
-        const arrowCol = m > 1.001 ? '#1e6b4a' : (m < 0.999 ? '#a83b3b' : '#666');
-        const action = m > 1.001 ? 'raise' : (m < 0.999 ? 'lower' : 'unchanged');
-        const actionCol = m > 1.001 ? '#1e6b4a' : (m < 0.999 ? '#a83b3b' : '#1e6b4a');
-        const wRedistribuito = wAppV > wBaseV + 0.001;
-        const extraPct = wRedistribuito ? (wPct - wBasePct) : 0;
-        const wDisplay = wRedistribuito
-          ? wBasePct.toFixed(0) + '%<span style="color:#3b6b9a;font-weight:600">+' + extraPct.toFixed(1) + '%</span>'
-          : wPct.toFixed(0) + '%';
-        const wTooltip = wRedistribuito ? 'Base weight ' + wBasePct.toFixed(0) + '% + ' + extraPct.toFixed(1) + '% redistributed from n/a factors' : 'Weight ' + wPct.toFixed(0) + '%';
-        rmesSection += '<tr>' + factorCell;
-        rmesSection += '<td style="padding:5px 10px;border-bottom:1px solid #eee;text-align:right;font-family:\'DM Mono\',monospace;font-size:11px;color:#666" title="'+wTooltip+'">'+wDisplay+'</td>';
-        rmesSection += '<td style="padding:5px 10px;border-bottom:1px solid #eee;text-align:right;font-family:\'DM Mono\',monospace;color:'+arrowCol+';font-weight:600">'+arrow+' '+(devPct>=0?'+':'')+devPct.toFixed(1)+'%</td>';
-        rmesSection += '</tr>';
-        rmesSection += '<tr><td colspan="3" style="padding:0;border-bottom:1px solid #eee">';
-        rmesSection += '<details style="padding:0 10px"><summary style="cursor:pointer;padding:4px 0;font-size:10.5px;color:'+f.color+';font-weight:600;list-style:none;user-select:none">▸ Calculation detail '+f.code+'·'+f.name+'</summary>';
-        rmesSection += _buildFactorDetail(f.code);
-        rmesSection += '</details></td></tr>';
+        rmesSection += rowSig('A', '#2c7a4b', 'Pickup', A.dev ? pc(A.dev) : '—',
+          (A.dev||0) > 0 ? '#1e6b4a' : ((A.dev||0) < 0 ? '#a83b3b' : '#999'), aDet);
+        // B · mercato
+        const M = _sg.market || {};
+        const actMap = {
+          'inside band': 'Inside the band — nothing to correct.',
+          'raise': 'You are below the market beyond the band: stepping up.',
+          'lower': 'You are above the market beyond the band: stepping down.',
+          'veto': 'Above the market, but <b>not lowered</b>: ' + escapeHtml(M.veto || 'the date is holding up'),
+          'no compset': 'No competitor price available for this date.',
+          'none': 'Switched off in the RMES settings.'
+        };
+        let mDet = actMap[M.action] || M.action || '—';
+        if (M.gap != null) mDet = 'Your price is <b>'+pc(M.gap)+'</b> versus the weighted compset.<br>' + mDet;
+        const mDev = (_sg.totDev || 0) - (A.dev || 0);
+        rmesSection += rowSig('B', '#3a6b6b', 'Market guard-rail',
+          Math.abs(mDev) > 0.001 ? pc(mDev) : '—',
+          mDev > 0 ? '#1e6b4a' : (mDev < 0 ? '#a83b3b' : '#999'), mDet);
+        // C · airdna
+        const AD = _sg.airdna || {};
+        rmesSection += rowSig('C', '#8e5fa8', 'AirDNA check',
+          AD.weak ? 'held' : '—', AD.weak ? '#a83b3b' : '#999',
+          !AD.on ? 'Switched off in the RMES settings.'
+                 : (AD.weak ? 'The market is booking little: the suggested increase of <b>'+pc(AD.held||0)+'</b> did not go through.'
+                            : 'The market is not holding the price back.'));
+        // limite giornaliero
+        const SM = _sg.smoothing || {};
+        if (SM.on && SM.limited){
+          rmesSection += rowSig('·', '#c4823b', 'Daily step limit',
+            pc(_sg.totDevApplied || 0), '#7a4f1c',
+            'The raw signal was <b>'+pc(_sg.totDev||0)+'</b>, capped to keep the move within one step of yesterday\'s suggestion ('+fmtEUR(SM.from||0)+').');
+        }
+        rmesSection += '</tbody></table>';
       }
-      rmesSection += '</tbody></table>';
       const multFinPct = (mults.multFinale - 1) * 100;
       const multFinCol = mults.multFinale > 1.001 ? '#1e6b4a' : (mults.multFinale < 0.999 ? '#a83b3b' : '#666');
       rmesSection += '<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#f5f5f5;border-radius:4px;margin-bottom:10px;font-size:12px">';
-      rmesSection += '<span style="color:#666;font-weight:600">Composite multiplier (Σ weight × dev)</span>';
+      rmesSection += '<span style="color:#666;font-weight:600" title="Pickup moves the price; the market guard-rail and the AirDNA check can only hold it back. There are no weights.">Combined signal effect</span>';
       rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+multFinCol+'">×'+mults.multFinale.toFixed(3)+' ('+(multFinPct>=0?'+':'')+multFinPct.toFixed(1)+'%)</span>';
       rmesSection += '</div>';
       if (typeof fp_lmfLookup === 'function'){
@@ -13504,6 +13976,32 @@ function renderSellStrategy(sel){
   try {
     if (typeof pickup7dMapForStays === 'function') _pk7map = pickup7dMapForStays(sel, A.rows.map(r=>r.ymd));
   } catch(e){ _pk7map = {}; }
+  /* Pickup degli ULTIMI 3 GIORNI (oggi incluso), per evidenziare in tabella le
+     date che si sono mosse di recente. Diverso dal marker ▲▼ accanto alla data,
+     che confronta 7 giorni con lo stesso periodo dell'anno scorso: qui interessa
+     solo "su questa notte e' entrato qualcosa in questi tre giorni". */
+  const _pk3map = {};
+  {
+    const keys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
+    const t0 = startOfDay(new Date(TODAY));
+    const from = ymd(addDays(t0, -2)), to = ymd(t0);
+    const list = (typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel])
+      ? _BOOKINGS_BY_STRUCT[sel] : BOOKINGS;
+    const useIdx = !!(typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]);
+    for (let i=0;i<list.length;i++){
+      const b = list[i];
+      if (b.cancelled || !b.stayYmds) continue;
+      if (!useIdx && !keys.has(b.struct)) continue;
+      if (b.bookYmd < from || b.bookYmd > to) continue;
+      for (let j=0;j<b.stayYmds.length;j++){
+        const k = b.stayYmds[j];
+        if (!_pk3map[k]) _pk3map[k] = { n:0, byRt:{}, bookYmds:{} };
+        _pk3map[k].n++;
+        _pk3map[k].byRt[b.room] = (_pk3map[k].byRt[b.room] || 0) + 1;
+        _pk3map[k].bookYmds[b.bookYmd] = (_pk3map[k].bookYmds[b.bookYmd] || 0) + 1;
+      }
+    }
+  }
   const _pk7Flag = (ymdNum)=>{
     const p = _pk7map[ymdNum];
     if (!p) return '';
@@ -14305,7 +14803,22 @@ function renderSellStrategy(sel){
         const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${dirHint}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
-    html += `<tr${_searchTipVal}>
+    /* Evidenzia la riga se su questa notte e' entrato pickup negli ultimi 3 giorni
+       (oggi incluso): sono le date che si sono mosse adesso e su cui vale la pena
+       guardare il prezzo per prime. */
+    const _pk3 = _pk3map[r.ymd];
+    let _rowCls = '', _rowTip = '';
+    if (_pk3 && _pk3.n > 0){
+      _rowCls = ' class="sell-row-fresh"';
+      const _days = Object.keys(_pk3.bookYmds).sort().reverse().map(k => {
+        const ss = String(k); return ss.slice(6,8)+'/'+ss.slice(4,6)+' ('+_pk3.bookYmds[k]+')';
+      }).join(' · ');
+      const _rts = Object.keys(_pk3.byRt).map(k => k+' '+_pk3.byRt[k]).join(' · ');
+      _rowTip = ' title="' + escapeHtml(
+        _pk3.n + ' booking' + (_pk3.n===1?'':'s') + ' came in for this night in the last 3 days\n'
+        + 'Booked on: ' + _days + '\nRoom types: ' + _rts) + '"';
+    }
+    html += `<tr${_rowCls}${_rowTip}${_searchTipVal}>
       <td class="cell-mono sell-date-cell">${_pk7Flag(r.ymd)}<span class="sell-date-txt"${_occRing}>${pad2(r.day)}/${pad2(r.mo)}/${r.y}</span></td>
       <td${_dowInline}>${dowIT[r.dow]}</td>
       <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
@@ -18905,6 +19418,7 @@ function renderRMESConfigTab(){
   _renderRmesThresholdsBox(sel);
   if (typeof _renderRmesPickupThresholdsBox === 'function') _renderRmesPickupThresholdsBox(sel);
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
+  if (typeof _renderRmesSignalsBox === 'function') _renderRmesSignalsBox(sel);
   if (typeof _renderRmesSpecialBox === 'function') _renderRmesSpecialBox();
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
   if (typeof _renderRmesPromosBox === 'function') _renderRmesPromosBox(sel);
@@ -19227,6 +19741,117 @@ function _rmesTabApplyAll(){
 /* === PANNELLO DATE SPECIALI (feste fisse + ponti) ===
    Vale per TUTTE le strutture: le feste non cambiano da proprieta' a proprieta'.
    Pasqua non e' in lista, si sposta ogni anno ed e' calcolata dal computus. */
+/* === PANNELLO SEGNALI RMES ===
+   Ogni riga e' una regola leggibile con i suoi parametri, e ognuna si spegne.
+   Niente pesi: il pickup muove il prezzo, mercato e AirDNA possono trattenerlo. */
+function _renderRmesSignalsBox(sel){
+  const wrap = document.getElementById('rmes-signals-wrap');
+  if (!wrap) return;
+  if (typeof isAggSel === 'function' && isAggSel(sel)){
+    wrap.innerHTML = '<div class="panel"><div class="panel-body" style="font-size:12.5px;color:var(--ink-3);font-style:italic">Pick a single property to configure its RMES signals.</div></div>';
+    return;
+  }
+  const c = rmesSignalsCfg(sel);
+  const nrM = (typeof rmesNonRefMeasured === 'function') ? rmesNonRefMeasured(sel) : { discount:null, n:0, weak:true };
+  const num = (grp, key, val, min, max, step, suffix) =>
+    `<input type="number" data-sg="${grp}.${key}" value="${val}" min="${min}" max="${max}" step="${step}"
+      style="width:66px;padding:4px 7px;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;text-align:right;font-size:12.5px"> ${suffix||''}`;
+  const chk = (grp, on, label) =>
+    `<label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:700;color:${on?'#2c7a4b':'#a0988a'}">
+      <input type="checkbox" data-sg="${grp}.on" ${on?'checked':''} style="width:15px;height:15px;cursor:pointer"> ${label}</label>`;
+  const box = (title, body, on) =>
+    `<div style="border:1px solid ${on?'var(--line)':'#eceae4'};border-radius:8px;padding:12px 14px;margin-bottom:10px;background:${on?'var(--surface)':'#faf9f6'}">${title}${body}</div>`;
+
+  let h = `<div class="panel"><div class="panel-head"><div>
+      <h3>RMES signals</h3>
+      <div class="panel-sub">The Base Price is the starting point. These signals move it — and each one can be switched off. No weights to tune: every rule is readable on its own.</div>
+    </div></div><div class="panel-body">`;
+
+  // A · pickup
+  h += box(
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      ${chk('pickup', c.pickup.on, 'A · Pickup — the engine')}
+      <span style="font-size:11px;color:var(--ink-3)">what is actually being booked for this date</span>
+    </div>`,
+    `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
+      <label title="How far back to look for bookings">window ${num('pickup','windowDays',c.pickup.windowDays,1,60,1,'days')}</label>
+      <label title="Nights around the date included in the count. Widening is the only way to get usable counts on 3-9 room properties.">spread ±${num('pickup','spreadNights',c.pickup.spreadNights,0,21,1,'nights')}</label>
+      <label title="Maximum push when the pickup is entirely on this room type and at full price">max push ${num('pickup','devFull',c.pickup.devFull,0,0.30,0.01,'')}</label>
+      <label title="Discount of the non-refundable rate as configured on Beddy. A non-refundable sale means the price was accepted at less than face value.">non-refund. ${num('pickup','nrDiscount',c.pickup.nrDiscount,0,0.4,0.01,'')}</label>
+      <label title="A booking made today says the price is accepted NOW; one from two weeks ago was about a different price. With a half-life of H days the weight halves every H days, so the signal fades instead of dropping off a cliff at the end of the window. 0 = off.">half-life ${num('pickup','halfLifeDays',c.pickup.halfLifeDays,0,30,1,'days')}</label>
+    </div>
+    <div style="margin-top:7px;font-size:11px;color:var(--ink-3)">
+      Measured from your bookings: <b>${nrM.discount!=null?('−'+Math.round(nrM.discount*100)+'%'):'—'}</b>
+      ${nrM.n?(' on '+nrM.n+' close pairs'):''} ${nrM.discount==null?'':(nrM.weak?'<span style="color:#b0332f">⚠ few pairs, treat with care</span>':(Math.abs(nrM.discount-(c.pickup.nrDiscount||0.10))<=0.03?'<span style="color:#2c7a4b">✓ in line with your setting</span>':'<span style="color:#b0332f">⚠ differs from your setting</span>'))}
+    </div>`, c.pickup.on);
+
+  // STLY
+  h += box(
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      ${chk('stly', c.stly.on, 'Last-year comparison — a three-state light')}
+      <span style="font-size:11px;color:var(--ink-3)">not a multiplier: the ratio is too unstable to be a measure</span>
+    </div>`,
+    `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
+      <label title="Within this distance from last year you are considered in line — no adjustment">in line within ±${num('stly','tolerance',c.stly.tolerance,0.05,1,0.05,'')}</label>
+      <label title="Correction applied when clearly behind or clearly ahead of last year">adjustment ±${num('stly','adjust',c.stly.adjust,0,0.2,0.01,'')}</label>
+    </div>`, c.stly.on);
+
+  // mercato
+  h += box(
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      ${chk('market', c.market.on, 'B · Market — a guard-rail, not a driver')}
+      <span style="font-size:11px;color:var(--ink-3)">it never moves the price — it only blocks a move</span>
+    </div>`,
+    `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
+      <label title="Inside this distance from the weighted compset nothing happens">band ±${num('market','band',c.market.band,0.05,0.6,0.05,'')}</label>
+    </div>`, c.market.on);
+
+  // airdna
+  h += box(
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      ${chk('airdna', c.airdna.on, 'C · AirDNA — a check, not a formula')}
+      <span style="font-size:11px;color:var(--ink-3)">holds increases back when the market is quiet</span>
+    </div>`,
+    `<div style="font-size:12px;color:var(--ink-2)">It never multiplies the price: if the market is booking little, a suggested increase simply does not go through.</div>`,
+    c.airdna.on);
+
+  // smoothing
+  h += box(
+    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      ${chk('smoothing', c.smoothing.on, 'Daily step limit')}
+      <span style="font-size:11px;color:var(--ink-3)">keeps the suggestion readable day by day</span>
+    </div>`,
+    `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
+      <label title="The suggestion cannot move more than this from yesterday's. It is not a cap on the level: the price still gets where it needs to, just in more steps.">max move vs yesterday ${num('smoothing','maxDailyStep',c.smoothing.maxDailyStep,0.01,0.3,0.01,'')}</label>
+    </div>`, c.smoothing.on);
+
+  h += `<div style="margin-top:6px;text-align:right">
+      <button id="sg-reset" style="border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:5px;padding:6px 14px;cursor:pointer;font-size:12px;margin-right:6px">Reset to defaults</button>
+      <button id="sg-save" style="border:0;background:#3d7a4b;color:#fff;border-radius:5px;padding:7px 18px;cursor:pointer;font-size:12.5px;font-weight:700">Apply changes</button>
+      <span id="sg-msg" style="margin-left:10px;font-size:12px"></span>
+    </div></div></div>`;
+  wrap.innerHTML = h;
+
+  const save = () => {
+    const out = JSON.parse(JSON.stringify(c));
+    wrap.querySelectorAll('[data-sg]').forEach(el => {
+      const [g,k] = el.dataset.sg.split('.');
+      if (!out[g]) out[g] = {};
+      out[g][k] = (el.type === 'checkbox') ? el.checked : (el.value === '' ? null : +el.value);
+    });
+    rmesSignalsSet(sel, out);
+    const msg = wrap.querySelector('#sg-msg');
+    if (msg){ msg.textContent = 'Saved'; msg.style.color = '#3d7a4b'; }
+    if (typeof renderAll === 'function') setTimeout(renderAll, 60);
+  };
+  const sv = wrap.querySelector('#sg-save'); if (sv) sv.addEventListener('click', save);
+  const rs = wrap.querySelector('#sg-reset');
+  if (rs) rs.addEventListener('click', () => {
+    rmesSignalsSet(sel, JSON.parse(JSON.stringify(RMES_SIG_DEFAULT)));
+    _renderRmesSignalsBox(sel);
+    if (typeof renderAll === 'function') setTimeout(renderAll, 60);
+  });
+}
 function _renderRmesSpecialBox(){
   const wrap = document.getElementById('rmes-special-wrap');
   if (!wrap) return;
