@@ -404,8 +404,8 @@ main{flex:1;padding:8px 16px 24px}
 <script src="engine.js"></script>
 <script>
 /* RMES MOBILE APP v2 — reuses engine.js (same RMES logic as the dashboard).
-   Orange theme everywhere; day drill-in with a 2nd inner click → Base Price + 5 RMES factors
-   + 5 RMES factors; room categories ordered by price; monthly overview with OTB big
+   Orange theme everywhere; day drill-in with a 2nd inner click → Base Price + RMES
+   signals; room categories ordered by price; monthly overview with OTB big
    + STLY / LY / Forecast small for Revenue, ADR and Occupancy. */
 const MOB = { struct:'firenze', winStart:null, tab:'big', lastDay:null, lastRow:null, monthView:'otb', monthPast:false, paceChans:null };
 const MOB_STRUCTS = ['firenze','condotta','alfani','davids','nazionale','portenuove'];
@@ -413,13 +413,9 @@ const DOW_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MO_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MO_FULL = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MOB_TARGET_CASE = { target_superato:'target exceeded', vicino_target:'near target', sotto_target:'below target' };
-const MOB_FACTORS = [
-  {key:'occ_mult',   naKey:'occ',   code:'A', name:'Demand (occupancy)', desc:'Current-day OCC vs STLY (-364d)',            color:'#0E9FC2'},
-  {key:'price_mult', naKey:'price', code:'B', name:'Demand (price)',      desc:'Current-day ADR vs STLY',                   color:'#2BB3C9'},
-  {key:'pace_mult',  naKey:'pace',  code:'C', name:'Pace trend',          desc:'4-week pickup vs STLY (recent weeks weighted)', color:'#0A7A97'},
-  {key:'comp_mult',  naKey:'comp',  code:'D', name:'Online pricing',      desc:'My Expedia vs compset average (inverted)',  color:'#1689AE'},
-  {key:'air_mult',   naKey:'air',   code:'E', name:'Demand (Expedia)',    desc:'Expedia searches vs month median',          color:'#5BC4DC'},
-];
+/* The five weighted factors are gone: pickup moves the price, market and AirDNA
+   can only hold it back. The mobile detail now reads _sigDbg, the same
+   diagnostics the desktop uses. */
 function mobLabel(sk){ return (CFG.structures[sk] && CFG.structures[sk].label) || sk; }
 function mobBaseRT(sk){ return (CFG.structures[sk] && CFG.structures[sk].baseRT) || null; }
 /* ---- Expedia helpers (reuse engine conversion + EXPEDIA_DATA, same logic as the dashboard) ---- */
@@ -812,16 +808,31 @@ function mobBuildDetailHTML(yn, rmesRow){
   } else { html+=`<div class="fp-step"><div class="fps-body"><div class="fps-desc">Base Price detail not available for this day.</div></div></div>`; }
   html+=`</div>`;
   const mults=(rmesRow&&rmesRow.multsByRT&&baseRT!=null&&rmesRow.multsByRT[baseRT])?rmesRow.multsByRT[baseRT]:(rmesRow&&rmesRow.multsByRT?Object.values(rmesRow.multsByRT)[0]:null);
-  html+=`<div class="sh-group"><div class="sh-group-t">RMES factors · applied over the Base Price</div>`;
-  if(mults){
-    const na=mults._naReasons||{};
-    for(const f of MOB_FACTORS){
-      const m=mults[f.key]; const isNa=na[f.naKey]!=null; const devPct=(m!=null&&isFinite(m))?Math.round((m-1)*1000)/10:null;
-      const valHtml=isNa?`<span class="fac-na">n/a</span>`:`<span class="fac-mult" style="color:${devPct>0.1?'var(--up)':(devPct<-0.1?'var(--down)':'var(--flat)')}">×${(m!=null?Math.round(m*1000)/1000:1)}</span>`;
-      html+=`<div class="fac"><div class="fac-code" style="background:${f.color}">${f.code}</div><div class="fac-body"><div class="fac-name">${f.name}</div><div class="fac-desc">${f.desc}${isNa?' · '+escapeHtml(String(na[f.naKey])):''}</div></div>${valHtml}</div>`;
-    }
-    if(mults.multFinale!=null) html+=`<div class="fac-final"><span class="ff-lab">Combined multiplier (capped)</span><span class="ff-val">×${Math.round(mults.multFinale*1000)/1000}</span></div>`;
-  } else { html+=`<div class="fac"><div class="fac-body"><div class="fac-desc">Factor detail not available.</div></div></div>`; }
+  html+=`<div class="sh-group"><div class="sh-group-t">RMES signals · applied over the Base Price</div>`;
+  const sg=(rmesRow&&rmesRow._sigDbg)?rmesRow._sigDbg:null;
+  if(sg){
+    const pc=x=>(x==null||!isFinite(x))?'—':((x>=0?'+':'')+(x*100).toFixed(1)+'%');
+    const col=x=>(x>0.0001?'var(--up)':(x<-0.0001?'var(--down)':'var(--flat)'));
+    const A=sg.A||{};
+    const rowF=(code,color,name,desc,val,valCol)=>`<div class="fac"><div class="fac-code" style="background:${color}">${code}</div><div class="fac-body"><div class="fac-name">${name}</div><div class="fac-desc">${desc}</div></div><span class="fac-mult" style="color:${valCol}">${val}</span></div>`;
+    let aDesc;
+    if(sg.inHorizon===false) aDesc='Beyond the '+sg.horizon+'-day selling horizon: the Base Price stands.';
+    else if(!A.n) aDesc='No booking came in for this night in the window.';
+    else aDesc=(A.good!=null?A.good.toFixed(2)+' good bookings':'')
+             +(A.pickupDays?' on '+A.pickupDays+' day(s)':'')
+             +(A.goodLy!=null?' · last year '+A.goodLy.toFixed(2):'')
+             +(A.stlyState?' → '+A.stlyState:'');
+    html+=rowF('A','#0E9FC2','Pickup · the engine',aDesc,pc(A.dev),col(A.dev||0));
+    const M=sg.market||{};
+    html+=rowF('B','#1689AE','Market · guard-rail',
+      (M.gap!=null?('you are '+pc(M.gap)+' vs compset · '):'')+(M.blocked||M.action||'—'),
+      M.blocked?'hold':'—', M.blocked?'var(--down)':'var(--flat)');
+    const AD=sg.airdna||{};
+    html+=rowF('C','#5BC4DC','AirDNA · check',
+      !AD.hasData?'no data for this day':(AD.weak?'market quiet: increase held':(AD.strong?'market busy: decrease held':'not holding anything back')),
+      (AD.weak||AD.strong)?'hold':'—',(AD.weak||AD.strong)?'var(--down)':'var(--flat)');
+    if(rmesRow.multFinale!=null) html+=`<div class="fac-final"><span class="ff-lab">Combined effect</span><span class="ff-val">×${Math.round(rmesRow.multFinale*1000)/1000}</span></div>`;
+  } else { html+=`<div class="fac"><div class="fac-body"><div class="fac-desc">Signal detail not available.</div></div></div>`; }
   html+=`</div>`;
   html+=`<div class="fac-final" style="margin-top:14px;background:linear-gradient(135deg,var(--org),var(--org-deep))"><span class="ff-lab" style="color:#fff">Suggested price</span><span class="ff-val" style="color:#fff">${fmtEUR(rmesRow?rmesRow.price:NaN)}</span></div>`;
   return html;

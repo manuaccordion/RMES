@@ -2465,7 +2465,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <div style="margin-top:14px;padding:12px 14px;background:#fafaf8;border-left:3px solid #c4823b;font-size:13px;line-height:1.6">
           <p style="margin:0 0 8px 0"><b>How RMES decides what to suggest (the "in line" rule)</b></p>
-          <p style="margin:0 0 8px 0">RMES <b>always</b> computes the target price on the <b>structural Base Price</b>, never on your override or your last accept. This way the engine has a stable reference and cannot drift down (or up) in a loop just because you set a low (or high) price manually. One guard-rail is always active: nothing can ever drop below the <b>Floor</b>, which is the higher of your annual Floor Rate and the historical p15.</p>
+          <p style="margin:0 0 8px 0">RMES <b>always</b> computes the target price on the <b>structural Base Price</b>, never on your override or your last accept. This way the engine has a stable reference and cannot drift down (or up) in a loop just because you set a low (or high) price manually. One guard-rail is always active: nothing can ever drop below the <b>Floor</b>.</p>
           <p style="margin:0 0 8px 0">After computing the target, RMES compares it with the price you currently have loaded (the <b>Last update</b>) and decides whether to <b>insist</b> or <b>stay silent</b>:</p>
           <ul style="margin:6px 0 8px 18px">
             <li><b>Insists</b> (shows ↓ €target or ↑ €target with a ✓ button) — your active price is on the "wrong side" of the target. The market signal is still calling for the move.</li>
@@ -2484,7 +2484,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
             <li>You override 🖋 with €230 → Last update becomes <b style="color:#b86b1f">🖋 €230</b> in orange. The RMES target stays €260 (computed on Base €283, not on your override). Since you have already lowered past the target (230 ≤ 260) and the engine wanted to go down, the cell shows <b>✓ in line</b>. RMES will not insist to lower further — your decision is downstream of its suggestion.</li>
             <li>You override 🖋 with €300 → Last update becomes <b style="color:#b86b1f">🖋 €300</b> in orange. The target is still €260 (direction: down). Your override €300 is above the target, so RMES still wants you to lower. The cell shows <b>↓ €260</b> with a tooltip explaining "your override is above the target". You decide whether to follow or to keep your €300.</li>
           </ol>
-          <p style="margin:0"><b>Why this design</b>: the target depends only on the market and the structural Base Price — never on your past decisions. This avoids the "loop" risk (if RMES suggested based on your last override, after a few iterations it could drift very far). The Floor keeps the target in a sane range whatever the market does: nothing can go below the higher of your annual Floor Rate and the historical p15.</p>
+          <p style="margin:0"><b>Why this design</b>: the target depends only on the market and the structural Base Price — never on your past decisions. This avoids the "loop" risk (if RMES suggested based on your last override, after a few iterations it could drift very far). The Floor keeps the target in a sane range whatever the market does.</p>
+          <p style="margin:8px 0 0 0"><b>What the Floor means.</b> &ldquo;Floor 200&rdquo; is about the <b>flexible rate of the property's cheapest room type</b>, not the base room. At Palazzo Alfani the base is the Classic but the cheapest is the Junior Suite at &minus;&euro;10, so the Classic's floor is lifted to &euro;210 and the Junior Suite lands exactly on &euro;200. Derived rates sit below it by design &mdash; non-refundable at &minus;10%, extended stay at &minus;15% from 5 nights &mdash; because the floor is about the flexible rate. The value itself is the higher of your annual Floor Rate and the historical p15, and the same figure binds the Base Price and the RMES suggestion.</p>
         </div>
 
         <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12px"><b>How to read a row at a glance.</b> Look first at the <b>Last update</b> column to know the price active right now (Base Price by default, accepted ✓, or override 🖋). When both an accept and an override exist for the same day, the <b>most recent decision wins</b> (whichever you did last). Then look at the <b>RMES</b> column for the engine's verdict: either a target to consider (↓/↑) or "✓ in line" if your decision is already in tune.</p>
@@ -2846,14 +2847,13 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         <ul style="margin:6px 0 6px 18px;font-size:13px">
           <li><b>Property · Date · DoW</b> — identifier.</li>
           <li><b>Last update</b> — current reference price (Base if no action taken, accepted RMES otherwise, override if forced). This is the starting point. Tooltip says the source: "Currently equal to the Base Price..." or "Accepted RMES on DD/MM/YYYY".</li>
-          <li><b>A·Pickup</b> — single-factor weighted dev% for Daily Pickup. Green if positive, gray if 0 (no recent pickup).</li>
-          <li><b>B·Pace</b> — single-factor weighted dev% for Pace Trend. Green if positive (booking faster than LY), red if negative.</li>
-          <li><b>C·Online</b> — single-factor weighted dev% for Online Pricing. Green if my Expedia is below compset (engine wants to raise), red if above.</li>
-          <li><b>D·Demand</b> — single-factor weighted dev% for Demand Expedia. Green if searches above month median, red if below.</li>
-          <li><b>Composite</b> — joint multiplier = 1 + Σ(weight × dev). Hover for the breakdown of each factor's contribution.</li>
+          <li><b>Pickup</b> — the engine: good bookings on this room type in the window, compared with the same point last year on revenue. Green when it pushes up, red when it pushes down.</li>
+          <li><b>Market</b> — guard-rail: it never moves the price, it only blocks a move that would take you further from the compset.</li>
+          <li><b>AirDNA</b> — check: holds an increase back when the market is quiet, a decrease when it is busy. Does nothing without data.</li>
+          <li><b>Signal</b> — the combined effect of the three above, after the daily step limit. There are no weights.</li>
           <li><b>LMF</b> — Last-Minute Factor from the matrix (OCC × days-to-arrival). The only mechanism that can lower the price close-in.</li>
           <li><b>Event</b> — Event Factor (×1.000 if no event for that date).</li>
-          <li><b>RMES suggested</b> — final suggested price = Base × Composite × (1+LMF%) × Event, ≥ Floor. <b>⚠</b> = clamped to the Floor Rate.</li>
+          <li><b>RMES suggested</b> — final suggested price = Base × Signal × (1+LMF%) × Event, never below the Floor. <b>⚠</b> = the Floor stopped it.</li>
           <li><b>RMES applied</b> — price <b>actually loaded</b> for the day, with its source:
             <ul style="margin:4px 0 0 18px;font-size:12.5px">
               <li><span style="color:#666">gray</span> = Base Price (no action taken — same as Last update).</li>

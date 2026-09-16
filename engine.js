@@ -5759,7 +5759,20 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
   if (isAggSel(sel)) return out;  // RMES non significativo aggregato
   const _rmKey = sel + '|' + startYmd + '|' + rangeDays;
   if (_RMESMAP_TICK && _RMESMAP_TICK[_rmKey] !== undefined) return _RMESMAP_TICK[_rmKey];
-  const _structFloor = (typeof fp_getFloor === 'function') ? fp_getFloor(sel) : 0;
+  /* Il pavimento del RMES deve essere LO STESSO del Base Price, non il solo
+     valore annuale: quello effettivo include il p15 storico e il rialzo per la
+     camera piu' economica. Usando fp_getFloor grezzo il suggerimento poteva
+     scendere sotto il pavimento che il Base Price rispetta (visto su Alfani:
+     250 contro un floor di 257). */
+  const _floorAnnual = (typeof fp_getFloor === 'function') ? fp_getFloor(sel) : 0;
+  const _floorFor = (ymdNum) => {
+    try {
+      const d = ymdToDate(ymdNum);
+      const v = newrmesCalculateBasePriceVerbose(sel, fp_isoDate(d));
+      if (v && v.floorEff > 0) return v.floorEff;
+    } catch(e){}
+    return _floorAnnual;
+  };
   const A = aggSellStrategy(sel, startYmd, rangeDays, 1);
   const _occByMonth = {};      // ym → {curRn, stlyRn, cap_sum, curOcc, stlyOcc}
   for (const r of A.rows){
@@ -6192,10 +6205,14 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         rtList: Apri.rtList,
       };
       _inventoryByRT = structRoomsFor(sel);
-      _rtCheapToExp = [Apri.baseRT].concat(
-        Apri.rtList.filter(r => r !== Apri.baseRT)
-          .sort((a,b) => (Apri.supplementoStagione[a]?.alta || 0) - (Apri.supplementoStagione[b]?.alta || 0))
-      );
+      /* Ordine dal PIU' ECONOMICO. La camera base non e' sempre la piu' economica:
+         su Palazzo Alfani la base e' la Classic (ha piu' unita') ma la Junior Suite
+         costa meno, avendo supplemento negativo. Mettere la base sempre in testa
+         faceva credere che la vetrina Expedia mostrasse la Classic anche quando
+         mostrava la Junior Suite. */
+      _rtCheapToExp = Apri.rtList.slice().sort((a,b) =>
+        ((a === Apri.baseRT ? 0 : (Apri.supplementoStagione[a]?.alta || 0)))
+        - ((b === Apri.baseRT ? 0 : (Apri.supplementoStagione[b]?.alta || 0))));
     } catch(e){ _suppData = null; }
   }
   function _cheapestAvailableRT(row){
@@ -6698,7 +6715,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         const _promoBoost = _promoInfo.boost;
         let _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
         // Cap ±20% RIMOSSO nella migrazione 4-fattori. Restano solo Floor (≥) e Anchor ±50% (sul Base).
-        const priceSuggested = Math.max(_priceAfterFactors, _structFloor);
+        const priceSuggested = Math.max(_priceAfterFactors, _floorFor(r.ymd));
         rmesSuggestedByRT[rt] = priceSuggested;
         rmesDeltaByRT[rt] = priceSuggested - baseRT;   // delta in € rispetto al riferimento corrente
         // ---- TARGET RMES su Base Price strutturale (per la regola "in line" con override) ----
@@ -6712,7 +6729,8 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           let _priceOnBase = baseRT_pure * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
           // Cap ±20% RIMOSSO. Solo Floor.
           let _atCapB = null;
-          if (_priceOnBase < _structFloor){ _priceOnBase = _structFloor; _atCapB = 'floor'; }
+          const _flo = _floorFor(r.ymd);
+          if (_priceOnBase < _flo){ _priceOnBase = _flo; _atCapB = 'floor'; }
           rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB };
         } else {
           rmesTargetOnBaseByRT[rt] = { price: priceSuggested, atCap: null };
@@ -6723,7 +6741,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
         overrideUsedByRT[rt] = false;
       }
       const baseRT = _suppData ? _suppData.baseRT : _rtList[0];
-      const mainPrice = pricesByRT[baseRT] != null ? pricesByRT[baseRT] : Math.max(basePrice * multFinale, _structFloor);
+      const mainPrice = pricesByRT[baseRT] != null ? pricesByRT[baseRT] : Math.max(basePrice * multFinale, _floorFor(r.ymd));
       out[r.ymd] = {
         price: mainPrice,
         source: baseSource,
@@ -6772,6 +6790,34 @@ const FP_TARGET_GROWTH_KEY = 'rmes_target_growth_v1';
 const FP_FLOOR_KEY = 'rmes_floor_v1';
 /* Sotto questo numero di osservazioni il p15 non fa testo e vale solo il floor annuale. */
 const FP_FLOOR_HIST_MIN_OBS = 8;
+/* IL FLOOR SI RIFERISCE ALLA CAMERA PIU' ECONOMICA.
+   "Floor 150" vuol dire: la tariffa FLESSIBILE della camera piu' economica della
+   struttura non scende sotto 150. Non e' la stessa cosa del prezzo della camera
+   base: su Palazzo Alfani la base e' la Classic, ma la piu' economica e' la
+   Junior Suite, che sta ~18 euro sotto. Applicando il floor alla base, la Junior
+   Suite finirebbe sotto la soglia decisa.
+   Quindi il floor della camera BASE va alzato di quanto la piu' economica le sta
+   sotto. Le tariffe derivate (non rimborsabile -10%, soggiorno lungo -15%)
+   possono stare sotto il floor: il floor riguarda la flessibile. */
+function fpFloorLiftForBaseRT(structKey, month){
+  try {
+    if (typeof aggPricingDaily !== 'function') return 0;
+    const t0 = startOfDay(new Date(TODAY));
+    const A = aggPricingDaily(structKey, ymd(t0), 1);
+    if (!A || !A.rtList || !A.baseRT) return 0;
+    const hi = new Set(A.highSeason || []);
+    const mo = month || (t0.getMonth() + 1);
+    let worst = 0;   // supplemento piu' negativo fra tutte le tipologie
+    for (const rt of A.rtList){
+      if (rt === A.baseRT) continue;
+      const sp = A.supplementoStagione && A.supplementoStagione[rt];
+      if (!sp) continue;
+      const v = hi.has(mo) ? sp.alta : sp.bassa;
+      if (v != null && isFinite(v) && v < worst) worst = v;
+    }
+    return -worst;   // positivo: quanto alzare il floor della base
+  } catch(e){ return 0; }
+}
 /* ORIZZONTE DEL CAP COMPSET — non e' un numero fisso, lo dicono i dati.
    Il cap ha senso dove si vende davvero: se l'80% delle prenotazioni di una
    struttura entra entro N giorni dall'arrivo, oltre N il prezzo online conta
@@ -7373,7 +7419,8 @@ function newrmesCalculateBasePrice(structKey, isoDate){
      rete quando lo storico e' debole o assente. */
   const floorHist = (anchor && anchor.adrP15 != null && anchor.adrP15 > 0 && anchor.adrP15N >= FP_FLOOR_HIST_MIN_OBS)
     ? anchor.adrP15 : null;
-  const floorEff = (floorHist != null) ? Math.max(floor, floorHist) : floor;
+  const _lift = fpFloorLiftForBaseRT(structKey, +isoDate.slice(5,7));
+  const floorEff = ((floorHist != null) ? Math.max(floor, floorHist) : floor) + _lift;
   if (price < floorEff) price = floorEff;
   return Math.round(price);
 }
@@ -7429,7 +7476,9 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
   // Floor = max(floor annuale, p15 storico). Vedi nota in newrmesCalculateBasePrice.
   const floorHist = (anchor && anchor.adrP15 != null && anchor.adrP15 > 0 && anchor.adrP15N >= FP_FLOOR_HIST_MIN_OBS)
     ? Math.round(anchor.adrP15) : null;
-  const floorEff = (floorHist != null) ? Math.max(floor, floorHist) : floor;
+  const _lift = fpFloorLiftForBaseRT(structKey, +isoDate.slice(5,7));
+  const floorBase = (floorHist != null) ? Math.max(floor, floorHist) : floor;
+  const floorEff = floorBase + _lift;
   const floorSource = (floorHist != null && floorHist > floor) ? 'historical' : 'annual';
   let flooredBy = false;
   if (price < floorEff){ price = floorEff; flooredBy = true; }
@@ -7479,7 +7528,7 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
     guardRail,
     floor,
     flooredBy,
-    floorHist, floorEff, floorSource,
+    floorHist, floorEff, floorSource, floorLift: _lift, floorBeforeLift: floorBase,
     floorHistN: anchor ? anchor.adrP15N : 0,
     finalBase: Math.round(price),
     flags: _bpComputeFlags({
@@ -15429,7 +15478,15 @@ function aggPricingDaily(sel, startYmdNum, rangeDays){
     'Suite': { alta: 20 },
   };
   const SUPP_OVERRIDE_C16 = {};
-  const SUPP_OVERRIDE_ALF = {};
+  /* Junior Suite: categoria PIU' BASSA della Classic, fissata a -10 euro tutto
+     l'anno. Lo storico da' 0 in bassa stagione e -35 in alta perche' risente del
+     mix di vendita, ma la regola commerciale e' un differenziale fisso.
+     Conta anche per il floor: la Junior Suite e' la camera piu' economica di
+     Palazzo Alfani, quindi e' la sua flessibile a non dover scendere sotto la
+     soglia, e il floor della Classic si alza di conseguenza. */
+  const SUPP_OVERRIDE_ALF = {
+    'Junior Suite': { alta: -10, bassa: -10 },
+  };
   const structOverride = isFirenze ? SUPP_OVERRIDE_FS : (isCondotta ? SUPP_OVERRIDE_C16 : SUPP_OVERRIDE_ALF);
   const supplementoStagione = {};  // {rt: {alta:€, bassa:€}}
   for (const rt of rtList){
