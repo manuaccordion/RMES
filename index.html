@@ -1700,6 +1700,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
     
 
+    <div id="fcst-growth-note" style="margin-bottom:10px"></div>
     <div class="kpi-grid" id="fcst-kpis"></div>
 
     <div class="panel">
@@ -2536,6 +2537,8 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <p style="margin:12px 0 4px 0;font-weight:700;color:#5a3a14">Step 5 &mdash; bring last year up to today's size</p>
         <p style="margin:0 0 6px 0">Last year's group describes a property that was smaller than it is now. It gets scaled by a <b>growth factor</b>: the <i>median</i> of the month-on-month year-over-year ratios across the 12 closed months, ignoring any month whose base year was below 30% occupancy (start-up ramp), and kept between 0.85 and 1.30.</p>
+        <p style="margin:0 0 6px 0">A band above the table shows the factor in use and compares it with how the last closed months actually went. <b>It does not correct anything by itself</b>: shorter windows and recency-weighted medians were both tried against past months, and they move the error from one property to another rather than removing it. With a handful of months of evidence no formula can tell a lasting decline from one bad season &mdash; so the check reports, and you decide. <b>Set by hand</b> overrides the factor for that property; <b>Auto</b> gives it back to the calculation.</p>
+        <p style="margin:0 0 6px 0;font-size:12.5px;color:#666"><i>The check pauses itself when the data file is more than a week old, and skips any month whose late bookings had not arrived yet. Without that guard a stale file makes every property look like it is collapsing &mdash; in development all four showed &minus;14% to &minus;27% and none of it was real.</i></p>
         <p style="margin:0 0 6px 0;padding:8px 12px;background:#fbfaf6;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;font-size:11.5px">Firenze 1.107 &middot; Condotta 1.174 &middot; Alfani 1.263 &middot; Enis Guesthouse 1.048</p>
         <p style="margin:0 0 10px 0">The median, and the 30% filter, are there on purpose: a plain average over the last 12 months would read a property's opening ramp as growth and repeat it forever. The recent group is <b>not</b> scaled &mdash; it is already at today's level.</p>
 

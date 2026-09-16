@@ -5394,7 +5394,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; if (typeof _NR_DISCOUNT_CACHE !== 'undefined') _NR_DISCOUNT_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _DATA_LAST_BOOK !== 'undefined') _DATA_LAST_BOOK = null; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; if (typeof _NR_DISCOUNT_CACHE !== 'undefined') _NR_DISCOUNT_CACHE = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -16965,8 +16965,105 @@ function fcstGrowthFactor(sel){
     g = ratios.length % 2 ? ratios[m] : (ratios[m-1]+ratios[m])/2;
   }
   g = Math.max(FCST_GROWTH_MIN, Math.min(FCST_GROWTH_MAX, g));
+  // Un fattore impostato a mano vince sempre: serve quando sai qualcosa che i
+  // dati non mostrano ancora (vedi fcstGrowthCheck).
+  const _ovr = fcstGrowthOverride(sel);
+  if (_ovr != null) g = _ovr;
   _FCST_GROWTH[sel] = g;
   return g;
+}
+/* ---------------------------------------------------------------------------
+   FATTORE DI CRESCITA — override manuale e controllo di deriva
+   ---------------------------------------------------------------------------
+   La mediana su 12 mesi non sa distinguere un calo strutturale da una stagione
+   storta: servono mesi di evidenza, e quando arrivano il danno e' fatto.
+   Provate mediana pesata per recenza (mezza vita 6/4/3/2 mesi) e finestre piu'
+   corte: spostano il problema da una struttura all'altra invece di risolverlo
+   (Enis migliora, Alfani peggiora). Con 8 mesi di storia, tarare la formula
+   sarebbe adattarla al rumore.
+   Quindi la formula resta e il sistema si limita a SEGNALARE lo scostamento,
+   lasciando la decisione a chi conosce la struttura.
+   --------------------------------------------------------------------------- */
+const FCST_GROWTH_OVR_KEY = 'rmes_fcst_growth_override_v1';
+function fcstGrowthOverride(sel){
+  try {
+    const raw = localStorage.getItem(FCST_GROWTH_OVR_KEY);
+    if (!raw) return null;
+    const o = JSON.parse(raw) || {};
+    const v = o[sel];
+    return (v != null && isFinite(v) && v > 0) ? +v : null;
+  } catch(e){ return null; }
+}
+function fcstGrowthSetOverride(sel, val){
+  let o = {};
+  try { const raw = localStorage.getItem(FCST_GROWTH_OVR_KEY); if (raw) o = JSON.parse(raw) || {}; } catch(e){}
+  if (val == null || !isFinite(val) || val <= 0) delete o[sel]; else o[sel] = +val;
+  try { localStorage.setItem(FCST_GROWTH_OVR_KEY, JSON.stringify(o)); } catch(e){}
+  if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {};
+  if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {};
+}
+/* Confronta gli ultimi N mesi CHIUSI con il fattore in uso. Se sono andati
+   sistematicamente sotto (o sopra), lo dice. */
+const FCST_DRIFT_MONTHS = 3;
+const FCST_DRIFT_TOL = 0.10;      // oltre questo scarto vale la pena segnalarlo
+/* Ultimo giorno in cui il file dati contiene prenotazioni. Un mese va confrontato
+   con l'anno scorso SOLO se le sue prenotazioni hanno avuto tempo di entrare
+   tutte: se i dati si fermano al 1 agosto, agosto risultera' vuoto e sembrera'
+   un crollo. E' successo davvero in sviluppo: tutte e quattro le strutture
+   segnalavano -14/-27% e non era un calo, erano dati mancanti. */
+let _DATA_LAST_BOOK = null;
+function fcstDataLastBookYmd(){
+  if (_DATA_LAST_BOOK != null) return _DATA_LAST_BOOK;
+  let mx = 0;
+  for (const b of BOOKINGS) if (b.bookYmd > mx) mx = b.bookYmd;
+  _DATA_LAST_BOOK = mx || null;
+  return _DATA_LAST_BOOK;
+}
+function fcstGrowthCheck(sel){
+  const out = { recent: null, factor: null, drift: null, months: [], warn: false,
+                manual: fcstGrowthOverride(sel) != null, staleData: false, dataLast: fcstDataLastBookYmd() };
+  try {
+    const keys = new Set(structKeysFor(sel));
+    const rn = {};
+    for (const b of BOOKINGS){
+      if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
+      for (let i=0;i<b.stayYmds.length;i++){
+        const ym = Math.floor(b.stayYmds[i]/100);
+        rn[ym] = (rn[ym]||0) + 1;
+      }
+    }
+    const t = new Date(TODAY);
+    const lastBook = fcstDataLastBookYmd();
+    // Se i dati sono fermi da un pezzo, il confronto non e' attendibile.
+    if (lastBook){
+      const gapDays = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(lastBook)) / 86400000);
+      if (gapDays > 7) out.staleData = true;
+    }
+    let sumCur = 0, sumLy = 0;
+    for (let i=1; i<=FCST_DRIFT_MONTHS; i++){
+      const dd = new Date(t.getFullYear(), t.getMonth()-i, 1);
+      const ym = dd.getFullYear()*100 + (dd.getMonth()+1);
+      const ymLy = (dd.getFullYear()-1)*100 + (dd.getMonth()+1);
+      // Il mese conta solo se i dati arrivano almeno alla sua fine: altrimenti
+      // mancano le prenotazioni sotto data e il mese sembra sempre in calo.
+      const lastDay = dd.getFullYear()*10000 + (dd.getMonth()+1)*100
+                    + new Date(dd.getFullYear(), dd.getMonth()+1, 0).getDate();
+      if (lastBook && lastBook < lastDay){ out.months.push({ ym, incomplete: true }); continue; }
+      const cur = rn[ym]||0, ly = rn[ymLy]||0;
+      if (ly <= 0) continue;
+      sumCur += cur; sumLy += ly;
+      out.months.push({ ym, cur, ly, ratio: cur/ly });
+    }
+    // Il fattore in uso va sempre mostrato; e' il CONFRONTO con i mesi recenti
+    // che non ha senso quando i dati sono fermi.
+    out.factor = fcstGrowthFactor(sel);
+    if (sumLy > 0 && !out.staleData){
+      out.recent = sumCur / sumLy;
+      out.drift = out.recent - out.factor;
+      out.warn = Math.abs(out.drift) > FCST_DRIFT_TOL;
+    }
+  } catch(e){}
+  return out;
 }
 /* ---------------------------------------------------------------------------
    CURVA DI SOPRAVVIVENZA (cancellazioni)
@@ -17748,7 +17845,66 @@ function renderClosedYears(sel){
   };
   host.innerHTML = `<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">${data.map(card).join('')}</div>`;
 }
+/* Nota sul fattore di crescita: lo mostra, segnala se gli ultimi mesi vanno in
+   un'altra direzione, e permette di forzarlo a mano. Non corregge da sola: con
+   pochi mesi di evidenza nessuna formula distingue un calo strutturale da una
+   stagione storta, quindi decide chi conosce la struttura. */
+function _renderGrowthNote(sel){
+  const box = document.getElementById('fcst-growth-note');
+  if (!box) return;
+  if (typeof fcstGrowthCheck !== 'function'){ box.innerHTML = ''; return; }
+  const c = fcstGrowthCheck(sel);
+  if (c.factor == null){ box.innerHTML = ''; return; }
+  const pct = v => ((v >= 0 ? '+' : '') + (v*100).toFixed(0) + '%');
+  const isAgg = (typeof isAggSel === 'function') && isAggSel(sel);
+  let tone = '#f7f5ef', edge = 'var(--line)', txt;
+  if (c.staleData){
+    const dl = String(c.dataLast || '');
+    tone = '#fdf6ec'; edge = '#e8c89a';
+    txt = '<b>Data is not up to date</b> \u2014 the latest booking in the file is from '
+        + (dl ? dl.slice(6,8)+'/'+dl.slice(4,6)+'/'+dl.slice(0,4) : '\u2014')
+        + '. Recent months look weaker than they are, because their late bookings are missing, so the growth check is paused.';
+  } else if (c.warn){
+    tone = '#fdf0ef'; edge = '#e0b3b0';
+    txt = 'The last ' + c.months.filter(m=>!m.incomplete).length + ' closed months ran <b>' + pct(c.recent - 1)
+        + '</b> versus last year, while the forecast is using a growth factor of <b>' + c.factor.toFixed(2) + '</b> ('
+        + pct(c.factor - 1) + '). If the change is here to stay, set the factor by hand.';
+  } else {
+    txt = 'Growth factor in use: <b>' + c.factor.toFixed(2) + '</b> (' + pct(c.factor - 1) + ')'
+        + (c.recent != null ? ' \u00b7 last closed months: ' + pct(c.recent - 1) : '')
+        + ' \u2014 in line.';
+  }
+  let h = '<div style="padding:9px 13px;background:' + tone + ';border:1px solid ' + edge
+        + ';border-radius:8px;font-size:12.5px;color:var(--ink-2);line-height:1.5;display:flex;'
+        + 'justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">';
+  h += '<div>' + txt + (c.manual ? ' <b style="color:#7a4f1c">Currently set by hand.</b>' : '') + '</div>';
+  if (!isAgg){
+    h += '<div style="display:flex;gap:6px;align-items:center;white-space:nowrap">'
+       + '<label style="font-size:11.5px;color:var(--ink-3)">set by hand</label>'
+       + '<input type="number" id="fcst-g-ovr" step="0.01" min="0.3" max="3" value="' + (c.manual ? c.factor.toFixed(2) : '')
+       + '" placeholder="auto" style="width:66px;padding:4px 7px;border:1px solid var(--line);border-radius:4px;'
+       + "font-family:'DM Mono',monospace;text-align:right;font-size:12.5px\">"
+       + '<button id="fcst-g-save" style="border:0;background:#3d7a4b;color:#fff;border-radius:5px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700">Apply</button>'
+       + (c.manual ? '<button id="fcst-g-clear" style="border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:5px;padding:5px 10px;cursor:pointer;font-size:12px">Auto</button>' : '')
+       + '</div>';
+  }
+  h += '</div>';
+  box.innerHTML = h;
+  const save = box.querySelector('#fcst-g-save');
+  if (save) save.addEventListener('click', () => {
+    const el = box.querySelector('#fcst-g-ovr');
+    const v = el && el.value !== '' ? parseFloat(el.value) : null;
+    fcstGrowthSetOverride(sel, v);
+    if (typeof renderForecast === 'function') renderForecast(sel);
+  });
+  const clr = box.querySelector('#fcst-g-clear');
+  if (clr) clr.addEventListener('click', () => {
+    fcstGrowthSetOverride(sel, null);
+    if (typeof renderForecast === 'function') renderForecast(sel);
+  });
+}
 function renderForecast(sel){
+  try { _renderGrowthNote(sel); } catch(e){ console.error('growth note', e); }
   const A = aggForecast(sel);
   const M = A.monthly;
   const monthsITLong = ['January','February','March','April','May','June','July','August','September','October','November','December'];
