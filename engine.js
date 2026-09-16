@@ -6584,6 +6584,31 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
                              : { on:true, dev:0, n:0, good:0, goodLy:null, share:null, quality:null,
                                  stlyRatio:null, stlyState:'out of horizon',
                                  notes:['the date is ' + _leadRmes + ' days away, beyond the ' + _horizon + '-day selling horizon'] };
+    /* FUORI ORIZZONTE: il prezzo non si muove, ed e' giusto. Ma se allo STESSO
+       anticipo l'anno scorso quella notte aveva gia' camere vendute e oggi e'
+       a zero, la calma non e' normale e vale la pena dirlo. Non muove il
+       prezzo: solo un avviso. Capita di rado (2-8% delle date lontane), quindi
+       quando compare significa qualcosa. */
+    let _farQuiet = null;
+    if (!_inHorizon && (r.curRn || 0) === 0){
+      try {
+        const lyYmd = ymd(addDays(ymdToDate(r.ymd), -364));
+        const lyIdx = (typeof _stlyOtbAtLead === 'function') ? null : null;
+        let lyOtb = 0;
+        const keys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
+        const list = (_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]) || BOOKINGS;
+        const useIdx = !!_BOOKINGS_BY_STRUCT;
+        for (let i=0;i<list.length;i++){
+          const b = list[i];
+          if (b.cancelled || !b.stayYmds) continue;
+          if (!useIdx && !keys.has(b.struct)) continue;
+          if (b.stayYmds.indexOf(lyYmd) < 0) continue;
+          const lead = Math.round((ymdToDate(lyYmd) - ymdToDate(b.bookYmd)) / 86400000);
+          if (lead >= _leadRmes) lyOtb++;
+        }
+        if (lyOtb > 0) _farQuiet = { lyOtb, lead: _leadRmes };
+      } catch(e){}
+    }
     /* ===== IL PICKUP E' L'UNICO MOTORE =====
        Mercato e AirDNA NON sommano e NON sottraggono: sono guard-rail, cioe'
        possono solo FERMARE un movimento che il pickup ha gia' chiesto.
@@ -6695,7 +6720,7 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     }
     const _multFinaleRaw = 1 + _totDevSmoothed;
     const _sigDbg = { A: _sigA, market: _mktInfo, airdna: _adInfo, nrDiscount: _nrDisc,
-                      horizon: _horizon, lead: _leadRmes, inHorizon: _inHorizon,
+                      horizon: _horizon, lead: _leadRmes, inHorizon: _inHorizon, farQuiet: _farQuiet,
                       totDev: _totDev, totDevApplied: _totDevSmoothed, smoothing: _smoothInfo };
     const _capStruct = (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.25;
     const _cappedStruct = applyTotalCap(_multFinaleRaw - 1, _capStruct);
@@ -13205,7 +13230,7 @@ function renderSellStrategy(sel){
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). Click 🖋 to override one day; ↺ to reset.">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
     + '<th rowspan="2" class="sell-grp sell-grp-sold" title="Last sold price — the rate of the most recent booking that covers this night, on the base room type, gross of OTA commission (Booking and Direct as they are; Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%). Blank = this night has never been sold on the base room type.">Last sold<br><span class="sell-th-sub">gross · base RT</span></th>'
-    + '<th colspan="' + (2 + _suppRTs.length) + '" class="sell-grp sell-grp-pricing" title="What the engine suggests for this date. The price is for the base room type; the other columns are the supplement to add on top of it.">RMES</th>'
+    + '<th colspan="' + (3 + _suppRTs.length) + '" class="sell-grp sell-grp-pricing" title="What the engine suggests for this date, and what you have actually loaded. The price is for the base room type; the other columns are the supplement to add on top of it.">RMES</th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
     + '<th class="sell-grp-otb-sub" title="OTB to date · RN sold">RN</th>'
@@ -13219,6 +13244,7 @@ function renderSellStrategy(sel){
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net RN a year ago. Click a cell for the new/cancelled detail.">Var RN</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of the net STLY pickup">Var ADR</th>'
     + '<th class="sell-grp-rmes-today" title="Suggested price for the BASE room type, to load on Beddy. Click the cell for the calculation detail. The \u2713 button accepts it as the active price.">Pricing<br><span class="sell-th-sub">' + escapeHtml(_baseRTShort) + ' \u00b7 \u2713</span></th>'
+    + '<th class="sell-grp-loaded" title="The price you have actually loaded on Beddy for the base room type.\n\nType a number to record it \u2014 it is saved as a manual override and shared with everyone. Leave it empty to go back to what the engine decides.\n\nAccepting an RMES suggestion fills this box by itself.">Loaded<br><span class="sell-th-sub">on Beddy</span></th>'
     + _suppRTs.map(rt => {
         /* Nell'intestazione metto anche il confronto fra supplemento configurato
            e quello a cui la tipologia si vende davvero: e' l'informazione che
@@ -13979,6 +14005,37 @@ function renderSellStrategy(sel){
     /* Celle SUPPLEMENTO: quanto ogni altra tipologia costa in piu' (o in meno)
        della camera base, in euro. Il motore calcola un segnale per ogni camera,
        quindi lo scarto non e' fisso: si muove con il pickup di quella tipologia. */
+    /* CELLA "LOADED" — il prezzo che carichiamo davvero su Beddy.
+       Non introduce uno store nuovo: scrive nello stesso override sincronizzato
+       che il motore gia' usa come riferimento, quindi accettare un RMES riempie
+       la casella da solo e scriverla a mano equivale a un override. Vuota =
+       nessuna decisione, comanda il motore. */
+    const _loadedTdHtml = (function(){
+      const baseRTK = (CFG.structures[sel] || {}).baseRT;
+      if (!baseRTK) return '<td class="cell-mono sell-loaded-cell"></td>';
+      const isoD = fp_isoDate(ymdToDate(r.ymd));
+      let cur = null, src = '';
+      try {
+        const o = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, isoD, baseRTK) : null;
+        if (o && o.price > 0){ cur = o.price; src = 'manual'; }
+      } catch(e){}
+      if (cur == null){
+        try {
+          const am = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(sel, r.ymd) : null;
+          if (am && am.price > 0){ cur = am.price; src = 'accepted'; }
+        } catch(e){}
+      }
+      const tip = src === 'manual'   ? 'Loaded by hand. Clear the box to hand the date back to the engine.'
+                : src === 'accepted' ? 'Filled by accepting the RMES suggestion. Type over it to record a different price.'
+                : 'Nothing recorded yet: the engine decides this date. Type the price you loaded on Beddy, or accept the RMES suggestion.';
+      const col = src === 'manual' ? '#1e4a6b' : (src === 'accepted' ? '#2c7a4b' : '#b9b3a6');
+      return '<td class="cell-mono sell-loaded-cell" style="text-align:center" title="' + escapeHtml(tip) + '">'
+           + '<input type="number" class="sell-loaded-inp" data-struct="' + escapeHtml(sel) + '" data-rt="' + escapeHtml(baseRTK)
+           + '" data-date="' + isoD + '" value="' + (cur != null ? Math.round(cur) : '') + '" placeholder="\u2014"'
+           + ' style="width:58px;padding:3px 5px;border:1px solid var(--line);border-radius:4px;'
+           + "font-family:'DM Mono',monospace;font-size:11.5px;text-align:center;color:" + col + ';'
+           + (src ? 'font-weight:700;' : '') + 'background:transparent"></td>';
+    })();
     const _suppTdHtml = (function(){
       if (!_suppRTs.length) return '';
       const mapEntry = (_rmesMapForAlignment && _rmesMapForAlignment[r.ymd]) ? _rmesMapForAlignment[r.ymd] : null;
@@ -14130,6 +14187,17 @@ function renderSellStrategy(sel){
        piu' forza se la vendita e' recente. */
     const _verdict = (function(){
       try {
+        /* Prima di tutto il caso "lontana e ferma, ma l'anno scorso si muoveva":
+           li' non c'e' un ultimo venduto da confrontare, il segnale e' proprio
+           l'assenza di prenotazioni dove l'anno prima ce n'erano. */
+        const meF = _rmesMapForAlignment && _rmesMapForAlignment[r.ymd];
+        const fq = meF && meF._sigDbg && meF._sigDbg.farQuiet;
+        if (fq){
+          return { tone: 'warn',
+                   txt: 'Nothing booked yet, ' + fq.lead + ' days out. At this same point last year '
+                      + fq.lyOtb + (fq.lyOtb === 1 ? ' room was' : ' rooms were') + ' already sold.'
+                      + '\nThe date is too far out for the engine to act, so the price will not move on its own \u2014 but the quiet is not normal here. Worth checking the rate and the restrictions.' };
+        }
         const ls = (typeof lastSoldForStay === 'function') ? lastSoldForStay(sel, r.ymd) : null;
         const baseRTK = (CFG.structures[sel] || {}).baseRT;
         if (!ls || !(ls.price > 0) || ls.room !== baseRTK) return null;
@@ -14172,7 +14240,7 @@ function renderSellStrategy(sel){
       } catch(e){ return null; }
     })();
 
-        const _vTip = _verdict ? ('\n\nVERSUS THE LAST SALE\n' + _verdict.txt) : '';
+        const _vTip = _verdict ? ('\n\n' + (/last year/.test(_verdict.txt) ? 'VERSUS LAST YEAR' : 'VERSUS THE LAST SALE') + '\n' + _verdict.txt) : '';
         const _vMark = (_verdict && _verdict.tone === 'warn')
           ? '<span style="color:#b0332f;font-weight:700">\u00b7</span>' : '';
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip + _suppTip + _vTip)}">${_vMark}${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
@@ -14216,7 +14284,7 @@ function renderSellStrategy(sel){
       ${cellFoundation}
       ${_soldTdHtml}
       <!-- RMES: prezzo suggerito + minimum stay consigliato -->
-      ${_rmesTdHtml}${_suppTdHtml}${_mlosTdHtml}
+      ${_rmesTdHtml}${_loadedTdHtml}${_suppTdHtml}${_mlosTdHtml}
     </tr>`;
   }
   const totDRev = T.pkRev;
@@ -14265,6 +14333,7 @@ function renderSellStrategy(sel){
     <!-- Last sold + RMES (prezzo, un supplemento per tipologia, min stay) -->
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
+    <td class="cell-flat sell-loaded-cell" style="text-align:center;color:var(--ink-3);font-size:10px">\u2014</td>
     ${_suppRTs.map(() => '<td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">\u2014</td>').join('')}
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
@@ -14345,6 +14414,24 @@ function renderSellStrategy(sel){
       '<div style="font-size:11px;color:#666">Trend: <b>' + winner + '</b> · Detail in the tab <a href="#" onclick="document.querySelector(\'.tab[data-tab=pri]\').click();return false" style="color:#7a4f1c;font-weight:600;text-decoration:underline">RMES</a> → Audit override</div>' +
       '</div>';
   })();
+  /* Salvataggio del prezzo caricato. Scrive l'override (sincronizzato) e ridisegna,
+     cosi il RMES ricalcola il delta rispetto al nuovo riferimento. Casella vuota =
+     rimuove la decisione e la data torna al motore. */
+  document.getElementById('sell-table-wrap').querySelectorAll('.sell-loaded-inp').forEach(inp => {
+    inp.addEventListener('change', (ev) => {
+      const el = ev.currentTarget;
+      const v = el.value === '' ? null : parseFloat(el.value);
+      if (v != null && (!isFinite(v) || v <= 0)){ el.value = ''; return; }
+      try {
+        fp_setOverride(el.dataset.struct, el.dataset.date, el.dataset.rt, v,
+                       { source: 'loaded box' });
+      } catch(e){ console.error('loaded box', e); }
+      if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+      if (typeof renderSellStrategy === 'function') setTimeout(() => renderSellStrategy(sel), 30);
+    });
+    // Enter conferma senza aspettare il blur
+    inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') ev.currentTarget.blur(); });
+  });
   document.getElementById('sell-table-wrap').querySelectorAll('.sell-pickup-link').forEach(el=>{
     el.addEventListener('click', (ev)=>{
       ev.stopPropagation();

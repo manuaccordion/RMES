@@ -2741,7 +2741,11 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Every room type has its own signal</p>
         <p style="margin:0 0 6px 0">A booking on the Suite says nothing about the base room, so the engine reads the pickup <b>separately for each room type</b>. One booking on a Suite lifts the Suite and leaves the base room alone &mdash; or even pushes it down, if the base room is the one standing still.</p>
-        <p style="margin:0 0 6px 0">Each of those room types gets its own column next to Pricing, showing the <b>suggested supplement in euros</b> over the base room &mdash; that is how prices are actually loaded:</p>
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">The Loaded box</p>
+        <p style="margin:0 0 6px 0">Next to the suggested price there is a box for <b>the price you actually loaded on Beddy</b>. Type a number and it is recorded; accepting an RMES suggestion fills it by itself; clear it and the date goes back to the engine. It writes to the same shared store the engine already uses as its reference, so everyone sees the same thing and the suggestion recalculates against it. Blue means typed by hand, green means it came from accepting a suggestion.</p>
+        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>Accepting for a whole period still works from the bar at the top &mdash; pick a range and press Accept RMES.</i></p>
+
+        <p style="margin:0 0 6px 0">Each room type also gets its own column, showing the <b>suggested supplement in euros</b> over the base room &mdash; that is how prices are actually loaded:</p>
         <div style="margin:4px 0 12px 0;padding:9px 13px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.7">
           Suggested supplement over Camera Matrimoniale Deluxe (&euro;220):<br>
           &nbsp;&nbsp;Suite con Terrazza: +&euro;71<br>
@@ -2762,6 +2766,14 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <tr><td style="padding:3px 14px 3px 0">Enis Guesthouse</td><td style="padding:3px 12px">60 days</td></tr>
         </table>
         <p style="margin:0 0 10px 0">Beyond it the price has little effect on whether the date sells, and &mdash; more importantly &mdash; <b>a quiet date out there is normal, not a signal</b>. Inside the window a quiet date means something; at eight months out it means nothing. So beyond the horizon the RMES stays out and the Base Price stands. The same threshold already governs the compset ceiling: <b>one rule, one number per property</b>.</p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Quiet far-out dates are checked against last year</p>
+        <p style="margin:0 0 6px 0">Beyond the horizon the price does not move, and that is right. But a date sitting at zero is only normal if it was also quiet last year at the same point. When last year <b>had rooms already sold</b> at that same lead time and this year has none, the engine says so:</p>
+        <div style="margin:4px 0 8px 0;padding:8px 12px;background:#fdf0ef;border-left:3px solid #e0b3b0;border-radius:0 4px 4px 0;font-size:12px;line-height:1.55">
+          Nothing booked yet, 151 days out. At this same point last year 1 room was already sold.<br>
+          The date is too far out for the engine to act, so the price will not move on its own &mdash; but the quiet is not normal here. Worth checking the rate and the restrictions.
+        </div>
+        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>It stays a warning and never touches the price. It fires on 2&ndash;8% of far-out dates &mdash; 36 across the whole year and all four properties &mdash; so when it appears it means something. The first ones it catches are 13&ndash;15 February at Palazzo Alfani.</i></p>
 
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">When a date is quiet <i>and</i> expensive</p>
         <p style="margin:0 0 10px 0">Nothing booked this year and nothing last year is normally no signal at all. But if on top of that you are <b>above the market band</b>, the two facts together do have an explanation: it is not selling because it costs too much. In that case the price comes down by the full step. On Palazzo Alfani this covers 26 dates; on Firenze Suite and Enis Guesthouse it never happens, because they sit below the market.</p>
