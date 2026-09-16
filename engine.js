@@ -5394,7 +5394,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _DATA_LAST_BOOK !== 'undefined') _DATA_LAST_BOOK = null; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; if (typeof _NR_DISCOUNT_CACHE !== 'undefined') _NR_DISCOUNT_CACHE = {}; if (typeof _MK_MEASURED_CACHE !== 'undefined') _MK_MEASURED_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _DATA_LAST_BOOK !== 'undefined') _DATA_LAST_BOOK = null; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; if (typeof _NR_DISCOUNT_CACHE !== 'undefined') _NR_DISCOUNT_CACHE = {}; if (typeof _MK_MEASURED_CACHE !== 'undefined') _MK_MEASURED_CACHE = {}; if (typeof _SUPP_MEASURED_CACHE !== 'undefined') _SUPP_MEASURED_CACHE = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -5809,6 +5809,66 @@ function rmesMarkupMeasured(structKey){
     }
   } catch(e){}
   _MK_MEASURED_CACHE[structKey] = out;
+  return out;
+}
+/* SUPPLEMENTI: configurato contro venduto.
+   Il supplemento di una tipologia e' una decisione commerciale, ma se il mercato
+   la vende a un differenziale molto diverso vale la pena accorgersene. Misura:
+   per ogni notte in cui sono state vendute sia la camera base sia la tipologia,
+   la differenza in euro fra i due prezzi-Beddy; poi la mediana, separando alta e
+   bassa stagione.
+   Non corregge niente: il motore usa il valore configurato. Serve a vedere gli
+   scostamenti, come quello della Junior Suite di Palazzo Alfani, che era
+   configurata a 0 in bassa e -35 in alta mentre la regola commerciale e' -10. */
+const SUPP_MIN_OBS = 30;
+const SUPP_TOL_EUR = 15;
+let _SUPP_MEASURED_CACHE = {};
+function rmesSupplementMeasured(structKey){
+  if (_SUPP_MEASURED_CACHE[structKey]) return _SUPP_MEASURED_CACHE[structKey];
+  const out = {};
+  try {
+    const t0 = startOfDay(new Date(TODAY));
+    const A = aggPricingDaily(structKey, ymd(t0), 1);
+    if (!A || !A.baseRT) { _SUPP_MEASURED_CACHE[structKey] = out; return out; }
+    const base = A.baseRT, hi = new Set(A.highSeason || []);
+    const useIdx = !!(typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]);
+    const list = useIdx ? _BOOKINGS_BY_STRUCT[structKey] : BOOKINGS;
+    const cfg = CFG.structures[structKey];
+    const byNight = {};
+    for (let i=0;i<list.length;i++){
+      const b = list[i];
+      if (b.cancelled || !b.stayYmds || !(b.revPerNightCaricato > 0)) continue;
+      if (!useIdx && cfg && b.struct !== cfg.key) continue;
+      for (let j=0;j<b.stayYmds.length;j++) (byNight[b.stayYmds[j]] = byNight[b.stayYmds[j]] || []).push(b);
+    }
+    const acc = {};
+    for (const k in byNight){
+      const a = byNight[k];
+      const bs = a.filter(x => x.room === base);
+      if (!bs.length) continue;
+      const mb = bs.reduce((p,q)=>p+q.revPerNightCaricato,0) / bs.length;
+      const season = hi.has(Math.floor(k/100) % 100) ? 'alta' : 'bassa';
+      for (const x of a){
+        if (x.room === base) continue;
+        const key = x.room + '|' + season;
+        (acc[key] = acc[key] || []).push(x.revPerNightCaricato - mb);
+      }
+    }
+    const med = (arr) => { if (!arr.length) return null; const z = arr.slice().sort((p,q)=>p-q); return z[Math.floor(z.length/2)]; };
+    for (const rt of (A.rtList || [])){
+      if (rt === base || rt === 'Other') continue;
+      const lo = acc[rt+'|bassa'] || [], up = acc[rt+'|alta'] || [];
+      if (lo.length + up.length < SUPP_MIN_OBS) continue;
+      const sp = (A.supplementoStagione || {})[rt] || {};
+      const mLo = med(lo), mUp = med(up);
+      const dLo = (mLo != null && sp.bassa != null) ? Math.abs(mLo - sp.bassa) : null;
+      const dUp = (mUp != null && sp.alta  != null) ? Math.abs(mUp - sp.alta)  : null;
+      out[rt] = { soldLow: mLo, soldHigh: mUp, cfgLow: sp.bassa, cfgHigh: sp.alta,
+                  n: lo.length + up.length,
+                  off: (dLo != null && dLo > SUPP_TOL_EUR) || (dUp != null && dUp > SUPP_TOL_EUR) };
+    }
+  } catch(e){}
+  _SUPP_MEASURED_CACHE[structKey] = out;
   return out;
 }
 /* Valore USATO dal motore: quello configurato. Il misurato resta informativo. */
@@ -13159,9 +13219,30 @@ function renderSellStrategy(sel){
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net RN a year ago. Click a cell for the new/cancelled detail.">Var RN</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of the net STLY pickup">Var ADR</th>'
     + '<th class="sell-grp-rmes-today" title="Suggested price for the BASE room type, to load on Beddy. Click the cell for the calculation detail. The \u2713 button accepts it as the active price.">Pricing<br><span class="sell-th-sub">' + escapeHtml(_baseRTShort) + ' \u00b7 \u2713</span></th>'
-    + _suppRTs.map(rt => '<th class="sell-grp-rmes-supp" title="' + escapeHtml(rt)
-        + ' \u2014 supplement to add to the base room price. Each room type has its own pickup signal, so this gap moves on its own.">'
-        + escapeHtml(_rtShortLabel(rt)) + '<br><span class="sell-th-sub">supplement</span></th>').join('')
+    + _suppRTs.map(rt => {
+        /* Nell'intestazione metto anche il confronto fra supplemento configurato
+           e quello a cui la tipologia si vende davvero: e' l'informazione che
+           serve per decidere se la configurazione va rivista, e sta bene qui
+           perche' vale per tutta la colonna, non per la singola data. */
+        let extra = '', mark = '';
+        try {
+          const sm = (typeof rmesSupplementMeasured === 'function') ? rmesSupplementMeasured(sel) : null;
+          const o = sm && sm[rt];
+          if (o){
+            const f = v => (v == null ? '\u2014' : (v >= 0 ? '+' : '\u2212') + '\u20ac' + Math.round(Math.abs(v)));
+            extra = '\n\nConfigured: ' + f(o.cfgLow) + ' low season / ' + f(o.cfgHigh) + ' high season'
+                  + '\nActually sells at: ' + f(o.soldLow) + ' / ' + f(o.soldHigh)
+                  + '  (' + o.n + ' nights where both were sold)'
+                  + (o.off ? '\n\u26a0 The two differ by more than \u20ac15 \u2014 worth reviewing the configured supplement.'
+                           : '\n\u2713 In line with what the market pays.');
+            if (o.off) mark = '<span style="color:#b0332f"> \u00b7</span>';
+          }
+        } catch(e){}
+        return '<th class="sell-grp-rmes-supp" title="' + escapeHtml(rt)
+          + ' \u2014 supplement to add to the base room price. Each room type has its own pickup signal, so this gap moves on its own.'
+          + extra + '">'
+          + escapeHtml(_rtShortLabel(rt)) + mark + '<br><span class="sell-th-sub">supplement</span></th>';
+      }).join('')
     + '<th class="sell-grp-mlos" title="Suggested minimum stay for this date. 2 = hold a 2-night minimum, blank = no restriction.">Min stay<br><span class="sell-th-sub">nights</span></th>'
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;

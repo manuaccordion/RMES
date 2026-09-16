@@ -2741,12 +2741,16 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Every room type has its own signal</p>
         <p style="margin:0 0 6px 0">A booking on the Suite says nothing about the base room, so the engine reads the pickup <b>separately for each room type</b>. One booking on a Suite lifts the Suite and leaves the base room alone &mdash; or even pushes it down, if the base room is the one standing still.</p>
-        <p style="margin:0 0 10px 0">The Pricing column shows the base room type, and its tooltip lists the <b>suggested supplement in euros</b> for the others &mdash; that is how prices are actually loaded:</p>
+        <p style="margin:0 0 6px 0">Each of those room types gets its own column next to Pricing, showing the <b>suggested supplement in euros</b> over the base room &mdash; that is how prices are actually loaded:</p>
         <div style="margin:4px 0 12px 0;padding:9px 13px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.7">
           Suggested supplement over Camera Matrimoniale Deluxe (&euro;220):<br>
           &nbsp;&nbsp;Suite con Terrazza: +&euro;71<br>
           &nbsp;&nbsp;Suite: +&euro;56
         </div>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Are the configured supplements still right?</p>
+        <p style="margin:0 0 6px 0">The supplement between room types is a commercial decision, but if the market pays a very different gap it is worth knowing. Hovering a supplement column header shows the <b>configured</b> value against what that room type <b>actually sells for</b> &mdash; measured on the nights when both it and the base room were sold, split between high and low season &mdash; with a red dot on the header when the two differ by more than &euro;15.</p>
+        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>It earns its place: Palazzo Alfani's Junior Suite is configured at &minus;&euro;10 all year and sells at &minus;&euro;9 in low season but &minus;&euro;30 in high season, over 493 nights. The Deluxe is configured +&euro;145 low / +&euro;130 high and sells at +&euro;116 / +&euro;139 &mdash; the seasonality is the other way round. Nothing is corrected automatically; the engine keeps using the configured values.</i></p>
 
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">The selling horizon &mdash; where the RMES works at all</p>
         <p style="margin:0 0 6px 0">The RMES only moves prices <b>inside the window where bookings actually arrive</b>: the number of days within which 80% of that property's bookings come in, measured from its own history.</p>
