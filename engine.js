@@ -14031,7 +14031,51 @@ function renderSellStrategy(sel){
         const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${dirHint}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
         // I supplementi hanno ora una colonna ciascuno: fuori dal tooltip.
         const _suppTip = '';
-        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip + _suppTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
+    /* LETTURA DEL SUGGERIMENTO CONTRO L'ULTIMO VENDUTO.
+       Il confronto lo puo' fare il motore, non serve che lo faccia l'occhio:
+       sa quanto propone, a quanto quella notte ha venduto, se sta entrando
+       pickup e come siamo messi rispetto al mercato. Mette insieme le tre cose
+       e scrive cosa ne pensa.
+       Soglia calibrata sui dati: lo scarto fra suggerimento e ultimo venduto ha
+       mediana 20% e supera il 20% su meta' delle date, quindi segnalare a quel
+       livello vorrebbe dire segnalare tutto. Si parla solo oltre il 30%, e con
+       piu' forza se la vendita e' recente. */
+    const _verdict = (function(){
+      try {
+        const ls = (typeof lastSoldForStay === 'function') ? lastSoldForStay(sel, r.ymd) : null;
+        const baseRTK = (CFG.structures[sel] || {}).baseRT;
+        if (!ls || !(ls.price > 0) || ls.room !== baseRTK) return null;
+        const me = _rmesMapForAlignment && _rmesMapForAlignment[r.ymd];
+        const px = me && me.price;
+        if (!(px > 0)) return null;
+        const gap = px / ls.price - 1;
+        if (Math.abs(gap) < 0.30) return null;
+        const age = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(ls.bookYmd)) / 86400000);
+        const sg = me._sigDbg;
+        const pkN = sg && sg.A ? (sg.A.n || 0) : 0;
+        const pkUp = sg && sg.A ? (sg.A.dev || 0) > 0.001 : false;
+        const mktGap = sg && sg.market ? sg.market.gap : null;
+        const pct = (gap >= 0 ? '+' : '\u2212') + Math.round(Math.abs(gap) * 100) + '%';
+        const stale = age > 90;
+        let txt, tone;
+        if (gap > 0){
+          if (pkUp) { txt = 'Asking ' + pct + ' over the last sale, but bookings are coming in \u2014 the market is following the higher price.'; tone = 'ok'; }
+          else if (pkN === 0 && !stale) { txt = 'Asking ' + pct + ' over what this night sold for ' + age + ' days ago, and nothing is booking. Worth a look.'; tone = 'warn'; }
+          else if (stale) { txt = 'Asking ' + pct + ' over a sale from ' + age + ' days ago \u2014 old enough that it says little about today.'; tone = 'info'; }
+          else { txt = 'Asking ' + pct + ' over the last sale, with little movement.'; tone = 'info'; }
+        } else {
+          if (mktGap != null && mktGap > 0.20) { txt = 'Suggesting ' + pct + ' below the last sale, but you are still above the market \u2014 the correction is deliberate.'; tone = 'info'; }
+          else if (stale) { txt = 'Suggesting ' + pct + ' below a sale from ' + age + ' days ago \u2014 that price may no longer be the reference.'; tone = 'info'; }
+          else { txt = 'Suggesting ' + pct + ' below what this night sold for ' + age + ' days ago. Worth a look before accepting.'; tone = 'warn'; }
+        }
+        return { txt, tone, gap };
+      } catch(e){ return null; }
+    })();
+
+        const _vTip = _verdict ? ('\n\nVERSUS THE LAST SALE\n' + _verdict.txt) : '';
+        const _vMark = (_verdict && _verdict.tone === 'warn')
+          ? '<span style="color:#b0332f;font-weight:700">\u00b7</span>' : '';
+        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip + _suppTip + _vTip)}">${_vMark}${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
     /* Evidenzia la riga se su questa notte e' entrato pickup negli ultimi 3 giorni
        (oggi incluso): sono le date che si sono mosse adesso e su cui vale la pena
