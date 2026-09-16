@@ -5394,7 +5394,7 @@ function _getPaceAggBoth(){
   _PACE_AGG_BOTH_CACHE = byStayMonth;
   return byStayMonth;
 }
-function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _DATA_LAST_BOOK !== 'undefined') _DATA_LAST_BOOK = null; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; if (typeof _NR_DISCOUNT_CACHE !== 'undefined') _NR_DISCOUNT_CACHE = {}; }
+function _invalidatePaceAggCache(){ _PACE_AGG_BOTH_CACHE = null; if (typeof _APD_CACHE !== 'undefined') _APD_CACHE = {}; if (typeof _EXP_SUPP_AGG_CACHE !== 'undefined') _EXP_SUPP_AGG_CACHE = {}; if (typeof _ANCHOR_LY_CACHE !== 'undefined') _ANCHOR_LY_CACHE = {}; if (typeof _MONTHLY_ANCHOR_CACHE !== 'undefined') _MONTHLY_ANCHOR_CACHE = {}; if (typeof _BOOKING_CURVE_CACHE !== 'undefined') _BOOKING_CURVE_CACHE = {}; if (typeof _FORECAST_CACHE !== 'undefined') _FORECAST_CACHE = {}; if (typeof _FCST_DAY_IDX !== 'undefined') _FCST_DAY_IDX = {}; if (typeof _FCST_GROWTH !== 'undefined') _FCST_GROWTH = {}; if (typeof _FCST_SURV !== 'undefined') _FCST_SURV = {}; if (typeof _LAST_SOLD_CACHE !== 'undefined') _LAST_SOLD_CACHE = {}; if (typeof _DATA_LAST_BOOK !== 'undefined') _DATA_LAST_BOOK = null; if (typeof _CAP_HORIZON_CACHE !== 'undefined') _CAP_HORIZON_CACHE = {}; if (typeof _NR_DISCOUNT_CACHE !== 'undefined') _NR_DISCOUNT_CACHE = {}; if (typeof _MK_MEASURED_CACHE !== 'undefined') _MK_MEASURED_CACHE = {}; }
 /* ============================================================
    computeRMESPriceMap(sel, startYmd, rangeDays)
    ============================================================
@@ -5744,6 +5744,64 @@ function rmesNonRefMeasured(structKey){
     }
   } catch(e){}
   _NR_DISCOUNT_CACHE[structKey] = out;
+  return out;
+}
+/* MARKUP MISURATO DAI DATI.
+   Metodo: per ogni vendita OTA cerco la vendita DIRETTA piu' vicina nel tempo
+   sulla stessa notte e stessa camera (max 7 giorni di distanza, stesso tipo di
+   tariffa) e confronto i due prezzi LORDI. La differenza e' il ricarico che il
+   canale ha davvero applicato.
+   Serve perche' un markup sbagliato falsa tutto a monte: il prezzo-Beddy si
+   ottiene dividendo il lordo per (1+markup), quindi un markup troppo alto fa
+   sembrare che si incassi meno di quanto si incassa. Misurato su Palazzo Alfani:
+   Expedia ha un ricarico reale dello 0,8% contro il 17% configurato, e quello
+   spiega da solo lo scarto fra Base Price e incassato su quel canale.
+   Come per lo sconto non rimborsabile, il motore continua a usare il valore
+   CONFIGURATO: questo e' solo un controllo. */
+const MK_PAIR_MAX_GAP = 7;
+const MK_MIN_PAIRS = 15;
+let _MK_MEASURED_CACHE = {};
+function rmesMarkupMeasured(structKey){
+  if (_MK_MEASURED_CACHE[structKey]) return _MK_MEASURED_CACHE[structKey];
+  const out = {};
+  try {
+    const cfg = CFG.structures[structKey];
+    const baseRT = cfg && cfg.baseRT;
+    const useIdx = !!(typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]);
+    const list = useIdx ? _BOOKINGS_BY_STRUCT[structKey] : BOOKINGS;
+    const byStay = {};
+    for (let i=0;i<list.length;i++){
+      const b = list[i];
+      if (b.cancelled || !b.stayYmds || !(b.revPerNight > 0)) continue;
+      if (!useIdx && cfg && b.struct !== cfg.key) continue;
+      if (baseRT && b.room !== baseRT) continue;
+      for (let j=0;j<b.stayYmds.length;j++) (byStay[b.stayYmds[j]] = byStay[b.stayYmds[j]] || []).push(b);
+    }
+    const byCh = {};
+    for (const k in byStay){
+      const a = byStay[k];
+      const dir = a.filter(x => String(x.canale) === 'Direct');
+      if (!dir.length) continue;
+      for (const x of a){
+        const ch = String(x.canale);
+        if (ch === 'Direct') continue;
+        let best = null, bd = 1e9;
+        for (const d of dir){
+          const g = Math.abs(Math.round((ymdToDate(d.bookYmd) - ymdToDate(x.bookYmd)) / 86400000));
+          if (g < bd){ bd = g; best = d; }
+        }
+        if (!best || bd > MK_PAIR_MAX_GAP) continue;
+        if (!!x.isNonRefundable !== !!best.isNonRefundable) continue;
+        if (!(best.revPerNight > 0)) continue;
+        (byCh[ch] = byCh[ch] || []).push(x.revPerNight / best.revPerNight - 1);
+      }
+    }
+    for (const ch in byCh){
+      const arr = byCh[ch].sort((p,q)=>p-q);
+      out[ch] = { markup: arr[Math.floor(arr.length/2)], n: arr.length, weak: arr.length < MK_MIN_PAIRS };
+    }
+  } catch(e){}
+  _MK_MEASURED_CACHE[structKey] = out;
   return out;
 }
 /* Valore USATO dal motore: quello configurato. Il misurato resta informativo. */
@@ -6688,14 +6746,24 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       // "Base strutturale" = il Base congelato + foundation override, MA NON l'override modale finale (fp_getOverride).
       // Su questo si calcola il target RMES "vero" che resta indipendente dalle decisioni dell'utente.
       let _basePure = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : basePrice;
-      /* L'ANCORA SULL'ULTIMO VENDUTO E' STATA RIMOSSA.
-         Serviva quando il RMES non sapeva leggere il pickup: portava dentro il
-         motore l'informazione "questa notte ha venduto a X", altrimenti persa.
-         Ora il pickup E' il motore e quella informazione entra dalla porta
-         principale, con piu' dettaglio (quante prenotazioni, quando, su quale
-         camera, a che prezzo, contro l'anno scorso). Tenerla avrebbe contato
-         due volte la stessa vendita: alzava il punto di partenza E generava il
-         segnale. La colonna "Last sold" resta, come informazione. */
+      /* ANCORA SULL'ULTIMO VENDUTO — solo se recentissima (7 giorni) e solo se
+         sulla CAMERA BASE, perche' il riferimento del RMES e' la flessibile
+         della base da caricare su Beddy. Una vendita di ieri e' l'evidenza piu'
+         fresca di cosa il mercato accetta su quella notte, e vale piu' di una
+         stima strutturale.
+         NOTA: la stessa vendita alimenta anche il segnale pickup, quindi entro i
+         7 giorni viene contata due volte (alza il punto di partenza e spinge).
+         La finestra corta limita l'effetto; se risultasse eccessivo basta
+         portare LAST_SOLD_ANCHOR_DAYS a 0 per disattivarla. */
+      let _anchorSold = null;
+      if (typeof lastSoldForStay === 'function' && LAST_SOLD_ANCHOR_DAYS > 0){
+        const _lsA = lastSoldForStay(sel, r.ymd);
+        if (_lsA && _lsA.price > 0 && _lsA.isBaseRT){
+          const _ageA = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(_lsA.bookYmd)) / 86400000);
+          if (_ageA >= 0 && _ageA <= LAST_SOLD_ANCHOR_DAYS) _anchorSold = _lsA.price;
+        }
+      }
+      if (_anchorSold != null) _basePure = _anchorSold;
       const _basePureValid = (_basePure != null && isFinite(_basePure) && _basePure > 0);
       for (const rt of _rtList){
         let baseRT = basePrice;  // default per baseRT (riferimento corrente)
@@ -6919,6 +6987,7 @@ function ensureUserProfile(){
     // se cancella: nessun profilo settato, riprova al prossimo boot
   }, 1500);
 }
+const LAST_SOLD_ANCHOR_DAYS = 7;   // 0 = ancora disattivata
 const NEWRMES_LAST_SUGGESTION_KEY = 'rmes_last_suggestion_v1';
 const NEWRMES_LAST_SUGGESTION_DATE_KEY = 'rmes_last_suggestion_date_v1';
 
@@ -7246,7 +7315,6 @@ function _rmesSuggestedForDay(structKey, ymdN, rt){
    =========================================================================== */
 /* Una vendita e' un segnale di mercato valido solo se recente: oltre questa
    soglia il prezzo non ancora piu' il suggerimento, resta solo informazione. */
-const LAST_SOLD_FRESH_DAYS = 21;
 let _LAST_SOLD_CACHE = {};
 function lastSoldIndex(structKey){
   if (_LAST_SOLD_CACHE[structKey]) return _LAST_SOLD_CACHE[structKey];
@@ -7254,26 +7322,20 @@ function lastSoldIndex(structKey){
   const out = {};
   if (!cfg){ _LAST_SOLD_CACHE[structKey] = out; return out; }
   const baseRT = cfg.baseRT;
-  const srKey = structKey + '|' + baseRT;
-  const useIdx = !!(_BOOKINGS_BY_SR && _BOOKINGS_BY_SR[srKey]);
-  const list = useIdx ? _BOOKINGS_BY_SR[srKey] : BOOKINGS;
+  // Indice per STRUTTURA, non per struttura+camera base: serve l'ultima vendita
+  // qualunque tipologia sia stata venduta.
+  const useIdx = !!(_BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[structKey]);
+  const list = useIdx ? _BOOKINGS_BY_STRUCT[structKey] : BOOKINGS;
   for (let i=0; i<list.length; i++){
     const b = list[i];
     if (b.cancelled || !b.stayYmds) continue;
-    if (!useIdx){
-      if (b.struct !== cfg.key) continue;
-      if (b.room !== baseRT) continue;
-    }
-    /* Il RMES suggerisce la tariffa FLESSIBILE della CAMERA BASE da caricare su
-       BEDDY. Una vendita non e' direttamente quel numero: va riportata in quello
-       spazio, altrimenti si ancora il suggerimento a una grandezza diversa.
-         camera base   → gia' filtrata sopra (b.room !== baseRT scartato)
-         prezzo-Beddy  → revPerNightCaricato, cioe' il lordo diviso il markup
-                          del canale: e' quanto era caricato per produrre quella
-                          vendita
-         flessibile    → se la vendita e' non rimborsabile e' entrata scontata,
-                          quindi il corrispondente flessibile e' piu' alto e va
-                          ricostruito dividendo per (1 - sconto misurato) */
+    if (!useIdx && b.struct !== cfg.key) continue;
+    /* Il prezzo va riportato in spazio BEDDY FLESSIBILE, altrimenti non e'
+       confrontabile con il suggerimento:
+         prezzo-Beddy → revPerNightCaricato, il lordo diviso il markup del canale
+         flessibile   → una vendita non rimborsabile e' entrata scontata, quindi
+                        il flessibile corrispondente e' piu' alto
+       La tipologia resta quella vera e viene mostrata in chiaro. */
     const priceGross = b.revPerNight;
     let price = b.revPerNightCaricato;           // prezzo-Beddy (netto markup canale)
     if (!(price > 0) || !isFinite(price)) continue;
@@ -7289,7 +7351,7 @@ function lastSoldIndex(structKey){
       // vince la prenotazione entrata piu' di recente; a parita', il prezzo piu' alto
       if (!cur || b.bookYmd > cur.bookYmd || (b.bookYmd === cur.bookYmd && price > cur.price)){
         out[k] = { price: price, priceGross: priceGross, bookYmd: b.bookYmd,
-                   canale: b.canale || '—', room: baseRT, notti: b.notti,
+                   canale: b.canale || '—', room: b.room, isBaseRT: (b.room === baseRT), notti: b.notti,
                    nonRefundable: !!b.isNonRefundable, nrAdj: nrAdj,
                    markup: b.channelMarkup || 0 };
       }
@@ -12135,6 +12197,7 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Price elasticity: if the price changes by X%, expected RN change in the opposite direction by X% × elasticity. Default 1.0 (ratio 1:1). E.g.: 0.5 = low elasticity, 1.5 = high elasticity."><b style="color:#a83b3b">Price elasticity</b>: <input type="number" id="fp-elasticity-input" min="0" max="3" step="0.1" style="width:60px;padding:6px 8px;border:1px solid #a83b3b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fdeef0"> :1</label>';
   h += '<button id="fp-elasticity-estimate" type="button" style="font-size:11px;padding:6px 10px;border:1px solid #a83b3b;border-radius:4px;background:#fff;color:#a83b3b;cursor:pointer;font-family:\'DM Sans\',sans-serif" title="Estimate elasticity from the last 24 months of history">📊 Estimate from data</button>';
   h += '<span style="font-size:11px;color:var(--ink-3);font-style:italic">Press "Recompute Base Price" below to apply</span>';
+  h += '<div id="fp-mk-measured" style="flex-basis:100%;font-size:11px;color:var(--ink-3);margin-top:2px"></div>';
   h += '</div></div>';
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓒ Compset competitor weights and offsets <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
@@ -12166,6 +12229,38 @@ function fp_renderFoundationConfigBox(structKey){
   }
   document.getElementById('fp-base-input').value = fp_getBasePrice(structKey);
   document.getElementById('fp-floor-input').value = fp_getFloor(structKey);
+  /* Markup CONFIGURATO contro quello che i dati mostrano. Un markup sbagliato
+     falsa tutto a monte: il prezzo-Beddy e' il lordo diviso (1+markup), quindi
+     se il ricarico vero e' meno di quello impostato, sembra che si incassi meno
+     di quanto si incassa e il Base Price appare sovrastimato. */
+  (function(){
+    const el = document.getElementById('fp-mk-measured');
+    if (!el || typeof rmesMarkupMeasured !== 'function') return;
+    const meas = rmesMarkupMeasured(structKey);
+    const conf = fp_getChannelMarkups(structKey);
+    const pick = (ch) => /booking/i.test(ch) ? conf.booking
+                       : (/expedia|hotels|orbitz/i.test(ch) ? conf.expedia
+                       : (/airbnb|vrbo/i.test(ch) ? conf.airbnb : null));
+    const parts = [];
+    for (const ch of Object.keys(meas).sort()){
+      const m = meas[ch];
+      const c = pick(ch);              // percentuale (13 = 13%)
+      const mv = m.markup * 100;
+      let tag = '', col = 'var(--ink-3)';
+      if (m.weak){ tag = ' \u26a0 few pairs'; }
+      else if (c != null && Math.abs(mv - c) > 3){ tag = ' \u26a0'; col = '#b0332f'; }
+      else if (c != null){ tag = ' \u2713'; col = '#2c7a4b'; }
+      parts.push('<span style="color:' + col + '" title="' + escapeHtml(
+          ch + ': measured ' + mv.toFixed(1) + '% on ' + m.n + ' close pairs against direct sales'
+          + (c != null ? ', configured ' + c + '%' : ', no configured value')
+          + '\nThe engine keeps using the configured value; this is a check.')
+        + '">' + escapeHtml(ch) + ' ' + mv.toFixed(0) + '%'
+        + (c != null ? '<span style="opacity:.6"> vs ' + c + '%</span>' : '') + tag + '</span>');
+    }
+    el.innerHTML = parts.length
+      ? ('Measured from your own bookings: ' + parts.join(' &nbsp;\u00b7&nbsp; '))
+      : '';
+  })();
   // Accanto al floor annuale: il p15 storico mese per mese, per vedere quando
   // e' lui a comandare. Il floor effettivo e' sempre il piu' alto dei due.
   (function(){
@@ -13014,6 +13109,22 @@ function renderSellStrategy(sel){
   const _rmesGroupCols = (_rtFilter
     ? 1
     : 1 + (_showAllRT ? _nonBaseRTs.length : 0));
+  /* Colonne dei SUPPLEMENTI: una per ogni tipologia diversa dalla base, dentro
+     il gruppo RMES e prima di Min stay. Rende esplicito che il prezzo suggerito
+     e' quello della camera base e le altre si ricavano aggiungendo uno scarto. */
+  const _baseRTKeyHdr = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
+  const _rtShortLabel = (rt) => {
+    const t = String(rt).replace(/^Camera\s+/i, '');
+    return t.length > 14 ? (t.slice(0, 13) + '\u2026') : t;
+  };
+  const _baseRTShort = _baseRTKeyHdr ? _rtShortLabel(_baseRTKeyHdr) : 'base';
+  const _suppRTs = (function(){
+    if (!_baseRTKeyHdr || typeof structRoomsFor !== 'function') return [];
+    try {
+      const inv = structRoomsFor(sel) || {};
+      return Object.keys(inv).filter(rt => rt !== _baseRTKeyHdr && rt !== 'Other');
+    } catch(e){ return []; }
+  })();
   let html = '<table class="data sell-table"><thead>'
     + '<tr class="sell-thead-groups">'
     + '<th rowspan="2">Date</th>'
@@ -13027,7 +13138,7 @@ function renderSellStrategy(sel){
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). Click 🖋 to override one day; ↺ to reset.">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
     + '<th rowspan="2" class="sell-grp sell-grp-sold" title="Last sold price — the rate of the most recent booking that covers this night, on the base room type, gross of OTA commission (Booking and Direct as they are; Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%). Blank = this night has never been sold on the base room type.">Last sold<br><span class="sell-th-sub">gross · base RT</span></th>'
-    + '<th colspan="2" class="sell-grp sell-grp-pricing" title="What the engine suggests for this date: price and minimum stay.">RMES</th>'
+    + '<th colspan="' + (2 + _suppRTs.length) + '" class="sell-grp sell-grp-pricing" title="What the engine suggests for this date. The price is for the base room type; the other columns are the supplement to add on top of it.">RMES</th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
     + '<th class="sell-grp-otb-sub" title="OTB to date · RN sold">RN</th>'
@@ -13040,7 +13151,10 @@ function renderSellStrategy(sel){
     + '<th class="sell-grp-stly-sub" title="STLY · ADR">ADR</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net RN a year ago. Click a cell for the new/cancelled detail.">Var RN</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of the net STLY pickup">Var ADR</th>'
-    + '<th class="sell-grp-rmes-today" title="Suggested price. Click the cell for the calculation detail. The \u2713 button accepts it as the active price.">Pricing<br><span class="sell-th-sub">price \u00b7 \u0394\u20ac \u00b7 \u2713</span></th>'
+    + '<th class="sell-grp-rmes-today" title="Suggested price for the BASE room type, to load on Beddy. Click the cell for the calculation detail. The \u2713 button accepts it as the active price.">Pricing<br><span class="sell-th-sub">' + escapeHtml(_baseRTShort) + ' \u00b7 \u2713</span></th>'
+    + _suppRTs.map(rt => '<th class="sell-grp-rmes-supp" title="' + escapeHtml(rt)
+        + ' \u2014 supplement to add to the base room price. Each room type has its own pickup signal, so this gap moves on its own.">'
+        + escapeHtml(_rtShortLabel(rt)) + '<br><span class="sell-th-sub">supplement</span></th>').join('')
     + '<th class="sell-grp-mlos" title="Suggested minimum stay for this date. 2 = hold a 2-night minimum, blank = no restriction.">Min stay<br><span class="sell-th-sub">nights</span></th>'
     + '</tr></thead><tbody>';
   let _rmesMapForAlignment = null;
@@ -13752,35 +13866,49 @@ function renderSellStrategy(sel){
         // Compute LAST UPDATE and RMES cells as "card" style (richiesta utente)
     // Cella "Last sold": ultimo prezzo realmente venduto per quella notte (lordo OTA).
     const _soldTdHtml = (function(){
+      /* ULTIMO VENDUTO — sempre l'ultima vendita di quella notte, qualunque sia
+         la sua eta'. Niente soglia dei 21 giorni: una vendita di sei mesi fa
+         resta un'informazione utile (a che prezzo quella notte ha venduto, su
+         quale camera, tramite quale canale) e la cella la mostra come le altre. */
       const ls = (typeof lastSoldForStay === 'function') ? lastSoldForStay(sel, r.ymd) : null;
-      const _refSrc = (typeof newrmesGetReferenceSource === 'function') ? newrmesGetReferenceSource(sel, r.ymd) : null;
-      // "recente" ora colora solo la cella: non e' piu' un'ancora di prezzo
-      const _isAnchor = (function(){
-        if (!ls) return false;
-        const a = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(ls.bookYmd)) / 86400000);
-        return a >= 0 && a <= LAST_SOLD_FRESH_DAYS;
-      })();
       if (!ls){
         return `<td class="cell-mono sell-sold-cell cell-flat" style="text-align:center" title="This night has never been sold on the base room type">—</td>`;
       }
       const _bs = String(ls.bookYmd);
       const _bd = _bs.slice(6,8) + '/' + _bs.slice(4,6) + '/' + _bs.slice(0,4);
-      const _ageD = Math.round((ymdToDate(r.ymd) - ymdToDate(ls.bookYmd)) / 86400000);
       const _age = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(ls.bookYmd)) / 86400000);
       const tip = `Last sold: ${fmtEUR(ls.price)} (gross of OTA commission)\n`
                 + `Booked on ${_bd} via ${ls.canale}${_age > 0 ? ' — ' + _age + ' days ago' : ''}\n`
-                + `Room type: ${ls.room}\n`
-                + `Booked ${_ageD} days before check-in`
-                + (_isAnchor
-                    ? `\n\nSold within the last ${LAST_SOLD_FRESH_DAYS} days.`
-                    : '')
-                + '\n\nShown for information: what this night actually sold for, so you can see it next to what the engine suggests. It does not set the starting price — the RMES always starts from the Base Price and the pickup signal already counts this sale.';
-      // Piu' vecchia e' la vendita, meno il prezzo dice del mercato di oggi.
-      const _dim = _isAnchor ? '' : (_age > 60 ? ';opacity:.55' : ';opacity:.75');
-      const _mark = _isAnchor ? '<span style="color:#2c7a4b;font-weight:700">\u2713</span> ' : '';
-      return `<td class="cell-mono sell-sold-cell${_isAnchor ? ' sold-anchor' : ''}" style="text-align:center${_dim}" title="${escapeHtml(tip)}">`
-           + `<div style="font-weight:700">${_mark}${fmtEUR(ls.price)}</div>`
-           + `<div style="font-size:9px;font-weight:400;opacity:.8;white-space:nowrap">${_bd.slice(0,5)} \u00b7 ${escapeHtml(String(ls.canale).slice(0,7))}</div></td>`;
+                + `Room type: ${ls.room}`;
+      // La tipologia va letta insieme al prezzo: una Suite a 400 e una base a 250
+      // non dicono la stessa cosa. Percio' e' lei ad accompagnare il numero.
+      const _rtShort = String(ls.room).length > 13 ? (String(ls.room).slice(0,12) + '\u2026') : String(ls.room);
+      return `<td class="cell-mono sell-sold-cell" style="text-align:center" title="${escapeHtml(tip)}">`
+           + `<div style="font-weight:700">${fmtEUR(ls.price)}</div>`
+           + `<div style="font-size:9px;font-weight:400;opacity:.8;white-space:nowrap">${_bd.slice(0,5)} \u00b7 `
+           + `<span style="${ls.isBaseRT ? '' : 'color:#7a4f1c;font-weight:600'}">${escapeHtml(_rtShort)}</span></div></td>`;
+    })();
+    /* Celle SUPPLEMENTO: quanto ogni altra tipologia costa in piu' (o in meno)
+       della camera base, in euro. Il motore calcola un segnale per ogni camera,
+       quindi lo scarto non e' fisso: si muove con il pickup di quella tipologia. */
+    const _suppTdHtml = (function(){
+      if (!_suppRTs.length) return '';
+      const mapEntry = (_rmesMapForAlignment && _rmesMapForAlignment[r.ymd]) ? _rmesMapForAlignment[r.ymd] : null;
+      const pr = mapEntry ? (mapEntry.pricesByRT || {}) : {};
+      const pBase = _baseRTKeyHdr ? pr[_baseRTKeyHdr] : null;
+      return _suppRTs.map(rt => {
+        const pv = pr[rt];
+        if (!(pBase > 0) || !(pv > 0)){
+          return '<td class="cell-mono sell-supp-cell cell-flat" style="text-align:center" title="'
+               + escapeHtml(rt + ' — no suggestion for this date') + '">·</td>';
+        }
+        const d = Math.round(pv - pBase);
+        const tip = rt + '\nSuggested price ' + fmtEUR(pv) + ' = base ' + fmtEUR(pBase)
+                  + ' ' + (d >= 0 ? '+ ' : '\u2212 ') + fmtEUR(Math.abs(d));
+        const col = d > 0 ? '#1e6b4a' : (d < 0 ? '#a83b3b' : '#999');
+        return '<td class="cell-mono sell-supp-cell" style="text-align:center;color:' + col + '" title="'
+             + escapeHtml(tip) + '">' + (d >= 0 ? '+' : '\u2212') + fmtEUR(Math.abs(d)) + '</td>';
+      }).join('');
     })();
     // Cella "Min stay": minimum stay consigliato per quella data.
     // 1 notte = nessuna restrizione → cella vuota, per non aggiungere rumore.
@@ -13901,32 +14029,8 @@ function renderSellStrategy(sel){
           ? (_diffPctVsRef > 0 ? '\nRMES suggests to RAISE the price ↑ ('+_pctTxt+')' : '\nRMES suggests to LOWER the price ↓ ('+_pctTxt+')')
           : '\nRMES is in line with your active price (±2%)';
         const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${dirHint}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
-        /* SUPPLEMENTI SUGGERITI PER LE ALTRE TIPOLOGIE.
-           Il motore calcola gia' un segnale per ogni camera: se il pickup e' entrato
-           sulla Suite, la Suite sale e la camera base no. Finora quel risultato
-           restava invisibile perche' la colonna mostra un numero solo.
-           Qui mostro lo SCARTO suggerito rispetto alla camera base, non il prezzo
-           finale: e' il modo in cui i prezzi vengono davvero caricati. */
-        let _suppTip = '';
-        try {
-          const pr = mapEntry.pricesByRT || {};
-          const pBase = pr[baseRTKey];
-          if (pBase > 0){
-            const rows = [];
-            for (const rt in pr){
-              if (rt === baseRTKey || !(pr[rt] > 0)) continue;
-              // Supplemento in EURO: e' cosi' che i prezzi vengono caricati.
-              const diff = Math.round(pr[rt] - pBase);
-              rows.push('  ' + rt + ': ' + (diff >= 0 ? '+' : '\u2212') + '\u20ac' + Math.abs(diff));
-            }
-            if (rows.length){
-              _suppTip = '\n\nSuggested supplement over ' + baseRTKey + ' (\u20ac' + Math.round(pBase) + '):\n'
-                       + rows.join('\n')
-                       + '\n(each room type has its own pickup signal: a booking on one of them'
-                       + '\ndoes not move the others)';
-            }
-          }
-        } catch(e){}
+        // I supplementi hanno ora una colonna ciascuno: fuori dal tooltip.
+        const _suppTip = '';
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip + _suppTip)}">${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
     /* Evidenzia la riga se su questa notte e' entrato pickup negli ultimi 3 giorni
@@ -13968,7 +14072,7 @@ function renderSellStrategy(sel){
       ${cellFoundation}
       ${_soldTdHtml}
       <!-- RMES: prezzo suggerito + minimum stay consigliato -->
-      ${_rmesTdHtml}${_mlosTdHtml}
+      ${_rmesTdHtml}${_suppTdHtml}${_mlosTdHtml}
     </tr>`;
   }
   const totDRev = T.pkRev;
@@ -14014,9 +14118,10 @@ function renderSellStrategy(sel){
     ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
     <!-- Base Price -->
     <td class="cell-flat" style="background:rgba(195,131,59,.06);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
-    <!-- Last sold + RMES -->
+    <!-- Last sold + RMES (prezzo, un supplemento per tipologia, min stay) -->
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
+    ${_suppRTs.map(() => '<td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">\u2014</td>').join('')}
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
   html += '</tbody></table>';
