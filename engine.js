@@ -5758,8 +5758,15 @@ function rmesNonRefMeasured(structKey){
    spiega da solo lo scarto fra Base Price e incassato su quel canale.
    Come per lo sconto non rimborsabile, il motore continua a usare il valore
    CONFIGURATO: questo e' solo un controllo. */
-const MK_PAIR_MAX_GAP = 7;
-const MK_MIN_PAIRS = 15;
+/* L'accoppiamento deve essere STRETTO. Con 7 giorni di tolleranza il prezzo
+   caricato fa in tempo a cambiare fra le due vendite, e la differenza misurata
+   non e' piu' solo il ricarico: Booking su Firenze e Alfani usciva all'8-9%
+   (contro il 13% configurato) e stringendo a 2 giorni torna a 12-14%, cioe' in
+   linea. I canali prenotano anche ad anticipi molto diversi (su Enis il diretto
+   media 15 giorni, gli OTA 33), quindi due vendite lontane nel tempo non
+   guardano lo stesso prezzo in vetrina. */
+const MK_PAIR_MAX_GAP = 2;
+const MK_MIN_PAIRS = 20;
 let _MK_MEASURED_CACHE = {};
 function rmesMarkupMeasured(structKey){
   if (_MK_MEASURED_CACHE[structKey]) return _MK_MEASURED_CACHE[structKey];
@@ -14049,26 +14056,28 @@ function renderSellStrategy(sel){
         const px = me && me.price;
         if (!(px > 0)) return null;
         const gap = px / ls.price - 1;
+        /* Si parla solo quando c'e' davvero qualcosa da dire. Oltre lo scarto,
+           servono due condizioni: la vendita dev'essere recente (oltre i 60
+           giorni non e' piu' un riferimento) e lo scarto dev'essere grosso.
+           Con la sola soglia del 30% uscivano commenti anche su vendite vecchie
+           mesi, che non aggiungono niente. */
+        const ageD = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(ls.bookYmd)) / 86400000);
+        if (ageD > 60) return null;
         if (Math.abs(gap) < 0.30) return null;
-        const age = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(ls.bookYmd)) / 86400000);
         const sg = me._sigDbg;
-        const pkN = sg && sg.A ? (sg.A.n || 0) : 0;
         const pkUp = sg && sg.A ? (sg.A.dev || 0) > 0.001 : false;
-        const mktGap = sg && sg.market ? sg.market.gap : null;
-        const pct = (gap >= 0 ? '+' : '\u2212') + Math.round(Math.abs(gap) * 100) + '%';
-        const stale = age > 90;
-        let txt, tone;
+        const mktHigh = sg && sg.market && sg.market.gap != null && sg.market.gap > 0.20;
+        const pct = Math.round(Math.abs(gap) * 100) + '%';
+        const sold = fmtEUR(ls.price);
+        /* Quattro casi, una frase ciascuno. Si segnala (tone warn) solo quando
+           c'e' una decisione da prendere; negli altri due il commento spiega
+           perche' lo scarto e' voluto e non chiede niente. */
         if (gap > 0){
-          if (pkUp) { txt = 'Asking ' + pct + ' over the last sale, but bookings are coming in \u2014 the market is following the higher price.'; tone = 'ok'; }
-          else if (pkN === 0 && !stale) { txt = 'Asking ' + pct + ' over what this night sold for ' + age + ' days ago, and nothing is booking. Worth a look.'; tone = 'warn'; }
-          else if (stale) { txt = 'Asking ' + pct + ' over a sale from ' + age + ' days ago \u2014 old enough that it says little about today.'; tone = 'info'; }
-          else { txt = 'Asking ' + pct + ' over the last sale, with little movement.'; tone = 'info'; }
-        } else {
-          if (mktGap != null && mktGap > 0.20) { txt = 'Suggesting ' + pct + ' below the last sale, but you are still above the market \u2014 the correction is deliberate.'; tone = 'info'; }
-          else if (stale) { txt = 'Suggesting ' + pct + ' below a sale from ' + age + ' days ago \u2014 that price may no longer be the reference.'; tone = 'info'; }
-          else { txt = 'Suggesting ' + pct + ' below what this night sold for ' + age + ' days ago. Worth a look before accepting.'; tone = 'warn'; }
+          if (pkUp) return { txt: 'Sold at ' + sold + ' ' + ageD + ' days ago. Asking ' + pct + ' more \u2014 and it is selling, so the higher price is working.', tone: 'ok', gap };
+          return { txt: 'Sold at ' + sold + ' ' + ageD + ' days ago. Asking ' + pct + ' more, with nothing booking since. Lower it, or accept it may stay empty.', tone: 'warn', gap };
         }
-        return { txt, tone, gap };
+        if (mktHigh) return { txt: 'Sold at ' + sold + ' ' + ageD + ' days ago. Suggesting ' + pct + ' less, but you are still above the market \u2014 this is the correction doing its job.', tone: 'info', gap };
+        return { txt: 'Sold at ' + sold + ' ' + ageD + ' days ago. Suggesting ' + pct + ' less, with no market reason. Check before accepting.', tone: 'warn', gap };
       } catch(e){ return null; }
     })();
 
@@ -18072,9 +18081,16 @@ function _renderGrowthNote(sel){
         + '. Recent months look weaker than they are, because their late bookings are missing, so the growth check is paused.';
   } else if (c.warn){
     tone = '#fdf0ef'; edge = '#e0b3b0';
+    /* Questo e' un SEGNALE, non un'istruzione. Applicare il ritmo degli ultimi
+       mesi a tutto l'anno peggiora la previsione: misurato sui mesi chiusi del
+       2026, Enis passerebbe da +6,8% a -17,8% di scarto e Alfani da -1,5% a
+       -15,3%. Il calo e' concentrato in una stagione, il fattore vale su dodici
+       mesi. Il testo lo dice, cosi nessuno cambia il numero per riflesso. */
     txt = 'The last ' + c.months.filter(m=>!m.incomplete).length + ' closed months ran <b>' + pct(c.recent - 1)
-        + '</b> versus last year, while the forecast is using a growth factor of <b>' + c.factor.toFixed(2) + '</b> ('
-        + pct(c.factor - 1) + '). If the change is here to stay, set the factor by hand.';
+        + '</b> versus last year, while the growth factor is <b>' + c.factor.toFixed(2) + '</b> ('
+        + pct(c.factor - 1) + '). <b>This is worth knowing, not a reason to change the factor</b>: a few weak months '
+        + 'are usually one season, while the factor covers twelve. Forcing the recent pace onto the whole year has '
+        + 'made the forecast worse every time it was tested. Change it by hand only if you know the shift is permanent.';
   } else {
     txt = 'Growth factor in use: <b>' + c.factor.toFixed(2) + '</b> (' + pct(c.factor - 1) + ')'
         + (c.recent != null ? ' \u00b7 last closed months: ' + pct(c.recent - 1) : '')
