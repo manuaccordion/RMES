@@ -14014,17 +14014,21 @@ function renderSellStrategy(sel){
       const baseRTK = (CFG.structures[sel] || {}).baseRT;
       if (!baseRTK) return '<td class="cell-mono sell-loaded-cell"></td>';
       const isoD = fp_isoDate(ymdToDate(r.ymd));
+      /* La precedenza dev'essere la STESSA del motore: vince la decisione piu'
+         recente fra override e accettazione, non l'override per principio.
+         Dando la precedenza fissa all'override, accettare un RMES su una data
+         gia' scritta a mano non si vedeva: la casella restava sul vecchio numero. */
       let cur = null, src = '';
       try {
-        const o = (typeof fp_getOverride === 'function') ? fp_getOverride(sel, isoD, baseRTK) : null;
-        if (o && o.price > 0){ cur = o.price; src = 'manual'; }
-      } catch(e){}
-      if (cur == null){
-        try {
-          const am = (typeof newrmesGetAcceptedMeta === 'function') ? newrmesGetAcceptedMeta(sel, r.ymd) : null;
+        const rs = (typeof newrmesGetReferenceSource === 'function') ? newrmesGetReferenceSource(sel, r.ymd) : null;
+        if (rs && rs.source === 'accepted'){
+          const am = newrmesGetAcceptedMeta(sel, r.ymd);
           if (am && am.price > 0){ cur = am.price; src = 'accepted'; }
-        } catch(e){}
-      }
+        } else if (rs && rs.source === 'override'){
+          const o = fp_getOverride(sel, isoD, baseRTK);
+          if (o && o.price > 0){ cur = o.price; src = 'manual'; }
+        }
+      } catch(e){}
       const tip = src === 'manual'   ? 'Loaded by hand. Clear the box to hand the date back to the engine.'
                 : src === 'accepted' ? 'Filled by accepting the RMES suggestion. Type over it to record a different price.'
                 : 'Nothing recorded yet: the engine decides this date. Type the price you loaded on Beddy, or accept the RMES suggestion.';
