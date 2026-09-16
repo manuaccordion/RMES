@@ -22545,7 +22545,9 @@ function _bigRenderPickupByChannel(sel, hoverIdx){
   }
   let maxV=1; for (const r of rows){ if(r.ty>maxV)maxV=r.ty; if(r.ly>maxV)maxV=r.ly; }
   if (rows.length===0){ host.innerHTML='<div style="text-align:center;color:var(--ink-3);font-size:12px;padding:26px">No pickup in this window</div>'; return; }
-  const W=760, H=160, padL=60, padR=72, padT=22, padB=30;
+  // padB allargato da 30 a 44 per fare posto alle due righe dell'ADR sotto il
+  // nome del canale: con 30 l'etichetta finiva fuori dal viewBox e spariva.
+  const W=760, H=174, padL=60, padR=72, padT=22, padB=44;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const n=rows.length, slot=plotW/n, yB=padT+plotH;
   const groupW=Math.min(slot*0.66, 88), barW=(groupW-4)/2;
@@ -22566,6 +22568,17 @@ function _bigRenderPickupByChannel(sel, hoverIdx){
     svg+=`<text x="${(xTy+barW/2).toFixed(1)}" y="${(yB-tyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${TY}">${_bigEurK(r.ty)}</text>`;
     svg+=`<text x="${(xLy+barW/2).toFixed(1)}" y="${(yB-lyH-3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="${LY}">${_bigEurK(r.ly)}</text>`;
     svg+=`<text x="${cx.toFixed(1)}" y="${(yB+14).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--ink-2)">${r.ch}</text>`;
+    /* ADR sotto il nome del canale: il ricavo da solo non dice se stiamo
+       vendendo piu' notti o a prezzo piu' alto, ed era leggibile solo passando
+       il mouse. Riga unica TY vs LY, nei colori delle barre. */
+    if (adrT != null || adrL != null){
+      svg+=`<text x="${cx.toFixed(1)}" y="${(yB+25).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700">`
+         + `<tspan fill="${TY}">${adrT!=null?('\u20ac'+Math.round(adrT)):'\u2014'}</tspan>`
+         + `<tspan fill="var(--ink-3)" font-weight="400"> \u00b7 </tspan>`
+         + `<tspan fill="${LY}">${adrL!=null?('\u20ac'+Math.round(adrL)):'\u2014'}</tspan>`
+         + `</text>`;
+      svg+=`<text x="${cx.toFixed(1)}" y="${(yB+34).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="var(--ink-3)">ADR</text>`;
+    }
   });
   svg+=`</svg>`;
   const leg=`<div style="display:flex;gap:18px;justify-content:center;font-size:11px;color:var(--ink-2);margin-top:2px;font-family:'DM Mono',monospace"><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${TY};border-radius:2px;display:inline-block"></span>This year</span><span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;background:${LY};border-radius:2px;display:inline-block"></span>LY (same window)</span></div>`;
