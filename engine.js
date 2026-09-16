@@ -5811,6 +5811,39 @@ function rmesMarkupMeasured(structKey){
   _MK_MEASURED_CACHE[structKey] = out;
   return out;
 }
+/* SCOSTAMENTO SISTEMATICO FRA QUELLO CHE CARICHI E LA STIMA STRUTTURALE.
+   Una data fuori linea e' una decisione; dieci date fuori linea nella stessa
+   direzione sono un Base Price tarato male. La differenza conta, perche' si
+   correggono in modi diversi: la prima con un override, il secondo con il
+   target growth. Il sistema guarda l'insieme e lo dice. */
+const LOADED_DRIFT_MIN_DATES = 8;
+const LOADED_DRIFT_TOL = 0.10;
+function rmesLoadedDrift(structKey, days){
+  const out = { n: 0, drift: null, warn: false, above: 0, below: 0 };
+  try {
+    const t0 = startOfDay(new Date(TODAY));
+    const N = days || 90;
+    const gaps = [];
+    for (let i=0; i<N; i++){
+      const k = ymd(addDays(t0, i));
+      const src = (typeof newrmesGetReferenceSource === 'function') ? newrmesGetReferenceSource(structKey, k) : null;
+      if (!src || src.source === 'base') continue;     // nessuna decisione presa
+      const ref = newrmesGetCurrentReference(structKey, k);
+      const bs  = newrmesGetEffectiveBase(structKey, k);
+      if (!(ref > 0) || !(bs > 0)) continue;
+      const g = ref / bs - 1;
+      gaps.push(g);
+      if (g > 0) out.above++; else if (g < 0) out.below++;
+    }
+    out.n = gaps.length;
+    if (gaps.length >= LOADED_DRIFT_MIN_DATES){
+      gaps.sort((a,b)=>a-b);
+      out.drift = gaps[Math.floor(gaps.length/2)];
+      out.warn = Math.abs(out.drift) > LOADED_DRIFT_TOL;
+    }
+  } catch(e){}
+  return out;
+}
 /* SUPPLEMENTI: configurato contro venduto.
    Il supplemento di una tipologia e' una decisione commerciale, ma se il mercato
    la vende a un differenziale molto diverso vale la pena accorgersene. Misura:
@@ -6837,7 +6870,24 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       const rmesDeltaByRT = {};      // delta RMES vs reference, in €
       // "Base strutturale" = il Base congelato + foundation override, MA NON l'override modale finale (fp_getOverride).
       // Su questo si calcola il target RMES "vero" che resta indipendente dalle decisioni dell'utente.
-      let _basePure = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : basePrice;
+      /* DA DOVE PARTE IL SUGGERIMENTO.
+         Dal prezzo che stai DAVVERO caricando: quello scritto nella casella
+         Loaded, o quello che hai accettato. Se non hai deciso nulla, dal Base
+         Price strutturale.
+         Prima partiva sempre dal Base puro, per evitare che accettare facesse
+         salire il target e accettare di nuovo lo facesse salire ancora. Quel
+         rischio apparteneva al vecchio segnale, che era sempre positivo: il
+         pickup di oggi e' simmetrico e diventa negativo appena le prenotazioni
+         si fermano, quindi il ciclo si chiude da solo sul mercato.
+         Resta un guinzaglio: il suggerimento non puo' allontanarsi dal Base
+         strutturale piu' di REF_CORRIDOR, cosi' un prezzo scritto per errore
+         non porta il motore fuori strada per sempre. */
+      const _baseStruct = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : basePrice;
+      let _basePure = _baseStruct;
+      {
+        const _ref = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, r.ymd) : null;
+        if (_ref != null && isFinite(_ref) && _ref > 0) _basePure = _ref;
+      }
       /* ANCORA SULL'ULTIMO VENDUTO — solo se recentissima (7 giorni) e solo se
          sulla CAMERA BASE, perche' il riferimento del RMES e' la flessibile
          della base da caricare su Beddy. Una vendita di ieri e' l'evidenza piu'
@@ -6890,8 +6940,19 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           // Cap ±20% RIMOSSO. Solo Floor.
           let _atCapB = null;
           const _flo = _floorFor(r.ymd);
-          if (_priceOnBase < _flo){ _priceOnBase = _flo; _atCapB = 'floor'; }
-          rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB };
+          /* Guinzaglio sul Base strutturale: il suggerimento segue il prezzo che
+             carichi, ma non puo' staccarsi dalla stima strutturale oltre il
+             corridoio. Senza, un valore digitato per sbaglio resterebbe il
+             punto di partenza per sempre. */
+          if (_baseStruct > 0){
+            const _lo = _baseStruct * (1 - REF_CORRIDOR), _hi = _baseStruct * (1 + REF_CORRIDOR);
+            if (_priceOnBase > _hi){ _priceOnBase = _hi; _atCapB = 'corridor'; }
+            else if (_priceOnBase < _lo){ _priceOnBase = _lo; _atCapB = 'corridor'; }
+          }
+          const _flo2 = _flo;
+          if (_priceOnBase < _flo2){ _priceOnBase = _flo2; _atCapB = 'floor'; }
+          rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB,
+                                       baseStruct: _baseStruct, refUsed: _basePure };
         } else {
           rmesTargetOnBaseByRT[rt] = { price: priceSuggested, atCap: null };
         }
@@ -6950,6 +7011,11 @@ const FP_TARGET_GROWTH_KEY = 'rmes_target_growth_v1';
 const FP_FLOOR_KEY = 'rmes_floor_v1';
 /* Sotto questo numero di osservazioni il p15 non fa testo e vale solo il floor annuale. */
 const FP_FLOOR_HIST_MIN_OBS = 8;
+/* Quanto il suggerimento puo' allontanarsi dal Base Price strutturale quando
+   parte dal prezzo che hai caricato. Largo abbastanza da non litigare con le
+   tue decisioni, stretto abbastanza da riprendere il motore se il prezzo di
+   partenza e' sbagliato. */
+const REF_CORRIDOR = 0.40;
 /* IL FLOOR SI RIFERISCE ALLA CAMERA PIU' ECONOMICA.
    "Floor 150" vuol dire: la tariffa FLESSIBILE della camera piu' economica della
    struttura non scende sotto 150. Non e' la stessa cosa del prezzo della camera
@@ -13302,6 +13368,25 @@ function renderSellStrategy(sel){
      date che si sono mosse di recente. Diverso dal marker ▲▼ accanto alla data,
      che confronta 7 giorni con lo stesso periodo dell'anno scorso: qui interessa
      solo "su questa notte e' entrato qualcosa in questi tre giorni". */
+  /* Avviso sullo scostamento sistematico: sta in cima alla tabella perche'
+     riguarda l'insieme delle date, non una riga. */
+  (function(){
+    const host = document.getElementById('sell-loaded-drift');
+    if (!host) return;
+    if (typeof rmesLoadedDrift !== 'function' || (typeof isAggSel === 'function' && isAggSel(sel))){ host.innerHTML=''; return; }
+    const d = rmesLoadedDrift(sel, 90);
+    if (!d.warn){ host.innerHTML = ''; return; }
+    const pc = Math.round(Math.abs(d.drift) * 100);
+    const dir = d.drift > 0 ? 'above' : 'below';
+    host.innerHTML = '<div style="padding:8px 12px;background:#fdf6ec;border:1px solid #e8c89a;border-radius:6px;'
+      + 'font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-bottom:8px">'
+      + 'Across the next 90 days you are pricing <b>' + pc + '% ' + dir + '</b> the structural estimate on <b>'
+      + d.n + '</b> dates you have decided. '
+      + 'A single date out of line is a decision; a whole stretch in the same direction usually means the Base Price itself is set too '
+      + (d.drift > 0 ? 'low' : 'high') + ' for this property. '
+      + '<b>Raising the target growth</b> fixes it once, instead of overriding date by date.'
+      + '</div>';
+  })();
   const _pk3map = {};
   {
     const keys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
@@ -14202,8 +14287,29 @@ function renderSellStrategy(sel){
                       + fq.lyOtb + (fq.lyOtb === 1 ? ' room was' : ' rooms were') + ' already sold.'
                       + '\nThe date is too far out for the engine to act, so the price will not move on its own \u2014 but the quiet is not normal here. Worth checking the rate and the restrictions.' };
         }
+        /* IL MOTORE MANTIENE LA SUA OPINIONE.
+           Ora che il suggerimento parte dal prezzo che carichi, senza questo il
+           motore ti seguirebbe sempre: carichi 171 e propone 179, carichi 281 e
+           propone 294, senza mai dire che secondo lui quella notte vale 244.
+           Qui recupera la voce: confronta il tuo prezzo con la stima
+           strutturale e lo dice quando sono lontani, senza imporre nulla. */
+        const baseRTK0 = (CFG.structures[sel] || {}).baseRT;
+        const meS = _rmesMapForAlignment && _rmesMapForAlignment[r.ymd];
+        const tS = meS && meS.rmesTargetOnBaseByRT && meS.rmesTargetOnBaseByRT[baseRTK0];
+        if (tS && tS.baseStruct > 0 && tS.refUsed > 0 && Math.abs(tS.refUsed - tS.baseStruct) / tS.baseStruct > 0.20){
+          const g = tS.refUsed / tS.baseStruct - 1;
+          const sgS = meS._sigDbg;
+          const pkSays = sgS && sgS.A ? (sgS.A.dev || 0) : 0;
+          const agree = (g > 0 && pkSays > 0.001) || (g < 0 && pkSays < -0.001);
+          const head = 'You are loading ' + fmtEUR(tS.refUsed) + ' against a structural estimate of '
+                     + fmtEUR(tS.baseStruct) + ' \u2014 ' + Math.round(Math.abs(g)*100) + '% '
+                     + (g > 0 ? 'above' : 'below') + '.';
+          if (agree) return { tone: 'info', txt: head + '\nThe pickup points the same way, so your price and the engine are not really in disagreement.' };
+          return { tone: 'warn', txt: head + '\nNothing in the pickup or the market says this date should be '
+                   + (g > 0 ? 'that strong' : 'that weak') + '. If this is deliberate, fine \u2014 otherwise the structural estimate is the safer starting point.' };
+        }
         const ls = (typeof lastSoldForStay === 'function') ? lastSoldForStay(sel, r.ymd) : null;
-        const baseRTK = (CFG.structures[sel] || {}).baseRT;
+        const baseRTK = baseRTK0;
         if (!ls || !(ls.price > 0) || ls.room !== baseRTK) return null;
         const me = _rmesMapForAlignment && _rmesMapForAlignment[r.ymd];
         if (!me) return null;
@@ -14244,7 +14350,11 @@ function renderSellStrategy(sel){
       } catch(e){ return null; }
     })();
 
-        const _vTip = _verdict ? ('\n\n' + (/last year/.test(_verdict.txt) ? 'VERSUS LAST YEAR' : 'VERSUS THE LAST SALE') + '\n' + _verdict.txt) : '';
+        const _vHead = _verdict
+          ? (/structural estimate/.test(_verdict.txt) ? 'VERSUS THE STRUCTURAL ESTIMATE'
+            : (/last year/.test(_verdict.txt) ? 'VERSUS LAST YEAR' : 'VERSUS THE LAST SALE'))
+          : '';
+        const _vTip = _verdict ? ('\n\n' + _vHead + '\n' + _verdict.txt) : '';
         const _vMark = (_verdict && _verdict.tone === 'warn')
           ? '<span style="color:#b0332f;font-weight:700">\u00b7</span>' : '';
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip + _suppTip + _vTip)}">${_vMark}${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
