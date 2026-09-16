@@ -11566,18 +11566,6 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       rmesSection += '<div style="font-size:20px;font-weight:700;color:'+fpPriceCol+';font-family:\'DM Mono\',monospace">' + fmt(fpPriceSource) + '</div>';
       rmesSection += '</div>';
       rmesSection += '</div>';
-      const factors = [
-        {key:'occ_mult',   naKey:'occ',   code:'A', name:'Daily Pickup',     color:'#3b6b9a', desc:'recent bookings (window "1d" = yesterday + today, fallback "7d" = today and 7 previous days) for this stay-date × fill rate scale. Never negative.'},
-        {key:'pace_mult',  naKey:'pace',  code:'B', name:'Pace Trend',       color:'#8e5fa8', desc:'booking pace of the last 7 days for the stay month vs the same 7 days last year. Fallbacks: aggregate cross-property → annual property → neutralized.'},
-        {key:'comp_mult',  naKey:'comp',  code:'C', name:'Online Pricing',   color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)'},
-        {key:'air_mult',   naKey:'air',   code:'D', name:'Demand (Expedia)', color:'#a83b3b', desc:'Expedia searches vs month median'},
-        {key:'mkt_mult',   naKey:'mkt',   code:'E', name:'AirDNA Market',    color:'#c4823b', desc:'AirDNA Booked Listings vs MY OCC on the same day. Headroom signal: market more booked than me = raise; my OCC ahead of market = no push.'}
-      ];
-      const naReasons = mults._naReasons || {};
-      const dbg = mults._debug || {};
-      const _fn = (v, d) => (v == null || !isFinite(v)) ? '—' : (Math.round(v * Math.pow(10, d||0)) / Math.pow(10, d||0)).toFixed(d||0);
-      const _fpct = (v, d) => (v == null || !isFinite(v)) ? '—' : ((v >= 0 ? '+' : '') + (v * 100).toFixed(d||1) + '%');
-      const _fmt2 = (v) => (v == null || !isFinite(v)) ? '—' : '€' + v.toFixed(0);
       /* ===== TABELLA SEGNALI — rispecchia il motore attuale =====
          Niente piu' cinque fattori con i pesi: il pickup muove il prezzo, mercato
          e AirDNA possono solo trattenerlo. Ogni riga dice cosa ha fatto e perche'. */
@@ -12629,91 +12617,6 @@ try {
 /* Compact per-factor calculation note (same data & logic as the PC "Calculation detail").
    Used by the Pricing Console info popovers so both stay in sync.
    code: 'A'|'B'|'C'|'D'|'E' · mults: multsByRT[baseRT] · structKey: property key */
-function rmesFactorNote(code, mults, structKey){
-  if (!mults) return '';
-  var dbg = mults._debug || {};
-  var naR = mults._naReasons || {};
-  function fpct(v,d){ if(v==null||!isFinite(v)) return '\u2014'; return (v>=0?'+':'')+(v*100).toFixed(d==null?1:d)+'%'; }
-  function eu(v){ return (v==null||!isFinite(v)) ? '\u2014' : '\u20ac'+Math.round(v); }
-  function L(txt){ return '<div class="fn-l">'+txt+'</div>'; }
-  function How(txt){ return '<div class="fn-how">'+txt+'</div>'; }
-  function Fin(txt){ return '<div class="fn-fin">'+txt+'</div>'; }
-  var h='';
-  if (code === 'A'){
-    h += How('Fires only when new bookings came in for this stay-date. <b>Primary window</b>: yesterday+today. If zero, <b>fallback</b>: today + previous 7 days. Still zero \u2192 no signal. The % then depends on the fill rate. Never negative.');
-    var pk = dbg.pickupDbg || {};
-    var rn = pk.curRn || dbg.rnCur || 0, cap = pk.cap || dbg.capCur || 0;
-    var fill = cap>0 ? rn/cap : 0;
-    var src = pk.source || 'no_recent_pickup', cnt = pk.pickupCount || 0;
-    var recent;
-    if (src === 'recent_1g') recent = '<b>'+cnt+' booking(s)</b> in the primary window (yesterday+today)';
-    else if (src === 'recent_7g') recent = '<b>'+cnt+' booking(s)</b> in the fallback window (8 days) \u00b7 none in yesterday+today';
-    else if (src === 'no_capacity') recent = '\u2014 (no capacity data)';
-    else recent = '<b>0 bookings</b> in the fallback window (8 days) \u2192 stays at 0%';
-    h += L('Recent pickup: '+recent);
-    h += L('On the books: <b>'+rn+' RN</b> on <b>'+cap+' rooms</b> \u00b7 fill rate <b>'+(fill*100).toFixed(1)+'%</b>');
-    var band = '\u2014';
-    if (src === 'no_recent_pickup') band = 'No signal \u2192 +0%';
-    else if (src === 'no_capacity') band = '\u2014 (no capacity)';
-    else {
-      var thr = (typeof _rmesPickupGet === 'function') ? _rmesPickupGet(structKey)
-              : [{upTo:0.20,dev:0},{upTo:0.50,dev:0.05},{upTo:0.70,dev:0.10},{upTo:0.90,dev:0.15},{upTo:1.00,dev:0.20}];
-      for (var i=0;i<thr.length;i++){
-        var t=thr[i], prev=(i===0)?0:thr[i-1].upTo;
-        if (fill <= t.upTo + 0.0001){
-          var lbl = (i===0) ? ('Fill \u2264'+Math.round(t.upTo*100)+'%')
-                  : (i===thr.length-1) ? ('Fill >'+Math.round(prev*100)+'%')
-                  : ('Fill '+(Math.round(prev*100)+1)+'\u2013'+Math.round(t.upTo*100)+'%');
-          band = lbl+' \u2192 '+((t.dev||0)>=0?'+':'')+Math.round((t.dev||0)*100)+'%';
-          break;
-        }
-      }
-    }
-    h += L('Threshold matched: <b>'+band+'</b>');
-    h += Fin('Applied dev: <b>'+fpct(mults.occ_mult-1)+'</b>');
-  } else if (code === 'B'){
-    h += How('How fast this stay-month is booking vs the same <b>7 days</b> last year. Only the last week counts, so the factor follows current momentum. Above 1 = faster than LY \u2192 push up; below 1 \u2192 push down.');
-    var pi = dbg.paceInfo || {};
-    if (pi.pickupCur != null && pi.pickupStly != null){
-      h += L('Pace last 7 days: <b>'+(+pi.pickupCur).toFixed(1)+' RN</b> vs <b>'+(+pi.pickupStly).toFixed(1)+' RN</b> STLY');
-      var ratio = (pi.ratio != null) ? pi.ratio : (pi.pickupStly>0 ? pi.pickupCur/pi.pickupStly : null);
-      if (ratio != null) h += L('Pace ratio: <b>'+ratio.toFixed(3)+'</b> \u2192 raw dev <b>'+fpct(ratio-1)+'</b>');
-    }
-    var stMap = {mese_w4:'last-7-days pace (month)', fallback_aggregate:'aggregate fallback', fallback_annuale_struct:'annual fallback (property)', neutralizzato_no_dati:'neutralized \u2014 no data', fallback:'fallback'};
-    h += L('State: <b>'+((stMap[pi.state]) || pi.state || '\u2014')+'</b>');
-    h += Fin('Applied dev: <b>'+fpct(mults.pace_mult-1)+'</b>');
-  } else if (code === 'C'){
-    h += How('Formula: <b>\u2212(my_Beddy_eq / weighted_compset_Beddy_eq \u2212 1)</b>. Uses my <b>real Expedia price</b> and the <b>weighted Expedia compset</b> (weights only, <b>no</b> offset). Priced above the market \u2192 push down; below \u2192 push up.');
-    h += L('My Expedia price: <b>'+eu(dbg.myExpedia)+'</b> \u2192 Beddy-eq <b>'+eu(dbg.myBeddy)+'</b>');
-    h += L('Weighted compset (Beddy-eq): <b>'+eu(dbg.compsetBeddy)+'</b>');
-    if (dbg.myBeddy != null && dbg.compsetBeddy != null && dbg.compsetBeddy > 0){
-      var r = dbg.myBeddy / dbg.compsetBeddy;
-      h += L('My/compset ratio: <b>'+r.toFixed(3)+'</b> \u2192 raw dev <b>'+fpct(-(r-1))+'</b>');
-    }
-    h += Fin('Applied dev (clamp \u00b150%): <b>'+fpct(mults.comp_mult-1)+'</b>');
-  } else if (code === 'D'){
-    h += How('Formula: <b>(searches \u2212 month median) / month median</b>. More Expedia searches than usual for this date = stronger demand. Muted on event dates (the Event Factor already prices it).');
-    h += L('Expedia searches today: <b>'+(dbg.searchCur != null ? dbg.searchCur.toLocaleString('en-GB') : '\u2014')+'</b>');
-    h += L('Month median: <b>'+(dbg.searchP50Mo != null ? Math.round(dbg.searchP50Mo).toLocaleString('en-GB') : '\u2014')+'</b>');
-    if (dbg.searchDev != null) h += L('Raw dev: <b>'+fpct(dbg.searchDev)+'</b>');
-    h += Fin('Applied dev (clamp \u00b150%): <b>'+fpct(mults.air_mult-1)+'</b>');
-  } else if (code === 'E'){
-    h += How('Formula: <b>(market_idx \u2212 my_OCC) \u00d7 0.80</b> with a <b>\u00b15% deadband</b>. Market fuller than me \u2192 headroom to raise; me fuller than the market \u2192 no extra push.');
-    var ml = (dbg.airdnaListings != null) ? dbg.airdnaListings : null;
-    var mo = (dbg.occCur != null) ? dbg.occCur : null;
-    h += L('Market booked: '+(ml!=null ? ('<b>'+(ml*100).toFixed(1)+'%</b> ('+Math.round(ml*2948).toLocaleString('en-GB')+' / 2,948 listings)') : '<b>\u2014</b> (no AirDNA data)'));
-    if (mo != null) h += L('My OCC (OTB): <b>'+(mo*100).toFixed(1)+'%</b>');
-    if (ml != null && mo != null){
-      var gap = ml - mo, within = Math.abs(gap) < 0.05;
-      h += L('Gap (market \u2212 me): <b>'+(gap>=0?'+':'')+(gap*100).toFixed(1)+'%</b>'+(within?' \u00b7 inside deadband \u2192 neutralized':''));
-      h += L('Raw dev (gap \u00d7 0.80): <b>'+fpct(within?0:gap*0.80)+'</b>');
-    }
-    h += Fin('Applied dev (clamp \u00b150%): <b>'+fpct(mults.mkt_mult-1)+'</b>');
-  }
-  var naKey = {A:'occ',B:'pace',C:'comp',D:'air',E:'mkt'}[code];
-  if (naKey && naR[naKey]) h += Fin('No signal today \u2192 weight redistributed to the other factors.');
-  return h;
-}
 
 /* Colore dell'occupazione per la cella Date della Sell Strategy.
    Colora SOLO il testo della data: rosso = poco venduto (spingi),
@@ -18618,58 +18521,16 @@ function renderRMESConfigTab(){
     };
   }
 }
-/* === ① PESI === */
+/* Il pannello dei PESI e' stato rimosso: il RMES non usa piu' pesi.
+   Al suo posto una riga che rimanda al pannello dei segnali, dove ogni regola
+   si configura e si spegne per conto suo. */
 function _renderRmesWeightsBox(sel){
   const wrap = document.getElementById('rmes-tab-w-bar');
   if (!wrap) return;
-  const W = SELL_RMES_W_ALL[sel] || SELL_RMES_W_DEFAULT;
-  const factors = [
-    { key:'occ',    letter:'A', label:'Daily Pickup',       color:'#3b6b9a', desc:'recent pickup × fill rate (window "1d" = yesterday + today, fallback "7d")' },
-    { key:'pace',   letter:'B', label:'Pace Trend',         color:'#8e5fa8', desc:'last 7 days pace of stay month vs the same 7 days STLY (fallback: aggregate / annual / neutralized)' },
-    { key:'comp',   letter:'C', label:'Online Pricing',     color:'#1e6b4a', desc:'my Expedia vs Weighted Expedia Compset (inverted)' },
-    { key:'airdna', letter:'D', label:'Demand (Expedia)',   color:'#a83b3b', desc:'Expedia searches vs month median' },
-    { key:'mkt',    letter:'E', label:'AirDNA Market',      color:'#c4823b', desc:'AirDNA Booked Listings vs market average (booking density of Florence rentals)' },
-  ];
-  let html = '<div style="display:flex;gap:8px;flex-wrap:nowrap;align-items:stretch;overflow-x:auto;padding-bottom:4px">';
-  for (const f of factors){
-    html += _wcard(f, W);
-  }
-  html += '<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;justify-content:center;padding:0 10px"><div style="font-size:10px;color:var(--ink-3);font-weight:700;letter-spacing:.04em;text-transform:uppercase">Total</div><div id="rmes-tab-w-sum" style="padding:6px 14px;border:1px solid var(--line);border-radius:6px;background:#fff;font-family:\'DM Mono\',monospace;font-weight:700;font-size:14px;text-align:center">Σ —</div></div>';
-  html += '</div>';
-  wrap.innerHTML = html;
-  wrap.querySelectorAll('.rmes-w-input').forEach(inp => {
-    inp.addEventListener('input', () => {
-      _rmesTabSyncWeights(sel);
-      _rmesTabMarkDirty();  // segna che ci sono modifiche da applicare
-    });
-  });
-  _rmesTabSyncWeights(sel);
-  const resetBtn = document.getElementById('rmes-tab-w-reset');
-  if (resetBtn && !resetBtn._wired){
-    resetBtn._wired = true;
-    resetBtn.onclick = () => {
-      if (!confirm(`Reset the weights of ${RMES_TAB_STRUCT} to 20% × 5 factors?`)) return;
-      SELL_RMES_W_ALL[RMES_TAB_STRUCT] = Object.assign({}, SELL_RMES_W_DEFAULT);
-      saveRmesWeights();
-      _renderRmesWeightsBox(RMES_TAB_STRUCT);
-      if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
-      _rmesTabClearDirty();
-    };
-  }
-  const resetBtnAll = document.getElementById('rmes-tab-w-reset-all');
-  if (resetBtnAll && !resetBtnAll._wired){
-    resetBtnAll._wired = true;
-    resetBtnAll.onclick = () => {
-      if (!confirm("Reset weights to 20% × 5 factors for ALL properties?")) return;
-      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
-        SELL_RMES_W_ALL[s] = Object.assign({}, SELL_RMES_W_DEFAULT);
-      }
-      saveRmesWeights();
-      _renderRmesWeightsBox(RMES_TAB_STRUCT);
-      if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined') renderSellStrategy(CURRENT_STRUCT);
-      _rmesTabClearDirty();
-    };
-  }
+  wrap.innerHTML = '<div style="padding:10px 14px;background:#f7f5ef;border:1px solid var(--line);border-radius:8px;font-size:12.5px;color:var(--ink-2);line-height:1.55">'
+    + '<b>No weights to tune any more.</b> The price is moved by your own pickup; the market and AirDNA can only hold a move back. '
+    + 'Each rule is configured &mdash; and can be switched off &mdash; in the <b>RMES signals</b> panel below.'
+    + '</div>';
 }
 let _RMES_TAB_DIRTY = false;
 function _rmesTabMarkDirty(){
@@ -18692,43 +18553,9 @@ function _rmesTabClearDirty(){
     btn.textContent = 'Apply changes (' + ((CFG.structures[RMES_TAB_STRUCT] && CFG.structures[RMES_TAB_STRUCT].label) || RMES_TAB_STRUCT) + ')';
   }
 }
-function _wcard(f, W){
-  const v = Math.round((W[f.key] || 0) * 100);
-  return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 8px;background:#fff;border:1px solid ${f.color}40;border-radius:6px;min-width:130px;flex:1 1 0;max-width:200px" title="${escapeHtml(f.desc)}">
-    <div style="display:flex;align-items:center;gap:4px;white-space:nowrap">
-      <span style="background:${f.color};color:#fff;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0">${f.letter}</span>
-      <span style="font-size:11px;font-weight:600;color:${f.color};overflow:hidden;text-overflow:ellipsis">${f.label}</span>
-    </div>
-    <input type="number" min="0" max="100" step="5" value="${v}" data-rmesw="${f.key}" class="rmes-w-input" style="width:50px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;font-family:'DM Mono',monospace;font-size:13px;text-align:right;font-weight:700">
-  </div>`;
-}
-function _rmesTabSyncWeights(sel){
-  const inputs = document.querySelectorAll('.rmes-w-input');
-  let sum = 0;
-  inputs.forEach(inp => {
-    const v = Math.max(0, Math.min(100, parseInt(inp.value, 10) || 0));
-    sum += v;
-  });
-  const sumEl = document.getElementById('rmes-tab-w-sum');
-  if (sumEl){
-    sumEl.textContent = `Σ ${sum}%`;
-    sumEl.style.color = (sum === 100) ? '#4a7c59' : '#c4823b';
-  }
-}
-function _rmesTabApplyWeights(sel){
-  const inputs = document.querySelectorAll('.rmes-w-input');
-  const newW = Object.assign({}, SELL_RMES_W_DEFAULT);
-  inputs.forEach(inp => {
-    const key = inp.dataset.rmesw;
-    const v = Math.max(0, Math.min(100, parseInt(inp.value, 10) || 0));
-    newW[key] = v / 100;
-  });
-  SELL_RMES_W_ALL[sel] = newW;
-  saveRmesWeights();
-  if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === sel || isAggSel(CURRENT_STRUCT))){
-    renderSellStrategy(CURRENT_STRUCT);
-  }
-}
+/* I pesi non esistono piu': resta la funzione perche' e' ancora referenziata,
+   ma non ha nulla da applicare. */
+function _rmesTabApplyWeights(sel){ return; }
 /* === ②b Daily Pickup thresholds — Fase 2 === */
 function _renderRmesPickupThresholdsBox(sel){
   const wrap = document.getElementById('rmes-tab-pkthr-bar');
@@ -18840,15 +18667,7 @@ function _renderRmesThresholdsBox(sel){
 }
 function _rmesTabApplyAll(){
   const sel = RMES_TAB_STRUCT;
-  const wInputs = document.querySelectorAll('.rmes-w-input');
-  const newW = Object.assign({}, SELL_RMES_W_DEFAULT);
-  wInputs.forEach(inp => {
-    const key = inp.dataset.rmesw;
-    const v = Math.max(0, Math.min(100, parseInt(inp.value, 10) || 0));
-    newW[key] = v / 100;
-  });
-  SELL_RMES_W_ALL[sel] = newW;
-  saveRmesWeights();
+  // Niente pesi da applicare: il RMES non li usa piu'.
   const capInp = document.getElementById('rmes-tab-cap-input');
   if (capInp){
     let capPct = parseFloat(capInp.value);

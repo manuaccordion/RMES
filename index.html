@@ -2137,12 +2137,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- Box 1: WEIGHTS — blu -->
+    <!-- Box 1: HOW THE PRICE MOVES (the weights are gone) -->
     <div class="rmes-box rmes-box-blue">
       <div class="rmes-box-head">
-        <div class="rmes-box-icon">⚖️</div>
+        <div class="rmes-box-icon">◆</div>
         <div class="rmes-box-titles">
-          <h3>① Weights of the 5 RMES factors</h3>
+          <h3>① How the price moves</h3>
           <div class="rmes-box-sub" id="rmes-tab-w-sub">property: —</div>
         </div>
         <div class="rmes-box-actions">
@@ -2907,7 +2907,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Annual Anchor Price (fallback)</dt>
           <dd style="margin:2px 0 8px 18px">Single annual reference number per property (Firenze 220 · Condotta 280 · Alfani 270 · Enis 145). Used as guard-rail only when no LY booking data exists for the target month. Configurable in the RMES tab.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RMES delta</dt>
-          <dd style="margin:2px 0 8px 18px">Today's adjustment on top of the Base Price, computed from the 5 factors (Daily Pickup, Pace Trend, Online Pricing, Demand Expedia, AirDNA Market) + LMF + Event Factor. The final price is bounded ±20% from the Base Price, then clamped to the Floor Rate.</dd>
+          <dd style="margin:2px 0 8px 18px">Today's adjustment on top of the Base Price. <b>Your own pickup is the only thing that moves it</b> &mdash; the market and AirDNA can only hold a move back &mdash; and it works only inside the property's selling horizon. Up to <b>+10%</b> (up to <b>+20%</b> when bookings arrive on several different days), down to <b>&minus;5%</b>, never more than 5% away from yesterday's suggestion. LMF and the Event Factor apply after, and the Floor still holds.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">baseRT</dt>
           <dd style="margin:2px 0 8px 18px">The reference Room Type for each property (Camera Matrimoniale Deluxe for Firenze, Bilocale for Condotta, Classic for Alfani, Senape for Davids). Base Price is computed at the baseRT, other RTs inherit Base + monthly supplement.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">RT supplement</dt>

@@ -342,6 +342,9 @@ main{flex:1;padding:8px 16px 24px}
 .pkd-v{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;margin-left:8px}
 .pkd-track{height:7px;background:var(--org-tint);border-radius:5px;overflow:hidden}
 .pkd-fill{height:100%;border-radius:5px}
+.spill-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.spill-row.spill-sub{margin-top:5px;padding-left:10px}
+.spill.sub{font-size:12px;padding:5px 11px;opacity:.95}
 </style>
 </head>
 <body>
@@ -471,10 +474,47 @@ function addDaysYmd(n, days){ const d=ymdNumToDate(n); d.setDate(d.getDate()+day
 function isWeekendYmd(n){ const dow=ymdNumToDate(n).getDay(); return dow===5||dow===6; }
 function ymdNumToISO(n){ const s=String(n); return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8); }
 
+/* Menu a due livelli come sul desktop: prima la gestione, poi — solo per quelle
+   con piu' di una struttura — le singole proprieta' piu' l'aggregato.
+   Su schermo stretto e' anche piu' comodo: due file corte invece di sei pill. */
 function mobRenderStructPills(){
   const row = document.getElementById('struct-row');
-  row.innerHTML = MOB_STRUCTS.map(sk=>`<button class="spill ${sk===MOB.struct?'active':''}" data-struct="${sk}">${escapeHtml(mobLabel(sk))}</button>`).join('');
-  row.querySelectorAll('.spill').forEach(b=> b.addEventListener('click', ()=> mobSetStruct(b.dataset.struct)));
+  if (!row) return;
+  const GRP = (typeof STRUCT_GROUPS !== 'undefined') ? STRUCT_GROUPS : null;
+  if (!GRP){
+    row.innerHTML = MOB_STRUCTS.map(sk=>`<button class="spill ${sk===MOB.struct?'active':''}" data-struct="${sk}">${escapeHtml(mobLabel(sk))}</button>`).join('');
+    row.querySelectorAll('.spill').forEach(b=> b.addEventListener('click', ()=> mobSetStruct(b.dataset.struct)));
+    return;
+  }
+  const curGrp = (function(){
+    if (MOB.struct === 'both') return 'both';
+    if (GRP[MOB.struct]) return MOB.struct;
+    for (const g in GRP) if (GRP[g].members.indexOf(MOB.struct) >= 0) return g;
+    return 'both';
+  })();
+  let h = '<div class="spill-row">';
+  for (const g of ['blerina','francesca','enis']){
+    if (!GRP[g]) continue;
+    h += `<button class="spill ${curGrp===g?'active':''}" data-grp="${g}">${escapeHtml(GRP[g].label)}</button>`;
+  }
+  h += `<button class="spill ${curGrp==='both'?'active':''}" data-grp="both">All</button>`;
+  h += '</div>';
+  const grp = GRP[curGrp];
+  if (grp && grp.members.length > 1){
+    h += '<div class="spill-row spill-sub">';
+    h += `<button class="spill sub ${MOB.struct===curGrp?'active':''}" data-struct="${curGrp}">All ${escapeHtml(grp.label)}</button>`;
+    for (const sk of grp.members){
+      h += `<button class="spill sub ${MOB.struct===sk?'active':''}" data-struct="${sk}">${escapeHtml(mobLabel(sk))}</button>`;
+    }
+    h += '</div>';
+  }
+  row.innerHTML = h;
+  row.querySelectorAll('[data-grp]').forEach(b => b.addEventListener('click', () => {
+    const g = b.dataset.grp;
+    const target = (GRP[g] && GRP[g].members.length === 1) ? GRP[g].members[0] : g;
+    mobSetStruct(target);
+  }));
+  row.querySelectorAll('[data-struct]').forEach(b => b.addEventListener('click', () => mobSetStruct(b.dataset.struct)));
 }
 function mobSetStruct(sk){
   if(sk===MOB.struct) return;
