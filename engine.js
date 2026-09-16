@@ -14134,7 +14134,13 @@ function renderSellStrategy(sel){
         const baseRTK = (CFG.structures[sel] || {}).baseRT;
         if (!ls || !(ls.price > 0) || ls.room !== baseRTK) return null;
         const me = _rmesMapForAlignment && _rmesMapForAlignment[r.ymd];
-        const px = me && me.price;
+        if (!me) return null;
+        /* DEVE essere lo stesso numero che la cella mostra, cioe' il target sul
+           Base puro. Usare me.price dava un valore diverso e il commento parlava
+           di una percentuale che non tornava con i prezzi a schermo. */
+        const _tObj = me.rmesTargetOnBaseByRT && me.rmesTargetOnBaseByRT[baseRTK];
+        const px = (_tObj && isFinite(_tObj.price)) ? _tObj.price
+                 : (me.rmesSuggestedByRT ? me.rmesSuggestedByRT[baseRTK] : null);
         if (!(px > 0)) return null;
         const gap = px / ls.price - 1;
         /* Si parla solo quando c'e' davvero qualcosa da dire. Oltre lo scarto,
@@ -14149,16 +14155,20 @@ function renderSellStrategy(sel){
         const pkUp = sg && sg.A ? (sg.A.dev || 0) > 0.001 : false;
         const mktHigh = sg && sg.market && sg.market.gap != null && sg.market.gap > 0.20;
         const pct = Math.round(Math.abs(gap) * 100) + '%';
-        const sold = fmtEUR(ls.price);
-        /* Quattro casi, una frase ciascuno. Si segnala (tone warn) solo quando
-           c'e' una decisione da prendere; negli altri due il commento spiega
-           perche' lo scarto e' voluto e non chiede niente. */
+        /* La frase nomina SEMPRE i due prezzi e dice da dove viene la
+           percentuale, altrimenti non si capisce di cosa parli. E chiude con
+           un'azione concreta, non con un dilemma. */
+        const head = 'Suggested ' + fmtEUR(px) + ' against ' + fmtEUR(ls.price)
+                   + ' actually sold ' + ageD + (ageD === 1 ? ' day' : ' days') + ' ago'
+                   + ' \u2014 ' + pct + (gap > 0 ? ' higher' : ' lower') + '.';
         if (gap > 0){
-          if (pkUp) return { txt: 'Sold at ' + sold + ' ' + ageD + ' days ago. Asking ' + pct + ' more \u2014 and it is selling, so the higher price is working.', tone: 'ok', gap };
-          return { txt: 'Sold at ' + sold + ' ' + ageD + ' days ago. Asking ' + pct + ' more, with nothing booking since. Lower it, or accept it may stay empty.', tone: 'warn', gap };
+          if (pkUp) return { txt: head + '\nBookings are still coming in at this level, so the higher price is holding. Nothing to do.', tone: 'ok', gap };
+          return { txt: head + '\nNothing has booked since that sale. If you want the night sold, bring the price closer to ' + fmtEUR(ls.price)
+                        + '; if you would rather hold out for the higher rate, leave it and check again in a few days.', tone: 'warn', gap };
         }
-        if (mktHigh) return { txt: 'Sold at ' + sold + ' ' + ageD + ' days ago. Suggesting ' + pct + ' less, but you are still above the market \u2014 this is the correction doing its job.', tone: 'info', gap };
-        return { txt: 'Sold at ' + sold + ' ' + ageD + ' days ago. Suggesting ' + pct + ' less, with no market reason. Check before accepting.', tone: 'warn', gap };
+        if (mktHigh) return { txt: head + '\nYou are still above the compset even after the cut, so the engine is bringing you back into the market on purpose. Accepting is fine.', tone: 'info', gap };
+        return { txt: head + '\nNothing in the market justifies going below a price you already achieved. Consider overriding closer to ' + fmtEUR(ls.price)
+                      + ' instead of accepting.', tone: 'warn', gap };
       } catch(e){ return null; }
     })();
 
