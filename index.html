@@ -2126,22 +2126,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- Box 1: HOW THE PRICE MOVES (the weights are gone) -->
-    <div class="rmes-box rmes-box-blue">
-      <div class="rmes-box-head">
-        <div class="rmes-box-icon">◆</div>
-        <div class="rmes-box-titles">
-          <h3>① How the price moves</h3>
-          <div class="rmes-box-sub" id="rmes-tab-w-sub">property: —</div>
-        </div>
-        <div class="rmes-box-actions">
-        </div>
-      </div>
-      <div class="rmes-box-body">
-        <div id="rmes-tab-w-bar" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px"></div>
-      </div>
-    </div>
-
     <!-- Box 4: EVENT FACTOR — viola -->
     <div class="rmes-box rmes-box-purple">
       <div class="rmes-box-head">
@@ -2173,32 +2157,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- ============ DIAGNOSTICA MIX CANALE ============ -->
-    <div class="panel" style="margin-top:16px">
-      <div class="panel-head">
-        <div>
-          <h3>Channel mix &amp; price by channel</h3>
-          <div style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin-top:2px">
-            Here to check the two settings above, not as a report: the <b>markups</b> in Base Price and the
-            <b>non-refundable discount</b> in the signals. If direct and Booking are further apart than the markup
-            you configured, the markup is the thing to look at.
-          </div>
-          <div class="panel-sub" id="chmix-sub"></div>
-        </div>
-        <div id="chmix-filter" class="bw-mfilter"></div>
-      </div>
-      <div class="panel-body flush">
-        <div class="table-wrap"><table class="data" id="chmix-table"></table></div>
-      </div>
-    </div>
-
-<!-- Bottone APPLICA unico (pesi + soglie) sticky in basso -->
-    <div style="position:sticky;bottom:0;background:linear-gradient(0deg,var(--bg) 0%,var(--bg) 70%,transparent 100%);padding:16px 0 12px 0;margin-top:18px;z-index:10;border-top:1px solid var(--line)">
-      <div style="display:flex;align-items:center;gap:14px;justify-content:flex-end;padding:0 4px;flex-wrap:wrap">
-        <div style="font-size:11px;color:var(--ink-3);font-style:italic;line-height:1.4">Changes to weights and thresholds are <b>local</b>: they are saved and applied to the current property <b>only</b> when you click the button on the right. Switch property above to edit the others.</div>
-        <button id="rmes-tab-apply-all" disabled style="font-size:14px;padding:11px 26px;border:none;border-radius:8px;background:linear-gradient(135deg,#4a7c59,#3d7a4b);color:#fff;cursor:not-allowed;font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.03em;opacity:0.55;box-shadow:0 3px 10px rgba(74,124,89,.30)">✓ Apply changes</button>
-      </div>
-    </div>
   </section>
 
   <!-- ============ SECTION 10: AIRBNB ============ -->

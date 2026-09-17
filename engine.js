@@ -10009,108 +10009,6 @@ function fp_setChannelMarkup(kind, pct, structKey){
    Serve a capire dove il diretto e' davvero sottoprezzato e dove invece la
    differenza e' solo un campione troppo piccolo per dire qualcosa.
    =========================================================================== */
-const CHMIX_MIN_OBS = 4;      // sotto questo numero il dato per canale non fa testo
-let CHMIX_YEARS = null;       // null = ultimi 2 anni chiusi
-function _chmixMedian(a){ if(!a.length) return null; const x=[...a].sort((p,q)=>p-q); return x[Math.floor(x.length/2)]; }
-function aggChannelMix(sel, years){
-  const cfg = CFG.structures[sel];
-  if (!cfg) return null;
-  const RT = cfg.baseRT;
-  const yrs = years && years.length ? years : [TODAY.getFullYear()-2, TODAY.getFullYear()-1];
-  const months = [];
-  for (let m=1;m<=12;m++) months.push({ mo:m, byCh:{}, all:[] });
-  const useIdx = !!(typeof _BOOKINGS_BY_SR !== 'undefined' && _BOOKINGS_BY_SR && _BOOKINGS_BY_SR[sel+'|'+RT]);
-  const list = useIdx ? _BOOKINGS_BY_SR[sel+'|'+RT] : BOOKINGS;
-  for (let i=0;i<list.length;i++){
-    const b = list[i];
-    if (b.stato !== 'Confermate' || !b.stayYmds) continue;
-    if (!useIdx && (b.struct !== cfg.key || b.room !== RT)) continue;
-    for (let j=0;j<b.stayYmds.length;j++){
-      const k = b.stayYmds[j];
-      const y = Math.floor(k/10000), m = Math.floor(k/100)%100;
-      if (yrs.indexOf(y) < 0) continue;
-      const ch = b.canale || '—';
-      const M = months[m-1];
-      const price = (b.revPerNightCaricato != null) ? b.revPerNightCaricato : b.revPerNight;
-      (M.byCh[ch] = M.byCh[ch] || []).push(price);
-      M.all.push(price);
-      break;   // una prenotazione conta una volta per mese
-    }
-  }
-  const chSet = {};
-  for (const M of months) for (const c in M.byCh) chSet[c] = (chSet[c]||0) + M.byCh[c].length;
-  const channels = Object.keys(chSet).sort((a,b)=> chSet[b]-chSet[a]);
-  for (const M of months){
-    M.n = M.all.length;
-    M.median = _chmixMedian(M.all);
-    M.stats = {};
-    for (const c of channels){
-      const arr = M.byCh[c] || [];
-      M.stats[c] = { n: arr.length, share: M.n>0 ? arr.length/M.n : 0, median: arr.length>=CHMIX_MIN_OBS ? _chmixMedian(arr) : null };
-    }
-  }
-  return { sel, RT, years: yrs, channels, months, label: cfg.label };
-}
-function renderChannelMix(sel){
-  const host = document.getElementById('chmix-table');
-  if (!host) return;
-  if (isAggSel(sel)){
-    host.innerHTML = '';
-    const sub0 = document.getElementById('chmix-sub');
-    if (sub0) sub0.innerHTML = '<i>Select a single property to see its channel mix.</i>';
-    return;
-  }
-  const A = aggChannelMix(sel, CHMIX_YEARS);
-  if (!A){ host.innerHTML=''; return; }
-  const sub = document.getElementById('chmix-sub');
-  if (sub) sub.innerHTML = `Base room type <b>${escapeHtml(A.RT)}</b> · nights of ${A.years.join(' + ')} · prices are <b>Beddy-equivalent</b> (what you would load), median per channel. A channel with fewer than ${CHMIX_MIN_OBS} bookings in a month shows no price: the sample is too small to mean anything.`;
-  const DIR = 'Direct';
-  let head = `<thead><tr><th rowspan="2" style="text-align:left">Month</th><th rowspan="2">Obs</th><th rowspan="2">Median<br><span class="sell-th-sub">all channels</span></th>`;
-  for (const c of A.channels) head += `<th colspan="2" style="text-align:center;border-left:2px solid var(--line-2)">${escapeHtml(c)}</th>`;
-  head += `<th rowspan="2" title="Direct median vs Booking median, in Beddy-equivalent terms. Negative = your direct price sits below Booking's.">Direct<br><span class="sell-th-sub">vs Booking</span></th></tr><tr>`;
-  for (const c of A.channels) head += `<th style="border-left:2px solid var(--line-2)">share</th><th>median</th>`;
-  head += `</tr></thead>`;
-  let body = '';
-  for (const M of A.months){
-    if (!M.n) continue;
-    body += `<tr><td style="font-weight:600">${CFG.monthsITLong[M.mo-1]}</td>`
-         +  `<td class="cell-mono ${M.n<8?'cell-flat':''}">${M.n}</td>`
-         +  `<td class="cell-mono" style="font-weight:700">${M.median!=null?fmtEUR(M.median):'—'}</td>`;
-    for (const c of A.channels){
-      const st = M.stats[c];
-      const dom = st.share >= 0.70;
-      body += `<td class="cell-mono ${st.n?'':'cell-flat'}" style="border-left:2px solid var(--line-2)${dom?';background:rgba(196,131,59,.12);font-weight:700':''}"${dom?' title="This channel alone makes up '+Math.round(st.share*100)+'% of the month: the overall median is essentially this channel\'s median."':''}>${st.n?Math.round(st.share*100)+'%':'—'}</td>`
-           +  `<td class="cell-mono ${st.median==null?'cell-flat':''}"${st.n&&st.median==null?' title="Only '+st.n+' booking'+(st.n>1?'s':'')+' — too few to compute a meaningful median"':''}>${st.median!=null?fmtEUR(st.median):(st.n?'('+st.n+')':'—')}</td>`;
-    }
-    const mD = M.stats[DIR] ? M.stats[DIR].median : null;
-    const mB = M.stats['Booking'] ? M.stats['Booking'].median : null;
-    let gapTxt = '—', gapCls = 'cell-flat';
-    if (mD != null && mB != null){
-      const g = (mD/mB - 1) * 100;
-      gapTxt = (g>=0?'+':'') + Math.round(g) + '%';
-      gapCls = g >= 0 ? 'cell-pos' : 'cell-neg';
-    }
-    body += `<td class="cell-mono ${gapCls}" style="font-weight:700">${gapTxt}</td></tr>`;
-  }
-  host.innerHTML = head + '<tbody>' + body + '</tbody>';
-  // pill anni
-  const fh = document.getElementById('chmix-filter');
-  if (fh){
-    const yNow = TODAY.getFullYear();
-    const opts = [[yNow-2, yNow-1], [yNow-1], [yNow-2]];
-    fh.innerHTML = '<span class="bw-mlabel">Years:</span>' + opts.map(o=>{
-      const on = (CHMIX_YEARS===null && o.length===2) || (CHMIX_YEARS && CHMIX_YEARS.join()===o.join());
-      return `<span class="bw-mpill ${on?'active':''}" data-chy="${o.join(',')}">${o.join('+')}</span>`;
-    }).join('');
-    fh.querySelectorAll('.bw-mpill').forEach(el=>{
-      el.addEventListener('click', ()=>{
-        const v = el.dataset.chy.split(',').map(Number);
-        CHMIX_YEARS = (v.length===2) ? null : v;
-        renderChannelMix(CURRENT_STRUCT);
-      });
-    });
-  }
-}
 function fp_markupForChannel(canale, structKey){
   const c = (canale || '').toLowerCase();
   // Canale diretto = nessun markup: il prezzo che arriva e' gia' quello finale.
@@ -11902,11 +11800,6 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '</tbody></table>';
       }
       const multFinPct = (mults.multFinale - 1) * 100;
-      const multFinCol = mults.multFinale > 1.001 ? '#1e6b4a' : (mults.multFinale < 0.999 ? '#a83b3b' : '#666');
-      rmesSection += '<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#f5f5f5;border-radius:4px;margin-bottom:10px;font-size:12px">';
-      rmesSection += '<span style="color:#666;font-weight:600" title="Pickup moves the price; the market guard-rail and the AirDNA check can only hold it back. There are no weights.">Combined signal effect</span>';
-      rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+multFinCol+'">×'+mults.multFinale.toFixed(3)+' ('+(multFinPct>=0?'+':'')+multFinPct.toFixed(1)+'%)</span>';
-      rmesSection += '</div>';
       if (typeof fp_lmfLookup === 'function'){
         const _occCur = (dbg.occCur != null) ? dbg.occCur : 0;
         const _daysToArr = Math.max(0, Math.round((td.getTime() - new Date(TODAY).setHours(0,0,0,0)) / 86400000));
@@ -11953,6 +11846,11 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_promoCol+'">'+(_promoPct>=0?'+':'')+_promoPct.toFixed(0)+'% (\u00d7'+_promoBoostModal.toFixed(3)+')</span>';
         rmesSection += '</div>';
       }
+      const multFinCol = mults.multFinale > 1.001 ? '#1e6b4a' : (mults.multFinale < 0.999 ? '#a83b3b' : '#666');
+      rmesSection += '<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#f5f5f5;border-radius:4px;margin-bottom:10px;font-size:12px">';
+      rmesSection += '<span style="color:#666;font-weight:600" title="Pickup moves the price; the market guard-rail and the AirDNA check can only hold it back. There are no weights.">Combined signal effect</span>';
+      rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+multFinCol+'">×'+mults.multFinale.toFixed(3)+' ('+(multFinPct>=0?'+':'')+multFinPct.toFixed(1)+'%)</span>';
+      rmesSection += '</div>';
       {
         const _floor = (typeof fp_getFloor === 'function') ? fp_getFloor(structKey) : null;
         const _base = (typeof fp_getBasePrice === 'function') ? fp_getBasePrice(structKey) : null;
@@ -19281,7 +19179,6 @@ function renderRMESConfigTab(){
   if (typeof _renderRmesSpecialBox === 'function') _renderRmesSpecialBox();
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
-  if (typeof renderChannelMix === 'function'){ try { renderChannelMix(sel); } catch(e){ console.error('[chmix]', e); } }
   _rmesTabClearDirty();
   const applyAllBtn = document.getElementById('rmes-tab-apply-all');
   if (applyAllBtn && !applyAllBtn._wired){
