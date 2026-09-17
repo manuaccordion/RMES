@@ -18360,6 +18360,12 @@ function _renderRmesSignalsBox(sel){
   }
   const c = rmesSignalsCfg(sel);
   const nrM = (typeof rmesNonRefMeasured === 'function') ? rmesNonRefMeasured(sel) : { discount:null, n:0, weak:true };
+  /* Un campo con la sua spiegazione sotto: il nome tecnico da solo non dice
+     nulla a chi non ha scritto il motore. */
+  const fld = (label, input, help) =>
+    '<div><div style="display:flex;align-items:center;gap:7px;white-space:nowrap">'
+    + '<span style="font-weight:600">' + label + '</span>' + input + '</div>'
+    + '<div style="font-size:10.5px;color:var(--ink-3);line-height:1.45;margin-top:3px">' + help + '</div></div>';
   const num = (grp, key, val, min, max, step, suffix) =>
     `<input type="number" data-sg="${grp}.${key}" value="${val}" min="${min}" max="${max}" step="${step}"
       style="width:66px;padding:4px 7px;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;text-align:right;font-size:12.5px"> ${suffix||''}`;
@@ -18383,17 +18389,25 @@ function _renderRmesSignalsBox(sel){
     <div style="font-size:11.5px;color:var(--ink-2);line-height:1.5;margin:-2px 0 8px 0">
       Each booking is weighted by <b>when</b> it came in, <b>how close</b> its night is, and <b>at what price</b> &mdash;
       and it only counts on its own room type. One recent booking at full price is worth the full push.
-      <span style="color:var(--ink-3)">window = how far back to look \u00b7 spread = nights around the date \u00b7
-      half-life = when a booking is worth half \u00b7 continuity = different days needed to double the push.</span>
     </div>`,
-    `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
-      <label title="How far back to look for bookings. Tested 7 / 14 / adaptive on the backtest: 7 wins — with the rest of the engine sharper, a wider window just dilutes the signal.">window ${num('pickup','windowDays',c.pickup.windowDays,1,60,1,'days')}</label>
-      <label title="Different days on which something came in, needed to double the maximum push: 1 day gives +10%, this many or more gives +20%. Tells 'it sells every day' apart from 'it took three bookings all at once'.">continuity ${num('pickup','continuityDays',c.pickup.continuityDays,1,14,1,'days')}</label>
-      <label title="Nights around the date included in the count. Widening is the only way to get usable counts on 3-9 room properties.">spread ±${num('pickup','spreadNights',c.pickup.spreadNights,0,21,1,'nights')}</label>
-      <label title="Maximum push when the pickup is entirely on this room type and at full price">max push ${num('pickup','devFull',c.pickup.devFull,0,0.30,0.01,'')}</label>
-      <label title="Discount of the non-refundable rate as configured on Beddy. A non-refundable sale means the price was accepted at less than face value.">non-refund. ${num('pickup','nrDiscount',c.pickup.nrDiscount,0,0.4,0.01,'')}</label>
-      <label title="A booking made today says the price is accepted NOW; one from two weeks ago was about a different price. With a half-life of H days the weight halves every H days, so the signal fades instead of dropping off a cliff at the end of the window. 0 = off.">half-life ${num('pickup','halfLifeDays',c.pickup.halfLifeDays,0,30,1,'days')}</label>
-      <label title="A booking on the exact night says far more than one seven nights away. With a half-life of N nights the weight halves every N nights of distance. 0 = every night in the spread counts the same.">night half-life ${num('pickup','nightHalfLife',c.pickup.nightHalfLife,0,14,1,'nights')}</label>
+    /* Ogni campo con la sua spiegazione SOTTO, in chiaro. Prima erano tooltip:
+       per capire cosa fosse "half-life" bisognava indovinare di doverci passare
+       sopra col mouse, e nessuno lo fa. */
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px 18px;font-size:12px;color:var(--ink-2)">
+      ${fld('window', num('pickup','windowDays',c.pickup.windowDays,1,60,1,'days'),
+            'How many days back to look for bookings. Longer is not better: 14 days was tested and dilutes the signal.')}
+      ${fld('spread', num('pickup','spreadNights',c.pickup.spreadNights,0,21,1,'nights'),
+            'How many nights either side of the date to count. With 3 to 9 rooms a single night has too few bookings to read.')}
+      ${fld('booking half-life', num('pickup','halfLifeDays',c.pickup.halfLifeDays,0,30,1,'days'),
+            'After how many days a booking counts half. A sale from today says the price works now; one from two weeks ago was about a different price. 0 turns the fading off.')}
+      ${fld('night half-life', num('pickup','nightHalfLife',c.pickup.nightHalfLife,0,14,1,'nights'),
+            'After how many nights of distance a booking counts half. A booking on the exact night says far more than one six nights away. 0 = every night in the spread counts the same.')}
+      ${fld('continuity', num('pickup','continuityDays',c.pickup.continuityDays,1,14,1,'days'),
+            'Different days with bookings needed to reach the full push. Three bookings on one day are worth less than three spread over three days.')}
+      ${fld('max push', num('pickup','devFull',c.pickup.devFull,0,0.5,0.01,''),
+            'The most the pickup can raise the price in one go, as a fraction: 0.10 = +10%. It doubles to +20% once continuity is reached.')}
+      ${fld('non-refundable', num('pickup','nrDiscount',c.pickup.nrDiscount,0,0.5,0.01,''),
+            'The discount on your non-refundable rate, as a fraction: 0.10 = 10% off. A non-refundable sale means the full price was not accepted, so it counts a little less.')}
     </div>
     <div style="margin-top:7px;font-size:11px;color:var(--ink-3)">
       Measured from your bookings: <b>${nrM.discount!=null?('−'+Math.round(nrM.discount*100)+'%'):'—'}</b>
@@ -18409,12 +18423,12 @@ function _renderRmesSignalsBox(sel){
     <div style="font-size:11.5px;color:var(--ink-2);line-height:1.5;margin:-2px 0 8px 0">
       Bookings alone do not say whether a date is doing well: two this week is good or bad depending on last year.
       The comparison is on <b>revenue earned</b>, not nights, so selling fewer rooms at a higher price does not read as weakness.
-      <span style="color:var(--ink-3)">in line within = how far from last year still counts as normal \u00b7
-      adjustment = how much to correct when clearly behind or ahead.</span>
     </div>`,
-    `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
-      <label title="Within this distance from last year you are considered in line — no adjustment">in line within ±${num('stly','tolerance',c.stly.tolerance,0.05,1,0.05,'')}</label>
-      <label title="Correction applied when clearly behind or clearly ahead of last year">adjustment ±${num('stly','adjust',c.stly.adjust,0,0.2,0.01,'')}</label>
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px 18px;font-size:12px;color:var(--ink-2)">
+      ${fld('in line within', num('stly','tolerance',c.stly.tolerance,0.05,1,0.05,''),
+            'How far from last year still counts as normal, as a fraction: 0.40 means anywhere between 40% below and 40% above. Outside this the date is clearly ahead or clearly behind.')}
+      ${fld('adjustment', num('stly','adjust',c.stly.adjust,0,0.3,0.01,''),
+            'How much to correct when clearly behind or ahead, as a fraction: 0.05 = 5% up or down.')}
     </div>`, c.stly.on);
 
   // mercato
@@ -18423,8 +18437,9 @@ function _renderRmesSignalsBox(sel){
       ${chk('market', c.market.on, 'B · Market — a guard-rail, not a driver')}
       <span style="font-size:11px;color:var(--ink-3)">it never moves the price — it only blocks a move</span>
     </div>`,
-    `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
-      <label title="Inside this distance from the weighted compset nothing happens">band ±${num('market','band',c.market.band,0.05,0.6,0.05,'')}</label>
+    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px 18px;font-size:12px;color:var(--ink-2)">
+      ${fld('band', num('market','band',c.market.band,0.05,0.6,0.05,''),
+            'How far from the weighted compset still counts as normal, as a fraction: 0.20 = up to 20% either side. Inside the band the market does nothing at all.')}
     </div>`, c.market.on);
 
   // airdna
@@ -18443,7 +18458,8 @@ function _renderRmesSignalsBox(sel){
       <span style="font-size:11px;color:var(--ink-3)">keeps the suggestion readable day by day</span>
     </div>`,
     `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
-      <label title="The suggestion cannot move more than this from yesterday's. It is not a cap on the level: the price still gets where it needs to, just in more steps.">max move vs yesterday ${num('smoothing','maxDailyStep',c.smoothing.maxDailyStep,0.01,0.3,0.01,'')}</label>
+      ${fld('max move vs yesterday', num('smoothing','maxDailyStep',c.smoothing.maxDailyStep,0.01,0.3,0.01,''),
+            'The most the suggestion can change from yesterday, as a fraction: 0.05 = 5%. It does not cap the level, only the speed: the price still gets where it needs to, in more steps.')}
     </div>`, c.smoothing.on);
 
   h += `<div style="margin-top:6px;text-align:right">
