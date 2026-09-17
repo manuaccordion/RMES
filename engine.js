@@ -6585,10 +6585,23 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
          non porta il motore fuori strada per sempre. */
       const _baseStruct = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : basePrice;
       let _basePure = _baseStruct;
-      {
-        const _ref = (typeof newrmesGetCurrentReference === 'function') ? newrmesGetCurrentReference(sel, r.ymd) : null;
-        if (_ref != null && isFinite(_ref) && _ref > 0) _basePure = _ref;
-      }
+      /* Il prezzo caricato diventa il punto di partenza solo dove c'e' un
+         segnale da applicargli: si decide piu' sotto, per tipologia, quando
+         il moltiplicatore e' noto. Senza segnale il motore ripeterebbe il tuo
+         numero (scrivi 120, ti propone 120) perdendo la sua opinione proprio
+         quando e' l'unica cosa che avrebbe da dire. */
+      const _refLoaded = (typeof newrmesGetCurrentReference === 'function')
+        ? newrmesGetCurrentReference(sel, r.ymd) : null;
+      /* Se la data ha un accept ATTIVO (non superato da un override piu' recente)
+         il suggerimento si ferma li' finche' il mercato non si muove. */
+      let _acceptedHold = null;
+      try {
+        const _rs = (typeof newrmesGetReferenceSource === 'function') ? newrmesGetReferenceSource(sel, r.ymd) : null;
+        if (_rs && _rs.source === 'accepted'){
+          const _am = newrmesGetAcceptedMeta(sel, r.ymd);
+          if (_am && _am.price > 0) _acceptedHold = _am;
+        }
+      } catch(e){}
       /* ANCORA SULL'ULTIMO VENDUTO — solo se recentissima (7 giorni) e solo se
          sulla CAMERA BASE, perche' il riferimento del RMES e' la flessibile
          della base da caricare su Beddy. Una vendita di ieri e' l'evidenza piu'
@@ -6637,9 +6650,30 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           if (_suppData && rt !== _suppData.baseRT){
             baseRT_pure = _basePure + _supplementForRT(rt, r.mo);
           }
-          let _priceOnBase = baseRT_pure * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
-          // Cap ±20% RIMOSSO. Solo Floor.
+          /* Punto di partenza: il prezzo che carichi SE c'e' un segnale da
+             applicargli, altrimenti la stima strutturale. */
+          const _hasSignal = Math.abs((multRT || 1) - 1) > 0.001;
+          const _start = (_hasSignal && _refLoaded != null && isFinite(_refLoaded) && _refLoaded > 0)
+                       ? _refLoaded : baseRT_pure;
+          let _priceOnBase = _start * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
           let _atCapB = null;
+          /* DOPO UN ACCEPT IL PREZZO SI FERMA.
+             Accettare e' una decisione, non l'inizio di una nuova trattativa:
+             finche' il mercato non cambia davvero, il suggerimento resta quello
+             accettato. Si riapre solo se i segnali si sono mossi rispetto a
+             quando hai accettato, o se sono arrivate altre prenotazioni. */
+          if (_acceptedHold != null && _suppData && rt === _suppData.baseRT){
+            const _sa = _acceptedHold.sigAt;
+            if (!_sa) { _priceOnBase = _acceptedHold.price; _atCapB = 'accepted'; }
+            else {
+              const _mNow = multRT || 1;
+              const _gNow = (_sigA && _sigA.good != null) ? _sigA.good : 0;
+              const _moved = Math.abs(_mNow - (_sa.mult || 1)) > 0.005
+                          || Math.abs(_gNow - (_sa.good || 0)) > 0.5;
+              if (!_moved){ _priceOnBase = _acceptedHold.price; _atCapB = 'accepted'; }
+            }
+          }
+          // Cap ±20% RIMOSSO. Solo Floor.
           const _flo = _floorFor(r.ymd);
           /* Guinzaglio sul Base strutturale: il suggerimento segue il prezzo che
              carichi, ma non puo' staccarsi dalla stima strutturale oltre il
@@ -6653,7 +6687,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           const _flo2 = _flo;
           if (_priceOnBase < _flo2){ _priceOnBase = _flo2; _atCapB = 'floor'; }
           rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB,
-                                       baseStruct: _baseStruct, refUsed: _basePure };
+                                       baseStruct: _baseStruct,
+                                       // punto di partenza EFFETTIVO (prezzo caricato o stima)
+                                       refUsed: _start,
+                                       // prezzo caricato, anche quando non e' stato usato come partenza
+                                       loaded: (_refLoaded != null && isFinite(_refLoaded) && _refLoaded > 0) ? _refLoaded : null };
         } else {
           rmesTargetOnBaseByRT[rt] = { price: priceSuggested, atCap: null };
         }
@@ -7084,12 +7122,18 @@ function newrmesGetAccepted(structKey, ymd){
   return null;
 }
 function newrmesGetAcceptedMeta(structKey, ymd){
-  // Returns {price, ts, author} or null.
+  /* Restituisce {price, ts, author, sigAt} o null.
+     I campi vanno passati per intero: ricostruire l'oggetto uno a uno faceva
+     sparire sigAt (lo stato del mercato al momento dell'accept), e senza quello
+     il prezzo accettato restava bloccato per sempre invece di riaprirsi quando
+     il mercato cambia. */
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
   const v = all[structKey] && all[structKey][ymd];
   if (v == null) return null;
-  if (typeof v === 'number') return { price: v, ts: null, author: null };
-  if (typeof v === 'object' && v.price != null) return { price: v.price, ts: v.ts || null, author: v.author || null };
+  if (typeof v === 'number') return { price: v, ts: null, author: null, sigAt: null };
+  if (typeof v === 'object' && v.price != null){
+    return { price: v.price, ts: v.ts || null, author: v.author || null, sigAt: v.sigAt || null };
+  }
   return null;
 }
 function newrmesSetAccepted(structKey, ymd, price){
@@ -7100,7 +7144,28 @@ function newrmesSetAccepted(structKey, ymd, price){
     // TOMBSTONE (vedi fp_setOverride): la cancellazione deve propagarsi via Firebase.
     const _now = new Date().toISOString();
     all[structKey][ymd] = { price: null, __deleted: true, ts: _now, savedAt: _now, author: getUserProfile() || null };
-  } else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(), author: getUserProfile() || null };
+  } else {
+    /* Insieme al prezzo si registra COM'ERA IL MERCATO al momento dell'accept:
+       il moltiplicatore dei segnali e le prenotazioni buone contate allora.
+       Serve a non riaprire la trattativa un secondo dopo: accettare e' una
+       decisione, e finche' la situazione non cambia il prezzo resta quello.
+       Senza questo, subito dopo l'accept il segnale si riapplicava al nuovo
+       riferimento e proponeva gia' un altro numero, spesso piu' basso. */
+    let _sig = null;
+    try {
+      // La mappa va ricalcolata pulita: quella in cache puo' essere di un'altra
+      // finestra e non contenere questa data.
+      if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+      const m = computeRMESPriceMap(structKey, ymd, 1);
+      const e = m && m[ymd];
+      if (e){
+        _sig = { mult: (e.multFinale != null) ? +(+e.multFinale).toFixed(4) : 1,
+                 good: (e._sigDbg && e._sigDbg.A && e._sigDbg.A.good != null) ? +(+e._sigDbg.A.good).toFixed(2) : 0 };
+      }
+    } catch(err){ console.error('sigAt', err); }
+    all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(),
+                            author: getUserProfile() || null, sigAt: _sig };
+  }
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
   _invalidateRmesMapCache();
 }
@@ -11388,8 +11453,13 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         };
         let mDet = actMap[M.action] || M.action || '—';
         if (M.gap != null){
-          mDet = 'Your price is <b>'+pc(M.gap)+'</b> versus the weighted compset'
-               + (M.myBeddy!=null&&M.compsetBeddy!=null ? ' ('+fmtEUR(M.myBeddy)+' vs '+fmtEUR(M.compsetBeddy)+')' : '')
+          /* Il primo numero NON e' il prezzo che hai caricato: e' quello che
+             Expedia sta esponendo oggi, riportato in prezzo-Beddy e normalizzato
+             alla camera base. Senza dirlo sembra un valore uscito dal nulla. */
+          mDet = 'What Expedia is showing for you today, brought back to a Beddy base-room price, is <b>'
+               + (M.myBeddy!=null ? fmtEUR(M.myBeddy) : '\u2014') + '</b> against a weighted compset of <b>'
+               + (M.compsetBeddy!=null ? fmtEUR(M.compsetBeddy) : '\u2014') + '</b> \u2014 you are <b>' + pc(M.gap) + '</b>.'
+               + '<br><span style="color:#999">This is the shelf price, not the price you loaded: it already carries your OTA markup and any discount live on the channel.</span>'
                + (M.suppRemoved ? '<br><span style="color:#999">Expedia is showing '+escapeHtml(M.myRtShown||'')+' today, so '+fmtEUR(M.suppRemoved)+' of supplement was removed to compare like with like</span>' : '')
                + '<br>' + mDet;
         }
@@ -12431,6 +12501,68 @@ function _occRingColor(occ){
     }
   }
   return 'rgb(44,122,75)';
+}
+function _sellWireAcceptBtn(btn){
+  if (!btn || btn.dataset.wired === '1') return;
+  btn.dataset.wired = '1';
+
+    btn.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const ymdN = +btn.dataset.rmesAccept;
+      const newPrice = +btn.dataset.rmesPrice;
+      if (!ymdN || !isFinite(ymdN) || !isFinite(newPrice) || newPrice <= 0) return;
+      const sk = CURRENT_STRUCT;
+      if (!sk || isAggSel(sk)) { alert('Select a property first.'); return; }
+      const ymdStr = String(ymdN);
+      const dateLbl = ymdStr.slice(6,8) + '/' + ymdStr.slice(4,6) + '/' + ymdStr.slice(0,4);
+      if (!confirm('Accept RMES suggestion of €' + newPrice + ' for ' + dateLbl + '?')) return;
+      // Niente clear dell'override: l'accept ha timestamp piu recente e vince nel reader
+      // (newrmesGetCurrentReference / cella) via most-recent-wins. Evita tombstone in conflitto.
+      newrmesSetAccepted(sk, ymdN, newPrice);
+      if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
+    });
+}
+/* Aggiorna UNA riga della Sell Strategy dopo una decisione su quella data.
+   Ricalcola il suggerimento solo per quel giorno e riscrive le due celle che
+   cambiano. Il render completo costa qualche secondo e veniva rifatto a ogni
+   numero scritto: la tabella spariva sotto le dita e serviva un secondo
+   tentativo per digitare. */
+function _sellRefreshRow(sel, isoDate){
+  const wrap = document.getElementById('sell-table-wrap');
+  if (!wrap || !isoDate) return;
+  const cell = wrap.querySelector('td[data-rmes-date="' + isoDate + '"]');
+  const ymdNum = +isoDate.slice(0,4)*10000 + (+isoDate.slice(5,7))*100 + (+isoDate.slice(8,10));
+  const baseRTK = (CFG.structures[sel] || {}).baseRT;
+  let price = null, refPrice = null, src = '';
+  try {
+    const m = computeRMESPriceMap(sel, ymdNum, 1);
+    const e = m && m[ymdNum];
+    const t = e && e.rmesTargetOnBaseByRT && e.rmesTargetOnBaseByRT[baseRTK];
+    if (t && isFinite(t.price)) price = t.price;
+  } catch(e){}
+  try {
+    const rs = newrmesGetReferenceSource(sel, ymdNum);
+    if (rs && rs.source === 'accepted'){
+      const am = newrmesGetAcceptedMeta(sel, ymdNum);
+      if (am && am.price > 0){ refPrice = am.price; src = 'accepted'; }
+    } else if (rs && rs.source === 'override'){
+      const o = fp_getOverride(sel, isoDate, baseRTK);
+      if (o && o.price > 0){ refPrice = o.price; src = 'manual'; }
+    }
+  } catch(e){}
+  if (cell && price != null){
+    const btn = cell.querySelector('.rmes-accept-btn');
+    const keep = btn ? btn.outerHTML : '';
+    cell.innerHTML = Math.round(price) + keep;
+    const nb = cell.querySelector('.rmes-accept-btn');
+    if (nb){ nb.dataset.rmesPrice = String(Math.round(price)); nb.dataset.wired = ''; _sellWireAcceptBtn(nb); }
+  }
+  const inp = wrap.querySelector('input.sell-loaded-inp[data-date="' + isoDate + '"]');
+  if (inp){
+    inp.value = refPrice != null ? String(Math.round(refPrice)) : '';
+    inp.style.color = src === 'manual' ? '#1e4a6b' : (src === 'accepted' ? '#2c7a4b' : '#b9b3a6');
+    inp.style.fontWeight = src ? '700' : '';
+  }
 }
 function renderSellStrategy(sel){
   // Salva lo scroll orizzontale del wrap trasposto prima di ricostruire, così l'utente
@@ -13842,12 +13974,17 @@ function renderSellStrategy(sel){
         const baseRTK0 = (CFG.structures[sel] || {}).baseRT;
         const meS = _rmesMapForAlignment && _rmesMapForAlignment[r.ymd];
         const tS = meS && meS.rmesTargetOnBaseByRT && meS.rmesTargetOnBaseByRT[baseRTK0];
-        if (tS && tS.baseStruct > 0 && tS.refUsed > 0 && Math.abs(tS.refUsed - tS.baseStruct) / tS.baseStruct > 0.20){
-          const g = tS.refUsed / tS.baseStruct - 1;
+        /* Il confronto e' fra il prezzo che CARICHI e la stima strutturale, non
+           fra il punto di partenza del calcolo: senza segnale il motore riparte
+           dalla stima, ma il tuo prezzo resta quello che hai deciso e il motore
+           deve poter dire che e' lontano. */
+        const _loadedP = tS && tS.loaded;
+        if (tS && tS.baseStruct > 0 && _loadedP > 0 && Math.abs(_loadedP - tS.baseStruct) / tS.baseStruct > 0.20){
+          const g = _loadedP / tS.baseStruct - 1;
           const sgS = meS._sigDbg;
           const pkSays = sgS && sgS.A ? (sgS.A.dev || 0) : 0;
           const agree = (g > 0 && pkSays > 0.001) || (g < 0 && pkSays < -0.001);
-          const head = 'You are loading ' + fmtEUR(tS.refUsed) + ' against a structural estimate of '
+          const head = 'You are loading ' + fmtEUR(_loadedP) + ' against a structural estimate of '
                      + fmtEUR(tS.baseStruct) + ' \u2014 ' + Math.round(Math.abs(g)*100) + '% '
                      + (g > 0 ? 'above' : 'below') + '.';
           if (agree) return { tone: 'info', txt: head + '\nThe pickup points the same way, so your price and the engine are not really in disagreement.' };
@@ -14075,7 +14212,7 @@ function renderSellStrategy(sel){
                        { source: 'loaded box' });
       } catch(e){ console.error('loaded box', e); }
       if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
-      if (typeof renderSellStrategy === 'function') setTimeout(() => renderSellStrategy(sel), 30);
+      try { _sellRefreshRow(sel, el.dataset.date); } catch(e){ console.error('refresh row', e); }
     });
     // Enter conferma senza aspettare il blur
     inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') ev.currentTarget.blur(); });
@@ -14091,23 +14228,9 @@ function renderSellStrategy(sel){
   // NewRMES: listener bottoni ✓ accept
   // data-rmes-accept = ymd numerico (data)
   // data-rmes-price  = prezzo RMES ESATTO mostrato in cella (= quello che viene salvato)
-  document.getElementById('sell-table-wrap').querySelectorAll('.rmes-accept-btn').forEach(btn => {
-    btn.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      const ymdN = +btn.dataset.rmesAccept;
-      const newPrice = +btn.dataset.rmesPrice;
-      if (!ymdN || !isFinite(ymdN) || !isFinite(newPrice) || newPrice <= 0) return;
-      const sk = CURRENT_STRUCT;
-      if (!sk || isAggSel(sk)) { alert('Select a property first.'); return; }
-      const ymdStr = String(ymdN);
-      const dateLbl = ymdStr.slice(6,8) + '/' + ymdStr.slice(4,6) + '/' + ymdStr.slice(0,4);
-      if (!confirm('Accept RMES suggestion of €' + newPrice + ' for ' + dateLbl + '?')) return;
-      // Niente clear dell'override: l'accept ha timestamp piu recente e vince nel reader
-      // (newrmesGetCurrentReference / cella) via most-recent-wins. Evita tombstone in conflitto.
-      newrmesSetAccepted(sk, ymdN, newPrice);
-      if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
-    });
-  });
+  // L'aggancio vive in una funzione propria: serve anche quando si ridisegna
+  // UNA sola riga, perche' rigenerando la cella il listener andrebbe perso.
+  document.getElementById('sell-table-wrap').querySelectorAll('.rmes-accept-btn').forEach(_sellWireAcceptBtn);
   const _refreshSellAfterFp = () => {
     if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined'){
       try { renderSellStrategy(CURRENT_STRUCT); } catch(e){}
