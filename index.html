@@ -2126,34 +2126,52 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- Box 4: EVENT FACTOR — viola -->
-    <div class="rmes-box rmes-box-purple">
-      <div class="rmes-box-head">
-        <div class="rmes-box-icon">✨</div>
-        <div class="rmes-box-titles">
-          <h3>② Events</h3>
-          <div class="rmes-box-sub">shared across all properties</div>
-        </div>
-      </div>
-      <div class="rmes-box-body">
-        <div id="rmes-events-wrap"></div>
-      </div>
-    </div>
+    <!-- The three boxes follow the real chain: the Base Price is built first,
+         the signals then move it, and last minute and events adjust it at the
+         end. Before, the signals sat INSIDE the Base Price box and events came
+         first, which did not match how the engine works. -->
 
-    <!-- ============ FOUNDATION PRICING CONFIG — oro ============ -->
+    <!-- ① BASE PRICE — oro -->
     <div class="rmes-box rmes-box-gold">
       <div class="rmes-box-head">
         <div class="rmes-box-icon">⚡</div>
         <div class="rmes-box-titles">
-          <h3>③ Base Price <span style="font-size:10px;font-weight:700;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">active</span></h3>
-          <div class="rmes-box-sub">anchor, growth, floor, OTA markup, compset positioning · LMF matrix</div>
+          <h3>① Base Price <span style="font-size:10px;font-weight:700;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">active</span></h3>
+          <div class="rmes-box-sub">where every price starts: anchor, growth, floor, OTA markup, compset positioning</div>
         </div>
       </div>
       <div class="rmes-box-body">
         <div id="fp-tab-wrap"></div>
-        <div id="rmes-lmf-wrap" style="margin-top:14px"></div>
-        <div id="rmes-signals-wrap" style="margin-top:14px"></div>
         <div id="rmes-special-wrap" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <!-- &#9313; SIGNALS &mdash; what moves the price -->
+    <div class="rmes-box rmes-box-blue">
+      <div class="rmes-box-head">
+        <div class="rmes-box-icon">◆</div>
+        <div class="rmes-box-titles">
+          <h3>② Signals</h3>
+          <div class="rmes-box-sub">what moves the price away from the Base &mdash; per property</div>
+        </div>
+      </div>
+      <div class="rmes-box-body">
+        <div id="rmes-signals-wrap"></div>
+      </div>
+    </div>
+
+    <!-- &#9314; AFTER THE SIGNALS: last minute and events -->
+    <div class="rmes-box rmes-box-purple">
+      <div class="rmes-box-head">
+        <div class="rmes-box-icon">✨</div>
+        <div class="rmes-box-titles">
+          <h3>③ Last minute &amp; events</h3>
+          <div class="rmes-box-sub">applied after the signals &mdash; events are shared across all properties</div>
+        </div>
+      </div>
+      <div class="rmes-box-body">
+        <div id="rmes-lmf-wrap"></div>
+        <div id="rmes-events-wrap" style="margin-top:14px"></div>
       </div>
     </div>
 
