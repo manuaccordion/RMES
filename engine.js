@@ -838,7 +838,7 @@ function rmesCloudOnRemoteUpdate(){
    change (accept, override, config Apply, remote sync) writes an 'rmes_' key, which
    goes through the setItem wrapper below and marks all heavy tabs dirty. Struct
    changes mark them dirty in renderAll(). So a revisit re-renders only when needed. */
-var _TAB_DIRTY = { big:true, baseprice:true, ptree:true };
+var _TAB_DIRTY = { big:true, baseprice:true };
 function _markHeavyTabsDirty(){
   try { for (var k in _TAB_DIRTY) _TAB_DIRTY[k] = true; } catch(e){}
   try { if (typeof _FCST_DIRTY !== 'undefined') _FCST_DIRTY = true; } catch(e){}
@@ -5440,32 +5440,6 @@ const RMES_PICKUP_THR_DEFAULT = [
   { upTo: 0.90, dev: 0.15 },  // fill 71-90% → +15%
   { upTo: 1.00, dev: 0.20 },  // fill > 90% → +20%
 ];
-function _rmesPickupGetAll(){
-  try {
-    const raw = localStorage.getItem(RMES_PICKUP_THR_KEY);
-    if (raw){
-      const parsed = JSON.parse(raw);
-      const out = {};
-      for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
-        const arr = parsed[s];
-        if (Array.isArray(arr) && arr.length === 5) out[s] = arr.map(t => ({ upTo:+t.upTo, dev:+t.dev }));
-        else out[s] = RMES_PICKUP_THR_DEFAULT.map(t => ({...t}));
-      }
-      return out;
-    }
-  } catch(e){}
-  // Default per tutte le 4 strutture
-  return {
-    firenze:  RMES_PICKUP_THR_DEFAULT.map(t => ({...t})),
-    condotta: RMES_PICKUP_THR_DEFAULT.map(t => ({...t})),
-    alfani:   RMES_PICKUP_THR_DEFAULT.map(t => ({...t})),
-    davids:   RMES_PICKUP_THR_DEFAULT.map(t => ({...t})),
-  };
-}
-function _rmesPickupGet(structKey){
-  const all = _rmesPickupGetAll();
-  return all[structKey] || RMES_PICKUP_THR_DEFAULT.map(t => ({...t}));
-}
 function _rmesPickupSet(structKey, thresholds){
   if (!Array.isArray(thresholds) || thresholds.length !== 5) return false;
   const all = _rmesPickupGetAll();
@@ -5475,14 +5449,6 @@ function _rmesPickupSet(structKey, thresholds){
 }
 function _rmesPickupReset(structKey){
   return _rmesPickupSet(structKey, RMES_PICKUP_THR_DEFAULT.map(t => ({...t})));
-}
-function _pickupDevFromFillCfg(structKey, fillRate){
-  const thr = _rmesPickupGet(structKey);
-  for (const t of thr){
-    if (fillRate <= t.upTo + 0.0001) return t.dev || 0;
-  }
-  // Fallback: ultima riga
-  return thr[thr.length-1].dev || 0;
 }
 /* Event Factor: SOLO IN AUMENTO. Un evento che conosciamo e' un'occasione per
    alzare; non deve mai essere un motivo per abbassare — se una data va male,
@@ -6225,6 +6191,10 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     }
   }
   // Scala fill rate per Daily Pickup — soglie configurabili per struttura (storage rmes_pickup_thresholds_v1)
+  /* Le soglie configurabili sono sparite con il box che le impostava: il pickup
+     di oggi non usa piu' una scala sul fill rate, pesa le singole prenotazioni.
+     Questa scala resta solo per i nomi ancora letti a valle, a valore neutro. */
+  function _pickupDevFromFillCfg(structKey, fillRate){ return 0; }
   function _pickupDevFromFill(fillRate){
     return _pickupDevFromFillCfg(sel, fillRate);
   }
@@ -7968,7 +7938,11 @@ function _chainExportCSV(){
   a.click();
 }
 function _chainSetupControls(){
-  const wrap = document.getElementById('bp-table-wrap');
+  /* Il contenitore da cercare e' quello della catena: 'bp-table-wrap' apparteneva
+     alla vecchia tabella ed era stato rimosso, quindi la funzione usciva subito
+     e le date non finivano mai nello stato. Risultato: campi compilati a schermo
+     e tabella vuota. */
+  const wrap = document.getElementById('chain-table-wrap');
   if (!wrap) return;
   // Pills struttura
   const pillsEl = document.getElementById('bp-struct-pills');
@@ -8007,6 +7981,11 @@ function _chainSetupControls(){
     const t2 = new Date(today.getTime() + 120*86400000);
     toInp.value = t2.toISOString().slice(0,10);
   }
+  /* Le date vanno anche nello STATO, non solo nei campi: altrimenti al primo
+     accesso la tabella resta vuota con le date gia' visibili a schermo, e
+     sembra rotta finche' non premi Apply. */
+  if (!BP_BREAKDOWN_STATE.from && fromInp && fromInp.value) BP_BREAKDOWN_STATE.from = fromInp.value;
+  if (!BP_BREAKDOWN_STATE.to   && toInp   && toInp.value)   BP_BREAKDOWN_STATE.to   = toInp.value;
   // wire apply/export una volta
   const applyBtn = document.getElementById('bp-apply');
   if (applyBtn && !applyBtn.dataset.wired){
@@ -13477,14 +13456,20 @@ function renderSellStrategy(sel){
       const exp = expContext(r.ymd, sel);
       if (exp){
         const myP = exp.myPriceExpedia;
+        /* RATE SHOPPER: fotografia della vetrina, non uno strumento di pricing.
+           Qui NON si pesa e NON si applicano offset: il cliente su Expedia vede
+           tutti i competitor allo stesso modo, quindi la media giusta e' quella
+           semplice. La media pesata resta dov'e' utile, cioe' nel guard-rail
+           che confronta il tuo prezzo col posizionamento voluto. */
         let cAvg = null;
         let avgIsWeighted = false;
+        let cRaw = null;
         const isoK = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
         if (typeof compsetWeightedAvg === 'function'){
           const w = compsetWeightedAvg(sel, isoK, false, {rawExpedia:true});
-          if (w && w.avg != null && w.avg > 0){
-            cAvg = w.avg;
-            avgIsWeighted = true;
+          if (w && w.rawAvg != null && w.rawAvg > 0){
+            cAvg = w.rawAvg;
+            cRaw = w;
           }
         }
         if (cAvg == null && exp.compsetAvg != null){
@@ -13500,9 +13485,22 @@ function renderSellStrategy(sel){
         const myTxt = myP != null ? fmtEUR(myP) : '—';
         const avgTxt = cAvg != null ? fmtEUR(cAvg) : '—';
         const avgBadge = '';
-        const avgTooltip = avgIsWeighted
-          ? `Weighted compset average (weights configured in Rate Shopper) · diff vs mine: ${diffTxt}`
-          : `Arithmetic compset average · diff vs mine: ${diffTxt}`;
+        /* Il tooltip elenca i competitor uno per uno, con il prezzo che espongono.
+           E' l'informazione che serve davvero qui: non "la media pesata dice X"
+           ma "loro stanno a questi prezzi e io sto qui in mezzo". */
+        let avgTooltip;
+        if (cRaw && cRaw.rawList && cRaw.rawList.length){
+          const lst = cRaw.rawList.slice().sort((a,b)=>a.price-b.price)
+            .map(x => '  ' + fmtEUR(x.price) + '  ' + x.name).join('\n');
+          avgTooltip = 'How the shelf looks on Expedia today \u2014 plain prices, no weights, no offsets.\n\n'
+            + lst
+            + '\n\n  average ' + fmtEUR(cRaw.rawAvg)
+            + '   ·   range ' + fmtEUR(cRaw.rawMin) + ' \u2013 ' + fmtEUR(cRaw.rawMax)
+            + (myP != null ? '\n  you    ' + fmtEUR(myP) + '   (' + diffTxt + ' vs the average)' : '')
+            + '\n\nThe weighted average, with your positioning offsets, is a different figure and is used only as the guard-rail on the price.';
+        } else {
+          avgTooltip = 'Compset average \u00b7 diff vs mine: ' + diffTxt;
+        }
         const dem = expDemandLevel(exp.searchCurrent);
         let myTooltip = 'My price on Expedia';
         if (exp.searchCurrent != null && dem){
@@ -19022,6 +19020,11 @@ function compsetWeightedAvg(struct, isoKey, applyOffset, opts){
      su Beddy per arrivare a quel livello su Expedia. */
   let sumPrice = 0, sumOffset = 0, sumW = 0, n = 0;
   const names = [];
+  /* Prezzi GREZZI dei competitor, uno per uno, come appaiono su Expedia.
+     Servono al Rate Shopper, che deve mostrare la posizione reale in vetrina:
+     li' i pesi non c'entrano, perche' il cliente vede tutti allo stesso modo.
+     La media pesata resta quella che alimenta il guard-rail del prezzo. */
+  const rawList = [];
   for (const name in compMap){
     if (myStructKeys.has(name)) continue;  // escludo mie strutture mutuali
     const p = compMap[name][isoKey];
@@ -19040,6 +19043,7 @@ function compsetWeightedAvg(struct, isoKey, applyOffset, opts){
     sumW += w;
     n += 1;
     names.push(name);
+    rawList.push({ name, price: p, w });
   }
   if (n === 0 || sumW <= 0) return {avg: null, n: 0};
   // MEDIA PESATA VERA: divido per la somma dei pesi, non per il numero di
@@ -19052,6 +19056,10 @@ function compsetWeightedAvg(struct, isoKey, applyOffset, opts){
   const unit = opts.rawExpedia ? 'expedia_lordo' : 'beddy_da_caricare';
   return {
     avg, n, contributingNames: names, unit, withOffset: !!applyOffset,
+    rawList,
+    rawAvg: rawList.length ? rawList.reduce((a,b)=>a+b.price,0) / rawList.length : null,
+    rawMin: rawList.length ? Math.min.apply(null, rawList.map(x=>x.price)) : null,
+    rawMax: rawList.length ? Math.max.apply(null, rawList.map(x=>x.price)) : null,
     sumW,                       // somma dei pesi usata come denominatore
     avgExpedia,                 // media pesata dei competitor, su Expedia
     avgOffset,                  // offset medio pesato
@@ -19268,12 +19276,10 @@ function renderRMESConfigTab(){
   });
   _renderRmesWeightsBox(sel);
   _renderRmesThresholdsBox(sel);
-  if (typeof _renderRmesPickupThresholdsBox === 'function') _renderRmesPickupThresholdsBox(sel);
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
   if (typeof _renderRmesSignalsBox === 'function') _renderRmesSignalsBox(sel);
   if (typeof _renderRmesSpecialBox === 'function') _renderRmesSpecialBox();
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
-  if (typeof _renderRmesPromosBox === 'function') _renderRmesPromosBox(sel);
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
   if (typeof renderChannelMix === 'function'){ try { renderChannelMix(sel); } catch(e){ console.error('[chmix]', e); } }
   _rmesTabClearDirty();
@@ -19332,90 +19338,6 @@ function _rmesTabClearDirty(){
    ma non ha nulla da applicare. */
 function _rmesTabApplyWeights(sel){ return; }
 /* === ②b Daily Pickup thresholds — Fase 2 === */
-function _renderRmesPickupThresholdsBox(sel){
-  const wrap = document.getElementById('rmes-tab-pkthr-bar');
-  if (!wrap) return;
-  const labels = { firenze: 'Firenze Suite', condotta: 'Condotta 16', alfani: 'Palazzo Alfani', davids: "Enis Guesthouse", nazionale: "Nazionale 35 Apartments", portenuove: "Porte Nuove Apartments" };
-  const subEl = document.getElementById('rmes-tab-pkthr-sub');
-  if (subEl) subEl.textContent = 'property: ' + (labels[sel] || sel);
-  const thr = _rmesPickupGet(sel);
-  // Costruisco una tabella con 5 righe: ogni riga ha "fill rate range" e "dev %".
-  // L'upTo della riga i è il limite sup del range. Il lowerBound è upTo della riga precedente (+0.01).
-  let h = '';
-  h += '<div style="font-size:11.5px;color:var(--ink-2);margin-bottom:10px;line-height:1.45">';
-  h += 'Edit the dev % that the Daily Pickup factor applies for each fill rate bucket. ';
-  h += 'The factor activates only when at least 1 new booking came in for this stay-date in the primary window (yesterday + today = 2 calendar days). If zero, falls back to the wider window (today and the 7 previous days = 8 calendar days). ';
-  h += 'When activated, the dev % is picked from this table according to the current fill rate of the day. ';
-  h += '<b>Never negative</b>: only the LMF can lower the price close-in.';
-  h += '</div>';
-  h += '<table style="width:100%;max-width:520px;border-collapse:collapse;font-size:13px">';
-  h += '<thead><tr style="background:#f5f4f0;border-bottom:1px solid var(--line)">';
-  h += '<th style="padding:7px 10px;text-align:left;font-weight:600;color:var(--ink-2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Fill rate (OTB / cap)</th>';
-  h += '<th style="padding:7px 10px;text-align:right;font-weight:600;color:var(--ink-2);font-size:11px;text-transform:uppercase;letter-spacing:.04em">Dev %</th>';
-  h += '</tr></thead><tbody>';
-  for (let i = 0; i < thr.length; i++){
-    const t = thr[i];
-    const prevUpTo = (i === 0) ? 0 : thr[i-1].upTo;
-    let rangeLabel;
-    if (i === 0) rangeLabel = '≤ ' + Math.round(t.upTo * 100) + '%';
-    else if (i === thr.length - 1) rangeLabel = '> ' + Math.round(prevUpTo * 100) + '%';
-    else rangeLabel = (Math.round(prevUpTo * 100) + 1) + '% – ' + Math.round(t.upTo * 100) + '%';
-    h += '<tr style="border-bottom:1px solid #eee">';
-    h += '<td style="padding:8px 10px;font-family:\'DM Mono\',monospace;color:var(--ink)">'+rangeLabel+'</td>';
-    h += '<td style="padding:8px 10px;text-align:right">';
-    h += '<input type="number" class="pkthr-dev-input" data-idx="'+i+'" min="0" max="100" step="1" value="'+Math.round((t.dev||0)*100)+'" style="width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> <span style="color:var(--ink-3);font-size:11px">%</span>';
-    h += '</td></tr>';
-  }
-  h += '</tbody></table>';
-  h += '<div style="margin-top:10px;display:flex;align-items:center;gap:10px">';
-  h += '<button id="rmes-tab-pkthr-save" style="padding:7px 14px;border:1px solid #4a7c59;background:#4a7c59;color:#fff;border-radius:4px;font-family:\'DM Sans\',sans-serif;font-size:12px;font-weight:600;cursor:pointer">💾 Save thresholds</button>';
-  h += '<span id="rmes-tab-pkthr-status" style="font-size:11.5px;color:var(--ink-3)"></span>';
-  h += '</div>';
-  wrap.innerHTML = h;
-
-  const saveBtn = document.getElementById('rmes-tab-pkthr-save');
-  const statusEl = document.getElementById('rmes-tab-pkthr-status');
-  if (saveBtn){
-    saveBtn.onclick = () => {
-      const inputs = wrap.querySelectorAll('.pkthr-dev-input');
-      const newThr = [];
-      for (let i = 0; i < inputs.length; i++){
-        const pct = parseFloat(inputs[i].value);
-        if (!isFinite(pct) || pct < 0){
-          if (statusEl){ statusEl.textContent = '⚠ Invalid value at row ' + (i+1); statusEl.style.color = '#a83b3b'; }
-          return;
-        }
-        newThr.push({ upTo: thr[i].upTo, dev: pct / 100 });
-      }
-      const ok = _rmesPickupSet(sel, newThr);
-      if (ok){
-        if (statusEl){ statusEl.textContent = '✓ Saved for ' + (labels[sel] || sel); statusEl.style.color = '#2c5c3c'; }
-        // Invalida cache RMES per ricalcolo
-        if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
-        // Notifica Firebase
-        if (typeof rmesCloud !== 'undefined' && rmesCloud.notifyLocalChange) rmesCloud.notifyLocalChange();
-        // Ridisegna Sell Strategy se attiva
-        if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined') renderSellStrategy(CURRENT_STRUCT);
-        setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2500);
-      } else {
-        if (statusEl){ statusEl.textContent = '✗ Save failed'; statusEl.style.color = '#a83b3b'; }
-      }
-    };
-  }
-  const resetBtn = document.getElementById('rmes-tab-pkthr-reset');
-  if (resetBtn && !resetBtn._wired){
-    resetBtn._wired = true;
-    resetBtn.onclick = () => {
-      const lbl = labels[RMES_TAB_STRUCT] || RMES_TAB_STRUCT;
-      if (!confirm('Reset Daily Pickup thresholds for '+lbl+' to default scale (0/5/10/15/20%)?')) return;
-      _rmesPickupReset(RMES_TAB_STRUCT);
-      if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
-      if (typeof rmesCloud !== 'undefined' && rmesCloud.notifyLocalChange) rmesCloud.notifyLocalChange();
-      _renderRmesPickupThresholdsBox(RMES_TAB_STRUCT);
-      if (typeof renderSellStrategy === 'function' && typeof CURRENT_STRUCT !== 'undefined') renderSellStrategy(CURRENT_STRUCT);
-    };
-  }
-}
 /* === ② SOGLIE INDICI === */
 function _renderRmesThresholdsBox(sel){
   const capInp = document.getElementById('rmes-tab-cap-input');
@@ -19479,28 +19401,7 @@ function _rmesTabApplyAll(){
     });
     _setEventWeights(w);
   }
-  // Promo Overrides — già salvati ad ogni input change in _renderRmesPromosBox.
-  // Qui ricolleziamo per sicurezza (es. se l'utente cambia struttura senza che il blur sia partito).
-  const promoRows = document.querySelectorAll('#rmes-promos-wrap tr[data-promo-id]');
-  if (promoRows.length){
-    const promoArr = [];
-    promoRows.forEach(tr => {
-      const id = tr.getAttribute('data-promo-id');
-      const label = (tr.querySelector('.promo-label')||{}).value || '';
-      const _bf = (tr.querySelector('.promo-bookfrom')||{}).value;
-      const _bt = (tr.querySelector('.promo-bookto')||{}).value;
-      const _sf = (tr.querySelector('.promo-stayfrom')||{}).value;
-      const _st = (tr.querySelector('.promo-stayto')||{}).value;
-      const bookFrom = _bf ? parseInt(_bf.replace(/-/g,''), 10) : null;
-      const bookTo   = _bt ? parseInt(_bt.replace(/-/g,''), 10) : null;
-      const stayFrom = _sf ? parseInt(_sf.replace(/-/g,''), 10) : null;
-      const stayTo   = _st ? parseInt(_st.replace(/-/g,''), 10) : null;
-      const pctI = tr.querySelector('.promo-pct');
-      const pct = pctI ? +pctI.value : 0;
-      promoArr.push({ id, label, bookFrom, bookTo, stayFrom, stayTo, pct: isFinite(pct) ? pct : 0 });
-    });
-    _setPromosForStruct(sel, promoArr);
-  }
+
   if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
   _rmesTabClearDirty();
   return true;
@@ -19540,6 +19441,12 @@ function _renderRmesSignalsBox(sel){
     `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       ${chk('pickup', c.pickup.on, 'A · Pickup — the engine')}
       <span style="font-size:11px;color:var(--ink-3)">what is actually being booked for this date</span>
+    </div>
+    <div style="font-size:11.5px;color:var(--ink-2);line-height:1.5;margin:-2px 0 8px 0">
+      Each booking is weighted by <b>when</b> it came in, <b>how close</b> its night is, and <b>at what price</b> &mdash;
+      and it only counts on its own room type. One recent booking at full price is worth the full push.
+      <span style="color:var(--ink-3)">window = how far back to look \u00b7 spread = nights around the date \u00b7
+      half-life = when a booking is worth half \u00b7 continuity = different days needed to double the push.</span>
     </div>`,
     `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
       <label title="How far back to look for bookings. Tested 7 / 14 / adaptive on the backtest: 7 wins — with the rest of the engine sharper, a wider window just dilutes the signal.">window ${num('pickup','windowDays',c.pickup.windowDays,1,60,1,'days')}</label>
@@ -19559,7 +19466,13 @@ function _renderRmesSignalsBox(sel){
   h += box(
     `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
       ${chk('stly', c.stly.on, 'Last-year comparison — a three-state light')}
-      <span style="font-size:11px;color:var(--ink-3)">not a multiplier: the ratio is too unstable to be a measure</span>
+      <span style="font-size:11px;color:var(--ink-3)">the same point last year, on revenue</span>
+    </div>
+    <div style="font-size:11.5px;color:var(--ink-2);line-height:1.5;margin:-2px 0 8px 0">
+      Bookings alone do not say whether a date is doing well: two this week is good or bad depending on last year.
+      The comparison is on <b>revenue earned</b>, not nights, so selling fewer rooms at a higher price does not read as weakness.
+      <span style="color:var(--ink-3)">in line within = how far from last year still counts as normal \u00b7
+      adjustment = how much to correct when clearly behind or ahead.</span>
     </div>`,
     `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
       <label title="Within this distance from last year you are considered in line — no adjustment">in line within ±${num('stly','tolerance',c.stly.tolerance,0.05,1,0.05,'')}</label>
@@ -19922,128 +19835,6 @@ function _renderRmesEventsBox(){
 /* ============================================================================
    Promo Overrides box — lista compatta promo per struttura selezionata
    ============================================================================ */
-function _renderRmesPromosBox(sel){
-  const wrap = document.getElementById('rmes-promos-wrap');
-  if (!wrap) return;
-  const structLabels = { firenze:'Firenze Suite', condotta:'Condotta 16', alfani:'Palazzo Alfani', davids:'Enis Guesthouse', nazionale:'Nazionale 35 Apartments', portenuove:'Porte Nuove Apartments' };
-  const lbl = structLabels[sel] || sel;
-  const list = _getPromosForStruct(sel);
-  const _todayN = (typeof TODAY_YMD !== 'undefined') ? TODAY_YMD : 0;
-  function _ymdToIso(n){
-    if (n == null) return '';
-    const s = String(n);
-    return s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8);
-  }
-  function _isoToYmd(iso){
-    if (!iso) return null;
-    return parseInt(iso.replace(/-/g, ''), 10);
-  }
-  function _isActiveToday(p){
-    if (p.bookFrom != null && _todayN < p.bookFrom) return false;
-    if (p.bookTo != null && _todayN > p.bookTo) return false;
-    return true;
-  }
-  // Sort: active first, then by bookFrom asc
-  const sorted = list.slice().sort((a,b) => {
-    const aa = _isActiveToday(a), ab = _isActiveToday(b);
-    if (aa !== ab) return aa ? -1 : 1;
-    return (a.bookFrom || 0) - (b.bookFrom || 0);
-  });
-  const rowsHtml = sorted.length === 0
-    ? '<div style="padding:18px;text-align:center;color:#aaa;font-size:12px;font-style:italic;border:1px dashed var(--line);border-radius:6px;background:#fafafa">No promo configured for '+lbl+'. Click "Add promo" below to create one.</div>'
-    : '<table style="width:100%;border-collapse:collapse;font-size:12px">' +
-      '<thead><tr style="background:#fafafa;border-bottom:1px solid var(--line)">' +
-        '<th style="padding:7px 8px;text-align:left;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Status</th>' +
-        '<th style="padding:7px 8px;text-align:left;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Label</th>' +
-        '<th style="padding:7px 8px;text-align:center;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Booking window</th>' +
-        '<th style="padding:7px 8px;text-align:center;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Stay window</th>' +
-        '<th style="padding:7px 8px;text-align:center;font-size:10.5px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.04em">Premium %</th>' +
-        '<th style="padding:7px 8px"></th>' +
-      '</tr></thead><tbody>' +
-      sorted.map(p => {
-        const active = _isActiveToday(p);
-        const safeLbl = typeof escapeHtml === 'function' ? escapeHtml(p.label || '') : (p.label || '');
-        return '<tr data-promo-id="'+p.id+'" style="border-bottom:1px solid #f0ece0">' +
-          '<td style="padding:8px;vertical-align:middle">' +
-            (active
-              ? '<span style="display:inline-block;background:#e8f5e9;color:#1e6b4a;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid #b8d4be">ACTIVE</span>'
-              : '<span style="display:inline-block;background:#f5f5f5;color:#888;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;border:1px solid #e0e0e0">inactive</span>') +
-          '</td>' +
-          '<td style="padding:8px"><input type="text" class="promo-label" value="'+safeLbl+'" placeholder="Promo name" style="width:100%;padding:5px 7px;border:1px solid var(--line);border-radius:4px;font-size:12px;font-family:\'DM Sans\',sans-serif"></td>' +
-          '<td style="padding:8px"><div style="display:flex;gap:4px;justify-content:center;align-items:center"><input type="date" class="promo-bookfrom" value="'+_ymdToIso(p.bookFrom)+'" style="padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11.5px;font-family:\'DM Mono\',monospace"><span style="color:#aaa">→</span><input type="date" class="promo-bookto" value="'+_ymdToIso(p.bookTo)+'" style="padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11.5px;font-family:\'DM Mono\',monospace"></div></td>' +
-          '<td style="padding:8px"><div style="display:flex;gap:4px;justify-content:center;align-items:center"><input type="date" class="promo-stayfrom" value="'+_ymdToIso(p.stayFrom)+'" style="padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11.5px;font-family:\'DM Mono\',monospace"><span style="color:#aaa">→</span><input type="date" class="promo-stayto" value="'+_ymdToIso(p.stayTo)+'" style="padding:4px 6px;border:1px solid var(--line);border-radius:4px;font-size:11.5px;font-family:\'DM Mono\',monospace"></div></td>' +
-          '<td style="padding:8px;text-align:center"><input type="number" class="promo-pct" min="-50" max="50" step="1" value="'+(+p.pct || 0)+'" style="width:60px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:12px;font-weight:600"> <span style="font-size:10px;color:#aaa">%</span></td>' +
-          '<td style="padding:8px;text-align:center"><button class="promo-del" style="background:transparent;border:1px solid #e8b8b8;color:#a83b3b;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600">✕</button></td>' +
-        '</tr>';
-      }).join('') +
-      '</tbody></table>';
-  wrap.innerHTML =
-    '<div style="border:1px solid var(--line);border-radius:8px;padding:12px;background:#fff">' +
-      '<div style="font-size:11.5px;color:var(--ink-3);margin-bottom:10px;line-height:1.5">' +
-        'Promo overrides for <b>'+lbl+'</b>. Each promo defines a <b>booking window</b> (when the promo is active for new bookings) ' +
-        'and a <b>stay window</b> (which stay-dates the promo affects). When TODAY falls inside the booking window, ' +
-        'all stay-dates inside the stay window receive a <b>premium %</b> on top of the RMES suggested price ' +
-        '(prevents the engine from suggesting too low a price when you are running a promo).' +
-      '</div>' +
-      '<div id="rmes-promos-list">' + rowsHtml + '</div>' +
-      '<div style="margin-top:12px;display:flex;gap:8px;align-items:center">' +
-        '<button id="rmes-promo-add" style="font-size:12px;padding:7px 14px;background:linear-gradient(135deg,#c4823b,#d99a4e);color:#fff;border:none;border-radius:5px;font-weight:600;cursor:pointer">+ Add promo</button>' +
-        '<span style="font-size:11px;color:var(--ink-3)">Changes are saved with the "Apply changes" button at the bottom of the tab.</span>' +
-      '</div>' +
-    '</div>';
-  // Listeners
-  function _collectAndSave(){
-    const rows = wrap.querySelectorAll('tr[data-promo-id]');
-    const arr = [];
-    rows.forEach(tr => {
-      const id = tr.getAttribute('data-promo-id');
-      const label = (tr.querySelector('.promo-label')||{}).value || '';
-      const bookFrom = _isoToYmd((tr.querySelector('.promo-bookfrom')||{}).value);
-      const bookTo   = _isoToYmd((tr.querySelector('.promo-bookto')||{}).value);
-      const stayFrom = _isoToYmd((tr.querySelector('.promo-stayfrom')||{}).value);
-      const stayTo   = _isoToYmd((tr.querySelector('.promo-stayto')||{}).value);
-      const pctI = tr.querySelector('.promo-pct');
-      const pct = pctI ? +pctI.value : 0;
-      arr.push({ id, label, bookFrom, bookTo, stayFrom, stayTo, pct: isFinite(pct) ? pct : 0 });
-    });
-    _setPromosForStruct(sel, arr);
-  }
-  wrap.querySelectorAll('input').forEach(inp => {
-    inp.addEventListener('input', () => {
-      _collectAndSave();
-      if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
-    });
-  });
-  wrap.querySelectorAll('.promo-del').forEach(btn => {
-    btn.addEventListener('click', (ev) => {
-      const tr = ev.currentTarget.closest('tr[data-promo-id]');
-      if (!tr) return;
-      const id = tr.getAttribute('data-promo-id');
-      const cur = _getPromosForStruct(sel).filter(p => p.id !== id);
-      _setPromosForStruct(sel, cur);
-      _renderRmesPromosBox(sel);
-      if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
-    });
-  });
-  const addBtn = document.getElementById('rmes-promo-add');
-  if (addBtn) addBtn.addEventListener('click', () => {
-    const cur = _getPromosForStruct(sel);
-    const newId = 'p_' + Date.now() + '_' + Math.floor(Math.random()*1000);
-    // Default: booking window = oggi + 14gg, stay window = +30gg da oggi a +60gg
-    const _t = new Date(TODAY); _t.setHours(0,0,0,0);
-    const _bookFromN = _t.getFullYear()*10000 + (_t.getMonth()+1)*100 + _t.getDate();
-    const _t14 = new Date(_t); _t14.setDate(_t14.getDate()+14);
-    const _bookToN = _t14.getFullYear()*10000 + (_t14.getMonth()+1)*100 + _t14.getDate();
-    const _t30 = new Date(_t); _t30.setDate(_t30.getDate()+30);
-    const _stayFromN = _t30.getFullYear()*10000 + (_t30.getMonth()+1)*100 + _t30.getDate();
-    const _t60 = new Date(_t); _t60.setDate(_t60.getDate()+60);
-    const _stayToN = _t60.getFullYear()*10000 + (_t60.getMonth()+1)*100 + _t60.getDate();
-    cur.push({ id: newId, label: 'New promo', bookFrom: _bookFromN, bookTo: _bookToN, stayFrom: _stayFromN, stayTo: _stayToN, pct: 10 });
-    _setPromosForStruct(sel, cur);
-    _renderRmesPromosBox(sel);
-    if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
-  });
-}
 function _renderRmesCompsetBox(sel){
   const wrap = document.getElementById('rmes-tab-comp-wrap');
   if (!wrap) return;
@@ -21979,7 +21770,7 @@ function renderAll(){
   renderOTB(CURRENT_STRUCT);
   RT_VISIBLE = null;  // reset filter on struct change
   renderRT(CURRENT_STRUCT);
-  _markHeavyTabsDirty();  // struct changed → big / baseprice / ptree / fcst must rebuild on next visit
+  _markHeavyTabsDirty();  // struct changed → big / baseprice / fcst must rebuild on next visit
   if (CURRENT_TAB === 'big') _TAB_DIRTY.big = false;  // just rendered above
   if (CURRENT_TAB === 'fcst' && typeof renderForecast === 'function'){
     renderForecast(CURRENT_STRUCT); _FCST_DIRTY = false;
@@ -23204,143 +22995,6 @@ function _bigRenderPie(sel){
   </div>`;
 }
 function _bigRenderWindowPills(){ /* toggle 1/7 rimosso: default 1 giorno, selezione dal grafico */ }
-// ===================== PRICE TREE TAB =====================
-const PTREE_KEY = 'rmes_pricetree_v1';
-function ptreeGetConfig(){
-  let c = {};
-  try { c = JSON.parse(localStorage.getItem(PTREE_KEY) || '{}'); } catch(e){}
-  return Object.assign({
-    mkBooking:57, mkExpedia:62, mkCtrip:62, mkAirbnb:10,
-    member:10, promo:20, pkg:10, nr:10, airbnb15:15, airbnb30:20,
-    spEnabled:false, spPct:30, spFrom:'', spTo:'', spBookFrom:'', spBookTo:'', days:90,
-    roomBy:{}, suppBy:{}
-  }, c);
-}
-function ptreeSaveConfig(c){ try { localStorage.setItem(PTREE_KEY, JSON.stringify(c)); } catch(e){} }
-function ptreeAutoSupp(sel, room){
-  const baseRT=(CFG.structures[sel]&&CFG.structures[sel].baseRT)||null;
-  if(!baseRT || room===baseRT) return 0;
-  try { const today=new Date(TODAY); return Math.round(_globalSupplementForRT(sel, room, today.getMonth()+1))||0; } catch(e){ return 0; }
-}
-function ptreeConfigHtml(cfg, sel){
-  const n=(id,lbl,val,w)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="number" value="${val}" style="width:${w||56}px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
-  const d=(id,lbl,val)=>`<label style="display:inline-flex;flex-direction:column;font-size:10px;color:var(--ink-3);gap:2px">${lbl}<input id="pt-${id}" type="date" value="${val||''}" style="padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace"></label>`;
-  const dopt=[30,60,90,180,365].map(x=>`<button class="pt-daybtn" data-days="${x}" style="padding:5px 11px;border:1px solid var(--line);border-radius:7px;background:${(+cfg.days===x)?'var(--sel)':'var(--surface)'};color:${(+cfg.days===x)?'#fff':'var(--ink-2)'};font-family:'DM Mono',monospace;font-size:12px;cursor:pointer">${x}d</button>`).join('');
-  const st=CFG.structures[sel]||{}; const baseRT=st.baseRT||''; const rooms=Object.keys(st.rooms||{});
-  const room=(cfg.roomBy&&cfg.roomBy[sel])||baseRT;
-  const supp=(cfg.suppBy&&cfg.suppBy[sel+'|'+room]!=null)?cfg.suppBy[sel+'|'+room]:ptreeAutoSupp(sel,room);
-  const roomSel=`<select id="pt-room" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:12px">${rooms.map(r=>`<option value="${r}" ${r===room?'selected':''}>${r}${r===baseRT?' (base)':''}</option>`).join('')}</select>`;
-  return `
-    <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
-      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Room (tree base)</span>
-        <div style="display:flex;gap:8px;align-items:flex-end">${roomSel}${n('supp','Supplement €',supp,64)}</div></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Markup % (channel base)</span>
-        <div style="display:flex;gap:8px">${n('mkBooking','Booking',cfg.mkBooking)}${n('mkExpedia','Expedia',cfg.mkExpedia)}${n('mkCtrip','Ctrip',cfg.mkCtrip)}${n('mkAirbnb','Airbnb',cfg.mkAirbnb)}</div></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Offers % (stack)</span>
-        <div style="display:flex;gap:8px">${n('member','Member',cfg.member)}${n('promo','Promo',cfg.promo)}${n('pkg','Package (Exp)',cfg.pkg,72)}${n('nr','Non-ref',cfg.nr)}</div></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Airbnb LOS %</span>
-        <div style="display:flex;gap:8px">${n('airbnb15','&gt;15 nights',cfg.airbnb15,72)}${n('airbnb30','&ge;1 month',cfg.airbnb30,72)}</div></div>
-      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Days to show</span>
-        <div style="display:flex;gap:6px">${dopt}</div></div>
-      <div style="display:flex;flex-direction:column;gap:4px;padding:6px 10px;background:rgba(195,131,59,.06);border-radius:8px">
-        <label style="font-size:10px;color:var(--ink-2);font-weight:600;text-transform:uppercase;letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px"><input id="pt-spEnabled" type="checkbox" ${cfg.spEnabled?'checked':''}> Special promo (Booking/Expedia)</label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">${n('spPct','Promo %',cfg.spPct)}${d('spBookFrom','Booked from',cfg.spBookFrom)}${d('spBookTo','Booked to',cfg.spBookTo)}${d('spFrom','Travel from',cfg.spFrom)}${d('spTo','Travel to',cfg.spTo)}</div></div>
-      <button id="pt-apply" style="padding:8px 18px;background:var(--sel);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;align-self:flex-end">Apply</button>
-    </div>`;
-}
-function ptreeWireConfig(sel){
-  document.querySelectorAll('.pt-daybtn').forEach(b=>b.addEventListener('click',()=>{ const c=ptreeGetConfig(); c.days=+b.dataset.days; ptreeSaveConfig(c); const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built; renderPriceTree(CURRENT_STRUCT); }));
-  const rm=document.getElementById('pt-room');
-  if(rm) rm.addEventListener('change',()=>{ const c=ptreeGetConfig(); c.roomBy=c.roomBy||{}; c.roomBy[sel]=rm.value; ptreeSaveConfig(c); const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built; renderPriceTree(sel); });
-  const btn=document.getElementById('pt-apply'); if(!btn) return;
-  btn.addEventListener('click', ()=>{
-    const g=id=>{const el=document.getElementById('pt-'+id);return el?el.value:'';};
-    const c=ptreeGetConfig();
-    ['mkBooking','mkExpedia','mkCtrip','mkAirbnb','member','promo','pkg','nr','airbnb15','airbnb30','spPct'].forEach(k=>{const v=parseFloat(g(k));if(isFinite(v))c[k]=v;});
-    c.spFrom=g('spFrom'); c.spTo=g('spTo'); c.spBookFrom=g('spBookFrom'); c.spBookTo=g('spBookTo');
-    const cb=document.getElementById('pt-spEnabled'); c.spEnabled=cb?cb.checked:false;
-    const room=g('room'); if(room){ c.roomBy=c.roomBy||{}; c.roomBy[sel]=room; const sv=parseFloat(g('supp')); if(isFinite(sv)){ c.suppBy=c.suppBy||{}; c.suppBy[sel+'|'+room]=sv; } }
-    ptreeSaveConfig(c);
-    const ch=document.getElementById('ptree-config'); if(ch) delete ch.dataset.built;
-    renderPriceTree(sel);
-  });
-}
-function renderPriceTree(sel){
-  const tHost=document.getElementById('ptree-table'), cHost=document.getElementById('ptree-config');
-  if(!tHost) return;
-  const cfg=ptreeGetConfig();
-  if(cHost && (cHost.dataset.built!=='1' || cHost.dataset.struct!==sel)){ cHost.innerHTML=ptreeConfigHtml(cfg, sel); cHost.dataset.built='1'; cHost.dataset.struct=sel; ptreeWireConfig(sel); }
-  const f=x=>(x||0)/100;
-  const m=f(cfg.member), pk=f(cfg.pkg), nr=f(cfg.nr);
-  const mk={booking:1+f(cfg.mkBooking),expedia:1+f(cfg.mkExpedia),ctrip:1+f(cfg.mkCtrip),airbnb:1+f(cfg.mkAirbnb)};
-  const spN=(s)=>s?+String(s).replace(/-/g,''):0;
-  const today=new Date(TODAY);today.setHours(0,0,0,0);
-  const todayN=ymd(today);
-  const baseRT=(CFG.structures[sel]&&CFG.structures[sel].baseRT)||'';
-  const room=(cfg.roomBy&&cfg.roomBy[sel])||baseRT;
-  const supp=(cfg.suppBy&&cfg.suppBy[sel+'|'+room]!=null)?(+cfg.suppBy[sel+'|'+room]):ptreeAutoSupp(sel,room);
-  const promoFor=(ch,dn)=>{
-    if(cfg.spEnabled && (ch==='booking'||ch==='expedia')){
-      const bookOk=(!cfg.spBookFrom||todayN>=spN(cfg.spBookFrom))&&(!cfg.spBookTo||todayN<=spN(cfg.spBookTo));
-      const travelOk=(!cfg.spFrom||dn>=spN(cfg.spFrom))&&(!cfg.spTo||dn<=spN(cfg.spTo));
-      if(bookOk&&travelOk) return f(cfg.spPct);
-    }
-    return f(cfg.promo);
-  };
-  const N=Math.max(7,Math.min(365,cfg.days||90));
-  const days=[]; for(let i=0;i<N;i++){ days.push(new Date(today.getTime()+i*86400000)); }
-  const L=days.map(d=>{ let v=null; try{ v=newrmesGetCurrentReference(sel, ymd(d)); }catch(e){} return (v&&isFinite(v)&&v>0)?(v+supp):null; });
-  const grpColor={Beddy:'#2f7fb5',Booking:'#003580',Expedia:'#c4823b',Ctrip:'#2577e3',Airbnb:'#e0565b','':'#6b5b3f'};
-  const lines=[
-    {g:'',lbl:'Last Update (L)',c:(L)=>L,bold:true},
-    {g:'Beddy',lbl:'Flexible',c:(L)=>L,cmp:'flex',beddy:true},
-    {g:'Beddy',lbl:'Non-ref (\u221210%)',c:(L)=>L*(1-nr),cmp:'nr',beddy:true},
-    {g:'Booking',lbl:'Flex \u2212member \u2212promo',c:(L,dn)=>L*mk.booking*(1-m-promoFor('booking',dn)),cmp:'flex'},
-    {g:'Booking',lbl:'NR \u2212member \u2212promo',c:(L,dn)=>L*mk.booking*(1-nr)*(1-m-promoFor('booking',dn)),cmp:'nr'},
-    {g:'Expedia',lbl:'Flex \u2212mem \u2212promo \u2212pkg',c:(L,dn)=>L*mk.expedia*(1-m-pk-promoFor('expedia',dn)),cmp:'flex'},
-    {g:'Expedia',lbl:'NR \u2212mem \u2212promo \u2212pkg',c:(L,dn)=>L*mk.expedia*(1-nr)*(1-m-pk-promoFor('expedia',dn)),cmp:'nr'},
-    {g:'Ctrip',lbl:'Flex \u2212member \u2212promo',c:(L,dn)=>L*mk.ctrip*(1-m-promoFor('ctrip',dn)),cmp:'flex'},
-    {g:'Ctrip',lbl:'NR \u2212member \u2212promo',c:(L,dn)=>L*mk.ctrip*(1-nr)*(1-m-promoFor('ctrip',dn)),cmp:'nr'},
-    {g:'Airbnb',lbl:'Base',c:(L)=>L*mk.airbnb,cmp:'flex'},
-    {g:'Airbnb',lbl:'\u221215% (>15 nights)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb15))},
-    {g:'Airbnb',lbl:'\u221220% (\u22651 month)',c:(L)=>L*mk.airbnb*(1-f(cfg.airbnb30))},
-  ];
-  // valori precalcolati + min per rate type (per colorare Beddy)
-  const vals=lines.map(ln=>days.map((d,i)=>{ const l=L[i]; return (l==null)?null:ln.c(l, ymd(d)); }));
-  const minFlex=days.map((d,di)=>{ let mn=Infinity; lines.forEach((ln,li)=>{ if(ln.cmp==='flex'&&vals[li][di]!=null) mn=Math.min(mn,vals[li][di]); }); return mn; });
-  const minNR=days.map((d,di)=>{ let mn=Infinity; lines.forEach((ln,li)=>{ if(ln.cmp==='nr'&&vals[li][di]!=null) mn=Math.min(mn,vals[li][di]); }); return mn; });
-  const fmtP=v=>(v==null||!isFinite(v))?'\u2014':'\u20ac'+Math.round(v);
-  const DOW=['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  let head='<tr><th style="position:sticky;left:0;background:var(--surface);z-index:3;text-align:left;min-width:172px">Channel / rate \u2193 \u00b7 Date \u2192</th>';
-  days.forEach(d=>{ const wk=(d.getDay()===0||d.getDay()===6); head+=`<th style="min-width:62px;text-align:center;padding:6px 4px;${wk?'background:rgba(195,131,59,.06)':''}"><div style="font-family:'DM Mono',monospace">${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}</div><div style="font-size:9px;color:${wk?'#c4823b':'var(--ink-3)'};font-weight:600">${DOW[d.getDay()]}</div></th>`; });
-  head+='</tr>';
-  let body=''; let lastG=null;
-  lines.forEach((ln,li)=>{
-    if(ln.g!==lastG && ln.g!==''){ body+=`<tr><td colspan="${N+1}" style="background:${grpColor[ln.g]}14;color:${grpColor[ln.g]};font-weight:700;font-size:11px;padding:4px 8px;position:sticky;left:0">${ln.g}</td></tr>`; lastG=ln.g; }
-    const lblStyle = ln.bold?'font-weight:700;color:var(--ink)':'color:var(--ink-2)';
-    body+=`<tr><td style="position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;${lblStyle};border-left:2px solid ${grpColor[ln.g]||'transparent'}">${ln.lbl}</td>`;
-    days.forEach((d,i)=>{ const v=vals[li][i]; const wk=(d.getDay()===0||d.getDay()===6);
-      let bg=wk?'rgba(195,131,59,.04)':''; let col='';
-      if(ln.beddy && v!=null){ const mn=(ln.cmp==='flex')?minFlex[i]:minNR[i];
-        if(v<=mn+0.5){ bg='rgba(61,122,75,.16)'; col='#2f6b3f'; }  // Beddy è il più economico -> verde
-        else { bg='rgba(168,59,59,.14)'; col='#a83b3b'; }          // c'è un canale più economico (stessa tariffa) -> rosso
-      }
-      body+=`<td style="text-align:center;font-family:'DM Mono',monospace;${ln.bold?'font-weight:700':''};background:${bg||'transparent'};${col?'color:'+col+';font-weight:700':''}">${fmtP(v)}</td>`; });
-    body+='</tr>';
-  });
-  tHost.innerHTML=`
-    <div id="ptree-topscroll" style="overflow-x:auto;overflow-y:hidden"><div id="ptree-topscroll-inner" style="height:1px"></div></div>
-    <div id="ptree-scroll" style="overflow-x:auto"><table class="data" style="font-size:12px;border-collapse:collapse;white-space:nowrap">${head}${body}</table></div>`;
-  try {
-    const topScroll=document.getElementById('ptree-topscroll'), topInner=document.getElementById('ptree-topscroll-inner'), scrollWrap=document.getElementById('ptree-scroll');
-    const tbl=scrollWrap.querySelector('table');
-    const syncW=()=>{ if(tbl&&topInner) topInner.style.width=tbl.scrollWidth+'px'; };
-    syncW(); setTimeout(syncW,120);
-    let syncing=false;
-    topScroll.addEventListener('scroll',()=>{ if(syncing)return; syncing=true; scrollWrap.scrollLeft=topScroll.scrollLeft; syncing=false; });
-    scrollWrap.addEventListener('scroll',()=>{ if(syncing)return; syncing=true; topScroll.scrollLeft=scrollWrap.scrollLeft; syncing=false; });
-  } catch(e){}
-}
 function setTab(name){
   CURRENT_TAB = name;
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
@@ -23357,8 +23011,6 @@ function setTab(name){
   if (name === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
   }
-  if (name === 'ptree' && _TAB_DIRTY.ptree && typeof renderPriceTree === 'function'){
-    try { renderPriceTree(CURRENT_STRUCT); _TAB_DIRTY.ptree = false; } catch(e){ console.error('renderPriceTree', e); }
-  }
+
   if (typeof updateNotesBadge === 'function') updateNotesBadge();
 }

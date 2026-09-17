@@ -1582,7 +1582,6 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
     <button class="tab" data-tab="pri"><span class="ico" style="color:#b1432f"><svg viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></span>RMES</button>
     <button class="tab" data-tab="baseprice"><span class="ico" style="color:#2e7d6b"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 8.6a4 4 0 1 0 0 6.8"/><line x1="6.5" y1="10.6" x2="13" y2="10.6"/><line x1="6.5" y1="13.4" x2="13" y2="13.4"/></svg></span>Export Pricing</button>
     <button class="tab" data-tab="checks"><span class="ico" style="color:#b06fa0"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>Check Updates</button>
-    <button class="tab" data-tab="ptree"><span class="ico" style="color:#7a4d96"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.2"/><circle cx="18" cy="4" r="2.2"/><circle cx="18" cy="12" r="2.2"/><circle cx="18" cy="20" r="2.2"/><path d="M8.2 6H12M12 4v16M12 12h3.6M12 4h3.6M12 20h3.6"/></svg></span>Price Tree</button>
     <button class="tab" data-tab="instr"><span class="ico" style="color:#8b6f47"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>Playbook</button>
   </nav>
   <main>
@@ -2143,29 +2142,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- Box 3: Daily Pickup thresholds — arancione -->
-    <div class="rmes-box rmes-box-orange">
-      <div class="rmes-box-head">
-        <div class="rmes-box-icon">📈</div>
-        <div class="rmes-box-titles">
-          <h3>② Daily Pickup thresholds</h3>
-          <div class="rmes-box-sub" id="rmes-tab-pkthr-sub">property: —</div>
-        </div>
-        <div class="rmes-box-actions">
-          <button id="rmes-tab-pkthr-reset" class="rmes-btn-ghost" title="Reset thresholds to default scale for the current property">↺ Reset to default</button>
-        </div>
-      </div>
-      <div class="rmes-box-body">
-        <div id="rmes-tab-pkthr-bar"></div>
-      </div>
-    </div>
-
     <!-- Box 4: EVENT FACTOR — viola -->
     <div class="rmes-box rmes-box-purple">
       <div class="rmes-box-head">
         <div class="rmes-box-icon">✨</div>
         <div class="rmes-box-titles">
-          <h3>③ Event Factor</h3>
+          <h3>② Events</h3>
           <div class="rmes-box-sub">shared across all properties</div>
         </div>
       </div>
@@ -2174,26 +2156,12 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       </div>
     </div>
 
-    <!-- ============ PROMOS — peach ============ -->
-    <div class="rmes-box rmes-box-peach">
-      <div class="rmes-box-head">
-        <div class="rmes-box-icon">🎯</div>
-        <div class="rmes-box-titles">
-          <h3>④ Promo Overrides</h3>
-          <div class="rmes-box-sub">temporary premium for promo periods · acts on RMES suggested price</div>
-        </div>
-      </div>
-      <div class="rmes-box-body">
-        <div id="rmes-promos-wrap"></div>
-      </div>
-    </div>
-
     <!-- ============ FOUNDATION PRICING CONFIG — oro ============ -->
     <div class="rmes-box rmes-box-gold">
       <div class="rmes-box-head">
         <div class="rmes-box-icon">⚡</div>
         <div class="rmes-box-titles">
-          <h3>Ⓑ Base Price <span style="font-size:10px;font-weight:700;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">active</span></h3>
+          <h3>③ Base Price <span style="font-size:10px;font-weight:700;background:#1e6b4a;color:#fff;padding:2px 8px;border-radius:10px;margin-left:8px;letter-spacing:.04em;text-transform:uppercase">active</span></h3>
           <div class="rmes-box-sub">anchor, growth, floor, OTA markup, compset positioning · LMF matrix</div>
         </div>
       </div>
@@ -2210,6 +2178,11 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
       <div class="panel-head">
         <div>
           <h3>Channel mix &amp; price by channel</h3>
+          <div style="font-size:11.5px;color:var(--ink-3);line-height:1.5;margin-top:2px">
+            Here to check the two settings above, not as a report: the <b>markups</b> in Base Price and the
+            <b>non-refundable discount</b> in the signals. If direct and Booking are further apart than the markup
+            you configured, the markup is the thing to look at.
+          </div>
           <div class="panel-sub" id="chmix-sub"></div>
         </div>
         <div id="chmix-filter" class="bw-mfilter"></div>
@@ -2313,11 +2286,7 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
   </section>
 
   <!-- ============ SECTION PRICE TREE ============ -->
-  <section class="tab-panel" id="panel-ptree">
-    <div class="section-head"><h2>Price Tree</h2></div>
-    <div class="panel"><div class="panel-body"><div id="ptree-config"></div></div></div>
-    <div class="panel"><div class="panel-body flush" style="padding:0"><div id="ptree-table"></div></div></div>
-  </section>
+  
 
   <!-- ============ SECTION CHECKS — Activity Log ============ -->
   <section class="tab-panel" id="panel-checks">
