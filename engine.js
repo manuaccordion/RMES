@@ -14114,13 +14114,20 @@ function renderSellStrategy(sel){
           if (o && o.price > 0){ cur = o.price; src = 'manual'; }
         }
       } catch(e){}
-      const tip = src === 'manual'   ? 'Loaded by hand. Clear the box to hand the date back to the engine.'
+      /* CASELLA VUOTA = stai seguendo il motore.
+         Niente precompilazione: un numero gia' scritto sembrerebbe una decisione
+         presa, e non si distinguerebbe da un valore vecchio rimasto li'.
+         Vuota  -> segui il suggerimento, il calcolo parte dal Base Price.
+         Scritta -> e' un override, il calcolo parte dal tuo prezzo. */
+      const shown = cur;
+      const tip = src === 'manual'   ? 'Loaded by hand \u2014 the suggestion is calculated from this price. Clear the box to follow the engine again.'
                 : src === 'accepted' ? 'Filled by accepting the RMES suggestion. Type over it to record a different price.'
-                : 'Nothing recorded yet: the engine decides this date. Type the price you loaded on Beddy, or accept the RMES suggestion.';
-      const col = src === 'manual' ? '#1e4a6b' : (src === 'accepted' ? '#2c7a4b' : '#b9b3a6');
+                : 'Empty means you are following the engine: it loads what the RMES suggests and calculates from the Base Price.\nType a number here only if you loaded something different \u2014 the suggestion will then be calculated from your price.';
+      const col = src === 'manual' ? '#1e4a6b' : (src === 'accepted' ? '#2c7a4b' : '#b0a89a');
       return '<td class="cell-mono sell-loaded-cell" style="text-align:center" title="' + escapeHtml(tip) + '">'
            + '<input type="number" class="sell-loaded-inp" data-struct="' + escapeHtml(sel) + '" data-rt="' + escapeHtml(baseRTK)
-           + '" data-date="' + isoD + '" value="' + (cur != null ? Math.round(cur) : '') + '" placeholder="\u2014"'
+           + '" data-date="' + isoD + '"'
+           + ' value="' + (shown != null ? Math.round(shown) : '') + '" placeholder="\u2014"'
            + ' style="width:58px;padding:3px 5px;border:1px solid var(--line);border-radius:4px;'
            + "font-family:'DM Mono',monospace;font-size:11.5px;text-align:center;color:" + col + ';'
            + (src ? 'font-weight:700;' : '') + 'background:transparent"></td>';
