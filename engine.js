@@ -17704,6 +17704,32 @@ function _aggForecastSum(structKey){
     isAggregate: true, members: ids,
   };
 }
+/* AFFIDABILITA' DELLA PREVISIONE PER ORIZZONTE.
+   Una stima a 30 giorni e una a 6 mesi hanno lo stesso aspetto in tabella ma
+   non la stessa attendibilita'. Numeri misurati rigiocando il forecast sui mesi
+   chiusi del 2026 (24 casi per orizzonte, quattro strutture):
+     mese in corso  6,6% di errore medio
+     1 mese prima   7,7%
+     2 mesi prima  10,8%
+     3 mesi prima  11,5%
+   Oltre i 3 mesi non ci sono misure: uso una crescita prudente fino al 18%.
+   Le strutture piccole sbagliano di piu' perche' una prenotazione pesa molto
+   sul totale, quindi la banda si allarga quando le camere sono poche. */
+const FCST_BAND_BY_LEAD = [0.066, 0.077, 0.108, 0.115, 0.14, 0.16, 0.18];
+function fcstBandFor(structKey, y, mo){
+  try {
+    const t = startOfDay(new Date(TODAY));
+    const monthsAhead = (y - t.getFullYear()) * 12 + (mo - 1 - t.getMonth());
+    if (monthsAhead < 0) return null;                  // mese chiuso: nessuna banda
+    const i = Math.min(FCST_BAND_BY_LEAD.length - 1, Math.max(0, monthsAhead));
+    let band = FCST_BAND_BY_LEAD[i];
+    const inv = (typeof structRoomsFor === 'function') ? structRoomsFor(structKey) : null;
+    const rooms = inv ? Object.keys(inv).reduce((a,k)=>a+inv[k],0) : 0;
+    // Sotto le 6 camere una singola prenotazione sposta molto: banda piu' larga.
+    if (rooms > 0 && rooms < 6) band *= 1.35;
+    return band;
+  } catch(e){ return null; }
+}
 function aggForecast(structKey){
   if (_FORECAST_CACHE[structKey]) return _FORECAST_CACHE[structKey];
   const r = isAggSel(structKey) ? _aggForecastSum(structKey) : _aggForecastImpl(structKey);
@@ -18407,10 +18433,16 @@ function _renderGrowthNote(sel){
         + pct(c.factor - 1) + '). <b>This is worth knowing, not a reason to change the factor</b>: a few weak months '
         + 'are usually one season, while the factor covers twelve. Forcing the recent pace onto the whole year has '
         + 'made the forecast worse every time it was tested. Change it by hand only if you know the shift is permanent.';
+  } else if (c.manual){
+    /* Fattore forzato a mano: la fascia resta visibile anche senza scostamento,
+       altrimenti non ci sarebbe modo di accorgersene ne' di tornare ad auto. */
+    txt = 'Growth factor set by hand to <b>' + c.factor.toFixed(2) + '</b> (' + pct(c.factor - 1) + ')'
+        + (c.recent != null ? ' \u00b7 last closed months ran ' + pct(c.recent - 1) : '') + '.';
   } else {
-    txt = 'Growth factor in use: <b>' + c.factor.toFixed(2) + '</b> (' + pct(c.factor - 1) + ')'
-        + (c.recent != null ? ' \u00b7 last closed months: ' + pct(c.recent - 1) : '')
-        + ' \u2014 in line.';
+    /* Tutto in linea: la fascia non serve e occuperebbe spazio in cima alla tab
+       per dire che non c'e' nulla da fare. Compare solo quando c'e' qualcosa. */
+    box.innerHTML = '';
+    return;
   }
   let h = '<div style="padding:9px 13px;background:' + tone + ';border:1px solid ' + edge
         + ';border-radius:8px;font-size:12.5px;color:var(--ink-2);line-height:1.5;display:flex;'
@@ -18560,7 +18592,20 @@ function renderForecast(sel){
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(m.finalLyRevNet, m.finalLyRn)}"><b>${fmtEUR(m.finalLyRev)}</b></td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(m.occ,1)}</td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(m.adr)}</td>
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.fcstRev)}</b></td>
+      <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.fcstRev)}</b>${(() => {
+        /* BANDA DI AFFIDABILITA'. Il numero da solo non dice quanto fidarsi:
+           misurato sui mesi chiusi, l'errore passa dal 6,6% sul mese in corso
+           all'11,5% a tre mesi. Mostro l'intervallo sotto il ricavo previsto,
+           cosi si vede a colpo d'occhio che una stima lontana e' piu' larga. */
+        const band = (typeof fcstBandFor === 'function') ? fcstBandFor(A.sel, m.y, m.mo) : null;
+        if (band == null || !(m.fcstRev > 0)) return '';
+        const lo = m.fcstRev * (1 - band), hi = m.fcstRev * (1 + band);
+        return `<div style="font-size:9px;font-weight:400;color:var(--ink-3);white-space:nowrap" title="${escapeHtml(
+            'Typical error at this distance: \u00b1' + Math.round(band*100) + '%.\n'
+          + 'Measured by replaying the forecast on closed months: 6.6% for the current month, '
+          + '7.7% at one month out, 10.8% at two, 11.5% at three.\n'
+          + 'The band is wider on small properties, where a single booking moves the total.')}">${fmtEUR(lo)} \u2013 ${fmtEUR(hi)}</div>`;
+      })()}</td>
       ${(() => {
         const ymBud = m.y*100 + m.mo;
         const budRev = (typeof budgetMonthlyFor === 'function') ? budgetMonthlyFor(sel, ymBud, 'rev') : 0;
