@@ -816,6 +816,8 @@ const RMES_CLOUD = (function(){
 /* Hook chiamato dal listener realtime quando arriva un aggiornamento da un altro browser.
    Ridisegna le viste correnti senza ricaricare la pagina. */
 function rmesCloudOnRemoteUpdate(){
+  // Lo stato e' cambiato da fuori: la cache degli archivi non vale piu'.
+  try { if (typeof _newrmesInvalidateObjCache === 'function') _newrmesInvalidateObjCache(); } catch(e){}
   try {
     if (typeof CURRENT_TAB !== 'undefined'){
       if (CURRENT_TAB === 'sell' && typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
@@ -1677,13 +1679,6 @@ function structRoomsFor(sel){
    ymdNum è la data come YYYYMMDD numerico.
    Per altre strutture l'inventario è statico. */
 const ALFANI_JS_SPLIT_YMD = 20250201;  // 1 febbraio 2025 = data separazione JS dalla Classic
-function structRoomsForAt(sel, ymdNum){
-  if (sel !== 'alfani') return structRoomsFor(sel);
-  if (ymdNum < ALFANI_JS_SPLIT_YMD){
-    return {'Classic':4, 'Superior':4, 'Junior Suite':0, 'Deluxe':1};
-  }
-  return CFG.structures.alfani.rooms;  // post-split (current)
-}
 function structRoomsTotal(sel){
   if (sel && !isAggSel(sel) && CFG.structures[sel]) return CFG.structures[sel].roomsTotal;
   let tot = 0;
@@ -1901,10 +1896,6 @@ function structLabel(sel){
   if (isStructGroup(sel)) return STRUCT_GROUPS[sel].label + ' (all)';
   if (isAggSel(sel)) return 'All properties';
   return (CFG.structures[sel] && CFG.structures[sel].label) || String(sel);
-}
-function filteredBookings(sel){
-  const keys = new Set(structKeysFor(sel));
-  return BOOKINGS.filter(b => keys.has(b.struct));
 }
 /* -------- MONTH ALLOCATION (split stay across months) --------
    For metrics by month-of-stay: distribute roomNights and revenue per night
@@ -2323,147 +2314,6 @@ function aggRoomType(sel){
    OTB cumulato per mese (al 30-aprile-style) vs target di budget.
    - OTB mese m = revenue allocato sul mese m da prenotazioni con bookYmd<=TODAY e dIn in CUR_YEAR.
 */
-function aggBudget(sel){
-  const keys = new Set(structKeysFor(sel));
-  const fmonths = fiscalMonths(); // [202605, 202606, ..., 202704]
-  const otb = {};
-  const pk7 = {};
-  const pk7S = {};
-  for (const ym of fmonths){
-    otb[ym] = {rev:0, rn:0};
-    pk7[ym] = {rev:0, rn:0};
-    pk7S[ym] = {rev:0, rn:0};
-  }
-  const _today = new Date(TODAY); _today.setHours(0,0,0,0);
-  const pk7Start = new Date(_today.getTime() - 6*24*60*60*1000);
-  const pk7StartYmd = ymd(pk7Start);
-  const stlyEnd   = new Date(_today.getTime()  - 364*24*60*60*1000);
-  const stlyStart = new Date(stlyEnd.getTime() - 6*24*60*60*1000);
-  const pk7StlyStartYmd = ymd(stlyStart);
-  const pk7StlyEndYmd   = ymd(stlyEnd);
-  for (const b of BOOKINGS){
-    if (b.cancelled) continue;
-    if (!keys.has(b.struct)) continue;
-    if (b.bookYmd > TODAY_YMD) continue;
-    const alloc = monthAllocate(b.dIn, b.dOut, b.revPerNight);
-    const inPk7    = (b.bookYmd >= pk7StartYmd     && b.bookYmd <= TODAY_YMD);
-    const inPk7Stly = (b.bookYmd >= pk7StlyStartYmd && b.bookYmd <= pk7StlyEndYmd);
-    for (const k in alloc){
-      const ym = +k;
-      if (otb[ym]){
-        otb[ym].rev += alloc[k].rev;
-        otb[ym].rn  += alloc[k].rn;
-        if (inPk7){
-          pk7[ym].rev += alloc[k].rev;
-          pk7[ym].rn  += alloc[k].rn;
-        }
-      }
-    }
-    if (inPk7Stly){
-      const dInS = new Date(b.dIn.getTime()  + 364*24*60*60*1000);
-      const dOutS = new Date(b.dOut.getTime() + 364*24*60*60*1000);
-      const allocS = monthAllocate(dInS, dOutS, b.revPerNight);
-      for (const k in allocS){
-        const ym = +k;
-        if (pk7S[ym]){
-          pk7S[ym].rev += allocS[k].rev;
-          pk7S[ym].rn  += allocS[k].rn;
-        }
-      }
-    }
-  }
-  const rooms = structRoomsTotal(sel);
-  const todayY = TODAY.getFullYear();
-  const todayM = TODAY.getMonth() + 1;
-  const todayD = TODAY.getDate();
-  const todayYM = todayY*100 + todayM;
-  const dimCurrent = new Date(todayY, todayM, 0).getDate();
-  const daysLeftThisMonth = Math.max(0, dimCurrent - todayD);
-  const rows = [];
-  let cumOtb=0, cumBud=0, totOtb=0, totBud=0;
-  let cumGapToClose=0, cumDaysToYearEnd=0;
-  let cumDaysToMonthEnd = 0;
-  for (const ym of fmonths){
-    const y = Math.floor(ym/100), m = ym%100;
-    const dim = new Date(y, m, 0).getDate();
-    const cap = rooms * dim;
-    const targetRev = budgetMonthlyFor(sel, ym, 'rev');
-    const targetOcc = budgetMonthlyFor(sel, ym, 'occ');
-    const targetAdr = budgetMonthlyFor(sel, ym, 'adr');
-    const actualOcc = cap>0 ? otb[ym].rn / cap : 0;
-    const actualAdr = otb[ym].rn>0 ? otb[ym].rev / otb[ym].rn : 0;
-    let monthState = 'past';
-    let daysToMonthEnd = 0;       // cumulative days from today to end of this month
-    let daysOwnMonth = 0;         // days in this month alone (0 if past, partial if current, full if future)
-    if (ym < todayYM){
-      monthState = 'past';
-      daysToMonthEnd = 0;
-      daysOwnMonth = 0;
-    } else if (ym === todayYM){
-      monthState = 'current';
-      daysOwnMonth = daysLeftThisMonth;
-      daysToMonthEnd = daysLeftThisMonth;
-      cumDaysToMonthEnd = daysLeftThisMonth;
-    } else {
-      monthState = 'future';
-      daysOwnMonth = dim;
-      cumDaysToMonthEnd += dim;
-      daysToMonthEnd = cumDaysToMonthEnd;
-    }
-    const gap = otb[ym].rev - targetRev;
-    let runRate = NaN;
-    if (gap >= 0){
-      runRate = 0;
-    } else if (daysToMonthEnd > 0){
-      runRate = (-gap) / daysToMonthEnd;
-    } // else past month with negative gap -> NaN
-    const pk7Rate  = pk7[ym].rev  / 7;
-    const pk7RateS = pk7S[ym].rev / 7;
-    cumOtb += otb[ym].rev;
-    cumBud += targetRev;
-    totOtb += otb[ym].rev;
-    totBud += targetRev;
-    if (monthState !== 'past' && gap < 0){
-      cumGapToClose += -gap;
-    }
-    rows.push({
-      ym, y, m, dim, cap, monthState,
-      daysToMonthEnd, daysOwnMonth,
-      otb: otb[ym].rev,
-      rn:  otb[ym].rn,
-      target: targetRev,
-      targetOcc, targetAdr,
-      actualOcc, actualAdr,
-      pct: targetRev>0 ? otb[ym].rev/targetRev : NaN,
-      gap,
-      gapOcc: actualOcc - targetOcc,
-      gapAdr: actualAdr - targetAdr,
-      cumOtb, cumBud,
-      cumPct: cumBud>0 ? cumOtb/cumBud : NaN,
-      runRate,        // €/giorno necessario fino a fine mese (cumulativo)
-      pk7Rev: pk7[ym].rev,
-      pk7Rate,        // €/giorno medio pickup ultimi 7 days allocato a questo mese
-      pk7RevS: pk7S[ym].rev,
-      pk7RateS,       // average €/day pickup STLY (same period last year)
-    });
-  }
-  const lastRow = rows[rows.length-1];
-  const yearDaysRemain = lastRow ? lastRow.daysToMonthEnd : 0;
-  const yearRunRate = yearDaysRemain>0 ? cumGapToClose/yearDaysRemain : NaN;
-  let totPk7=0, totPk7S=0;
-  for (const r of rows){ totPk7 += r.pk7Rev; totPk7S += r.pk7RevS; }
-  const yearPk7Rate  = totPk7  / 7;
-  const yearPk7RateS = totPk7S / 7;
-  return {
-    rows, totOtb, totBud, totPct: totBud>0?totOtb/totBud:NaN,
-    fmonths,
-    yearRunRate, yearPk7Rate, yearPk7RateS,
-    pk7WindowStart: pk7StartYmd,
-    pk7WindowEnd:   TODAY_YMD,
-    pk7StlyWindowStart: pk7StlyStartYmd,
-    pk7StlyWindowEnd:   pk7StlyEndYmd,
-  };
-}
 /* PICKUP MATRIX
    Ultime 4 settimane (lunedì → domenica), terminanti alla settimana che contiene OGGI.
    Per ogni settimana: pickup = booking effettuate in quella settimana (bookDate)
@@ -4014,88 +3864,6 @@ function aggMarket(sel){
 /* Custom dual-line chart for Market: solid market line + own dots
    for days with bookings. Uses similar style to lineChart helper but
    accepts null values for own series. */
-function marketDualChart(mktArr, ownArr, labels, rows){
-  const W = 1080, H = 280;
-  const padL = 50, padR = 16, padT = 14, padB = 30;
-  const innerW = W - padL - padR;
-  const innerH = H - padT - padB;
-  const N = mktArr.length;
-  if (!N) return '';
-  const ownVals = ownArr.filter(v=>v!=null);
-  const allVals = mktArr.concat(ownVals);
-  let yMin = Math.min(...allVals);
-  let yMax = Math.max(...allVals);
-  const yPad = (yMax - yMin) * 0.1 || 10;
-  yMin = Math.max(0, yMin - yPad);
-  yMax = yMax + yPad;
-  const yNice = niceCeil(yMax);
-  const x = (i) => padL + (i / Math.max(1, N-1)) * innerW;
-  const y = (v) => padT + innerH - ((v - yMin) / (yNice - yMin)) * innerH;
-  let yTicks = '';
-  for (let i=0;i<=4;i++){
-    const v = yMin + (yNice - yMin) * (i/4);
-    const yy = padT + innerH - (i/4)*innerH;
-    yTicks += `<line x1="${padL}" x2="${W-padR}" y1="${yy}" y2="${yy}" stroke="rgba(0,0,0,.06)" />`;
-    yTicks += `<text x="${padL-6}" y="${yy+3}" text-anchor="end" font-size="10" fill="#8a8a8a" font-family="DM Mono,monospace">${tickFmt(v,'eur','€')}</text>`;
-  }
-  let xTicks = '';
-  for (let i=0;i<N;i++){
-    if (labels[i]){
-      const xx = x(i);
-      xTicks += `<line x1="${xx}" x2="${xx}" y1="${padT}" y2="${padT+innerH}" stroke="rgba(0,0,0,.04)" />`;
-      xTicks += `<text x="${xx}" y="${H-8}" text-anchor="middle" font-size="10" fill="#8a8a8a" font-family="DM Mono,monospace">${labels[i]}</text>`;
-    }
-  }
-  let weekends = '';
-  for (let i=0;i<N;i++){
-    const dow = rows[i].date.getDay();
-    if (dow === 6){ // Saturday → start of weekend strip
-      const x0 = x(i) - (innerW/(N-1))*0.5;
-      const w = (innerW/(N-1)) * 1.0; // Sat only (Sun handled separately if needed)
-      weekends += `<rect x="${x0}" y="${padT}" width="${w}" height="${innerH}" fill="rgba(107,91,63,.04)" />`;
-    }
-  }
-  let mktPath = '';
-  for (let i=0;i<N;i++){
-    mktPath += (i===0?'M':'L') + x(i).toFixed(1) + ',' + y(mktArr[i]).toFixed(1) + ' ';
-  }
-  let ownDots = '';
-  let ownPath = '';
-  let inSeg = false;
-  for (let i=0;i<N;i++){
-    const v = ownArr[i];
-    if (v != null){
-      const xi = x(i), yi = y(v);
-      if (!inSeg){ ownPath += `M${xi.toFixed(1)},${yi.toFixed(1)} `; inSeg = true; }
-      else { ownPath += `L${xi.toFixed(1)},${yi.toFixed(1)} `; }
-      ownDots += `<circle cx="${xi.toFixed(1)}" cy="${yi.toFixed(1)}" r="2.5" fill="#6b5b3f"><title>${pad2(rows[i].d)}/${pad2(rows[i].mo)} · Mia ADR ${fmtEUR(v)} · Market ${fmtEUR(mktArr[i])}</title></circle>`;
-    } else {
-      inSeg = false;
-    }
-  }
-  let hover = '';
-  const bandW = innerW / Math.max(1, N-1);
-  for (let i=0;i<N;i++){
-    const xi = x(i);
-    const tt = `${pad2(rows[i].d)}/${pad2(rows[i].mo)}/${rows[i].y} · Market ${fmtEUR(mktArr[i])} · ${rows[i].mktListings} listings` + (ownArr[i]!=null ? ` · Tua ADR ${fmtEUR(ownArr[i])}` : '');
-    hover += `<rect x="${xi - bandW/2}" y="${padT}" width="${bandW}" height="${innerH}" fill="transparent"><title>${tt}</title></rect>`;
-  }
-  return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="font-family:'DM Sans',sans-serif">
-    ${weekends}
-    ${yTicks}
-    ${xTicks}
-    <path d="${mktPath}" fill="none" stroke="#3b6b6b" stroke-width="2"/>
-    <path d="${ownPath}" fill="none" stroke="#6b5b3f" stroke-width="1.5" stroke-dasharray="4 3"/>
-    ${ownDots}
-    ${hover}
-    <g font-family="DM Mono,monospace" font-size="10" fill="#8a8a8a">
-      <rect x="${padL}" y="${padT-2}" width="14" height="2" fill="#3b6b6b"/>
-      <text x="${padL+18}" y="${padT+5}" fill="#3b6b6b">AirDNA Market</text>
-      <rect x="${padL+130}" y="${padT-2}" width="14" height="2" fill="#6b5b3f" stroke-dasharray="4 3"/>
-      <text x="${padL+148}" y="${padT+5}" fill="#6b5b3f">Your confirmed ADR</text>
-    </g>
-  </svg>`;
-}
 /* ===========================================================================
    EXPEDIA RATE SHOPPER — helpers
    EXPEDIA_DATA = {
@@ -4262,37 +4030,6 @@ function expDemandLevel(search){
 /* Background tint for a Sell Strategy row, based on the Expedia search pressure for that day.
    Uses a percentile-rank scale against the global search distribution for high contrast.
    Curve emphasised on the upper half (more visible differences for days that matter, peak season). */
-function _searchPressureBg(search){
-  if (search == null || !isFinite(search)) return '';
-  const s = expSearchStats();
-  if (!s || !s.p90 || !s.p25) return '';
-  let t;
-  if (search <= s.min) t = 0;
-  else if (search <= s.p25) t = 0.05 * (search - s.min) / (s.p25 - s.min || 1);     // 0..0.05 (low: barely visible)
-  else if (search <= s.p50) t = 0.05 + 0.15 * (search - s.p25) / (s.p50 - s.p25 || 1); // 0.05..0.20
-  else if (search <= s.p75) t = 0.20 + 0.25 * (search - s.p50) / (s.p75 - s.p50 || 1); // 0.20..0.45
-  else if (search <= s.p90) t = 0.45 + 0.30 * (search - s.p75) / (s.p90 - s.p75 || 1); // 0.45..0.75
-  else if (search <= s.max) t = 0.75 + 0.25 * (search - s.p90) / (s.max - s.p90 || 1); // 0.75..1.00
-  else t = 1.0;
-  if (t < 0) t = 0;
-  if (t > 1) t = 1;
-  // Alpha 0 to 0.42 — applied only on Date/Event/DoW cells now, so a bit more visible is OK.
-  const alpha = t * 0.42;
-  return 'background:rgba(196,130,59,' + alpha.toFixed(2) + ')';
-}
-function expCheckBrake(proposedPrice, compsetAvg){
-  if (!proposedPrice || !compsetAvg || compsetAvg <= 0) return null;
-  const ratio = proposedPrice / compsetAvg;
-  if (ratio >= 1.20){
-    return {
-      brake: true,
-      ratio,
-      suggestedMax: compsetAvg * 1.20,  // cap consigliato
-      compsetAvg,
-    };
-  }
-  return null;
-}
 /* ===========================================================================
    BEDDY DAILY PRICES — price realmente caricato sul PMS
    BEDDY_DATA = { asOf, rangeStart, rangeEnd, firenze:{YYYY-MM-DD: price}, condotta:{YYYY-MM-DD: price} }
@@ -4355,7 +4092,13 @@ function beddyExpediaRatio(sel, lookbackDays){
 let SELL_START_YMD = null;       // chosen start date (YMD num)
 let _lastSellStruct = null;       // last struct rendered (used to detect struct change → reset scroll)
 let SELL_START_USER_SET = false; // true once the user manually picks a date in this session
-let SELL_RANGE_DAYS = 180;        // 30 | 60 | 90 | 180 | 365
+/* 90 giorni di default, non 180. Il render costa quasi tutto in proporzione
+   alle righe (895 KB di HTML per 180 date, di cui 300 KB di tooltip) e la
+   tabella si bloccava a ogni cambio di data. Novanta giorni coprono l'intero
+   orizzonte di vendita di tutte le strutture (il piu' lungo e' 104 giorni su
+   Palazzo Alfani), quindi non si perde nulla di azionabile; per guardare piu'
+   avanti bastano i pulsanti 180 e 365. */
+let SELL_RANGE_DAYS = 90;         // 30 | 60 | 90 | 180 | 365
 let SELL_PICKUP_DAYS = 1;        // N days for pickup snapshot
 let SELL_LAST_AGG = null;        // last aggregation result (for drilldown lookups)
 let SELL_RT_FILTER = null;       // null = tutte le RT (default); altrimenti nome RT specifica (es. "Bilocale")
@@ -4481,9 +4224,6 @@ let SELL_RMES_W_ALL = (function(){
     }
   } catch(e){}
 })();
-function saveRmesWeights(){
-  try { localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL)); } catch(e){}
-}
 function getCurrentWeights(){
   const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'condotta';
   if (isAggSel(sel)){
@@ -4517,12 +4257,6 @@ function _wdayAll(){
   }
   return _WDAY_OBJ;
 }
-function _wdaySave(obj){
-  _WDAY_OBJ = obj;
-  try { localStorage.setItem(RMES_W_DAY_KEY, JSON.stringify(obj)); } catch(e){}
-  try { _WDAY_RAW = localStorage.getItem(RMES_W_DAY_KEY); } catch(e){}
-  if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
-}
 /* Returns the per-day override for (struct, ymd), or null. */
 function getDayWeights(structKey, ymd){
   const all = _wdayAll();
@@ -4540,12 +4274,6 @@ function getDayWeights(structKey, ymd){
   const s = w.occ + w.pace + w.comp + w.airdna + w.mkt;
   return (s > 0) ? w : null;
 }
-function getDayWeightsMeta(structKey, ymd){
-  const all = _wdayAll();
-  const v = all[structKey] && all[structKey][ymd];
-  if (!v || typeof v !== 'object' || v.__deleted) return null;
-  return { ts: v.ts || null, author: v.author || null };
-}
 function hasDayWeights(structKey, ymd){ return getDayWeights(structKey, ymd) != null; }
 /* The weights that actually apply to one stay-date: day override, else property default. */
 function getWeightsFor(structKey, ymd){
@@ -4555,55 +4283,8 @@ function getWeightsFor(structKey, ymd){
   return getCurrentWeights();
 }
 /* w = {occ,pace,comp,airdna,mkt} as fractions (any scale — they get normalised on read). */
-function setDayWeights(structKey, ymd, w){
-  const all = _wdayAll();
-  if (!all[structKey]) all[structKey] = {};
-  all[structKey][ymd] = {
-    occ:    +w.occ    || 0,
-    pace:   +w.pace   || 0,
-    comp:   +w.comp   || 0,
-    airdna: +w.airdna || 0,
-    mkt:    +w.mkt    || 0,
-    ts: new Date().toISOString(),
-    author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null,
-  };
-  _wdaySave(all);
-}
-function setDayWeightsRange(structKey, ymdFrom, ymdTo, w){
-  const all = _wdayAll();
-  if (!all[structKey]) all[structKey] = {};
-  const ts = new Date().toISOString();
-  const author = (typeof getUserProfile === 'function' ? getUserProfile() : null) || null;
-  const d = new Date(Math.floor(ymdFrom/10000), Math.floor((ymdFrom%10000)/100)-1, ymdFrom%100);
-  const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
-  let n = 0;
-  while (d <= dTo && n < 400){
-    const y = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
-    all[structKey][y] = {
-      occ: +w.occ||0, pace: +w.pace||0, comp: +w.comp||0, airdna: +w.airdna||0, mkt: +w.mkt||0,
-      ts: ts, author: author,
-    };
-    d.setDate(d.getDate()+1); n++;
-  }
-  _wdaySave(all);
-  return n;
-}
 /* Back to the property default for that day. Tombstone so the delete propagates via Firebase. */
-function clearDayWeights(structKey, ymd){
-  const all = _wdayAll();
-  if (!all[structKey] || !all[structKey][ymd]) return;
-  all[structKey][ymd] = { __deleted: true, ts: new Date().toISOString(),
-    author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
-  _wdaySave(all);
-}
 /* All stay-dates of a property that carry a custom weight set (numbers, ascending). */
-function listDayWeightYmds(structKey){
-  const all = _wdayAll();
-  const m = all[structKey] || {};
-  return Object.keys(m)
-    .filter(k => m[k] && typeof m[k] === 'object' && !m[k].__deleted)
-    .map(Number).filter(isFinite).sort((a,b) => a-b);
-}
 /* === Soglie e moltiplicatori RMES per-struttura === */
 const RMES_TH_DEFAULT = {
   occ:    { lo: 0.9,  hi: 1.1,  multLow: 0.90, multMid: 1.00, multHigh: 1.10 },
@@ -4711,41 +4392,12 @@ let RMES_TH_ALL = (function(){
   } catch(e){}
   return emptyAll();
 })();
-function saveRmesThresholds(){
-  try { localStorage.setItem(RMES_TH_KEY, JSON.stringify(RMES_TH_ALL)); } catch(e){}
-}
-function resetRmesThresholds(structKey){
-  function clone(){
-    const out = {};
-    for (const k of ['occ','price','pace','budget','comp','airdna']) out[k] = Object.assign({}, RMES_TH_DEFAULT[k]);
-    return out;
-  }
-  if (structKey){
-    RMES_TH_ALL[structKey] = clone();
-  } else {
-    RMES_TH_ALL = { firenze: clone(), condotta: clone(), alfani: clone() };
-  }
-  saveRmesThresholds();
-}
 function getCurrentThresholds(){
   const sel = (typeof CURRENT_STRUCT !== 'undefined') ? CURRENT_STRUCT : 'condotta';
   if (isAggSel(sel)) return RMES_TH_ALL.condotta;
   return RMES_TH_ALL[sel] || RMES_TH_ALL.condotta;
 }
 /* Vincola input nel range valido */
-function clampMult(v){
-  v = parseFloat(v);
-  if (!isFinite(v)) return 1.00;
-  if (v < 0.5) return 0.5;
-  if (v > 1.5) return 1.5;
-  return v;
-}
-function clampBreakpoint(v){
-  v = parseFloat(v);
-  if (!isFinite(v) || v <= 0) return 1.0;
-  if (v > 10) return 10;
-  return v;
-}
 /* SOSTITUITO: ora usa sistema lineare deviazione × peso (no più soglie).
    Ritorna 1 + deviazione, così il codice esistente (somma pesata) produce direttamente
    il moltiplicatore finale corretto via Σ wX × (1 + dev_X) = 1 + Σ wX × dev_X.
@@ -5171,16 +4823,6 @@ const RMES_PICKUP_THR_DEFAULT = [
   { upTo: 0.90, dev: 0.15 },  // fill 71-90% → +15%
   { upTo: 1.00, dev: 0.20 },  // fill > 90% → +20%
 ];
-function _rmesPickupSet(structKey, thresholds){
-  if (!Array.isArray(thresholds) || thresholds.length !== 5) return false;
-  const all = _rmesPickupGetAll();
-  all[structKey] = thresholds.map(t => ({ upTo:+t.upTo, dev:+t.dev }));
-  try { localStorage.setItem(RMES_PICKUP_THR_KEY, JSON.stringify(all)); return true; }
-  catch(e){ return false; }
-}
-function _rmesPickupReset(structKey){
-  return _rmesPickupSet(structKey, RMES_PICKUP_THR_DEFAULT.map(t => ({...t})));
-}
 /* Event Factor: SOLO IN AUMENTO. Un evento che conosciamo e' un'occasione per
    alzare; non deve mai essere un motivo per abbassare — se una data va male,
    a farla scendere ci pensano il pickup e il guard-rail di mercato, che
@@ -5201,43 +4843,6 @@ function _getEventBoost(ymd){
    Default tutti 0% (nessun effetto).
    =========================================================================== */
 const DOW_PREMIUM_KEY = 'rmes_dow_premium_v1';
-function _getDowPremiumMap(){
-  try { const raw = localStorage.getItem(DOW_PREMIUM_KEY); return raw ? JSON.parse(raw) : {}; }
-  catch(e){ return {}; }
-}
-function _getDowPremium(structKey, dow){
-  const all = _getDowPremiumMap();
-  const arr = all && all[structKey];
-  // Default: Fri (5) e Sat (6) a +5%, gli altri 0. Si attiva solo se l'utente non ha mai salvato per questa struttura.
-  // L'array salvato include sempre 7 valori (anche zeri) quando l'utente salva, quindi presence = user-defined.
-  const DEFAULT_DOW = [0, 0, 0, 0, 0, 5, 5];  // [Sun, Mon, Tue, Wed, Thu, Fri, Sat]
-  if (!Array.isArray(arr) || arr.length !== 7){
-    return DEFAULT_DOW[dow] || 0;
-  }
-  const v = +arr[dow]; return isFinite(v) ? v : 0;
-}
-function _getDowBoost(structKey, ymdNum){
-  if (!structKey || !ymdNum) return 1.0;
-  const d = new Date(Math.floor(ymdNum/10000), Math.floor((ymdNum%10000)/100)-1, ymdNum%100);
-  const dow = d.getDay();
-  const pct = _getDowPremium(structKey, dow);
-  if (!isFinite(pct) || pct === 0) return 1.0;
-  return 1 + pct/100;
-}
-function _setDowPremium(structKey, dowArray){
-  const all = _getDowPremiumMap();
-  const arr = (dowArray || []).slice(0,7).map(v => { const n = +v; return isFinite(n) ? n : 0; });
-  while (arr.length < 7) arr.push(0);
-  // Salva SEMPRE l'array (anche all-zero) perché significa "l'utente ha disattivato il default ven/sab".
-  // Per ripristinare il default, usa la funzione _resetDowPremium (rimuove la entry).
-  all[structKey] = arr;
-  try { localStorage.setItem(DOW_PREMIUM_KEY, JSON.stringify(all)); } catch(e){}
-}
-function _resetDowPremium(structKey){
-  const all = _getDowPremiumMap();
-  delete all[structKey];
-  try { localStorage.setItem(DOW_PREMIUM_KEY, JSON.stringify(all)); } catch(e){}
-}
 
 /* ===========================================================================
    Promo Overrides — promo ad hoc per struttura.
@@ -5259,12 +4864,6 @@ function _getPromosMap(){
 function _getPromosForStruct(structKey){
   const all = _getPromosMap();
   return (all && Array.isArray(all[structKey])) ? all[structKey] : [];
-}
-function _setPromosForStruct(structKey, arr){
-  const all = _getPromosMap();
-  if (!arr || arr.length === 0) delete all[structKey];
-  else all[structKey] = arr;
-  try { localStorage.setItem(PROMOS_KEY, JSON.stringify(all)); } catch(e){}
 }
 function _getPromoBoost(structKey, stayYmdNum){
   if (!structKey || !stayYmdNum) return { boost: 1.0, applied: [] };
@@ -5620,13 +5219,20 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
      scendere sotto il pavimento che il Base Price rispetta (visto su Alfani:
      250 contro un floor di 257). */
   const _floorAnnual = (typeof fp_getFloor === 'function') ? fp_getFloor(sel) : 0;
+  /* Memoizzato per data: il pavimento e' lo stesso per tutte le tipologie e
+     ricalcolarlo per ognuna moltiplicava per sette il lavoro piu' costoso del
+     render. */
+  const _floorCache = {};
   const _floorFor = (ymdNum) => {
+    if (_floorCache[ymdNum] !== undefined) return _floorCache[ymdNum];
+    let out = _floorAnnual;
     try {
       const d = ymdToDate(ymdNum);
       const v = newrmesCalculateBasePriceVerbose(sel, fp_isoDate(d));
-      if (v && v.floorEff > 0) return v.floorEff;
+      if (v && v.floorEff > 0) out = v.floorEff;
     } catch(e){}
-    return _floorAnnual;
+    _floorCache[ymdNum] = out;
+    return out;
   };
   const A = aggSellStrategy(sel, startYmd, rangeDays, 1);
   const _occByMonth = {};      // ym → {curRn, stlyRn, cap_sum, curOcc, stlyOcc}
@@ -6888,12 +6494,27 @@ const LAST_SOLD_ANCHOR_DAYS = 7;   // 0 = ancora disattivata
 const NEWRMES_LAST_SUGGESTION_KEY = 'rmes_last_suggestion_v1';
 const NEWRMES_LAST_SUGGESTION_DATE_KEY = 'rmes_last_suggestion_date_v1';
 
+/* Questi archivi vengono letti migliaia di volte per ogni render (una volta per
+   data e per tipologia) e ogni lettura faceva un JSON.parse dell'intero oggetto.
+   Con la cache il parsing avviene una volta sola finche' nessuno scrive.
+   La cache viene invalidata da _newrmesSaveObj e dagli aggiornamenti remoti
+   Firebase, che passano comunque da localStorage.setItem. */
+const _NR_OBJ_CACHE = {};
 function _newrmesLoadObj(key){
-  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : {}; }
-  catch(e){ return {}; }
+  if (_NR_OBJ_CACHE[key] !== undefined) return _NR_OBJ_CACHE[key];
+  let out = {};
+  try { const raw = localStorage.getItem(key); out = raw ? JSON.parse(raw) : {}; }
+  catch(e){ out = {}; }
+  _NR_OBJ_CACHE[key] = out;
+  return out;
+}
+function _newrmesInvalidateObjCache(key){
+  if (key == null) { for (const k in _NR_OBJ_CACHE) delete _NR_OBJ_CACHE[k]; }
+  else delete _NR_OBJ_CACHE[key];
 }
 function _newrmesSaveObj(key, obj){
   try { localStorage.setItem(key, JSON.stringify(obj || {})); } catch(e){}
+  _newrmesInvalidateObjCache(key);
 }
 
 /* === FROZEN BASE PRICE === */
@@ -6917,6 +6538,11 @@ function _invalidateRmesMapCache(){
   // Svuota la cache _RMESMAP_TICK quando dati cambiano (override, accept, foundation override).
   // Senza questo, il forecast e altre viste useranno mappe stantie con prezzi vecchi.
   if (typeof _RMESMAP_TICK !== 'undefined') _RMESMAP_TICK = {};
+  /* Anche la cache degli archivi: qualcosa e' cambiato, e non sempre passa da
+     _newrmesSaveObj (il layer Firebase e gli strumenti scrivono localStorage
+     direttamente). Rileggere il JSON e' comunque molto piu' economico che
+     servire dati stantii. */
+  if (typeof _newrmesInvalidateObjCache === 'function') _newrmesInvalidateObjCache();
 }
 function newrmesSetFrozenBaseOverride(structKey, ymd, price){
   try { logDecision(structKey, ymd, price == null ? 'reset_override' : 'override', price); } catch(e){}
@@ -6927,27 +6553,6 @@ function newrmesSetFrozenBaseOverride(structKey, ymd, price){
     const _now = new Date().toISOString();
     all[structKey][ymd] = { price: null, __deleted: true, ts: _now, savedAt: _now, author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
   } else all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(), author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
-  _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
-  _invalidateRmesMapCache();
-}
-function newrmesClearFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo){
-  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
-  if (!all[structKey]) return;
-  for (const k in all[structKey]){ const n = +k; if (n >= ymdFrom && n <= ymdTo){ try { logDecision(structKey, n, 'reset_override_range', null); } catch(e){} delete all[structKey][k]; } }
-  _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
-  _invalidateRmesMapCache();
-}
-function newrmesSetFrozenBaseOverrideRange(structKey, ymdFrom, ymdTo, price){
-  const all = _newrmesLoadObj(NEWRMES_FROZEN_BASE_OVR_KEY);
-  if (!all[structKey]) all[structKey] = {};
-  // iterate days
-  const dFrom = new Date(Math.floor(ymdFrom/10000), Math.floor((ymdFrom%10000)/100)-1, ymdFrom%100);
-  const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
-  for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
-    const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
-    try { logDecision(structKey, y, 'override_range', price); } catch(e){}
-    all[structKey][y] = { price: Math.round(price), ts: new Date().toISOString(), author: (typeof getUserProfile === 'function' ? getUserProfile() : null) || null };
-  }
   _newrmesSaveObj(NEWRMES_FROZEN_BASE_OVR_KEY, all);
   _invalidateRmesMapCache();
 }
@@ -7136,7 +6741,7 @@ function newrmesGetAcceptedMeta(structKey, ymd){
   }
   return null;
 }
-function newrmesSetAccepted(structKey, ymd, price){
+function newrmesSetAccepted(structKey, ymd, price, sigKnown){
   try { logDecision(structKey, ymd, price == null ? 'reset_accept' : 'accept', price); } catch(e){}
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
   if (!all[structKey]) all[structKey] = {};
@@ -7151,8 +6756,12 @@ function newrmesSetAccepted(structKey, ymd, price){
        decisione, e finche' la situazione non cambia il prezzo resta quello.
        Senza questo, subito dopo l'accept il segnale si riapplicava al nuovo
        riferimento e proponeva gia' un altro numero, spesso piu' basso. */
-    let _sig = null;
+    /* Chi accetta un intero periodo ha gia' la mappa in mano e passa il segnale:
+       senza questa scorciatoia ogni giorno del range ne avrebbe forzato un
+       ricalcolo, e accettare due mesi avrebbe bloccato l'interfaccia. */
+    let _sig = (sigKnown && sigKnown.mult != null) ? sigKnown : null;
     try {
+      if (_sig) throw null;   // gia' noto, salto il ricalcolo
       // La mappa va ricalcolata pulita: quella in cache puo' essere di un'altra
       // finestra e non contenere questa data.
       if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
@@ -7162,24 +6771,9 @@ function newrmesSetAccepted(structKey, ymd, price){
         _sig = { mult: (e.multFinale != null) ? +(+e.multFinale).toFixed(4) : 1,
                  good: (e._sigDbg && e._sigDbg.A && e._sigDbg.A.good != null) ? +(+e._sigDbg.A.good).toFixed(2) : 0 };
       }
-    } catch(err){ console.error('sigAt', err); }
+    } catch(err){ if (err) console.error('sigAt', err); }
     all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(),
                             author: getUserProfile() || null, sigAt: _sig };
-  }
-  _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
-  _invalidateRmesMapCache();
-}
-function newrmesSetAcceptedRange(structKey, ymdFrom, ymdTo, price){
-  const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
-  if (!all[structKey]) all[structKey] = {};
-  const dFrom = new Date(Math.floor(ymdFrom/10000), Math.floor((ymdFrom%10000)/100)-1, ymdFrom%100);
-  const dTo = new Date(Math.floor(ymdTo/10000), Math.floor((ymdTo%10000)/100)-1, ymdTo%100);
-  const ts = new Date().toISOString();
-  const author = getUserProfile() || null;
-  for (let dd = new Date(dFrom); dd <= dTo; dd.setDate(dd.getDate()+1)){
-    const y = dd.getFullYear()*10000 + (dd.getMonth()+1)*100 + dd.getDate();
-    try { logDecision(structKey, y, 'accept_range', price); } catch(e){}
-    all[structKey][y] = { price: Math.round(price), ts, author };
   }
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
   _invalidateRmesMapCache();
@@ -9393,26 +8987,6 @@ function newrmesMaintainFrozenWindow(structKey){
   return added;
 }
 
-function newrmesFreezeBasePriceHorizon(structKey, horizonDays){
-  horizonDays = horizonDays || 365;
-  const today = new Date(TODAY); today.setHours(0,0,0,0);
-  const existing = _newrmesLoadObj(NEWRMES_FROZEN_BASE_KEY);
-  if (!existing[structKey]) existing[structKey] = {};
-  let added = 0;
-  for (let off = 0; off < horizonDays; off++){
-    const d = new Date(today.getTime() + off * 86400000);
-    const ymdN = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
-    if (existing[structKey][ymdN] != null) continue;  // già congelato, non ricalcolo
-    const iso = d.toISOString().slice(0,10);
-    const price = newrmesCalculateBasePrice(structKey, iso);
-    if (price != null && isFinite(price)){
-      existing[structKey][ymdN] = { price: price, frozenAt: today.toISOString().slice(0,10) };
-      added++;
-    }
-  }
-  _newrmesSaveObj(NEWRMES_FROZEN_BASE_KEY, existing);
-  return added;
-}
 
 /* Recompute & OVERWRITE the frozen Base Price for the given structures over a date
    range, using the CURRENT data + config. Use when the stored frozen base is stale
@@ -9833,12 +9407,6 @@ function fp_getOtaMarkup(structKey){
   } catch(e){}
   return FP_OTA_MARKUP_DEFAULTS[structKey] != null ? FP_OTA_MARKUP_DEFAULTS[structKey] : 12;
 }
-function fp_setOtaMarkup(structKey, value){
-  let obj = {};
-  try { obj = JSON.parse(localStorage.getItem(FP_OTA_MARKUP_KEY) || '{}'); } catch(e){}
-  obj[structKey] = +value;
-  try { localStorage.setItem(FP_OTA_MARKUP_KEY, JSON.stringify(obj)); } catch(e){}
-}
 function fp_recalcMarkupOnBookings(){
   if (typeof BOOKINGS === 'undefined') return;
   for (const b of BOOKINGS){
@@ -9896,10 +9464,6 @@ function fp_getOverride(structKey, dateISO, rt){
     }
   } catch(e){}
   return null;
-}
-function fp_getOverridePrice(structKey, dateISO, rt){
-  const o = fp_getOverride(structKey, dateISO, rt);
-  return (o && o.price != null && isFinite(o.price)) ? +o.price : null;
 }
 /* === FOUNDATION OVERRIDE — chiave separata ===
    Diverso dall'override del price finale (sopra):
@@ -9975,47 +9539,6 @@ function fp_getFoundationEffectiveValue(structKey, dateISO, rt){
 function fp_getFoundationOverridePrice(structKey, dateISO, rt){
   return fp_getFoundationEffectiveValue(structKey, dateISO, rt);
 }
-function fp_setFoundationState(structKey, dateISO, rt, status, value, calculatedAtSnapshot){
-  const all = fp_getAllFoundationStates();
-  if (!all[structKey]) all[structKey] = {};
-  if (!all[structKey][dateISO]) all[structKey][dateISO] = {};
-  if (status == null){
-    delete all[structKey][dateISO][rt];
-    if (Object.keys(all[structKey][dateISO]).length === 0) delete all[structKey][dateISO];
-  } else {
-    if (status !== 'accepted' && status !== 'override') throw new Error('Invalid status: ' + status);
-    if (value == null || !isFinite(value)) throw new Error('Invalid value');
-    all[structKey][dateISO][rt] = {
-      status: status,
-      value: +value,
-      calculatedAtSave: (calculatedAtSnapshot != null && isFinite(calculatedAtSnapshot)) ? +calculatedAtSnapshot : null,
-      savedAt: new Date().toISOString(),
-    };
-  }
-  try { localStorage.setItem(FP_FOUNDATION_OVERRIDES_KEY, JSON.stringify(all)); } catch(e){}
-}
-function fp_acceptFoundation(structKey, dateISO, rt, foundationCalculatedNow){
-  fp_setFoundationState(structKey, dateISO, rt, 'accepted', foundationCalculatedNow, foundationCalculatedNow);
-}
-function fp_overrideFoundation(structKey, dateISO, rt, manualPrice, foundationCalculatedNow){
-  fp_setFoundationState(structKey, dateISO, rt, 'override', manualPrice, foundationCalculatedNow);
-}
-function fp_resetFoundationState(structKey, dateISO, rt){
-  fp_setFoundationState(structKey, dateISO, rt, null);
-}
-function fp_getFoundationOverrides(){
-  return fp_getAllFoundationStates();
-}
-function fp_getFoundationOverride(structKey, dateISO, rt){
-  return fp_getFoundationState(structKey, dateISO, rt);
-}
-function fp_setFoundationOverride(structKey, dateISO, rt, price){
-  if (price == null || price === '' || !isFinite(price)){
-    fp_resetFoundationState(structKey, dateISO, rt);
-    return;
-  }
-  fp_setFoundationState(structKey, dateISO, rt, 'override', +price, null);
-}
 /* === FORECAST MONTHLY SNAPSHOT ===
    Salva uno snapshot del forecast per il "1° giorno del mese" per ogni mese × struttura.
    Permette di confrontare a chiusura mese il forecast iniziale vs come è effettivamente
@@ -10050,13 +9573,6 @@ function fp_getFcstSnapshot(structKey, ymKey){
   } catch(e){}
   return null;
 }
-function fp_deleteFcstSnapshot(structKey, ymKey){
-  const all = fp_getFcstSnapshots();
-  if (all[structKey] && all[structKey][ymKey]){
-    delete all[structKey][ymKey];
-    try { localStorage.setItem(FCST_MONTHLY_SNAP_KEY, JSON.stringify(all)); } catch(e){}
-  }
-}
 function fp_maybeAutoSaveSnapshot(structKey, ymKey, fcstData, currentYmd){
   const existing = fp_getFcstSnapshot(structKey, ymKey);
   const monthYmd1 = Math.floor(ymKey/100)*10000 + (ymKey%100)*100 + 1;
@@ -10083,77 +9599,7 @@ function fp_maybeAutoSaveSnapshot(structKey, ymKey, fcstData, currentYmd){
    Reality: with a different price il pickup è diverso. Ma è l'unico calcolo possibile
    con i dati che abbiamo (storico Beddy del giorno chiuso).
 */
-function fp_buildAuditOverrides(structKey){
-  const out = [];
-  if (typeof BOOKINGS === 'undefined') return out;
-  const all = fp_getOverrides();
-  const structOvrs = all[structKey];
-  if (!structOvrs) return out;
-  const today = new Date(TODAY); today.setHours(0,0,0,0);
-  const structName = fp_structName(structKey);
-  for (const dateISO in structOvrs){
-    const dDate = new Date(dateISO + 'T00:00:00');
-    if (isNaN(dDate.getTime())) continue;
-    if (dDate >= today) continue;
-    const rtMap = structOvrs[dateISO];
-    for (const rt in rtMap){
-      const ovr = rtMap[rt];
-      if (typeof ovr === 'number') continue;  // backward-compat: senza snapshot non posso fare audit
-      if (!ovr || ovr.price == null) continue;
-      const rmesSuggested = (ovr.snapshot && ovr.snapshot.rmesSuggested != null && isFinite(ovr.snapshot.rmesSuggested))
-                          ? ovr.snapshot.rmesSuggested : null;
-      let rnFinali = 0;
-      let revEffettivoBeddyEq = 0;
-      const dYmd = ymd(dDate);
-      for (const b of BOOKINGS){
-        if (b.struct !== structName) continue;
-        if (b.stato !== 'Confermate') continue;
-        if (b.room !== rt) continue;
-        if (!b.dIn || !b.dOut) continue;
-        const ciYmd = ymd(b.dIn), coYmd = ymd(b.dOut);
-        if (ciYmd <= dYmd && coYmd > dYmd){
-          rnFinali++;
-          revEffettivoBeddyEq += (b.revPerNightCaricato != null) ? b.revPerNightCaricato : b.revPerNight;
-        }
-      }
-      const adrReale = (rnFinali > 0) ? (revEffettivoBeddyEq / rnFinali) : null;
-      const revIpoteticoRMES = (rmesSuggested != null && rnFinali > 0) ? (rmesSuggested * rnFinali) : null;
-      const deltaRev = (revIpoteticoRMES != null) ? (revEffettivoBeddyEq - revIpoteticoRMES) : null;
-      const winner = (deltaRev == null) ? 'n/d'
-                   : (Math.abs(deltaRev) < 1) ? 'pareggio'
-                   : (deltaRev > 0) ? 'override' : 'rmes';
-      out.push({
-        date: dateISO,
-        rt: rt,
-        priceOverride: +ovr.price,
-        priceRmesSuggested: rmesSuggested,
-        priceRealeBeddyEq: adrReale,
-        rnFinali: rnFinali,
-        revEffettivo: revEffettivoBeddyEq,
-        revIpoteticoRMES: revIpoteticoRMES,
-        deltaRev: deltaRev,
-        winner: winner,
-        savedAt: ovr.savedAt,
-      });
-    }
-  }
-  out.sort((a,b) => b.date.localeCompare(a.date));
-  return out;
-}
 /* Aggregato audit: ritorna stats su tutti i record */
-function fp_auditAggregate(records){
-  let nTot = records.length;
-  let nWinRmes = 0, nWinOvr = 0, nPari = 0, nNd = 0;
-  let deltaTot = 0;
-  for (const r of records){
-    if (r.winner === 'rmes') nWinRmes++;
-    else if (r.winner === 'override') nWinOvr++;
-    else if (r.winner === 'pareggio') nPari++;
-    else nNd++;
-    if (r.deltaRev != null && isFinite(r.deltaRev)) deltaTot += r.deltaRev;
-  }
-  return { nTot, nWinRmes, nWinOvr, nPari, nNd, deltaTot };
-}
 const FP_BASE_PRICE_DEFAULTS = { firenze: 220, condotta: 280, alfani: 270, davids: 145, nazionale: 130, portenuove: 120 };
 function fp_getBasePrice(structKey){
   try {
@@ -10243,12 +9689,6 @@ function fp_setCompsetOffset(structKey, competName, offset){
   if (!obj[structKey]) obj[structKey] = {};
   obj[structKey][competName] = offset;
   localStorage.setItem(FP_COMPSET_OFFSETS_KEY, JSON.stringify(obj));
-}
-function fp_setCompsetConfig(structKey, competName, peso, offset){
-  try {
-    if (typeof setWeight === 'function') setWeight(structKey, competName, peso/100);
-  } catch(e){}
-  fp_setCompsetOffset(structKey, competName, offset);
 }
 function fp_resetDefaults(structKey){
   try {
@@ -11485,7 +10925,12 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       }
       const multFinPct = (mults.multFinale - 1) * 100;
       if (typeof fp_lmfLookup === 'function'){
-        const _occCur = (dbg.occCur != null) ? dbg.occCur : 0;
+        /* dbg era una variabile locale del blocco dei vecchi fattori: spostando
+           qui il Last Minute era rimasta fuori scope, e il try inghiottiva
+           l'errore facendo sparire in silenzio tutta la coda del modal
+           (last minute, evento e totale). */
+        const _dbgM = (mults && mults._debug) ? mults._debug : {};
+        const _occCur = (_dbgM.occCur != null) ? _dbgM.occCur : 0;
         const _daysToArr = Math.max(0, Math.round((td.getTime() - new Date(TODAY).setHours(0,0,0,0)) / 86400000));
         const _lmfPct = fp_lmfLookup(structKey, _occCur, _daysToArr);
         const _lmfCol = _lmfPct > 0 ? '#1e6b4a' : (_lmfPct < 0 ? '#a83b3b' : '#666');
@@ -11532,7 +10977,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
       }
       const multFinCol = mults.multFinale > 1.001 ? '#1e6b4a' : (mults.multFinale < 0.999 ? '#a83b3b' : '#666');
       rmesSection += '<div style="display:flex;justify-content:space-between;padding:8px 14px;background:#f5f5f5;border-radius:4px;margin-bottom:10px;font-size:12px">';
-      rmesSection += '<span style="color:#666;font-weight:600" title="Pickup moves the price; the market guard-rail and the AirDNA check can only hold it back. There are no weights.">Combined signal effect</span>';
+      rmesSection += '<span style="color:#666;font-weight:600" title="Everything above multiplied together: the pickup that moves the price, the two guard-rails that can only hold it back, then the last-minute factor and the event weight.">Everything combined</span>';
       rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+multFinCol+'">×'+mults.multFinale.toFixed(3)+' ('+(multFinPct>=0?'+':'')+multFinPct.toFixed(1)+'%)</span>';
       rmesSection += '</div>';
       {
@@ -12459,16 +11904,6 @@ function _preserveSellHorizontalScroll(fn){
 
 /* Read the "Need days" watchlist (set from the Pricing Console, stored in localStorage,
    shared per-browser origin) → Set of ymd numbers for the given property. */
-function _rmesNeedDaysSet(structKey){
-  var set = new Set();
-  try {
-    var o = JSON.parse(localStorage.getItem('rmes_need_days_v1') || '{}') || {};
-    var m = o[structKey];
-    if (Array.isArray(m)){ for (var i=0;i<m.length;i++){ var y=+m[i]; if(isFinite(y)) set.add(y); } }
-    else if (m && typeof m === 'object'){ for (var k in m){ var e=m[k]; if(e && e.on){ var yn=+k; if(isFinite(yn)) set.add(yn); } } }
-  } catch(e){}
-  return set;
-}
 try {
   window.addEventListener('storage', function(ev){
     if (ev && ev.key === 'rmes_need_days_v1' && typeof CURRENT_TAB !== 'undefined' && CURRENT_TAB === 'sell'
@@ -12519,7 +11954,12 @@ function _sellWireAcceptBtn(btn){
       // Niente clear dell'override: l'accept ha timestamp piu recente e vince nel reader
       // (newrmesGetCurrentReference / cella) via most-recent-wins. Evita tombstone in conflitto.
       newrmesSetAccepted(sk, ymdN, newPrice);
-      if (typeof renderSellStrategy === 'function') renderSellStrategy(sk);
+      /* Solo la riga toccata: il render completo costa secondi e accettare un
+         prezzo bloccava l'interfaccia ogni volta. */
+      try {
+        const _iso = String(ymdN).slice(0,4)+'-'+String(ymdN).slice(4,6)+'-'+String(ymdN).slice(6,8);
+        _sellRefreshRow(sk, _iso);
+      } catch(e){ if (typeof renderSellStrategy === 'function') renderSellStrategy(sk); }
     });
 }
 /* Aggiorna UNA riga della Sell Strategy dopo una decisione su quella data.
@@ -13782,9 +13222,7 @@ function renderSellStrategy(sel){
            + '<input type="number" class="sell-loaded-inp" data-struct="' + escapeHtml(sel) + '" data-rt="' + escapeHtml(baseRTK)
            + '" data-date="' + isoD + '"'
            + ' value="' + (shown != null ? Math.round(shown) : '') + '" placeholder="\u2014"'
-           + ' style="width:58px;padding:3px 5px;border:1px solid var(--line);border-radius:4px;'
-           + "font-family:'DM Mono',monospace;font-size:11.5px;text-align:center;color:" + col + ';'
-           + (src ? 'font-weight:700;' : '') + 'background:transparent"></td>';
+           + ' style="color:' + col + (src ? ';font-weight:700' : '') + '"></td>';
     })();
     const _suppTdHtml = (function(){
       if (!_suppRTs.length) return '';
@@ -13935,7 +13373,7 @@ function renderSellStrategy(sel){
             textCol = Math.abs(diffPct)>0.20 ? '#5c1a18' : '#7a2828';
           }
         }
-        const acceptBtn = `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" data-rmes-price="${targetOnBaseRounded}" title="Accept this RMES suggestion (€${targetOnBaseRounded}) as the new active price for ${r.ymd}" style="margin-left:6px;font-size:9px;padding:2px 7px;border:1px solid #3d7a4b;border-radius:3px;background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block;vertical-align:middle">✓</button>`;
+        const acceptBtn = `<button class="rmes-accept-btn" data-rmes-accept="${r.ymd}" data-rmes-price="${targetOnBaseRounded}" title="Accept this RMES suggestion (€${targetOnBaseRounded}) as the new active price for ${r.ymd}">✓</button>`;
         const _pctTxt = _diffPctVsRef!=null ? ((_diffPctVsRef>=0?'+':'')+(_diffPctVsRef*100).toFixed(0)+'% vs active') : '';
         const dirHint = (_diffPctVsRef!=null && Math.abs(_diffPctVsRef) > 0.02)
           ? (_diffPctVsRef > 0 ? '\nRMES suggests to RAISE the price ↑ ('+_pctTxt+')' : '\nRMES suggests to LOWER the price ↓ ('+_pctTxt+')')
@@ -14439,10 +13877,25 @@ function renderSellStrategy(sel){
         const applicable = r.days.filter(d => isFinite(d.calc) && d.calc > 0);
         if (!applicable.length){ r.setMsg('No RMES to accept in this range (RMES is computed from today onward).', true); return; }
         if (!confirm('ACCEPT the RMES suggestion on ' + applicable.length + ' day(s) (baseRT: ' + baseRT + ')?\n\nEach day is accepted at its OWN suggested price — this becomes the current reference for those dates.')) return;
+        /* La mappa si calcola UNA volta per tutto il periodo e si passa il
+           segnale di ogni giorno: senza, ogni accept ne avrebbe forzato un
+           ricalcolo e accettare due mesi avrebbe bloccato tutto. */
+        let _mapAll = null;
+        try {
+          const _f = applicable[0].ymdN, _l = applicable[applicable.length-1].ymdN;
+          const _span = Math.round((ymdToDate(_l) - ymdToDate(_f)) / 86400000) + 1;
+          _mapAll = computeRMESPriceMap(sel, _f, Math.max(1, _span));
+        } catch(e){}
         for (const d of applicable){
           const ymdN = d.ymdN;
+          let _sig = null;
+          const _e = _mapAll && _mapAll[ymdN];
+          if (_e){
+            _sig = { mult: (_e.multFinale != null) ? +(+_e.multFinale).toFixed(4) : 1,
+                     good: (_e._sigDbg && _e._sigDbg.A && _e._sigDbg.A.good != null) ? +(+_e._sigDbg.A.good).toFixed(2) : 0 };
+          }
           // Niente clear override: l'accept (ts piu recente) vince nel reader via most-recent-wins.
-          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, d.calc);
+          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, d.calc, _sig);
         }
         const skipped = r.days.length - applicable.length;
         r.setMsg('✓ Accepted RMES on ' + applicable.length + ' day(s)' + (skipped ? ' · ' + skipped + ' skipped (no RMES)' : '') + '.');
@@ -15436,19 +14889,6 @@ let PRI_START_YMD = null;
 let PRI_START_USER_SET = false;
 const PRI_BOOKING_MARKUP = 0.12;
 const PRI_START_FACTOR   = 0.80;
-function priceVsSoldHTML(newPrice, soldAdr, compact){
-  if (!soldAdr || soldAdr <= 0) return '';
-  if (!newPrice || newPrice <= 0) return '';
-  const dEur = newPrice - soldAdr;
-  const dPct = dEur / soldAdr;
-  const isUp = dEur >= 0;
-  const color = isUp ? '#3d7a4b' : '#a83b3b';
-  const sign = isUp ? '+' : '';
-  const fz = compact ? 9 : 9.5;
-  const eurTxt = (Math.abs(dEur) < 1 ? '0' : Math.round(dEur).toLocaleString('en-GB'));
-  const pctTxt = (dPct*100).toFixed(0);
-  return `<br><small style="font-size:${fz}px;color:${color};font-weight:500">vs ${fmtEUR(soldAdr)} · ${sign}${eurTxt}€ ${sign}${pctTxt}%</small>`;
-}
 let _APD_CACHE = {};  // cache di aggPricingDaily, invalidata al reload dati (_invalidatePaceAggCache)
 function aggPricingDaily(sel, startYmdNum, rangeDays){
   if (isAggSel(sel)){
@@ -16094,19 +15534,6 @@ function fcstShareByMonth(structKey){
     }
   }
   return out;
-}
-function fcstShareForMonth(globalShare, monthShareMap, mm){
-  const m = monthShareMap[mm];
-  if (m && m.share != null && isFinite(m.share)){
-    if (m.curRn >= 30){
-      return { share: m.share, source: 'mensile', curRn: m.curRn, lyRn: m.lyRn };
-    }
-    if (m.curRn >= 10){
-      const blended = 0.6 * m.share + 0.4 * globalShare;
-      return { share: blended, source: 'blend', curRn: m.curRn, lyRn: m.lyRn };
-    }
-  }
-  return { share: globalShare, source: 'globale', curRn: (m ? m.curRn : 0), lyRn: (m ? m.lyRn : 0) };
 }
 function fcstPaceFactor(structKey){
   const pkAgg = aggPickup(structKey);
@@ -18274,7 +17701,6 @@ function _rmesTabClearDirty(){
 }
 /* I pesi non esistono piu': resta la funzione perche' e' ancora referenziata,
    ma non ha nulla da applicare. */
-function _rmesTabApplyWeights(sel){ return; }
 /* === ②b Daily Pickup thresholds — Fase 2 === */
 /* === ② SOGLIE INDICI === */
 function _renderRmesThresholdsBox(sel){
@@ -20159,14 +19585,6 @@ function abnbVisibleSet(){
   for (const L of ABNB_LISTINGS) s.add(L.key);
   return s;
 }
-function abnbShortName(listing){
-  for (const l of ABNB_LISTINGS) if (l.key === listing) return l.short;
-  return listing;
-}
-function abnbColor(listing){
-  for (const l of ABNB_LISTINGS) if (l.key === listing) return l.color;
-  return '#888';
-}
 function abnbDaysInMonth(y, m){ return new Date(y, m, 0).getDate(); }
 function abnbExpand(r){
   const out = [];
@@ -20512,7 +19930,6 @@ function renderAirbnb(){
 /* ============================================================
    SVG CHART HELPERS
    ============================================================ */
-function svgEscape(s){ return String(s); }
 /* Single-series line chart with current+stly comparison.
    curArr / prevArr same length, labels[] for x axis. */
 function lineChart(curArr, prevArr, labels, color='#6b5b3f', unit='€', kind='rev', altColor='#8a8a8a', smooth=true){
@@ -20642,39 +20059,6 @@ function multiLineChart(series, labels, unit='%', kind='pct'){
   return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMidYMid meet">
     ${yTicks}${lines}${xLab}
   </svg>`;
-}
-function barCompareChart(curArr, prevArr, labels, colorCur='#6b5b3f', colorPrev='#d8d2c5'){
-  const W = 560, H = 220;
-  const padL = 50, padR = 16, padT = 12, padB = 28;
-  const innerW = W - padL - padR;
-  const innerH = H - padT - padB;
-  const all = [...curArr, ...prevArr];
-  let yMax = Math.max(1, ...all);
-  yMax = niceCeil(yMax);
-  const n = labels.length;
-  const groupW = innerW / n;
-  const barW = (groupW * 0.8) / 2;
-  let bars = '';
-  let xLab = '';
-  for (let i=0;i<n;i++){
-    const cx = padL + groupW*i + groupW/2;
-    const xC = cx - barW;
-    const xP = cx;
-    const hC = innerH * (curArr[i]/yMax);
-    const hP = innerH * (prevArr[i]/yMax);
-    bars += `<rect x="${xC}" y="${padT+innerH-hC}" width="${barW-1}" height="${hC}" fill="${colorCur}" rx="2"><title>${labels[i]} OTB: ${fmtEUR(curArr[i])}</title></rect>`;
-    bars += `<rect x="${xP}" y="${padT+innerH-hP}" width="${barW-1}" height="${hP}" fill="${colorPrev}" rx="2"><title>${labels[i]} Budget: ${fmtEUR(prevArr[i])}</title></rect>`;
-    xLab += `<text x="${cx}" y="${H-8}" text-anchor="middle" font-size="10" font-family="DM Sans,sans-serif" fill="#8a8a8a">${labels[i]}</text>`;
-  }
-  const ticks=4;
-  let yTicks='';
-  for (let i=0;i<=ticks;i++){
-    const v = yMax*i/ticks;
-    const y = padT + innerH*(1-i/ticks);
-    yTicks += `<line x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}" stroke="#e6e1d8" stroke-dasharray="2,3"/>
-      <text x="${padL-6}" y="${y+3}" text-anchor="end" font-size="9.5" font-family="DM Mono,monospace" fill="#8a8a8a">${tickFmt(v,'rev','€')}</text>`;
-  }
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart-svg" preserveAspectRatio="xMidYMid meet">${yTicks}${bars}${xLab}</svg>`;
 }
 function tickFmt(v, kind, unit){
   if (kind==='pct') return Math.round(v)+'%';
@@ -21095,17 +20479,6 @@ function _bigCompsetRank(sel, horizonDays){
   if (!n) return null;
   return { rank: Math.round(rankSum/n), total: Math.round(totSum/n), gapPct: gn? gapSum/gn : null, isAvg:true };
 }
-function _bigForecast14d(sel){
-  const ks = new Set(structKeysFor(sel));
-  const today = new Date(TODAY); today.setHours(0,0,0,0);
-  const lo=+ymd(new Date(today.getTime()-13*864e5)), hi=+ymd(today);
-  let rev=0;
-  for (const b of BOOKINGS){
-    if (b.cancelled || !ks.has(b.struct)) continue;
-    if (b.bookYmd>=lo && b.bookYmd<=hi) rev += b.revTotal||0;
-  }
-  return rev;
-}
 function _bigCancelByDay(sel, nDays){
   const ks = new Set(structKeysFor(sel));
   const today = new Date(TODAY); today.setHours(0,0,0,0);
@@ -21117,61 +20490,6 @@ function _bigCancelByDay(sel, nDays){
   }
   const arr = Object.keys(byDay).map(d=>({ymd:+d, rn:byDay[d]})).sort((a,b)=>b.rn-a.rn);
   return { arr, totRn };
-}
-function _bigForecastPickup7Mo(sel){
-  const ks = new Set(structKeysFor(sel));
-  const today = new Date(TODAY); today.setHours(0,0,0,0);
-  const lo=+ymd(new Date(today.getTime()-6*864e5)), hi=+ymd(today);
-  const moY = today.getFullYear(), moM = today.getMonth();           // mese corrente
-  const moStart = new Date(moY, moM, 1), moEnd = new Date(moY, moM+1, 1);
-  let rn = 0;
-  for (const b of BOOKINGS){
-    if (b.cancelled || !ks.has(b.struct)) continue;
-    if (!(b.bookYmd>=lo && b.bookYmd<=hi)) continue;                  // prenotata negli ultimi 7gg
-    if (!b.dIn || !b.dOut) continue;
-    let d = new Date(b.dIn.getFullYear(), b.dIn.getMonth(), b.dIn.getDate());
-    const out = new Date(b.dOut.getFullYear(), b.dOut.getMonth(), b.dOut.getDate());
-    while (d < out){
-      if (d >= moStart && d < moEnd) rn++;
-      d = new Date(d.getTime()+864e5);
-    }
-  }
-  return rn/7;
-}
-function _bigTop3(items, unit){
-  const out = [];
-  for (let i=0;i<3;i++){
-    if (items[i]) out.push(items[i]);
-    else out.push({k:`${i+1}.`, v:`0${unit?(' '+unit):''}`});
-  }
-  return out;
-}
-function _bigCard(o){
-  const th = BIG_CARD_THEMES[o.theme] || {accent:'#888', bg:'#fff', ink:'#333', icon:''};
-  const links = (o.tabs||[]).map(t=>`<span class="big-card-link" data-bigtab="${t.tab}" style="color:${th.accent}">${t.label} →</span>`).join('<span style="color:var(--ink-3);margin:0 4px">·</span>');
-  let body;
-  if (o.empty){
-    body = `<div style="color:var(--ink-3);font-size:13px;padding:14px 0;text-align:center">no movement</div>`;
-  } else {
-    body = (o.lines||[]).map((l,i)=>{
-      const big = (i===0 && o.big);
-      const vStyle = big ? `font-size:24px;font-weight:800;color:${th.ink};line-height:1.1` : `font-size:14px;font-weight:700;color:${th.ink}`;
-      const sub = l.sub ? `<span style="color:var(--ink-3);font-size:11px;font-weight:500;margin-left:5px">${l.sub}</span>` : '';
-      return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:${big?'2px 0 6px':'4px 0'};${(i>0||!o.big)?'border-top:1px solid rgba(0,0,0,.06)':''}">
-        <span style="font-size:12px;color:var(--ink-2)">${l.k}</span>
-        <span style="font-family:'DM Mono',monospace;${vStyle};text-align:right">${l.v}${sub}</span>
-      </div>`;
-    }).join('');
-  }
-  return `<div class="big-card" style="background:${th.bg};border:1px solid ${th.accent}33;border-left:4px solid ${th.accent}">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="font-size:18px">${th.icon}</span>
-      <div style="font-weight:800;font-size:14px;color:${th.ink};letter-spacing:.01em">${o.title}</div>
-      ${o.byProp?`<span class="big-byprop" data-bigbreakdown="${o.byProp}" style="margin-left:auto;font-size:10px;font-weight:700;color:${th.accent};background:${th.accent}1a;border:1px solid ${th.accent}55;border-radius:10px;padding:2px 8px;cursor:pointer">by property</span>`:''}
-    </div>
-    <div>${body}</div>
-    <div style="margin-top:10px;font-size:11px;font-weight:700">${links}</div>
-  </div>`;
 }
 function renderBigPicture(){
   const host = document.getElementById('big-tree');

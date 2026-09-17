@@ -1531,6 +1531,20 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
 @media(max-width:600px){.big-hero-val{font-size:22px}.big-hero-val.hv-l{font-size:19px}.big-hero-val.hv-xl{font-size:17px}.big-hero-val.hv-xxl{font-size:15px}.big-card{padding:13px 14px}}
 .sell-tposed-datecol.need-day{background:rgba(196,131,59,.12) !important;box-shadow:inset 0 3px 0 #c4823b}
 .sell-tposed-datecol .nd-mark{color:#c4823b;margin-right:4px;font-size:12px;vertical-align:1px}
+/* Stili delle celle della Sell Strategy come CLASSI invece che inline.
+   Ripetuti su ogni riga pesavano decine di KB nell'HTML, e l'assegnazione di
+   quell'HTML era la parte piu' lenta del render. */
+table.data.sell-table .rmes-accept-btn{
+  margin-left:6px;font-size:9px;padding:2px 7px;border:1px solid #3d7a4b;border-radius:3px;
+  background:#fff;color:#3d7a4b;cursor:pointer;font-weight:700;display:inline-block;vertical-align:middle;
+}
+table.data.sell-table input.sell-loaded-inp{
+  width:58px;padding:3px 5px;border:1px solid var(--line);border-radius:4px;
+  font-family:'DM Mono',monospace;font-size:11.5px;text-align:center;background:transparent;
+}
+table.data.sell-table .sell-drill{
+  cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;
+}
 </style>
 </head>
 <body>
