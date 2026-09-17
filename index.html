@@ -485,17 +485,6 @@ table.rt-sticky-table tbody tr.total td.rt-month-cell{z-index:5;background:#efea
 table.data.sell-table thead th.sell-grp-sold{
   background:rgba(46,120,70,.12);color:#1e5c38;font-weight:700;border-left:3px solid #2c7a4b;
 }
-/* Righe con pickup negli ultimi 3 giorni: le date che si sono mosse adesso.
-   Sfondo tenue + barra verde a sinistra, per trovarle scorrendo. */
-table.data.sell-table tbody tr.sell-row-fresh > td{
-  background-image:linear-gradient(rgba(46,120,70,.07),rgba(46,120,70,.07));
-}
-table.data.sell-table tbody tr.sell-row-fresh > td:first-child{
-  box-shadow:inset 3px 0 0 #2c7a4b;
-}
-table.data.sell-table tbody tr.sell-row-fresh:hover > td{
-  background-image:linear-gradient(rgba(46,120,70,.13),rgba(46,120,70,.13));
-}
 table.data.sell-table tbody td.sell-sold-cell{
   background:rgba(46,120,70,.04);border-left:3px solid rgba(44,122,75,.35);line-height:1.25;
 }
@@ -2751,7 +2740,15 @@ table.data.pri-daily-table tbody tr:hover td:first-child{background:var(--surfac
         </ul>
         <p style="margin:0 0 6px 0">It is deliberately left empty rather than pre-filled with the Base Price: a number sitting in the box would look like a decision already taken, or worse like an old value nobody remembers writing. It writes to the same shared store the engine already uses as its reference, so everyone sees the same thing.</p>
         <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>Because the suggestion follows the price you record, the engine also tells you when your price sits far from its own estimate &mdash; on a single date in the cell tooltip, and across the whole range in a note above the table when the gap is systematic. A single date out of line is a decision; twenty in the same direction usually means the Base Price itself needs adjusting through the target growth.</i></p>
-        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>Accepting for a whole period still works from the bar at the top &mdash; pick a range and press Accept RMES.</i></p>
+        <p style="margin:0 0 6px 0;font-size:12.5px;color:#666"><i>Accepting for a whole period still works from the bar at the top &mdash; pick a range and press Accept RMES.</i></p>
+        <p style="margin:0 0 6px 0">Because the suggestion now follows the price you record, the engine also tells you <b>when your price is far from its own estimate</b> &mdash; on a single date in the cell tooltip, and above the table when the gap is systematic. One date out of line is a decision; twenty in the same direction usually means the Base Price is set too low or too high, and the target growth is the place to fix it.</p>
+        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>The suggestion cannot wander off: it stays within &plusmn;40% of the structural Base Price, so a number typed by mistake does not become the starting point for good.</i></p>
+
+        <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">What the colours tell you</p>
+        <p style="margin:0 0 6px 0">Two things are colour-coded, both to answer a question that would otherwise need reading numbers and dates.</p>
+        <p style="margin:0 0 6px 0"><b>In Last sold, how old the sale is.</b> Full green within a week, light green within a month, grey and faded between one and three months, faded only beyond that. A price from yesterday describes today's market; one from six months ago is history.</p>
+        <p style="margin:0 0 6px 0"><b>In the supplement columns, how far the date sits from the usual.</b> The colour does not repeat the sign &mdash; that is already in the number &mdash; it says whether this date is out of the ordinary for that room type: &#9650; full green beyond +35% of the period median, light green from +15%, light red from &minus;15%, &#9660; full red beyond &minus;35%. If Suite con Terrazza usually runs at +&euro;50 over the range, a date at +&euro;82 is flagged and the tooltip reads <i>this date is +64%</i>.</p>
+        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>The reference is the <b>median</b> of the visible dates, not the mean, so one odd date does not move the yardstick. Row highlighting for recent pickup was removed when these two came in: three simultaneous signals meant none of them stood out.</i></p>
 
         <p style="margin:0 0 6px 0">Each room type also gets its own column, showing the <b>suggested supplement in euros</b> over the base room &mdash; that is how prices are actually loaded:</p>
         <div style="margin:4px 0 12px 0;padding:9px 13px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;font-family:'DM Mono',monospace;font-size:11.5px;line-height:1.7">

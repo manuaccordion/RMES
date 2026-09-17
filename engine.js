@@ -13364,12 +13364,9 @@ function renderSellStrategy(sel){
   try {
     if (typeof pickup7dMapForStays === 'function') _pk7map = pickup7dMapForStays(sel, A.rows.map(r=>r.ymd));
   } catch(e){ _pk7map = {}; }
-  /* Pickup degli ULTIMI 3 GIORNI (oggi incluso), per evidenziare in tabella le
-     date che si sono mosse di recente. Diverso dal marker ▲▼ accanto alla data,
-     che confronta 7 giorni con lo stesso periodo dell'anno scorso: qui interessa
-     solo "su questa notte e' entrato qualcosa in questi tre giorni". */
-  /* Avviso sullo scostamento sistematico: sta in cima alla tabella perche'
-     riguarda l'insieme delle date, non una riga. */
+  /* Avviso sullo scostamento sistematico fra i prezzi caricati e la stima
+     strutturale: sta sopra la tabella perche' riguarda l'insieme delle date,
+     non una riga sola. */
   (function(){
     const host = document.getElementById('sell-loaded-drift');
     if (!host) return;
@@ -13377,38 +13374,41 @@ function renderSellStrategy(sel){
     const d = rmesLoadedDrift(sel, 90);
     if (!d.warn){ host.innerHTML = ''; return; }
     const pc = Math.round(Math.abs(d.drift) * 100);
-    const dir = d.drift > 0 ? 'above' : 'below';
     host.innerHTML = '<div style="padding:8px 12px;background:#fdf6ec;border:1px solid #e8c89a;border-radius:6px;'
       + 'font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-bottom:8px">'
-      + 'Across the next 90 days you are pricing <b>' + pc + '% ' + dir + '</b> the structural estimate on <b>'
-      + d.n + '</b> dates you have decided. '
+      + 'Across the next 90 days you are pricing <b>' + pc + '% ' + (d.drift > 0 ? 'above' : 'below')
+      + '</b> the structural estimate on <b>' + d.n + '</b> dates you have decided. '
       + 'A single date out of line is a decision; a whole stretch in the same direction usually means the Base Price itself is set too '
       + (d.drift > 0 ? 'low' : 'high') + ' for this property. '
-      + '<b>Raising the target growth</b> fixes it once, instead of overriding date by date.'
+      + '<b>Changing the target growth</b> fixes it once, instead of overriding date by date.'
       + '</div>';
   })();
-  const _pk3map = {};
-  {
-    const keys = (typeof structKeysFor === 'function') ? new Set(structKeysFor(sel)) : new Set([sel]);
-    const t0 = startOfDay(new Date(TODAY));
-    const from = ymd(addDays(t0, -2)), to = ymd(t0);
-    const list = (typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel])
-      ? _BOOKINGS_BY_STRUCT[sel] : BOOKINGS;
-    const useIdx = !!(typeof _BOOKINGS_BY_STRUCT !== 'undefined' && _BOOKINGS_BY_STRUCT && _BOOKINGS_BY_STRUCT[sel]);
-    for (let i=0;i<list.length;i++){
-      const b = list[i];
-      if (b.cancelled || !b.stayYmds) continue;
-      if (!useIdx && !keys.has(b.struct)) continue;
-      if (b.bookYmd < from || b.bookYmd > to) continue;
-      for (let j=0;j<b.stayYmds.length;j++){
-        const k = b.stayYmds[j];
-        if (!_pk3map[k]) _pk3map[k] = { n:0, byRt:{}, bookYmds:{} };
-        _pk3map[k].n++;
-        _pk3map[k].byRt[b.room] = (_pk3map[k].byRt[b.room] || 0) + 1;
-        _pk3map[k].bookYmds[b.bookYmd] = (_pk3map[k].bookYmds[b.bookYmd] || 0) + 1;
+  /* MEDIA DEI SUPPLEMENTI sulle date mostrate, per tipologia. Serve a colorare
+     lo scostamento: sapere che la Suite con Terrazza oggi sta a +60 non dice
+     nulla finche' non sai che di solito sta a +85. Mediana e non media, cosi'
+     una data anomala non sposta il riferimento. */
+  const _suppMedian = (function(){
+    const out = {};
+    try {
+      const baseK = (CFG.structures[sel] || {}).baseRT;
+      if (!baseK || !_suppRTs || !_suppRTs.length) return out;
+      const acc = {};
+      for (const row of A.rows){
+        const me = _rmesMapForAlignment && _rmesMapForAlignment[row.ymd];
+        const pr = me && me.pricesByRT;
+        if (!pr || !(pr[baseK] > 0)) continue;
+        for (const rt of _suppRTs){
+          if (!(pr[rt] > 0)) continue;
+          (acc[rt] = acc[rt] || []).push(pr[rt] - pr[baseK]);
+        }
       }
-    }
-  }
+      for (const rt in acc){
+        const a = acc[rt].sort((x,y)=>x-y);
+        if (a.length >= 5) out[rt] = a[Math.floor(a.length/2)];
+      }
+    } catch(e){}
+    return out;
+  })();
   const _pk7Flag = (ymdNum)=>{
     const p = _pk7map[ymdNum];
     if (!p) return '';
@@ -14082,7 +14082,19 @@ function renderSellStrategy(sel){
       // La tipologia va letta insieme al prezzo: una Suite a 400 e una base a 250
       // non dicono la stessa cosa. Percio' e' lei ad accompagnare il numero.
       const _rtShort = String(ls.room).length > 13 ? (String(ls.room).slice(0,12) + '\u2026') : String(ls.room);
-      return `<td class="cell-mono sell-sold-cell" style="text-align:center" title="${escapeHtml(tip)}">`
+      /* ETA' DELLA VENDITA a colpo d'occhio: una vendita di ieri parla del mercato
+         di oggi, una di sei mesi fa e' storia. Scala a quattro passi sullo
+         sfondo, cosi si distingue scorrendo senza leggere la data. */
+      const _ageBg = _age <= 7  ? 'rgba(46,120,70,.16)'
+                   : _age <= 30 ? 'rgba(46,120,70,.09)'
+                   : _age <= 90 ? 'rgba(160,150,130,.08)'
+                   :              'transparent';
+      const _ageOp = _age <= 30 ? '' : (_age <= 90 ? 'opacity:.72;' : 'opacity:.5;');
+      const _ageLbl = _age <= 7 ? 'Sold within the last week.'
+                    : _age <= 30 ? 'Sold within the last month.'
+                    : _age <= 90 ? 'Sold 1 to 3 months ago \u2014 fading.'
+                    : 'Sold more than 3 months ago \u2014 says little about today.';
+      return `<td class="cell-mono sell-sold-cell" style="text-align:center;background:${_ageBg};${_ageOp}" title="${escapeHtml(tip + '\n' + _ageLbl)}">`
            + `<div style="font-weight:700">${fmtEUR(ls.price)}</div>`
            + `<div style="font-size:9px;font-weight:400;opacity:.8;white-space:nowrap">${_bd.slice(0,5)} \u00b7 `
            + `<span style="${ls.isBaseRT ? '' : 'color:#7a4f1c;font-weight:600'}">${escapeHtml(_rtShort)}</span></div></td>`;
@@ -14146,9 +14158,26 @@ function renderSellStrategy(sel){
         const d = Math.round(pv - pBase);
         const tip = rt + '\nSuggested price ' + fmtEUR(pv) + ' = base ' + fmtEUR(pBase)
                   + ' ' + (d >= 0 ? '+ ' : '\u2212 ') + fmtEUR(Math.abs(d));
+        /* Il colore dice lo scostamento dalla MEDIANA del periodo, non il segno:
+           un supplemento di +60 e uno di +108 sulla stessa tipologia vanno
+           distinti a occhio, ed e' quella la differenza che conta. */
+        const med = _suppMedian[rt];
+        let bg = 'transparent', mark = '', extra = '';
+        if (med != null && Math.abs(med) > 1){
+          const rel = (d - med) / Math.abs(med);
+          extra = '\nUsual for this room type over the range: '
+                + (med >= 0 ? '+' : '\u2212') + fmtEUR(Math.abs(med))
+                + '  \u2014 this date is ' + (rel >= 0 ? '+' : '\u2212') + Math.round(Math.abs(rel)*100) + '%';
+          if (rel >= 0.35){ bg = 'rgba(30,107,74,.14)'; mark = '\u25b2 '; }
+          else if (rel >= 0.15){ bg = 'rgba(30,107,74,.07)'; }
+          else if (rel <= -0.35){ bg = 'rgba(168,59,59,.13)'; mark = '\u25bc '; }
+          else if (rel <= -0.15){ bg = 'rgba(168,59,59,.07)'; }
+        }
         const col = d > 0 ? '#1e6b4a' : (d < 0 ? '#a83b3b' : '#999');
-        return '<td class="cell-mono sell-supp-cell" style="text-align:center;color:' + col + '" title="'
-             + escapeHtml(tip) + '">' + (d >= 0 ? '+' : '\u2212') + fmtEUR(Math.abs(d)) + '</td>';
+        return '<td class="cell-mono sell-supp-cell" style="text-align:center;color:' + col
+             + ';background:' + bg + '" title="' + escapeHtml(tip + extra) + '">'
+             + '<span style="font-size:8px;opacity:.7">' + mark + '</span>'
+             + (d >= 0 ? '+' : '\u2212') + fmtEUR(Math.abs(d)) + '</td>';
       }).join('');
     })();
     // Cella "Min stay": minimum stay consigliato per quella data.
@@ -14366,22 +14395,10 @@ function renderSellStrategy(sel){
           ? '<span style="color:#b0332f;font-weight:700">\u00b7</span>' : '';
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip + _suppTip + _vTip)}">${_vMark}${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
-    /* Evidenzia la riga se su questa notte e' entrato pickup negli ultimi 3 giorni
-       (oggi incluso): sono le date che si sono mosse adesso e su cui vale la pena
-       guardare il prezzo per prime. */
-    const _pk3 = _pk3map[r.ymd];
-    let _rowCls = '', _rowTip = '';
-    if (_pk3 && _pk3.n > 0){
-      _rowCls = ' class="sell-row-fresh"';
-      const _days = Object.keys(_pk3.bookYmds).sort().reverse().map(k => {
-        const ss = String(k); return ss.slice(6,8)+'/'+ss.slice(4,6)+' ('+_pk3.bookYmds[k]+')';
-      }).join(' · ');
-      const _rts = Object.keys(_pk3.byRt).map(k => k+' '+_pk3.byRt[k]).join(' · ');
-      _rowTip = ' title="' + escapeHtml(
-        _pk3.n + ' booking' + (_pk3.n===1?'':'s') + ' came in for this night in the last 3 days\n'
-        + 'Booked on: ' + _days + '\nRoom types: ' + _rts) + '"';
-    }
-    html += `<tr${_rowCls}${_rowTip}${_searchTipVal}>
+    /* L'evidenziazione delle righe per pickup recente e' stata rimossa: con i
+       colori sull'eta' dell'ultima vendita e sullo scarto dei supplementi erano
+       troppi segnali contemporanei e nessuno si distingueva piu'. */
+    html += `<tr${_searchTipVal}>
       <td class="cell-mono sell-date-cell">${_pk7Flag(r.ymd)}<span class="sell-date-txt"${_occRing}>${pad2(r.day)}/${pad2(r.mo)}/${r.y}</span></td>
       <td${_dowInline}>${dowIT[r.dow]}</td>
       <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
