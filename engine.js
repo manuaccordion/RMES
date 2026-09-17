@@ -17716,6 +17716,27 @@ function _aggForecastSum(structKey){
    Le strutture piccole sbagliano di piu' perche' una prenotazione pesa molto
    sul totale, quindi la banda si allarga quando le camere sono poche. */
 const FCST_BAND_BY_LEAD = [0.066, 0.077, 0.108, 0.115, 0.14, 0.16, 0.18];
+/* L'INCERTEZZA VALE SOLO SU CIO' CHE NON E' ANCORA ACQUISITO.
+   Applicare la banda all'intero ricavo previsto porta a dire assurdita': a
+   settembre, con 100 notti gia' consumate e 199 a libro, la banda dichiarava
+   che il mese poteva chiudere 4.000 euro sotto quello che era gia' incassato.
+   Il ricavo si divide in tre pezzi con rischio molto diverso:
+     - notti gia' passate      certe, nessun rischio
+     - notti a libro future    contrattualizzate, rischio solo di cancellazione
+     - pickup ancora da fare   interamente incerto
+   La banda pesa il secondo un quarto del primo. */
+const FCST_BAND_OTB_WEIGHT = 0.25;
+function fcstBandAbs(structKey, m){
+  const pct = fcstBandFor(structKey, m.y, m.mo);
+  if (pct == null || !(m.fcstRev > 0)) return null;
+  const past   = Math.max(0, m.actualPastRev || 0);
+  const otbFut = Math.max(0, (m.otbRev || 0) - past);
+  const pickup = Math.max(0, m.fcstRev - (m.otbRev || 0));
+  const abs = pct * pickup + pct * FCST_BAND_OTB_WEIGHT * otbFut;
+  // Il limite inferiore non puo' mai scendere sotto quello gia' incassato.
+  const lo = Math.max(past, m.fcstRev - abs);
+  return { pct, abs, lo, hi: m.fcstRev + abs, past, otbFut, pickup };
+}
 function fcstBandFor(structKey, y, mo){
   try {
     const t = startOfDay(new Date(TODAY));
@@ -18592,19 +18613,34 @@ function renderForecast(sel){
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(m.finalLyRevNet, m.finalLyRn)}"><b>${fmtEUR(m.finalLyRev)}</b></td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(m.occ,1)}</td>
       <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(m.adr)}</td>
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(m.fcstRev)}</b>${(() => {
+      <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="${escapeHtml((() => {
+        /* Quando la previsione e' SOTTO il gia' a libro sembra un errore, e non lo
+           e': significa che una parte delle prenotazioni verra' cancellata. Le
+           cancellazioni misurate coincidono con la curva usata (Firenze 97,1%
+           reale contro 96,9% della curva entro 3 giorni), quindi il numero e'
+           giusto; era solo illeggibile. Lo dico a parole. */
+        if (!(m.fcstRev > 0) || !(m.otbRev > 0)) return '';
+        const diff = m.fcstRev - m.otbRev;
+        if (diff >= -0.5) return '';
+        return 'Lower than the ' + fmtEUR(m.otbRev) + ' already on the books: the engine expects about '
+             + fmtEUR(-diff) + ' of it to be cancelled before check-in, based on this property\'s own '
+             + 'cancellation history at this distance. Nothing is missing \u2014 it is the expected net.';
+      })())}"><b>${fmtEUR(m.fcstRev)}</b>${(() => {
         /* BANDA DI AFFIDABILITA'. Il numero da solo non dice quanto fidarsi:
            misurato sui mesi chiusi, l'errore passa dal 6,6% sul mese in corso
            all'11,5% a tre mesi. Mostro l'intervallo sotto il ricavo previsto,
            cosi si vede a colpo d'occhio che una stima lontana e' piu' larga. */
-        const band = (typeof fcstBandFor === 'function') ? fcstBandFor(A.sel, m.y, m.mo) : null;
-        if (band == null || !(m.fcstRev > 0)) return '';
-        const lo = m.fcstRev * (1 - band), hi = m.fcstRev * (1 + band);
+        const B = (typeof fcstBandAbs === 'function') ? fcstBandAbs(A.sel, m) : null;
+        if (!B || B.abs <= 0) return '';
         return `<div style="font-size:9px;font-weight:400;color:var(--ink-3);white-space:nowrap" title="${escapeHtml(
-            'Typical error at this distance: \u00b1' + Math.round(band*100) + '%.\n'
-          + 'Measured by replaying the forecast on closed months: 6.6% for the current month, '
-          + '7.7% at one month out, 10.8% at two, 11.5% at three.\n'
-          + 'The band is wider on small properties, where a single booking moves the total.')}">${fmtEUR(lo)} \u2013 ${fmtEUR(hi)}</div>`;
+            'Range: ' + fmtEUR(B.lo) + ' to ' + fmtEUR(B.hi) + '.\n\n'
+          + 'The uncertainty only applies to what is not secured yet:\n'
+          + '  ' + fmtEUR(B.past) + ' already stayed \u2014 certain\n'
+          + '  ' + fmtEUR(B.otbFut) + ' on the books for future nights \u2014 only cancellation risk\n'
+          + '  ' + fmtEUR(B.pickup) + ' still to be picked up \u2014 fully uncertain\n\n'
+          + 'Typical error at this distance: \u00b1' + Math.round(B.pct*100) + '%, measured by replaying '
+          + 'the forecast on closed months (6.6% current month, 7.7% at one, 10.8% at two, 11.5% at three). '
+          + 'Wider on small properties, where one booking moves the total.')}">${fmtEUR(B.lo)} \u2013 ${fmtEUR(B.hi)}</div>`;
       })()}</td>
       ${(() => {
         const ymBud = m.y*100 + m.mo;
