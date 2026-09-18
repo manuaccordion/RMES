@@ -9296,7 +9296,7 @@ function fp_estimateElasticity(structKey){
 const FP_OTA_MARKUP_DEFAULTS = { firenze: 12, condotta: 12, alfani: 12, davids: 12, nazionale: 12, portenuove: 12 };
 const FP_CHANNEL_MARKUP_KEY = 'rmes_channel_markup_v1';
 const FP_LMF_KEY = 'rmes_lastminute_factor_v1';
-const FP_LMF_OCC_BANDS = [10,20,30,40,50,60,70,80,100];
+const FP_LMF_OCC_BANDS = [10,20,30,40,50,60,70,80,90,100];
 const FP_LMF_DAY_BANDS = [[0,10],[11,30],[31,60],[61,365]];
 const FP_LMF_DEFAULT = [
   [-15,-10,-5,0],   // <=10%
@@ -9307,13 +9307,40 @@ const FP_LMF_DEFAULT = [
   [0,0,0,0],        // <=60%
   [0,0,5,10],       // <=70%
   [0,5,10,15],      // <=80%
+  [0,7,12,17],      // <=90%
   [0,10,15,20],     // <=100%
 ];
+/* La fascia 90% e' stata aggiunta dopo: fra l'80% e il tutto esaurito c'e'
+   troppo spazio per un solo scalino. Le matrici gia' salvate hanno 9 righe e il
+   caricatore, trovando un numero diverso, le avrebbe scartate tornando ai
+   default e cancellando in silenzio le personalizzazioni. La migrazione inserisce
+   la riga nuova copiando quella dell'80%, che e' la piu' vicina: i valori
+   esistenti restano dove sono. */
+const FP_LMF_OCC_BANDS_OLD = [10,20,30,40,50,60,70,80,100];
+function _fpLmfMigrateRows(rows){
+  if (!Array.isArray(rows)) return null;
+  if (rows.length === FP_LMF_OCC_BANDS.length) return rows;
+  if (rows.length === FP_LMF_OCC_BANDS_OLD.length){
+    const out = rows.slice(0, 8);                    // fino a <=80%
+    out.push((rows[7] || [0,0,0,0]).slice());        // <=90% = copia dell'80%
+    out.push((rows[8] || [0,0,0,0]).slice());        // <=100% invariata
+    return out;
+  }
+  return null;
+}
 function fp_getLmfMatrix(structKey){
   try {
     const raw = localStorage.getItem(FP_LMF_KEY);
     if (raw){
       const obj = JSON.parse(raw);
+      if (obj && obj[structKey]){
+        const _mig = _fpLmfMigrateRows(obj[structKey]);
+        if (_mig && _mig !== obj[structKey]){
+          // Salvo subito la versione migrata, cosi' la conversione avviene una volta sola.
+          obj[structKey] = _mig;
+          try { localStorage.setItem(FP_LMF_KEY, JSON.stringify(obj)); } catch(e){}
+        }
+      }
       if (obj && obj[structKey] && Array.isArray(obj[structKey]) && obj[structKey].length === FP_LMF_OCC_BANDS.length){
         return obj[structKey];
       }
