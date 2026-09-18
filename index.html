@@ -2166,11 +2166,11 @@ table.data.sell-table .sell-drill{
              prossimi giorni non si muove da solo, e ogni tanto serve rifarlo
              dopo un cambio di impostazioni o un'ondata di prenotazioni. -->
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 12px;margin-bottom:12px;background:#f7f5ef;border:1px solid var(--line);border-radius:8px">
-          <button id="rmes-refreeze-now" style="font-size:12px;font-weight:700;padding:6px 14px;border:1px solid #8e5fa8;border-radius:6px;background:#fff;color:#7a4f8e;cursor:pointer;white-space:nowrap">&#8635; Recompute frozen prices</button>
+          <button id="rmes-refreeze-now" style="font-size:12px;font-weight:700;padding:6px 14px;border:1px solid #8e5fa8;border-radius:6px;background:#fff;color:#7a4f8e;cursor:pointer;white-space:nowrap">&#8635; Clear any held prices</button>
           <span style="font-size:11.5px;color:var(--ink-2);line-height:1.45">
-            The Base Price is held still for the next <b id="rmes-refreeze-days">14</b> days so it does not shift under you while you work.
-            Press this after changing the settings above, or when a lot has been booked, to rebuild it from today's data.
-            <span style="color:var(--ink-3)">Dates further out already recompute on their own.</span>
+            <b>The Base Price now recomputes every time</b>, so there is normally nothing to do here.
+            Use this only to clear prices held from before, when the first two weeks used to be frozen.
+            <span style="color:var(--ink-3)">Your overrides and accepted prices are never touched.</span>
           </span>
           <span id="rmes-refreeze-msg" style="font-size:11.5px;color:var(--ink-3)"></span>
         </div>
@@ -2280,7 +2280,7 @@ table.data.sell-table .sell-drill{
           <div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">Every step from history to the price to load, one row per night. Hover any number for how it was obtained.</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
-          <button id="bp-refreeze" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid #8e5fa8;border-radius:6px;background:transparent;color:#8e5fa8;cursor:pointer;font-weight:700" title="Recompute the frozen Base Price from current data + config (fixes stale values). Overrides and accepts are kept.">Refresh frozen Base</button>
+          <button id="bp-refreeze" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid #8e5fa8;border-radius:6px;background:transparent;color:#8e5fa8;cursor:pointer;font-weight:700" title="Recompute the Base Price from current data + config (fixes stale values). Overrides and accepts are kept.">Recompute Base</button>
           <button id="chain-export" style="font-family:'DM Mono',monospace;font-size:12px;padding:6px 14px;border:1px solid var(--accent);border-radius:6px;background:transparent;color:var(--accent);cursor:pointer;font-weight:700">Export CSV</button>
         </div>
       </div>
@@ -2441,7 +2441,7 @@ table.data.sell-table .sell-drill{
           </ul>
           <p style="margin:0 0 8px 0"><b>Concrete example — Firenze Suite, single day</b>:</p>
           <ul style="margin:6px 0 8px 18px">
-            <li>Base Price = <b>€283</b> (frozen, structural)</li>
+            <li>Base Price = <b>€283</b> (structural)</li>
             <li>the pickup signal comes out at <b>−8%</b> (fewer bookings than at the same point last year)</li>
             <li>RMES target on Base = 283 × 0.92 = <b>€260</b> (no Floor here, so the target stands). This is the engine's "true suggestion".</li>
           </ul>
@@ -2453,7 +2453,8 @@ table.data.sell-table .sell-drill{
             <li>You override 🖋 with €300 → Last update becomes <b style="color:#b86b1f">🖋 €300</b> in orange. The target is still €260 (direction: down). Your override €300 is above the target, so RMES still wants you to lower. The cell shows <b>↓ €260</b> with a tooltip explaining "your override is above the target". You decide whether to follow or to keep your €300.</li>
           </ol>
           <p style="margin:0"><b>Why this design</b>: the target depends only on the market and the structural Base Price — never on your past decisions. This avoids the "loop" risk (if RMES suggested based on your last override, after a few iterations it could drift very far). The Floor keeps the target in a sane range whatever the market does.</p>
-          <p style="margin:8px 0 0 0"><b>What the Floor means.</b> &ldquo;Floor 200&rdquo; is about the <b>flexible rate of the property's cheapest room type</b>, not the base room. At Palazzo Alfani the base is the Classic but the cheapest is the Junior Suite at &minus;&euro;10, so the Classic's floor is lifted to &euro;210 and the Junior Suite lands exactly on &euro;200. Derived rates sit below it by design &mdash; non-refundable at &minus;10%, extended stay at &minus;15% from 5 nights &mdash; because the floor is about the flexible rate. The value itself is the higher of your annual Floor Rate and the historical p15, and the same figure binds the Base Price and the RMES suggestion.</p>
+          <p style="margin:8px 0 0 0"><b>What the Floor means.</b> It is the <b>lowest price anyone can pay</b> &mdash; not the flexible rate, but the cheapest rate on offer: extended stay, 15% under flexible, on the cheapest room type. &ldquo;Floor 200&rdquo; therefore means nobody pays less than &euro;200, not even booking five nights in the cheapest room. At Palazzo Alfani that puts the Classic's flexible rate at &euro;245: the Junior Suite sits &euro;10 below it, and its five-night rate lands exactly on &euro;200.</p>
+          <p style="margin:6px 0 0 0;font-size:12.5px;color:#666"><i>The historical p15 no longer raises the floor. It was pushing Palazzo Alfani to &euro;266 and made the number hard to reason about; the floor is now simply the figure you set.</i></p>
         </div>
 
         <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12px"><b>How to read a row at a glance.</b> Look first at the <b>Last update</b> column to know the price active right now (Base Price by default, accepted ✓, or override 🖋). When both an accept and an override exist for the same day, the <b>most recent decision wins</b> (whichever you did last). Then look at the <b>RMES</b> column for the engine's verdict: either a target to consider (↓/↑) or "✓ in line" if your decision is already in tune.</p>
@@ -2730,7 +2731,7 @@ table.data.sell-table .sell-drill{
         <p style="margin:0 0 6px 0">It is deliberately left empty rather than pre-filled with the Base Price: a number sitting in the box would look like a decision already taken, or worse like an old value nobody remembers writing. It writes to the same shared store the engine already uses as its reference, so everyone sees the same thing.</p>
         <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>Because the suggestion follows the price you record, the engine also tells you when your price sits far from its own estimate &mdash; on a single date in the cell tooltip, and across the whole range in a note above the table when the gap is systematic. A single date out of line is a decision; twenty in the same direction usually means the Base Price itself needs adjusting through the target growth.</i></p>
         <p style="margin:0 0 6px 0;font-size:12.5px;color:#666"><i>Accepting for a whole period still works from the bar at the top &mdash; pick a range and press Accept RMES.</i></p>
-        <p style="margin:0 0 6px 0"><b>The suggestion always starts from the Base Price, never from what you loaded.</b> Type &euro;120 where the engine estimates &euro;134 and it keeps proposing &euro;134, signal or no signal. Letting the calculation restart on top of your own decision meant the engine was chasing itself; this way the suggestion stays &ldquo;what this night is worth according to the data&rdquo;, and your price is what the <b>delta</b> measures against. Rebuild the frozen Base Price and the suggestion follows immediately, which is what you would expect.</p>
+        <p style="margin:0 0 6px 0"><b>The suggestion always starts from the Base Price, never from what you loaded.</b> Type &euro;120 where the engine estimates &euro;134 and it keeps proposing &euro;134, signal or no signal. Letting the calculation restart on top of your own decision meant the engine was chasing itself; this way the suggestion stays &ldquo;what this night is worth according to the data&rdquo;, and your price is what the <b>delta</b> measures against. The Base Price recomputes every time, so the suggestion always reflects the latest data.</p>
         <p style="margin:0 0 6px 0">Since the two are independent, the engine also tells you <b>when your price is far from its own estimate</b> &mdash; on a single date in the cell tooltip, and above the table when the gap is systematic. One date out of line is a decision; twenty in the same direction usually means the Base Price is set too low or too high, and the target growth is the place to fix it.</p>
         <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>A price typed by mistake therefore costs nothing beyond that one date: it cannot drag the calculation anywhere.</i></p>
 
@@ -2928,7 +2929,7 @@ table.data.sell-table .sell-drill{
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Final LY</dt>
           <dd style="margin:2px 0 8px 18px">The full close of last year. Different from STLY: Final LY is "what last year ended up as", STLY is "what was already on the books at this point last year".</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Base Price</dt>
-          <dd style="margin:2px 0 8px 18px">Structural price per stay-date, frozen, computed once. Source of the RMES suggestion.</dd>
+          <dd style="margin:2px 0 8px 18px">Structural price per stay-date, recomputed from the data every time. Source of the RMES suggestion.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Monthly Anchor</dt>
           <dd style="margin:2px 0 8px 18px">True ADR earned on the base RT in a given month, computed from the last 2 years of bookings (net of OTA markup). Used as the <b>fallback base</b> when a date has no LY history at all. The old ±50% guard-rail built on it has been removed. One value per property × per month.</dd>
           <dt style="font-weight:700;margin-top:8px;color:#5a3a14">Annual Anchor Price (fallback)</dt>

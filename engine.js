@@ -6364,6 +6364,14 @@ const FP_FLOOR_HIST_MIN_OBS = 8;
    Quindi il floor della camera BASE va alzato di quanto la piu' economica le sta
    sotto. Le tariffe derivate (non rimborsabile -10%, soggiorno lungo -15%)
    possono stare sotto il floor: il floor riguarda la flessibile. */
+/* IL PAVIMENTO E' IL PREZZO PIU' BASSO CHE UN CLIENTE PUO' PAGARE.
+   Non la flessibile della camera piu' economica, ma la tariffa piu' bassa in
+   assoluto: il soggiorno prolungato, che sta il 15% sotto la flessibile ed e'
+   piu' bassa anche del non rimborsabile (-10%).
+   Quindi "floor 200" vuol dire: nessuno paga meno di 200, nemmeno prenotando
+   cinque notti sulla camera piu' economica. La flessibile della camera base
+   deve stare abbastanza sopra perche' quella soglia regga. */
+const FP_LONGSTAY_DISCOUNT = 0.15;
 function fpFloorLiftForBaseRT(structKey, month){
   try {
     if (typeof aggPricingDaily !== 'function') return 0;
@@ -6449,10 +6457,17 @@ const NEWRMES_FROZEN_BASE_KEY = 'rmes_frozen_base_v1';
    compset, eventi) fino a quando la data non entra nella finestra.
    30 giorni: il prezzo resta aggiornato piu' a lungo e si blocca solo nell'ultimo
    mese, quando le decisioni diventano operative. */
-/* Il Base Price resta congelato per i prossimi 14 giorni, non 30: sotto data il
-   mercato si muove in fretta e mezzo mese di prezzo bloccato e' troppo. Oltre
-   questa finestra si ricalcola a ogni apertura. */
-const BASE_FREEZE_WINDOW_DAYS = 14;
+/* NIENTE CONGELAMENTO: il Base Price si ricalcola sempre.
+   Misurato prima di toglierlo: su 56 giorni il valore congelato e quello
+   ricalcolato erano IDENTICI, perche' tre ingredienti su quattro non cambiano
+   mai fra un aggiornamento dati e l'altro (mediana storica 2024-2025, crescita
+   configurata, pavimento). L'unico che si muove e' il tetto compset, che morde
+   su 6 date su 60 a Firenze e 14 su 60 ad Alfani, mai sulle altre due.
+   Il congelamento quindi non proteggeva da nulla e faceva il contrario di
+   quello che doveva: dopo un aggiornamento dati teneva fermo il valore vecchio.
+   La stabilita' che serve davvero sta negli override e negli accept, che il
+   ricalcolo non tocca. */
+const BASE_FREEZE_WINDOW_DAYS = 0;
 const NEWRMES_FROZEN_BASE_OVR_KEY = 'rmes_frozen_base_override_v1';
 const NEWRMES_ACCEPTED_KEY = 'rmes_accepted_v1';
 
@@ -6997,7 +7012,11 @@ function newrmesCalculateBasePrice(structKey, isoDate){
   const floorHist = (anchor && anchor.adrP15 != null && anchor.adrP15 > 0 && anchor.adrP15N >= FP_FLOOR_HIST_MIN_OBS)
     ? anchor.adrP15 : null;
   const _lift = fpFloorLiftForBaseRT(structKey, +isoDate.slice(5,7));
-  const floorEff = ((floorHist != null) ? Math.max(floor, floorHist) : floor) + _lift;
+  /* Il p15 storico non entra piu': il pavimento e' solo quello che decidi tu,
+     piu' semplice da capire e da controllare. La soglia si riferisce alla
+     tariffa piu' bassa (soggiorno prolungato sulla camera piu' economica),
+     quindi la flessibile della camera base va alzata di conseguenza. */
+  const floorEff = floor / (1 - FP_LONGSTAY_DISCOUNT) + _lift;
   if (price < floorEff) price = floorEff;
   return Math.round(price);
 }
@@ -7054,9 +7073,9 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
   const floorHist = (anchor && anchor.adrP15 != null && anchor.adrP15 > 0 && anchor.adrP15N >= FP_FLOOR_HIST_MIN_OBS)
     ? Math.round(anchor.adrP15) : null;
   const _lift = fpFloorLiftForBaseRT(structKey, +isoDate.slice(5,7));
-  const floorBase = (floorHist != null) ? Math.max(floor, floorHist) : floor;
+  const floorBase = floor / (1 - FP_LONGSTAY_DISCOUNT);
   const floorEff = floorBase + _lift;
-  const floorSource = (floorHist != null && floorHist > floor) ? 'historical' : 'annual';
+  const floorSource = 'annual';
   let flooredBy = false;
   if (price < floorEff){ price = floorEff; flooredBy = true; }
   return {
@@ -8966,7 +8985,9 @@ function newrmesMaintainFrozenWindow(structKey){
   if (!all[structKey]) all[structKey] = {};
   const store = all[structKey];
   let added = 0, removed = 0;
-  for (let off = 0; off <= BASE_FREEZE_WINDOW_DAYS; off++){
+  /* Con la finestra a 0 non si congela NIENTE, nemmeno oggi: il ciclo va
+     escluso, altrimenti "off <= 0" congelerebbe comunque il giorno corrente. */
+  for (let off = 0; off < BASE_FREEZE_WINDOW_DAYS; off++){
     const d = new Date(today.getTime() + off*86400000);
     const ymd = d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
     if (store[ymd] != null) continue;            // already frozen → keep stable
@@ -17651,11 +17672,13 @@ function renderRMESConfigTab(){
       const st = (typeof RMES_TAB_STRUCT !== 'undefined') ? RMES_TAB_STRUCT : CURRENT_STRUCT;
       const ids = (typeof structIdsFor === 'function') ? structIdsFor(st) : [st];
       const t0 = startOfDay(new Date(TODAY));
-      const t1 = addDays(t0, BASE_FREEZE_WINDOW_DAYS);
+      // La finestra e' 0, quindi uso un orizzonte fisso per ripulire eventuali
+      // prezzi rimasti congelati da quando il congelamento esisteva.
+      const t1 = addDays(t0, 60);
       const f = fp_isoDate(t0), t = fp_isoDate(t1);
       const label = ids.length > 1 ? (ids.length + ' properties') : ((CFG.structures[ids[0]] && CFG.structures[ids[0]].label) || ids[0]);
-      if (!confirm('Rebuild the frozen Base Price for ' + label + ', from today to ' + t + ' ('
-                   + BASE_FREEZE_WINDOW_DAYS + ' days)?\n\nIt is recomputed from today\'s data. '
+      if (!confirm('Clear any held Base Price for ' + label + ' and recompute from today\'s data?\n\n'
+                   + 'The Base Price already recomputes on its own; this only clears values held from before. '
                    + 'Manual overrides and accepted prices are not touched.')) return;
       let n = 0;
       try { n = newrmesRefreezeRange(ids, f, t) || 0; } catch(e){ console.error('refreeze', e); }
