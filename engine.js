@@ -2953,7 +2953,8 @@ function renderRtMonthFilter(A, sel){
         if (RT_MONTHS.has(m)){ RT_MONTHS.delete(m); if (!RT_MONTHS.size) RT_MONTHS = null; }
         else RT_MONTHS.add(m);
       }
-      renderRT(CURRENT_STRUCT);
+      if (CURRENT_TAB === 'rt'){ try { renderRT(CURRENT_STRUCT); } catch(e){ console.error('renderRT', e); } _TAB_DIRTY['rt'] = false; }
+  else _TAB_DIRTY['rt'] = true;
     });
   });
 }
@@ -3102,7 +3103,8 @@ function renderPickup(sel){
             PK_WEEKS_SEL = [...PK_WEEKS_SEL, wi].sort();
           }
         }
-        renderPickup(CURRENT_STRUCT);
+        if (CURRENT_TAB === 'pk'){ try { renderPickup(CURRENT_STRUCT); } catch(e){ console.error('renderPickup', e); } _TAB_DIRTY['pk'] = false; }
+  else _TAB_DIRTY['pk'] = true;
       });
     });
   }
@@ -6455,7 +6457,10 @@ const NEWRMES_FROZEN_BASE_KEY = 'rmes_frozen_base_v1';
    compset, eventi) fino a quando la data non entra nella finestra.
    30 giorni: il prezzo resta aggiornato piu' a lungo e si blocca solo nell'ultimo
    mese, quando le decisioni diventano operative. */
-const BASE_FREEZE_WINDOW_DAYS = 30;
+/* Il Base Price resta congelato per i prossimi 14 giorni, non 30: sotto data il
+   mercato si muove in fretta e mezzo mese di prezzo bloccato e' troppo. Oltre
+   questa finestra si ricalcola a ogni apertura. */
+const BASE_FREEZE_WINDOW_DAYS = 14;
 const NEWRMES_FROZEN_BASE_OVR_KEY = 'rmes_frozen_base_override_v1';
 const NEWRMES_ACCEPTED_KEY = 'rmes_accepted_v1';
 
@@ -12636,9 +12641,9 @@ function renderSellStrategy(sel){
           if (rkM) _posMine = rkM.rank + '/' + rkM.total;
         }
         const _rsTip = myTooltip + (_posMine ? ' · position ' + _posMine + ' (1 = cheapest)' : '') + ' — ' + avgTooltip;
-        expCells = `<td class="cell-mono sell-block-expedia ${diffCls}" style="background:rgba(58,107,107,.04);text-align:center;line-height:1.25" title="${escapeHtml(_rsTip)}">`
+        expCells = `<td class="cell-mono sell-block-expedia ${diffCls}" class="bg-mkt" title="${escapeHtml(_rsTip)}">`
                  + `<div style="font-weight:700">${myTxt}</div>`
-                 + `<div style="font-size:9.5px;font-weight:400;opacity:.85;white-space:nowrap">cs ${avgTxt}${_posMine ? ' · ' + _posMine : ''}</div></td>`;
+                 + `<div class="sub-9">cs ${avgTxt}${_posMine ? ' · ' + _posMine : ''}</div></td>`;
       } else {
         expCells = `<td class="cell-mono cell-flat sell-block-expedia" style="background:rgba(58,107,107,.04);text-align:center">—</td>`;
       }
@@ -13256,7 +13261,7 @@ function renderSellStrategy(sel){
         const col = d > 0 ? '#1e6b4a' : (d < 0 ? '#a83b3b' : '#999');
         return '<td class="cell-mono sell-supp-cell" style="text-align:center;color:' + col
              + ';background:' + bg + '" title="' + escapeHtml(tip + extra) + '">'
-             + '<span style="font-size:8px;opacity:.7">' + mark + '</span>'
+             + '<span class="mark-8">' + mark + '</span>'
              + (d >= 0 ? '+' : '\u2212') + fmtEUR(Math.abs(d)) + '</td>';
       }).join('');
     })();
@@ -13499,8 +13504,8 @@ function renderSellStrategy(sel){
       <td class="cell-mono cell-flat">${fmtPct(r.stlyOcc,0)}</td>
       <td class="cell-mono cell-flat">${isFinite(r.stlyAdr)?fmtEUR(r.stlyAdr):'—'}</td>
       <!-- Pickup STLY: solo il netto -->
-      <td class="cell-mono sell-grp-pkstly-cell ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" style="background:rgba(138,138,138,.04)">${(pkStlyNewCount>0||pkStlyCancelCount>0)?`<span class="sell-pickup-link" data-row="${i}" data-kind="pkStlyNet" title="Click: new + cancelled detail (STLY)" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</span>`:`${r.pkRnStly>=0?'+':''}${r.pkRnStly}`}</td>
-      <td class="cell-mono ${pkStlyAdrTxt==='—'?'cell-flat':''}" style="background:rgba(138,138,138,.04)">${pkStlyAdrTxt}</td>
+      <td class="cell-mono sell-grp-pkstly-cell ${r.pkRnStly>0?'cell-pos':(r.pkRnStly<0?'cell-neg':'cell-flat')}" class="bg-grey">${(pkStlyNewCount>0||pkStlyCancelCount>0)?`<span class="sell-pickup-link" data-row="${i}" data-kind="pkStlyNet" title="Click: new + cancelled detail (STLY)" style="cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">${r.pkRnStly>=0?'+':''}${r.pkRnStly}</span>`:`${r.pkRnStly>=0?'+':''}${r.pkRnStly}`}</td>
+      <td class="cell-mono ${pkStlyAdrTxt==='—'?'cell-flat':''}" class="bg-grey">${pkStlyAdrTxt}</td>
       ${expCells}
       ${beddyCell}
       <!-- Base Price cell (with override 🖋 / reset ↺ buttons) -->
@@ -13547,8 +13552,8 @@ function renderSellStrategy(sel){
     <td class="cell-mono cell-flat">${fmtPct(T.stlyOcc,1)}</td>
     <td class="cell-mono cell-flat">${isFinite(T.stlyAdr)?fmtEUR(T.stlyAdr):'—'}</td>
     <!-- Pickup STLY: solo il netto -->
-    <td class="cell-mono ${T.pkRnStly>=0?'cell-pos':'cell-neg'}" style="background:rgba(138,138,138,.04)">${T.pkRnStly>=0?'+':''}${T.pkRnStly}</td>
-    <td class="cell-mono ${isFinite(totPkStlyAdr)?'':'cell-flat'}" style="background:rgba(138,138,138,.04)">${isFinite(totPkStlyAdr)?fmtEUR(totPkStlyAdr):'—'}</td>
+    <td class="cell-mono ${T.pkRnStly>=0?'cell-pos':'cell-neg'}" class="bg-grey">${T.pkRnStly>=0?'+':''}${T.pkRnStly}</td>
+    <td class="cell-mono ${isFinite(totPkStlyAdr)?'':'cell-flat'}" class="bg-grey">${isFinite(totPkStlyAdr)?fmtEUR(totPkStlyAdr):'—'}</td>
     ${showExp ? '<td class="cell-flat" style="background:rgba(58,107,107,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
     ${showBeddy ? '<td class="cell-flat" style="background:rgba(30,107,74,.04);text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>' : ''}
     <!-- Base Price -->
@@ -14808,41 +14813,6 @@ function _applySellColsState(){
   tbl.setAttribute('data-hide-stly',    state.stly    ? '0' : '1');
   tbl.setAttribute('data-hide-pkstly',  state.pkstly  ? '0' : '1');
   tbl.setAttribute('data-hide-expedia', state.expedia ? '0' : '1');
-}
-function _renderSellColsPills(){
-  const wrap = document.getElementById('sell-cols-pills');
-  if (!wrap) return;
-  const state = _loadSellColsState();
-  const blocks = [
-    { key:'event',   label:'Event' },
-    { key:'pickup',  label:'Pickup' },
-    { key:'stly',    label:'STLY' },
-    { key:'pkstly',  label:'Pickup STLY' },
-    { key:'expedia', label:'Expedia' },
-    { key:'allrt',   label:'All RT', highlight:true },
-  ];
-  wrap.innerHTML = blocks.map(b => {
-    const on = !!state[b.key];
-    const extra = b.highlight ? 'style="border-color:#c4823b;background:'+(on?'rgba(195,131,59,0.18)':'rgba(195,131,59,0.04)')+';color:#7a4f1c;font-weight:600"' : '';
-    const tooltip = b.key === 'allrt' ? ' title="Show extra columns inside the RMES group with price + MLOS for each non-base room type (Suite, Trilocale, Attico etc.). Prices are computed with RT-specific multipliers (A · Daily Pickup, B · Pace Trend, C · Online Pricing, D · Demand (Expedia)) — all at property level."' : '';
-    return `<button class="sell-col-pill ${on?'on':''}" data-sell-col="${b.key}" ${extra}${tooltip}>${b.label}</button>`;
-  }).join('');
-  wrap.querySelectorAll('button[data-sell-col]').forEach(btn => {
-    btn.onclick = () => {
-      const key = btn.dataset.sellCol;
-      const st = _loadSellColsState();
-      st[key] = !st[key];
-      _saveSellColsState(st);
-      if (key === 'allrt'){
-        if (typeof CURRENT_STRUCT !== 'undefined' && typeof renderSellStrategy === 'function'){
-          renderSellStrategy(CURRENT_STRUCT);
-        }
-      } else {
-        _applySellColsState();
-        _renderSellColsPills();
-      }
-    };
-  });
 }
 function _renderSellRtFilterPills(sel){
   const wrap = document.getElementById('sell-rt-filter-pills');
@@ -17649,127 +17619,23 @@ function renderRMESConfigTab(){
       el.style.fontSize = '12px';
     }
   });
-  _renderRmesThresholdsBox(sel);
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
   if (typeof _renderRmesSignalsBox === 'function') _renderRmesSignalsBox(sel);
   if (typeof _renderRmesSpecialBox === 'function') _renderRmesSpecialBox();
   if (typeof _renderRmesEventsBox === 'function') _renderRmesEventsBox();
   if (typeof fp_renderFoundationConfigBox === 'function') fp_renderFoundationConfigBox(sel);
-  _rmesTabClearDirty();
-  const applyAllBtn = document.getElementById('rmes-tab-apply-all');
-  if (applyAllBtn && !applyAllBtn._wired){
-    applyAllBtn._wired = true;
-    applyAllBtn.onclick = () => {
-      if (applyAllBtn.disabled) return;
-      const structLbl = (RMES_TAB_STRUCT === 'condotta') ? 'Condotta 16' : (RMES_TAB_STRUCT === 'firenze') ? 'Firenze Suite' : (RMES_TAB_STRUCT === 'davids') ? "Enis Guesthouse" : 'Palazzo Alfani';
-      const ok = _rmesTabApplyAll();
-      if (ok){
-        const orig = applyAllBtn.textContent;
-        applyAllBtn.textContent = '✓ Applicato a ' + structLbl;
-        applyAllBtn.style.background = '#2d6a3e';
-        setTimeout(() => {
-          applyAllBtn.textContent = orig;
-          applyAllBtn.style.background = '#4a7c59';
-        }, 1500);
-      }
-    };
-  }
+  /* Il pulsante "Apply changes" viveva nel box dei pesi, rimosso insieme a
+     quelli: ogni pannello ora salva per conto suo. */
+
 }
 /* Il pannello dei PESI e' stato rimosso: il RMES non usa piu' pesi.
    Al suo posto una riga che rimanda al pannello dei segnali, dove ogni regola
    si configura e si spegne per conto suo. */
 let _RMES_TAB_DIRTY = false;
-function _rmesTabMarkDirty(){
-  _RMES_TAB_DIRTY = true;
-  const btn = document.getElementById('rmes-tab-apply-all');
-  if (btn){
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-    btn.textContent = '⚠ Apply changes (' + ((CFG.structures[RMES_TAB_STRUCT] && CFG.structures[RMES_TAB_STRUCT].label) || RMES_TAB_STRUCT) + ')';
-  }
-}
-function _rmesTabClearDirty(){
-  _RMES_TAB_DIRTY = false;
-  const btn = document.getElementById('rmes-tab-apply-all');
-  if (btn){
-    btn.disabled = true;
-    btn.style.opacity = '0.55';
-    btn.style.cursor = 'not-allowed';
-    btn.textContent = 'Apply changes (' + ((CFG.structures[RMES_TAB_STRUCT] && CFG.structures[RMES_TAB_STRUCT].label) || RMES_TAB_STRUCT) + ')';
-  }
-}
 /* I pesi non esistono piu': resta la funzione perche' e' ancora referenziata,
    ma non ha nulla da applicare. */
 /* === ②b Daily Pickup thresholds — Fase 2 === */
 /* === ② SOGLIE INDICI === */
-function _renderRmesThresholdsBox(sel){
-  const capInp = document.getElementById('rmes-tab-cap-input');
-  if (capInp){
-    const cap = (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.25;
-    capInp.value = Math.round(cap * 100);  // converto fraction → %
-    if (!capInp._wired){
-      capInp._wired = true;
-      capInp.addEventListener('input', () => { if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty(); });
-    }
-  }
-  const resetBtn = document.getElementById('rmes-tab-th-reset');
-  if (resetBtn && !resetBtn._wired){
-    resetBtn._wired = true;
-    resetBtn.onclick = () => {
-      if (confirm('Resettare il Cap di ' + RMES_TAB_STRUCT + ' al default 30%?')){
-        if (typeof setRmesCap === 'function') setRmesCap(RMES_TAB_STRUCT, 0.30);
-        _renderRmesThresholdsBox(RMES_TAB_STRUCT);
-        if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
-        if (typeof _rmesTabClearDirty === 'function') _rmesTabClearDirty();
-      }
-    };
-  }
-}
-function _rmesTabApplyAll(){
-  const sel = RMES_TAB_STRUCT;
-  // Niente pesi da applicare: il RMES non li usa piu'.
-  const capInp = document.getElementById('rmes-tab-cap-input');
-  if (capInp){
-    let capPct = parseFloat(capInp.value);
-    if (!isFinite(capPct)) capPct = 25;
-    if (capPct < 0) capPct = 0;
-    if (capPct > 100) capPct = 100;
-    capInp.value = Math.round(capPct);
-    if (typeof setRmesCap === 'function') setRmesCap(sel, capPct / 100);  // % → fraction
-  }
-  const lmfInputs = document.querySelectorAll('.rmes-lmf-input');
-  if (lmfInputs.length && typeof fp_setLmfMatrix === 'function'){
-    const mtx = FP_LMF_OCC_BANDS.map(() => FP_LMF_DAY_BANDS.map(() => 0));
-    lmfInputs.forEach(inp => {
-      const ri = parseInt(inp.dataset.lmfR, 10);
-      const ci = parseInt(inp.dataset.lmfC, 10);
-      let v = parseFloat(inp.value);
-      if (!isFinite(v)) v = 0;
-      if (v < -90) v = -90;
-      if (v > 200) v = 200;
-      if (mtx[ri]) mtx[ri][ci] = v;
-    });
-    fp_setLmfMatrix(sel, mtx);
-  }
-  const evInputs = document.querySelectorAll('.rmes-evw-input');
-  if (evInputs.length){
-    const w = {};
-    evInputs.forEach(inp => {
-      const lbl = inp.dataset.evw;
-      let v = parseFloat(inp.value);
-      if (!isFinite(v)) v = 0;
-      if (v < 0) v = 0;
-      if (v > 20) v = 20;
-      if (lbl && v !== 0) w[lbl] = v;  // store only non-zero weights to keep storage clean
-    });
-    _setEventWeights(w);
-  }
-
-  if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
-  _rmesTabClearDirty();
-  return true;
-}
 /* === ③ PESI COMPETITOR === */
 /* === PANNELLO DATE SPECIALI (feste fisse + ponti) ===
    Vale per TUTTE le strutture: le feste non cambiano da proprieta' a proprieta'.
@@ -18059,17 +17925,40 @@ function _renderRmesLmfBox(sel){
       '</div>' +
       '<div style="padding:8px 14px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center">' +
         '<button id="rmes-lmf-reset" style="font-size:11px;padding:5px 10px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--ink-2);cursor:pointer">\u21ba Reset default</button>' +
-        '<span style="font-size:11px;color:var(--ink-3)">Changes are saved with the \u201cApply changes\u201d button at the bottom of the tab.</span>' +
+        '<button id="rmes-lmf-save" style="font-size:11px;font-weight:700;padding:5px 14px;border:0;border-radius:4px;background:#3d7a4b;color:#fff;cursor:pointer">Save</button>' +
+        '<span id="rmes-lmf-msg" style="font-size:11px;color:var(--ink-3)"></span>' +
       '</div>' +
     '</div>';
+  /* Il pulsante "Apply changes" della tab e' stato rimosso insieme al box dei
+     pesi: senza un salvataggio proprio, le modifiche a questa matrice non
+     andavano da nessuna parte e la nota rimandava a un pulsante inesistente. */
+  const _lmfSave = () => {
+    const mtx = [];
+    for (let ri=0; ri<occBands.length; ri++){
+      const row = [];
+      for (let ci=0; ci<dayBands.length; ci++){
+        const inp = wrap.querySelector('.rmes-lmf-input[data-lmf-r="'+ri+'"][data-lmf-c="'+ci+'"]');
+        const v = inp ? parseFloat(inp.value) : 0;
+        row.push(isFinite(v) ? v : 0);
+      }
+      mtx.push(row);
+    }
+    try { fp_setLmfMatrix(sel, mtx); } catch(e){ console.error('lmf save', e); }
+    if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+    const msg = document.getElementById('rmes-lmf-msg');
+    if (msg){ msg.textContent = 'Saved'; msg.style.color = '#3d7a4b';
+      setTimeout(() => { if (msg) msg.textContent = ''; }, 1800); }
+    if (typeof renderSellStrategy === 'function') setTimeout(() => renderSellStrategy(sel), 40);
+  };
+  const _sb = document.getElementById('rmes-lmf-save');
+  if (_sb) _sb.addEventListener('click', _lmfSave);
   wrap.querySelectorAll('.rmes-lmf-input').forEach(inp => {
-    inp.addEventListener('input', () => { if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty(); });
+    inp.addEventListener('keydown', ev => { if (ev.key === 'Enter') _lmfSave(); });
   });
   const rb = document.getElementById('rmes-lmf-reset');
   if (rb) rb.addEventListener('click', () => {
     try { const raw = localStorage.getItem(FP_LMF_KEY); const obj = raw?JSON.parse(raw):{}; delete obj[sel]; localStorage.setItem(FP_LMF_KEY, JSON.stringify(obj)); } catch(e){}
     _renderRmesLmfBox(sel);
-    if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
   });
 }
 function _renderRmesEventsBox(){
@@ -18202,76 +18091,17 @@ function _renderRmesEventsBox(){
       '</div>' +
     '</div>';
   wrap.querySelectorAll('.rmes-evw-input').forEach(inp => {
-    inp.addEventListener('input', () => { if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty(); });
-  });
+      });
   const rb = document.getElementById('rmes-evw-reset');
   if (rb) rb.addEventListener('click', () => {
     _setEventWeights({});
     _renderRmesEventsBox();
-    if (typeof _rmesTabMarkDirty === 'function') _rmesTabMarkDirty();
   });
 }
 
 /* ============================================================================
    Promo Overrides box — lista compatta promo per struttura selezionata
    ============================================================================ */
-function _renderRmesCompsetBox(sel){
-  const wrap = document.getElementById('rmes-tab-comp-wrap');
-  if (!wrap) return;
-  const compMap = (sel === 'condotta') ? (EXPEDIA_DATA && EXPEDIA_DATA.competitors)
-                : (sel === 'alfani')   ? (EXPEDIA_DATA && EXPEDIA_DATA.competitors_alfani)
-                : (sel === 'firenze')  ? (EXPEDIA_DATA && EXPEDIA_DATA.competitors_firenze)
-                : (sel === 'davids')   ? (EXPEDIA_DATA && EXPEDIA_DATA.competitors_davids)
-                : null;
-  if (!compMap || Object.keys(compMap).length === 0){
-    wrap.innerHTML = '<div style="padding:24px;text-align:center;color:var(--ink-3);font-style:italic">No Expedia compset data available.</div>';
-    return;
-  }
-  const myExcl = new Set(['Condotta 16 Apartments', 'Palazzo Alfani al David']);
-  const names = Object.keys(compMap).filter(n => !myExcl.has(n)).sort();
-  let html = `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">`;
-  for (const name of names){
-    const w = (typeof getWeight === 'function') ? getWeight(sel, name) : 1.0;
-    const wPct = Math.round(w * 100);
-    html += `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:5px">
-      <span style="flex:1;font-size:12px;font-weight:500">${escapeHtml(name)}</span>
-      <input type="number" min="0" max="100" step="5" value="${wPct}"
-        data-tabcomp="${escapeHtml(name)}" data-tabcomp-struct="${sel}"
-        class="rmes-tab-comp-input"
-        style="width:64px;padding:4px 6px;border:1px solid var(--line);border-radius:3px;font-family:'DM Mono',monospace;font-size:12px;text-align:right;font-weight:600">
-      <span style="font-size:11px;color:var(--ink-3)">%</span>
-    </div>`;
-  }
-  html += `</div>`;
-  html += `<div style="margin-top:10px;font-size:10px;color:var(--ink-3);font-style:italic;text-align:center">Weight 0% = competitor excluded from the average · 100% = full weight · Daily prices are in the Rate Shopper tab.</div>`;
-  wrap.innerHTML = html;
-  wrap.querySelectorAll('.rmes-tab-comp-input').forEach(inp => {
-    inp.addEventListener('change', () => {
-      const name = inp.dataset.tabcomp;
-      const structKey = inp.dataset.tabcompStruct;
-      let v = parseInt(inp.value, 10);
-      if (isNaN(v) || v < 0) v = 0;
-      if (v > 100) v = 100;
-      inp.value = v;
-      if (typeof setWeight === 'function') setWeight(structKey, name, v / 100);
-      if (typeof renderSellStrategy === 'function' && (CURRENT_STRUCT === structKey || isAggSel(CURRENT_STRUCT))){
-        renderSellStrategy(CURRENT_STRUCT);
-      }
-      if (typeof renderRateShopper === 'function') renderRateShopper();
-    });
-  });
-  const resetBtn = document.getElementById('rmes-tab-comp-reset');
-  if (resetBtn && !resetBtn._wired){
-    resetBtn._wired = true;
-    resetBtn.onclick = () => {
-      if (!confirm('Reset all compset weights to 100% (for all properties)?')) return;
-      try { localStorage.removeItem('rmes_compset_weights_v1'); } catch(e){}
-      _renderRmesCompsetBox(RMES_TAB_STRUCT);
-      if (typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
-      if (typeof renderRateShopper === 'function') renderRateShopper();
-    };
-  }
-}
 /* ============================================================
    NOTES SYSTEM (append-only journal PER STRUTTURA)
    ============================================================ */
@@ -20104,7 +19934,10 @@ function renderAll(){
   if (CURRENT_TAB === 'big' && typeof renderBigPicture === 'function'){
     try { renderBigPicture(); _TAB_DIRTY.big = false; } catch(e){ console.error('renderBigPicture', e); }
   }
-  if (typeof renderRMESConfigTab === 'function') renderRMESConfigTab();
+  // Solo se la tab e' quella aperta: ridisegnare schede nascoste costava
+  // centinaia di ms a ogni azione. Le altre si marcano e si rifanno all'apertura.
+  if (CURRENT_TAB === 'pri'){ try { renderRMESConfigTab(); } catch(e){ console.error('renderRMESConfigTab', e); } _TAB_DIRTY['pri'] = false; }
+  else _TAB_DIRTY['pri'] = true;
   renderOTB(CURRENT_STRUCT);
   RT_VISIBLE = null;  // reset filter on struct change
   renderRT(CURRENT_STRUCT);
@@ -20133,8 +19966,9 @@ function renderAll(){
   if (typeof renderBookingWindowCancel === 'function') renderBookingWindowCancel(CURRENT_STRUCT);
   if (typeof renderAdrTrend === 'function') renderAdrTrend(CURRENT_STRUCT);
   if (typeof renderOccTrend === 'function') renderOccTrend(CURRENT_STRUCT);
-  if (typeof renderRateShopper === 'function') renderRateShopper();
-  if (typeof renderAirbnb === 'function') renderAirbnb();
+  if (CURRENT_TAB === 'rate'){ try { renderRateShopper(); } catch(e){ console.error('renderRateShopper', e); } _TAB_DIRTY['rate'] = false; }
+  else _TAB_DIRTY['rate'] = true;
+  // La sezione Airbnb e' nascosta (display:none): non va mai disegnata.
   if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }
   }
@@ -21234,6 +21068,20 @@ function setTab(name){
   }
   if (name === 'baseprice' && _TAB_DIRTY.baseprice && typeof renderPriceChain === 'function'){
     try { renderPriceChain(); _TAB_DIRTY.baseprice = false; } catch(e){ console.error('renderPriceChain', e); }
+  }
+  /* Tab pigre: renderAll le marca invece di disegnarle, qui si recupera il
+     ritardo quando l'utente le apre davvero. */
+  const _lazy = { pri: 'renderRMESConfigTab', rate: 'renderRateShopper', rt: 'renderRT', pk: 'renderPickup' };
+  if (_lazy[name] && _TAB_DIRTY[name] !== false){
+    const _fn = (typeof window !== 'undefined') ? window[_lazy[name]] : null;
+    try {
+      if (typeof _fn === 'function') _fn(CURRENT_STRUCT);
+      else if (name === 'pri' && typeof renderRMESConfigTab === 'function') renderRMESConfigTab();
+      else if (name === 'rate' && typeof renderRateShopper === 'function') renderRateShopper();
+      else if (name === 'rt' && typeof renderRT === 'function') renderRT(CURRENT_STRUCT);
+      else if (name === 'pk' && typeof renderPickup === 'function') renderPickup(CURRENT_STRUCT);
+      _TAB_DIRTY[name] = false;
+    } catch(e){ console.error('lazy render ' + name, e); }
   }
   if (name === 'checks' && typeof renderCheckUpdates === 'function'){
     try { renderCheckUpdates(); } catch(e){ console.error('renderCheckUpdates', e); }

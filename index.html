@@ -1542,6 +1542,13 @@ table.data.sell-table input.sell-loaded-inp{
   width:58px;padding:3px 5px;border:1px solid var(--line);border-radius:4px;
   font-family:'DM Mono',monospace;font-size:11.5px;text-align:center;background:transparent;
 }
+/* Classi per gli stili di cella piu' ripetuti: inline pesavano decine di KB
+   nell'HTML, e scrivere quell'HTML e' la parte piu' lenta del render. */
+table.data.sell-table td.c-ctr{text-align:center}
+table.data.sell-table td.bg-grey{background:rgba(138,138,138,.04)}
+table.data.sell-table td.bg-mkt{background:rgba(58,107,107,.04);text-align:center;line-height:1.25}
+table.data.sell-table .sub-9{font-size:9.5px;font-weight:400;opacity:.85;white-space:nowrap}
+table.data.sell-table .mark-8{font-size:8px;opacity:.7}
 table.data.sell-table .sell-drill{
   cursor:pointer;text-decoration:underline dotted;text-underline-offset:2px;
 }
