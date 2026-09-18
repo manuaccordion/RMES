@@ -6189,15 +6189,12 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
          pickup di oggi e' simmetrico e diventa negativo appena le prenotazioni
          si fermano, quindi il ciclo si chiude da solo sul mercato.
          Resta un guinzaglio: il suggerimento non puo' allontanarsi dal Base
-         strutturale piu' di REF_CORRIDOR, cosi' un prezzo scritto per errore
-         non porta il motore fuori strada per sempre. */
+         strutturale, perche' il calcolo parte sempre da li'. */
       const _baseStruct = (typeof newrmesGetEffectiveBase === 'function') ? newrmesGetEffectiveBase(sel, r.ymd) : basePrice;
       let _basePure = _baseStruct;
-      /* Il prezzo caricato diventa il punto di partenza solo dove c'e' un
-         segnale da applicargli: si decide piu' sotto, per tipologia, quando
-         il moltiplicatore e' noto. Senza segnale il motore ripeterebbe il tuo
-         numero (scrivi 120, ti propone 120) perdendo la sua opinione proprio
-         quando e' l'unica cosa che avrebbe da dire. */
+      /* Il prezzo caricato NON entra nel calcolo: serve a misurare la distanza
+         fra quello che hai deciso e quello che il motore propone. Il
+         suggerimento parte sempre dal Base Price. */
       const _refLoaded = (typeof newrmesGetCurrentReference === 'function')
         ? newrmesGetCurrentReference(sel, r.ymd) : null;
       /* Se la data ha un accept ATTIVO (non superato da un override piu' recente)
@@ -6258,11 +6255,15 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           if (_suppData && rt !== _suppData.baseRT){
             baseRT_pure = _basePure + _supplementForRT(rt, r.mo);
           }
-          /* Punto di partenza: il prezzo che carichi SE c'e' un segnale da
-             applicargli, altrimenti la stima strutturale. */
-          const _hasSignal = Math.abs((multRT || 1) - 1) > 0.001;
-          const _start = (_hasSignal && _refLoaded != null && isFinite(_refLoaded) && _refLoaded > 0)
-                       ? _refLoaded : baseRT_pure;
+          /* IL SUGGERIMENTO PARTE SEMPRE DAL BASE PRICE.
+             Non dal prezzo che hai caricato: quello e' una tua decisione, e
+             farci ripartire il calcolo sopra significava che il motore
+             inseguiva se stesso. Cosi' invece il suggerimento resta sempre
+             "quanto vale questa notte secondo i dati", e il prezzo caricato
+             serve a misurare la distanza: e' il delta che ti dice se muoverti.
+             Rifacendo il Base Price congelato, il suggerimento si aggiorna
+             subito di conseguenza, che e' quello che ci si aspetta. */
+          const _start = baseRT_pure;
           let _priceOnBase = _start * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
           let _atCapB = null;
           /* DOPO UN ACCEPT IL PREZZO SI FERMA.
@@ -6283,15 +6284,11 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           }
           // Cap ±20% RIMOSSO. Solo Floor.
           const _flo = _floorFor(r.ymd);
-          /* Guinzaglio sul Base strutturale: il suggerimento segue il prezzo che
-             carichi, ma non puo' staccarsi dalla stima strutturale oltre il
-             corridoio. Senza, un valore digitato per sbaglio resterebbe il
-             punto di partenza per sempre. */
-          if (_baseStruct > 0){
-            const _lo = _baseStruct * (1 - REF_CORRIDOR), _hi = _baseStruct * (1 + REF_CORRIDOR);
-            if (_priceOnBase > _hi){ _priceOnBase = _hi; _atCapB = 'corridor'; }
-            else if (_priceOnBase < _lo){ _priceOnBase = _lo; _atCapB = 'corridor'; }
-          }
+          /* Il corridoio attorno al Base non serve piu': esisteva per impedire
+             che un prezzo caricato per sbaglio trascinasse via il calcolo, e
+             ora il calcolo parte sempre dal Base. Tenerlo avrebbe solo tagliato
+             in silenzio combinazioni legittime di segnale, last minute ed
+             evento, che insieme possono superare il 40%. */
           const _flo2 = _flo;
           if (_priceOnBase < _flo2){ _priceOnBase = _flo2; _atCapB = 'floor'; }
           rmesTargetOnBaseByRT[rt] = { price: _priceOnBase, atCap: _atCapB,
@@ -6358,11 +6355,6 @@ const FP_TARGET_GROWTH_KEY = 'rmes_target_growth_v1';
 const FP_FLOOR_KEY = 'rmes_floor_v1';
 /* Sotto questo numero di osservazioni il p15 non fa testo e vale solo il floor annuale. */
 const FP_FLOOR_HIST_MIN_OBS = 8;
-/* Quanto il suggerimento puo' allontanarsi dal Base Price strutturale quando
-   parte dal prezzo che hai caricato. Largo abbastanza da non litigare con le
-   tue decisioni, stretto abbastanza da riprendere il motore se il prezzo di
-   partenza e' sbagliato. */
-const REF_CORRIDOR = 0.40;
 /* IL FLOOR SI RIFERISCE ALLA CAMERA PIU' ECONOMICA.
    "Floor 150" vuol dire: la tariffa FLESSIBILE della camera piu' economica della
    struttura non scende sotto 150. Non e' la stessa cosa del prezzo della camera
@@ -17646,6 +17638,34 @@ function renderRMESConfigTab(){
       el.style.fontSize = '12px';
     }
   });
+  /* Pulsante per rifare il Base Price congelato. Agisce sulla finestra e sulla
+     struttura che stai configurando, non su un range scelto altrove: e' li' che
+     lo cerchi dopo aver cambiato un'impostazione. */
+  (function(){
+    const btn = document.getElementById('rmes-refreeze-now');
+    const dEl = document.getElementById('rmes-refreeze-days');
+    if (dEl) dEl.textContent = String(BASE_FREEZE_WINDOW_DAYS);
+    if (!btn || btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', () => {
+      const st = (typeof RMES_TAB_STRUCT !== 'undefined') ? RMES_TAB_STRUCT : CURRENT_STRUCT;
+      const ids = (typeof structIdsFor === 'function') ? structIdsFor(st) : [st];
+      const t0 = startOfDay(new Date(TODAY));
+      const t1 = addDays(t0, BASE_FREEZE_WINDOW_DAYS);
+      const f = fp_isoDate(t0), t = fp_isoDate(t1);
+      const label = ids.length > 1 ? (ids.length + ' properties') : ((CFG.structures[ids[0]] && CFG.structures[ids[0]].label) || ids[0]);
+      if (!confirm('Rebuild the frozen Base Price for ' + label + ', from today to ' + t + ' ('
+                   + BASE_FREEZE_WINDOW_DAYS + ' days)?\n\nIt is recomputed from today\'s data. '
+                   + 'Manual overrides and accepted prices are not touched.')) return;
+      let n = 0;
+      try { n = newrmesRefreezeRange(ids, f, t) || 0; } catch(e){ console.error('refreeze', e); }
+      if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+      const msg = document.getElementById('rmes-refreeze-msg');
+      if (msg){ msg.textContent = '\u2713 ' + n + ' day(s) rebuilt'; msg.style.color = '#3d7a4b';
+        setTimeout(() => { if (msg) msg.textContent = ''; }, 3000); }
+      if (typeof renderSellStrategy === 'function') setTimeout(() => renderSellStrategy(CURRENT_STRUCT), 40);
+    });
+  })();
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
   if (typeof _renderRmesSignalsBox === 'function') _renderRmesSignalsBox(sel);
   if (typeof _renderRmesSpecialBox === 'function') _renderRmesSpecialBox();

@@ -2162,6 +2162,18 @@ table.data.sell-table .sell-drill{
         </div>
       </div>
       <div class="rmes-box-body">
+        <!-- Ricalcolo su richiesta della finestra congelata: il Base Price dei
+             prossimi giorni non si muove da solo, e ogni tanto serve rifarlo
+             dopo un cambio di impostazioni o un'ondata di prenotazioni. -->
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 12px;margin-bottom:12px;background:#f7f5ef;border:1px solid var(--line);border-radius:8px">
+          <button id="rmes-refreeze-now" style="font-size:12px;font-weight:700;padding:6px 14px;border:1px solid #8e5fa8;border-radius:6px;background:#fff;color:#7a4f8e;cursor:pointer;white-space:nowrap">&#8635; Recompute frozen prices</button>
+          <span style="font-size:11.5px;color:var(--ink-2);line-height:1.45">
+            The Base Price is held still for the next <b id="rmes-refreeze-days">14</b> days so it does not shift under you while you work.
+            Press this after changing the settings above, or when a lot has been booked, to rebuild it from today's data.
+            <span style="color:var(--ink-3)">Dates further out already recompute on their own.</span>
+          </span>
+          <span id="rmes-refreeze-msg" style="font-size:11.5px;color:var(--ink-3)"></span>
+        </div>
         <div id="fp-tab-wrap"></div>
         <div id="rmes-special-wrap" style="margin-top:14px"></div>
       </div>
@@ -2718,9 +2730,9 @@ table.data.sell-table .sell-drill{
         <p style="margin:0 0 6px 0">It is deliberately left empty rather than pre-filled with the Base Price: a number sitting in the box would look like a decision already taken, or worse like an old value nobody remembers writing. It writes to the same shared store the engine already uses as its reference, so everyone sees the same thing.</p>
         <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>Because the suggestion follows the price you record, the engine also tells you when your price sits far from its own estimate &mdash; on a single date in the cell tooltip, and across the whole range in a note above the table when the gap is systematic. A single date out of line is a decision; twenty in the same direction usually means the Base Price itself needs adjusting through the target growth.</i></p>
         <p style="margin:0 0 6px 0;font-size:12.5px;color:#666"><i>Accepting for a whole period still works from the bar at the top &mdash; pick a range and press Accept RMES.</i></p>
-        <p style="margin:0 0 6px 0"><b>The loaded price is the starting point only where there is a signal to apply to it.</b> On a date with nothing happening the suggestion goes back to the structural estimate: type &euro;120 where the engine estimates &euro;134 and it will keep proposing &euro;134. Repeating your own number would say nothing, and on a quiet date the engine's own read is the only useful thing it has.</p>
-        <p style="margin:0 0 6px 0">Because the suggestion follows the price you record wherever a signal exists, the engine also tells you <b>when your price is far from its own estimate</b> &mdash; on a single date in the cell tooltip, and above the table when the gap is systematic. One date out of line is a decision; twenty in the same direction usually means the Base Price is set too low or too high, and the target growth is the place to fix it.</p>
-        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>The suggestion cannot wander off: it stays within &plusmn;40% of the structural Base Price, so a number typed by mistake does not become the starting point for good.</i></p>
+        <p style="margin:0 0 6px 0"><b>The suggestion always starts from the Base Price, never from what you loaded.</b> Type &euro;120 where the engine estimates &euro;134 and it keeps proposing &euro;134, signal or no signal. Letting the calculation restart on top of your own decision meant the engine was chasing itself; this way the suggestion stays &ldquo;what this night is worth according to the data&rdquo;, and your price is what the <b>delta</b> measures against. Rebuild the frozen Base Price and the suggestion follows immediately, which is what you would expect.</p>
+        <p style="margin:0 0 6px 0">Since the two are independent, the engine also tells you <b>when your price is far from its own estimate</b> &mdash; on a single date in the cell tooltip, and above the table when the gap is systematic. One date out of line is a decision; twenty in the same direction usually means the Base Price is set too low or too high, and the target growth is the place to fix it.</p>
+        <p style="margin:0 0 10px 0;font-size:12.5px;color:#666"><i>A price typed by mistake therefore costs nothing beyond that one date: it cannot drag the calculation anywhere.</i></p>
 
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Accepting stops the price</p>
         <p style="margin:0 0 6px 0">Pressing &#10003; is a decision, not the opening of a new negotiation. Once a price is accepted the suggestion <b>stays on that number</b>; it does not come back the next minute proposing something lower. Along with the price, the engine records <b>what the market looked like at that moment</b> &mdash; the combined signal and the good bookings counted then &mdash; and only reopens when those have genuinely moved: the signal by more than half a percent, or half a good booking either way.</p>
