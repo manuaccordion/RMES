@@ -6099,7 +6099,21 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
     let basePrice = null;
     let baseSource = null;
     let baseSuppApplied = 0;
-    if (typeof newrmesGetCurrentReference === 'function'){
+    /* IL PREZZO SUGGERITO PARTE DAL BASE PRICE, NON DAL RIFERIMENTO.
+       Qui si prendeva newrmesGetCurrentReference, cioe' il prezzo che hai
+       caricato o accettato: il suggerimento finiva per essere il tuo stesso
+       numero piu' il segnale, e con un override a 342 su un Base di 233 la
+       cella mostrava 325 invece di 221.
+       Il riferimento resta quello che era, ma serve SOLO a misurare il delta
+       e a etichettare l'origine ("Last update"), non a calcolare il prezzo. */
+    if (typeof newrmesGetEffectiveBase === 'function'){
+      const _bs = newrmesGetEffectiveBase(sel, r.ymd);
+      if (_bs != null && isFinite(_bs) && _bs > 0){
+        basePrice = _bs;
+        baseSource = 'frozen_base';
+      }
+    }
+    if (basePrice == null && typeof newrmesGetCurrentReference === 'function'){
       const ref = newrmesGetCurrentReference(sel, r.ymd);
       if (ref != null && isFinite(ref) && ref > 0){
         basePrice = ref;
