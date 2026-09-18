@@ -4846,46 +4846,6 @@ function _getEventBoost(ymd){
    =========================================================================== */
 const DOW_PREMIUM_KEY = 'rmes_dow_premium_v1';
 
-/* ===========================================================================
-   Promo Overrides — promo ad hoc per struttura.
-   Storage: rmes_promos_v1 = { firenze: [ {id, label, bookFrom, bookTo, stayFrom, stayTo, pct}, ... ], ... }
-   - id: identificatore univoco (timestamp)
-   - label: nome libero (es. "Black Friday")
-   - bookFrom/bookTo: window della data di prenotazione (ymd numero, YYYYMMDD)
-   - stayFrom/stayTo: window della stay-date (ymd numero, YYYYMMDD)
-   - pct: premium % da applicare al RMES suggested per le stay-date nella finestra
-   Una promo è ATTIVA OGGI se: TODAY_YMD ∈ [bookFrom, bookTo]
-   E si applica alla stay-date `s` se: s ∈ [stayFrom, stayTo]
-   Premium cumulativo se più promo si applicano alla stessa data (additivo).
-   =========================================================================== */
-const PROMOS_KEY = 'rmes_promos_v1';
-function _getPromosMap(){
-  try { const raw = localStorage.getItem(PROMOS_KEY); return raw ? JSON.parse(raw) : {}; }
-  catch(e){ return {}; }
-}
-function _getPromosForStruct(structKey){
-  const all = _getPromosMap();
-  return (all && Array.isArray(all[structKey])) ? all[structKey] : [];
-}
-function _getPromoBoost(structKey, stayYmdNum){
-  if (!structKey || !stayYmdNum) return { boost: 1.0, applied: [] };
-  const list = _getPromosForStruct(structKey);
-  if (!list.length) return { boost: 1.0, applied: [] };
-  const today = (typeof TODAY_YMD !== 'undefined') ? TODAY_YMD : 0;
-  let totalPct = 0;
-  const applied = [];
-  for (const p of list){
-    if (!p || !isFinite(+p.pct) || +p.pct === 0) continue;
-    if (p.bookFrom != null && today < p.bookFrom) continue;
-    if (p.bookTo != null && today > p.bookTo) continue;
-    if (p.stayFrom != null && stayYmdNum < p.stayFrom) continue;
-    if (p.stayTo != null && stayYmdNum > p.stayTo) continue;
-    totalPct += +p.pct;
-    applied.push(p);
-  }
-  if (totalPct === 0) return { boost: 1.0, applied: [] };
-  return { boost: 1 + totalPct/100, applied };
-}
 /* List all distinct event labels that appear in EVENTS, sorted alphabetically */
 function _listEventLabels(){
   if (typeof EVENTS === 'undefined') return [];
@@ -6240,8 +6200,12 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           _lmfPct = fp_lmfLookup(sel, r.curOcc, Math.max(0, _daysToArr));
         }
         const _eventBoost = _getEventBoost(r.ymd);
-        const _promoInfo = (typeof _getPromoBoost === 'function') ? _getPromoBoost(sel, r.ymd) : { boost: 1, applied: [] };
-        const _promoBoost = _promoInfo.boost;
+        /* PROMO OVERRIDE RIMOSSE. Erano un secondo sconto sopra quelli che
+           Beddy applica gia' (campagna 20% e member deal 10%), configurabile
+           solo dal Price Tree che non esiste piu': un moltiplicatore in piu'
+           che nessuno vedeva e che rischiava di sommarsi due volte. */
+        const _promoInfo = { boost: 1, applied: [] };
+        const _promoBoost = 1;
         let _priceAfterFactors = baseRT * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
         // Cap ±20% RIMOSSO nella migrazione 4-fattori. Restano solo Floor (≥) e Anchor ±50% (sul Base).
         const priceSuggested = Math.max(_priceAfterFactors, _floorFor(r.ymd));
@@ -9377,11 +9341,63 @@ function fp_lmfLookup(structKey, occFrac, daysToArrival){
   const v = (m[ri] && m[ri][ci] != null) ? m[ri][ci] : 0;
   return isFinite(v) ? v : 0;
 }
-const FP_CHANNEL_MARKUP_DEFAULTS = {
-  expedia: 17,   // Expedia e canali non specificati sotto (anche posizionamento online)
-  booking: 13,   // Booking
-  airbnb: 10     // Airbnb / VRBO
+/* IL MARKUP COM'E' DAVVERO IMPOSTATO SU BEDDY.
+   Non un numero solo, ma tre pezzi che si moltiplicano:
+     ricarico del canale  ×  (1 - campagna)  ×  (1 - member deal)
+   Booking:  +57%  con campagna 20% e member 10%  →  1,57 × 0,80 × 0,90 = +13,0%
+   Ctrip:    +62%  idem                            →  +16,6%
+   Expedia:  +62%  idem                            →  +16,6%
+   Airbnb / VRBO: +10%, senza campagne ne' member deal → +10,0%
+   Prima si configurava direttamente il risultato (13, 17, 10): il numero era
+   giusto ma non diceva da dove venisse, e per cambiarlo bisognava rifare il
+   conto a mano. Cosi' si imposta quello che si vede su Beddy e l'effettivo lo
+   calcola il sistema. */
+const FP_CHANNEL_MARKUP_PARTS_DEFAULTS = {
+  expedia: { gross: 62, campaign: 20, member: 10 },
+  booking: { gross: 57, campaign: 20, member: 10 },
+  ctrip:   { gross: 62, campaign: 20, member: 10 },
+  airbnb:  { gross: 10, campaign: 0,  member: 0  }
 };
+/* Percentuale effettiva a partire dai tre pezzi. */
+function fpEffectiveMarkup(parts){
+  if (!parts) return 0;
+  const g = (+parts.gross || 0) / 100;
+  const c = (+parts.campaign || 0) / 100;
+  const m = (+parts.member || 0) / 100;
+  return ((1 + g) * (1 - c) * (1 - m) - 1) * 100;
+}
+const FP_CHANNEL_MARKUP_DEFAULTS = {
+  expedia: fpEffectiveMarkup(FP_CHANNEL_MARKUP_PARTS_DEFAULTS.expedia),
+  booking: fpEffectiveMarkup(FP_CHANNEL_MARKUP_PARTS_DEFAULTS.booking),
+  ctrip:   fpEffectiveMarkup(FP_CHANNEL_MARKUP_PARTS_DEFAULTS.ctrip),
+  airbnb:  fpEffectiveMarkup(FP_CHANNEL_MARKUP_PARTS_DEFAULTS.airbnb)
+};
+const FP_CHANNEL_PARTS_KEY = 'rmes_channel_markup_parts_v1';
+/* I tre pezzi, per struttura. Se non ci sono, valgono i default sopra. */
+function fp_getChannelMarkupParts(structKey){
+  let obj = {};
+  try { const raw = localStorage.getItem(FP_CHANNEL_PARTS_KEY); if (raw) obj = JSON.parse(raw) || {}; } catch(e){}
+  const sk = structKey || (typeof CURRENT_STRUCT !== 'undefined' ? CURRENT_STRUCT : null);
+  const per = (sk && obj[sk] && typeof obj[sk] === 'object') ? obj[sk] : null;
+  const out = {};
+  for (const ch of ['expedia','booking','ctrip','airbnb']){
+    const d = FP_CHANNEL_MARKUP_PARTS_DEFAULTS[ch];
+    const p = (per && per[ch] && typeof per[ch] === 'object') ? per[ch] : null;
+    out[ch] = {
+      gross:    (p && isFinite(p.gross))    ? +p.gross    : d.gross,
+      campaign: (p && isFinite(p.campaign)) ? +p.campaign : d.campaign,
+      member:   (p && isFinite(p.member))   ? +p.member   : d.member
+    };
+  }
+  return out;
+}
+function fp_setChannelMarkupParts(structKey, parts){
+  let obj = {};
+  try { const raw = localStorage.getItem(FP_CHANNEL_PARTS_KEY); if (raw) obj = JSON.parse(raw) || {}; } catch(e){}
+  obj[structKey] = parts;
+  try { localStorage.setItem(FP_CHANNEL_PARTS_KEY, JSON.stringify(obj)); } catch(e){}
+  if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+}
 /* Markup PER STRUTTURA. Il markup e' una caratteristica della singola proprieta'
    (su Beddy lo imposti struttura per struttura), non del gruppo: Condotta ha
    Booking attorno al 20% mentre Firenze e Alfani stanno sul 13%.
@@ -9399,7 +9415,18 @@ function fp_getChannelMarkups(structKey){
     if (legacy && legacy[kind] != null && isFinite(legacy[kind])) return +legacy[kind];
     return FP_CHANNEL_MARKUP_DEFAULTS[kind];
   };
-  return { expedia: pick('expedia'), booking: pick('booking'), airbnb: pick('airbnb') };
+  /* Il markup effettivo viene dai tre pezzi impostati su Beddy. Un valore
+     salvato col vecchio schema (un numero solo) resta valido e ha la
+     precedenza, cosi' chi aveva tarato a mano non si vede cambiare i conti. */
+  const parts = fp_getChannelMarkupParts(sk);
+  const fromParts = (kind) => fpEffectiveMarkup(parts[kind]);
+  const pickOr = (kind) => {
+    if (per && per[kind] != null && isFinite(per[kind])) return +per[kind];
+    if (legacy && legacy[kind] != null && isFinite(legacy[kind])) return +legacy[kind];
+    return fromParts(kind);
+  };
+  return { expedia: pickOr('expedia'), booking: pickOr('booking'),
+           ctrip: pickOr('ctrip'), airbnb: pickOr('airbnb') };
 }
 function fp_setChannelMarkup(kind, pct, structKey){
   let obj = {};
@@ -9440,6 +9467,8 @@ function fp_markupForChannel(canale, structKey){
   const m = fp_getChannelMarkups(structKey);
   if (c.indexOf('booking') !== -1) return m.booking;       // Booking.com
   if (c.indexOf('airbnb') !== -1 || c.indexOf('vrbo') !== -1) return m.airbnb;  // Airbnb/VRBO
+  // Ctrip ha un ricarico proprio (+62%), prima ricadeva su quello di Expedia.
+  if (c.indexOf('ctrip') !== -1 || c.indexOf('trip.com') !== -1) return (m.ctrip != null ? m.ctrip : m.expedia);
   return m.expedia;  // Expedia + tutti gli altri OTA non specificati
 }
 function fp_getOtaMarkup(structKey){
@@ -11002,7 +11031,7 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '<span style="font-family:\'DM Mono\',monospace;font-weight:700;color:'+_eventCol+'">'+(_eventPct>=0?'+':'')+_eventPct.toFixed(0)+'% (\u00d7'+_eventBoostModal.toFixed(3)+')</span>';
         rmesSection += '</div>';
         // === Promo Overrides row ===
-        const _promoInfoModal = (typeof _getPromoBoost === 'function') ? _getPromoBoost(structKey, _ymdNumEvent) : { boost: 1, applied: [] };
+        const _promoInfoModal = { boost: 1, applied: [] };
         const _promoBoostModal = _promoInfoModal.boost;
         const _promoPct = (_promoBoostModal - 1) * 100;
         const _promoCol = _promoPct > 0 ? '#1e6b4a' : (_promoPct < 0 ? '#a83b3b' : '#aaa');
@@ -11400,9 +11429,35 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Used as guard-rail only when LY data for the target month is missing. Normally the Monthly Anchor (computed from last 2 years data) is used instead."><b style="color:#7a4f1c">Annual Anchor (fallback)</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Annual minimum for this property. The effective floor on each date is the HIGHER of this and the historical p15 of that period."><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="10" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
   h += '<span id="fp-floor-p15" style="font-size:11px;color:var(--ink-3);font-family:\'DM Mono\',monospace"></span>';
-  h += '<label style="font-size:12px;color:var(--ink-2)"><b style="color:#3a6b6b">Markup Expedia/altri</b>: <input type="number" id="fp-mk-expedia" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #3a6b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef6f6"> %</label>';
-  h += '<label style="font-size:12px;color:var(--ink-2)" title="Booking.com markup for channel history"><b style="color:#1e4a6b">Markup Booking</b>: <input type="number" id="fp-mk-booking" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #1e4a6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#eef4fa"> %</label>';
-  h += '<label style="font-size:12px;color:var(--ink-2)" title="Airbnb/VRBO markup for channel history"><b style="color:#a83b6b">Markup Airbnb/VRBO</b>: <input type="number" id="fp-mk-airbnb" min="0" max="50" step="1" style="width:55px;padding:6px 8px;border:1px solid #a83b6b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#faeef4"> %</label>';
+  /* I TRE PEZZI DEL MARKUP, come sono impostati su Beddy: ricarico del canale,
+     campagna e member deal. Prima si scriveva direttamente il risultato (13%,
+     17%): giusto come numero ma opaco, e per cambiarlo bisognava rifare il
+     conto a mano. Ora il risultato lo calcola il sistema e si vede accanto. */
+  h += '<div style="flex-basis:100%;margin-top:6px">';
+  h += '<div style="font-size:12px;font-weight:700;color:#3a6b6b;margin-bottom:6px">Channel markup &mdash; as set on Beddy</div>';
+  h += '<table style="border-collapse:collapse;font-size:12px">';
+  h += '<tr style="color:var(--ink-3);font-size:11px"><th style="text-align:left;padding:2px 10px 4px 0">Channel</th><th style="padding:2px 8px 4px">markup</th><th style="padding:2px 8px 4px">campaign</th><th style="padding:2px 8px 4px">member deal</th><th style="padding:2px 0 4px 10px;text-align:left">what you actually get</th></tr>';
+  (function(){
+    const P = (typeof fp_getChannelMarkupParts === 'function') ? fp_getChannelMarkupParts(structKey) : {};
+    const row = (key, label, note) => {
+      const p = P[key] || { gross:0, campaign:0, member:0 };
+      const eff = (typeof fpEffectiveMarkup === 'function') ? fpEffectiveMarkup(p) : 0;
+      const inp = (f, v) => '<input type="number" class="mkp-input" data-mkp-ch="' + key + '" data-mkp-f="' + f + '" value="' + v + '" step="1" min="0" max="200" style="width:56px;padding:3px 6px;border:1px solid var(--line);border-radius:4px;font-family:monospace;text-align:right;font-size:12px">';
+      h += '<tr><td style="padding:3px 10px 3px 0;font-weight:600">' + label + '</td>'
+         + '<td style="padding:3px 8px;text-align:center">+' + inp('gross', p.gross) + '%</td>'
+         + '<td style="padding:3px 8px;text-align:center">&minus;' + inp('campaign', p.campaign) + '%</td>'
+         + '<td style="padding:3px 8px;text-align:center">&minus;' + inp('member', p.member) + '%</td>'
+         + '<td style="padding:3px 0 3px 10px;font-family:monospace;font-weight:700;color:#3a6b6b">+' + eff.toFixed(1) + '%'
+         + '<span style="font-weight:400;color:var(--ink-3);font-size:10.5px"> ' + (note || '') + '</span></td></tr>';
+    };
+    row('booking', 'Booking', '');
+    row('expedia', 'Expedia', 'and other OTAs');
+    row('ctrip',   'Ctrip',   '');
+    row('airbnb',  'Airbnb / VRBO', 'no campaigns, no member deal');
+  })();
+  h += '</table>';
+  h += '<div style="font-size:10.5px;color:var(--ink-3);margin-top:4px">Booking at +57% with a 20% campaign and a 10% member deal comes out at 1.57 &times; 0.80 &times; 0.90 = <b>+13.0%</b>. That last figure is what the engine uses to turn a gross price back into what you loaded.</div>';
+  h += '</div>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Price elasticity: if the price changes by X%, expected RN change in the opposite direction by X% × elasticity. Default 1.0 (ratio 1:1). E.g.: 0.5 = low elasticity, 1.5 = high elasticity."><b style="color:#a83b3b">Price elasticity</b>: <input type="number" id="fp-elasticity-input" min="0" max="3" step="0.1" style="width:60px;padding:6px 8px;border:1px solid #a83b3b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fdeef0"> :1</label>';
   h += '<button id="fp-elasticity-estimate" type="button" style="font-size:11px;padding:6px 10px;border:1px solid #a83b3b;border-radius:4px;background:#fff;color:#a83b3b;cursor:pointer;font-family:\'DM Sans\',sans-serif" title="Estimate elasticity from the last 24 months of history">📊 Estimate from data</button>';
   h += '<span style="font-size:11px;color:var(--ink-3);font-style:italic">Press "Recompute Base Price" below to apply</span>';
@@ -11502,9 +11557,6 @@ function fp_renderFoundationConfigBox(structKey){
       + 'historical p15 takes over in <b>' + nHigher + '/12</b> months \u2139</span>';
   })();
   const _mk = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups(structKey) : {expedia:17,booking:13,airbnb:10};
-  const _mkE = document.getElementById('fp-mk-expedia'); if (_mkE) _mkE.value = _mk.expedia;
-  const _mkB = document.getElementById('fp-mk-booking'); if (_mkB) _mkB.value = _mk.booking;
-  const _mkA = document.getElementById('fp-mk-airbnb');  if (_mkA) _mkA.value = _mk.airbnb;
   const elInp = document.getElementById('fp-elasticity-input');
   if (elInp) elInp.value = fp_getElasticity(structKey);
   const compNames = fp_getCompetitorsForStruct(structKey);
@@ -11826,14 +11878,20 @@ function fp_renderFoundationConfigBox(structKey){
     if (isFinite(baseVal)) fp_setBasePrice(structKey, baseVal);
     const floorVal = parseFloat(document.getElementById('fp-floor-input').value);
     if (isFinite(floorVal)) fp_setFloor(structKey, floorVal);
-    const _mkExpVal = parseFloat((document.getElementById('fp-mk-expedia')||{}).value);
-    const _mkBokVal = parseFloat((document.getElementById('fp-mk-booking')||{}).value);
-    const _mkAirVal = parseFloat((document.getElementById('fp-mk-airbnb')||{}).value);
+    /* I markup si salvano nei loro tre pezzi: ricarico, campagna, member deal.
+       L'effettivo che il motore usa viene calcolato da questi. */
     let _mkChanged = false;
-    // I markup si salvano sulla STRUTTURA selezionata.
-    if (isFinite(_mkExpVal) && _mkExpVal >= 0 && _mkExpVal <= 50){ fp_setChannelMarkup('expedia', _mkExpVal, structKey); _mkChanged = true; }
-    if (isFinite(_mkBokVal) && _mkBokVal >= 0 && _mkBokVal <= 50){ fp_setChannelMarkup('booking', _mkBokVal, structKey); _mkChanged = true; }
-    if (isFinite(_mkAirVal) && _mkAirVal >= 0 && _mkAirVal <= 50){ fp_setChannelMarkup('airbnb', _mkAirVal, structKey); _mkChanged = true; }
+    (function(){
+      const parts = (typeof fp_getChannelMarkupParts === 'function') ? fp_getChannelMarkupParts(structKey) : {};
+      document.querySelectorAll('input.mkp-input').forEach(function(inp){
+        const ch = inp.dataset.mkpCh, f = inp.dataset.mkpF;
+        const v = parseFloat(inp.value);
+        if (!ch || !f || !isFinite(v) || v < 0 || v > 200) return;
+        if (!parts[ch]) parts[ch] = { gross:0, campaign:0, member:0 };
+        if (parts[ch][f] !== v){ parts[ch][f] = v; _mkChanged = true; }
+      });
+      if (_mkChanged && typeof fp_setChannelMarkupParts === 'function') fp_setChannelMarkupParts(structKey, parts);
+    })();
     if (_mkChanged && typeof fp_recalcMarkupOnBookings === 'function') fp_recalcMarkupOnBookings();
     const elVal = parseFloat((document.getElementById('fp-elasticity-input')||{}).value);
     if (isFinite(elVal) && elVal >= 0 && elVal <= 3) fp_setElasticity(structKey, elVal);
