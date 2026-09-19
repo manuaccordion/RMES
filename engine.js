@@ -13567,22 +13567,25 @@ function renderSellStrategy(sel){
         const baseRTK0 = (CFG.structures[sel] || {}).baseRT;
         const meS = _rmesMapForAlignment && _rmesMapForAlignment[r.ymd];
         const tS = meS && meS.rmesTargetOnBaseByRT && meS.rmesTargetOnBaseByRT[baseRTK0];
-        /* Il confronto e' fra il prezzo che CARICHI e la stima strutturale, non
-           fra il punto di partenza del calcolo: senza segnale il motore riparte
-           dalla stima, ma il tuo prezzo resta quello che hai deciso e il motore
-           deve poter dire che e' lontano. */
+        /* IL CONFRONTO E' FRA SUGGERITO E CARICATO.
+           Il Base Price serve a calcolare il suggerimento ed e' un passaggio
+           intermedio: metterlo nel confronto costringe a fare due conti in
+           testa. Quello che serve sapere e' di quanto il suggerimento si
+           discosta dal prezzo che hai su Beddy, perche' e' quella la distanza
+           da colmare. */
         const _loadedP = tS && tS.loaded;
-        if (tS && tS.baseStruct > 0 && _loadedP > 0 && Math.abs(_loadedP - tS.baseStruct) / tS.baseStruct > 0.20){
-          const g = _loadedP / tS.baseStruct - 1;
+        const _sugg = tS && tS.price;
+        if (tS && _sugg > 0 && _loadedP > 0 && Math.abs(_sugg - _loadedP) / _loadedP > 0.20){
+          const g = _sugg / _loadedP - 1;           // + = il motore suggerisce di alzare
           const sgS = meS._sigDbg;
           const pkSays = sgS && sgS.A ? (sgS.A.dev || 0) : 0;
           const agree = (g > 0 && pkSays > 0.001) || (g < 0 && pkSays < -0.001);
-          const head = 'You are loading ' + fmtEUR(_loadedP) + ' against a structural estimate of '
-                     + fmtEUR(tS.baseStruct) + ' \u2014 ' + Math.round(Math.abs(g)*100) + '% '
-                     + (g > 0 ? 'above' : 'below') + '.';
-          if (agree) return { tone: 'info', txt: head + '\nThe pickup points the same way, so your price and the engine are not really in disagreement.' };
-          return { tone: 'warn', txt: head + '\nNothing in the pickup or the market says this date should be '
-                   + (g > 0 ? 'that strong' : 'that weak') + '. If this is deliberate, fine \u2014 otherwise the structural estimate is the safer starting point.' };
+          const head = 'Suggested ' + fmtEUR(_sugg) + ' against ' + fmtEUR(_loadedP)
+                     + ' loaded \u2014 ' + Math.round(Math.abs(g)*100) + '% '
+                     + (g > 0 ? 'higher' : 'lower') + '.'
+                     + '\n(the suggestion is built on a Base Price of ' + fmtEUR(tS.baseStruct) + ')';
+          if (agree) return { tone: 'info', txt: head + '\nThe pickup points the same way, so the gap is the engine following the market, not disagreeing with you.' };
+          return { tone: 'warn', txt: head + '\nNothing in the pickup or the market explains a gap this wide. If your price is deliberate, fine \u2014 otherwise the suggestion is the safer number.' };
         }
         const ls = (typeof lastSoldForStay === 'function') ? lastSoldForStay(sel, r.ymd) : null;
         const baseRTK = baseRTK0;
@@ -13626,10 +13629,12 @@ function renderSellStrategy(sel){
       } catch(e){ return null; }
     })();
 
-        const _vHead = _verdict
-          ? (/structural estimate/.test(_verdict.txt) ? 'VERSUS THE STRUCTURAL ESTIMATE'
-            : (/last year/.test(_verdict.txt) ? 'VERSUS LAST YEAR' : 'VERSUS THE LAST SALE'))
-          : '';
+        /* L'intestazione deve dire di cosa parla il commento: prima cercava
+           "structural estimate", che non compare piu' nella frase, e tutto
+           finiva sotto "VERSUS THE LAST SALE" anche quando parlava d'altro. */
+        const _vHead = !_verdict ? ''
+          : (/loaded \u2014/.test(_verdict.txt) ? 'SUGGESTED VERSUS WHAT YOU LOADED'
+            : (/last year/.test(_verdict.txt) ? 'VERSUS LAST YEAR' : 'VERSUS THE LAST SALE'));
         const _vTip = _verdict ? ('\n\n' + _vHead + '\n' + _verdict.txt) : '';
         const _vMark = (_verdict && _verdict.tone === 'warn')
           ? '<span style="color:#b0332f;font-weight:700">\u00b7</span>' : '';
