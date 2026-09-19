@@ -6181,24 +6181,14 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           if (_am && _am.price > 0) _acceptedHold = _am;
         }
       } catch(e){}
-      /* ANCORA SULL'ULTIMO VENDUTO — solo se recentissima (7 giorni) e solo se
-         sulla CAMERA BASE, perche' il riferimento del RMES e' la flessibile
-         della base da caricare su Beddy. Una vendita di ieri e' l'evidenza piu'
-         fresca di cosa il mercato accetta su quella notte, e vale piu' di una
-         stima strutturale.
-         NOTA: la stessa vendita alimenta anche il segnale pickup, quindi entro i
-         7 giorni viene contata due volte (alza il punto di partenza e spinge).
-         La finestra corta limita l'effetto; se risultasse eccessivo basta
-         portare LAST_SOLD_ANCHOR_DAYS a 0 per disattivarla. */
-      let _anchorSold = null;
-      if (typeof lastSoldForStay === 'function' && LAST_SOLD_ANCHOR_DAYS > 0){
-        const _lsA = lastSoldForStay(sel, r.ymd);
-        if (_lsA && _lsA.price > 0 && _lsA.isBaseRT){
-          const _ageA = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(_lsA.bookYmd)) / 86400000);
-          if (_ageA >= 0 && _ageA <= LAST_SOLD_ANCHOR_DAYS) _anchorSold = _lsA.price;
-        }
-      }
-      if (_anchorSold != null) _basePure = _anchorSold;
+      /* L'ANCORA SULL'ULTIMO VENDUTO E' STATA RIMOSSA.
+         Spostava il punto di partenza sull'ultima vendita, e siccome quella
+         stessa vendita alimenta gia' il segnale pickup finiva contata due
+         volte: alzava la base E spingeva il prezzo. Il commento originale lo
+         diceva, ma la finestra corta non bastava a renderla innocua: su
+         Firenze il 15/10 partiva da 329 invece che dai 267 del Base.
+         Il suggerimento parte sempre e solo dal Base Price; l'ultima vendita
+         resta nella sua colonna, come informazione da guardare. */
       const _basePureValid = (_basePure != null && isFinite(_basePure) && _basePure > 0);
       for (const rt of _rtList){
         let baseRT = basePrice;  // default per baseRT (riferimento corrente)
@@ -6480,7 +6470,6 @@ function ensureUserProfile(){
     // se cancella: nessun profilo settato, riprova al prossimo boot
   }, 1500);
 }
-const LAST_SOLD_ANCHOR_DAYS = 7;   // 0 = ancora disattivata
 const NEWRMES_LAST_SUGGESTION_KEY = 'rmes_last_suggestion_v1';
 const NEWRMES_LAST_SUGGESTION_DATE_KEY = 'rmes_last_suggestion_date_v1';
 
@@ -12121,7 +12110,54 @@ function _sellRefreshRow(sel, isoDate){
     inp.style.fontWeight = src ? '700' : '';
   }
 }
+/* TOOLTIP COSTRUITI AL PASSAGGIO DEL MOUSE.
+   Scrivere tutti i title dentro l'HTML costava 160 KB su 409: la riga
+   title="..." e' lunga in media 170 caratteri e ce n'e' una per cella. Scrivere
+   quell'HTML era la parte piu' lenta del render (686ms su 1100).
+   Qui il testo resta in memoria e finisce nell'attributo solo quando il mouse
+   passa davvero su quella cella. In tabella va un data-tip di 15 caratteri. */
+let _SELL_TIPS = {};
+let _SELL_TIP_N = 0;
+function _tipReset(){ _SELL_TIPS = {}; _SELL_TIP_N = 0; }
+function _tip(text){
+  if (text == null || text === '') return '';
+  const id = 't' + (++_SELL_TIP_N);
+  _SELL_TIPS[id] = String(text);
+  return ' data-tip="' + id + '"';
+}
+/* Applica subito tutti i tooltip invece di aspettare il mouse. Serve ai test,
+   che leggono l'attributo title appena dopo il render. */
+function _tipFlushAll(){
+  const wrap = document.getElementById('sell-table-wrap');
+  if (!wrap) return;
+  wrap.querySelectorAll('[data-tip]').forEach(el => {
+    const t = _SELL_TIPS[el.dataset.tip];
+    if (t != null) el.title = t;
+    delete el.dataset.tip;
+  });
+}
+function _tipWire(){
+  const wrap = document.getElementById('sell-table-wrap');
+  if (!wrap) return;
+  if (typeof window !== 'undefined' && window.__RMES_SYNC_RENDER) _tipFlushAll();
+  if (wrap.dataset.tipWired === '1') return;
+  wrap.dataset.tipWired = '1';
+  wrap.addEventListener('mouseover', (ev) => {
+    let el = ev.target;
+    while (el && el !== wrap){
+      if (el.dataset && el.dataset.tip){
+        const t = _SELL_TIPS[el.dataset.tip];
+        if (t != null) el.title = t;
+        delete el.dataset.tip;      // una volta sola
+        return;
+      }
+      el = el.parentElement;
+    }
+  });
+}
 function renderSellStrategy(sel){
+  _tipReset();
+  const _rowsBuf = [];
   // Salva lo scroll orizzontale del wrap trasposto prima di ricostruire, così l'utente
   // resta nella stessa posizione (es. agosto) dopo un accept/override invece di tornare a oggi.
   // ECCEZIONE: se è cambiata la struttura → reset a 0 (= torna a oggi sulla nuova struttura).
@@ -12599,7 +12635,7 @@ function renderSellStrategy(sel){
     else if (d > 0){ cls='pk-up';   txt='\u25b2'+p.cur; }
     else if (d < 0){ cls='pk-down'; txt='\u25bc'+p.cur; }
     else { cls='pk-flat'; txt='\u25cf'+p.cur; }
-    return `<span class="sell-pk-dot ${cls}" title="${escapeHtml(tip)}">${txt}</span>`;
+    return `<span class="sell-pk-dot ${cls}" ${_tip(tip)}>${txt}</span>`;
   };
   // MLOS consigliato per-giorno: alimenta la colonna "Min stay" del gruppo RMES.
   // Regola: 1 notte entro 7 giorni dall'arrivo, 1 se il giorno dopo e' gia' pieno,
@@ -12753,7 +12789,7 @@ function renderSellStrategy(sel){
           if (rkM) _posMine = rkM.rank + '/' + rkM.total;
         }
         const _rsTip = myTooltip + (_posMine ? ' · position ' + _posMine + ' (1 = cheapest)' : '') + ' — ' + avgTooltip;
-        expCells = `<td class="cell-mono sell-block-expedia ${diffCls}" class="bg-mkt" title="${escapeHtml(_rsTip)}">`
+        expCells = `<td class="cell-mono sell-block-expedia ${diffCls}" class="bg-mkt" ${_tip(_rsTip)}>`
                  + `<div style="font-weight:700">${myTxt}</div>`
                  + `<div class="sub-9">cs ${avgTxt}${_posMine ? ' · ' + _posMine : ''}</div></td>`;
       } else {
@@ -12908,7 +12944,9 @@ function renderSellStrategy(sel){
       }
       _prezzoRMES_row = prezzoRMES;
       _expedia_rt_shown_row = expedia_rt_shown;
-      const baseRT = _suppData ? _suppData.baseRT : null;
+      /* _suppData era una variabile locale del render: qui si ricava la camera
+       base dalla configurazione, che e' la stessa cosa ed e' sempre disponibile. */
+    const baseRT = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
       const pricesByRT_row = {};
       const mlosByRT_row = {};
       const _multsForThisRow = r._multsByRT || {};
@@ -13139,7 +13177,7 @@ function renderSellStrategy(sel){
             `= Base ${baseRT_fp} + supplement ${fpRT} month ${r.mo}\n` +
             `= €${(fpEffective - supp).toFixed(0)} + €${supp.toFixed(0)} = €${fpEffective.toFixed(0)}\n\n` +
             `Overrides apply ONLY to the baseRT (${baseRT_fp}). To change this price, go to the baseRT row.`;
-          cellFoundation = `<td class="cell-mono sell-block-fp" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(derivedTip)}"><b style="${textStyle}">↳ ${fpPriceTxt}</b></td>`;
+          cellFoundation = `<td class="cell-mono sell-block-fp" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" ${_tip(derivedTip)}><b style="${textStyle}">↳ ${fpPriceTxt}</b></td>`;
         } else {
           // baseRT: Base Price cell. The structural Base is "accepted by default", but you
           // CAN override it for a single day with 🖋 — useful for a holiday the historical
@@ -13156,7 +13194,7 @@ function renderSellStrategy(sel){
           const _btnStyle = 'font-size:10px;line-height:1;border:none;background:transparent;cursor:pointer;padding:0 1px;color:inherit;opacity:.65';
           let _btns = `<button class="fp-inline-override" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Override Base Price for this day" style="${_btnStyle}">🖋</button>`;
           if (_hasOvr) _btns += `<button class="fp-inline-reset" data-iso="${fpDateISO}" data-rt="${fpRTAttr}" title="Reset Base Price to the computed value" style="${_btnStyle}">↺</button>`;
-          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${_hasOvr?'override':'frozen'}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" title="${escapeHtml(fpTip)}"><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b> ${_btns}</td>`;
+          cellFoundation = `<td class="cell-mono sell-block-fp" data-fp-struct="${sel}" data-fp-rt="${fpRTAttr}" data-fp-date="${fpDateISO}" data-fp-status="${_hasOvr?'override':'frozen'}" style="background:${cellBg};text-align:center;border-left:2px solid ${cellBorder};white-space:nowrap" ${_tip(fpTip)}><b style="${textStyle}">${statusIcon}${fpPriceTxt}</b> ${_btns}</td>`;
         }
       }
     }
@@ -13201,7 +13239,7 @@ function renderSellStrategy(sel){
       }
       const paceFromAgg = (mainMults && mainMults._paceFromAggregate === true);
       const paceAggBadge = paceFromAgg ? `<span title="Factor C · Pace Trend: property month-specific data unavailable, using the properties-aggregate pace (marked: similar local market, area and quality tier) as a proxy." style="font-size:9px;color:#8e5fa8;font-weight:700;margin-right:2px;font-family:'DM Mono',monospace">P̄</span>` : '';
-      cells += `<td class="cell-mono sell-block-rmes sell-rmes-baseRT" data-rmes-struct="${sel}" data-rmes-rt="${fpRTAttrCell}" data-rmes-date="${fpDateAttrISO}" style="background:${cellBgRgba};${cellBorderStyle}text-align:center;cursor:pointer" title="${escapeHtml(mainTip)}">${overrideBadge}${paceAggBadge}<b style="color:${mainColor}">${mainPriceTxt}</b> <span style="color:${mainMCol};font-weight:700;font-size:10.5px">M${mainM}</span></td>`;
+      cells += `<td class="cell-mono sell-block-rmes sell-rmes-baseRT" data-rmes-struct="${sel}" data-rmes-rt="${fpRTAttrCell}" data-rmes-date="${fpDateAttrISO}" style="background:${cellBgRgba};${cellBorderStyle}text-align:center;cursor:pointer" ${_tip(mainTip)}>${overrideBadge}${paceAggBadge}<b style="color:${mainColor}">${mainPriceTxt}</b> <span style="color:${mainMCol};font-weight:700;font-size:10.5px">M${mainM}</span></td>`;
       if (!_rtFilter && _showAllRT){
         for (const rt of _rtList){
           if (rt === baseRT) continue;
@@ -13223,7 +13261,7 @@ function renderSellStrategy(sel){
           }
           const rtDateAttrISO = `${r.y}-${pad2(r.mo)}-${pad2(r.day)}`;
           const rtNameAttr = escapeHtml(rt);
-          cells += `<td class="cell-mono sell-block-rt" data-rmes-struct="${sel}" data-rmes-rt="${rtNameAttr}" data-rmes-date="${rtDateAttrISO}" style="background:${rtCellBg};text-align:center;cursor:pointer" title="${escapeHtml(cellTip)}">${priceTxt} <span style="color:${mCol};font-weight:700;font-size:10.5px">M${m}</span></td>`;
+          cells += `<td class="cell-mono sell-block-rt" data-rmes-struct="${sel}" data-rmes-rt="${rtNameAttr}" data-rmes-date="${rtDateAttrISO}" style="background:${rtCellBg};text-align:center;cursor:pointer" ${_tip(cellTip)}>${priceTxt} <span style="color:${mCol};font-weight:700;font-size:10.5px">M${m}</span></td>`;
         }
       }
       return cells;
@@ -13246,7 +13284,7 @@ function renderSellStrategy(sel){
           const lvl = expDemandLevel(sc);
           _t += ` · Expedia search pressure: ${sc.toLocaleString('en-GB')} searches${lvl ? ' · ' + lvl.label : ''}`;
         }
-        return ` title="${escapeHtml(_t)}"`;
+        return ` ${_tip(_t)}`;
       } catch(e){ return ''; }
     })();
     // Build dateBg style: combine _rowBgStyle (search pressure) with weekend dateStyle for the DoW cell
@@ -13293,7 +13331,7 @@ function renderSellStrategy(sel){
                     : _age <= 30 ? 'Sold within the last month.'
                     : _age <= 90 ? 'Sold 1 to 3 months ago \u2014 fading.'
                     : 'Sold more than 3 months ago \u2014 says little about today.';
-      return `<td class="cell-mono sell-sold-cell" style="text-align:center;background:${_ageBg};${_ageOp}" title="${escapeHtml(tip + '\n' + _ageLbl)}">`
+      return `<td class="cell-mono sell-sold-cell" style="text-align:center;background:${_ageBg};${_ageOp}" ${_tip(tip + '\n' + _ageLbl)}>`
            + `<div style="font-weight:700">${fmtEUR(ls.price)}</div>`
            + `<div style="font-size:9px;font-weight:400;opacity:.8;white-space:nowrap">${_bd.slice(0,5)} \u00b7 `
            + `<span style="${ls.isBaseRT ? '' : 'color:#7a4f1c;font-weight:600'}">${escapeHtml(_rtShort)}</span></div></td>`;
@@ -13432,7 +13470,7 @@ function renderSellStrategy(sel){
           tip = `Active price: €${Math.round(activePrice)}\nSource: Base Price (accepted by default — RMES never explicitly accepted for this day)`;
           txtColor = 'color:#6a6a6a;font-weight:500';  // grigio esplicito
         }
-        return `<td class="cell-mono cell-flat sell-lu-cell" data-lu-struct="${sel}" data-lu-rt="${escapeHtml(baseRTKey)}" data-lu-ymd="${r.ymd}" data-lu-iso="${_isoOvr}" data-lu-current="${Math.round(activePrice)}" style="background:rgba(195,131,59,.03);text-align:center;cursor:pointer;${txtColor}" title="${escapeHtml(tip)}\n\n📝 Click to edit (manual override) — Right-click (or Shift+click) to start range selection">${icon ? icon+' ' : ''}${Math.round(activePrice)}</td>`;
+        return `<td class="cell-mono cell-flat sell-lu-cell" data-lu-struct="${sel}" data-lu-rt="${escapeHtml(baseRTKey)}" data-lu-ymd="${r.ymd}" data-lu-iso="${_isoOvr}" data-lu-current="${Math.round(activePrice)}" style="background:rgba(195,131,59,.03);text-align:center;cursor:pointer;${txtColor}" ${_tip(tip)}\n\n📝 Click to edit (manual override) — Right-click (or Shift+click) to start range selection">${icon ? icon+' ' : ''}${Math.round(activePrice)}</td>`;
       })();
     const _rmesTdHtml = (function(){
         const mapEntry = (_rmesMapForAlignment && _rmesMapForAlignment[r.ymd]) ? _rmesMapForAlignment[r.ymd] : null;
@@ -13595,12 +13633,15 @@ function renderSellStrategy(sel){
         const _vTip = _verdict ? ('\n\n' + _vHead + '\n' + _verdict.txt) : '';
         const _vMark = (_verdict && _verdict.tone === 'warn')
           ? '<span style="color:#b0332f;font-weight:700">\u00b7</span>' : '';
-        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" title="${escapeHtml(cellTip + _suppTip + _vTip)}">${_vMark}${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
+        return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" ${_tip(cellTip + _suppTip + _vTip)}>${_vMark}${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();
     /* L'evidenziazione delle righe per pickup recente e' stata rimossa: con i
        colori sull'eta' dell'ultima vendita e sullo scarto dei supplementi erano
        troppi segnali contemporanei e nessuno si distingueva piu'. */
-    html += `<tr${_searchTipVal}>
+    /* Le righe si accumulano a parte: la tabella viene inserita in due tempi,
+       prima quelle visibili e poi il resto, cosi' la pagina compare subito
+       invece di restare bloccata mentre il browser costruisce 1.900 celle. */
+    _rowsBuf.push(`<tr${_searchTipVal}>
       <td class="cell-mono sell-date-cell">${_pk7Flag(r.ymd)}<span class="sell-date-txt"${_occRing}>${pad2(r.day)}/${pad2(r.mo)}/${r.y}</span></td>
       <td${_dowInline}>${dowIT[r.dow]}</td>
       <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
@@ -13625,7 +13666,7 @@ function renderSellStrategy(sel){
       ${_soldTdHtml}
       <!-- RMES: prezzo suggerito + minimum stay consigliato -->
       ${_rmesTdHtml}${_loadedTdHtml}${_suppTdHtml}${_mlosTdHtml}
-    </tr>`;
+    </tr>`);
   }
   const totDRev = T.pkRev;
   const totDRn  = T.pkRn;
@@ -13648,7 +13689,7 @@ function renderSellStrategy(sel){
     totPkStlyNewRev += (r.pkRowsStly || []).reduce((s,b)=>s+b.revPerNight, 0);
   }
   const totPkStlyAdr = totPkStlyNew > 0 ? totPkStlyNewRev / totPkStlyNew : NaN;
-  html += `<tr class="total">
+  const html_total_row = `<tr class="total">
     <td class="cell-mono">Total</td>
     <td>${A.rangeDays}d</td>
     <td class="sell-ev-col"></td>
@@ -13677,8 +13718,49 @@ function renderSellStrategy(sel){
     ${_suppRTs.map(() => '<td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">\u2014</td>').join('')}
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
-  html += '</tbody></table>';
-  document.getElementById('sell-table-wrap').innerHTML = html;
+  /* INSERIMENTO IN DUE TEMPI.
+     Costruire 1.900 celle in un colpo solo blocca la pagina per piu' di un
+     secondo, e il costo sta nel numero di celle, non nei byte. Le prime
+     SELL_FIRST_CHUNK righe entrano subito (sono quelle che vedi), il resto un
+     istante dopo: il tempo totale e' lo stesso ma la tabella compare subito.
+     Il totale in fondo va inserito con l'ultimo blocco, altrimenti resterebbe
+     appiccicato alle prime righe. */
+  const SELL_FIRST_CHUNK = 25;
+  const _tailHtml = html;              // intestazioni + apertura tbody
+  const _first = _rowsBuf.slice(0, SELL_FIRST_CHUNK).join('');
+  const _rest  = _rowsBuf.slice(SELL_FIRST_CHUNK).join('');
+  const _closeHtml = html_total_row + '</tbody></table>';
+  const _wrapEl = document.getElementById('sell-table-wrap');
+  { const _t=Date.now();
+    _wrapEl.innerHTML = _tailHtml + _first + (_rest ? '' : _closeHtml);
+    if (typeof window!=='undefined' && window.__PH) window.__PH.inner=Date.now()-_t; }
+  _tipWire();
+  /* I test leggono la tabella subito dopo il render e non hanno modo di
+     aspettare il secondo blocco: con questo interruttore l'inserimento torna
+     tutto in una volta. Nell'uso normale resta spezzato. */
+  const _syncRender = (typeof window !== 'undefined' && window.__RMES_SYNC_RENDER);
+  if (_rest && _syncRender){
+    const tb = _wrapEl.querySelector('table.sell-table tbody');
+    if (tb) tb.insertAdjacentHTML('beforeend', _rest + html_total_row);
+    _tipFlushAll();
+    try { _sellWireAfterRender(sel, _savedSellScrollLeft); } catch(e){ console.error('wire', e); }
+  } else if (_rest){
+    const _finish = () => {
+      const tb = _wrapEl.querySelector('table.sell-table tbody');
+      if (tb) tb.insertAdjacentHTML('beforeend', _rest + html_total_row);
+      else _wrapEl.innerHTML = _tailHtml + _first + _rest + _closeHtml;
+      try { _sellWireAfterRender(sel, _savedSellScrollLeft); } catch(e){ console.error('wire', e); }
+    };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => setTimeout(_finish, 0));
+    else setTimeout(_finish, 0);
+  } else {
+    try { _sellWireAfterRender(sel, _savedSellScrollLeft); } catch(e){ console.error('wire', e); }
+  }
+}
+function _sellWireAfterRender(sel, _savedSellScrollLeft){
+  /* Tutto l'aggancio dei listener e il ripristino dello scroll: va
+     richiamato DOPO che le righe sono nel DOM, e con l'inserimento in due
+     tempi quel momento non e' piu' la fine del render. */
   // Orientamento classico ripristinato su richiesta: giorni in RIGA, KPI in COLONNA.
   // La versione trasposta della tabella e' stata rimossa.
   // Ripristina lo scroll orizzontale (vedi save all'inizio della funzione) — così l'utente
@@ -13944,8 +14026,13 @@ function renderSellStrategy(sel){
     const barEl = document.getElementById('sell-fp-approval-bar');
     const labelEl = document.getElementById('sell-fp-baseRT-label');
     if (!barEl) return;
-    const baseRT = _suppData ? _suppData.baseRT : null;
-    const isFilterCompatible = (!_rtFilter) || (_rtFilter === baseRT);
+    /* _suppData era una variabile locale del render: qui si ricava la camera
+       base dalla configurazione, che e' la stessa cosa ed e' sempre disponibile. */
+    const baseRT = (CFG.structures[sel] && CFG.structures[sel].baseRT) || null;
+    /* Il filtro tipologia va riletto qui: era una variabile locale del render,
+       e con l'estrazione della funzione di aggancio era rimasta fuori portata. */
+    const _rtFilterNow = (typeof SELL_RT_FILTER !== 'undefined') ? SELL_RT_FILTER : null;
+    const isFilterCompatible = (!_rtFilterNow) || (_rtFilterNow === baseRT);
     if (isAggSel(sel) || !baseRT || !isFilterCompatible){
       barEl.style.display = 'none';
       return;
