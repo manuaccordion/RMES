@@ -6171,24 +6171,6 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
          suggerimento parte sempre dal Base Price. */
       const _refLoaded = (typeof newrmesGetCurrentReference === 'function')
         ? newrmesGetCurrentReference(sel, r.ymd) : null;
-      /* Se la data ha un accept ATTIVO (non superato da un override piu' recente)
-         il suggerimento si ferma li' finche' il mercato non si muove. */
-      let _acceptedHold = null;
-      try {
-        const _rs = (typeof newrmesGetReferenceSource === 'function') ? newrmesGetReferenceSource(sel, r.ymd) : null;
-        if (_rs && _rs.source === 'accepted'){
-          const _am = newrmesGetAcceptedMeta(sel, r.ymd);
-          if (_am && _am.price > 0) _acceptedHold = _am;
-        }
-      } catch(e){}
-      /* L'ANCORA SULL'ULTIMO VENDUTO E' STATA RIMOSSA.
-         Spostava il punto di partenza sull'ultima vendita, e siccome quella
-         stessa vendita alimenta gia' il segnale pickup finiva contata due
-         volte: alzava la base E spingeva il prezzo. Il commento originale lo
-         diceva, ma la finestra corta non bastava a renderla innocua: su
-         Firenze il 15/10 partiva da 329 invece che dai 267 del Base.
-         Il suggerimento parte sempre e solo dal Base Price; l'ultima vendita
-         resta nella sua colonna, come informazione da guardare. */
       const _basePureValid = (_basePure != null && isFinite(_basePure) && _basePure > 0);
       for (const rt of _rtList){
         let baseRT = basePrice;  // default per baseRT (riferimento corrente)
@@ -6234,23 +6216,13 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
           const _start = baseRT_pure;
           let _priceOnBase = _start * multRT * (1 + _lmfPct/100) * _eventBoost * _promoBoost;
           let _atCapB = null;
-          /* DOPO UN ACCEPT IL PREZZO SI FERMA.
-             Accettare e' una decisione, non l'inizio di una nuova trattativa:
-             finche' il mercato non cambia davvero, il suggerimento resta quello
-             accettato. Si riapre solo se i segnali si sono mossi rispetto a
-             quando hai accettato, o se sono arrivate altre prenotazioni. */
-          if (_acceptedHold != null && _suppData && rt === _suppData.baseRT){
-            const _sa = _acceptedHold.sigAt;
-            if (!_sa) { _priceOnBase = _acceptedHold.price; _atCapB = 'accepted'; }
-            else {
-              const _mNow = multRT || 1;
-              const _gNow = (_sigA && _sigA.good != null) ? _sigA.good : 0;
-              const _moved = Math.abs(_mNow - (_sa.mult || 1)) > 0.005
-                          || Math.abs(_gNow - (_sa.good || 0)) > 0.5;
-              if (!_moved){ _priceOnBase = _acceptedHold.price; _atCapB = 'accepted'; }
-            }
-          }
-          // Cap ±20% RIMOSSO. Solo Floor.
+          /* NESSUN BLOCCO DOPO L'ACCEPT.
+             Serviva quando il suggerimento partiva dal prezzo di riferimento:
+             accettare alzava il riferimento, il segnale si riapplicava sopra e
+             il motore inseguiva se stesso. Ora il suggerimento e' Base x
+             segnali, indipendente da cosa accetti, quindi non c'e' nulla da
+             fermare. Misurato su 7 date: con e senza blocco il numero e'
+             identico. Tenerlo avrebbe solo nascosto suggerimenti aggiornati. */
           const _flo = _floorFor(r.ymd);
           /* Il corridoio attorno al Base non serve piu': esisteva per impedire
              che un prezzo caricato per sbaglio trascinasse via il calcolo, e
@@ -6720,7 +6692,7 @@ function newrmesGetAcceptedMeta(structKey, ymd){
   }
   return null;
 }
-function newrmesSetAccepted(structKey, ymd, price, sigKnown){
+function newrmesSetAccepted(structKey, ymd, price){
   try { logDecision(structKey, ymd, price == null ? 'reset_accept' : 'accept', price); } catch(e){}
   const all = _newrmesLoadObj(NEWRMES_ACCEPTED_KEY);
   if (!all[structKey]) all[structKey] = {};
@@ -6735,24 +6707,11 @@ function newrmesSetAccepted(structKey, ymd, price, sigKnown){
        decisione, e finche' la situazione non cambia il prezzo resta quello.
        Senza questo, subito dopo l'accept il segnale si riapplicava al nuovo
        riferimento e proponeva gia' un altro numero, spesso piu' basso. */
-    /* Chi accetta un intero periodo ha gia' la mappa in mano e passa il segnale:
-       senza questa scorciatoia ogni giorno del range ne avrebbe forzato un
-       ricalcolo, e accettare due mesi avrebbe bloccato l'interfaccia. */
-    let _sig = (sigKnown && sigKnown.mult != null) ? sigKnown : null;
-    try {
-      if (_sig) throw null;   // gia' noto, salto il ricalcolo
-      // La mappa va ricalcolata pulita: quella in cache puo' essere di un'altra
-      // finestra e non contenere questa data.
-      if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
-      const m = computeRMESPriceMap(structKey, ymd, 1);
-      const e = m && m[ymd];
-      if (e){
-        _sig = { mult: (e.multFinale != null) ? +(+e.multFinale).toFixed(4) : 1,
-                 good: (e._sigDbg && e._sigDbg.A && e._sigDbg.A.good != null) ? +(+e._sigDbg.A.good).toFixed(2) : 0 };
-      }
-    } catch(err){ if (err) console.error('sigAt', err); }
+    /* Non si registra piu' lo stato dei segnali: serviva a decidere quando
+       sciogliere il blocco, e il blocco non esiste piu'. Accettare significa
+       semplicemente "carico il prezzo suggerito": un override scritto per te. */
     all[structKey][ymd] = { price: Math.round(price), ts: new Date().toISOString(),
-                            author: getUserProfile() || null, sigAt: _sig };
+                            author: getUserProfile() || null };
   }
   _newrmesSaveObj(NEWRMES_ACCEPTED_KEY, all);
   _invalidateRmesMapCache();
@@ -12068,6 +12027,15 @@ function _sellWireAcceptBtn(btn){
       } catch(e){ if (typeof renderSellStrategy === 'function') renderSellStrategy(sk); }
     });
 }
+/* SCIOGLIE LE ACCETTAZIONI VECCHIE senza perdere il prezzo.
+   Un accept ferma la data sul prezzo accettato finche' il mercato non si muove.
+   Va bene finche' il motore calcola allo stesso modo, ma quando il calcolo
+   cambia quelle date restano ancorate a un suggerimento che non esiste piu'.
+   Cancellare l'accept perderebbe l'informazione utile, cioe' che su Beddy c'e'
+   quel prezzo. Quindi lo si converte in prezzo caricato: il numero resta nella
+   casella, il blocco si scioglie, e il suggerimento torna a ricalcolarsi e a
+   mostrare il delta. */
+/* Quante accettazioni ci sono da sciogliere, per non offrire l'azione a vuoto. */
 /* Aggiorna UNA riga della Sell Strategy dopo una decisione su quella data.
    Ricalcola il suggerimento solo per quel giorno e riscrive le due celle che
    cambiano. Il render completo costa qualche secondo e veniva rifatto a ogni
@@ -14086,25 +14054,9 @@ function _sellWireAfterRender(sel, _savedSellScrollLeft){
         const applicable = r.days.filter(d => isFinite(d.calc) && d.calc > 0);
         if (!applicable.length){ r.setMsg('No RMES to accept in this range (RMES is computed from today onward).', true); return; }
         if (!confirm('ACCEPT the RMES suggestion on ' + applicable.length + ' day(s) (baseRT: ' + baseRT + ')?\n\nEach day is accepted at its OWN suggested price — this becomes the current reference for those dates.')) return;
-        /* La mappa si calcola UNA volta per tutto il periodo e si passa il
-           segnale di ogni giorno: senza, ogni accept ne avrebbe forzato un
-           ricalcolo e accettare due mesi avrebbe bloccato tutto. */
-        let _mapAll = null;
-        try {
-          const _f = applicable[0].ymdN, _l = applicable[applicable.length-1].ymdN;
-          const _span = Math.round((ymdToDate(_l) - ymdToDate(_f)) / 86400000) + 1;
-          _mapAll = computeRMESPriceMap(sel, _f, Math.max(1, _span));
-        } catch(e){}
         for (const d of applicable){
-          const ymdN = d.ymdN;
-          let _sig = null;
-          const _e = _mapAll && _mapAll[ymdN];
-          if (_e){
-            _sig = { mult: (_e.multFinale != null) ? +(+_e.multFinale).toFixed(4) : 1,
-                     good: (_e._sigDbg && _e._sigDbg.A && _e._sigDbg.A.good != null) ? +(+_e._sigDbg.A.good).toFixed(2) : 0 };
-          }
-          // Niente clear override: l'accept (ts piu recente) vince nel reader via most-recent-wins.
-          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, ymdN, d.calc, _sig);
+          // Niente clear override: l'accept (ts piu recente) vince nel reader.
+          if (typeof newrmesSetAccepted === 'function') newrmesSetAccepted(sel, d.ymdN, d.calc);
         }
         const skipped = r.days.length - applicable.length;
         r.setMsg('✓ Accepted RMES on ' + applicable.length + ' day(s)' + (skipped ? ' · ' + skipped + ' skipped (no RMES)' : '') + '.');
