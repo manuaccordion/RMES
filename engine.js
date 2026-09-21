@@ -8099,36 +8099,99 @@ function _assistantResolveDate(parsed){
   return null;
 }
 /* ---- Single-day calculation breakdown (reuses the audit snapshot extractor) ---- */
+/* SPIEGA IL PREZZO DI UN GIORNO, con il modello di oggi.
+   Prima descriveva i vecchi cinque fattori pesati (Pace Trend, Online Pricing,
+   Demand Expedia...) che non esistono piu': spiegava un calcolo sbagliato.
+   Ora segue la catena vera, nell'ordine in cui il prezzo si forma:
+     Base Price -> segnali (pickup, poi i due freni) -> last minute ed evento
+     -> pavimento -> suggerito -> confronto con quello che hai caricato.
+   Legge gli stessi numeri della cella in Sell Strategy, quindi non puo'
+   raccontare una storia diversa da quella che vedi. */
 function _assistantDayBreakdown(sk, ymd, dateLabel){
   const lbl = ASSISTANT_PROPS[sk] ? ASSISTANT_PROPS[sk].label : sk;
   const _td = new Date(TODAY); _td.setHours(0,0,0,0);
   const _tdN = _td.getFullYear()*10000+(_td.getMonth()+1)*100+_td.getDate();
-  if (ymd < _tdN) return `<p><b>${lbl}</b> · ${dateLabel}: RMES only applies to today and future dates — I can't break down a past day.</p>`;
-  const s = (typeof _auditCaptureSnapshot === 'function') ? _auditCaptureSnapshot(sk, ymd) : null;
-  if (!s || (s.rmes_suggested == null && s.base_price == null)) return `<p>I couldn't compute the breakdown for <b>${lbl}</b> on ${dateLabel} (no data for that day yet).</p>`;
-  const eur = n => (n==null||!isFinite(n)) ? '—' : '€'+Math.round(n);
-  const pct = n => (n==null||!isFinite(n)) ? '—' : (n>=0?'+':'')+n.toFixed(1)+'%';
-  const frow = (code,name,val,extra)=>{
-    if (val==null) return `<li><b>${code} · ${name}</b>: n/a${extra||''}</li>`;
-    const col = val>=0?'#1e6b4a':'#a83b3b';
-    return `<li><b>${code} · ${name}</b>: <span style="color:${col}">${pct(val)}</span>${extra||''}</li>`;
-  };
-  const overridden = (s.effective_base!=null && s.base_price!=null && Math.round(s.effective_base)!==Math.round(s.base_price));
-  let h = `<h4>${lbl} · ${dateLabel}</h4>`;
-  h += `<p>Base Price <b>${eur(s.effective_base)}</b>${overridden?` (frozen ${eur(s.base_price)}, overridden)`:''} → RMES suggested <b>${eur(s.rmes_suggested)}</b></p>`;
-  h += `<p class="small">Active reference (Last update): ${eur(s.last_update_ref)}</p>`;
-  h += `<p><b>The 5 factors</b> (weighted contribution to the composite):</p><ul>`;
-  h += frow('A','Daily Pickup', s.dev_pickup_pct);
-  h += frow('B','Pace Trend', s.dev_pace_pct);
-  h += frow('C','Online Pricing', s.dev_online_pct);
-  h += frow('D','Demand (Expedia)', s.dev_demand_pct, s.d_demand_off_event ? ' <i>(off — event date)</i>' : '');
-  h += frow('E','AirDNA Market', s.dev_airdna_pct);
-  h += `</ul>`;
-  h += `<p>Composite multiplier: <b>×${s.composite!=null?s.composite.toFixed(3):'—'}</b>`;
-  if (s.lmf_pct) h += ` · LMF ${pct(s.lmf_pct)}`;
-  if (s.event_name) h += ` · Event "${s.event_name}" ×${s.event_factor!=null?s.event_factor.toFixed(3):'—'}`;
+  if (ymd < _tdN) return `<p><b>${lbl}</b> · ${dateLabel}: that date has passed, so there is no price to explain. I can tell you how it sold instead.</p>`;
+  const baseRT = (CFG.structures[sk] && CFG.structures[sk].baseRT) || null;
+  let e = null;
+  try { const m = computeRMESPriceMap(sk, ymd, 1); e = m && m[ymd]; } catch(err){}
+  const t = e && e.rmesTargetOnBaseByRT && baseRT ? e.rmesTargetOnBaseByRT[baseRT] : null;
+  if (!e || !t) return `<p>I couldn't work out the price for <b>${lbl}</b> on ${dateLabel}.</p>`;
+  const iso = String(ymd).slice(0,4)+'-'+String(ymd).slice(4,6)+'-'+String(ymd).slice(6,8);
+  let v = null; try { v = newrmesCalculateBasePriceVerbose(sk, iso); } catch(err){}
+  const eur = x => (x == null || !isFinite(x)) ? '—' : '€' + Math.round(x);
+  const pc  = x => (x >= 0 ? '+' : '−') + Math.abs(x*100).toFixed(1) + '%';
+  const sg  = e._sigDbg || {};
+  const A = sg.A || {}, M = sg.market || {}, AD = sg.airdna || {};
+  const lead = Math.round((ymdToDate(ymd) - _td) / 86400000);
+  let lmf = 0; try { lmf = fp_lmfLookup(sk, e.curOcc, Math.max(0, lead)) || 0; } catch(err){}
+  let ev = 1;  try { ev = _getEventBoost(ymd) || 1; } catch(err){}
+  const base = t.baseStruct;
+  const sugg = t.price;
+  /* Il prezzo caricato va letto solo se c'e' davvero: senza decisione il
+     riferimento ricade sul Base, e dire "hai €176 su Beddy" sarebbe inventato. */
+  let loaded = null;
+  try {
+    const rs = newrmesGetReferenceSource(sk, ymd);
+    if (rs && rs.source && rs.source !== 'base') loaded = t.loaded;
+  } catch(err){}
+  let h = `<p><b>${lbl}</b> · ${dateLabel} &nbsp;<span style="color:#888">(${lead} days out)</span></p>`;
+
+  // 1. da dove parte
+  h += `<p><b>1 · It starts from the Base Price: ${eur(base)}</b><br>`;
+  if (v){
+    /* I nomi dei campi sono quelli che la funzione restituisce davvero
+       (lyMedianADR, lySetDesc, targetGrowth): con i nomi sbagliati la riga
+       restava vuota e il Base compariva senza spiegazione. */
+    const parts = [];
+    if (v.lyMedianADR != null) parts.push(`what this kind of night earned in the last two years — ${eur(v.lyMedianADR)}, `
+      + (v.lySetDesc ? `the middle value of ${v.lySetDesc}` : 'the middle value of comparable nights')
+      + (v.lyObs ? ` (${v.lyObs} sales)` : ''));
+    if (v.targetGrowth) parts.push(`then the growth you set for the month (${v.targetGrowth > 0 ? '+' : ''}${v.targetGrowth}%)`);
+    if (v.cappedByGoal) parts.push(`then capped at ${eur(v.goalValue)}, where you want to sit against the competitors`);
+    if (v.flooredBy) parts.push(`then raised to the floor, since the lowest rate on offer cannot go below it`);
+    h += parts.length ? parts.join('; ') + '.' : '';
+  }
   h += `</p>`;
-  h += `<p class="small">Formula: Base × Composite × (1 + LMF%) × Event, then floored. Same numbers as the RMES cell in Sell Strategy.</p>`;
+
+  // 2. cosa lo muove
+  const mult = e.multFinale || 1;
+  h += `<p><b>2 · Bookings move it: ${pc(mult - 1)}</b><br>`;
+  if (sg.inHorizon === false){
+    h += `The date is ${lead} days away, beyond the ${sg.horizon}-day window where most of this property's bookings arrive. Out here a quiet date is normal, so nothing moves.`;
+  } else if (!A.n){
+    h += `No bookings have come in for this night recently.`;
+    if (A.goodLy > 0) h += ` Last year at this point there were already ${A.goodLy.toFixed(1)}, so the price comes down a little.`;
+    else h += ` Last year was quiet too, so there is nothing to react to.`;
+  } else {
+    h += `${A.n} booking(s) came in recently, worth ${(A.good||0).toFixed(1)} once weighed by how recent they are and how close their night is.`;
+    if (A.goodLy != null) h += ` Last year at this point: ${A.goodLy.toFixed(1)}`;
+    if (A.stlyState) h += ` — ${A.stlyState}.`;
+    if (A.pickupDays > 1) h += ` They arrived on ${A.pickupDays} different days, which lets the price rise further.`;
+  }
+  h += `</p>`;
+  const holds = [];
+  if (M.blocked) holds.push(`the market held it back (you are ${M.gap != null ? pc(M.gap) : '—'} against the competitors)`);
+  if (AD.weak) holds.push(`AirDNA shows a quiet market, so an increase was held back`);
+  if (AD.strong) holds.push(`AirDNA shows a busy market, so a cut was held back`);
+  if (holds.length) h += `<p style="color:#666">Also: ${holds.join('; ')}.</p>`;
+
+  // 3. ritocchi finali
+  const tweaks = [];
+  if (lmf) tweaks.push(`last-minute factor ${lmf > 0 ? '+' : ''}${lmf}%`);
+  if (ev && Math.abs(ev - 1) > 0.001) tweaks.push(`event ${pc(ev - 1)}`);
+  if (t.atCap === 'floor') tweaks.push(`the floor stopped it going lower`);
+  if (tweaks.length) h += `<p><b>3 · Then:</b> ${tweaks.join(', ')}.</p>`;
+
+  // 4. risultato e confronto
+  h += `<p style="font-size:15px"><b>Suggested: ${eur(sugg)}</b></p>`;
+  if (loaded > 0){
+    const g = sugg / loaded - 1;
+    if (Math.abs(g) < 0.02) h += `<p>That is what you have on Beddy (${eur(loaded)}). Nothing to change.</p>`;
+    else h += `<p>You have <b>${eur(loaded)}</b> on Beddy, so the suggestion is <b>${Math.round(Math.abs(g)*100)}% ${g > 0 ? 'higher' : 'lower'}</b> — the arrow in the table points ${g > 0 ? 'up' : 'down'}.</p>`;
+  } else {
+    h += `<p>You have not set a price for this night, so the suggestion is what goes on Beddy.</p>`;
+  }
   return h;
 }
 function assistantHandleDayCalc(parsed){
@@ -12493,7 +12556,8 @@ function renderSellStrategy(sel){
     + '<th class="sell-grp-stly-sub" title="STLY · ADR">ADR</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net RN a year ago. Click a cell for the new/cancelled detail.">Var RN</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of the net STLY pickup">Var ADR</th>'
-    + '<th class="sell-grp-rmes-today" title="Suggested price for the BASE room type, to load on Beddy. Click the cell for the calculation detail. The \u2713 button accepts it as the active price.">Pricing<br><span class="sell-th-sub">' + escapeHtml(_baseRTShort) + ' \u00b7 \u2713</span></th>'
+    + '<th class="sell-grp-rmes-today" title="Suggested price for the BASE room type, to load on Beddy. Click the cell for the calculation detail. The \u2713 button accepts it as the active price.">Pricing<br><span class="sell-th-sub">' + escapeHtml(_baseRTShort) + ' \u00b7 \u2713</span>'
+      + '<br><button type="button" id="sell-warn-filter" class="sell-warn-filter" title="Show only the dates marked with a red dot: the suggestion is far from what you loaded, with nothing in the data to explain it.">\u25cf only these</button></th>'
     + '<th class="sell-grp-loaded" title="The price you have actually loaded on Beddy for the base room type.\n\nType a number to record it \u2014 it is saved as a manual override and shared with everyone. Leave it empty to go back to what the engine decides.\n\nAccepting an RMES suggestion fills this box by itself.">Loaded<br><span class="sell-th-sub">on Beddy</span></th>'
     + _suppRTs.map(rt => {
         /* Nell'intestazione metto anche il confronto fra supplemento configurato
@@ -13614,7 +13678,13 @@ function renderSellStrategy(sel){
     /* Le righe si accumulano a parte: la tabella viene inserita in due tempi,
        prima quelle visibili e poi il resto, cosi' la pagina compare subito
        invece di restare bloccata mentre il browser costruisce 1.900 celle. */
-    _rowsBuf.push(`<tr${_searchTipVal}>
+    /* Le righe con il puntino rosso portano una classe: il filtro in cima alla
+       colonna Pricing le isola nascondendo le altre, senza ridisegnare nulla. */
+    // Il commento vive dentro la cella del prezzo: il puntino rosso nel suo HTML
+    // e' il segnale piu' affidabile, perche' e' esattamente quello che vedi.
+    const _warnRow = (typeof _rmesTdHtml === 'string' && _rmesTdHtml.indexOf('color:#b0332f;font-weight:700">\u00b7') !== -1)
+      ? ' class="sell-row-warn"' : '';
+    _rowsBuf.push(`<tr${_warnRow}${_searchTipVal}>
       <td class="cell-mono sell-date-cell">${_pk7Flag(r.ymd)}<span class="sell-date-txt"${_occRing}>${pad2(r.day)}/${pad2(r.mo)}/${r.y}</span></td>
       <td${_dowInline}>${dowIT[r.dow]}</td>
       <td class="sell-ev-col">${EVENTS[r.ymd] ? escapeHtml(EVENTS[r.ymd]) : ''}</td>
@@ -13731,6 +13801,24 @@ function renderSellStrategy(sel){
   }
 }
 function _sellWireAfterRender(sel, _savedSellScrollLeft){
+  /* Filtro sulle righe con il puntino rosso: accende o spegne una classe sulla
+     tabella e il CSS nasconde le altre righe. Niente ridisegno, quindi e'
+     istantaneo; lo stato sopravvive al ridisegno successivo. */
+  (function(){
+    const btn = document.getElementById('sell-warn-filter');
+    const tbl = document.querySelector('#sell-table-wrap table.sell-table');
+    if (!btn || !tbl) return;
+    const n = tbl.querySelectorAll('tbody tr.sell-row-warn').length;
+    btn.textContent = '\u25cf only these (' + n + ')';
+    btn.disabled = (n === 0);
+    if (window._SELL_WARN_ONLY && n > 0){ tbl.classList.add('warn-only'); btn.classList.add('on'); }
+    btn.onclick = (ev) => {
+      ev.stopPropagation();
+      window._SELL_WARN_ONLY = !window._SELL_WARN_ONLY;
+      tbl.classList.toggle('warn-only', !!window._SELL_WARN_ONLY);
+      btn.classList.toggle('on', !!window._SELL_WARN_ONLY);
+    };
+  })();
   /* Tutto l'aggancio dei listener e il ripristino dello scroll: va
      richiamato DOPO che le righe sono nel DOM, e con l'inserimento in due
      tempi quel momento non e' piu' la fine del render. */

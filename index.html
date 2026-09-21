@@ -1544,6 +1544,11 @@ table.data.sell-table input.sell-loaded-inp{
 }
 /* Classi per gli stili di cella piu' ripetuti: inline pesavano decine di KB
    nell'HTML, e scrivere quell'HTML e' la parte piu' lenta del render. */
+/* Filtro "solo puntini rossi" sulla colonna Pricing. */
+table.data.sell-table .sell-warn-filter{margin-top:4px;font-size:9.5px;font-weight:700;padding:2px 7px;border:1px solid #d9a3a0;border-radius:10px;background:#fff;color:#b0332f;cursor:pointer;white-space:nowrap}
+table.data.sell-table .sell-warn-filter.on{background:#b0332f;color:#fff;border-color:#b0332f}
+table.data.sell-table .sell-warn-filter:disabled{opacity:.4;cursor:default}
+table.data.sell-table.warn-only tbody tr:not(.sell-row-warn):not(.total){display:none}
 table.data.sell-table td.c-ctr{text-align:center}
 table.data.sell-table td.bg-grey{background:rgba(138,138,138,.04)}
 table.data.sell-table td.bg-mkt{background:rgba(58,107,107,.04);text-align:center;line-height:1.25}
