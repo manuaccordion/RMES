@@ -7963,7 +7963,7 @@ function assistantHandlePlaybook(parsed){
   const stopwords = new Set(['what','is','the','a','an','how','does','do','cosa','è','come','funziona','un','una','il','la','di','del','dei','che','si','what\'s','che','spiega','explain']);
   const words = q.split(/\s+/).filter(w => w.length >= 3 && !stopwords.has(w));
   if (words.length === 0){
-    return `<h4>Playbook search</h4><p>Please ask a more specific question, e.g. "What is the floor rate?" or "How does Pace Trend work?"</p>`;
+    return `<h4>Playbook search</h4><p>Please ask a more specific question, e.g. "What is the floor rate?" or "Why is Firenze at this price on 5 October?"</p>`;
   }
   // Iterate over <details> blocks with id starting with instr-
   const blocks = document.querySelectorAll('details[id^="instr-"]');
@@ -8404,6 +8404,26 @@ function _assistantBuildContext(parsed){
       } catch(e){}
     }
   }
+  /* SPIEGAZIONE DEL GIORNO. Se la domanda riguarda una data precisa, all'IA
+     arriva la stessa scomposizione che la chat mostrerebbe da sola: Base
+     Price, segnali, ritocchi, suggerito e confronto col caricato. Senza
+     questo blocco l'IA doveva ricostruire il calcolo dalle istruzioni, e con
+     istruzioni vecchie lo ricostruiva sbagliato. */
+  try {
+    const dt = (typeof _assistantResolveDate === 'function') ? _assistantResolveDate(parsed) : null;
+    if (dt && dt.ymd){
+      const sks = parsed.property ? [parsed.property] : ['firenze','condotta','alfani','davids'];
+      for (const sk of sks){
+        const html = _assistantDayBreakdown(sk, dt.ymd, dt.label);
+        const txt = String(html).replace(/<\/p>/g, '\n').replace(/<br>/g, '\n')
+          .replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&mdash;/g, '—')
+          .split('\n').map(x => x.trim()).filter(Boolean).join('\n');
+        L.push('');
+        L.push('DAY EXPLANATION (' + (ASSISTANT_PROPS[sk] ? ASSISTANT_PROPS[sk].label : sk) + ', ' + dt.label + ') — authoritative:');
+        L.push(txt);
+      }
+    }
+  } catch(e){}
   return L.join('\n');
 }
 
@@ -8431,7 +8451,7 @@ async function _assistantCallLLM(query, parsed, priorHistory){
   const system =
 `You are the revenue-management assistant embedded in the "Revenue Intelligence Manu&Enis" dashboard for 4 properties in Florence: Firenze Suite, Condotta 16, Palazzo Alfani, Enis Guesthouse. Today is ${todayISO}.
 
-How RMES works: the suggested daily price = Base Price × Composite × (1 + LMF%) × Event, then floored at the property's Floor Rate. The Composite is the weighted sum of 5 factors — A·Daily Pickup, B·Pace Trend (last 7 days), C·Online Pricing (vs Expedia compset), D·Demand (Expedia searches), E·AirDNA Market — each individually capped, with the composite capped at ±30% by default vs the Base Price. D·Demand is automatically muted on dates that have an Event weight set (to avoid double-counting). RMES outputs a single flexible, room-only rate; non-refundable is derived downstream.
+How RMES works: the suggested daily price is built in this order. (1) The Base Price: the median of what comparable nights actually earned over the last two years, plus the growth set for the month, capped where the user wants to sit against competitors on Expedia, and never below the floor. The floor is the LOWEST rate a guest can pay (the extended-stay rate, 15% under flexible, on the cheapest room type). (2) Bookings move it: recent bookings on that night, weighted by how recent they are and how close their night is, compared with the same point last year on revenue. This is the ONLY thing that moves the price. The market (Expedia compset) and AirDNA can only HOLD a move back, never start one. (3) Then the last-minute factor and any event weight. The suggestion ALWAYS starts from the Base Price, never from the price the user loaded on Beddy. The loaded price is only what the suggestion is compared against: the arrow and the percentage in the table show suggested versus loaded. There are NO weights and NO five factors: Pace Trend, Online Pricing and Demand (Expedia) no longer exist, never mention them. When the context contains a DAY EXPLANATION block, it is the authoritative breakdown of that night's price: explain it in plain words, in that order, and quote its numbers exactly.
 
 Rules:
 - The CONTEXT below contains the AUTHORITATIVE figures already computed by the dashboard (OTB, STLY, Final LY, forecast). TREAT THEM AS COMPLETE AND CORRECT. Never ask the user to provide data that is already in the context, and never tell them to share OTA detail or last-year data — you already have OTB, STLY and Final LY.
@@ -8497,7 +8517,7 @@ function assistantHandle(query){
         <li><b>Structure info</b> — e.g. <i>"how many rooms does Condotta have?"</i>, <i>"base RT Alfani"</i>, <i>"floor Davids"</i></li>
         <li><b>Stats</b> — e.g. <i>"ADR July Alfani"</i>, <i>"OCC next month"</i>, <i>"revenue Firenze August"</i></li>
         <li><b>Anomalies</b> — e.g. <i>"any anomalies?"</i>, <i>"check Condotta"</i></li>
-        <li><b>Playbook</b> — e.g. <i>"what is the floor rate?"</i>, <i>"how does Pace Trend work?"</i></li>
+        <li><b>Playbook</b> — e.g. <i>"what is the floor rate?"</i>, <i>"why is Firenze at this price on 5 October?"</i></li>
         <li><b>Strategy</b> — e.g. <i>"strategy August Firenze"</i>, <i>"should I raise prices?"</i></li>
       </ul>
       <p class="small">I work on local data only — your data stays in this browser.</p>`;
