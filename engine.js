@@ -1252,6 +1252,27 @@ function loadData(csvText){
     const tax = parseFloat((r['Tassa di soggiorno']||'0').toString().replace(',', '.')) || 0;
     const extraCleaning = parseFloat((r['cleaning']||r['Extra']||'0').toString().replace(',', '.')) || 0;
     const totNet = tot - tax;
+    /* La tassa di soggiorno si paga PER PERSONA PER NOTTE: conservandola si puo'
+       risalire a quante persone c'erano, dato che non esiste una colonna ospiti.
+       Va tenuta grezza; la conversione in persone richiede la tariffa della
+       struttura e si fa a parte. */
+    const _cityTax = tax;
+    /* OSPITI. Beddy esporta una colonna "Ospiti" con testo tipo "Adulti: 2" o
+       "Adulti: 2, Bambini: 1". Se c'e', e' il dato migliore. Se manca (come nei
+       file generati finora, che la scartano) si prova a ricavare le persone
+       dalla tassa di soggiorno, che a Firenze si paga per persona per notte. */
+    let _adults = null, _children = null;
+    {
+      const g = (r['Ospiti'] || r['ospiti'] || r['Guests'] || '').toString();
+      if (g){
+        const ma = g.match(/adult[ie]?\s*:?\s*(\d+)/i);
+        const mc = g.match(/bambin[ie]?\s*:?\s*(\d+)/i) || g.match(/child(?:ren)?\s*:?\s*(\d+)/i);
+        if (ma) _adults = parseInt(ma[1], 10);
+        if (mc) _children = parseInt(mc[1], 10);
+        // formato alternativo: un numero secco
+        if (_adults == null && /^\s*\d+\s*$/.test(g)) _adults = parseInt(g, 10);
+      }
+    }
     const _validRoomsSet = _structKeyForRooms ? _structRoomsCache[_structKeyForRooms] : null;
     let alloggi = (r['Alloggi']||'').split(',').map(s=>normRoom(s)).filter(Boolean);
     const _alloggiRaw = (r['Alloggi']||'');
@@ -1307,6 +1328,11 @@ function loadData(csvText){
         revTotal: revPerRoomNightGross * notti,
         virtualRoom: _isVirtualRoom || false,
         cleaning: extraCleaning / numRooms,
+        // tassa di soggiorno della prenotazione, divisa fra le camere: serve a
+        // ricavare quante persone c'erano, dato che il dato non esiste
+        cityTax: _cityTax / numRooms,
+        // ospiti dichiarati nell'export (null se la colonna non c'e')
+        adults: _adults, children: _children,
         bookYmd: ymd(dBook),
         cancelled: stato === 'Cancellate',
         cancelYmd: dCancel ? ymd(dCancel) : null,
@@ -4896,13 +4922,22 @@ const RMES_SIG_DEFAULT = {
     continuityDays: 4,     // giorni DIVERSI con pickup per raddoppiare la spinta massima:
                            // 1 giorno -> +10%, 4 o piu' -> +20%. Distingue "vende ogni
                            // giorno" da "ha preso tre prenotazioni tutte lo stesso giorno" 
-    spreadNights: 7,       // notti attorno alla data (allarga il campione)
+    spreadNights: 4,       // notti attorno alla data (allarga il campione).
+                           // Era 7: ±7 notti significa guardare due settimane intorno
+                           // alla data, e a ridosso del soggiorno quelle notti hanno
+                           // una domanda troppo diversa per dire qualcosa sulla data
+                           // che stai prezzando. ±4 tiene il campione ampio ma vicino.
     devFull: 0.10,         // spinta massima: una prenotazione recente, a prezzo pieno,
                            // su questa camera vale gia' la spinta intera
     nrDiscount: 0.10,      // sconto non rimborsabile impostato su Beddy (10%). Il valore
                            // misurato dai dati resta visibile come suggerimento.
-    halfLifeDays: 7,       // peso per recenza: una vendita di 7 giorni fa vale meta' di una di oggi.
-                           // 0 = disattiva (tutte le vendite della finestra pesano uguale)
+    halfLifeDays: 3,       /* peso per recenza. Era 7, cioe' uguale alla finestra: la
+                              vendita piu' vecchia della finestra pesava 0,50 contro
+                              1,00 della piu' recente, un rapporto di appena 2 a 1 che
+                              rendeva la sfumatura quasi invisibile. Con 3 il rapporto
+                              diventa 5 a 1: una vendita di stanotte conta davvero piu'
+                              di una di lunedi' scorso. Regola: tenerlo intorno a meta'
+                              della finestra. 0 = disattiva. */
     nightHalfLife: 3,      // peso per DISTANZA dalla notte: sulla notte esatta vale 1,
                            // a 3 notti di distanza meta'. 0 = tutte le notti pesano uguale
   },
@@ -17981,17 +18016,17 @@ function _renderRmesSignalsBox(sel){
        sopra col mouse, e nessuno lo fa. */
     `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px 18px;font-size:12px;color:var(--ink-2)">
       ${fld('window', num('pickup','windowDays',c.pickup.windowDays,1,60,1,'days'),
-            'How many days back to look for bookings. Longer is not better: 14 days was tested and dilutes the signal.')}
+            'How far back to look for bookings. 14 days was tested and came out worse: older sales carry noise, not news.')}
       ${fld('spread', num('pickup','spreadNights',c.pickup.spreadNights,0,21,1,'nights'),
-            'How many nights either side of the date to count. With 3 to 9 rooms a single night has too few bookings to read.')}
+            'How many nights either side of the date to count. A single night has too few bookings to read, but go too wide and you are looking at nights whose demand has nothing to do with this one.')}
       ${fld('booking half-life', num('pickup','halfLifeDays',c.pickup.halfLifeDays,0,30,1,'days'),
-            'After how many days a booking counts half. A sale from today says the price works now; one from two weeks ago was about a different price. 0 turns the fading off.')}
+            'How fast older bookings lose weight. At 3 days, a sale from today counts five times one from a week ago; set it to the full window and the two would be only 2 to 1 apart, which is barely a difference at all. Keep it near half the window. 0 turns the fading off.')}
       ${fld('night half-life', num('pickup','nightHalfLife',c.pickup.nightHalfLife,0,14,1,'nights'),
-            'After how many nights of distance a booking counts half. A booking on the exact night says far more than one six nights away. 0 = every night in the spread counts the same.')}
+            'Same idea for distance: a booking on the exact night counts double one three nights away. Keep it near half the spread. 0 = every night in the spread counts the same.')}
       ${fld('continuity', num('pickup','continuityDays',c.pickup.continuityDays,1,14,1,'days'),
             'Different days with bookings needed to reach the full push. Three bookings on one day are worth less than three spread over three days.')}
       ${fld('max push', num('pickup','devFull',c.pickup.devFull,0,0.5,0.01,''),
-            'The most the pickup can raise the price in one go, as a fraction: 0.10 = +10%. It doubles to +20% once continuity is reached.')}
+            'How far the pickup can push the price above the Base, as a fraction: 0.10 = +10%, doubling to +20% once continuity is reached. This is the destination, not the daily step \u2014 the step limit below decides how fast it gets there (at 5% a day, two days to +10%).')}
       ${fld('non-refundable', num('pickup','nrDiscount',c.pickup.nrDiscount,0,0.5,0.01,''),
             'The discount on your non-refundable rate, as a fraction: 0.10 = 10% off. A non-refundable sale means the full price was not accepted, so it counts a little less.')}
     </div>
@@ -18045,7 +18080,7 @@ function _renderRmesSignalsBox(sel){
     </div>`,
     `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
       ${fld('max move vs yesterday', num('smoothing','maxDailyStep',c.smoothing.maxDailyStep,0.01,0.3,0.01,''),
-            'The most the suggestion can change from yesterday, as a fraction: 0.05 = 5%. It does not cap the level, only the speed: the price still gets where it needs to, in more steps.')}
+            'How much the suggestion can move in one day, as a fraction: 0.05 = 5%. It limits the speed, never the destination: a +10% push arrives on the second day, +20% on the fourth. It exists so one odd booking cannot swing the price overnight.')}
     </div>`, c.smoothing.on);
 
   h += `<div style="margin-top:6px;text-align:right">
