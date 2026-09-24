@@ -18086,6 +18086,7 @@ function _renderRmesSignalsBox(sel){
   h += `<div style="margin-top:6px;text-align:right">
       <button id="sg-reset" style="border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:5px;padding:6px 14px;cursor:pointer;font-size:12px;margin-right:6px">Reset to defaults</button>
       <button id="sg-save" style="border:0;background:#3d7a4b;color:#fff;border-radius:5px;padding:7px 18px;cursor:pointer;font-size:12.5px;font-weight:700">Apply changes</button>
+      <button id="sg-copy-all" style="border:1px solid #8e5fa8;background:#fff;color:#7a4f8e;border-radius:5px;padding:7px 14px;cursor:pointer;font-weight:700;font-size:12px" title="Copy the settings on this page to every other property, so you configure once instead of six times.">&#8690; Apply to all properties</button>
       <span id="sg-msg" style="margin-left:10px;font-size:12px"></span>
     </div></div></div>`;
   wrap.innerHTML = h;
@@ -18102,6 +18103,43 @@ function _renderRmesSignalsBox(sel){
     if (msg){ msg.textContent = 'Saved'; msg.style.color = '#3d7a4b'; }
     if (typeof renderAll === 'function') setTimeout(renderAll, 60);
   };
+  /* APPLICA A TUTTE LE STRUTTURE.
+     Le regole dei segnali sono le stesse per tutti nella pratica, ma finora
+     andavano reimpostate sei volte, una per struttura: un invito a dimenticarne
+     una e ritrovarsi con un motore che si comporta in modo diverso senza che
+     nessuno sappia perche'. Copia solo cio' che ha senso condividere: le regole
+     dei segnali, la matrice last minute e i ricarichi dei canali. NON copia
+     pavimento, anchor, crescita e compset, che sono di ciascuna struttura. */
+  const copyAll = () => {
+    const ids = Object.keys(CFG.structures || {}).filter(k => k !== sel);
+    if (!ids.length) return;
+    const nomi = ids.map(k => (CFG.structures[k] && CFG.structures[k].label) || k).join(', ');
+    if (!confirm('Copy these settings from ' + ((CFG.structures[sel] && CFG.structures[sel].label) || sel)
+        + ' to all other properties?\n\n' + nomi
+        + '\n\nCopied: the signal rules on this page, the last-minute matrix and the channel markups.'
+        + '\nNot copied: floor, anchor, growth and compset — those belong to each property.')) return;
+    save();                                   // prima salva quella corrente
+    const cfgNow = JSON.parse(JSON.stringify(rmesSignalsCfg(sel)));
+    let lmf = null, parts = null;
+    try { lmf = fp_getLmfMatrix(sel); } catch(e){}
+    try { parts = fp_getChannelMarkupParts(sel); } catch(e){}
+    let n = 0;
+    for (const k of ids){
+      try {
+        rmesSignalsSet(k, JSON.parse(JSON.stringify(cfgNow)));
+        if (lmf) fp_setLmfMatrix(k, JSON.parse(JSON.stringify(lmf)));
+        if (parts && typeof fp_setChannelMarkupParts === 'function')
+          fp_setChannelMarkupParts(k, JSON.parse(JSON.stringify(parts)));
+        n++;
+      } catch(e){ console.error('copy to ' + k, e); }
+    }
+    if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+    const msg = wrap.querySelector('#sg-msg');
+    if (msg){ msg.textContent = 'Applied to ' + n + ' other propert' + (n === 1 ? 'y' : 'ies');
+      msg.style.color = '#7a4f8e'; }
+    if (typeof renderAll === 'function') setTimeout(renderAll, 80);
+  };
+  const cpa = wrap.querySelector('#sg-copy-all'); if (cpa) cpa.addEventListener('click', copyAll);
   const sv = wrap.querySelector('#sg-save'); if (sv) sv.addEventListener('click', save);
   const rs = wrap.querySelector('#sg-reset');
   if (rs) rs.addEventListener('click', () => {
