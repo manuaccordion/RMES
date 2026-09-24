@@ -2149,6 +2149,10 @@ table.data.sell-table .sell-drill{
       <div class="rmes-prop-bar-inner">
         <span class="rmes-prop-bar-label">🏠 Choose property to configure</span>
         <div id="rmes-tab-struct-pills" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+        <!-- Copies the rules to every property, so they don't have to be set six
+             times. Property-specific numbers are deliberately left alone. -->
+        <button id="rmes-copy-all" style="margin-left:auto;font-size:11.5px;font-weight:700;padding:5px 13px;border:1px solid #7a4f8e;border-radius:14px;background:#fff;color:#7a4f8e;cursor:pointer;white-space:nowrap">⧉ Use these rules everywhere</button>
+        <span id="rmes-copy-all-msg" style="font-size:11.5px;color:var(--ink-3)"></span>
       </div>
     </div>
 

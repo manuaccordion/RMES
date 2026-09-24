@@ -4974,6 +4974,30 @@ function rmesSignalsCfg(structKey){
   }
   return out;
 }
+/* COPIA LE REGOLE SU TUTTE LE STRUTTURE.
+   Copia solo ci' che e' una REGOLA di comportamento: i segnali, il tetto, la
+   matrice last minute, i pezzi del markup. NON copia i numeri che descrivono la
+   singola struttura (pavimento, ancoraggio, crescita, compset): quelli valgono
+   per quella e basta, e sovrascriverli sarebbe un danno silenzioso. */
+function rmesCopyRulesToAll(fromKey){
+  const targets = Object.keys(CFG.structures).filter(k => k !== fromKey);
+  const done = [];
+  for (const k of targets){
+    try {
+      if (typeof rmesSignalsCfg === 'function' && typeof rmesSignalsSet === 'function')
+        rmesSignalsSet(k, JSON.parse(JSON.stringify(rmesSignalsCfg(fromKey))));
+      if (typeof getRmesCap === 'function' && typeof setRmesCap === 'function')
+        setRmesCap(k, getRmesCap(fromKey));
+      if (typeof fp_getLmfMatrix === 'function' && typeof fp_setLmfMatrix === 'function')
+        fp_setLmfMatrix(k, JSON.parse(JSON.stringify(fp_getLmfMatrix(fromKey))));
+      if (typeof fp_getChannelMarkupParts === 'function' && typeof fp_setChannelMarkupParts === 'function')
+        fp_setChannelMarkupParts(k, JSON.parse(JSON.stringify(fp_getChannelMarkupParts(fromKey))));
+      done.push(k);
+    } catch(e){ console.error('copy rules to ' + k, e); }
+  }
+  if (typeof _invalidateRmesMapCache === 'function') _invalidateRmesMapCache();
+  return done;
+}
 function rmesSignalsSet(structKey, cfg){
   if (!_RMES_SIG_CACHE){
     let obj = {};
@@ -17948,6 +17972,29 @@ function renderRMESConfigTab(){
       if (typeof renderSellStrategy === 'function') setTimeout(() => renderSellStrategy(CURRENT_STRUCT), 40);
     });
   })();
+  /* "Usa queste regole ovunque": evita di reimpostare sei volte le stesse cose.
+     L'elenco di cosa viene copiato e cosa no sta nella conferma, perche' e' la
+     domanda che uno si fa prima di premere. */
+  (function(){
+    const btn = document.getElementById('rmes-copy-all');
+    if (!btn || btn.dataset.wired) return;
+    btn.dataset.wired = '1';
+    btn.addEventListener('click', () => {
+      const from = (typeof RMES_TAB_STRUCT !== 'undefined') ? RMES_TAB_STRUCT : CURRENT_STRUCT;
+      const lbl = (CFG.structures[from] && CFG.structures[from].label) || from;
+      const others = Object.keys(CFG.structures).filter(k => k !== from).length;
+      if (!confirm('Copy ' + lbl + '\u2019s rules to the other ' + others + ' properties?\n\n'
+        + 'COPIED: the signal settings, the total cap, the last-minute matrix, the channel markups.\n\n'
+        + 'NOT COPIED: floor rate, anchor price, target growth and the competitor set \u2014 '
+        + 'those describe each property and would be wrong to overwrite.')) return;
+      let done = [];
+      try { done = rmesCopyRulesToAll(from) || []; } catch(e){ console.error('copy all', e); }
+      const msg = document.getElementById('rmes-copy-all-msg');
+      if (msg){ msg.textContent = '\u2713 copied to ' + done.length; msg.style.color = '#3d7a4b';
+        setTimeout(() => { if (msg) msg.textContent = ''; }, 3000); }
+      if (typeof renderAll === 'function') setTimeout(renderAll, 60);
+    });
+  })();
   if (typeof _renderRmesLmfBox === 'function') _renderRmesLmfBox(sel);
   if (typeof _renderRmesSignalsBox === 'function') _renderRmesSignalsBox(sel);
   if (typeof _renderRmesSpecialBox === 'function') _renderRmesSpecialBox();
@@ -17986,7 +18033,16 @@ function _renderRmesSignalsBox(sel){
   const fld = (label, input, help) =>
     '<div><div style="display:flex;align-items:center;gap:7px;white-space:nowrap">'
     + '<span style="font-weight:600">' + label + '</span>' + input + '</div>'
-    + '<div style="font-size:10.5px;color:var(--ink-3);line-height:1.45;margin-top:3px">' + help + '</div></div>';
+    /* L'esempio va staccato dalla definizione: attaccati si leggono come una
+       frase sola e il senso si perde. Prima riga = cosa fa, seconda = come si
+       comporta con un valore concreto, cosi' resta valida anche cambiando il
+       numero nella casella. */
+    + '<div style="font-size:10.5px;color:var(--ink-3);line-height:1.5;margin-top:3px">'
+    + help.split('<br>').map((part, i) => i === 0
+        ? part
+        : '<div style="margin-top:2px;padding-left:7px;border-left:2px solid var(--line);color:#8a8a8a"><i>' + part + '</i></div>'
+      ).join('')
+    + '</div></div>';
   const num = (grp, key, val, min, max, step, suffix) =>
     `<input type="number" data-sg="${grp}.${key}" value="${val}" min="${min}" max="${max}" step="${step}"
       style="width:66px;padding:4px 7px;border:1px solid var(--line);border-radius:4px;font-family:'DM Mono',monospace;text-align:right;font-size:12.5px"> ${suffix||''}`;
@@ -18016,19 +18072,19 @@ function _renderRmesSignalsBox(sel){
        sopra col mouse, e nessuno lo fa. */
     `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px 18px;font-size:12px;color:var(--ink-2)">
       ${fld('window', num('pickup','windowDays',c.pickup.windowDays,1,60,1,'days'),
-            'How far back to look for bookings. 14 days was tested and came out worse: older sales carry noise, not news.')}
+            'How many days of recent bookings to look at.<br>Set 7 and a sale from last Tuesday still counts; set 3 and only this weekend does.')}
       ${fld('spread', num('pickup','spreadNights',c.pickup.spreadNights,0,21,1,'nights'),
-            'How many nights either side of the date to count. A single night has too few bookings to read, but go too wide and you are looking at nights whose demand has nothing to do with this one.')}
+            'One night alone has too few bookings to read, so nearby nights are counted too.<br>Set 4 and pricing Friday the 10th also looks at the 6th to the 14th.')}
       ${fld('booking half-life', num('pickup','halfLifeDays',c.pickup.halfLifeDays,0,30,1,'days'),
-            'How fast older bookings lose weight. At 3 days, a sale from today counts five times one from a week ago; set it to the full window and the two would be only 2 to 1 apart, which is barely a difference at all. Keep it near half the window. 0 turns the fading off.')}
+            'How quickly an older booking stops counting.<br>Set 3 and a sale from today is worth five of one from a week ago. Set it as high as the window and they are almost equal. Half the window is a good place. 0 = age does not matter.')}
       ${fld('night half-life', num('pickup','nightHalfLife',c.pickup.nightHalfLife,0,14,1,'nights'),
-            'Same idea for distance: a booking on the exact night counts double one three nights away. Keep it near half the spread. 0 = every night in the spread counts the same.')}
+            'The same, but for how far away the booked night is.<br>Set 3 and a booking on the night itself is worth double one three nights off. Half the spread is a good place. 0 = distance does not matter.')}
       ${fld('continuity', num('pickup','continuityDays',c.pickup.continuityDays,1,14,1,'days'),
-            'Different days with bookings needed to reach the full push. Three bookings on one day are worth less than three spread over three days.')}
+            'Selling on several different days is a better sign than selling three rooms in one afternoon.<br>Set 4 and the price only pushes hard once bookings have come in on four separate days.')}
       ${fld('max push', num('pickup','devFull',c.pickup.devFull,0,0.5,0.01,''),
-            'How far the pickup can push the price above the Base, as a fraction: 0.10 = +10%, doubling to +20% once continuity is reached. This is the destination, not the daily step \u2014 the step limit below decides how fast it gets there (at 5% a day, two days to +10%).')}
+            'The highest the price can go above the Base, written as a fraction.<br>Set 0.10 for +10%, which becomes +20% once the days above are met. This is where it ends up, not how fast \u2014 the step limit sets the speed.')}
       ${fld('non-refundable', num('pickup','nrDiscount',c.pickup.nrDiscount,0,0.5,0.01,''),
-            'The discount on your non-refundable rate, as a fraction: 0.10 = 10% off. A non-refundable sale means the full price was not accepted, so it counts a little less.')}
+            'Your non-refundable discount, as a fraction.<br>Set 0.10 for 10% off. Those sales count a little less, because the guest did not pay the full price.')}
     </div>
     <div style="margin-top:7px;font-size:11px;color:var(--ink-3)">
       Measured from your bookings: <b>${nrM.discount!=null?('−'+Math.round(nrM.discount*100)+'%'):'—'}</b>
@@ -18047,9 +18103,9 @@ function _renderRmesSignalsBox(sel){
     </div>`,
     `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px 18px;font-size:12px;color:var(--ink-2)">
       ${fld('in line within', num('stly','tolerance',c.stly.tolerance,0.05,1,0.05,''),
-            'How far from last year still counts as normal, as a fraction: 0.40 means anywhere between 40% below and 40% above. Outside this the date is clearly ahead or clearly behind.')}
+            'How different from last year still counts as normal, as a fraction.<br>Set 0.40 and anything between 40% below and 40% above last year is treated as in line. Outside that, the date is clearly ahead or clearly behind.')}
       ${fld('adjustment', num('stly','adjust',c.stly.adjust,0,0.3,0.01,''),
-            'How much to correct when clearly behind or ahead, as a fraction: 0.05 = 5% up or down.')}
+            'How much to move the price when the date is clearly behind or ahead.<br>Set 0.05 for 5% up or down.')}
     </div>`, c.stly.on);
 
   // mercato
@@ -18060,7 +18116,7 @@ function _renderRmesSignalsBox(sel){
     </div>`,
     `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px 18px;font-size:12px;color:var(--ink-2)">
       ${fld('band', num('market','band',c.market.band,0.05,0.6,0.05,''),
-            'How far from the weighted compset still counts as normal, as a fraction: 0.20 = up to 20% either side. Inside the band the market does nothing at all.')}
+            'How far from the competitors you can sit before the market interferes, as a fraction.<br>Set 0.20 and anything within 20% either side is fine. Inside the band the market does nothing.')}
     </div>`, c.market.on);
 
   // airdna
@@ -18080,7 +18136,7 @@ function _renderRmesSignalsBox(sel){
     </div>`,
     `<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)">
       ${fld('max move vs yesterday', num('smoothing','maxDailyStep',c.smoothing.maxDailyStep,0.01,0.3,0.01,''),
-            'How much the suggestion can move in one day, as a fraction: 0.05 = 5%. It limits the speed, never the destination: a +10% push arrives on the second day, +20% on the fourth. It exists so one odd booking cannot swing the price overnight.')}
+            'How much the suggestion can change from one day to the next, as a fraction.<br>Set 0.05 for 5% a day: the price still reaches wherever it is heading, just over a few days. It stops one strange booking from moving the price overnight.')}
     </div>`, c.smoothing.on);
 
   h += `<div style="margin-top:6px;text-align:right">
