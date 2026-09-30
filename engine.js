@@ -16130,8 +16130,10 @@ function _fcstMonthDaily(sel, m, inventory, rtList, baseRT, today0){
 const FCST_GROWTH_MIN = 0.85, FCST_GROWTH_MAX = 1.30;
 const FCST_GROWTH_MIN_OCC = 0.30;   // sotto questa OCC l'anno base non fa testo
 let _FCST_GROWTH = {};
+const _FCST_GROWTH_RATIOS = {};
 function fcstGrowthFactor(sel){
   if (_FCST_GROWTH[sel] != null) return _FCST_GROWTH[sel];
+  _FCST_GROWTH_RATIOS[sel] = [];
   const keys = new Set(structKeysFor(sel));
   const inv = fcstRoomsByRT(sel);
   const rooms = Object.keys(inv).reduce((a,k)=> a + inv[k], 0) || 1;
@@ -16154,6 +16156,10 @@ function fcstGrowthFactor(sel){
     if (ly <= 0) continue;
     if (ly/(rooms*dim) < FCST_GROWTH_MIN_OCC) continue;   // anno base troppo vuoto
     ratios.push(cur/ly);
+    /* Tengo traccia dei rapporti usati: servono per riconoscere i mesi di
+       avviamento, che gonfiano il fattore senza essere una tendenza. */
+    (_FCST_GROWTH_RATIOS[sel] = _FCST_GROWTH_RATIOS[sel] || []).push({
+      ym, cur, ly, ratio: cur/ly, occLy: ly/(rooms*dim) });
   }
   let g = 1;
   if (ratios.length){
@@ -16215,6 +16221,229 @@ function fcstDataLastBookYmd(){
   for (const b of BOOKINGS) if (b.bookYmd > mx) mx = b.bookYmd;
   _DATA_LAST_BOOK = mx || null;
   return _DATA_LAST_BOOK;
+}
+/* I PROSSIMI MESI CONTRO L'ANNO SCORSO.
+   Restituisce il passo previsto complessivo e il mese che si discosta di piu'
+   dalle attese: e' quello su cui vale la pena guardare, non la media. */
+
+/* Disegna l'analisi del mese scelto. */
+function renderDeepDive(sel, ym){
+  const wrap = document.getElementById('dd-wrap');
+  if (!wrap) return;
+  const selEl = document.getElementById('dd-month');
+  /* Il menu dei mesi si costruisce una volta: 6 indietro e 12 avanti, cosi'
+     si puo' guardare sia un mese appena chiuso sia uno che deve ancora
+     riempirsi. */
+  if (selEl && !selEl.options.length){
+    const t = new Date(TODAY);
+    for (let i = -6; i <= 12; i++){
+      const d = new Date(t.getFullYear(), t.getMonth() + i, 1);
+      const v = d.getFullYear()*100 + (d.getMonth()+1);
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+                    + (i < 0 ? ' \u00b7 closed' : (i === 0 ? ' \u00b7 current' : ''));
+      if (i === 0) o.selected = true;
+      selEl.appendChild(o);
+    }
+    selEl.addEventListener('change', () => renderDeepDive(CURRENT_STRUCT, +selEl.value));
+  }
+  if (ym == null) ym = selEl ? +selEl.value : null;
+  if (!ym) return;
+
+  let a = null;
+  try { a = ddAnalyseMonth(sel, ym); } catch(e){ console.error('deep dive', e); }
+  if (!a){ wrap.innerHTML = '<p style="color:var(--ink-3)">No data for this month.</p>'; return; }
+
+  const eur = v => (v == null || !isFinite(v)) ? '\u2014' : (v < 0 ? '\u2212' : '') + '\u20ac' + Math.abs(Math.round(v)).toLocaleString('en-GB');
+  const pc  = v => v == null ? 'new' : (v >= 0 ? '+' : '\u2212') + Math.abs(v*100).toFixed(0) + '%';
+  const col = v => v > 0 ? '#3d7a4b' : (v < 0 ? '#a83b3b' : 'var(--ink-3)');
+
+  if (!a.hasLy){
+    wrap.innerHTML = '<p style="color:var(--ink-3)">Nothing was on the books at this point last year, so there is no honest comparison for this month. '
+      + 'On the books now: <b>' + eur(a.cur.rev) + '</b> over ' + a.cur.rn + ' nights.</p>';
+    return;
+  }
+
+  const cause = ddSplitCause(a);
+  let h = '';
+  h += '<div style="display:flex;gap:26px;flex-wrap:wrap;align-items:baseline;margin-bottom:4px">';
+  h += '<div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">On the books</div>'
+     + '<div style="font-size:21px;font-weight:700;font-family:\'DM Mono\',monospace">' + eur(a.cur.rev) + '</div>'
+     + '<div style="font-size:11px;color:var(--ink-3)">' + a.cur.rn + ' nights \u00b7 ADR ' + eur(a.adr) + '</div></div>';
+  h += '<div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Same point last year</div>'
+     + '<div style="font-size:21px;font-weight:700;font-family:\'DM Mono\',monospace;color:var(--ink-2)">' + eur(a.ly.rev) + '</div>'
+     + '<div style="font-size:11px;color:var(--ink-3)">' + a.ly.rn + ' nights \u00b7 ADR ' + eur(a.adrLy) + '</div></div>';
+  h += '<div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Difference</div>'
+     + '<div style="font-size:21px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + col(a.dRev) + '">'
+     + (a.dRev >= 0 ? '+' : '') + eur(a.dRev) + '</div>'
+     + '<div style="font-size:11px;color:' + col(a.dRev) + '">' + pc(a.pct) + '</div></div>';
+  if (cause){
+    h += '<div style="font-size:11.5px;color:var(--ink-2);line-height:1.5;max-width:340px">'
+       + '<b>' + eur(cause.volume) + '</b> of it is nights sold, <b>' + eur(cause.price) + '</b> is the rate.'
+       + '<br><span style="color:var(--ink-3)">' + (Math.abs(cause.volume) > Math.abs(cause.price)
+          ? 'This is a filling problem more than a pricing one.'
+          : 'This is a rate problem more than a filling one.') + '</span></div>';
+  }
+  h += '</div>';
+
+  const table = (title, rows, note) => {
+    if (!rows || !rows.length) return '';
+    let t = '<div style="flex:1;min-width:270px">';
+    t += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:14px 0 5px">' + title + '</div>';
+    t += '<table style="border-collapse:collapse;width:100%;font-size:12px">';
+    t += '<tr style="color:var(--ink-3);font-size:10.5px"><th style="text-align:left;padding:2px 0">&nbsp;</th>'
+       + '<th style="text-align:right;padding:2px 6px">now</th><th style="text-align:right;padding:2px 6px">LY</th>'
+       + '<th style="text-align:right;padding:2px 6px">diff</th><th style="text-align:right;padding:2px 0 2px 6px">ADR</th></tr>';
+    for (const r of rows.slice(0, 7)){
+      const adrTxt = (r.adr != null && r.adrLy != null)
+        ? eur(r.adr) + ' <span style="color:var(--ink-3)">vs ' + eur(r.adrLy) + '</span>'
+        : (r.adr != null ? eur(r.adr) : '\u2014');
+      t += '<tr style="border-top:1px solid var(--line)">'
+         + '<td style="padding:3px 0;font-weight:600">' + escapeHtml(r.name) + '</td>'
+         + '<td style="text-align:right;padding:3px 6px;font-family:\'DM Mono\',monospace">' + eur(r.rev) + '</td>'
+         + '<td style="text-align:right;padding:3px 6px;font-family:\'DM Mono\',monospace;color:var(--ink-3)">' + eur(r.revLy) + '</td>'
+         + '<td style="text-align:right;padding:3px 6px;font-family:\'DM Mono\',monospace;font-weight:700;color:' + col(r.dRev) + '">'
+         + (r.dRev >= 0 ? '+' : '') + eur(r.dRev) + '</td>'
+         + '<td style="text-align:right;padding:3px 0 3px 6px;font-size:11px">' + adrTxt + '</td></tr>';
+    }
+    t += '</table>';
+    if (note) t += '<div style="font-size:10.5px;color:var(--ink-3);margin-top:3px">' + note + '</div>';
+    return t + '</div>';
+  };
+
+  h += '<div style="display:flex;gap:26px;flex-wrap:wrap">';
+  h += table('By channel', a.channels, 'Sorted by how much each one moved the month, not by size.');
+  h += table('By room type', a.rooms);
+  h += table('By rate plan', a.rates);
+  h += '</div>';
+  wrap.innerHTML = h;
+}
+
+/* ===========================================================================
+   ANALISI DI UN MESE — cosa va e cosa non va
+   Si sceglie un mese e si vede il confronto con lo stesso punto dell'anno
+   scorso (STLY), spezzato per canale, tipologia di camera e tipo di tariffa.
+   Serve a rispondere a "perche' questo mese va male": la cifra complessiva
+   dice che va male, la scomposizione dice DOVE.
+   STLY = prenotazioni fatte entro oggi-364 per notti dello stesso mese
+   dell'anno prima: e' il confronto onesto, perche' mette a paragone due
+   momenti uguali della curva di prenotazione, non un mese chiuso con uno aperto.
+   =========================================================================== */
+function ddAnalyseMonth(sel, ym){
+  const keys = new Set(structKeysFor(sel));
+  const y = Math.floor(ym/100), m = ym % 100;
+  const ymLy = (y-1)*100 + m;
+  const cutCur = ymd(startOfDay(new Date(TODAY)));
+  const cutLy  = ymd(startOfDay(new Date(TODAY.getTime() - 364*86400000)));
+
+  const empty = () => ({ rn: 0, rev: 0 });
+  const add = (bag, k, rn, rev) => { (bag[k] = bag[k] || empty()); bag[k].rn += rn; bag[k].rev += rev; };
+
+  const cur = { tot: empty(), ch: {}, rt: {}, rate: {} };
+  const ly  = { tot: empty(), ch: {}, rt: {}, rate: {} };
+
+  for (const b of BOOKINGS){
+    if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
+    const isCur = b.stayYmds.some(v => Math.floor(v/100) === ym);
+    const isLy  = b.stayYmds.some(v => Math.floor(v/100) === ymLy);
+    if (!isCur && !isLy) continue;
+    // conta solo cio' che era gia' prenotato allo stesso punto della curva
+    if (isCur && b.bookYmd > cutCur) continue;
+    if (isLy  && b.bookYmd > cutLy)  continue;
+    const target = isCur ? ym : ymLy;
+    const nights = b.stayYmds.filter(v => Math.floor(v/100) === target).length;
+    if (!nights) continue;
+    const rev = nights * (b.revPerNight || 0);
+    const bag = isCur ? cur : ly;
+    bag.tot.rn += nights; bag.tot.rev += rev;
+    add(bag.ch,   b.canale || 'Direct', nights, rev);
+    add(bag.rt,   b.room   || '?',      nights, rev);
+    add(bag.rate, b.isNonRefundable ? 'Non-refundable' : 'Flexible', nights, rev);
+  }
+
+  /* Per ogni voce: quanto e' cambiata e QUANTO PESA quel cambiamento sul
+     totale. La seconda e' la colonna che conta: un canale che crolla del 90%
+     ma valeva 300 euro non e' il problema del mese. */
+  const compare = (a, b) => {
+    const names = new Set([...Object.keys(a), ...Object.keys(b)]);
+    const rows = [];
+    for (const n of names){
+      const A = a[n] || empty(), B = b[n] || empty();
+      rows.push({
+        name: n, rn: A.rn, rnLy: B.rn, rev: A.rev, revLy: B.rev,
+        dRev: A.rev - B.rev,
+        pct: B.rev > 0 ? (A.rev / B.rev - 1) : null,
+        adr: A.rn > 0 ? A.rev / A.rn : null,
+        adrLy: B.rn > 0 ? B.rev / B.rn : null
+      });
+    }
+    rows.sort((x, z) => Math.abs(z.dRev) - Math.abs(x.dRev));
+    return rows;
+  };
+
+  const dRev = cur.tot.rev - ly.tot.rev;
+  return {
+    ym, ymLy, hasLy: ly.tot.rev > 0,
+    cur: cur.tot, ly: ly.tot, dRev,
+    pct: ly.tot.rev > 0 ? (cur.tot.rev / ly.tot.rev - 1) : null,
+    adr:   cur.tot.rn > 0 ? cur.tot.rev / cur.tot.rn : null,
+    adrLy: ly.tot.rn  > 0 ? ly.tot.rev  / ly.tot.rn  : null,
+    channels: compare(cur.ch, ly.ch),
+    rooms:    compare(cur.rt, ly.rt),
+    rates:    compare(cur.rate, ly.rate)
+  };
+}
+
+/* Spiega a parole da dove viene lo scarto: quanto dal riempimento e quanto
+   dal prezzo. Sono due problemi diversi e si risolvono in modi diversi. */
+function ddSplitCause(a){
+  if (!a.hasLy || !(a.ly.rn > 0) || !(a.adrLy > 0)) return null;
+  const dRn  = (a.cur.rn - a.ly.rn) * a.adrLy;          // effetto volume
+  const dAdr = a.cur.rn * ((a.adr || 0) - a.adrLy);      // effetto prezzo
+  return { volume: dRn, price: dAdr };
+}
+
+function fcstNextMonthsVsLy(sel, n){
+  try {
+    /* IL CONFRONTO VA FATTO ALLO STESSO PUNTO DELLA CURVA.
+       Mettere quello che ho sui libri oggi contro il TOTALE FINALE dell'anno
+       scorso fa sembrare ogni mese futuro a -80%, perche' deve ancora
+       riempirsi. Quindi dell'anno scorso si contano solo le prenotazioni fatte
+       entro oggi-364: due momenti uguali della curva. */
+    const keys = new Set(structKeysFor(sel));
+    const cutCur = ymd(startOfDay(new Date(TODAY)));
+    const cutLy  = ymd(startOfDay(new Date(TODAY.getTime() - 364*86400000)));
+    const rn = {}, rev = {}, rnLy = {}, revLy = {};
+    for (const b of BOOKINGS){
+      if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
+      const inCur = b.bookYmd <= cutCur, inLy = b.bookYmd <= cutLy;
+      for (const y of b.stayYmds){
+        const ym = Math.floor(y/100);
+        if (inCur){ rn[ym] = (rn[ym]||0) + 1; rev[ym] = (rev[ym]||0) + (b.revPerNight || 0); }
+        if (inLy){ rnLy[ym] = (rnLy[ym]||0) + 1; revLy[ym] = (revLy[ym]||0) + (b.revPerNight || 0); }
+      }
+    }
+    const t = new Date(TODAY);
+    const g = (typeof fcstGrowthFactor === 'function') ? fcstGrowthFactor(sel) : 1;
+    let sumCur = 0, sumLy = 0, worst = null;
+    const months = [];
+    for (let i = 0; i < (n || 3); i++){
+      const dd = new Date(t.getFullYear(), t.getMonth() + i, 1);
+      const ym = dd.getFullYear()*100 + (dd.getMonth()+1);
+      const ymLy = (dd.getFullYear()-1)*100 + (dd.getMonth()+1);
+      const cur = rev[ym] || 0, ly = revLy[ymLy] || 0;   // LY allo stesso punto, non finale
+      if (ly <= 0) continue;
+      sumCur += cur; sumLy += ly;
+      // atteso = anno scorso x fattore; lo scarto e' quanto il mese se ne allontana
+      const atteso = ly * g;
+      const gap = atteso > 0 ? (cur / atteso - 1) : null;
+      const rec = { ym, cur, ly, atteso, gap };
+      months.push(rec);
+      if (gap != null && (worst == null || Math.abs(gap) > Math.abs(worst.gap))) worst = rec;
+    }
+    return { pace: sumLy > 0 ? sumCur/sumLy : null, months, worst, factor: g };
+  } catch(e){ return null; }
 }
 function fcstGrowthCheck(sel){
   const out = { recent: null, factor: null, drift: null, months: [], warn: false,
@@ -17115,11 +17344,34 @@ function _renderGrowthNote(sel){
        2026, Enis passerebbe da +6,8% a -17,8% di scarto e Alfani da -1,5% a
        -15,3%. Il calo e' concentrato in una stagione, il fattore vale su dodici
        mesi. Il testo lo dice, cosi nessuno cambia il numero per riflesso. */
+    /* Il confronto utile non e' solo "gli ultimi mesi contro il fattore", ma
+       cosa sta succedendo ADESSO: i tre mesi chiusi contro i tre che arrivano.
+       Se il futuro e' previsto molto diverso dal passato recente, e' quello il
+       fatto da guardare, non lo scostamento dal fattore. */
+    const _fwd = (typeof fcstNextMonthsVsLy === 'function') ? fcstNextMonthsVsLy(sel, 3) : null;
     txt = 'The last ' + c.months.filter(m=>!m.incomplete).length + ' closed months ran <b>' + pct(c.recent - 1)
-        + '</b> versus last year, while the growth factor is <b>' + c.factor.toFixed(2) + '</b> ('
+        + '</b> versus last year'
+        + (_fwd && _fwd.pace != null ? ', and the next 3 are forecast at <b>' + pct(_fwd.pace - 1) + '</b>' : '')
+        + ', while the growth factor is <b>' + c.factor.toFixed(2) + '</b> ('
         + pct(c.factor - 1) + '). <b>This is worth knowing, not a reason to change the factor</b>: a few weak months '
         + 'are usually one season, while the factor covers twelve. Forcing the recent pace onto the whole year has '
-        + 'made the forecast worse every time it was tested. Change it by hand only if you know the shift is permanent.';
+        + 'made the forecast worse every time it was tested. Change it by hand only if you know the shift is permanent.'
+        /* Su una struttura aperta da poco il fattore e' alto per un motivo
+           diverso: confronta mesi di rodaggio con mesi gia' a regime. Dirlo
+           evita di leggere come "stagione debole" quello che e' solo la fine
+           dell'avviamento. */
+        + (function(){
+            /* Rodaggio = rapporto alto CONTRO UN ANNO BASE QUASI VUOTO. Il solo
+               rapporto non basta: su una struttura avviata un +54% e' crescita
+               vera, non riempimento dell'apertura. */
+            const used = (typeof _FCST_GROWTH_RATIOS !== 'undefined' && _FCST_GROWTH_RATIOS[sel]) || [];
+            const hot = used.filter(m => m.ratio >= 1.5 && m.occLy < 0.50).length;
+            if (hot < 2) return '';
+            return '<br><span style="color:#7a4f1c">On this property the factor is lifted by <b>' + hot
+                 + ' start-up months</b> that grew more than 50% against a nearly empty year. That is the opening '
+                 + 'filling up, not a pace you should expect to repeat: the factor will come down on its own as '
+                 + 'those months leave the window.</span>';
+          })();
   } else if (c.manual){
     /* Fattore forzato a mano: la fascia resta visibile anche senza scostamento,
        altrimenti non ci sarebbe modo di accorgersene ne' di tornare ad auto. */
@@ -17199,6 +17451,14 @@ function renderForecast(sel){
     for (const b of BOOKINGS){ if (b.cancelled || !b.cleaning || !_tk.has(b.struct)) continue; const _yr=b.dIn?b.dIn.getFullYear():0; if (b.bookYmd <= _tyN && _yr>=2026) _ovClean += b.cleaning; }
   } catch(e){}
   const _clnLine = (base)=> _ovClean>0 ? `<div class="kpi-sub mono" style="font-size:11px;color:var(--ink-3)">Room ${fmtEUR(base)} · Cleaning ${fmtEUR(_ovClean)}</div>` : '';
+  /* Il budget dell'intero periodo serve gia' qui, per il KPI del confronto: il
+     totale usato piu' sotto nella tabella nasce dopo. Stesso criterio, cosi'
+     i due numeri non possono divergere. */
+  let _kpiBudgetRev = 0;
+  try {
+    if (typeof budgetMonthlyFor === 'function')
+      for (const ym of ymOrder) _kpiBudgetRev += (budgetMonthlyFor(sel, ym, 'rev') || 0);
+  } catch(e){}
   const kpis = `
     <div class="kpi" style="border-left:3px solid #c4823b">
       <div class="kpi-label">YTD + Forecast Revenue</div>
@@ -17206,6 +17466,12 @@ function renderForecast(sel){
       <div class="kpi-sub mono">${totFcstRn} RN · OCC ${fmtPct(fcstOcc,1)} · ADR ${fmtEUR(fcstAdr)}</div>
       ${_clnLine(totFcstRev)}
     </div>
+    ${(_kpiBudgetRev > 0) ? `
+    <div class="kpi" style="border-left:3px solid ${(totFcstRev + _ovClean - _kpiBudgetRev) >= 0 ? '#3d7a4b' : '#a83b3b'}">
+      <div class="kpi-label">&Delta; vs Budget</div>
+      <div class="kpi-value" style="color:${(totFcstRev + _ovClean - _kpiBudgetRev) >= 0 ? '#3d7a4b' : '#a83b3b'}">${((totFcstRev + _ovClean - _kpiBudgetRev) >= 0 ? '+' : '') + fmtEUR(totFcstRev + _ovClean - _kpiBudgetRev)}</div>
+      <div class="kpi-sub mono">${(((totFcstRev + _ovClean) / _kpiBudgetRev - 1) * 100 >= 0 ? '+' : '') + (((totFcstRev + _ovClean) / _kpiBudgetRev - 1) * 100).toFixed(1)}% &middot; budget ${fmtEUR(_kpiBudgetRev)}</div>
+    </div>` : ''}
     <div class="kpi" style="border-left:3px solid #8e5fa8">
       <div class="kpi-label">Final LY 2025 (reference)</div>
       <div class="kpi-value">${fmtEUR(totFLRev)}</div>
@@ -17224,6 +17490,7 @@ function renderForecast(sel){
     </div>
   `;
   document.getElementById('fcst-kpis').innerHTML = kpis;
+  try { renderDeepDive(sel); } catch(e){ console.error('deep dive', e); }
   let head = `
     <thead>
       <tr>

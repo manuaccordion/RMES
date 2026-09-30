@@ -1716,6 +1716,18 @@ table.data.sell-table .sell-drill{
     <div id="fcst-growth-note" style="margin-bottom:10px"></div>
     <div class="kpi-grid" id="fcst-kpis"></div>
 
+    <!-- Analisi di un mese: la cifra complessiva dice CHE va male, questa
+         scomposizione dice DOVE. -->
+    <div class="panel">
+      <div class="panel-head">
+        <div><h3>Month deep-dive</h3></div>
+        <div class="head-actions" style="display:flex;gap:8px;align-items:center">
+          <select id="dd-month" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff"></select>
+        </div>
+      </div>
+      <div class="panel-body"><div id="dd-wrap"></div></div>
+    </div>
+
     <div class="panel">
       <div class="panel-head"><div><h3>Revenue by month</h3></div></div>
       <div class="panel-body"><div id="fcst-chart-monthly"></div></div>
