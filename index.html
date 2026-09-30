@@ -1718,18 +1718,6 @@ table.data.sell-table .sell-drill{
     <div id="fcst-growth-note" style="margin-bottom:10px"></div>
     <div class="kpi-grid" id="fcst-kpis"></div>
 
-    <!-- Analisi di un mese: la cifra complessiva dice CHE va male, questa
-         scomposizione dice DOVE. -->
-    <div class="panel">
-      <div class="panel-head">
-        <div><h3>Month deep-dive</h3></div>
-        <div class="head-actions" style="display:flex;gap:8px;align-items:center">
-          <select id="dd-month" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff"></select>
-        </div>
-      </div>
-      <div class="panel-body"><div id="dd-wrap"></div></div>
-    </div>
-
     <div class="panel">
       <div class="panel-head"><div><h3>Revenue by month</h3></div></div>
       <div class="panel-body"><div id="fcst-chart-monthly"></div></div>
@@ -1854,6 +1842,16 @@ table.data.sell-table .sell-drill{
         <div class="panel-body flush"><div class="table-wrap"><table class="data" id="otb-can-table"></table></div></div>
       </div>
     </div>
+  </section>
+  <section class="tab-panel" id="panel-anly">
+    <div class="section-head">
+      <div><h2>Analysis</h2><div class="section-sub" id="anly-sub">&nbsp;</div></div>
+      <div class="head-actions" style="display:flex;gap:8px;align-items:center">
+        <select id="anly-month" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff"></select>
+        <button id="anly-clear" style="font-size:11.5px;font-weight:700;padding:5px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">clear filters</button>
+      </div>
+    </div>
+    <div id="anly-wrap"></div>
   </section>
 
   <!-- ============ SECTION 4: PICKUP ============ -->
@@ -2975,16 +2973,7 @@ table.data.sell-table .sell-drill{
 
   
 
-  <section class="tab-panel" id="panel-anly">
-    <div class="section-head">
-      <div><h2>Analysis</h2><div class="section-sub" id="anly-sub">&nbsp;</div></div>
-      <div class="head-actions" style="display:flex;gap:8px;align-items:center">
-        <select id="anly-month" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff"></select>
-        <button id="anly-clear" style="font-size:11.5px;font-weight:700;padding:5px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">clear filters</button>
-      </div>
-    </div>
-    <div id="anly-wrap"></div>
-  </section></section>
+</section>
 
   <div class="foot-note mono">Revenue Intelligence Manu&amp;Enis · data as of <span id="foot-today">—</span> · STLY = today −364d</div>
 </main>

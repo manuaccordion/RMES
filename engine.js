@@ -16227,98 +16227,6 @@ function fcstDataLastBookYmd(){
    dalle attese: e' quello su cui vale la pena guardare, non la media. */
 
 /* Disegna l'analisi del mese scelto. */
-function renderDeepDive(sel, ym){
-  const wrap = document.getElementById('dd-wrap');
-  if (!wrap) return;
-  const selEl = document.getElementById('dd-month');
-  /* Il menu dei mesi si costruisce una volta: 6 indietro e 12 avanti, cosi'
-     si puo' guardare sia un mese appena chiuso sia uno che deve ancora
-     riempirsi. */
-  if (selEl && !selEl.options.length){
-    const t = new Date(TODAY);
-    for (let i = -6; i <= 12; i++){
-      const d = new Date(t.getFullYear(), t.getMonth() + i, 1);
-      const v = d.getFullYear()*100 + (d.getMonth()+1);
-      const o = document.createElement('option');
-      o.value = v;
-      o.textContent = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
-                    + (i < 0 ? ' \u00b7 closed' : (i === 0 ? ' \u00b7 current' : ''));
-      if (i === 0) o.selected = true;
-      selEl.appendChild(o);
-    }
-    selEl.addEventListener('change', () => renderDeepDive(CURRENT_STRUCT, +selEl.value));
-  }
-  if (ym == null) ym = selEl ? +selEl.value : null;
-  if (!ym) return;
-
-  let a = null;
-  try { a = ddAnalyseMonth(sel, ym); } catch(e){ console.error('deep dive', e); }
-  if (!a){ wrap.innerHTML = '<p style="color:var(--ink-3)">No data for this month.</p>'; return; }
-
-  const eur = v => (v == null || !isFinite(v)) ? '\u2014' : (v < 0 ? '\u2212' : '') + '\u20ac' + Math.abs(Math.round(v)).toLocaleString('en-GB');
-  const pc  = v => v == null ? 'new' : (v >= 0 ? '+' : '\u2212') + Math.abs(v*100).toFixed(0) + '%';
-  const col = v => v > 0 ? '#3d7a4b' : (v < 0 ? '#a83b3b' : 'var(--ink-3)');
-
-  if (!a.hasLy){
-    wrap.innerHTML = '<p style="color:var(--ink-3)">Nothing was on the books at this point last year, so there is no honest comparison for this month. '
-      + 'On the books now: <b>' + eur(a.cur.rev) + '</b> over ' + a.cur.rn + ' nights.</p>';
-    return;
-  }
-
-  const cause = ddSplitCause(a);
-  let h = '';
-  h += '<div style="display:flex;gap:26px;flex-wrap:wrap;align-items:baseline;margin-bottom:4px">';
-  h += '<div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">On the books</div>'
-     + '<div style="font-size:21px;font-weight:700;font-family:\'DM Mono\',monospace">' + eur(a.cur.rev) + '</div>'
-     + '<div style="font-size:11px;color:var(--ink-3)">' + a.cur.rn + ' nights \u00b7 ADR ' + eur(a.adr) + '</div></div>';
-  h += '<div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Same point last year</div>'
-     + '<div style="font-size:21px;font-weight:700;font-family:\'DM Mono\',monospace;color:var(--ink-2)">' + eur(a.ly.rev) + '</div>'
-     + '<div style="font-size:11px;color:var(--ink-3)">' + a.ly.rn + ' nights \u00b7 ADR ' + eur(a.adrLy) + '</div></div>';
-  h += '<div><div style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Difference</div>'
-     + '<div style="font-size:21px;font-weight:700;font-family:\'DM Mono\',monospace;color:' + col(a.dRev) + '">'
-     + (a.dRev >= 0 ? '+' : '') + eur(a.dRev) + '</div>'
-     + '<div style="font-size:11px;color:' + col(a.dRev) + '">' + pc(a.pct) + '</div></div>';
-  if (cause){
-    h += '<div style="font-size:11.5px;color:var(--ink-2);line-height:1.5;max-width:340px">'
-       + '<b>' + eur(cause.volume) + '</b> of it is nights sold, <b>' + eur(cause.price) + '</b> is the rate.'
-       + '<br><span style="color:var(--ink-3)">' + (Math.abs(cause.volume) > Math.abs(cause.price)
-          ? 'This is a filling problem more than a pricing one.'
-          : 'This is a rate problem more than a filling one.') + '</span></div>';
-  }
-  h += '</div>';
-
-  const table = (title, rows, note) => {
-    if (!rows || !rows.length) return '';
-    let t = '<div style="flex:1;min-width:270px">';
-    t += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:14px 0 5px">' + title + '</div>';
-    t += '<table style="border-collapse:collapse;width:100%;font-size:12px">';
-    t += '<tr style="color:var(--ink-3);font-size:10.5px"><th style="text-align:left;padding:2px 0">&nbsp;</th>'
-       + '<th style="text-align:right;padding:2px 6px">now</th><th style="text-align:right;padding:2px 6px">LY</th>'
-       + '<th style="text-align:right;padding:2px 6px">diff</th><th style="text-align:right;padding:2px 0 2px 6px">ADR</th></tr>';
-    for (const r of rows.slice(0, 7)){
-      const adrTxt = (r.adr != null && r.adrLy != null)
-        ? eur(r.adr) + ' <span style="color:var(--ink-3)">vs ' + eur(r.adrLy) + '</span>'
-        : (r.adr != null ? eur(r.adr) : '\u2014');
-      t += '<tr style="border-top:1px solid var(--line)">'
-         + '<td style="padding:3px 0;font-weight:600">' + escapeHtml(r.name) + '</td>'
-         + '<td style="text-align:right;padding:3px 6px;font-family:\'DM Mono\',monospace">' + eur(r.rev) + '</td>'
-         + '<td style="text-align:right;padding:3px 6px;font-family:\'DM Mono\',monospace;color:var(--ink-3)">' + eur(r.revLy) + '</td>'
-         + '<td style="text-align:right;padding:3px 6px;font-family:\'DM Mono\',monospace;font-weight:700;color:' + col(r.dRev) + '">'
-         + (r.dRev >= 0 ? '+' : '') + eur(r.dRev) + '</td>'
-         + '<td style="text-align:right;padding:3px 0 3px 6px;font-size:11px">' + adrTxt + '</td></tr>';
-    }
-    t += '</table>';
-    if (note) t += '<div style="font-size:10.5px;color:var(--ink-3);margin-top:3px">' + note + '</div>';
-    return t + '</div>';
-  };
-
-  h += '<div style="display:flex;gap:26px;flex-wrap:wrap">';
-  h += table('By channel', a.channels, 'Sorted by how much each one moved the month, not by size.');
-  h += table('By room type', a.rooms);
-  h += table('By rate plan', a.rates);
-  h += '</div>';
-  wrap.innerHTML = h;
-}
 
 /* ===========================================================================
    ANALISI INCROCIATA — stile Power BI
@@ -16596,89 +16504,9 @@ function renderAnalysis(sel){
   });
 }
 
-/* ===========================================================================
-   ANALISI DI UN MESE — cosa va e cosa non va
-   Si sceglie un mese e si vede il confronto con lo stesso punto dell'anno
-   scorso (STLY), spezzato per canale, tipologia di camera e tipo di tariffa.
-   Serve a rispondere a "perche' questo mese va male": la cifra complessiva
-   dice che va male, la scomposizione dice DOVE.
-   STLY = prenotazioni fatte entro oggi-364 per notti dello stesso mese
-   dell'anno prima: e' il confronto onesto, perche' mette a paragone due
-   momenti uguali della curva di prenotazione, non un mese chiuso con uno aperto.
-   =========================================================================== */
-function ddAnalyseMonth(sel, ym){
-  const keys = new Set(structKeysFor(sel));
-  const y = Math.floor(ym/100), m = ym % 100;
-  const ymLy = (y-1)*100 + m;
-  const cutCur = ymd(startOfDay(new Date(TODAY)));
-  const cutLy  = ymd(startOfDay(new Date(TODAY.getTime() - 364*86400000)));
-
-  const empty = () => ({ rn: 0, rev: 0 });
-  const add = (bag, k, rn, rev) => { (bag[k] = bag[k] || empty()); bag[k].rn += rn; bag[k].rev += rev; };
-
-  const cur = { tot: empty(), ch: {}, rt: {}, rate: {} };
-  const ly  = { tot: empty(), ch: {}, rt: {}, rate: {} };
-
-  for (const b of BOOKINGS){
-    if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
-    const isCur = b.stayYmds.some(v => Math.floor(v/100) === ym);
-    const isLy  = b.stayYmds.some(v => Math.floor(v/100) === ymLy);
-    if (!isCur && !isLy) continue;
-    // conta solo cio' che era gia' prenotato allo stesso punto della curva
-    if (isCur && b.bookYmd > cutCur) continue;
-    if (isLy  && b.bookYmd > cutLy)  continue;
-    const target = isCur ? ym : ymLy;
-    const nights = b.stayYmds.filter(v => Math.floor(v/100) === target).length;
-    if (!nights) continue;
-    const rev = nights * (b.revPerNight || 0);
-    const bag = isCur ? cur : ly;
-    bag.tot.rn += nights; bag.tot.rev += rev;
-    add(bag.ch,   b.canale || 'Direct', nights, rev);
-    add(bag.rt,   b.room   || '?',      nights, rev);
-    add(bag.rate, b.isNonRefundable ? 'Non-refundable' : 'Flexible', nights, rev);
-  }
-
-  /* Per ogni voce: quanto e' cambiata e QUANTO PESA quel cambiamento sul
-     totale. La seconda e' la colonna che conta: un canale che crolla del 90%
-     ma valeva 300 euro non e' il problema del mese. */
-  const compare = (a, b) => {
-    const names = new Set([...Object.keys(a), ...Object.keys(b)]);
-    const rows = [];
-    for (const n of names){
-      const A = a[n] || empty(), B = b[n] || empty();
-      rows.push({
-        name: n, rn: A.rn, rnLy: B.rn, rev: A.rev, revLy: B.rev,
-        dRev: A.rev - B.rev,
-        pct: B.rev > 0 ? (A.rev / B.rev - 1) : null,
-        adr: A.rn > 0 ? A.rev / A.rn : null,
-        adrLy: B.rn > 0 ? B.rev / B.rn : null
-      });
-    }
-    rows.sort((x, z) => Math.abs(z.dRev) - Math.abs(x.dRev));
-    return rows;
-  };
-
-  const dRev = cur.tot.rev - ly.tot.rev;
-  return {
-    ym, ymLy, hasLy: ly.tot.rev > 0,
-    cur: cur.tot, ly: ly.tot, dRev,
-    pct: ly.tot.rev > 0 ? (cur.tot.rev / ly.tot.rev - 1) : null,
-    adr:   cur.tot.rn > 0 ? cur.tot.rev / cur.tot.rn : null,
-    adrLy: ly.tot.rn  > 0 ? ly.tot.rev  / ly.tot.rn  : null,
-    channels: compare(cur.ch, ly.ch),
-    rooms:    compare(cur.rt, ly.rt),
-    rates:    compare(cur.rate, ly.rate)
-  };
-}
 
 /* Spiega a parole da dove viene lo scarto: quanto dal riempimento e quanto
    dal prezzo. Sono due problemi diversi e si risolvono in modi diversi. */
-function ddSplitCause(a){
-  if (!a.hasLy || !(a.ly.rn > 0) || !(a.adrLy > 0)) return null;
-  const dRn  = (a.cur.rn - a.ly.rn) * a.adrLy;          // effetto volume
-  const dAdr = a.cur.rn * ((a.adr || 0) - a.adrLy);      // effetto prezzo
-  return { volume: dRn, price: dAdr };
-}
 
 function fcstNextMonthsVsLy(sel, n){
   try {
@@ -17766,7 +17594,6 @@ function renderForecast(sel){
     </div>
   `;
   document.getElementById('fcst-kpis').innerHTML = kpis;
-  try { renderDeepDive(sel); } catch(e){ console.error('deep dive', e); }
   let head = `
     <thead>
       <tr>
