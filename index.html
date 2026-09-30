@@ -1600,6 +1600,8 @@ table.data.sell-table .sell-drill{
     <button class="tab" data-tab="sell"><span class="ico" style="color:#4a7c59"><svg viewBox="0 0 24 24"><path d="M11 2H4a2 2 0 0 0-2 2v7l9.29 9.29a2 2 0 0 0 2.83 0l6.58-6.58a2 2 0 0 0 0-2.83L11 2Z"/><circle cx="7" cy="7" r="1.3"/></svg></span>Sell Strategy</button>
     <button class="tab" data-tab="otb" style="display:none"><span class="num">2</span>Overview (alt)</button>
     <button class="tab" data-tab="fcst"><span class="ico" style="color:#3b5a78"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx="0.5"/><rect x="12" y="7" width="3" height="11" rx="0.5"/><rect x="17" y="14" width="3" height="4" rx="0.5"/></svg></span>Overview</button>
+    <!-- Analisi incrociata: si sceglie una voce e tutto il resto si filtra. -->
+    <button class="tab" data-tab="anly"><span class="ico" style="color:#7a4f8e"><svg viewBox="0 0 24 24"><circle cx="9" cy="9" r="5"/><circle cx="15" cy="15" r="5"/></svg></span>Analysis</button>
     <button class="tab" data-tab="hist" style="display:none"><span class="num">5</span>Historical Data</button>
     <button class="tab" data-tab="pk"><span class="ico" style="color:#3f7d78"><svg viewBox="0 0 24 24"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></span>Pickup &amp; CXL</button>
     <button class="tab" data-tab="cancel" style="display:none"><span class="num">4</span>CXLTrend</button>
@@ -2971,7 +2973,18 @@ table.data.sell-table .sell-drill{
       </div>
     </details>
 
-  </section>
+  
+
+  <section class="tab-panel" id="panel-anly">
+    <div class="section-head">
+      <div><h2>Analysis</h2><div class="section-sub" id="anly-sub">&nbsp;</div></div>
+      <div class="head-actions" style="display:flex;gap:8px;align-items:center">
+        <select id="anly-month" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff"></select>
+        <button id="anly-clear" style="font-size:11.5px;font-weight:700;padding:5px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">clear filters</button>
+      </div>
+    </div>
+    <div id="anly-wrap"></div>
+  </section></section>
 
   <div class="foot-note mono">Revenue Intelligence Manu&amp;Enis · data as of <span id="foot-today">—</span> · STLY = today −364d</div>
 </main>

@@ -16321,6 +16321,282 @@ function renderDeepDive(sel, ym){
 }
 
 /* ===========================================================================
+   ANALISI INCROCIATA — stile Power BI
+   Si sceglie una voce (un canale, una camera, una tariffa) e TUTTO il resto
+   si ricalcola su quel sottoinsieme. Serve a rispondere a domande che la
+   somma non puo' sciogliere: "Booking va male, ma male su cosa? E se chi
+   perdo prenotava con tre mesi di anticipo mentre chi guadagno prenota sotto
+   data, lo scarto e' ancora recuperabile o no?"
+   Confronto sempre allo STESSO PUNTO della curva di prenotazione: l'anno
+   scorso si contano solo le prenotazioni fatte entro oggi-364. Mettere l'on
+   the books di oggi contro un mese gia' chiuso direbbe solo che il futuro
+   non e' ancora arrivato.
+   =========================================================================== */
+
+/* Filtri attivi. Chiave = dimensione, valore = voce selezionata (o null). */
+let ANLY_FILTERS = { ch: null, rt: null, rate: null };
+let ANLY_YM = null;
+
+function anlyAggregate(sel, ym, filters){
+  filters = filters || {};
+  const keys = new Set(structKeysFor(sel));
+  const y = Math.floor(ym/100), mo = ym % 100;
+  const ymLy = (y-1)*100 + mo;
+  const cutCur = ymd(startOfDay(new Date(TODAY)));
+  const cutLy  = ymd(startOfDay(new Date(TODAY.getTime() - 364*86400000)));
+  const pickupFrom = ymd(addDays(startOfDay(new Date(TODAY)), -7));
+  const giorni = new Date(y, mo, 0).getDate();
+  const rooms = (typeof fcstRoomsByRT === 'function')
+    ? Object.values(fcstRoomsByRT(sel)).reduce((a,b) => a+b, 0) : 0;
+
+  const vuoto = () => ({ rn: 0, rev: 0, lead: 0, leadN: 0 });
+  const bag = () => ({ tot: vuoto(), ch: {}, rt: {}, rate: {} });
+  const cur = bag(), ly = bag();
+  let pickupRn = 0, pickupRev = 0;
+
+  const passa = (b) => (!filters.ch   || (b.canale || 'Direct') === filters.ch)
+                    && (!filters.rt   || (b.room   || '?')      === filters.rt)
+                    && (!filters.rate || (b.isNonRefundable ? 'Non-refundable' : 'Flexible') === filters.rate);
+
+  const metti = (into, b, nights, rev, lead) => {
+    const add = (o, k) => { (o[k] = o[k] || vuoto()); o[k].rn += nights; o[k].rev += rev;
+                            if (lead != null){ o[k].lead += lead * nights; o[k].leadN += nights; } };
+    into.tot.rn += nights; into.tot.rev += rev;
+    if (lead != null){ into.tot.lead += lead * nights; into.tot.leadN += nights; }
+    add(into.ch,   b.canale || 'Direct');
+    add(into.rt,   b.room   || '?');
+    add(into.rate, b.isNonRefundable ? 'Non-refundable' : 'Flexible');
+  };
+
+  for (const b of BOOKINGS){
+    if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
+    const nCur = b.stayYmds.filter(v => Math.floor(v/100) === ym).length;
+    const nLy  = b.stayYmds.filter(v => Math.floor(v/100) === ymLy).length;
+    if (!nCur && !nLy) continue;
+    if (!passa(b)) continue;
+    /* Anticipo: giorni fra la prenotazione e la prima notte. E' la variabile
+       che dice se uno scarto e' recuperabile: chi prenota sotto data puo'
+       ancora arrivare, chi prenotava con mesi di anticipo no. */
+    const lead = (b.stayYmds.length && b.bookYmd)
+      ? Math.max(0, Math.round((ymdToDate(b.stayYmds[0]) - ymdToDate(b.bookYmd)) / 86400000)) : null;
+    if (nCur && b.bookYmd <= cutCur){
+      metti(cur, b, nCur, nCur * (b.revPerNight || 0), lead);
+      if (b.bookYmd >= pickupFrom){ pickupRn += nCur; pickupRev += nCur * (b.revPerNight || 0); }
+    }
+    if (nLy && b.bookYmd <= cutLy) metti(ly, b, nLy, nLy * (b.revPerNight || 0), lead);
+  }
+
+  const cap = rooms * giorni;
+  const kpi = (o) => ({
+    rev: o.tot.rev,
+    rn: o.tot.rn,
+    adr: o.tot.rn > 0 ? o.tot.rev / o.tot.rn : null,
+    occ: cap > 0 ? o.tot.rn / cap : null,
+    lead: o.tot.leadN > 0 ? o.tot.lead / o.tot.leadN : null
+  });
+
+  const confronta = (a, b) => {
+    const nomi = new Set([...Object.keys(a), ...Object.keys(b)]);
+    const out = [];
+    for (const n of nomi){
+      const A = a[n] || vuoto(), B = b[n] || vuoto();
+      out.push({
+        name: n, rev: A.rev, revLy: B.rev, rn: A.rn, rnLy: B.rn,
+        dRev: A.rev - B.rev,
+        pct: B.rev > 0 ? (A.rev / B.rev - 1) : null,
+        adr: A.rn > 0 ? A.rev / A.rn : null,
+        adrLy: B.rn > 0 ? B.rev / B.rn : null,
+        lead: A.leadN > 0 ? A.lead / A.leadN : null,
+        leadLy: B.leadN > 0 ? B.lead / B.leadN : null
+      });
+    }
+    out.sort((x, z) => Math.abs(z.dRev) - Math.abs(x.dRev));
+    return out;
+  };
+
+  /* Prezzo contro Expedia: il mio prezzo esposto e la media dei competitor,
+     sulle notti del mese. Dice se il problema e' come sono posizionato. */
+  let expMine = [], expComp = [];
+  try {
+    const E = (typeof EXPEDIA_DATA !== 'undefined') ? EXPEDIA_DATA : null;
+    const mio = E && E[sel], comp = E && E['competitors_' + sel];
+    if (mio) for (let d = 1; d <= giorni; d++){
+      const iso = y + '-' + String(mo).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+      const v = mio[iso];
+      if (v > 10) expMine.push(v);
+      if (comp){
+        const altri = Object.keys(comp).map(n => comp[n] && comp[n][iso]).filter(x => x > 10);
+        if (altri.length) expComp.push(altri.reduce((a,b) => a+b, 0) / altri.length);
+      }
+    }
+  } catch(e){}
+  const med = a => { a = a.slice().sort((x,z) => x-z); return a.length ? a[a.length>>1] : null; };
+
+  return {
+    ym, ymLy, giorni, rooms, cap,
+    cur: kpi(cur), ly: kpi(ly), hasLy: ly.tot.rev > 0,
+    channels: confronta(cur.ch, ly.ch),
+    rooms_: confronta(cur.rt, ly.rt),
+    rates: confronta(cur.rate, ly.rate),
+    pickup: { rn: pickupRn, rev: pickupRev },
+    expedia: { mine: med(expMine), comp: med(expComp), n: expMine.length }
+  };
+}
+
+/* Disegna la tab Analysis. Ogni riga delle tre tabelle e' cliccabile: clicca
+   "Booking" e KPI, camere, tariffe, anticipo e pickup si ricalcolano solo su
+   Booking. Riclicca per togliere il filtro. */
+function renderAnalysis(sel){
+  const wrap = document.getElementById('anly-wrap');
+  if (!wrap) return;
+  const selEl = document.getElementById('anly-month');
+
+  if (selEl && !selEl.options.length){
+    const t = new Date(TODAY);
+    for (let i = -6; i <= 12; i++){
+      const d = new Date(t.getFullYear(), t.getMonth() + i, 1);
+      const v = d.getFullYear()*100 + (d.getMonth()+1);
+      const o = document.createElement('option');
+      o.value = v;
+      o.textContent = d.toLocaleDateString('en-GB', { month:'long', year:'numeric' })
+                    + (i < 0 ? ' \u00b7 closed' : (i === 0 ? ' \u00b7 current' : ''));
+      if (i === 0) o.selected = true;
+      selEl.appendChild(o);
+    }
+    selEl.addEventListener('change', () => { ANLY_YM = +selEl.value; renderAnalysis(CURRENT_STRUCT); });
+  }
+  if (ANLY_YM == null && selEl) ANLY_YM = +selEl.value;
+  const ym = ANLY_YM;
+  if (!ym) return;
+
+  const clr = document.getElementById('anly-clear');
+  if (clr && !clr.dataset.wired){
+    clr.dataset.wired = '1';
+    clr.addEventListener('click', () => { ANLY_FILTERS = { ch:null, rt:null, rate:null }; renderAnalysis(CURRENT_STRUCT); });
+  }
+
+  let a = null;
+  try { a = anlyAggregate(sel, ym, ANLY_FILTERS); } catch(e){ console.error('analysis', e); }
+  if (!a){ wrap.innerHTML = '<p style="color:var(--ink-3)">No data.</p>'; return; }
+
+  const eur = v => (v == null || !isFinite(v)) ? '\u2014' : (v < 0 ? '\u2212' : '') + '\u20ac' + Math.abs(Math.round(v)).toLocaleString('en-GB');
+  const pct = v => (v == null || !isFinite(v)) ? '\u2014' : (v >= 0 ? '+' : '\u2212') + Math.abs(v*100).toFixed(1) + '%';
+  const occ = v => (v == null || !isFinite(v)) ? '\u2014' : (v*100).toFixed(0) + '%';
+  const col = v => v > 0 ? '#3d7a4b' : (v < 0 ? '#a83b3b' : 'var(--ink-3)');
+
+  const attivi = Object.keys(ANLY_FILTERS).filter(k => ANLY_FILTERS[k]);
+  const sub = document.getElementById('anly-sub');
+  if (sub) sub.textContent = attivi.length
+    ? 'filtered by ' + attivi.map(k => ANLY_FILTERS[k]).join(' + ')
+    : 'click any row to filter everything else by it';
+
+  let h = '';
+  if (attivi.length){
+    h += '<div style="margin-bottom:10px;display:flex;gap:7px;flex-wrap:wrap;align-items:center">';
+    h += '<span style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">filtered by</span>';
+    for (const k of attivi)
+      h += '<button class="anly-chip" data-dim="' + k + '" data-val="" style="font-size:11.5px;font-weight:700;padding:3px 10px;border:1px solid #7a4f8e;border-radius:12px;background:#7a4f8e;color:#fff;cursor:pointer">'
+         + escapeHtml(ANLY_FILTERS[k]) + ' \u00d7</button>';
+    h += '</div>';
+  }
+
+  /* KPI: ricavo lordo, ADR, occupazione, anticipo. Ognuno col confronto allo
+     stesso punto dell'anno scorso. */
+  const kpi = (label, val, valLy, dpct, extra) =>
+    '<div style="min-width:132px">'
+    + '<div style="font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">' + label + '</div>'
+    + '<div style="font-size:20px;font-weight:700;font-family:\'DM Mono\',monospace">' + val + '</div>'
+    + '<div style="font-size:11px;color:var(--ink-3)">LY ' + valLy
+    + (dpct != null ? ' &middot; <span style="color:' + col(dpct) + ';font-weight:700">' + pct(dpct) + '</span>' : '')
+    + (extra ? '<br>' + extra : '') + '</div></div>';
+
+  const dRev = a.hasLy ? (a.ly.rev > 0 ? a.cur.rev/a.ly.rev - 1 : null) : null;
+  const dAdr = (a.cur.adr != null && a.ly.adr > 0) ? a.cur.adr/a.ly.adr - 1 : null;
+  const dOcc = (a.cur.occ != null && a.ly.occ > 0) ? a.cur.occ/a.ly.occ - 1 : null;
+  h += '<div style="display:flex;gap:22px;flex-wrap:wrap;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;margin-bottom:14px">';
+  h += kpi('Revenue (gross)', eur(a.cur.rev), eur(a.ly.rev), dRev);
+  h += kpi('ADR', eur(a.cur.adr), eur(a.ly.adr), dAdr);
+  h += kpi('Occupancy', occ(a.cur.occ), occ(a.ly.occ), dOcc, a.cur.rn + ' of ' + a.cap + ' nights');
+  h += kpi('Booking lead', a.cur.lead != null ? Math.round(a.cur.lead) + ' days' : '\u2014',
+           a.ly.lead != null ? Math.round(a.ly.lead) + ' days' : '\u2014',
+           (a.cur.lead != null && a.ly.lead > 0) ? a.cur.lead/a.ly.lead - 1 : null);
+  h += '<div style="min-width:132px">'
+     + '<div style="font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">Pickup last 7 days</div>'
+     + '<div style="font-size:20px;font-weight:700;font-family:\'DM Mono\',monospace">' + eur(a.pickup.rev) + '</div>'
+     + '<div style="font-size:11px;color:var(--ink-3)">' + a.pickup.rn + ' nights booked</div></div>';
+  if (a.expedia.mine != null){
+    const gap = a.expedia.comp > 0 ? a.expedia.mine/a.expedia.comp - 1 : null;
+    h += '<div style="min-width:150px">'
+       + '<div style="font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">My price on Expedia</div>'
+       + '<div style="font-size:20px;font-weight:700;font-family:\'DM Mono\',monospace">' + eur(a.expedia.mine) + '</div>'
+       + '<div style="font-size:11px;color:var(--ink-3)">compset ' + eur(a.expedia.comp)
+       + (gap != null ? ' &middot; <span style="color:' + col(gap) + ';font-weight:700">' + pct(gap) + '</span>' : '')
+       + '</div></div>';
+  }
+  h += '</div>';
+
+  /* Una tabella per dimensione. Le righe sono pulsanti: cliccarle filtra. */
+  const tabella = (titolo, dim, rows) => {
+    if (!rows || !rows.length) return '';
+    let t = '<div style="flex:1;min-width:290px">';
+    t += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:0 0 5px">' + titolo + '</div>';
+    t += '<table style="border-collapse:collapse;width:100%;font-size:12px">';
+    t += '<tr style="color:var(--ink-3);font-size:10px"><th style="text-align:left;padding:2px 0">&nbsp;</th>'
+       + '<th style="text-align:right;padding:2px 5px">rev</th><th style="text-align:right;padding:2px 5px">vs LY</th>'
+       + '<th style="text-align:right;padding:2px 5px">ADR</th><th style="text-align:right;padding:2px 0 2px 5px">lead</th></tr>';
+    for (const r of rows.slice(0, 8)){
+      const on = ANLY_FILTERS[dim] === r.name;
+      t += '<tr class="anly-row" data-dim="' + dim + '" data-val="' + escapeHtml(r.name) + '"'
+         + ' style="border-top:1px solid var(--line);cursor:pointer;' + (on ? 'background:rgba(122,79,142,.10)' : '') + '">'
+         + '<td style="padding:4px 0;font-weight:' + (on ? '700' : '600') + '">' + (on ? '\u25cf ' : '') + escapeHtml(r.name) + '</td>'
+         + '<td style="text-align:right;padding:4px 5px;font-family:\'DM Mono\',monospace">' + eur(r.rev) + '</td>'
+         + '<td style="text-align:right;padding:4px 5px;font-family:\'DM Mono\',monospace;font-weight:700;color:' + col(r.dRev) + '">'
+         + (r.dRev >= 0 ? '+' : '') + eur(r.dRev) + '</td>'
+         + '<td style="text-align:right;padding:4px 5px;font-size:11px">' + eur(r.adr)
+         + (r.adrLy != null ? '<span style="color:var(--ink-3)"> / ' + eur(r.adrLy) + '</span>' : '') + '</td>'
+         + '<td style="text-align:right;padding:4px 0 4px 5px;font-size:11px">'
+         + (r.lead != null ? Math.round(r.lead) + 'd' : '\u2014')
+         + (r.leadLy != null ? '<span style="color:var(--ink-3)"> / ' + Math.round(r.leadLy) + 'd</span>' : '') + '</td></tr>';
+    }
+    t += '</table></div>';
+    return t;
+  };
+
+  h += '<div style="display:flex;gap:22px;flex-wrap:wrap">';
+  h += tabella('By channel', 'ch', a.channels);
+  h += tabella('By room type', 'rt', a.rooms_);
+  h += tabella('By rate plan', 'rate', a.rates);
+  h += '</div>';
+
+  /* Lettura dell'anticipo: e' la parte che dice se lo scarto e' recuperabile. */
+  if (a.hasLy && a.cur.lead != null && a.ly.lead != null){
+    const d = a.cur.lead - a.ly.lead;
+    let nota;
+    if (Math.abs(d) < 3) nota = 'Guests are booking at about the same distance as last year.';
+    else if (d < 0) nota = 'Guests are booking <b>' + Math.abs(Math.round(d)) + ' days later</b> than last year. '
+       + 'A gap at this stage is more recoverable than it looks: much of what is missing would arrive closer in anyway.';
+    else nota = 'Guests are booking <b>' + Math.round(d) + ' days earlier</b> than last year. '
+       + 'That makes a gap now harder to recover: the bookings that would have filled it are already being made.';
+    h += '<div style="margin-top:14px;padding:9px 12px;background:var(--surface-2);border-left:3px solid #7a4f8e;border-radius:0 7px 7px 0;font-size:12px;line-height:1.5">'
+       + nota + '</div>';
+  }
+
+  wrap.innerHTML = h;
+
+  /* Click: aggiunge o toglie il filtro, poi ridisegna tutto. */
+  wrap.querySelectorAll('.anly-row').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const d = tr.dataset.dim, v = tr.dataset.val;
+      ANLY_FILTERS[d] = (ANLY_FILTERS[d] === v) ? null : v;
+      renderAnalysis(CURRENT_STRUCT);
+    });
+  });
+  wrap.querySelectorAll('.anly-chip').forEach(b => {
+    b.addEventListener('click', () => { ANLY_FILTERS[b.dataset.dim] = null; renderAnalysis(CURRENT_STRUCT); });
+  });
+}
+
+/* ===========================================================================
    ANALISI DI UN MESE — cosa va e cosa non va
    Si sceglie un mese e si vede il confronto con lo stesso punto dell'anno
    scorso (STLY), spezzato per canale, tipologia di camera e tipo di tariffa.
@@ -20626,6 +20902,8 @@ function renderAll(){
   }
   // Solo se la tab e' quella aperta: ridisegnare schede nascoste costava
   // centinaia di ms a ogni azione. Le altre si marcano e si rifanno all'apertura.
+  if (CURRENT_TAB === 'anly'){ try { renderAnalysis(CURRENT_STRUCT); } catch(e){ console.error('renderAnalysis', e); } _TAB_DIRTY['anly'] = false; }
+  else _TAB_DIRTY['anly'] = true;
   if (CURRENT_TAB === 'pri'){ try { renderRMESConfigTab(); } catch(e){ console.error('renderRMESConfigTab', e); } _TAB_DIRTY['pri'] = false; }
   else _TAB_DIRTY['pri'] = true;
   renderOTB(CURRENT_STRUCT);
@@ -21761,7 +22039,7 @@ function setTab(name){
   }
   /* Tab pigre: renderAll le marca invece di disegnarle, qui si recupera il
      ritardo quando l'utente le apre davvero. */
-  const _lazy = { pri: 'renderRMESConfigTab', rate: 'renderRateShopper', rt: 'renderRT', pk: 'renderPickup' };
+  const _lazy = { pri: 'renderRMESConfigTab', rate: 'renderRateShopper', rt: 'renderRT', pk: 'renderPickup', anly: 'renderAnalysis' };
   if (_lazy[name] && _TAB_DIRTY[name] !== false){
     const _fn = (typeof window !== 'undefined') ? window[_lazy[name]] : null;
     try {
@@ -21770,6 +22048,7 @@ function setTab(name){
       else if (name === 'rate' && typeof renderRateShopper === 'function') renderRateShopper();
       else if (name === 'rt' && typeof renderRT === 'function') renderRT(CURRENT_STRUCT);
       else if (name === 'pk' && typeof renderPickup === 'function') renderPickup(CURRENT_STRUCT);
+      else if (name === 'anly' && typeof renderAnalysis === 'function') renderAnalysis(CURRENT_STRUCT);
       _TAB_DIRTY[name] = false;
     } catch(e){ console.error('lazy render ' + name, e); }
   }
