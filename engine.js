@@ -1115,14 +1115,78 @@ function normCanale(raw){
      Expedia 18% → ÷0.82   (es. 100 → 121.95)   [+ VRBO / Homeaway = stesso gruppo]
      Airbnb 15.5%→ ÷0.845  (es. 100 → 118.34)
      Booking     → già lordo (×1) · Direct/Beddy → nessuna commissione (×1) · Italcamel → invariato (×1) */
-function _grossUpFactor(canale){
+/* RECUPERO DELLA COMMISSIONE — da payout a quello che ha pagato il cliente.
+   Su Expedia incassi tramite carta virtuale e Beddy registra il PAYOUT, cioe'
+   quanto Expedia ti versa, gia' al netto della sua commissione. Il ricavo
+   vero e' quello che il cliente ha pagato.
+   La catena, verificata su una prenotazione reale di Palazzo Alfani:
+       camera lorda   638,05
+       − commissione  114,85   = 18% del lordo
+       = netto        523,20
+       + IVA           52,32   = 10% del NETTO, non del lordo
+       = payout       575,52   ← quello che vedi in Beddy
+       cliente        690,37   = payout + commissione
+   Il fattore NON e' 1/(1-c): l'IVA sta dentro il payout e non e'
+   commissionabile, quindi diluisce il recupero. Con 18% e IVA 10% il fattore
+   e' 1,1996 e non 1,2195. Sui 692mila euro di Expedia la differenza fra le
+   due formule vale circa 14mila euro.
+   Booking lavora in modo opposto: incassi tu dal cliente e paghi la
+   commissione dopo, quindi Beddy registra gia' il lordo e non si tocca. */
+/* DUE PORTALI, DUE MODI DI CALCOLARE — verificati su prenotazioni reali.
+   Expedia: l'IVA sta dentro il payout e NON e' commissionabile, quindi
+     diluisce il recupero. payout 575,52 → cliente 690,37, fattore 1,1996.
+   Ctrip:   lavora a "net rate". La tariffa che vedi e' quella che resta a te;
+     Ctrip ci mette sopra la commissione e vende a quel prezzo. La commissione
+     si prende su tutto, IVA compresa. payout 523,75 → cliente 638,72, fattore
+     1/(1-c) = 1,2195, e infatti la commissione dichiarata e' 114,95.
+   Usare la stessa formula per entrambi sbaglia del 2% in un verso o nell'altro. */
+const IVA_RATE = 0.10;
+const COMMISSIONI = {
+  expedia:  { iva: 'fuori', standard: 0.18,  condotta: 0.165 },
+  vrbo:     { iva: 'fuori', standard: 0.18,  condotta: 0.165 },   // gruppo Expedia
+  homeaway: { iva: 'fuori', standard: 0.18,  condotta: 0.165 },   // gruppo Expedia
+  ctrip:    { iva: 'dentro', standard: 0.15, alfani: 0.18 }
+  /* AIRBNB NON VA RITOCCATO. Verificato su una prenotazione di Nazionale:
+     Beddy registra 179, che e' esattamente la "room fee" che il cliente ha
+     pagato. La commissione (15,5% + IVA = 33,86) te la trattengono dopo, come
+     fa Booking, e il cliente paga 191 solo perche' ci somma la tassa di
+     soggiorno. Applicare un recupero qui gonfiava ogni prenotazione Airbnb del
+     18% su un numero che era gia' lordo. */
+};
+/* PRENOTAZIONI HOTEL COLLECT.
+   Su queste il cliente paga in struttura e la commissione la versi tu dopo,
+   quindi Beddy ha gia' il lordo come per Booking. Non c'e' NESSUN campo
+   nell'export che le distingua: il piano tariffario non basta (su Alfani 9 su
+   47 della stessa tariffa lo sono), l'etichetta e' vuota. Finche' non esiste
+   un marcatore in Beddy, l'elenco si tiene qui e va aggiornato a mano quando
+   ne arrivano di nuove. */
+const HOTEL_COLLECT = new Set([
+  // Palazzo Alfani
+  'D0DC06D1DC', 'E50353E38A', '78A7F0CC36', '49FEEF488A', 'E2EB6DA0DB',
+  '0BDF8B0196', 'DC947CC814', '34F2FA974D', '9968B24819',
+  // Firenze Suite
+  'E42F027893', 'A21355D036', '612A0C4DC2'
+]);
+/* iva 'fuori'  = la commissione non tocca l'IVA (Expedia)
+   iva 'dentro' = la commissione si prende anche sull'IVA (Ctrip, net rate) */
+function _commissionFactor(c, ivaMode){
+  return (ivaMode === 'dentro') ? 1 / (1 - c)
+                                : 1 + c / ((1 - c) * (1 + IVA_RATE));
+}
+function _grossUpFactor(canale, structKey, ref){
+  /* Hotel Collect: incassi tu in struttura, quindi il dato e' gia' lordo. */
+  if (ref && HOTEL_COLLECT.has(String(ref).trim())) return 1;
   const c = (canale || '').toLowerCase();
-  if (c === 'expedia') return 1 / 0.82;   // 18%
-  if (c === 'vrbo')    return 1 / 0.82;   // come Expedia (gruppo Expedia)
-  if (c.indexOf('homeaway') !== -1) return 1 / 0.82;   // come Expedia (gruppo Expedia)
-  if (c === 'ctrip')   return 1 / 0.85;   // 15%
-  if (c === 'airbnb')  return 1 / 0.845;  // 15.5%
-  return 1;   // Booking (già lordo), Direct/Beddy, Italcamel, altri → invariati
+  let key = null;
+  if (c === 'expedia') key = 'expedia';
+  else if (c === 'vrbo') key = 'vrbo';
+  else if (c.indexOf('homeaway') !== -1) key = 'homeaway';
+  else if (c === 'ctrip') key = 'ctrip';
+  // Airbnb, Booking, Direct e il resto registrano gia' il lordo: niente ritocco.
+  if (!key || !COMMISSIONI[key]) return 1;
+  const tab = COMMISSIONI[key];
+  const pct = (structKey && tab[structKey] != null) ? tab[structKey] : tab.standard;
+  return _commissionFactor(pct, tab.iva);
 }
 function normProv(p, canale){
   const t = (p||'').trim();
@@ -1298,7 +1362,7 @@ function loadData(csvText){
     const canaleRaw = (r['Canale']||'—').trim() || '—';
     const canale = normCanale(canaleRaw);
     // Gross-up commissioni OTA: porta il ricavo al LORDO in modo uniforme su tutti i canali.
-    const revPerRoomNightGross = revPerRoomNight * _grossUpFactor(canale);
+    const revPerRoomNightGross = revPerRoomNight * _grossUpFactor(canale, _structKeyForRooms, r['numero di riferimento']);
     const prov = normProv(r['Provenienza'], canale);
     const ref = r['numero di riferimento'] || '';
     const guest = (r['prenotante']||'').trim();
