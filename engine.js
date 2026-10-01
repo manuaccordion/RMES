@@ -16193,10 +16193,8 @@ function _fcstMonthDaily(sel, m, inventory, rtList, baseRT, today0){
 const FCST_GROWTH_MIN = 0.85, FCST_GROWTH_MAX = 1.30;
 const FCST_GROWTH_MIN_OCC = 0.30;   // sotto questa OCC l'anno base non fa testo
 let _FCST_GROWTH = {};
-const _FCST_GROWTH_RATIOS = {};
 function fcstGrowthFactor(sel){
   if (_FCST_GROWTH[sel] != null) return _FCST_GROWTH[sel];
-  _FCST_GROWTH_RATIOS[sel] = [];
   const keys = new Set(structKeysFor(sel));
   const inv = fcstRoomsByRT(sel);
   const rooms = Object.keys(inv).reduce((a,k)=> a + inv[k], 0) || 1;
@@ -16219,11 +16217,7 @@ function fcstGrowthFactor(sel){
     if (ly <= 0) continue;
     if (ly/(rooms*dim) < FCST_GROWTH_MIN_OCC) continue;   // anno base troppo vuoto
     ratios.push(cur/ly);
-    /* Tengo traccia dei rapporti usati: servono per riconoscere i mesi di
-       avviamento, che gonfiano il fattore senza essere una tendenza. */
-    (_FCST_GROWTH_RATIOS[sel] = _FCST_GROWTH_RATIOS[sel] || []).push({
-      ym, cur, ly, ratio: cur/ly, occLy: ly/(rooms*dim) });
-  }
+      }
   let g = 1;
   if (ratios.length){
     ratios.sort((a,b)=>a-b);
@@ -16232,7 +16226,6 @@ function fcstGrowthFactor(sel){
   }
   g = Math.max(FCST_GROWTH_MIN, Math.min(FCST_GROWTH_MAX, g));
   // Un fattore impostato a mano vince sempre: serve quando sai qualcosa che i
-  // dati non mostrano ancora (vedi fcstGrowthCheck).
   const _ovr = fcstGrowthOverride(sel);
   if (_ovr != null) g = _ovr;
   _FCST_GROWTH[sel] = g;
@@ -16571,93 +16564,6 @@ function renderAnalysis(sel){
 /* Spiega a parole da dove viene lo scarto: quanto dal riempimento e quanto
    dal prezzo. Sono due problemi diversi e si risolvono in modi diversi. */
 
-function fcstNextMonthsVsLy(sel, n){
-  try {
-    /* IL CONFRONTO VA FATTO ALLO STESSO PUNTO DELLA CURVA.
-       Mettere quello che ho sui libri oggi contro il TOTALE FINALE dell'anno
-       scorso fa sembrare ogni mese futuro a -80%, perche' deve ancora
-       riempirsi. Quindi dell'anno scorso si contano solo le prenotazioni fatte
-       entro oggi-364: due momenti uguali della curva. */
-    const keys = new Set(structKeysFor(sel));
-    const cutCur = ymd(startOfDay(new Date(TODAY)));
-    const cutLy  = ymd(startOfDay(new Date(TODAY.getTime() - 364*86400000)));
-    const rn = {}, rev = {}, rnLy = {}, revLy = {};
-    for (const b of BOOKINGS){
-      if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
-      const inCur = b.bookYmd <= cutCur, inLy = b.bookYmd <= cutLy;
-      for (const y of b.stayYmds){
-        const ym = Math.floor(y/100);
-        if (inCur){ rn[ym] = (rn[ym]||0) + 1; rev[ym] = (rev[ym]||0) + (b.revPerNight || 0); }
-        if (inLy){ rnLy[ym] = (rnLy[ym]||0) + 1; revLy[ym] = (revLy[ym]||0) + (b.revPerNight || 0); }
-      }
-    }
-    const t = new Date(TODAY);
-    const g = (typeof fcstGrowthFactor === 'function') ? fcstGrowthFactor(sel) : 1;
-    let sumCur = 0, sumLy = 0, worst = null;
-    const months = [];
-    for (let i = 0; i < (n || 3); i++){
-      const dd = new Date(t.getFullYear(), t.getMonth() + i, 1);
-      const ym = dd.getFullYear()*100 + (dd.getMonth()+1);
-      const ymLy = (dd.getFullYear()-1)*100 + (dd.getMonth()+1);
-      const cur = rev[ym] || 0, ly = revLy[ymLy] || 0;   // LY allo stesso punto, non finale
-      if (ly <= 0) continue;
-      sumCur += cur; sumLy += ly;
-      // atteso = anno scorso x fattore; lo scarto e' quanto il mese se ne allontana
-      const atteso = ly * g;
-      const gap = atteso > 0 ? (cur / atteso - 1) : null;
-      const rec = { ym, cur, ly, atteso, gap };
-      months.push(rec);
-      if (gap != null && (worst == null || Math.abs(gap) > Math.abs(worst.gap))) worst = rec;
-    }
-    return { pace: sumLy > 0 ? sumCur/sumLy : null, months, worst, factor: g };
-  } catch(e){ return null; }
-}
-function fcstGrowthCheck(sel){
-  const out = { recent: null, factor: null, drift: null, months: [], warn: false,
-                manual: fcstGrowthOverride(sel) != null, staleData: false, dataLast: fcstDataLastBookYmd() };
-  try {
-    const keys = new Set(structKeysFor(sel));
-    const rn = {};
-    for (const b of BOOKINGS){
-      if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
-      for (let i=0;i<b.stayYmds.length;i++){
-        const ym = Math.floor(b.stayYmds[i]/100);
-        rn[ym] = (rn[ym]||0) + 1;
-      }
-    }
-    const t = new Date(TODAY);
-    const lastBook = fcstDataLastBookYmd();
-    // Se i dati sono fermi da un pezzo, il confronto non e' attendibile.
-    if (lastBook){
-      const gapDays = Math.round((startOfDay(new Date(TODAY)) - ymdToDate(lastBook)) / 86400000);
-      if (gapDays > 7) out.staleData = true;
-    }
-    let sumCur = 0, sumLy = 0;
-    for (let i=1; i<=FCST_DRIFT_MONTHS; i++){
-      const dd = new Date(t.getFullYear(), t.getMonth()-i, 1);
-      const ym = dd.getFullYear()*100 + (dd.getMonth()+1);
-      const ymLy = (dd.getFullYear()-1)*100 + (dd.getMonth()+1);
-      // Il mese conta solo se i dati arrivano almeno alla sua fine: altrimenti
-      // mancano le prenotazioni sotto data e il mese sembra sempre in calo.
-      const lastDay = dd.getFullYear()*10000 + (dd.getMonth()+1)*100
-                    + new Date(dd.getFullYear(), dd.getMonth()+1, 0).getDate();
-      if (lastBook && lastBook < lastDay){ out.months.push({ ym, incomplete: true }); continue; }
-      const cur = rn[ym]||0, ly = rn[ymLy]||0;
-      if (ly <= 0) continue;
-      sumCur += cur; sumLy += ly;
-      out.months.push({ ym, cur, ly, ratio: cur/ly });
-    }
-    // Il fattore in uso va sempre mostrato; e' il CONFRONTO con i mesi recenti
-    // che non ha senso quando i dati sono fermi.
-    out.factor = fcstGrowthFactor(sel);
-    if (sumLy > 0 && !out.staleData){
-      out.recent = sumCur / sumLy;
-      out.drift = out.recent - out.factor;
-      out.warn = Math.abs(out.drift) > FCST_DRIFT_TOL;
-    }
-  } catch(e){}
-  return out;
-}
 /* ---------------------------------------------------------------------------
    CURVA DI SOPRAVVIVENZA (cancellazioni)
    Il pickup storico conta solo le notti arrivate al check-in, ma l'OTB di oggi
@@ -17489,106 +17395,7 @@ function renderClosedYears(sel){
    un'altra direzione, e permette di forzarlo a mano. Non corregge da sola: con
    pochi mesi di evidenza nessuna formula distingue un calo strutturale da una
    stagione storta, quindi decide chi conosce la struttura. */
-function _renderGrowthNote(sel){
-  const box = document.getElementById('fcst-growth-note');
-  if (!box) return;
-  if (typeof fcstGrowthCheck !== 'function'){ box.innerHTML = ''; return; }
-  const c = fcstGrowthCheck(sel);
-  if (c.factor == null){ box.innerHTML = ''; return; }
-  const pct = v => ((v >= 0 ? '+' : '') + (v*100).toFixed(0) + '%');
-  const isAgg = (typeof isAggSel === 'function') && isAggSel(sel);
-  let tone = '#f7f5ef', edge = 'var(--line)', txt;
-  if (c.staleData){
-    const dl = String(c.dataLast || '');
-    tone = '#fdf6ec'; edge = '#e8c89a';
-    txt = '<b>Data is not up to date</b> \u2014 the latest booking in the file is from '
-        + (dl ? dl.slice(6,8)+'/'+dl.slice(4,6)+'/'+dl.slice(0,4) : '\u2014')
-        + '. Recent months look weaker than they are, because their late bookings are missing, so the growth check is paused.';
-  } else if (c.warn){
-    /* Niente rosso: questo riquadro informa, non segnala un errore. Il colore
-       d'allarme faceva sembrare che ci fosse qualcosa da correggere, mentre il
-       testo stesso dice il contrario. */
-    tone = '#f7f5ef'; edge = 'var(--line)';
-    /* Questo e' un SEGNALE, non un'istruzione. Applicare il ritmo degli ultimi
-       mesi a tutto l'anno peggiora la previsione: misurato sui mesi chiusi del
-       2026, Enis passerebbe da +6,8% a -17,8% di scarto e Alfani da -1,5% a
-       -15,3%. Il calo e' concentrato in una stagione, il fattore vale su dodici
-       mesi. Il testo lo dice, cosi nessuno cambia il numero per riflesso. */
-    /* Il confronto utile non e' solo "gli ultimi mesi contro il fattore", ma
-       cosa sta succedendo ADESSO: i tre mesi chiusi contro i tre che arrivano.
-       Se il futuro e' previsto molto diverso dal passato recente, e' quello il
-       fatto da guardare, non lo scostamento dal fattore. */
-    const _fwd = (typeof fcstNextMonthsVsLy === 'function') ? fcstNextMonthsVsLy(sel, 3) : null;
-    txt = 'The last ' + c.months.filter(m=>!m.incomplete).length + ' closed months ran <b>' + pct(c.recent - 1)
-        + '</b> versus last year'
-        + (_fwd && _fwd.pace != null ? ', and the next 3 are forecast at <b>' + pct(_fwd.pace - 1) + '</b>' : '')
-        + ', while the growth factor is <b>' + c.factor.toFixed(2) + '</b> ('
-        + pct(c.factor - 1) + '). <b>This is worth knowing, not a reason to change the factor</b>: a few weak months '
-        + 'are usually one season, while the factor covers twelve. Forcing the recent pace onto the whole year has '
-        + 'made the forecast worse every time it was tested. Change it by hand only if you know the shift is permanent.'
-        /* Su una struttura aperta da poco il fattore e' alto per un motivo
-           diverso: confronta mesi di rodaggio con mesi gia' a regime. Dirlo
-           evita di leggere come "stagione debole" quello che e' solo la fine
-           dell'avviamento. */
-        + (function(){
-            /* Rodaggio = rapporto alto CONTRO UN ANNO BASE QUASI VUOTO. Il solo
-               rapporto non basta: su una struttura avviata un +54% e' crescita
-               vera, non riempimento dell'apertura. */
-            const used = (typeof _FCST_GROWTH_RATIOS !== 'undefined' && _FCST_GROWTH_RATIOS[sel]) || [];
-            const hot = used.filter(m => m.ratio >= 1.5 && m.occLy < 0.50).length;
-            if (hot < 2) return '';
-            return '<br><span style="color:#7a4f1c">On this property the factor is lifted by <b>' + hot
-                 + ' start-up months</b> that grew more than 50% against a nearly empty year. That is the opening '
-                 + 'filling up, not a pace you should expect to repeat: the factor will come down on its own as '
-                 + 'those months leave the window.</span>';
-          })();
-  } else if (c.manual){
-    /* Fattore forzato a mano: la fascia resta visibile anche senza scostamento,
-       altrimenti non ci sarebbe modo di accorgersene ne' di tornare ad auto. */
-    txt = 'Growth factor set by hand to <b>' + c.factor.toFixed(2) + '</b> (' + pct(c.factor - 1) + ')'
-        + (c.recent != null ? ' \u00b7 last closed months ran ' + pct(c.recent - 1) : '') + '.';
-  } else {
-    /* Tutto in linea: la fascia non serve e occuperebbe spazio in cima alla tab
-       per dire che non c'e' nulla da fare. Compare solo quando c'e' qualcosa. */
-    box.innerHTML = '';
-    return;
-  }
-  let _fwdPace = null;
-  try { const _f = fcstNextMonthsVsLy(sel, 3); if (_f) _fwdPace = _f.pace; } catch(e){}
-  let h = '<div style="padding:9px 13px;background:' + tone + ';border:1px solid ' + edge
-        + ';border-radius:8px;font-size:12.5px;color:var(--ink-2);line-height:1.5;display:flex;'
-        + 'justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">';
-  /* NESSUN TESTO. Resta solo il comando per impostare il fattore a mano:
-     il riquadro non deve spiegare niente, le spiegazioni stanno nel Playbook. */
-  h += '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--ink-3)">'
-     + 'growth ' + c.factor.toFixed(2) + (c.manual ? ' \u00b7 manual' : '') + '</div>';
-  if (!isAgg){
-    h += '<div style="display:flex;gap:6px;align-items:center;white-space:nowrap">'
-       + '<label style="font-size:11.5px;color:var(--ink-3)">set by hand</label>'
-       + '<input type="number" id="fcst-g-ovr" step="0.01" min="0.3" max="3" value="' + (c.manual ? c.factor.toFixed(2) : '')
-       + '" placeholder="auto" style="width:66px;padding:4px 7px;border:1px solid var(--line);border-radius:4px;'
-       + "font-family:'DM Mono',monospace;text-align:right;font-size:12.5px\">"
-       + '<button id="fcst-g-save" style="border:0;background:#3d7a4b;color:#fff;border-radius:5px;padding:5px 12px;cursor:pointer;font-size:12px;font-weight:700">Apply</button>'
-       + (c.manual ? '<button id="fcst-g-clear" style="border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:5px;padding:5px 10px;cursor:pointer;font-size:12px">Auto</button>' : '')
-       + '</div>';
-  }
-  h += '</div>';
-  box.innerHTML = h;
-  const save = box.querySelector('#fcst-g-save');
-  if (save) save.addEventListener('click', () => {
-    const el = box.querySelector('#fcst-g-ovr');
-    const v = el && el.value !== '' ? parseFloat(el.value) : null;
-    fcstGrowthSetOverride(sel, v);
-    if (typeof renderForecast === 'function') renderForecast(sel);
-  });
-  const clr = box.querySelector('#fcst-g-clear');
-  if (clr) clr.addEventListener('click', () => {
-    fcstGrowthSetOverride(sel, null);
-    if (typeof renderForecast === 'function') renderForecast(sel);
-  });
-}
 function renderForecast(sel){
-  try { _renderGrowthNote(sel); } catch(e){ console.error('growth note', e); }
   const A = aggForecast(sel);
   const M = A.monthly;
   const monthsITLong = ['January','February','March','April','May','June','July','August','September','October','November','December'];
