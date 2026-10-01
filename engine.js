@@ -17553,10 +17553,15 @@ function _renderGrowthNote(sel){
     box.innerHTML = '';
     return;
   }
+  let _fwdPace = null;
+  try { const _f = fcstNextMonthsVsLy(sel, 3); if (_f) _fwdPace = _f.pace; } catch(e){}
   let h = '<div style="padding:9px 13px;background:' + tone + ';border:1px solid ' + edge
         + ';border-radius:8px;font-size:12.5px;color:var(--ink-2);line-height:1.5;display:flex;'
         + 'justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">';
-  h += '<div>' + txt + (c.manual ? ' <b style="color:#7a4f1c">Currently set by hand.</b>' : '') + '</div>';
+  /* NESSUN TESTO. Resta solo il comando per impostare il fattore a mano:
+     il riquadro non deve spiegare niente, le spiegazioni stanno nel Playbook. */
+  h += '<div style="font-family:\'DM Mono\',monospace;font-size:12px;color:var(--ink-3)">'
+     + 'growth ' + c.factor.toFixed(2) + (c.manual ? ' \u00b7 manual' : '') + '</div>';
   if (!isAgg){
     h += '<div style="display:flex;gap:6px;align-items:center;white-space:nowrap">'
        + '<label style="font-size:11.5px;color:var(--ink-3)">set by hand</label>'
