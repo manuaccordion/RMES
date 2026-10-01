@@ -1107,14 +1107,6 @@ function normCanale(raw){
   // Fallback: title-case
   return t.charAt(0).toUpperCase() + t.slice(1).toLowerCase();
 }
-/* Gross-up commissioni OTA: i dati arrivano MISTI (Booking già lordo, gli altri netti).
-   Riportiamo TUTTO al LORDO di commissione così ADR/Revenue sono confrontabili tra canali
-   e tra anni. Fattore = 1/(1 - commissione). Applicato a revPerRoomNight in loadData → vale
-   sia per il reporting sia per il motore RMES/Base Price (che parte da revPerNight).
-     Ctrip 15%   → ÷0.85   (es. 100 → 117.65)
-     Expedia 18% → ÷0.82   (es. 100 → 121.95)   [+ VRBO / Homeaway = stesso gruppo]
-     Airbnb 15.5%→ ÷0.845  (es. 100 → 118.34)
-     Booking     → già lordo (×1) · Direct/Beddy → nessuna commissione (×1) · Italcamel → invariato (×1) */
 /* RECUPERO DELLA COMMISSIONE — da payout a quello che ha pagato il cliente.
    Su Expedia incassi tramite carta virtuale e Beddy registra il PAYOUT, cioe'
    quanto Expedia ti versa, gia' al netto della sua commissione. Il ricavo
@@ -2857,8 +2849,13 @@ function _ovEnsurePlaybookNote(){
     const g=document.createElement('div');
     g.id='instr-gross-note';
     g.style.cssText='margin:12px 0 0 0;padding:12px 14px;background:#fdf3e6;border-left:4px solid #c4823b;border-radius:0 6px 6px 0;line-height:1.55';
-    g.innerHTML=`<p style="margin:0 0 6px 0;font-weight:700;color:#7a4f1c">💶 Revenue shown gross of OTA commission</p>`
-      +`<p style="margin:0;font-size:13px">Across <b>every tab and every year</b> (past, present, future) revenue and ADR are shown <b>gross of OTA commission</b>, so channels and years are compared like-for-like. Booking already arrives gross (left as-is); the others are grossed up on import: <b>Ctrip +15%</b> (÷0.85), <b>Expedia +18%</b> (÷0.82, and <b>VRBO / Homeaway</b> at the same 18%), <b>Airbnb +15.5%</b> (÷0.845). Direct/Beddy and Italcamel are left unchanged. This also feeds the RMES Base Price engine.</p>`;
+    g.innerHTML=`<p style="margin:0 0 6px 0;font-weight:700;color:#7a4f1c">\u{1F4B6} Revenue shown gross of OTA commission</p>`
+      +`<p style="margin:0 0 7px 0;font-size:13px">Across <b>every tab and every year</b> revenue and ADR show <b>what the guest paid</b>, not what the channel transferred, so channels and years compare like-for-like.</p>`
+      +`<p style="margin:0 0 7px 0;font-size:13px">Three channels already report the full amount and are left alone: <b>Booking</b> and <b>Direct</b>, where you collect and pay the commission afterwards, and <b>Airbnb</b>, whose room fee in Beddy is already what the guest paid \u2014 the host fee is deducted later. The same goes for Expedia <b>Hotel Collect</b>, where the guest pays at the property.</p>`
+      +`<p style="margin:0 0 7px 0;font-size:13px">Two channels report the payout, so the commission is added back \u2014 and they do it differently:<br>
+         <b>Expedia Collect</b> &times;1.1996 (Condotta &times;1.1796). The VAT sits inside the payout and is not commissionable, so it dilutes the recovery: the plain 1/(1&minus;c) would overstate by about 2%.<br>
+         <b>Ctrip</b> &times;1.2195 on Palazzo Alfani, &times;1.1765 elsewhere. Ctrip works on net rates and takes its cut on everything, VAT included.</p>`
+      +`<p style="margin:0;font-size:12px;color:#7a6a52">Each factor was checked against a real booking: Expedia 575.52 &rarr; 690.37 \u00b7 Ctrip 523.75 &rarr; 638.72 \u00b7 Airbnb 179 &rarr; 179. City tax is removed everywhere before any of this. The same figures feed the RMES Base Price.</p>`;
     body.appendChild(g);
   }
 }
@@ -6887,9 +6884,11 @@ function _rmesSuggestedForDay(structKey, ymdN, rt){
    RECENTE (data di prenotazione piu' alta) che copre quella notte, sulla
    baseRT della struttura.
    Il prezzo e' `revPerNight`, cioe' gia' AL LORDO della commissione OTA con la
-   stessa regola usata per il revenue in Overview: Booking e Direct restano come
-   sono, Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%. Cosi il numero e'
-   confrontabile con il prezzo a scaffale, indipendentemente dal canale.
+   stessa regola usata per il revenue in Overview (vedi _grossUpFactor): Booking,
+   Direct, Airbnb e Hotel Collect restano come sono perche' registrano gia' il
+   lordo; Expedia Collect e Ctrip vengono riportati a quanto ha pagato il
+   cliente. Cosi il numero e' confrontabile col prezzo a scaffale, qualunque
+   sia il canale.
    Se quella notte non e' mai stata venduta sulla baseRT → null.
    =========================================================================== */
 /* Una vendita e' un segnale di mercato valido solo se recente: oltre questa
@@ -12685,7 +12684,7 @@ function renderSellStrategy(sel){
     + (showExp ? '<th rowspan="2" class="sell-grp sell-grp-expedia" title="My Expedia price, the compset average and my position (1 = cheapest)">Rate shopper<br><span class="sell-th-sub">mine · compset · pos</span></th>' : '')
     + (showBeddy ? '<th rowspan="2" class="sell-grp sell-grp-beddy" title="Actual price loaded on the Beddy PMS for the baseRT (days covered: 12/5/2026 → 27/12/2026)">Beddy<br><span class="sell-th-sub">Actual PMS</span></th>' : '')
     + '<th rowspan="2" class="sell-grp sell-grp-fp" title="Base Price — the structural starting price for each stay-date. It is ACCEPTED BY DEFAULT (✓ green = already active). Click 🖋 to override one day; ↺ to reset.">Base Price<br><span class="sell-th-sub">accepted by default</span></th>'
-    + '<th rowspan="2" class="sell-grp sell-grp-sold" title="Last sold price — the rate of the most recent booking that covers this night, on the base room type, gross of OTA commission (Booking and Direct as they are; Expedia/VRBO +18%, Ctrip +15%, Airbnb +15.5%). Blank = this night has never been sold on the base room type.">Last sold<br><span class="sell-th-sub">gross · base RT</span></th>'
+    + '<th rowspan="2" class="sell-grp sell-grp-sold" title="Last sold price — the rate of the most recent booking that covers this night, on the base room type, gross of OTA commission \u2014 what the guest paid, with Expedia Collect and Ctrip grossed back up from their payout. Blank = this night has never been sold on the base room type.">Last sold<br><span class="sell-th-sub">gross · base RT</span></th>'
     + '<th colspan="' + (3 + _suppRTs.length) + '" class="sell-grp sell-grp-pricing" title="What the engine suggests for this date, and what you have actually loaded. The price is for the base room type; the other columns are the supplement to add on top of it.">RMES</th>'
     + '</tr>'
     + '<tr class="sell-thead-subs">'
@@ -17506,7 +17505,10 @@ function _renderGrowthNote(sel){
         + (dl ? dl.slice(6,8)+'/'+dl.slice(4,6)+'/'+dl.slice(0,4) : '\u2014')
         + '. Recent months look weaker than they are, because their late bookings are missing, so the growth check is paused.';
   } else if (c.warn){
-    tone = '#fdf0ef'; edge = '#e0b3b0';
+    /* Niente rosso: questo riquadro informa, non segnala un errore. Il colore
+       d'allarme faceva sembrare che ci fosse qualcosa da correggere, mentre il
+       testo stesso dice il contrario. */
+    tone = '#f7f5ef'; edge = 'var(--line)';
     /* Questo e' un SEGNALE, non un'istruzione. Applicare il ritmo degli ultimi
        mesi a tutto l'anno peggiora la previsione: misurato sui mesi chiusi del
        2026, Enis passerebbe da +6,8% a -17,8% di scarto e Alfani da -1,5% a
@@ -17956,7 +17958,7 @@ function renderForecast(sel){
 }
 /* Badge "gross of OTA commission" accanto ai titoli dell'Overview (idempotente). */
 function _ovGrossBadgeSpan(){
-  return '<span class="ov-gross-badge" title="All revenue and ADR are shown gross of OTA commission (Booking already gross; Expedia/VRBO/Homeaway +18%, Ctrip +15%, Airbnb +15.5%; Direct/Italcamel unchanged). Applies to every year, past included." style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;background:#e8f1ea;color:#2c5c3c;border:1px solid #bcd9c4;padding:2px 8px;border-radius:10px;margin-left:10px;vertical-align:middle;font-family:\'DM Sans\',sans-serif">gross of OTA commission</span>';
+  return '<span class="ov-gross-badge" title="All revenue and ADR show what the guest paid, not what the channel transferred. Booking, Direct, Airbnb and Expedia Hotel Collect already report the full amount; Expedia Collect and Ctrip report the payout, so their commission is added back. Applies to every year, past included." style="display:inline-block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;background:#e8f1ea;color:#2c5c3c;border:1px solid #bcd9c4;padding:2px 8px;border-radius:10px;margin-left:10px;vertical-align:middle;font-family:\'DM Sans\',sans-serif">gross of OTA commission</span>';
 }
 /* Applica il badge a un heading (idempotente). */
 function _grossBadgeOn(el){
