@@ -1,0 +1,54 @@
+Aggiorna data.js dai file in "/mnt/g/My Drive/RMES". (Prompt giornaliero — v3)
+═══════════════════════════════════════════════════════════
+SCHEMA (16 colonne — l'ultima è "cleaning")
+═══════════════════════════════════════════════════════════
+0 numero di riferimento · 1 Data/ora prenotazione · 2 Data/ora ultima modifica · 3 Canale · 4 prenotante · 5 Alloggi · 6 Piani tariffari · 7 Data inizio soggiorno · 8 Data partenza · 9 Num. notti · 10 Totale · 11 Struttura · 12 Stato · 13 Tassa di soggiorno · 14 Provenienza · 15 cleaning
+Header e OGNI riga devono avere 16 campi. Non rimuovere mai la colonna "cleaning".
+═══════════════════════════════════════════════════════════
+CUTOFF (vedi build_freeze.js)
+═══════════════════════════════════════════════════════════
+* Storico CONGELATO: solo stayDate <= 2025-12-31 (seeding 2024-2025, non si tocca).
+* TUTTO IL 2026 viene RILETTO dal PMS ad ogni giro (stayDate >= 2026-01-01), perché le prenotazioni passate continuano a essere modificate/aggiunte nel PMS.
+* ECCEZIONE Nazionale 35 e Porte Nuove: nel PMS esistono solo da luglio 2026 → per loro rileggi da stayDate >= 2026-07-01; il loro gennaio-giugno viene da Airbnb_backfill_nuove.csv e NON va cancellato.
+* La versione PMS VINCE sulle righe 2026 esistenti (sostituzione, non merge additivo: le prenotazioni possono essere state modificate o cancellate).
+═══════════════════════════════════════════════════════════
+FONTI
+═══════════════════════════════════════════════════════════
+* BEDDY (elenco_prenotazioni*.csv) → route per colonna "Struttura": "Firenze Suite"→firenze · "Condotta 16"→condotta · "Palazzo Alfani"→alfani · "Nazionale 35 Apartments"→nazionale · "Porte Nuove Apartments"→portenuove Confermate = Stato "Confermate" (le cancellate restano marcate tali, non si perdono).
+* KROSSBOOKING (Prenotazioni_1_*.xlsx) → davids (Enis). NON viene scaricato tutti i giorni: se il file Krossbooking è ASSENTE, NON è bloccante e NON cancellare David's — mantieni le righe David's dell'ultima versione di data.js (non rileggere/azzerare il 2026 di David's) e prosegui con le altre fonti. Può arrivare in RMES anche messo a mano (non solo dai Download). Se in RMES ci sono PIÙ file Prenotazioni_1_*, usa SOLO il più recente (per data nel nome / data del file) e ignora gli altri.
+* EXPEDIA: sostituisci interamente EXPEDIA_DATA (valori <50€ = null). 130414195=Firenze, 109802560=Condotta, 2532443=Alfani, 122888837=Enis.
+* AIRDNA: rateFuture_next_180_days_*.csv → const AIRDNA_CSV = ...; (raw, dopo EVENTS_CSV).
+* NON toccare BEDDY_DATA e EVENTS_CSV.
+
+Room type (colonna Alloggi): firenze: Camera Matrimoniale Deluxe / Suite con Terrazza / Suite condotta: Bilocale / Trilocale / Attico alfani: Classic / Superior / Junior Suite / Deluxe davids: Verde / Senape / Blu nazionale: Cupola / Uffizi portenuove: Palazzo Vecchio / Palazzo Pitti / Ponte Vecchio
+═══════════════════════════════════════════════════════════
+COLONNA "cleaning" (16ª) — REGOLA A TRE FASCE
+═══════════════════════════════════════════════════════════
+Vale SOLO per: Struttura ∈ {"Nazionale 35 Apartments","Porte Nuove Apartments"} E Canale = "Airbnb". Tutte le altre righe (altre strutture o altri canali) → cleaning = 0, Totale invariato. (Firenze / Condotta / Palazzo Alfani / Enis: cleaning = 0 SEMPRE.)
+Per le righe Airbnb di Nazionale/Porte Nuove, in base a "Data/ora prenotazione": • <= 07/07/2026 → cleaning = 40 · Totale invariato (già = sola camera) • 08/07/2026 – 15/07/2026 → cleaning = 30 · Totale = Totale − 30 (porta a sola camera) • >= 16/07/2026 → cleaning = 0 · Totale invariato (da questa data Airbnb non applica più cleaning fee: il Totale è già sola camera)
+Il Totale resta SEMPRE = sola camera; la pulizia sta solo nella colonna "cleaning", mai nel Totale. (Così in dashboard il cleaning entra nel REVENUE totale ma NON nell'ADR.)
+═══════════════════════════════════════════════════════════
+CONTROLLO RIGHE MALFORMATE (obbligatorio — non scartare in silenzio)
+═══════════════════════════════════════════════════════════
+Valida ogni riga e SEGNALAMI (fermandoti) le righe con: a) date non valide → es. "Data inizio soggiorno" = "0/2025" (giorno/mese mancante). b) colonne SHIFTATE → "Canale" contiene un numero (es. "3") o "Piani tariffari" contiene un importo. c) Totale non numerico, notti <= 0, oppure data partenza <= data inizio. Le righe rotte note avevano riferimento tipo "n.NNNNNNNNN" (le altre sono tipo "78A7F0CC36"): provengono da un import diverso, controllalo. Se trovi righe malformate: elencamele e fermati.
+Nota: se una riga ha un nome stanza NON nella lista room-type qui sopra (es. "CAMERA VIRTUALE PER SPOSTAMENTI" o una stanza di un'altra struttura), NON scartarla: è la dashboard a gestirla (revenue sì, occupazione a parte). Tu limitati a lasciarla nel CSV come da PMS.
+═══════════════════════════════════════════════════════════
+SANITY CHECK
+═══════════════════════════════════════════════════════════
+* Header finisce in ",cleaning"; ogni riga ha 16 campi. Nessuna riga scartata in silenzio.
+* Storico <= 2025-12-31 INVARIATO. 2026 riletto per tutte (naz/porte solo da luglio).
+* Cleaning: 40 (<=07/07), 30 (08–15/07), 0 (>=16/07), SOLO Nazionale/Porte Nuove Airbnb; 0 ovunque altro.
+* Nessun Totale negativo, nessun doppione, tutte e 6 le strutture presenti.
+* Sanity noto: Palazzo Alfani maggio 2026 ≈ EUR 80.807.
+* Expedia: Firenze 189-512, Condotta 245-571, Alfani 247-638, Enis 127-770; nessun valore <50€.
+
+MAIL (in autonomia, SENZA chiedere conferma) — tre casi:
+* Se tutto OK: fai commit "data update YYYY-MM-DD" + push (solo data.js), poi manda la mail pickup COSÌ, senza aggiungere altro:
+    PICKUP=$(node --max-old-space-size=2048 ~/RMES/calc_pickup.js ~/RMES)
+    ~/notifica_dashboard.sh "" "$PICKUP"
+  ★ La mail di successo deve contenere SOLO il pickup (lo produce calc_pickup.js: intestazione con la finestra di giorni + la riga delle 6 strutture) e il link. NON aggiungere MAI note, sezioni "⚠ NOTE", sanity check, conteggi, delta o spiegazioni tecniche: quelle vanno SOLO nel tuo output testuale. Non passare descrizioni nel primo parametro.
+  ★ calc_pickup.js calcola da solo la finestra: dall'ultimo aggiornamento notificato a oggi (se è passato più di un giorno somma tutti i giorni) e aggiorna ~/RMES/.last_pickup.json. Lancialo UNA volta sola per giro, DOPO il push (senza --no-save), e passa l'output così com'è.
+* Se BLOCCHI per FILE MANCANTI (manca un export necessario, es. il Beddy MASTER con la colonna Struttura, oppure un'altra fonte): NON pubblicare e NON mandare NESSUNA mail. Fermati e basta, spiegando SOLO nel tuo output testuale cosa manca. (Niente mail: l'utente capisce che deve scaricare dal fatto che non arriva la mail pickup.)
+* Se BLOCCHI per DATI CORROTTI (i file ci sono ma hanno righe malformate / sanity check fallito): NON pubblicare, e manda la mail di alert con il SOLO primo parametro (niente pickup):
+    ~/notifica_dashboard.sh "⛔ ALERT — DATI NON AGGIORNATI: <spiegazione + cosa sistemare>"
+  In questo caso NON lanciare calc_pickup.js (così la finestra di pickup non si azzera e domani recupera anche i giorni saltati).
