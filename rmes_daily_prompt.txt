@@ -1,9 +1,9 @@
-Aggiorna data.js dai file in "/mnt/g/My Drive/RMES". (Prompt giornaliero — v3)
+Aggiorna data.js dai file in "/mnt/g/My Drive/RMES". (Prompt giornaliero — v4)
 ═══════════════════════════════════════════════════════════
-SCHEMA (16 colonne — l'ultima è "cleaning")
+SCHEMA (17 colonne — le ultime due sono "cleaning" e "Ospiti")
 ═══════════════════════════════════════════════════════════
-0 numero di riferimento · 1 Data/ora prenotazione · 2 Data/ora ultima modifica · 3 Canale · 4 prenotante · 5 Alloggi · 6 Piani tariffari · 7 Data inizio soggiorno · 8 Data partenza · 9 Num. notti · 10 Totale · 11 Struttura · 12 Stato · 13 Tassa di soggiorno · 14 Provenienza · 15 cleaning
-Header e OGNI riga devono avere 16 campi. Non rimuovere mai la colonna "cleaning".
+0 numero di riferimento · 1 Data/ora prenotazione · 2 Data/ora ultima modifica · 3 Canale · 4 prenotante · 5 Alloggi · 6 Piani tariffari · 7 Data inizio soggiorno · 8 Data partenza · 9 Num. notti · 10 Totale · 11 Struttura · 12 Stato · 13 Tassa di soggiorno · 14 Provenienza · 15 cleaning · 16 Ospiti
+Header e OGNI riga devono avere 17 campi. Non rimuovere mai le colonne "cleaning" e "Ospiti".
 ═══════════════════════════════════════════════════════════
 CUTOFF (vedi build_freeze.js)
 ═══════════════════════════════════════════════════════════
@@ -28,6 +28,14 @@ Vale SOLO per: Struttura ∈ {"Nazionale 35 Apartments","Porte Nuove Apartments"
 Per le righe Airbnb di Nazionale/Porte Nuove, in base a "Data/ora prenotazione": • <= 07/07/2026 → cleaning = 40 · Totale invariato (già = sola camera) • 08/07/2026 – 15/07/2026 → cleaning = 30 · Totale = Totale − 30 (porta a sola camera) • >= 16/07/2026 → cleaning = 0 · Totale invariato (da questa data Airbnb non applica più cleaning fee: il Totale è già sola camera)
 Il Totale resta SEMPRE = sola camera; la pulizia sta solo nella colonna "cleaning", mai nel Totale. (Così in dashboard il cleaning entra nel REVENUE totale ma NON nell'ADR.)
 ═══════════════════════════════════════════════════════════
+COLONNA "Ospiti" (17ª) — SI COPIA TALE E QUALE
+═══════════════════════════════════════════════════════════
+Viene dalla colonna "Ospiti" dell'export Beddy, copiata senza modifiche.
+Formato tipico: "Adulti: 2" oppure "Adulti: 2 Bambini: 1".
+Se il valore contiene una virgola, racchiudi il campo fra virgolette, altrimenti spezza il CSV.
+KROSSBOOKING (davids) non espone questo dato: lascia il campo VUOTO. Non scrivere "0", non dedurlo dal numero di notti, non inventarlo.
+A cosa serve: è l'unico modo per sapere quante persone occupano davvero ogni camera. Senza, non si possono tarare i supplementi persona né capire quanto pesano i bambini. Il dato non è ricostruibile a posteriori: la tassa di soggiorno lo permetterebbe solo dove è compilata, e su Firenze e Condotta è quasi sempre vuota.
+═══════════════════════════════════════════════════════════
 CONTROLLO RIGHE MALFORMATE (obbligatorio — non scartare in silenzio)
 ═══════════════════════════════════════════════════════════
 Valida ogni riga e SEGNALAMI (fermandoti) le righe con: a) date non valide → es. "Data inizio soggiorno" = "0/2025" (giorno/mese mancante). b) colonne SHIFTATE → "Canale" contiene un numero (es. "3") o "Piani tariffari" contiene un importo. c) Totale non numerico, notti <= 0, oppure data partenza <= data inizio. Le righe rotte note avevano riferimento tipo "n.NNNNNNNNN" (le altre sono tipo "78A7F0CC36"): provengono da un import diverso, controllalo. Se trovi righe malformate: elencamele e fermati.
@@ -35,7 +43,8 @@ Nota: se una riga ha un nome stanza NON nella lista room-type qui sopra (es. "CA
 ═══════════════════════════════════════════════════════════
 SANITY CHECK
 ═══════════════════════════════════════════════════════════
-* Header finisce in ",cleaning"; ogni riga ha 16 campi. Nessuna riga scartata in silenzio.
+* Header finisce in ",cleaning,Ospiti"; ogni riga ha 17 campi. Nessuna riga scartata in silenzio.
+* "Ospiti" compilata su tutte le righe Beddy; vuota SOLO sulle righe David's (Krossbooking).
 * Storico <= 2025-12-31 INVARIATO. 2026 riletto per tutte (naz/porte solo da luglio).
 * Cleaning: 40 (<=07/07), 30 (08–15/07), 0 (>=16/07), SOLO Nazionale/Porte Nuove Airbnb; 0 ovunque altro.
 * Nessun Totale negativo, nessun doppione, tutte e 6 le strutture presenti.
