@@ -11625,6 +11625,43 @@ function fp_renderFoundationConfigBox(structKey){
   h += '</table>';
   h += '<div style="font-size:10.5px;color:var(--ink-3);margin-top:4px">Booking at +57% with a 20% campaign and a 10% member deal comes out at 1.57 &times; 0.80 &times; 0.90 = <b>+13.0%</b>. That last figure is what the engine uses to turn a gross price back into what you loaded.</div>';
   h += '</div>';
+
+  /* LE COMMISSIONI DEI PORTALI. Vivevano solo nel codice: per sapere quali
+     fossero bisognava aprire engine.js, e per cambiarle anche. Sono numeri che
+     cambiano senza preavviso, quindi almeno vanno letti da qui. */
+  h += '<div style="flex-basis:100%;margin-top:14px">';
+  h += '<div style="font-size:12px;font-weight:700;color:#3a6b6b;margin-bottom:6px">What each channel keeps &mdash; and how revenue is rebuilt</div>';
+  h += '<table style="border-collapse:collapse;font-size:12px">';
+  h += '<tr style="color:var(--ink-3);font-size:11px">'
+     + '<th style="text-align:left;padding:2px 12px 4px 0">Channel</th>'
+     + '<th style="padding:2px 10px 4px">commission</th>'
+     + '<th style="padding:2px 10px 4px">factor</th>'
+     + '<th style="text-align:left;padding:2px 0 4px 10px">how it works</th></tr>';
+  const _commRow = (label, pct, fattore, nota) =>
+      '<tr style="border-top:1px solid var(--line)">'
+    + '<td style="padding:4px 12px 4px 0;font-weight:600">' + label + '</td>'
+    + '<td style="text-align:center;padding:4px 10px;font-family:monospace">' + pct + '</td>'
+    + '<td style="text-align:center;padding:4px 10px;font-family:monospace;font-weight:700;color:#3a6b6b">' + fattore + '</td>'
+    + '<td style="padding:4px 0 4px 10px;font-size:11px;color:var(--ink-2)">' + nota + '</td></tr>';
+  try {
+    /* Mostro il fattore di OGNI struttura, non solo di quella selezionata: la
+       tabella risponde alla domanda "quanto tiene ciascun portale", che non
+       dipende da quale scheda stai guardando. */
+    const _f = (ch, sk) => _grossUpFactor(ch, sk).toFixed(4);
+    h += _commRow('Expedia Collect', '18%<br><span style="color:var(--ink-3)">Condotta 16.5%</span>',
+         '&times;' + _f('Expedia', 'firenze') + '<br><span style="color:var(--ink-3)">&times;' + _f('Expedia', 'condotta') + '</span>',
+         'Beddy records the payout. VAT sits inside it and is not commissionable, so the recovery is diluted: the plain 1/(1&minus;c) would overstate by about 2%.');
+    h += _commRow('Ctrip', 'Alfani 18%<br><span style="color:var(--ink-3)">elsewhere 15%</span>',
+         '&times;' + _f('Ctrip', 'alfani') + '<br><span style="color:var(--ink-3)">&times;' + _f('Ctrip', 'firenze') + '</span>',
+         'Net rate: the rate you see is what stays with you, and the commission is taken on everything, VAT included.');
+    h += _commRow('Booking', 'paid separately', '&times;1', 'You collect from the guest, so Beddy already has the full amount.');
+    h += _commRow('Airbnb', '15.5% + VAT, deducted later', '&times;1', 'The room fee in Beddy is already what the guest paid.');
+    h += _commRow('Expedia Hotel Collect', 'paid separately', '&times;1', 'The guest pays at the property. Identified by booking reference, not by any export field.');
+    h += _commRow('Direct', 'none', '&times;1', '');
+  } catch(e){}
+  h += '</table>';
+  h += '<div style="font-size:10.5px;color:var(--ink-3);margin-top:4px">Checked against real bookings: Expedia 575.52 &rarr; 690.37 &middot; Ctrip 523.75 &rarr; 638.72 &middot; Airbnb 179 &rarr; 179. These figures are set in the code: ask for a change if a channel renegotiates.</div>';
+  h += '</div>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Price elasticity: if the price changes by X%, expected RN change in the opposite direction by X% × elasticity. Default 1.0 (ratio 1:1). E.g.: 0.5 = low elasticity, 1.5 = high elasticity."><b style="color:#a83b3b">Price elasticity</b>: <input type="number" id="fp-elasticity-input" min="0" max="3" step="0.1" style="width:60px;padding:6px 8px;border:1px solid #a83b3b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fdeef0"> :1</label>';
   h += '<button id="fp-elasticity-estimate" type="button" style="font-size:11px;padding:6px 10px;border:1px solid #a83b3b;border-radius:4px;background:#fff;color:#a83b3b;cursor:pointer;font-family:\'DM Sans\',sans-serif" title="Estimate elasticity from the last 24 months of history">📊 Estimate from data</button>';
   h += '<span style="font-size:11px;color:var(--ink-3);font-style:italic">Press "Recompute Base Price" below to apply</span>';
