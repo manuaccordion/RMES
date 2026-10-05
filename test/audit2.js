@@ -6,12 +6,12 @@
    conseguenze.
    =========================================================================== */
 const T = require('./t_lib');
-const { w, X, ok, info, fine } = T.boot([
+const { w, X, D, ok, info, fine } = T.boot([
   'BASE_FREEZE_WINDOW_DAYS', 'FP_LONGSTAY_DISCOUNT', 'FP_LMF_OCC_BANDS', 'FP_LMF_DAY_BANDS',
   'newrmesGetFrozenBase', 'newrmesGetEffectiveBase', 'newrmesCalculateBasePrice',
   'newrmesCalculateBasePriceVerbose', 'fp_getFloor', 'fp_getChannelMarkupParts',
   'fp_getChannelMarkups', 'fp_markupForChannel', 'fpEffectiveMarkup', 'fp_getLmfMatrix',
-  'rmesSignalsCfg', '_grossUpFactor', '_commissionFactor', 'TODAY', 'CFG'
+  'rmesSignalsCfg', '_grossUpFactor', '_commissionFactor', 'renderRMESConfigTab', 'TODAY', 'CFG'
 ]);
 const t0 = new Date(X.TODAY); t0.setHours(0,0,0,0);
 
@@ -142,5 +142,20 @@ for (const id of T.IDS){
     ok(src.indexOf(vecchio) === -1, 'nessun testo cita piu "' + vecchio + '"');
   ok(/Expedia Hotel Collect|Hotel Collect/.test(src), 'le note nominano Hotel Collect');
   ok(/1\.1996/.test(src) && /1\.2195/.test(src), 'e i fattori attuali');
+}
+
+/* --- LE COMMISSIONI SI DEVONO POTER LEGGERE ----------------------------- */
+/* Vivevano solo nel codice: per sapere quanto tiene ciascun portale bisognava
+   aprire engine.js. Sono numeri che cambiano senza preavviso, quindi la tab
+   RMES deve mostrarli. */
+{
+  w.CURRENT_STRUCT = 'alfani'; w.RMES_TAB_STRUCT = 'alfani';
+  try { w.renderRMESConfigTab(); } catch(e){}
+  const t = (D.getElementById('fp-tab-wrap') || {}).textContent || '';
+  ok(/What each channel keeps/.test(t), 'la tab RMES mostra le commissioni');
+  for (const k of ['Expedia Collect', 'Ctrip', 'Booking', 'Airbnb', 'Hotel Collect'])
+    ok(t.includes(k), 'elenca ' + k);
+  ok(/1\.1996/.test(t) && /1\.1796/.test(t), 'con i due fattori Expedia, non solo quello della struttura aperta');
+  ok(/1\.2195/.test(t) && /1\.1765/.test(t), 'e i due di Ctrip');
 }
 fine();

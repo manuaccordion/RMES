@@ -139,4 +139,54 @@ for (const id of T.IDS){
   const lug = perMese[202607] || 0, ago = perMese[202608] || 0;
   ok(lug > 100 && ago > 100, 'i mesi hanno le loro notti', 'luglio ' + lug + ' · agosto ' + ago);
 }
+
+/* --- SALTI ANOMALI FRA ANNI SULLO STESSO CANALE ------------------------- */
+/* IL CONTROLLO CHE MANCAVA. Tutti gli altri verificano la coerenza INTERNA
+   del calcolo: che il motore applichi la regola giusta. Nessuno verificava la
+   natura del DATO IN INGRESSO.
+   Il 2025 di Nazionale e Porte Nuove conteneva quello che incassavi tu, non
+   quello che pagava il cliente, perche' veniva da un file costruito con
+   un'altra logica. Il motore applicava correttamente il fattore x1 di Airbnb,
+   ma a un numero che non era quello che credeva. L'errore e' stato trovato a
+   mano, guardando le schermate Airbnb: nessun test poteva prenderlo.
+   Un salto secco del prezzo medio a notte, sullo stesso canale e struttura,
+   fra un anno e l'altro, e' il sintomo di questo tipo di problema. Soglia 15%:
+   il caso Airbnb faceva +24% su Nazionale e +18% su Porte Nuove.
+   Il 2024 e' escluso: anno di seeding, dati parziali e campioni piccoli. */
+{
+  const SOGLIA = 0.15;
+  /* Salti gia' esaminati e spiegati. Toglierne uno da qui lo rimette sotto
+     osservazione; aggiungerne uno richiede di aver capito perche'. */
+  const SPIEGATI = {
+    'alfani|Direct': 'apertura della struttura: il mix di camere vendute in diretta e cambiato'
+  };
+  const perKey = {};
+  for (const b of X.BOOKINGS){
+    if (b.cancelled || !b.stayYmds || !b.stayYmds.length) continue;
+    const id = Object.keys(X.CFG.structures).find(k => new Set(w.structKeysFor(k)).has(b.struct));
+    if (!id) continue;
+    const anno = Math.floor(Math.min(...b.stayYmds) / 10000);
+    (perKey[id + '|' + (b.canale || '?') + '|' + anno] = perKey[id + '|' + (b.canale || '?') + '|' + anno] || [])
+      .push(b.revPerNight || 0);
+  }
+  const mediana = a => { a = a.slice().sort((x,y) => x-y); return a.length ? a[a.length>>1] : null; };
+  const nuovi = [];
+  for (const k in perKey){
+    const [id, ch, anno] = k.split('|');
+    if (anno !== '2026') continue;
+    const prec = perKey[id + '|' + ch + '|2025'];
+    if (!prec || prec.length < 20 || perKey[k].length < 20) continue;
+    const a = mediana(perKey[k]), b = mediana(prec);
+    if (!(a > 0 && b > 0)) continue;
+    const salto = a/b - 1;
+    if (Math.abs(salto) <= SOGLIA) continue;
+    const chiave = id + '|' + ch;
+    const txt = id + ' ' + ch + ': ' + Math.round(b) + ' → ' + Math.round(a)
+              + ' (' + (salto>=0?'+':'') + (salto*100).toFixed(0) + '%)';
+    if (SPIEGATI[chiave]) info('salto noto ·', txt, '·', SPIEGATI[chiave]);
+    else nuovi.push(txt);
+  }
+  ok(nuovi.length === 0, 'nessun salto inspiegato del prezzo medio fra 2025 e 2026',
+     nuovi.length + ' · ' + nuovi.slice(0,2).join(' | '));
+}
 fine();
