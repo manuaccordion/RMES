@@ -11591,7 +11591,7 @@ function fp_renderFoundationConfigBox(structKey){
   h += '</div>';
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓑ Base, Floor, OTA markup, Elasticity <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
-  h += '<div class="panel-sub"><b>Annual Anchor Price</b>: a fallback value (net Beddy_eq) used as guard-rail of the Base Price <b>only when LY data for the target month is missing</b>. In normal conditions the guard-rail uses the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month, computed dynamically from the last 2 years. Default Firenze 220 / Condotta 280 / Alfani 270 / David\'s 145. <b>Floor</b>: the absolute minimum below which the Base Price never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. <b>Price elasticity</b>: the estimate used in override simulations (RMES modal). E.g. 1.0 = if I lower the price -10%, I sell +10% RN. Default 1.0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
+  h += '<div class="panel-sub"><b>Annual Anchor Price</b>: a fallback value (net Beddy_eq) used as guard-rail of the Base Price <b>only when LY data for the target month is missing</b>. In normal conditions the guard-rail uses the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month, computed dynamically from the last 2 years. Default Firenze 220 / Condotta 280 / Alfani 270 / David\'s 145. <b>Floor</b>: the absolute minimum below which the Base Price never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. 0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Used as guard-rail only when LY data for the target month is missing. Normally the Monthly Anchor (computed from last 2 years data) is used instead."><b style="color:#7a4f1c">Annual Anchor (fallback)</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Annual minimum for this property. The effective floor on each date is the HIGHER of this and the historical p15 of that period."><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="10" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
@@ -11660,12 +11660,11 @@ function fp_renderFoundationConfigBox(structKey){
     h += _commRow('Direct', 'none', '&times;1', '');
   } catch(e){}
   h += '</table>';
-  h += '<div style="font-size:10.5px;color:var(--ink-3);margin-top:4px">Checked against real bookings: Expedia 575.52 &rarr; 690.37 &middot; Ctrip 523.75 &rarr; 638.72 &middot; Airbnb 179 &rarr; 179. These figures are set in the code: ask for a change if a channel renegotiates.</div>';
   h += '</div>';
-  h += '<label style="font-size:12px;color:var(--ink-2)" title="Price elasticity: if the price changes by X%, expected RN change in the opposite direction by X% × elasticity. Default 1.0 (ratio 1:1). E.g.: 0.5 = low elasticity, 1.5 = high elasticity."><b style="color:#a83b3b">Price elasticity</b>: <input type="number" id="fp-elasticity-input" min="0" max="3" step="0.1" style="width:60px;padding:6px 8px;border:1px solid #a83b3b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fdeef0"> :1</label>';
-  h += '<button id="fp-elasticity-estimate" type="button" style="font-size:11px;padding:6px 10px;border:1px solid #a83b3b;border-radius:4px;background:#fff;color:#a83b3b;cursor:pointer;font-family:\'DM Sans\',sans-serif" title="Estimate elasticity from the last 24 months of history">📊 Estimate from data</button>';
-  h += '<span style="font-size:11px;color:var(--ink-3);font-style:italic">Press "Recompute Base Price" below to apply</span>';
-  h += '<div id="fp-mk-measured" style="flex-basis:100%;font-size:11px;color:var(--ink-3);margin-top:2px"></div>';
+  /* Tolte la riga dell'elasticita' e il confronto sui markup misurati:
+     l'elasticita' non viene piu' usata nel calcolo del prezzo e il confronto
+     coi markup misurati ripeteva, in forma piu' confusa, quello che la tabella
+     qui sopra dice gia' con i fattori veri. */
   h += '</div></div>';
   h += '<div class="panel" style="margin-bottom:16px">';
   h += '<div class="panel-head"><div><h3>Ⓒ Compset competitor weights and offsets <span class="mono" style="font-weight:400;font-size:11px;color:var(--ink-3);margin-left:6px">property: ' + structLbl + '</span></h3>';
@@ -11697,38 +11696,6 @@ function fp_renderFoundationConfigBox(structKey){
   }
   document.getElementById('fp-base-input').value = fp_getBasePrice(structKey);
   document.getElementById('fp-floor-input').value = fp_getFloor(structKey);
-  /* Markup CONFIGURATO contro quello che i dati mostrano. Un markup sbagliato
-     falsa tutto a monte: il prezzo-Beddy e' il lordo diviso (1+markup), quindi
-     se il ricarico vero e' meno di quello impostato, sembra che si incassi meno
-     di quanto si incassa e il Base Price appare sovrastimato. */
-  (function(){
-    const el = document.getElementById('fp-mk-measured');
-    if (!el || typeof rmesMarkupMeasured !== 'function') return;
-    const meas = rmesMarkupMeasured(structKey);
-    const conf = fp_getChannelMarkups(structKey);
-    const pick = (ch) => /booking/i.test(ch) ? conf.booking
-                       : (/expedia|hotels|orbitz/i.test(ch) ? conf.expedia
-                       : (/airbnb|vrbo/i.test(ch) ? conf.airbnb : null));
-    const parts = [];
-    for (const ch of Object.keys(meas).sort()){
-      const m = meas[ch];
-      const c = pick(ch);              // percentuale (13 = 13%)
-      const mv = m.markup * 100;
-      let tag = '', col = 'var(--ink-3)';
-      if (m.weak){ tag = ' \u26a0 few pairs'; }
-      else if (c != null && Math.abs(mv - c) > 3){ tag = ' \u26a0'; col = '#b0332f'; }
-      else if (c != null){ tag = ' \u2713'; col = '#2c7a4b'; }
-      parts.push('<span style="color:' + col + '" title="' + escapeHtml(
-          ch + ': measured ' + mv.toFixed(1) + '% on ' + m.n + ' close pairs against direct sales'
-          + (c != null ? ', configured ' + c + '%' : ', no configured value')
-          + '\nThe engine keeps using the configured value; this is a check.')
-        + '">' + escapeHtml(ch) + ' ' + mv.toFixed(0) + '%'
-        + (c != null ? '<span style="opacity:.6"> vs ' + c + '%</span>' : '') + tag + '</span>');
-    }
-    el.innerHTML = parts.length
-      ? ('Measured from your own bookings: ' + parts.join(' &nbsp;\u00b7&nbsp; '))
-      : '';
-  })();
   // Accanto al floor annuale: il p15 storico mese per mese, per vedere quando
   // e' lui a comandare. Il floor effettivo e' sempre il piu' alto dei due.
   (function(){
@@ -12022,54 +11989,6 @@ function fp_renderFoundationConfigBox(structKey){
         if (typeof setWeight === 'function') setWeight(structKey, cn, 1.0);
       }
       fp_renderFoundationConfigBox(structKey);
-    };
-  }
-  const btnEstE = document.getElementById('fp-elasticity-estimate');
-  if (btnEstE){
-    btnEstE.onclick = function(){
-      btnEstE.disabled = true;
-      btnEstE.textContent = '⏳ Calcolo...';
-      setTimeout(function(){
-        try {
-          const result = fp_estimateElasticity(structKey);
-          btnEstE.disabled = false;
-          btnEstE.textContent = '📊 Estimate from data';
-          if (!result){
-            alert('Not enough data to estimate elasticity (at least 20 observations and 30 closed days in the last 24 months needed).');
-            return;
-          }
-          const msg = 'ELASTICITY ESTIMATE — ' + structLbl + '\n'
-                    + '━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'
-                    + 'Method: ' + (result.method || 'standard') + '\n'
-                    + '(comparison of pickup in specific time windows before check-in,\n'
-                    + ' not the closed-day final ADR)\n\n'
-                    + 'Estimate (clamped 0-3): ' + result.estimate.toFixed(2) + ' :1\n'
-                    + 'Raw median: ' + result.median.toFixed(2) + '\n'
-                    + 'P25-P75 range: [' + result.p25.toFixed(2) + ', ' + result.p75.toFixed(2) + ']\n\n'
-                    + 'Based on:\n'
-                    + '  • ' + result.nObservations + ' valid observations (out of ' + (result.nObservationsTotal||0) + ' total)\n'
-                    + '  • ' + result.nGroups + ' groups (month × DOW × pickup window)\n\n'
-                    + 'Filters applied:\n'
-                    + '  • ' + (result.nFilteredOccPre||0) + ' observations discarded (pre-window OCC ≥80%)\n'
-                    + '  • ' + (result.nFilteredSmallAdr||0) + ' observations discarded (Δ%ADR <5%)\n'
-                    + '  • ' + (result.nFilteredOutlier||0) + ' outliers discarded (elasticity outside [-3, +5])\n\n'
-                    + 'INTERPRETATION:\n'
-                    + '  • value near 0: the price was already dynamically adjusted to demand → masked signal\n'
-                    + '  • value 0.5-1: inelastic market (demand barely responds to price)\n'
-                    + '  • value 1-2: elastic market (typical urban hospitality)\n'
-                    + '  • value >2: highly elastic (leisure market, weekenders)\n\n'
-                    + 'Apply estimate to the input?\n'
-                    + '(Proposed value: ' + result.estimate.toFixed(1) + ')';
-          if (confirm(msg)){
-            const inp = document.getElementById('fp-elasticity-input');
-            if (inp) inp.value = result.estimate.toFixed(1);
-          }
-        } catch(e){
-          btnEstE.disabled = false;
-          btnEstE.textContent = '📊 Estimate from data';
-          alert('Errore nel calcolo: ' + e.message);
-        }
-      }, 50);
     };
   }
   document.getElementById('fp-recompute').onclick = function(){
