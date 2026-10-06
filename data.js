@@ -5689,102 +5689,102 @@ n.3093769010,14/08/2022 18:55,,BOOKINGXML,Lee Barefoot,Appartamento Classic con 
 1357,23/11/2024 20:04:57,,Booking,Chaput Edgar,Blu,Blu - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,352.03,Florence David's Apartament,Confermate,22,Booking,0,
 1341,16/11/2024 16:55:52,,Booking,Melissa Revelli,Senape,Senape - Non Rimborsabile OTA,31/12/2024,02/01/2025,2,436.56,Florence David's Apartament,Confermate,33,Booking,0,
 1367,28/11/2024 18:50:10,29/11/2024,Booking,Fabrizio Golfi,Verde,Verde - Non Rimborsabile OTA,30/12/2024,01/01/2025,2,443.72,Florence David's Apartament,Cancellate,0,Booking,0,
-HMSFDP4WTW,06/06/2025,,Airbnb,,Palazzo Pitti,,30/06/2025,03/07/2025,3,243.46,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBQ289MTM,30/06/2025,,Airbnb,,Palazzo Vecchio,,30/06/2025,01/07/2025,1,64.63,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBZ2DMWPN,12/03/2025,,Airbnb,,Uffizi,,29/06/2025,01/07/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYEZQXZH9,10/06/2025,,Airbnb,,Palazzo Pitti,,27/06/2025,29/06/2025,2,167.36,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXHJSE3J8,04/06/2025,,Airbnb,,Palazzo Vecchio,,26/06/2025,29/06/2025,3,263.43,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMEJPRQHZM,31/05/2025,,Airbnb,,Uffizi,,26/06/2025,28/06/2025,2,385.19,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMKDXBQEYX,07/05/2025,,Airbnb,,Cupola,,25/06/2025,29/06/2025,4,450.82,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMMQ4AP2XH,15/06/2025,,Airbnb,,Palazzo Pitti,,25/06/2025,27/06/2025,2,209.21,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMZHX498K4,01/06/2025,,Airbnb,,Palazzo Vecchio,,21/06/2025,26/06/2025,5,487.92,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMHMMQ94A5,08/01/2025,,Airbnb,,Uffizi,,21/06/2025,25/06/2025,4,767.39,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMXZZSDZT8,30/05/2025,,Airbnb,,Palazzo Pitti,,20/06/2025,25/06/2025,5,542.13,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM8P3AFKA3,19/05/2025,,Airbnb,,Cupola,,20/06/2025,24/06/2025,4,753.49,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCJPFSMR8,30/05/2025,,Airbnb,,Cupola,,19/06/2025,20/06/2025,1,154.05,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMXRJNCK48,15/01/2025,,Airbnb,,Cupola,,17/06/2025,19/06/2025,2,343.43,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMFFXJYPM3,01/06/2025,,Airbnb,,Uffizi,,16/06/2025,20/06/2025,4,999.66,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMJRRAWB9J,22/04/2025,,Airbnb,,Palazzo Vecchio,,15/06/2025,16/06/2025,1,164.56,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBZFMJXSR,21/04/2025,,Airbnb,,Palazzo Pitti,,15/06/2025,16/06/2025,1,157.37,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJCK8QD4T,14/06/2025,,Airbnb,,Uffizi,,14/06/2025,16/06/2025,2,252.97,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4FWW3J8J,07/03/2025,,Airbnb,,Cupola,,13/06/2025,16/06/2025,3,537.52,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9EN8DHJB,10/06/2025,,Airbnb,,Palazzo Pitti,,13/06/2025,15/06/2025,2,190.71,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMAJEMEQBT,11/06/2025,,Airbnb,,Uffizi,,12/06/2025,14/06/2025,2,333.48,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBS95MWH3,03/06/2025,,Airbnb,,Palazzo Vecchio,,12/06/2025,14/06/2025,2,243.46,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMNRCTHPCP,31/05/2025,,Airbnb,,Palazzo Pitti,,12/06/2025,13/06/2025,1,120.75,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJ8KK8PQW,02/05/2025,,Airbnb,,Cupola,,10/06/2025,13/06/2025,3,564.63,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYQHB4DKT,10/06/2025,,Airbnb,,Uffizi,,10/06/2025,11/06/2025,1,127.46,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCQYYFNQT,06/06/2025,,Airbnb,,Cupola,,07/06/2025,10/06/2025,3,383.88,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMQE52KQXN,13/01/2025,,Airbnb,,Uffizi,,06/06/2025,10/06/2025,4,767.38,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMWX55NMAB,23/05/2025,,Airbnb,,Palazzo Pitti,,06/06/2025,08/06/2025,2,262.48,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMQ5SHSAQ8,21/04/2025,,Airbnb,,Palazzo Vecchio,,06/06/2025,07/06/2025,1,114.62,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMQFPF8TD8,02/03/2025,,Airbnb,,Cupola,,05/06/2025,07/06/2025,2,343.44,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM42P9P4DD,04/06/2025,,Airbnb,,Uffizi,,05/06/2025,06/06/2025,1,154.99,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZFT9NMPM,29/04/2025,,Airbnb,,Palazzo Pitti,,05/06/2025,06/06/2025,1,133.59,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMMX4NB4FH,14/04/2025,,Airbnb,,Palazzo Vecchio,,05/06/2025,06/06/2025,1,114.62,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM8S4TZ2XW,03/06/2025,,Airbnb,,Uffizi,,04/06/2025,05/06/2025,1,127.41,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDPSPSE4C,05/02/2025,,Airbnb,,Cupola,,03/06/2025,05/06/2025,2,343.43,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNJAYZJYR,31/05/2025,,Airbnb,,Palazzo Vecchio,,01/06/2025,03/06/2025,2,176.97,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM8PYFQSFE,30/05/2025,,Airbnb,,Cupola,,31/05/2025,02/06/2025,2,343.43,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDF83QKSY,29/05/2025,,Airbnb,,Uffizi,,30/05/2025,04/06/2025,5,894.74,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZMEBWPWJ,29/04/2025,,Airbnb,,Palazzo Pitti,,30/05/2025,02/06/2025,3,352.85,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMNWRHQC4X,16/03/2025,,Airbnb,,Cupola,,29/05/2025,31/05/2025,2,343.44,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMT4NPWW8B,23/04/2025,,Airbnb,,Palazzo Vecchio,,28/05/2025,31/05/2025,3,356.79,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM22MSZQCS,27/12/2024,,Airbnb,,Cupola,,26/05/2025,29/05/2025,3,537.52,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9NA5P58M,19/01/2025,,Airbnb,,Uffizi,,25/05/2025,30/05/2025,5,1037.59,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDZBEYB9M,16/05/2025,,Airbnb,,Palazzo Pitti,,24/05/2025,28/05/2025,4,409.92,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM9S34FBBN,27/04/2025,,Airbnb,,Cupola,,24/05/2025,26/05/2025,2,381.38,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMP4BJFKDM,02/02/2025,,Airbnb,,Palazzo Pitti,,23/05/2025,24/05/2025,1,146.25,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMK3EDW4ST,09/01/2025,,Airbnb,,Uffizi,,23/05/2025,24/05/2025,1,174.44,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM3S22TMCN,22/05/2025,,Airbnb,,Palazzo Vecchio,,22/05/2025,24/05/2025,2,176.97,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMH2YQJMXJ,18/01/2025,,Airbnb,,Uffizi,,22/05/2025,23/05/2025,1,174.45,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMMFFAEF2J,09/03/2025,,Airbnb,,Cupola,,21/05/2025,24/05/2025,3,537.52,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZ2HENX8B,09/01/2025,,Airbnb,,Uffizi,,21/05/2025,22/05/2025,1,174.44,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMAWK8HHWR,14/04/2025,,Airbnb,,Palazzo Pitti,,20/05/2025,23/05/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2X3M24AX,21/04/2025,,Airbnb,,Uffizi,,20/05/2025,21/05/2025,1,184.48,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2FQ2MRNK,05/04/2025,,Airbnb,,Cupola,,19/05/2025,21/05/2025,2,352.47,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNEZH9KFW,26/01/2025,,Airbnb,,Uffizi,,18/05/2025,20/05/2025,2,365.22,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBEYK4SF5,15/04/2025,,Airbnb,,Palazzo Pitti,,17/05/2025,19/05/2025,2,222.16,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMW9ZYW24K,13/04/2025,,Airbnb,,Uffizi,,16/05/2025,18/05/2025,2,435.6,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDNA828CJ,01/04/2025,,Airbnb,,Cupola,,15/05/2025,19/05/2025,4,744.74,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYWRCPENF,21/04/2025,,Airbnb,,Palazzo Pitti,,14/05/2025,17/05/2025,3,325.26,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM5HJJ34TM,19/01/2025,,Airbnb,,Uffizi,,13/05/2025,16/05/2025,3,576.72,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMFPXXRQHM,05/03/2025,,Airbnb,,Uffizi,,11/05/2025,13/05/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMTYYMRSJD,14/04/2025,,Airbnb,,Palazzo Pitti,,10/05/2025,14/05/2025,4,422.28,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM382TAQDE,06/05/2025,,Airbnb,,Uffizi,,10/05/2025,11/05/2025,1,207.31,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2J8H24W2,20/01/2025,,Airbnb,,Uffizi,,08/05/2025,10/05/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMXM8XY2MJ,21/01/2025,,Airbnb,,Cupola,,07/05/2025,15/05/2025,8,1436.64,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMKCHM2XBS,22/04/2025,,Airbnb,,Palazzo Pitti,,06/05/2025,10/05/2025,4,412.77,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM525CASK8,25/02/2025,,Airbnb,,Uffizi,,06/05/2025,08/05/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMJTNRJKTY,03/05/2025,,Airbnb,,Uffizi,,03/05/2025,06/05/2025,3,498.99,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMQ8BB23DH,16/04/2025,,Airbnb,,Palazzo Vecchio,,02/05/2025,19/05/2025,17,2069.76,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJR4JTBFB,16/04/2025,,Airbnb,,Uffizi,,01/05/2025,03/05/2025,2,552.6,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMN3EJAD88,17/04/2025,,Airbnb,,Palazzo Pitti,,30/04/2025,05/05/2025,5,611.57,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2AKEP3FB,17/02/2025,,Airbnb,,Cupola,,30/04/2025,04/05/2025,4,717.35,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMTP52M4S2,27/04/2025,,Airbnb,,Palazzo Vecchio,,27/04/2025,02/05/2025,5,497.62,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMP3RNN3AE,19/04/2025,,Airbnb,,Ponte Vecchio,,25/04/2025,27/04/2025,2,197.04,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJQNYQZPQ,22/01/2025,,Airbnb,,Uffizi,,24/04/2025,27/04/2025,3,611.05,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMK2BPNBZP,14/04/2025,,Airbnb,,Palazzo Pitti,,23/04/2025,30/04/2025,7,714.64,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMPTB58YWD,24/03/2025,,Airbnb,,Ponte Vecchio,,23/04/2025,25/04/2025,2,195.32,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM4FFXZK9X,25/03/2025,,Airbnb,,Cupola,,22/04/2025,27/04/2025,5,897.07,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYFAF2K25,21/04/2025,,Airbnb,,Uffizi,,22/04/2025,24/04/2025,2,216.92,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5AB4WXTK,20/04/2025,,Airbnb,,Uffizi,,20/04/2025,22/04/2025,2,208.26,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM8AD3B5JW,06/03/2025,,Airbnb,,Cupola,,19/04/2025,22/04/2025,3,537.37,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZDXXKARQ,27/03/2025,,Airbnb,,Uffizi,,17/04/2025,19/04/2025,2,401.35,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMHDXFSQ49,27/03/2025,,Airbnb,,Cupola,,17/04/2025,19/04/2025,2,343.33,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMFKRYBC4F,28/03/2025,,Airbnb,,Palazzo Pitti,,15/04/2025,20/04/2025,5,592.55,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJYMKH2QK,12/03/2025,,Airbnb,,Ponte Vecchio,,15/04/2025,20/04/2025,5,466.04,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2SAJMCDT,27/03/2025,,Airbnb,,Cupola,,15/04/2025,17/04/2025,2,324.31,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9SJKHCN9,24/03/2025,,Airbnb,,Uffizi,,15/04/2025,17/04/2025,2,307.19,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2TAKW4PE,08/04/2025,,Airbnb,,Uffizi,,13/04/2025,15/04/2025,2,325.26,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMQRZ8XQKA,07/04/2025,,Airbnb,,Cupola,,12/04/2025,15/04/2025,3,451.77,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMJQ5WPDH3,04/04/2025,,Airbnb,,Ponte Vecchio,,12/04/2025,15/04/2025,3,246.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJT3QF9PZ,01/01/2025,,Airbnb,,Cupola,,11/04/2025,12/04/2025,1,163.61,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
+HMSFDP4WTW,06/06/2025 00:00,,Airbnb,Pranav Rampal,Palazzo Pitti,Flessibile,30/06/2025,03/07/2025,3,297.35,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMBQ289MTM,30/06/2025 00:00,,Airbnb,Valerio Donfrancesco,Palazzo Vecchio,Flessibile,30/06/2025,01/07/2025,1,97.96,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMBZ2DMWPN,12/03/2025 00:00,,Airbnb,Christoph G Barrera,Uffizi,Flessibile,29/06/2025,01/07/2025,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMYEZQXZH9,10/06/2025 00:00,,Airbnb,Bachar Ramadan,Palazzo Pitti,Flessibile,27/06/2025,29/06/2025,2,222.43,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMXHJSE3J8,04/06/2025 00:00,,Airbnb,지원 김,Palazzo Vecchio,Flessibile,26/06/2025,29/06/2025,3,321.54,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMEJPRQHZM,31/05/2025 00:00,,Airbnb,승훈 한,Uffizi,Flessibile,26/06/2025,28/06/2025,2,486.36,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMKDXBQEYX,07/05/2025 00:00,,Airbnb,Tristyn Davis,Cupola,Flessibile,25/06/2025,29/06/2025,4,540.52,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMMQ4AP2XH,15/06/2025 00:00,,Airbnb,Christina Maltagliati,Palazzo Pitti,Flessibile,25/06/2025,27/06/2025,2,273.14,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HMZHX498K4,01/06/2025 00:00,,Airbnb,Elena Creanga,Palazzo Vecchio,Flessibile,21/06/2025,26/06/2025,5,585.47,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HMHMMQ94A5,08/01/2025 00:00,,Airbnb,Heather Sorensen,Uffizi,Flessibile,21/06/2025,25/06/2025,4,924.09,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMXZZSDZT8,30/05/2025 00:00,,Airbnb,Natalya Fomina,Palazzo Pitti,Flessibile,20/06/2025,25/06/2025,5,651.16,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM8P3AFKA3,19/05/2025 00:00,,Airbnb,Lee Cherubin,Cupola,Flessibile,20/06/2025,24/06/2025,4,907.25,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMCJPFSMR8,30/05/2025 00:00,,Airbnb,Jana Verstraete,Cupola,Flessibile,19/06/2025,20/06/2025,1,206.3,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMXRJNCK48,15/01/2025 00:00,,Airbnb,Mădălina Crainicu,Cupola,Flessibile,17/06/2025,19/06/2025,2,435.76,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMFFXJYPM3,01/06/2025 00:00,,Airbnb,Sachin Vaish,Uffizi,Flessibile,16/06/2025,20/06/2025,4,1205.51,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMJRRAWB9J,22/04/2025 00:00,,Airbnb,Tommaso Paglia,Palazzo Vecchio,Flessibile,15/06/2025,16/06/2025,1,219.04,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HMBZFMJXSR,21/04/2025 00:00,,Airbnb,Arianna Cardoni,Palazzo Pitti,Flessibile,15/06/2025,16/06/2025,1,210.33,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HMJCK8QD4T,14/06/2025 00:00,,Airbnb,Unkyu Han,Uffizi,Flessibile,14/06/2025,16/06/2025,2,326.16,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM4FWW3J8J,07/03/2025 00:00,,Airbnb,Natalie Swinburne,Cupola,Flessibile,13/06/2025,16/06/2025,3,653.64,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM9EN8DHJB,10/06/2025 00:00,,Airbnb,Jessica Phillabaum,Palazzo Pitti,Flessibile,13/06/2025,15/06/2025,2,250.72,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMAJEMEQBT,11/06/2025 00:00,,Airbnb,Chohang Huang,Uffizi,Flessibile,12/06/2025,14/06/2025,2,423.71,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMBS95MWH3,03/06/2025 00:00,,Airbnb,Matthew Moore,Palazzo Vecchio,Flessibile,12/06/2025,14/06/2025,2,314.64,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMNRCTHPCP,31/05/2025 00:00,,Airbnb,Francesca Taburni,Palazzo Pitti,Flessibile,12/06/2025,13/06/2025,1,165.96,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMJ8KK8PQW,02/05/2025 00:00,,Airbnb,Rachel Radlein,Cupola,Flessibile,10/06/2025,13/06/2025,3,686.49,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMYQHB4DKT,10/06/2025 00:00,,Airbnb,Josh Chiswell,Uffizi,Flessibile,10/06/2025,11/06/2025,1,174.09,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMCQYYFNQT,06/06/2025 00:00,,Airbnb,Lutz Schneider,Cupola,Flessibile,07/06/2025,10/06/2025,3,467.48,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMQE52KQXN,13/01/2025 00:00,,Airbnb,Thomas Caselli,Uffizi,Flessibile,06/06/2025,10/06/2025,4,924.08,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMWX55NMAB,23/05/2025 00:00,,Airbnb,Chloe Ren,Palazzo Pitti,Flessibile,06/06/2025,08/06/2025,2,337.68,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMQ5SHSAQ8,21/04/2025 00:00,,Airbnb,Francesca Cortinovis,Palazzo Vecchio,Flessibile,06/06/2025,07/06/2025,1,158.53,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMQFPF8TD8,02/03/2025 00:00,,Airbnb,Emi Imai,Cupola,Flessibile,05/06/2025,07/06/2025,2,435.77,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM42P9P4DD,04/06/2025 00:00,,Airbnb,Amelia O’Neill,Uffizi,Flessibile,05/06/2025,06/06/2025,1,207.44,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMZFT9NMPM,29/04/2025 00:00,,Airbnb,Biagio Varlese,Palazzo Pitti,Flessibile,05/06/2025,06/06/2025,1,181.51,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMMX4NB4FH,14/04/2025 00:00,,Airbnb,Diego Adami,Palazzo Vecchio,Flessibile,05/06/2025,06/06/2025,1,158.53,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM8S4TZ2XW,03/06/2025 00:00,,Airbnb,Subi A,Uffizi,Flessibile,04/06/2025,05/06/2025,1,174.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMDPSPSE4C,05/02/2025 00:00,,Airbnb,Lori Biunno,Cupola,Flessibile,03/06/2025,05/06/2025,2,435.76,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMNJAYZJYR,31/05/2025 00:00,,Airbnb,Thiago Beltramini Morais,Palazzo Vecchio,Flessibile,01/06/2025,03/06/2025,2,234.07,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM8PYFQSFE,30/05/2025 00:00,,Airbnb,David Fuller,Cupola,Flessibile,31/05/2025,02/06/2025,2,435.76,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMDF83QKSY,29/05/2025 00:00,,Airbnb,Josh Gain,Uffizi,Flessibile,30/05/2025,04/06/2025,5,1078.39,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMZMEBWPWJ,29/04/2025 00:00,,Airbnb,Sky Wong,Palazzo Pitti,Flessibile,30/05/2025,02/06/2025,3,429.89,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMNWRHQC4X,16/03/2025 00:00,,Airbnb,Yoonjee Koh,Cupola,Flessibile,29/05/2025,31/05/2025,2,435.77,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMT4NPWW8B,23/04/2025 00:00,,Airbnb,Ana Gantman,Palazzo Vecchio,Flessibile,28/05/2025,31/05/2025,3,434.66,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 1
+HM22MSZQCS,27/12/2024 00:00,,Airbnb,Cha Robson,Cupola,Flessibile,26/05/2025,29/05/2025,3,653.64,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM9NA5P58M,19/01/2025 00:00,,Airbnb,Sandra Venturi Moser,Uffizi,Flessibile,25/05/2025,30/05/2025,5,1251.47,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMDZBEYB9M,16/05/2025 00:00,,Airbnb,小宁 刘,Palazzo Pitti,Flessibile,24/05/2025,28/05/2025,4,490.97,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM9S34FBBN,27/04/2025 00:00,,Airbnb,倩 吴,Cupola,Flessibile,24/05/2025,26/05/2025,2,481.74,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMP4BJFKDM,02/02/2025 00:00,,Airbnb,Michael Staski,Palazzo Pitti,Flessibile,23/05/2025,24/05/2025,1,196.85,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMK3EDW4ST,09/01/2025 00:00,,Airbnb,Chris Cho,Uffizi,Flessibile,23/05/2025,24/05/2025,1,231.01,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM3S22TMCN,22/05/2025 00:00,,Airbnb,Heyuan Qi,Palazzo Vecchio,Flessibile,22/05/2025,24/05/2025,2,234.07,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMH2YQJMXJ,18/01/2025 00:00,,Airbnb,해명 이,Uffizi,Flessibile,22/05/2025,23/05/2025,1,231.02,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMMFFAEF2J,09/03/2025 00:00,,Airbnb,Peyman Amiri,Cupola,Flessibile,21/05/2025,24/05/2025,3,653.64,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMZ2HENX8B,09/01/2025 00:00,,Airbnb,Chris Cho,Uffizi,Flessibile,21/05/2025,22/05/2025,1,231.01,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMAWK8HHWR,14/04/2025 00:00,,Airbnb,Anita Zenardo,Palazzo Pitti,Flessibile,20/05/2025,23/05/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM2X3M24AX,21/04/2025 00:00,,Airbnb,Joseph Block,Uffizi,Flessibile,20/05/2025,21/05/2025,1,243.17,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2FQ2MRNK,05/04/2025 00:00,,Airbnb,혜현 인,Cupola,Flessibile,19/05/2025,21/05/2025,2,446.71,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMNEZH9KFW,26/01/2025 00:00,,Airbnb,Vernice Lee,Uffizi,Flessibile,18/05/2025,20/05/2025,2,462.16,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMBEYK4SF5,15/04/2025 00:00,,Airbnb,Chiara Petrella,Palazzo Pitti,Flessibile,17/05/2025,19/05/2025,2,288.83,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMW9ZYW24K,13/04/2025 00:00,,Airbnb,Celine Lee,Uffizi,Flessibile,16/05/2025,18/05/2025,2,547.44,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMDNA828CJ,01/04/2025 00:00,,Airbnb,Trent Lillis,Cupola,Flessibile,15/05/2025,19/05/2025,4,896.65,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMYWRCPENF,21/04/2025 00:00,,Airbnb,Cora Jornacion,Palazzo Pitti,Flessibile,14/05/2025,17/05/2025,3,396.46,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM5HJJ34TM,19/01/2025 00:00,,Airbnb,Peiyu Liu,Uffizi,Flessibile,13/05/2025,16/05/2025,3,701.13,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMFPXXRQHM,05/03/2025 00:00,,Airbnb,韶嵘 王,Uffizi,Flessibile,11/05/2025,13/05/2025,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMTYYMRSJD,14/04/2025 00:00,,Airbnb,Dipak Bhowmick,Palazzo Pitti,Flessibile,10/05/2025,14/05/2025,4,505.94,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM382TAQDE,06/05/2025 00:00,,Airbnb,Ariel Kuo,Uffizi,Flessibile,10/05/2025,11/05/2025,1,270.84,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HM2J8H24W2,20/01/2025 00:00,,Airbnb,Jenny Tan,Uffizi,Flessibile,08/05/2025,10/05/2025,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMXM8XY2MJ,21/01/2025 00:00,,Airbnb,Diane Jones,Cupola,Flessibile,07/05/2025,15/05/2025,8,1734.97,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HMKCHM2XBS,22/04/2025 00:00,,Airbnb,Octavian Chiorean,Palazzo Pitti,Flessibile,06/05/2025,10/05/2025,4,494.42,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM525CASK8,25/02/2025 00:00,,Airbnb,Jesus Eduardo Paez Alaniz,Uffizi,Flessibile,06/05/2025,08/05/2025,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMJTNRJKTY,03/05/2025 00:00,,Airbnb,Angela Tyre,Uffizi,Flessibile,03/05/2025,06/05/2025,3,606.96,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMQ8BB23DH,16/04/2025 00:00,,Airbnb,Marc Aubichon,Palazzo Vecchio,Flessibile,02/05/2025,19/05/2025,17,2502.08,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMJR4JTBFB,16/04/2025 00:00,,Airbnb,Ryan Adams,Uffizi,Flessibile,01/05/2025,03/05/2025,2,689.2,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMN3EJAD88,17/04/2025 00:00,,Airbnb,Clare Williams,Palazzo Pitti,Flessibile,30/04/2025,05/05/2025,5,735.29,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM2AKEP3FB,17/02/2025 00:00,,Airbnb,Dakota Alexyn,Cupola,Flessibile,30/04/2025,04/05/2025,4,863.46,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMTP52M4S2,27/04/2025 00:00,,Airbnb,Ly Phạm,Palazzo Vecchio,Flessibile,27/04/2025,02/05/2025,5,597.23,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMP3RNN3AE,19/04/2025 00:00,,Airbnb,Franca Nicolia,Ponte Vecchio,Flessibile,25/04/2025,27/04/2025,2,258.39,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMJQNYQZPQ,22/01/2025 00:00,,Airbnb,Alison Jessup,Uffizi,Flessibile,24/04/2025,27/04/2025,3,742.73,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMK2BPNBZP,14/04/2025 00:00,,Airbnb,Ines Lahoel,Palazzo Pitti,Flessibile,23/04/2025,30/04/2025,7,860.18,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMPTB58YWD,24/03/2025 00:00,,Airbnb,Vikas Misri,Ponte Vecchio,Flessibile,23/04/2025,25/04/2025,2,256.31,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM4FFXZK9X,25/03/2025 00:00,,Airbnb,Harry Donaghy,Cupola,Flessibile,22/04/2025,27/04/2025,5,1081.21,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMYFAF2K25,21/04/2025 00:00,,Airbnb,Karla Yvonne Ramirez Lazo,Uffizi,Flessibile,22/04/2025,24/04/2025,2,282.48,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM5AB4WXTK,20/04/2025 00:00,,Airbnb,Amal M,Uffizi,Flessibile,20/04/2025,22/04/2025,2,271.99,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM8AD3B5JW,06/03/2025 00:00,,Airbnb,Kerry Borbidge,Cupola,Flessibile,19/04/2025,22/04/2025,3,653.46,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMZDXXKARQ,27/03/2025 00:00,,Airbnb,Nicole Ingraffia,Uffizi,Flessibile,17/04/2025,19/04/2025,2,505.94,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMHDXFSQ49,27/03/2025 00:00,,Airbnb,Camilla Xavier,Cupola,Flessibile,17/04/2025,19/04/2025,2,435.64,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMFKRYBC4F,28/03/2025 00:00,,Airbnb,Sue Lin,Palazzo Pitti,Flessibile,15/04/2025,20/04/2025,5,712.25,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMJYMKH2QK,12/03/2025 00:00,,Airbnb,Viktoria Radeva,Ponte Vecchio,Flessibile,15/04/2025,20/04/2025,5,558.96,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM2SAJMCDT,27/03/2025 00:00,,Airbnb,Nicole Ingraffia,Cupola,Flessibile,15/04/2025,17/04/2025,2,412.6,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HM9SJKHCN9,24/03/2025 00:00,,Airbnb,Andrés Esquivel,Uffizi,Flessibile,15/04/2025,17/04/2025,2,391.85,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2TAKW4PE,08/04/2025 00:00,,Airbnb,Christopher Polanco,Uffizi,Flessibile,13/04/2025,15/04/2025,2,413.75,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMQRZ8XQKA,07/04/2025 00:00,,Airbnb,Ankit Parikh,Cupola,Flessibile,12/04/2025,15/04/2025,3,549.74,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMJQ5WPDH3,04/04/2025 00:00,,Airbnb,Ian Hung,Ponte Vecchio,Flessibile,12/04/2025,15/04/2025,3,301.5,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMJT3QF9PZ,01/01/2025 00:00,,Airbnb,Harrison Watt,Cupola,Flessibile,11/04/2025,12/04/2025,1,217.89,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
 HMBTMCQNEN,27/03/2025,,Airbnb,,Palazzo Pitti,,10/04/2025,14/04/2025,4,167.36,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM5FJBAJDE,09/04/2025,,Airbnb,,Palazzo Pitti,,10/04/2025,12/04/2025,2,176.97,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM9FWNNNXP,24/03/2025,,Airbnb,,Uffizi,,09/04/2025,12/04/2025,3,489.82,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HME32C93FS,08/04/2025,,Airbnb,,Cupola,,09/04/2025,10/04/2025,1,82.28,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMKTSYD8WY,12/03/2025,,Airbnb,,Ponte Vecchio,,07/04/2025,12/04/2025,5,412.77,Porte Nuove Apartments,Confermate,0,Airbnb,40,
+HM5FJBAJDE,09/04/2025 00:00,,Airbnb,Barbara Plaza,Palazzo Pitti,Flessibile,10/04/2025,12/04/2025,2,234.07,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HM9FWNNNXP,24/03/2025 00:00,,Airbnb,Isabela Borba,Uffizi,Flessibile,09/04/2025,12/04/2025,3,595.84,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HME32C93FS,08/04/2025 00:00,,Airbnb,Rue Tsoka,Cupola,Flessibile,09/04/2025,10/04/2025,1,119.35,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMKTSYD8WY,12/03/2025 00:00,,Airbnb,용희 김,Ponte Vecchio,Flessibile,07/04/2025,12/04/2025,5,494.42,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
 HMX2T9KNHX,25/03/2025,,Airbnb,,Uffizi,,06/04/2025,09/04/2025,3,528.82,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
 HMQ3XR9MB8,18/03/2025,,Airbnb,,Palazzo Pitti,,06/04/2025,09/04/2025,3,280.56,Porte Nuove Apartments,Confermate,0,Airbnb,40,
 HM8FXPDDXZ,03/04/2025,,Airbnb,,Cupola,,04/04/2025,06/04/2025,2,244.41,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
@@ -5859,397 +5859,397 @@ HMT8SYQ2SM,12/11/2024,,Airbnb,,Uffizi,,07/01/2025,09/01/2025,2,226.44,Nazionale 
 HM4BBW4QKT,28/12/2024,,Airbnb,,Uffizi,,31/12/2024,05/01/2025,5,944.92,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
 HMPT583YXA,28/12/2024,,Airbnb,,Palazzo Pitti,,31/12/2024,02/01/2025,2,236.37,Porte Nuove Apartments,Confermate,0,Airbnb,40,
 HM4S4H9B9A,03/11/2024,,Airbnb,,Cupola,,27/12/2024,02/01/2025,6,1095.07,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMTJZXXMCC,18/12/2025,,Airbnb,,Palazzo Vecchio,,31/12/2025,01/01/2026,1,118.94,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXHAX33RX,28/12/2025,,Airbnb,,Ponte Vecchio,,30/12/2025,01/01/2026,2,198.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM59J5RZT5,27/10/2025,,Airbnb,,Uffizi,,30/12/2025,01/01/2026,2,355.67,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5FJX2CKQ,22/12/2025,,Airbnb,,Palazzo Pitti,,29/12/2025,05/01/2026,7,566.35,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMQ25RZNKR,25/11/2025,,Airbnb,,Cupola,,29/12/2025,03/01/2026,5,815.5,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPBKNPX3Q,20/10/2025,,Airbnb,,Uffizi,,29/12/2025,30/12/2025,1,115.88,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM84M3W5ZN,19/10/2025,,Airbnb,,Ponte Vecchio,,28/12/2025,30/12/2025,2,121.85,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMSRX8HFBD,19/12/2025,,Airbnb,,Palazzo Pitti,,27/12/2025,29/12/2025,2,120.56,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMWWYDZRXJ,20/12/2025,,Airbnb,,Palazzo Vecchio,,26/12/2025,31/12/2025,5,314.36,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXCQCMTZK,21/12/2025,,Airbnb,,Cupola,,26/12/2025,29/12/2025,3,281.12,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM329Z3XTR,14/11/2025,,Airbnb,,Uffizi,,26/12/2025,29/12/2025,3,506.64,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMW9NJEJWK,19/12/2025,,Airbnb,,Ponte Vecchio,,26/12/2025,28/12/2025,2,107.58,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2WFTNC8A,23/12/2025,,Airbnb,,Palazzo Pitti,,23/12/2025,27/12/2025,4,225.09,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMNM5RCEYY,25/11/2025,,Airbnb,,Uffizi,,23/12/2025,25/12/2025,2,165.2,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPW4PM5NN,23/12/2025,,Airbnb,,Palazzo Vecchio,,23/12/2025,24/12/2025,1,45.59,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBBEXB2YY,16/10/2025,,Airbnb,,Cupola,,21/12/2025,24/12/2025,3,297.82,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMFNPXWWS3,30/10/2025,,Airbnb,,Palazzo Pitti,,20/12/2025,23/12/2025,3,174.26,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJ5KP45CQ,06/12/2025,,Airbnb,,Uffizi,,18/12/2025,22/12/2025,4,303.01,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMN2MJAZX9,18/12/2025,,Airbnb,,Cupola,,18/12/2025,19/12/2025,1,48.83,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM3WK2ECYF,06/12/2025,,Airbnb,,Uffizi,,15/12/2025,18/12/2025,3,226.78,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMEANK3E84,14/12/2025,,Airbnb,,Cupola,,15/12/2025,16/12/2025,1,41.13,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5TTRT8H8,11/12/2025,,Airbnb,,Uffizi,,13/12/2025,15/12/2025,2,125.1,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBYXDWXZT,02/12/2025,,Airbnb,,Cupola,,11/12/2025,14/12/2025,3,249.98,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPN92DYXT,03/12/2025,,Airbnb,,Uffizi,,11/12/2025,13/12/2025,2,165.2,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4X2YWMYF,08/12/2025,,Airbnb,,Uffizi,,09/12/2025,11/12/2025,2,125.1,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMF92A8YXN,02/12/2025,,Airbnb,,Cupola,,08/12/2025,11/12/2025,3,247.1,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMSFWTRYPJ,08/11/2025,,Airbnb,,Uffizi,,06/12/2025,08/12/2025,2,215.3,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPCQKMWRR,23/10/2025,,Airbnb,,Cupola,,05/12/2025,08/12/2025,3,174.26,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9CHBKNSJ,02/10/2025,,Airbnb,,Palazzo Vecchio,,05/12/2025,07/12/2025,2,124.84,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMDB43EENB,23/10/2025,,Airbnb,,Ponte Vecchio,,02/12/2025,20/12/2025,18,1170.94,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM9AE5FF8A,04/11/2025,,Airbnb,,Uffizi,,01/12/2025,03/12/2025,2,190.25,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCCKAAD5T,20/07/2025,,Airbnb,,Cupola,,30/11/2025,03/12/2025,3,323.36,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDTYJAQRJ,31/10/2025,,Airbnb,,Uffizi,,28/11/2025,01/12/2025,3,325.2,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMJP3XD3FA,02/11/2025,,Airbnb,,Cupola,,26/11/2025,28/11/2025,2,155.57,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMHAX8R5A3,04/11/2025,,Airbnb,,Uffizi,,26/11/2025,27/11/2025,1,79.46,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMT8CSAK2Q,11/11/2025,,Airbnb,,Cupola,,24/11/2025,25/11/2025,1,69.83,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4BCPY5NF,02/11/2025,,Airbnb,,Uffizi,,23/11/2025,25/11/2025,2,174.84,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMXT2DQWJX,30/10/2025,,Airbnb,,Cupola,,22/11/2025,24/11/2025,2,155.57,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4ZP3C2YQ,16/11/2025,,Airbnb,,Uffizi,,22/11/2025,23/11/2025,1,79.46,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDBP8H2ZS,01/11/2025,,Airbnb,,Cupola,,20/11/2025,22/11/2025,2,155.57,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM23A9F55X,28/10/2025,,Airbnb,,Uffizi,,19/11/2025,22/11/2025,3,291.41,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYER4Z8DQ,24/10/2025,,Airbnb,,Cupola,,18/11/2025,20/11/2025,2,161.35,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZH8ERMQP,20/10/2025,,Airbnb,,Uffizi,,17/11/2025,18/11/2025,1,124.74,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMR5DC3JZT,10/11/2025,,Airbnb,,Cupola,,16/11/2025,18/11/2025,2,155.57,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDKZPYP5M,13/11/2025,,Airbnb,,Uffizi,,14/11/2025,16/11/2025,2,183.6,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZHXPKP9K,29/10/2025,,Airbnb,,Cupola,,14/11/2025,16/11/2025,2,155.57,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMF3E3WFJF,28/10/2025,,Airbnb,,Uffizi,,11/11/2025,14/11/2025,3,291.41,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZFE5QD4W,27/10/2025,,Airbnb,,Cupola,,10/11/2025,12/11/2025,2,166.17,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBH5SWCKN,09/11/2025,,Airbnb,,Uffizi,,09/11/2025,11/11/2025,2,165.3,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9NY8NFDE,08/11/2025,,Airbnb,,Palazzo Vecchio,,09/11/2025,10/11/2025,1,58.94,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMPQPTDDZA,26/10/2025,,Airbnb,,Cupola,,07/11/2025,09/11/2025,2,175.8,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
+HMTJZXXMCC,18/12/2025 00:00,,Airbnb,Estella Spurio,Palazzo Vecchio,Flessibile,31/12/2025,01/01/2026,1,171.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMXHAX33RX,28/12/2025 00:00,,Airbnb,Davide Frattin,Ponte Vecchio,Flessibile,30/12/2025,01/01/2026,2,269.6,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HM59J5RZT5,27/10/2025 00:00,,Airbnb,Danielle Dobeleit,Uffizi,Flessibile,30/12/2025,01/01/2026,2,444.52,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM5FJX2CKQ,22/12/2025 00:00,,Airbnb,Mădălin Gabriel Mitrofan,Palazzo Pitti,Flessibile,29/12/2025,05/01/2026,7,700.75,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMQ25RZNKR,25/11/2025 00:00,,Airbnb,Lovey Singh,Cupola,Flessibile,29/12/2025,03/01/2026,5,969.25,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMPBKNPX3Q,20/10/2025 00:00,,Airbnb,Marihá Batista,Uffizi,Flessibile,29/12/2025,30/12/2025,1,157.66,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM84M3W5ZN,19/10/2025 00:00,,Airbnb,清然 何,Ponte Vecchio,Flessibile,28/12/2025,30/12/2025,2,164.81,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMSRX8HFBD,19/12/2025 00:00,,Airbnb,Luca Proietti,Palazzo Pitti,Flessibile,27/12/2025,29/12/2025,2,173.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMWWYDZRXJ,20/12/2025 00:00,,Airbnb,Andy Verstraeten,Palazzo Vecchio,Flessibile,26/12/2025,31/12/2025,5,390.0,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMXCQCMTZK,21/12/2025 00:00,,Airbnb,Tamara Young,Cupola,Flessibile,26/12/2025,29/12/2025,3,356.0,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM329Z3XTR,14/11/2025 00:00,,Airbnb,Eduardo Jimenez,Uffizi,Flessibile,26/12/2025,29/12/2025,3,607.84,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 3
+HMW9NJEJWK,19/12/2025 00:00,,Airbnb,Andrea Torrisi,Ponte Vecchio,Flessibile,26/12/2025,28/12/2025,2,157.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HM2WFTNC8A,23/12/2025 00:00,,Airbnb,Austin Loud,Palazzo Pitti,Flessibile,23/12/2025,27/12/2025,4,279.91,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 1
+HMNM5RCEYY,25/11/2025 00:00,,Airbnb,Aki Saito,Uffizi,Flessibile,23/12/2025,25/12/2025,2,216.66,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMPW4PM5NN,23/12/2025 00:00,,Airbnb,Frank Lotta,Palazzo Vecchio,Flessibile,23/12/2025,24/12/2025,1,80.55,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 1
+HMBBEXB2YY,16/10/2025 00:00,,Airbnb,경국 이,Cupola,Flessibile,21/12/2025,24/12/2025,3,358.03,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMFNPXWWS3,30/10/2025 00:00,,Airbnb,Diogo Kuhn,Palazzo Pitti,Flessibile,20/12/2025,23/12/2025,3,210.22,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMJ5KP45CQ,06/12/2025 00:00,,Airbnb,Emily Markow,Uffizi,Flessibile,18/12/2025,22/12/2025,4,376.0,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMN2MJAZX9,18/12/2025 00:00,,Airbnb,Andrea Meneghini,Cupola,Flessibile,18/12/2025,19/12/2025,1,84.54,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HM3WK2ECYF,06/12/2025 00:00,,Airbnb,Ellie Farner,Uffizi,Flessibile,15/12/2025,18/12/2025,3,288.99,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMEANK3E84,14/12/2025 00:00,,Airbnb,Rhea Gupta,Cupola,Flessibile,15/12/2025,16/12/2025,1,75.05,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HM5TTRT8H8,11/12/2025 00:00,,Airbnb,Rhea Gupta,Uffizi,Flessibile,13/12/2025,15/12/2025,2,178.6,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HMBYXDWXZT,02/12/2025 00:00,,Airbnb,Rene Castro,Cupola,Flessibile,11/12/2025,14/12/2025,3,300.8,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMPN92DYXT,03/12/2025 00:00,,Airbnb,提 阿,Uffizi,Flessibile,11/12/2025,13/12/2025,2,216.66,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM4X2YWMYF,08/12/2025 00:00,,Airbnb,Ying Liu,Uffizi,Flessibile,09/12/2025,11/12/2025,2,178.6,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HMF92A8YXN,02/12/2025 00:00,,Airbnb,Jennifer Nieman,Cupola,Flessibile,08/12/2025,11/12/2025,3,297.35,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 1
+HMSFWTRYPJ,08/11/2025 00:00,,Airbnb,Ariadna Mayol,Uffizi,Flessibile,06/12/2025,08/12/2025,2,276.6,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMPCQKMWRR,23/10/2025 00:00,,Airbnb,Massimiliano Granata,Cupola,Flessibile,05/12/2025,08/12/2025,3,210.22,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 1
+HM9CHBKNSJ,02/10/2025 00:00,,Airbnb,Bharagth Ravindhran,Palazzo Vecchio,Flessibile,05/12/2025,07/12/2025,2,168.38,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMDB43EENB,23/10/2025 00:00,,Airbnb,Long Zhang,Ponte Vecchio,Flessibile,02/12/2025,20/12/2025,18,1394.46,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HM9AE5FF8A,04/11/2025 00:00,,Airbnb,Stevens Wilson,Uffizi,Flessibile,01/12/2025,03/12/2025,2,246.63,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMCCKAAD5T,20/07/2025 00:00,,Airbnb,Chae Yeon Moon,Cupola,Flessibile,30/11/2025,03/12/2025,3,394.16,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMDTYJAQRJ,31/10/2025 00:00,,Airbnb,Christoph Altmann,Uffizi,Flessibile,28/11/2025,01/12/2025,3,390.78,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMJP3XD3FA,02/11/2025 00:00,,Airbnb,Shelby Mitchell,Cupola,Flessibile,26/11/2025,28/11/2025,2,205.14,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMHAX8R5A3,04/11/2025 00:00,,Airbnb,Michele Pastore,Uffizi,Flessibile,26/11/2025,27/11/2025,1,114.1,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMT8CSAK2Q,11/11/2025 00:00,,Airbnb,Nicolò Giordano,Cupola,Flessibile,24/11/2025,25/11/2025,1,102.58,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM4BCPY5NF,02/11/2025 00:00,,Airbnb,Elena Brodeală,Uffizi,Flessibile,23/11/2025,25/11/2025,2,228.2,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMXT2DQWJX,30/10/2025 00:00,,Airbnb,Jin Park,Cupola,Flessibile,22/11/2025,24/11/2025,2,205.14,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM4ZP3C2YQ,16/11/2025 00:00,,Airbnb,Jasmine Wullschleger,Uffizi,Flessibile,22/11/2025,23/11/2025,1,114.1,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMDBP8H2ZS,01/11/2025 00:00,,Airbnb,Paola Salinas,Cupola,Flessibile,20/11/2025,22/11/2025,2,205.14,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM23A9F55X,28/10/2025 00:00,,Airbnb,Kieran Mehta,Uffizi,Flessibile,19/11/2025,22/11/2025,3,350.36,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMYER4Z8DQ,24/10/2025 00:00,,Airbnb,婕瑜 辛,Cupola,Flessibile,18/11/2025,20/11/2025,2,212.06,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMZH8ERMQP,20/10/2025 00:00,,Airbnb,Armando Cruz Rodriguez,Uffizi,Flessibile,17/11/2025,18/11/2025,1,168.26,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HMR5DC3JZT,10/11/2025 00:00,,Airbnb,보미 전,Cupola,Flessibile,16/11/2025,18/11/2025,2,205.14,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMDKZPYP5M,13/11/2025 00:00,,Airbnb,Liz Rouse,Uffizi,Flessibile,14/11/2025,16/11/2025,2,238.68,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMZHXPKP9K,29/10/2025 00:00,,Airbnb,Alessandro Pini,Cupola,Flessibile,14/11/2025,16/11/2025,2,205.14,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMF3E3WFJF,28/10/2025 00:00,,Airbnb,Karl Otto,Uffizi,Flessibile,11/11/2025,14/11/2025,3,350.36,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMZFE5QD4W,27/10/2025 00:00,,Airbnb,Tarun Kumar,Cupola,Flessibile,10/11/2025,12/11/2025,2,217.83,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMBH5SWCKN,09/11/2025 00:00,,Airbnb,Barb Bush,Uffizi,Flessibile,09/11/2025,11/11/2025,2,216.78,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM9NY8NFDE,08/11/2025 00:00,,Airbnb,Former Member ,Palazzo Vecchio,Flessibile,09/11/2025,10/11/2025,1,89.55,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMPQPTDDZA,26/10/2025 00:00,,Airbnb,Ashraf Master,Cupola,Flessibile,07/11/2025,09/11/2025,2,229.35,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
 HMXS3WSTZ8,22/10/2025,,Airbnb,,Ponte Vecchio,,07/11/2025,09/11/2025,2,76.57,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3QCPMDKA,18/10/2025,,Airbnb,,Uffizi,,07/11/2025,09/11/2025,2,219.15,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMEPPZPXWN,24/10/2025,,Airbnb,,Palazzo Pitti,,05/11/2025,08/11/2025,3,189.29,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMKDBFK9JS,10/09/2025,,Airbnb,,Palazzo Vecchio,,05/11/2025,07/11/2025,2,140.83,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMY3M5MSNY,21/10/2025,,Airbnb,,Uffizi,,03/11/2025,07/11/2025,4,500.46,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMP8Z5NBTW,30/10/2025,,Airbnb,,Cupola,,03/11/2025,06/11/2025,3,255.76,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4BJKSP5H,13/08/2025,,Airbnb,,Cupola,,31/10/2025,03/11/2025,3,379.38,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCEHYXZ5P,31/10/2025,,Airbnb,,Uffizi,,31/10/2025,02/11/2025,2,201.91,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMSHB3AA4Q,07/08/2025,,Airbnb,,Palazzo Vecchio,,28/10/2025,31/10/2025,3,231.19,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMWK2EZTSK,23/10/2025,,Airbnb,,Cupola,,27/10/2025,28/10/2025,1,100.66,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMN4C2CFJN,06/10/2025,,Airbnb,,Palazzo Pitti,,26/10/2025,02/11/2025,7,587.02,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMZA98BHRB,19/10/2025,,Airbnb,,Ponte Vecchio,,25/10/2025,27/10/2025,2,147.86,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMZZTCKAN3,11/10/2025,,Airbnb,,Uffizi,,25/10/2025,27/10/2025,2,365.59,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZD9R8YN2,24/10/2025,,Airbnb,,Cupola,,24/10/2025,27/10/2025,3,383.85,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPRW2HHNN,22/10/2025,,Airbnb,,Uffizi,,22/10/2025,23/10/2025,1,129.61,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBA284SCA,31/08/2025,,Airbnb,,Cupola,,21/10/2025,24/10/2025,3,480.59,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM3CPK4WDW,18/10/2025,,Airbnb,,Palazzo Vecchio,,20/10/2025,28/10/2025,8,654.76,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3PS98ZD9,22/09/2025,,Airbnb,,Palazzo Pitti,,20/10/2025,24/10/2025,4,370.01,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMQ434H5PK,30/08/2025,,Airbnb,,Palazzo Vecchio,,17/10/2025,20/10/2025,3,266.43,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMKCXYK3DB,06/07/2025,,Airbnb,,Uffizi,,17/10/2025,20/10/2025,3,555.79,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMSST8WTAF,04/08/2025,,Airbnb,,Cupola,,17/10/2025,19/10/2025,2,306.38,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBEFTWBCY,14/09/2025,,Airbnb,,Uffizi,,16/10/2025,17/10/2025,1,197.27,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNKARARBF,30/06/2025,,Airbnb,,Palazzo Pitti,,15/10/2025,20/10/2025,5,445.35,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMP8PSZ4HT,06/06/2025,,Airbnb,,Uffizi,,15/10/2025,16/10/2025,1,174.02,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2MRP9AAX,04/08/2025,,Airbnb,,Palazzo Vecchio,,13/10/2025,17/10/2025,4,360.59,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJ8XMB9R8,18/09/2025,,Airbnb,,Uffizi,,13/10/2025,15/10/2025,2,383.28,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMAA5WHRJF,15/07/2025,,Airbnb,,Cupola,,13/10/2025,15/10/2025,2,305.47,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCBHN8TA9,23/08/2025,,Airbnb,,Ponte Vecchio,,12/10/2025,21/10/2025,9,795.05,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMQWPKZQCP,04/08/2025,,Airbnb,,Palazzo Pitti,,11/10/2025,14/10/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXJ39DTF2,11/10/2025,,Airbnb,,Cupola,,11/10/2025,13/10/2025,2,310.83,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM8NXAF9KX,27/07/2025,,Airbnb,,Uffizi,,10/10/2025,12/10/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMW5T5KXAB,05/10/2025,,Airbnb,,Cupola,,09/10/2025,11/10/2025,2,339.58,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMY5R8EECR,06/07/2025,,Airbnb,,Palazzo Vecchio,,08/10/2025,12/10/2025,4,355.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMHNMDA3KM,20/08/2025,,Airbnb,,Uffizi,,08/10/2025,10/10/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMMH2PEJC5,02/09/2025,,Airbnb,,Palazzo Pitti,,07/10/2025,11/10/2025,4,355.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMWXK5R8XC,19/06/2025,,Airbnb,,Cupola,,06/10/2025,09/10/2025,3,537.52,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMACBNETPJ,23/06/2025,,Airbnb,,Ponte Vecchio,,05/10/2025,12/10/2025,7,617.94,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMZ5RPFYNC,02/08/2025,,Airbnb,,Palazzo Vecchio,,04/10/2025,07/10/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXETQ8J83,24/06/2025,,Airbnb,,Palazzo Pitti,,04/10/2025,07/10/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXQ4HSF3Z,03/08/2025,,Airbnb,,Cupola,,04/10/2025,06/10/2025,2,307.29,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMXJTN8Q5B,13/05/2025,,Airbnb,,Uffizi,,03/10/2025,08/10/2025,5,958.05,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMW2943EMH,12/07/2025,,Airbnb,,Ponte Vecchio,,03/10/2025,05/10/2025,2,174.97,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3QSCZKWC,03/10/2025,,Airbnb,,Palazzo Pitti,,03/10/2025,04/10/2025,1,89.14,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMWDC44PWQ,02/10/2025,,Airbnb,,Ponte Vecchio,,02/10/2025,03/10/2025,1,83.32,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMPNJQWTH5,10/06/2025,,Airbnb,,Palazzo Vecchio,,01/10/2025,04/10/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMRRKFJBFJ,11/07/2025,,Airbnb,,Cupola,,30/09/2025,04/10/2025,4,650.47,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMK2F9WAYB,10/08/2025,,Airbnb,,Uffizi,,30/09/2025,03/10/2025,3,576.72,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4KSEPSRB,22/06/2025,,Airbnb,,Palazzo Pitti,,30/09/2025,03/10/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMEHKP98EH,17/08/2025,,Airbnb,,Palazzo Vecchio,,29/09/2025,01/10/2025,2,176.97,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMDRZX2XPR,21/05/2025,,Airbnb,,Uffizi,,29/09/2025,30/09/2025,1,174.45,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMF2MDHHBC,18/08/2025,,Airbnb,,Cupola,,28/09/2025,30/09/2025,2,323.54,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMF54J3EXT,14/06/2025,,Airbnb,,Ponte Vecchio,,27/09/2025,02/10/2025,5,467.94,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HME2KMSQ3Y,24/09/2025,,Airbnb,,Cupola,,27/09/2025,28/09/2025,1,153.67,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMQFZM2Y2J,06/08/2025,,Airbnb,,Uffizi,,26/09/2025,29/09/2025,3,576.72,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMAEEYSTA9,14/06/2025,,Airbnb,,Palazzo Pitti,,26/09/2025,29/09/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMDKMPMRW3,02/07/2025,,Airbnb,,Ponte Vecchio,,26/09/2025,27/09/2025,1,82.7,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM53SDTX5W,23/06/2025,,Airbnb,,Palazzo Vecchio,,25/09/2025,28/09/2025,3,270.94,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMHBT8A5T5,25/09/2025,,Airbnb,,Palazzo Pitti,,25/09/2025,26/09/2025,1,87.46,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMRHBJ3KZ9,08/07/2025,,Airbnb,,Ponte Vecchio,,24/09/2025,26/09/2025,2,173.07,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMRTNXCSDN,19/05/2025,,Airbnb,,Uffizi,,24/09/2025,26/09/2025,2,365.12,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMP9ESNZXJ,16/08/2025,,Airbnb,,Ponte Vecchio,,23/09/2025,24/09/2025,1,78.9,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMKWKCZBP3,06/07/2025,,Airbnb,,Cupola,,22/09/2025,27/09/2025,5,847.46,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMX3T3SRCW,16/06/2025,,Airbnb,,Palazzo Pitti,,22/09/2025,25/09/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMH3NWHTQS,02/09/2025,,Airbnb,,Uffizi,,22/09/2025,24/09/2025,2,385.19,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMHT348DSR,13/06/2025,,Airbnb,,Palazzo Vecchio,,21/09/2025,25/09/2025,4,355.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMCCHC8FAM,08/07/2025,,Airbnb,,Ponte Vecchio,,21/09/2025,23/09/2025,2,169.26,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMHEPHK5DD,15/07/2025,,Airbnb,,Uffizi,,20/09/2025,22/09/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZMA9BJX2,19/06/2025,,Airbnb,,Palazzo Pitti,,19/09/2025,22/09/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJKJTHD5M,08/07/2025,,Airbnb,,Palazzo Vecchio,,19/09/2025,21/09/2025,2,181.49,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3M3TWH8J,14/07/2025,,Airbnb,,Cupola,,18/09/2025,22/09/2025,4,653.19,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMFWN2FH5W,10/07/2025,,Airbnb,,Ponte Vecchio,,18/09/2025,21/09/2025,3,276.75,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM8KSNHDKR,18/09/2025,,Airbnb,,Palazzo Vecchio,,18/09/2025,19/09/2025,1,87.51,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBEJBD4DC,13/04/2025,,Airbnb,,Uffizi,,17/09/2025,20/09/2025,3,576.71,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMHYK8NM49,07/08/2025,,Airbnb,,Cupola,,16/09/2025,18/09/2025,2,307.28,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNKW582D3,20/06/2025,,Airbnb,,Palazzo Pitti,,16/09/2025,18/09/2025,2,224.53,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM9YRN2WQ3,11/06/2025,,Airbnb,,Ponte Vecchio,,16/09/2025,18/09/2025,2,176.87,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3SMYCTCC,28/07/2025,,Airbnb,,Uffizi,,16/09/2025,17/09/2025,1,197.27,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMSXMQAFAJ,28/06/2025,,Airbnb,,Palazzo Vecchio,,15/09/2025,18/09/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2YRJ8E4A,15/09/2025,,Airbnb,,Palazzo Pitti,,15/09/2025,16/09/2025,1,87.51,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBWMA9EPF,15/06/2025,,Airbnb,,Ponte Vecchio,,14/09/2025,16/09/2025,2,176.87,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMWZ2P55RB,24/05/2025,,Airbnb,,Uffizi,,13/09/2025,16/09/2025,3,576.72,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMY2ND8N2A,14/06/2025,,Airbnb,,Palazzo Pitti,,13/09/2025,15/09/2025,2,176.97,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMZTEMCCKS,09/07/2025,,Airbnb,,Cupola,,12/09/2025,16/09/2025,4,645.05,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMP3ATWF2T,20/07/2025,,Airbnb,,Ponte Vecchio,,12/09/2025,14/09/2025,2,173.07,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMR8MMBPHN,20/08/2025,,Airbnb,,Uffizi,,12/09/2025,13/09/2025,1,184.48,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMQZECQFAY,05/09/2025,,Airbnb,,Palazzo Pitti,,11/09/2025,13/09/2025,2,186.39,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMCBCJR2K5,10/09/2025,,Airbnb,,Ponte Vecchio,,11/09/2025,12/09/2025,1,82.7,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMRK2RWDA5,25/06/2025,,Airbnb,,Palazzo Vecchio,,10/09/2025,14/09/2025,4,360.41,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXHRJRD48,29/07/2025,,Airbnb,,Cupola,,10/09/2025,12/09/2025,2,307.29,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9XR3SSXW,30/03/2025,,Airbnb,,Uffizi,,08/09/2025,12/09/2025,4,767.38,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5PB55J4P,18/06/2025,,Airbnb,,Palazzo Pitti,,08/09/2025,11/09/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMH4BWNM8T,25/06/2025,,Airbnb,,Ponte Vecchio,,07/09/2025,11/09/2025,4,374.72,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXDQDSJPH,09/06/2025,,Airbnb,,Palazzo Vecchio,,06/09/2025,10/09/2025,4,360.4,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMWCTRDJD2,10/07/2025,,Airbnb,,Cupola,,06/09/2025,09/09/2025,3,483.3,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMKWM3BRB5,06/07/2025,,Airbnb,,Uffizi,,06/09/2025,08/09/2025,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMWMBA334M,02/08/2025,,Airbnb,,Palazzo Pitti,,03/09/2025,06/09/2025,3,266.42,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM93KXFYKW,17/07/2025,,Airbnb,,Palazzo Vecchio,,02/09/2025,06/09/2025,4,355.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMCP59Z232,09/06/2025,,Airbnb,,Ponte Vecchio,,01/09/2025,06/09/2025,5,468.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMMTM25D5M,16/06/2025,,Airbnb,,Palazzo Pitti,,01/09/2025,03/09/2025,2,176.97,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMT3T2XM4C,02/02/2025,,Airbnb,,Uffizi,,29/08/2025,04/09/2025,6,1148.71,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMAH5XAT3J,13/07/2025,,Airbnb,,Cupola,,27/08/2025,31/08/2025,4,449.87,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMTQ82YQY5,15/06/2025,,Airbnb,,Ponte Vecchio,,25/08/2025,31/08/2025,6,471.75,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMPAXBZ522,05/08/2025,,Airbnb,,Cupola,,25/08/2025,27/08/2025,2,210.17,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2PPCCTJY,10/07/2025,,Airbnb,,Uffizi,,22/08/2025,25/08/2025,3,373.39,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCCPHSTNF,13/06/2025,,Airbnb,,Palazzo Pitti,,22/08/2025,25/08/2025,3,209.5,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMCQ5MSZ28,29/07/2025,,Airbnb,,Cupola,,21/08/2025,23/08/2025,2,198.75,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9NX22K5A,19/08/2025,,Airbnb,,Uffizi,,20/08/2025,22/08/2025,2,200.65,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM88NQZQXY,11/08/2025,,Airbnb,,Cupola,,19/08/2025,21/08/2025,2,198.75,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMN49ZP3MR,17/06/2025,,Airbnb,,Ponte Vecchio,,17/08/2025,19/08/2025,2,136.92,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM95NA39CZ,04/07/2025,,Airbnb,,Uffizi,,16/08/2025,20/08/2025,4,496.29,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNTFXQ2CE,15/06/2025,,Airbnb,,Palazzo Pitti,,16/08/2025,20/08/2025,4,279.98,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMB4QBZ9TP,19/06/2025,,Airbnb,,Palazzo Vecchio,,16/08/2025,19/08/2025,3,212.21,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMNKDWY48J,06/07/2025,,Airbnb,,Cupola,,14/08/2025,17/08/2025,3,336.91,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM3XB8ASZX,14/07/2025,,Airbnb,,Ponte Vecchio,,13/08/2025,17/08/2025,4,283.4,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM5WYD399D,04/08/2025,,Airbnb,,Uffizi,,13/08/2025,16/08/2025,3,344.28,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNH9XD5D5,21/06/2025,,Airbnb,,Palazzo Pitti,,12/08/2025,14/08/2025,2,139.01,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMMETZN3PP,23/07/2025,,Airbnb,,Cupola,,12/08/2025,13/08/2025,1,95.07,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMTZQDFQKT,11/08/2025,,Airbnb,,Uffizi,,11/08/2025,12/08/2025,1,86.8,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2HPZJ35Y,08/08/2025,,Airbnb,,Cupola,,08/08/2025,10/08/2025,2,173.55,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2YEZQ83J,16/06/2025,,Airbnb,,Ponte Vecchio,,08/08/2025,10/08/2025,2,136.92,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMM3DKWXJP,15/06/2025,,Airbnb,,Palazzo Pitti,,07/08/2025,11/08/2025,4,279.98,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMAYBAZ8YY,06/08/2025,,Airbnb,,Uffizi,,07/08/2025,09/08/2025,2,240.89,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM28SJJKTA,30/07/2025,,Airbnb,,Palazzo Vecchio,,06/08/2025,10/08/2025,4,264.38,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM5CR4NZ2M,01/08/2025,,Airbnb,,Uffizi,,05/08/2025,06/08/2025,1,95.07,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMXFXJPEMX,29/06/2025,,Airbnb,,Ponte Vecchio,,03/08/2025,08/08/2025,5,369.02,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM98ERDEYT,03/08/2025,,Airbnb,,Cupola,,03/08/2025,07/08/2025,4,377.58,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPJHFJRW4,23/07/2025,,Airbnb,,Uffizi,,03/08/2025,05/08/2025,2,229.19,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4BMJZZN8,13/06/2025,,Airbnb,,Palazzo Pitti,,01/08/2025,05/08/2025,4,279.98,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMEEQ3TNCJ,16/07/2025,,Airbnb,,Uffizi,,01/08/2025,03/08/2025,2,229.19,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2W942TFW,27/06/2025,,Airbnb,,Cupola,,30/07/2025,01/08/2025,2,216.93,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMRT58ANEW,28/07/2025,,Airbnb,,Uffizi,,29/07/2025,31/07/2025,2,191.62,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMD5BH8FPB,17/07/2025,,Airbnb,,Cupola,,29/07/2025,30/07/2025,1,96.97,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM245DFCA2,15/06/2025,,Airbnb,,Palazzo Pitti,,26/07/2025,01/08/2025,6,420.96,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM4JWMKSFD,22/06/2025,,Airbnb,,Cupola,,23/07/2025,25/07/2025,2,198.85,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5A5WD2TD,30/05/2025,,Airbnb,,Uffizi,,23/07/2025,25/07/2025,2,343.44,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2YEQWK5S,16/06/2025,,Airbnb,,Ponte Vecchio,,22/07/2025,24/07/2025,2,136.92,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM92AD9T9W,22/07/2025,,Airbnb,,Cupola,,22/07/2025,23/07/2025,1,85.56,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
+HM3QCPMDKA,18/10/2025 00:00,,Airbnb,Queenie Zhou,Uffizi,Flessibile,07/11/2025,09/11/2025,2,281.2,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMEPPZPXWN,24/10/2025 00:00,,Airbnb,Matheus Andrade Rodrigues,Palazzo Pitti,Flessibile,05/11/2025,08/11/2025,3,228.2,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMKDBFK9JS,10/09/2025 00:00,,Airbnb,Tahnee Hopman,Palazzo Vecchio,Flessibile,05/11/2025,07/11/2025,2,190.29,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMY3M5MSNY,21/10/2025 00:00,,Airbnb,Alexander Spong,Uffizi,Flessibile,03/11/2025,07/11/2025,4,592.38,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMP8Z5NBTW,30/10/2025 00:00,,Airbnb,Nir Rostoker,Cupola,Flessibile,03/11/2025,06/11/2025,3,307.71,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 1
+HM4BJKSP5H,13/08/2025 00:00,,Airbnb,Jodi Hammerstad Faschingbauer,Cupola,Flessibile,31/10/2025,03/11/2025,3,462.03,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMCEHYXZ5P,31/10/2025 00:00,,Airbnb,מירי מאיר,Uffizi,Flessibile,31/10/2025,02/11/2025,2,260.58,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMSHB3AA4Q,07/08/2025 00:00,,Airbnb,Jingyu Che,Palazzo Vecchio,Flessibile,28/10/2025,31/10/2025,3,282.48,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMWK2EZTSK,23/10/2025 00:00,,Airbnb,Sophia Byers,Cupola,Flessibile,27/10/2025,28/10/2025,1,139.46,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMN4C2CFJN,06/10/2025 00:00,,Airbnb,Manuel Lässer,Palazzo Pitti,Flessibile,26/10/2025,02/11/2025,7,695.93,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HMZA98BHRB,19/10/2025 00:00,,Airbnb,⁨Dudu6633⁩ 김,Ponte Vecchio,Flessibile,25/10/2025,27/10/2025,2,195.92,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMZZTCKAN3,11/10/2025 00:00,,Airbnb,Ahmed Albesher,Uffizi,Flessibile,25/10/2025,27/10/2025,2,456.39,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMZD9R8YN2,24/10/2025 00:00,,Airbnb,Jumee Lee,Cupola,Flessibile,24/10/2025,27/10/2025,3,460.94,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 1
+HMPRW2HHNN,22/10/2025 00:00,,Airbnb,Nancy Guillen,Uffizi,Flessibile,22/10/2025,23/10/2025,1,174.09,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMBA284SCA,31/08/2025 00:00,,Airbnb,Shefali Jain,Cupola,Flessibile,21/10/2025,24/10/2025,3,584.66,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM3CPK4WDW,18/10/2025 00:00,,Airbnb,Christopher Mcsweeney,Palazzo Vecchio,Flessibile,20/10/2025,28/10/2025,8,776.96,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HM3PS98ZD9,22/09/2025 00:00,,Airbnb,Laurie Chan,Palazzo Pitti,Flessibile,20/10/2025,24/10/2025,4,442.61,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMQ434H5PK,30/08/2025 00:00,,Airbnb,Magaly Salcedo,Palazzo Vecchio,Flessibile,17/10/2025,20/10/2025,3,325.18,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMKCXYK3DB,06/07/2025 00:00,,Airbnb,Buzzy Beck,Uffizi,Flessibile,17/10/2025,20/10/2025,3,675.78,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMSST8WTAF,04/08/2025 00:00,,Airbnb,Doreen Teo,Cupola,Flessibile,17/10/2025,19/10/2025,2,390.87,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMBEFTWBCY,14/09/2025 00:00,,Airbnb,Peter Connolly,Uffizi,Flessibile,16/10/2025,17/10/2025,1,258.67,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HMNKARARBF,30/06/2025 00:00,,Airbnb,Diana Gomez,Palazzo Pitti,Flessibile,15/10/2025,20/10/2025,5,533.9,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMP8PSZ4HT,06/06/2025 00:00,,Airbnb,Dawn Getchius,Uffizi,Flessibile,15/10/2025,16/10/2025,1,230.5,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2MRP9AAX,04/08/2025 00:00,,Airbnb,Patrice Su,Palazzo Vecchio,Flessibile,13/10/2025,17/10/2025,4,431.2,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HMJ8XMB9R8,18/09/2025 00:00,,Airbnb,Brooke Marmo,Uffizi,Flessibile,13/10/2025,15/10/2025,2,484.05,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMAA5WHRJF,15/07/2025 00:00,,Airbnb,Keya Shial,Cupola,Flessibile,13/10/2025,15/10/2025,2,389.77,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMCBHN8TA9,23/08/2025 00:00,,Airbnb,Aurelio Ferreira,Ponte Vecchio,Flessibile,12/10/2025,21/10/2025,9,957.6,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMQWPKZQCP,04/08/2025 00:00,,Airbnb,Nancy Fontana,Palazzo Pitti,Flessibile,11/10/2025,14/10/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMXJ39DTF2,11/10/2025 00:00,,Airbnb,Cameron Vinson,Cupola,Flessibile,11/10/2025,13/10/2025,2,390.88,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM8NXAF9KX,27/07/2025 00:00,,Airbnb,인경 이,Uffizi,Flessibile,10/10/2025,12/10/2025,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMW5T5KXAB,05/10/2025 00:00,,Airbnb,Jennifer Petruzziello,Cupola,Flessibile,09/10/2025,11/10/2025,2,425.27,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMY5R8EECR,06/07/2025 00:00,,Airbnb,Karen Upton,Palazzo Vecchio,Flessibile,08/10/2025,12/10/2025,4,425.5,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMHNMDA3KM,20/08/2025 00:00,,Airbnb,수빈 조,Uffizi,Flessibile,08/10/2025,10/10/2025,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMMH2PEJC5,02/09/2025 00:00,,Airbnb,Tiffany Chang,Palazzo Pitti,Flessibile,07/10/2025,11/10/2025,4,425.5,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMWXK5R8XC,19/06/2025 00:00,,Airbnb,Yehrod Lai,Cupola,Flessibile,06/10/2025,09/10/2025,3,653.64,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMACBNETPJ,23/06/2025 00:00,,Airbnb,Karen Stout,Ponte Vecchio,Flessibile,05/10/2025,12/10/2025,7,743.01,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMZ5RPFYNC,02/08/2025 00:00,,Airbnb,Hayeon Lee,Palazzo Vecchio,Flessibile,04/10/2025,07/10/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMXETQ8J83,24/06/2025 00:00,,Airbnb,Manuela Zanoletti Mannello,Palazzo Pitti,Flessibile,04/10/2025,07/10/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMXQ4HSF3Z,03/08/2025 00:00,,Airbnb,Maggie Hogan,Cupola,Flessibile,04/10/2025,06/10/2025,2,391.97,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMXJTN8Q5B,13/05/2025 00:00,,Airbnb,명숙 심,Uffizi,Flessibile,03/10/2025,08/10/2025,5,1155.1,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMW2943EMH,12/07/2025 00:00,,Airbnb,天一 李,Ponte Vecchio,Flessibile,03/10/2025,05/10/2025,2,231.65,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM3QSCZKWC,03/10/2025 00:00,,Airbnb,Olena Bokhenik,Palazzo Pitti,Flessibile,03/10/2025,04/10/2025,1,125.68,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMWDC44PWQ,02/10/2025 00:00,,Airbnb,Niccolo Focardi,Ponte Vecchio,Flessibile,02/10/2025,03/10/2025,1,118.71,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMPNJQWTH5,10/06/2025 00:00,,Airbnb,付越 付,Palazzo Vecchio,Flessibile,01/10/2025,04/10/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMRRKFJBFJ,11/07/2025 00:00,,Airbnb,Renata Chade,Cupola,Flessibile,30/09/2025,04/10/2025,4,782.42,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMK2F9WAYB,10/08/2025 00:00,,Airbnb,书迪 林,Uffizi,Flessibile,30/09/2025,03/10/2025,3,701.13,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM4KSEPSRB,22/06/2025 00:00,,Airbnb,Qiaoyu Yang,Palazzo Pitti,Flessibile,30/09/2025,03/10/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMEHKP98EH,17/08/2025 00:00,,Airbnb,Maritza Montoya,Palazzo Vecchio,Flessibile,29/09/2025,01/10/2025,2,234.07,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMDRZX2XPR,21/05/2025 00:00,,Airbnb,Kaitlin Banahan,Uffizi,Flessibile,29/09/2025,30/09/2025,1,231.02,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMF2MDHHBC,18/08/2025 00:00,,Airbnb,Ann Haas,Cupola,Flessibile,28/09/2025,30/09/2025,2,411.66,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMF54J3EXT,14/06/2025 00:00,,Airbnb,May Chu,Ponte Vecchio,Flessibile,27/09/2025,02/10/2025,5,561.27,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HME2KMSQ3Y,24/09/2025 00:00,,Airbnb,Hubin Olivier,Cupola,Flessibile,27/09/2025,28/09/2025,1,205.84,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMQFZM2Y2J,06/08/2025 00:00,,Airbnb,Sefa Karaytug,Uffizi,Flessibile,26/09/2025,29/09/2025,3,701.13,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMAEEYSTA9,14/06/2025 00:00,,Airbnb,郭维泽 Guo,Palazzo Pitti,Flessibile,26/09/2025,29/09/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMDKMPMRW3,02/07/2025 00:00,,Airbnb,Nadia Basaraba,Ponte Vecchio,Flessibile,26/09/2025,27/09/2025,1,119.85,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM53SDTX5W,23/06/2025 00:00,,Airbnb,Salomon Uribe,Palazzo Vecchio,Flessibile,25/09/2025,28/09/2025,3,330.64,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMHBT8A5T5,25/09/2025 00:00,,Airbnb,Yo B Benguigui,Palazzo Pitti,Flessibile,25/09/2025,26/09/2025,1,125.62,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMRHBJ3KZ9,08/07/2025 00:00,,Airbnb,Tracy Chang,Ponte Vecchio,Flessibile,24/09/2025,26/09/2025,2,229.35,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMRTNXCSDN,19/05/2025 00:00,,Airbnb,Jermina Rich,Uffizi,Flessibile,24/09/2025,26/09/2025,2,462.04,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMP9ESNZXJ,16/08/2025 00:00,,Airbnb,기환 오,Ponte Vecchio,Flessibile,23/09/2025,24/09/2025,1,115.25,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMKWKCZBP3,06/07/2025 00:00,,Airbnb,Donal Glazik,Cupola,Flessibile,22/09/2025,27/09/2025,5,1021.1,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMX3T3SRCW,16/06/2025 00:00,,Airbnb,Sylvain Coin,Palazzo Pitti,Flessibile,22/09/2025,25/09/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 1
+HMH3NWHTQS,02/09/2025 00:00,,Airbnb,Amber Jordan,Uffizi,Flessibile,22/09/2025,24/09/2025,2,486.36,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMHT348DSR,13/06/2025 00:00,,Airbnb,Rosina Galvin,Palazzo Vecchio,Flessibile,21/09/2025,25/09/2025,4,425.5,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMCCHC8FAM,08/07/2025 00:00,,Airbnb,Valeria Schult,Ponte Vecchio,Flessibile,21/09/2025,23/09/2025,2,224.73,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMHEPHK5DD,15/07/2025 00:00,,Airbnb,지우 신,Uffizi,Flessibile,20/09/2025,22/09/2025,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMZMA9BJX2,19/06/2025 00:00,,Airbnb,Laura Ramos Guerra,Palazzo Pitti,Flessibile,19/09/2025,22/09/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMJKJTHD5M,08/07/2025 00:00,,Airbnb,Hanna Bacon,Palazzo Vecchio,Flessibile,19/09/2025,21/09/2025,2,239.55,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM3M3TWH8J,14/07/2025 00:00,,Airbnb,Omid Aramoon,Cupola,Flessibile,18/09/2025,22/09/2025,4,785.72,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HMFWN2FH5W,10/07/2025 00:00,,Airbnb,Shawn Konynenberg,Ponte Vecchio,Flessibile,18/09/2025,21/09/2025,3,337.68,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM8KSNHDKR,18/09/2025 00:00,,Airbnb,Eleonora Zanetti,Palazzo Vecchio,Flessibile,18/09/2025,19/09/2025,1,125.68,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMBEJBD4DC,13/04/2025 00:00,,Airbnb,Michael Chaplin,Uffizi,Flessibile,17/09/2025,20/09/2025,3,701.12,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMHYK8NM49,07/08/2025 00:00,,Airbnb,Tiffani Van Ee,Cupola,Flessibile,16/09/2025,18/09/2025,2,391.96,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMNKW582D3,20/06/2025 00:00,,Airbnb,Ankit Pandey,Palazzo Pitti,Flessibile,16/09/2025,18/09/2025,2,291.7,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2 Bambini: 1
+HM9YRN2WQ3,11/06/2025 00:00,,Airbnb,Alessandra Di Florio,Ponte Vecchio,Flessibile,16/09/2025,18/09/2025,2,233.95,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM3SMYCTCC,28/07/2025 00:00,,Airbnb,Madison Lee,Uffizi,Flessibile,16/09/2025,17/09/2025,1,258.67,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HMSXMQAFAJ,28/06/2025 00:00,,Airbnb,Vanina Knubel,Palazzo Vecchio,Flessibile,15/09/2025,18/09/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM2YRJ8E4A,15/09/2025 00:00,,Airbnb,Ginger Jensen,Palazzo Pitti,Flessibile,15/09/2025,16/09/2025,1,125.68,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMBWMA9EPF,15/06/2025 00:00,,Airbnb,Victoria Gines Pastor,Ponte Vecchio,Flessibile,14/09/2025,16/09/2025,2,233.95,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMWZ2P55RB,24/05/2025 00:00,,Airbnb,수연 강,Uffizi,Flessibile,13/09/2025,16/09/2025,3,701.13,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMY2ND8N2A,14/06/2025 00:00,,Airbnb,Daniel Baylis,Palazzo Pitti,Flessibile,13/09/2025,15/09/2025,2,234.07,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMZTEMCCKS,09/07/2025 00:00,,Airbnb,Michael Stier,Cupola,Flessibile,12/09/2025,16/09/2025,4,775.86,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMP3ATWF2T,20/07/2025 00:00,,Airbnb,Ewan Aitken,Ponte Vecchio,Flessibile,12/09/2025,14/09/2025,2,229.35,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMR8MMBPHN,20/08/2025 00:00,,Airbnb,Yashovardhan Poddar,Uffizi,Flessibile,12/09/2025,13/09/2025,1,243.17,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMQZECQFAY,05/09/2025 00:00,,Airbnb,Daria Carchia,Palazzo Pitti,Flessibile,11/09/2025,13/09/2025,2,245.49,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMCBCJR2K5,10/09/2025 00:00,,Airbnb,Rosanne Van Oijen,Ponte Vecchio,Flessibile,11/09/2025,12/09/2025,1,119.85,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMRK2RWDA5,25/06/2025 00:00,,Airbnb,Juan Gonzalez,Palazzo Vecchio,Flessibile,10/09/2025,14/09/2025,4,430.98,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HMXHRJRD48,29/07/2025 00:00,,Airbnb,嘉骏 金,Cupola,Flessibile,10/09/2025,12/09/2025,2,391.97,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM9XR3SSXW,30/03/2025 00:00,,Airbnb,Micaela Gobeille,Uffizi,Flessibile,08/09/2025,12/09/2025,4,924.08,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM5PB55J4P,18/06/2025 00:00,,Airbnb,Glenda White,Palazzo Pitti,Flessibile,08/09/2025,11/09/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMH4BWNM8T,25/06/2025 00:00,,Airbnb,Victoria Calero Cobano,Ponte Vecchio,Flessibile,07/09/2025,11/09/2025,4,448.32,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMXDQDSJPH,09/06/2025 00:00,,Airbnb,Milena Robles,Palazzo Vecchio,Flessibile,06/09/2025,10/09/2025,4,430.97,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMWCTRDJD2,10/07/2025 00:00,,Airbnb,Paxton Daniels,Cupola,Flessibile,06/09/2025,09/09/2025,3,587.94,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMKWM3BRB5,06/07/2025 00:00,,Airbnb,Lakea Deans Mayo,Uffizi,Flessibile,06/09/2025,08/09/2025,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMWMBA334M,02/08/2025 00:00,,Airbnb,Marco Lopez,Palazzo Pitti,Flessibile,03/09/2025,06/09/2025,3,325.17,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM93KXFYKW,17/07/2025 00:00,,Airbnb,Franca Santilli,Palazzo Vecchio,Flessibile,02/09/2025,06/09/2025,4,425.5,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMCP59Z232,09/06/2025 00:00,,Airbnb,Lotty Goederond,Ponte Vecchio,Flessibile,01/09/2025,06/09/2025,5,562.42,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMMTM25D5M,16/06/2025 00:00,,Airbnb,Kingston Myles,Palazzo Pitti,Flessibile,01/09/2025,03/09/2025,2,234.07,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMT3T2XM4C,02/02/2025 00:00,,Airbnb,Natasha Karim,Uffizi,Flessibile,29/08/2025,04/09/2025,6,1386.11,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMAH5XAT3J,13/07/2025 00:00,,Airbnb,Lydia Shen,Cupola,Flessibile,27/08/2025,31/08/2025,4,539.37,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMTQ82YQY5,15/06/2025 00:00,,Airbnb,Péroline Helbling,Ponte Vecchio,Flessibile,25/08/2025,31/08/2025,6,565.88,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMPAXBZ522,05/08/2025 00:00,,Airbnb,Mary Sweeney,Cupola,Flessibile,25/08/2025,27/08/2025,2,274.3,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2PPCCTJY,10/07/2025 00:00,,Airbnb,Anjanette Valero,Uffizi,Flessibile,22/08/2025,25/08/2025,3,454.77,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMCCPHSTNF,13/06/2025 00:00,,Airbnb,Lara Rambaud,Palazzo Pitti,Flessibile,22/08/2025,25/08/2025,3,256.2,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMCQ5MSZ28,29/07/2025 00:00,,Airbnb,Steven Solarz,Cupola,Flessibile,21/08/2025,23/08/2025,2,260.46,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM9NX22K5A,19/08/2025 00:00,,Airbnb,Fabio Manna,Uffizi,Flessibile,20/08/2025,22/08/2025,2,262.77,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM88NQZQXY,11/08/2025 00:00,,Airbnb,Aanand Mohapatra,Cupola,Flessibile,19/08/2025,21/08/2025,2,260.46,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMN49ZP3MR,17/06/2025 00:00,,Airbnb,Breeanna Rifley,Ponte Vecchio,Flessibile,17/08/2025,19/08/2025,2,185.55,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM95NA39CZ,04/07/2025 00:00,,Airbnb,Matthew Otto,Uffizi,Flessibile,16/08/2025,20/08/2025,4,595.62,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMNTFXQ2CE,15/06/2025 00:00,,Airbnb,Malena Bellabarba,Palazzo Pitti,Flessibile,16/08/2025,20/08/2025,4,333.53,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMB4QBZ9TP,19/06/2025 00:00,,Airbnb,晴文 楊,Palazzo Vecchio,Flessibile,16/08/2025,19/08/2025,3,259.48,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMNKDWY48J,06/07/2025 00:00,,Airbnb,Patricia Barbosa,Cupola,Flessibile,14/08/2025,17/08/2025,3,410.57,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HM3XB8ASZX,14/07/2025 00:00,,Airbnb,Christine Xu,Ponte Vecchio,Flessibile,13/08/2025,17/08/2025,4,337.67,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM5WYD399D,04/08/2025 00:00,,Airbnb,Jasmin Cortes,Uffizi,Flessibile,13/08/2025,16/08/2025,3,419.5,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMNH9XD5D5,21/06/2025 00:00,,Airbnb,Sadia Touati,Palazzo Pitti,Flessibile,12/08/2025,14/08/2025,2,188.08,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMMETZN3PP,23/07/2025 00:00,,Airbnb,여름 김,Cupola,Flessibile,12/08/2025,13/08/2025,1,134.84,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMTZQDFQKT,11/08/2025 00:00,,Airbnb,Dee Kocyigit,Uffizi,Flessibile,11/08/2025,12/08/2025,1,124.82,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2HPZJ35Y,08/08/2025 00:00,,Airbnb,Oliver Hüsser,Cupola,Flessibile,08/08/2025,10/08/2025,2,229.93,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2YEZQ83J,16/06/2025 00:00,,Airbnb,Edison Goh,Ponte Vecchio,Flessibile,08/08/2025,10/08/2025,2,185.55,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMM3DKWXJP,15/06/2025 00:00,,Airbnb,Agustín Sampaolesi,Palazzo Pitti,Flessibile,07/08/2025,11/08/2025,4,333.53,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMAYBAZ8YY,06/08/2025 00:00,,Airbnb,晓玲 翟,Uffizi,Flessibile,07/08/2025,09/08/2025,2,311.52,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2 Bambini: 1
+HM28SJJKTA,30/07/2025 00:00,,Airbnb,La Sakura S,Palazzo Vecchio,Flessibile,06/08/2025,10/08/2025,4,314.63,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM5CR4NZ2M,01/08/2025 00:00,,Airbnb,Sarah Pershing,Uffizi,Flessibile,05/08/2025,06/08/2025,1,134.84,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMXFXJPEMX,29/06/2025 00:00,,Airbnb,Carmen Lee,Ponte Vecchio,Flessibile,03/08/2025,08/08/2025,5,441.41,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM98ERDEYT,03/08/2025 00:00,,Airbnb,Rolf Eijsink,Cupola,Flessibile,03/08/2025,07/08/2025,4,451.78,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMPJHFJRW4,23/07/2025 00:00,,Airbnb,Bilal Khan,Uffizi,Flessibile,03/08/2025,05/08/2025,2,297.35,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM4BMJZZN8,13/06/2025 00:00,,Airbnb,Jennifer Garcia,Palazzo Pitti,Flessibile,01/08/2025,05/08/2025,4,333.53,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMEEQ3TNCJ,16/07/2025 00:00,,Airbnb,Emenet Fantaye,Uffizi,Flessibile,01/08/2025,03/08/2025,2,297.35,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2W942TFW,27/06/2025 00:00,,Airbnb,Jenny Duong,Cupola,Flessibile,30/07/2025,01/08/2025,2,282.49,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMRT58ANEW,28/07/2025 00:00,,Airbnb,Jelle Ehrenhard,Uffizi,Flessibile,29/07/2025,31/07/2025,2,251.82,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMD5BH8FPB,17/07/2025 00:00,,Airbnb,Shlomo Shenzis,Cupola,Flessibile,29/07/2025,30/07/2025,1,137.14,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM245DFCA2,15/06/2025 00:00,,Airbnb,Yiu Fai Sit,Palazzo Pitti,Flessibile,26/07/2025,01/08/2025,6,504.34,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM4JWMKSFD,22/06/2025 00:00,,Airbnb,Joe Bowman,Cupola,Flessibile,23/07/2025,25/07/2025,2,260.58,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HM5A5WD2TD,30/05/2025 00:00,,Airbnb,Alejandro Espejo,Uffizi,Flessibile,23/07/2025,25/07/2025,2,435.77,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2YEQWK5S,16/06/2025 00:00,,Airbnb,Guerric Pottier,Ponte Vecchio,Flessibile,22/07/2025,24/07/2025,2,185.55,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HM92AD9T9W,22/07/2025 00:00,,Airbnb,Sankarsh Chanda,Cupola,Flessibile,22/07/2025,23/07/2025,1,123.32,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
 HMNY4SA28W,13/07/2025,,Airbnb,,Cupola,,22/07/2025,23/07/2025,1,25.63,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMQJHZTZWM,14/06/2025,,Airbnb,,Palazzo Pitti,,21/07/2025,24/07/2025,3,209.5,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMS5TQTDXD,14/07/2025,,Airbnb,,Uffizi,,21/07/2025,22/07/2025,1,123.6,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNRPQ33ZE,16/07/2025,,Airbnb,,Cupola,,18/07/2025,21/07/2025,3,298.72,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMX5PZR42F,19/06/2025,,Airbnb,,Ponte Vecchio,,18/07/2025,21/07/2025,3,235.85,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMYSCZ954E,08/07/2025,,Airbnb,,Uffizi,,18/07/2025,20/07/2025,2,217.78,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMFTW2NJQJ,28/04/2025,,Airbnb,,Uffizi,,17/07/2025,18/07/2025,1,186.43,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5TMZW4FD,14/06/2025,,Airbnb,,Palazzo Pitti,,15/07/2025,21/07/2025,6,424.66,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM5JMWDW4Y,10/07/2025,,Airbnb,,Uffizi,,15/07/2025,17/07/2025,2,212.07,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM3TMC48TC,13/07/2025,,Airbnb,,Cupola,,14/07/2025,17/07/2025,3,293.54,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMSN3EZAM3,14/07/2025,,Airbnb,,Uffizi,,14/07/2025,15/07/2025,1,89.5,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMEHESBM43,14/06/2025,,Airbnb,,Palazzo Vecchio,,13/07/2025,21/07/2025,8,569.14,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM9E8AC9PJ,19/06/2025,,Airbnb,,Palazzo Pitti,,12/07/2025,15/07/2025,3,229.19,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMMCK3S4CY,10/07/2025,,Airbnb,,Cupola,,10/07/2025,13/07/2025,3,293.53,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMM3584XAP,08/07/2025,,Airbnb,,Uffizi,,09/07/2025,10/07/2025,1,100.35,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM23NMJM22,06/06/2025,,Airbnb,,Palazzo Pitti,,07/07/2025,11/07/2025,4,319.74,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMEJYEMY5K,03/06/2025,,Airbnb,,Palazzo Vecchio,,07/07/2025,10/07/2025,3,239.31,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMZAZE94DF,21/06/2025,,Airbnb,,Uffizi,,07/07/2025,09/07/2025,2,229.19,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMQQHCATEC,04/07/2025,,Airbnb,,Uffizi,,05/07/2025,07/07/2025,2,208.79,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM8CJDYK8F,19/06/2025,,Airbnb,,Palazzo Vecchio,,03/07/2025,06/07/2025,3,223.48,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMATFFBPKZ,28/03/2025,,Airbnb,,Uffizi,,03/07/2025,04/07/2025,1,196.85,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMHTAWWFP3,07/03/2025,,Airbnb,,Uffizi,,01/07/2025,02/07/2025,1,174.45,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDSNZXYTD,06/05/2025,,Airbnb,,Cupola,,30/06/2025,08/07/2025,8,1428.51,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMHDBYDRJE,30/04/2026,,Airbnb,,Uffizi,,04/05/2026,06/05/2026,2,351.66,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMB3X8DWTP,10/04/2026,,Airbnb,,Palazzo Pitti,,02/05/2026,04/05/2026,2,218.67,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMSP98XHA5,25/04/2026,,Airbnb,,Uffizi,,01/05/2026,03/05/2026,2,439.24,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPJHQ5R9W,24/04/2026,,Airbnb,,Palazzo Vecchio,,29/04/2026,03/05/2026,4,514.66,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMYFW3TYQH,27/03/2026,,Airbnb,,Ponte Vecchio,,30/04/2026,03/05/2026,3,342.95,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMTPH9SX2R,14/04/2026,,Airbnb,,Palazzo Pitti,,01/05/2026,02/05/2026,1,113.25,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3RMBMKA5,30/12/2025,,Airbnb,,Cupola,,26/04/2026,02/05/2026,6,856,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4XFD53DH,06/03/2026,,Airbnb,,Uffizi,,30/04/2026,01/05/2026,1,142.83,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HME5Z34ST4,16/02/2026,,Airbnb,,Palazzo Pitti,,28/04/2026,01/05/2026,3,292.87,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJZ3ZHK9F,21/02/2026,,Airbnb,,Uffizi,,28/04/2026,29/04/2026,1,142.45,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMAATEMKQ3,23/02/2026,,Airbnb,,Palazzo Pitti,,25/04/2026,28/04/2026,3,292.87,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMR42CAXKH,29/12/2025,,Airbnb,,Uffizi,,26/04/2026,28/04/2026,2,305.36,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2CH2TJ88,02/03/2026,,Airbnb,,Palazzo Vecchio,,25/04/2026,27/04/2026,2,138.8,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMD3TAETP3,20/02/2026,,Airbnb,,Cupola,,23/04/2026,26/04/2026,3,401.49,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5RNSY34J,14/12/2025,,Airbnb,,Uffizi,,24/04/2026,26/04/2026,2,305.37,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYNRREAQZ,18/03/2026,,Airbnb,,Ponte Vecchio,,21/04/2026,25/04/2026,4,451.41,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMDFJAS22E,16/03/2026,,Airbnb,,Palazzo Vecchio,,21/04/2026,25/04/2026,4,377.61,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMY3N3XAHE,09/03/2026,,Airbnb,,Uffizi,,23/04/2026,24/04/2026,1,142.82,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCBEHY9YK,13/04/2026,,Airbnb,,Uffizi,,20/04/2026,23/04/2026,3,482.22,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMY8D2PD5R,22/02/2026,,Airbnb,,Cupola,,21/04/2026,23/04/2026,2,263.6,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4PKFT2D8,17/04/2026,,Airbnb,,Palazzo Vecchio,,18/04/2026,21/04/2026,3,269,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBTJ55NW3,20/01/2026,,Airbnb,,Cupola,,17/04/2026,21/04/2026,4,544.02,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNCFF8BKM,07/11/2025,,Airbnb,,Ponte Vecchio,,15/04/2026,21/04/2026,6,472.53,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMHEDMMQXS,18/01/2026,,Airbnb,,Uffizi,,17/04/2026,20/04/2026,3,485.75,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYYA4QR5E,13/04/2026,,Airbnb,,Palazzo Pitti,,17/04/2026,19/04/2026,2,234.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMNBTRFDH3,13/04/2026,,Airbnb,,Palazzo Vecchio,,16/04/2026,18/04/2026,2,157.09,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM9W9RZPD9,07/03/2026,,Airbnb,,Uffizi,,15/04/2026,17/04/2026,2,305.36,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZ2APCAM4,29/12/2025,,Airbnb,,Cupola,,13/04/2026,17/04/2026,4,544.01,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMEDPEBZYR,09/03/2026,,Airbnb,,Uffizi,,14/04/2026,15/04/2026,1,142.82,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZDRCCZNZ,19/07/2025,,Airbnb,,Uffizi,,03/04/2026,14/04/2026,11,2102.05,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMM8N33YCF,22/03/2026,,Airbnb,,Cupola,,12/04/2026,13/04/2026,1,137.58,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMTRMR98YM,17/03/2026,,Airbnb,,Palazzo Pitti,,09/04/2026,13/04/2026,4,414.1,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM855CQ44T,12/11/2025,,Airbnb,,Ponte Vecchio,,10/04/2026,13/04/2026,3,235.53,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMTRKHP94W,22/03/2026,,Airbnb,,Cupola,,07/04/2026,12/04/2026,5,604.66,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMN3HK329Y,05/04/2026,,Airbnb,,Ponte Vecchio,,05/04/2026,10/04/2026,5,514.73,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMSXRS4ATD,23/01/2026,,Airbnb,,Palazzo Pitti,,05/04/2026,08/04/2026,3,292.87,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMECWEPTYH,12/03/2026,,Airbnb,,Palazzo Vecchio,,05/04/2026,07/04/2026,2,230.84,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2SF5JXCF,17/12/2025,,Airbnb,,Cupola,,04/04/2026,07/04/2026,3,399.18,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMWSHXD92W,30/03/2026,,Airbnb,,Ponte Vecchio,,01/04/2026,05/04/2026,4,429.19,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMR24A2KCD,17/03/2026,,Airbnb,,Palazzo Vecchio,,03/04/2026,05/04/2026,2,191.91,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMM53BY9WT,20/05/2026,,Airbnb,,Uffizi,,05/06/2026,07/06/2026,2,351.66,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMRNYZ4T4S,20/05/2026,,Airbnb,,Ponte Vecchio,,02/06/2026,06/06/2026,4,424.49,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3YHMKW3J,14/05/2026,,Airbnb,,Uffizi,,02/06/2026,05/06/2026,3,555.2,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4CWDX2DM,26/05/2026,,Airbnb,,Cupola,,31/05/2026,04/06/2026,4,832.53,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMA9QHSXKK,31/05/2026,,Airbnb,,Uffizi,,31/05/2026,02/06/2026,2,315.37,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMXH9EAKEK,15/05/2026,,Airbnb,,Ponte Vecchio,,31/05/2026,02/06/2026,2,208.46,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMTH4JQHXT,02/04/2026,,Airbnb,,Palazzo Vecchio,,30/05/2026,02/06/2026,3,327.54,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMM99A5Z33,21/04/2026,,Airbnb,,Palazzo Pitti,,28/05/2026,01/06/2026,4,439.24,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMPW4N2N53,06/05/2026,,Airbnb,,Cupola,,28/05/2026,31/05/2026,3,573.85,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM35YHK92M,23/04/2026,,Airbnb,,Uffizi,,27/05/2026,31/05/2026,4,919.45,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM38NHNRYP,15/04/2026,,Airbnb,,Ponte Vecchio,,27/05/2026,31/05/2026,4,448.49,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2CRX5PTX,25/03/2026,,Airbnb,,Palazzo Vecchio,,26/05/2026,29/05/2026,3,304.43,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMTYMDBDWN,26/05/2026,,Airbnb,,Cupola,,26/05/2026,28/05/2026,2,299.03,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYKADTY5M,07/05/2026,,Airbnb,,Palazzo Pitti,,26/05/2026,28/05/2026,2,258.41,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJDMFJ2NF,04/08/2025,,Airbnb,,Uffizi,,25/05/2026,27/05/2026,2,365.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2REHEBKX,16/02/2026,,Airbnb,,Cupola,,23/05/2026,26/05/2026,3,591,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5D2EADHA,09/05/2026,,Airbnb,,Palazzo Vecchio,,23/05/2026,25/05/2026,2,217.87,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM88ANAW4M,25/04/2026,,Airbnb,,Uffizi,,24/05/2026,25/05/2026,1,161.11,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMKNQDJP3E,04/04/2026,,Airbnb,,Palazzo Pitti,,22/05/2026,25/05/2026,3,327.54,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBWPJWKBH,23/02/2026,,Airbnb,,Uffizi,,22/05/2026,24/05/2026,2,305.37,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMSS2S24TK,19/03/2026,,Airbnb,,Palazzo Vecchio,,21/05/2026,23/05/2026,2,214.3,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HME3C9TBY4,18/05/2026,,Airbnb,,Palazzo Pitti,,19/05/2026,22/05/2026,3,313.68,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2SPSNQJE,27/03/2026,,Airbnb,,Uffizi,,21/05/2026,22/05/2026,1,142.82,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMF3ASAQCQ,12/12/2025,,Airbnb,,Cupola,,18/05/2026,22/05/2026,4,605.64,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMKDNYNMK9,23/02/2026,,Airbnb,,Uffizi,,19/05/2026,21/05/2026,2,305.37,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMT3YJQ35Z,25/03/2026,,Airbnb,,Palazzo Vecchio,,17/05/2026,20/05/2026,3,304.43,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2CPFYMJK,03/05/2026,,Airbnb,,Uffizi,,16/05/2026,19/05/2026,3,544.65,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9BTPEKST,06/04/2026,,Airbnb,,Palazzo Pitti,,16/05/2026,19/05/2026,3,327.54,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMWY5PHQKQ,26/03/2026,,Airbnb,,Ponte Vecchio,,15/05/2026,18/05/2026,3,336.78,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMZKDAQFQH,06/04/2026,,Airbnb,,Palazzo Vecchio,,14/05/2026,17/05/2026,3,327.55,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMPS99433C,25/04/2026,,Airbnb,,Palazzo Pitti,,14/05/2026,16/05/2026,2,227.6,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMEQDT9XRB,02/04/2026,,Airbnb,,Cupola,,13/05/2026,16/05/2026,3,590.87,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMJTNCC5EW,16/11/2025,,Airbnb,,Uffizi,,12/05/2026,15/05/2026,3,584.28,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBDW3NWC4,06/04/2026,,Airbnb,,Ponte Vecchio,,09/05/2026,14/05/2026,5,566.35,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMWP2JJQAR,09/05/2026,,Airbnb,,Cupola,,09/05/2026,13/05/2026,4,605.64,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNEHTMMEZ,24/03/2026,,Airbnb,,Palazzo Vecchio,,08/05/2026,13/05/2026,5,512.43,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2REPY5HD,08/12/2025,,Airbnb,,Uffizi,,06/05/2026,12/05/2026,6,973.38,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBXQHKRFN,23/04/2026,,Airbnb,,Ponte Vecchio,,07/05/2026,09/05/2026,2,221.11,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMQHH2AMB5,14/04/2026,,Airbnb,,Palazzo Pitti,,05/05/2026,09/05/2026,4,453.03,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMKYF49PDP,19/02/2026,,Airbnb,,Cupola,,05/05/2026,09/05/2026,4,790.53,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNJ45HCCH,10/05/2026,,Airbnb,,Cupola,,25/06/2026,30/06/2026,5,991.59,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMA9XHCBYM,02/06/2026,,Airbnb,,Ponte Vecchio,,27/06/2026,29/06/2026,2,166.14,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBQA85EMD,15/05/2026,,Airbnb,,Uffizi,,26/06/2026,28/06/2026,2,333.09,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCZC453DP,12/04/2026,,Airbnb,,Palazzo Pitti,,26/06/2026,28/06/2026,2,217.38,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMN9H9PREM,30/04/2026,,Airbnb,,Palazzo Vecchio,,26/06/2026,27/06/2026,1,104.91,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMCFBPDR5M,13/04/2026,,Airbnb,,Ponte Vecchio,,25/06/2026,27/06/2026,2,220.46,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMQHJAQ9A3,23/06/2026,,Airbnb,,Palazzo Pitti,,23/06/2026,26/06/2026,3,232.79,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3R2J2BZ8,22/06/2026,,Airbnb,,Palazzo Vecchio,,25/06/2026,26/06/2026,1,72.56,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXS4FDFMQ,19/06/2026,,Airbnb,,Uffizi,,23/06/2026,26/06/2026,3,457.89,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZB3FWE2J,20/06/2026,,Airbnb,,Ponte Vecchio,,21/06/2026,24/06/2026,3,240.5,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMMYT2RNQS,21/09/2025,,Airbnb,,Uffizi,,18/06/2026,22/06/2026,4,767.38,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMHAW9HAFC,02/06/2026,,Airbnb,,Ponte Vecchio,,14/06/2026,20/06/2026,6,586.5,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMHFXAB4W3,16/06/2026,,Airbnb,,Palazzo Pitti,,17/06/2026,19/06/2026,2,175.7,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HME2WHNZKE,10/05/2026,,Airbnb,,Cupola,,17/06/2026,19/06/2026,2,406.89,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMJ2Z5ZT5D,08/06/2026,,Airbnb,,Palazzo Vecchio,,17/06/2026,18/06/2026,1,105.15,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMKW2ZYYT3,12/05/2026,,Airbnb,,Uffizi,,17/06/2026,18/06/2026,1,172.09,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDYJEDRXB,16/06/2026,,Airbnb,,Palazzo Vecchio,,16/06/2026,17/06/2026,1,99.51,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM3BK2Q5HN,07/06/2026,,Airbnb,,Uffizi,,14/06/2026,17/06/2026,3,643.59,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMTZCEZP28,31/05/2026,,Airbnb,,Palazzo Pitti,,15/06/2026,17/06/2026,2,225.98,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJW3M4XWB,21/05/2026,,Airbnb,,Cupola,,15/06/2026,17/06/2026,2,331.39,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMKAQNTBCP,08/06/2026,,Airbnb,,Palazzo Vecchio,,14/06/2026,15/06/2026,1,108.39,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBDR8HDB2,04/06/2026,,Airbnb,,Palazzo Pitti,,13/06/2026,15/06/2026,2,193.54,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMBES8FDE2,13/05/2026,,Airbnb,,Cupola,,12/06/2026,15/06/2026,3,506.26,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPPWFCDNN,09/06/2026,,Airbnb,,Palazzo Vecchio,,09/06/2026,14/06/2026,5,471.43,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMECJP5HCQ,04/06/2026,,Airbnb,,Ponte Vecchio,,12/06/2026,14/06/2026,2,239.11,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM5NEB5PDA,26/05/2026,,Airbnb,,Uffizi,,12/06/2026,14/06/2026,2,384.09,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5MPN5MN8,04/06/2026,,Airbnb,,Cupola,,09/06/2026,12/06/2026,3,354.9,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZC5ZMPSY,26/05/2026,,Airbnb,,Ponte Vecchio,,10/06/2026,12/06/2026,2,209.92,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM4ECQST5W,10/06/2026,,Airbnb,,Uffizi,,10/06/2026,11/06/2026,1,95.83,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMRWF8ZH49,04/06/2026,,Airbnb,,Uffizi,,07/06/2026,09/06/2026,2,233.8,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMSEXB24ZK,30/04/2026,,Airbnb,,Ponte Vecchio,,07/06/2026,09/06/2026,2,198.35,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMRT9XXEWP,05/06/2026,,Airbnb,,Palazzo Vecchio,,05/06/2026,08/06/2026,3,214.3,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMY9DSJX8A,05/06/2026,,Airbnb,,Palazzo Pitti,,05/06/2026,08/06/2026,3,214.3,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMFYFJTDA5,30/05/2026,,Airbnb,,Cupola,,04/06/2026,07/06/2026,3,403.56,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM3ZMHDQBZ,31/01/2026,,Airbnb,,Ponte Vecchio,,13/02/2026,16/02/2026,3,161.91,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMD2MTRPY8,11/12/2025,,Airbnb,,Palazzo Vecchio,,13/02/2026,16/02/2026,3,151.9,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM5S8C85A2,25/11/2025,,Airbnb,,Cupola,,13/02/2026,16/02/2026,3,284.09,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMQ8NC4WAP,06/02/2026,,Airbnb,,Cupola,,09/02/2026,13/02/2026,4,277.5,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBBT9MRCN,03/02/2026,,Airbnb,,Uffizi,,09/02/2026,11/02/2026,2,165.15,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZEETEYDR,06/02/2026,,Airbnb,,Uffizi,,06/02/2026,08/02/2026,2,144.96,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCBZA5FT8,09/12/2025,,Airbnb,,Cupola,,04/02/2026,06/02/2026,2,140.51,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMRQXDE53H,23/10/2025,,Airbnb,,Uffizi,,02/02/2026,06/02/2026,4,422.62,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM4YC88X9N,07/12/2025,,Airbnb,,Uffizi,,29/01/2026,01/02/2026,3,238.46,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM3FWAZ8C3,14/01/2026,,Airbnb,,Cupola,,27/01/2026,31/01/2026,4,281.12,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMCK5KR5XX,19/12/2025,,Airbnb,,Uffizi,,26/01/2026,28/01/2026,2,140.51,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMT3SXAFXX,20/12/2025,,Airbnb,,Cupola,,25/01/2026,27/01/2026,2,140.51,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMA3FAJQ9Y,12/01/2026,,Airbnb,,Uffizi,,24/01/2026,26/01/2026,2,124.61,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMS4WF5CA5,23/01/2026,,Airbnb,,Cupola,,23/01/2026,25/01/2026,2,129.56,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5HQSDH4F,30/11/2025,,Airbnb,,Uffizi,,21/01/2026,24/01/2026,3,290.84,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMYXKYTJAF,27/11/2025,,Airbnb,,Uffizi,,17/01/2026,20/01/2026,3,290.83,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMT53JH2KT,02/01/2026,,Airbnb,,Cupola,,15/01/2026,19/01/2026,4,321.66,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9NHPENTX,01/12/2025,,Airbnb,,Uffizi,,14/01/2026,16/01/2026,2,174.84,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMBRB3YYYP,09/11/2025,,Airbnb,,Cupola,,13/01/2026,15/01/2026,2,183.61,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMSYF9JSJZ,05/12/2025,,Airbnb,,Uffizi,,10/01/2026,14/01/2026,4,318.58,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM2WZSAFK5,04/01/2026,,Airbnb,,Cupola,,08/01/2026,12/01/2026,4,313.55,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMX4F92S8Z,14/12/2025,,Airbnb,,Uffizi,,01/01/2026,06/01/2026,5,785.5,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMTHJ4WQ9Q,31/12/2025,,Airbnb,,Cupola,,03/01/2026,05/01/2026,2,164.78,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMWXFSKTZ3,08/12/2025,,Airbnb,,Ponte Vecchio,,03/01/2026,05/01/2026,2,112.45,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMEKMQBX9Y,20/12/2025,,Airbnb,,Palazzo Vecchio,,01/01/2026,04/01/2026,3,185.43,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM2D249T35,21/12/2025,,Airbnb,,Ponte Vecchio,,01/01/2026,03/01/2026,2,144.89,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMSSK3THY8,15/01/2026,,Airbnb,,Palazzo Pitti,,02/04/2026,05/04/2026,3,292.87,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMZ5WSJHCX,24/01/2026,,Airbnb,,Cupola,,01/04/2026,04/04/2026,3,406.12,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDK923HM9,02/03/2026,,Airbnb,,Uffizi,,01/04/2026,03/04/2026,2,305.37,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9H8EMDPR,13/12/2025,,Airbnb,,Palazzo Vecchio,,26/03/2026,02/04/2026,7,464.67,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMKPNQMMRY,07/02/2026,,Airbnb,,Palazzo Pitti,,28/03/2026,01/04/2026,4,269.76,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMDDCNWEW4,11/11/2025,,Airbnb,,Uffizi,,30/03/2026,01/04/2026,2,256.83,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMH5828J5H,09/12/2025,,Airbnb,,Cupola,,30/03/2026,31/03/2026,1,95.05,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM8NRQA5ES,04/02/2026,,Airbnb,,Uffizi,,27/03/2026,30/03/2026,3,423.96,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMJEK59ATE,22/01/2026,,Airbnb,,Ponte Vecchio,,27/03/2026,30/03/2026,3,191.18,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM58Q2PNCB,15/03/2026,,Airbnb,,Cupola,,27/03/2026,29/03/2026,2,234.08,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMA9TR9QHR,07/01/2026,,Airbnb,,Cupola,,24/03/2026,27/03/2026,3,336.78,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMWXNX9RDH,13/11/2025,,Airbnb,,Uffizi,,24/03/2026,27/03/2026,3,414.39,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMR5JCNKQ3,15/03/2026,,Airbnb,,Ponte Vecchio,,18/03/2026,25/03/2026,7,423.84,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMXEKSTF4A,09/02/2026,,Airbnb,,Uffizi,,22/03/2026,24/03/2026,2,225.25,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM852JJCAD,05/01/2026,,Airbnb,,Palazzo Pitti,,18/03/2026,22/03/2026,4,266.68,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMTQ9PPY89,28/11/2025,,Airbnb,,Uffizi,,18/03/2026,22/03/2026,4,550.75,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM3Z3BMMMA,09/12/2025,,Airbnb,,Cupola,,18/03/2026,21/03/2026,3,336.79,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM5FT3TRZ3,25/01/2026,,Airbnb,,Palazzo Vecchio,,17/03/2026,20/03/2026,3,175.01,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMTJ4F9QRQ,04/02/2026,,Airbnb,,Uffizi,,15/03/2026,17/03/2026,2,225.25,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMP4WDZJD8,14/12/2025,,Airbnb,,Palazzo Vecchio,,12/03/2026,15/03/2026,3,175.01,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM84PBHAJP,11/03/2026,,Airbnb,,Palazzo Pitti,,12/03/2026,14/03/2026,2,123.4,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMT5Y5FHXN,15/02/2026,,Airbnb,,Uffizi,,12/03/2026,14/03/2026,2,238.13,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMDDC3YDE5,27/01/2026,,Airbnb,,Cupola,,10/03/2026,14/03/2026,4,451.57,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMA8W8PBZ8,16/10/2025,,Airbnb,,Uffizi,,09/03/2026,10/03/2026,1,120.45,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM22YPRTA2,04/03/2026,,Airbnb,,Cupola,,05/03/2026,08/03/2026,3,162.72,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM9844E2S8,03/01/2026,,Airbnb,,Ponte Vecchio,,05/03/2026,08/03/2026,3,198.4,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJHQCZBSE,04/12/2025,,Airbnb,,Palazzo Vecchio,,05/03/2026,07/03/2026,2,114.15,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMP4MCY38K,27/01/2026,,Airbnb,,Uffizi,,27/02/2026,01/03/2026,2,174.4,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMZYBYP2TF,29/10/2025,,Airbnb,,Ponte Vecchio,,27/02/2026,01/03/2026,2,114.14,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMMP4938XJ,12/12/2025,,Airbnb,,Uffizi,,24/02/2026,27/02/2026,3,261.58,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM88TC58R3,23/02/2026,,Airbnb,,Cupola,,23/02/2026,25/02/2026,2,169.62,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HM8XWCMAZR,23/02/2026,,Airbnb,,Uffizi,,23/02/2026,24/02/2026,1,77.34,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMNE5R8BAJ,16/12/2025,,Airbnb,,Cupola,,21/02/2026,23/02/2026,2,148.2,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMT4XKF9K3,02/01/2026,,Airbnb,,Ponte Vecchio,,19/02/2026,22/02/2026,3,175.01,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMJSDJJNAM,18/11/2025,,Airbnb,,Uffizi,,20/02/2026,22/02/2026,2,192.76,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMB5HKSYR2,17/02/2026,,Airbnb,,Palazzo Vecchio,,18/02/2026,21/02/2026,3,181.95,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HMMZP2W2AA,20/10/2025,,Airbnb,,Cupola,,17/02/2026,21/02/2026,4,397.57,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMWHKYA5YE,25/10/2025,,Airbnb,,Uffizi,,18/02/2026,20/02/2026,2,239,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
-HMPH328FXT,28/01/2026,,Airbnb,,Ponte Vecchio,,16/02/2026,19/02/2026,3,184.62,Porte Nuove Apartments,Confermate,0,Airbnb,40,
-HM4X4JYRHR,20/10/2025,,Airbnb,,Uffizi,,13/02/2026,18/02/2026,5,526.95,Nazionale 35 Apartments,Confermate,0,Airbnb,40,
+HMQJHZTZWM,14/06/2025 00:00,,Airbnb,Nithin Gopalakrishna,Palazzo Pitti,Flessibile,21/07/2025,24/07/2025,3,256.2,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMS5TQTDXD,14/07/2025 00:00,,Airbnb,Caterina Penna,Uffizi,Flessibile,21/07/2025,22/07/2025,1,169.41,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HMNRPQ33ZE,16/07/2025 00:00,,Airbnb,Kyrah Davis,Cupola,Flessibile,18/07/2025,21/07/2025,3,364.3,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 1
+HMX5PZR42F,19/06/2025 00:00,,Airbnb,Marco Antonio Herrero Gregorio,Ponte Vecchio,Flessibile,18/07/2025,21/07/2025,3,288.13,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMYSCZ954E,08/07/2025 00:00,,Airbnb,Alyssa Smith,Uffizi,Flessibile,18/07/2025,20/07/2025,2,283.52,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMFTW2NJQJ,28/04/2025 00:00,,Airbnb,Daniella Hameed,Uffizi,Flessibile,17/07/2025,18/07/2025,1,245.54,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HM5TMZW4FD,14/06/2025 00:00,,Airbnb,Shoba Subramanyam,Palazzo Pitti,Flessibile,15/07/2025,21/07/2025,6,508.83,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM5JMWDW4Y,10/07/2025 00:00,,Airbnb,Taylored Living Solutions LLC,Uffizi,Flessibile,15/07/2025,17/07/2025,2,276.6,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM3TMC48TC,13/07/2025 00:00,,Airbnb,Lily Parker,Cupola,Flessibile,14/07/2025,17/07/2025,3,358.03,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMSN3EZAM3,14/07/2025 00:00,,Airbnb,Samuel Thompson,Uffizi,Flessibile,14/07/2025,15/07/2025,1,128.09,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HMEHESBM43,14/06/2025 00:00,,Airbnb,Anca Pricop,Palazzo Vecchio,Flessibile,13/07/2025,21/07/2025,8,683.88,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM9E8AC9PJ,19/06/2025 00:00,,Airbnb,Wing Yee Law,Palazzo Pitti,Flessibile,12/07/2025,15/07/2025,3,280.06,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMMCK3S4CY,10/07/2025 00:00,,Airbnb,Neelanjan Sircar,Cupola,Flessibile,10/07/2025,13/07/2025,3,358.01,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMM3584XAP,08/07/2025 00:00,,Airbnb,James Asefa,Uffizi,Flessibile,09/07/2025,10/07/2025,1,141.24,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM23NMJM22,06/06/2025 00:00,,Airbnb,소영 백,Palazzo Pitti,Flessibile,07/07/2025,11/07/2025,4,381.7,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMEJYEMY5K,03/06/2025 00:00,,Airbnb,Aria So,Palazzo Vecchio,Flessibile,07/07/2025,10/07/2025,3,292.32,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMZAZE94DF,21/06/2025 00:00,,Airbnb,Amanda Choi,Uffizi,Flessibile,07/07/2025,09/07/2025,2,297.35,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMQQHCATEC,04/07/2025 00:00,,Airbnb,Kaj Aka KAJ,Uffizi,Flessibile,05/07/2025,07/07/2025,2,272.63,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 1
+HM8CJDYK8F,19/06/2025 00:00,,Airbnb,Rajat Singh,Palazzo Vecchio,Flessibile,03/07/2025,06/07/2025,3,273.14,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMATFFBPKZ,28/03/2025 00:00,,Airbnb,Sonali Parthasarathy,Uffizi,Flessibile,03/07/2025,04/07/2025,1,258.16,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2 Bambini: 1
+HMHTAWWFP3,07/03/2025 00:00,,Airbnb,Stefanie Gammel,Uffizi,Flessibile,01/07/2025,02/07/2025,1,231.02,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMDSNZXYTD,06/05/2025 00:00,,Airbnb,Marissa Lavelle,Cupola,Flessibile,30/06/2025,08/07/2025,8,1725.12,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 1
+HMHDBYDRJE,30/04/2026 00:00,,Airbnb,Melissa Annecchini,Uffizi,Flessibile,04/05/2026,06/05/2026,2,457.99,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMB3X8DWTP,10/04/2026 00:00,,Airbnb,Iqra Rasheed,Palazzo Pitti,Flessibile,02/05/2026,04/05/2026,2,293.99,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMSP98XHA5,25/04/2026 00:00,,Airbnb,Mohammed Ishan,Uffizi,Flessibile,01/05/2026,03/05/2026,2,566.0,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2 Bambini: 1
+HMPJHQ5R9W,24/04/2026 00:00,,Airbnb,Iurii Chupakhin,Palazzo Vecchio,Flessibile,29/04/2026,03/05/2026,4,637.01,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 1
+HMYFW3TYQH,27/03/2026 00:00,,Airbnb,Kiki Zhu,Ponte Vecchio,Flessibile,30/04/2026,03/05/2026,3,432.25,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMTPH9SX2R,14/04/2026 00:00,,Airbnb,Josana Lima Figueiredo,Palazzo Pitti,Flessibile,01/05/2026,02/05/2026,1,163.99,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HM3RMBMKA5,30/12/2025 00:00,,Airbnb,Lyuba Mironenko,Cupola,Flessibile,26/04/2026,02/05/2026,6,1057.95,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HM4XFD53DH,06/03/2026 00:00,,Airbnb,Kathy Melton,Uffizi,Flessibile,30/04/2026,01/05/2026,1,200.47,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HME5Z34ST4,16/02/2026 00:00,,Airbnb,Thao Nguyen,Palazzo Pitti,Flessibile,28/04/2026,01/05/2026,3,370.49,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMJZ3ZHK9F,21/02/2026 00:00,,Airbnb,意 卢,Uffizi,Flessibile,28/04/2026,29/04/2026,1,200.0,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMAATEMKQ3,23/02/2026 00:00,,Airbnb,João Carvalho,Palazzo Pitti,Flessibile,25/04/2026,28/04/2026,3,370.49,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMR42CAXKH,29/12/2025 00:00,,Airbnb,Tony Ditlow,Uffizi,Flessibile,26/04/2026,28/04/2026,2,400.9,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HM2CH2TJ88,02/03/2026 00:00,,Airbnb,Johan Grené,Palazzo Vecchio,Flessibile,25/04/2026,27/04/2026,2,195.5,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMD3TAETP3,20/02/2026 00:00,,Airbnb,Agatha Morello,Cupola,Flessibile,23/04/2026,26/04/2026,3,504.44,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM5RNSY34J,14/12/2025 00:00,,Airbnb,민아 조,Uffizi,Flessibile,24/04/2026,26/04/2026,2,400.91,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMYNRREAQZ,18/03/2026 00:00,,Airbnb,Mihaela Roxana Bradeanu,Ponte Vecchio,Flessibile,21/04/2026,25/04/2026,4,559.01,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMDFJAS22E,16/03/2026 00:00,,Airbnb,Leticia Carcedo Domingo,Palazzo Vecchio,Flessibile,21/04/2026,25/04/2026,4,468.0,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMY3N3XAHE,09/03/2026 00:00,,Airbnb,Daniel Pivirotto,Uffizi,Flessibile,23/04/2026,24/04/2026,1,200.45,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMCBEHY9YK,13/04/2026 00:00,,Airbnb,Faaiza Khan,Uffizi,Flessibile,20/04/2026,23/04/2026,3,604.0,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMY8D2PD5R,22/02/2026 00:00,,Airbnb,승민 이,Cupola,Flessibile,21/04/2026,23/04/2026,2,349.4,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HM4PKFT2D8,17/04/2026 00:00,,Airbnb,Laura Hoang,Palazzo Vecchio,Flessibile,18/04/2026,21/04/2026,3,341.06,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMBTJ55NW3,20/01/2026 00:00,,Airbnb,Heather Cunningham,Cupola,Flessibile,17/04/2026,21/04/2026,4,673.21,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMNCFF8BKM,07/11/2025 00:00,,Airbnb,Viviana Amalia Bua,Ponte Vecchio,Flessibile,15/04/2026,21/04/2026,6,558.96,Porte Nuove Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMHEDMMQXS,18/01/2026 00:00,,Airbnb,태수 김,Uffizi,Flessibile,17/04/2026,20/04/2026,3,608.35,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMYYA4QR5E,13/04/2026 00:00,,Airbnb,Charis Evripidou,Palazzo Pitti,Flessibile,17/04/2026,19/04/2026,2,313.99,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 3
+HMNBTRFDH3,13/04/2026 00:00,,Airbnb,Regina Barcenas Suero,Palazzo Vecchio,Flessibile,16/04/2026,18/04/2026,2,218.05,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 1
+HM9W9RZPD9,07/03/2026 00:00,,Airbnb,Emma Parker,Uffizi,Flessibile,15/04/2026,17/04/2026,2,400.9,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMZ2APCAM4,29/12/2025 00:00,,Airbnb,Elizabeth Cavino,Cupola,Flessibile,13/04/2026,17/04/2026,4,673.2,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMEDPEBZYR,09/03/2026 00:00,,Airbnb,奕航 朱,Uffizi,Flessibile,14/04/2026,15/04/2026,1,200.45,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMZDRCCZNZ,19/07/2025 00:00,,Airbnb,극렬 유,Uffizi,Flessibile,03/04/2026,14/04/2026,11,2541.2,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMM8N33YCF,22/03/2026 00:00,,Airbnb,Dempsey Rice,Cupola,Flessibile,12/04/2026,13/04/2026,1,193.99,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMTRMR98YM,17/03/2026 00:00,,Airbnb,Hanan Od,Palazzo Pitti,Flessibile,09/04/2026,13/04/2026,4,513.0,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 1
+HM855CQ44T,12/11/2025 00:00,,Airbnb,Laura Córcoles,Ponte Vecchio,Flessibile,10/04/2026,13/04/2026,3,283.51,Porte Nuove Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMTRKHP94W,22/03/2026 00:00,,Airbnb,Seride Samurkaş,Cupola,Flessibile,07/04/2026,12/04/2026,5,747.99,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMN3HK329Y,05/04/2026 00:00,,Airbnb,Jimi Avaliani,Ponte Vecchio,Flessibile,05/04/2026,10/04/2026,5,637.09,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 1
+HMSXRS4ATD,23/01/2026 00:00,,Airbnb,Nahomi Castellanos,Palazzo Pitti,Flessibile,05/04/2026,08/04/2026,3,370.49,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMECWEPTYH,12/03/2026 00:00,,Airbnb,Juan Pablo López Perez,Palazzo Vecchio,Flessibile,05/04/2026,07/04/2026,2,309.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 3
+HM2SF5JXCF,17/12/2025 00:00,,Airbnb,Pavn Brar,Cupola,Flessibile,04/04/2026,07/04/2026,3,501.6,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMWSHXD92W,30/03/2026 00:00,,Airbnb,Michael Swanson,Ponte Vecchio,Flessibile,01/04/2026,05/04/2026,4,531.6,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMR24A2KCD,17/03/2026 00:00,,Airbnb,Sina Hummel,Palazzo Vecchio,Flessibile,03/04/2026,05/04/2026,2,260.99,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMM53BY9WT,20/05/2026 00:00,,Airbnb,Jacqueline Anderson,Uffizi,Flessibile,05/06/2026,07/06/2026,2,457.99,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMRNYZ4T4S,20/05/2026 00:00,,Airbnb,Barteld André De La Porte,Ponte Vecchio,Flessibile,02/06/2026,06/06/2026,4,525.81,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HM3YHMKW3J,14/05/2026 00:00,,Airbnb,원정 지,Uffizi,Flessibile,02/06/2026,05/06/2026,3,694.0,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM4CWDX2DM,26/05/2026 00:00,,Airbnb,Tritip Suprakob,Cupola,Flessibile,31/05/2026,04/06/2026,4,1029.0,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMA9QHSXKK,31/05/2026 00:00,,Airbnb,John Nice,Uffizi,Flessibile,31/05/2026,02/06/2026,2,413.24,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMXH9EAKEK,15/05/2026 00:00,,Airbnb,Dean Webster,Ponte Vecchio,Flessibile,31/05/2026,02/06/2026,2,281.4,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMTH4JQHXT,02/04/2026 00:00,,Airbnb,Aitor Alcantara,Palazzo Vecchio,Flessibile,30/05/2026,02/06/2026,3,413.25,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMM99A5Z33,21/04/2026 00:00,,Airbnb,Aušra Grigienė,Palazzo Pitti,Flessibile,28/05/2026,01/06/2026,4,544.0,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMPW4N2N53,06/05/2026 00:00,,Airbnb,Sarah Tuttle,Cupola,Flessibile,28/05/2026,31/05/2026,3,717.0,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM35YHK92M,23/04/2026 00:00,,Airbnb,Joanne Wright,Uffizi,Flessibile,27/05/2026,31/05/2026,4,1136.19,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HM38NHNRYP,15/04/2026 00:00,,Airbnb,湘 苏,Ponte Vecchio,Flessibile,27/05/2026,31/05/2026,4,555.4,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HM2CRX5PTX,25/03/2026 00:00,,Airbnb,Swee Im Tan,Palazzo Vecchio,Flessibile,26/05/2026,29/05/2026,3,384.75,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMTYMDBDWN,26/05/2026 00:00,,Airbnb,Kevin Burris,Cupola,Flessibile,26/05/2026,28/05/2026,2,393.09,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMYKADTY5M,07/05/2026 00:00,,Airbnb,La Nota De Joseph Perez,Palazzo Pitti,Flessibile,26/05/2026,28/05/2026,2,343.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2 Bambini: 1
+HMJDMFJ2NF,04/08/2025 00:00,,Airbnb,지안 문,Uffizi,Flessibile,25/05/2026,27/05/2026,2,462.03,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM2REHEBKX,16/02/2026 00:00,,Airbnb,Kristy Michelle Riddle,Cupola,Flessibile,23/05/2026,26/05/2026,3,738.15,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM5D2EADHA,09/05/2026 00:00,,Airbnb,Baozhi Li,Palazzo Vecchio,Flessibile,23/05/2026,25/05/2026,2,293.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 1
+HM88ANAW4M,25/04/2026 00:00,,Airbnb,Jim Fox,Uffizi,Flessibile,24/05/2026,25/05/2026,1,223.01,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 3
+HMKNQDJP3E,04/04/2026 00:00,,Airbnb,Bárbara Vitantonio,Palazzo Pitti,Flessibile,22/05/2026,25/05/2026,3,413.25,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMBWPJWKBH,23/02/2026 00:00,,Airbnb,지영 김,Uffizi,Flessibile,22/05/2026,24/05/2026,2,400.91,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMSS2S24TK,19/03/2026 00:00,,Airbnb,Théo Prestavoine,Palazzo Vecchio,Flessibile,21/05/2026,23/05/2026,2,288.6,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HME3C9TBY4,18/05/2026 00:00,,Airbnb,Michael Cioato,Palazzo Pitti,Flessibile,19/05/2026,22/05/2026,3,396.16,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM2SPSNQJE,27/03/2026 00:00,,Airbnb,Nicole Cho,Uffizi,Flessibile,21/05/2026,22/05/2026,1,200.45,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMF3ASAQCQ,12/12/2025 00:00,,Airbnb,Samantha Broomer,Cupola,Flessibile,18/05/2026,22/05/2026,4,749.2,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMKDNYNMK9,23/02/2026 00:00,,Airbnb,Nadia Rahmatian,Uffizi,Flessibile,19/05/2026,21/05/2026,2,400.91,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMT3YJQ35Z,25/03/2026 00:00,,Airbnb,Carmen Leslie,Palazzo Vecchio,Flessibile,17/05/2026,20/05/2026,3,384.75,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM2CPFYMJK,03/05/2026 00:00,,Airbnb,嘉莉 徐,Uffizi,Flessibile,16/05/2026,19/05/2026,3,680.99,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM9BTPEKST,06/04/2026 00:00,,Airbnb,Catarina Gregório,Palazzo Pitti,Flessibile,16/05/2026,19/05/2026,3,413.25,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMWY5PHQKQ,26/03/2026 00:00,,Airbnb,Graham Wharton,Ponte Vecchio,Flessibile,15/05/2026,18/05/2026,3,424.64,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMZKDAQFQH,06/04/2026 00:00,,Airbnb,Luke Jobling,Palazzo Vecchio,Flessibile,14/05/2026,17/05/2026,3,413.26,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMPS99433C,25/04/2026 00:00,,Airbnb,Kadek Suartana,Palazzo Pitti,Flessibile,14/05/2026,16/05/2026,2,305.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMEQDT9XRB,02/04/2026 00:00,,Airbnb,Jessica Dower,Cupola,Flessibile,13/05/2026,16/05/2026,3,737.99,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMJTNCC5EW,16/11/2025 00:00,,Airbnb,David Bradley,Uffizi,Flessibile,12/05/2026,15/05/2026,3,700.72,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMBDW3NWC4,06/04/2026 00:00,,Airbnb,Joris Van Deventer,Ponte Vecchio,Flessibile,09/05/2026,14/05/2026,5,700.75,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMWP2JJQAR,09/05/2026 00:00,,Airbnb,Li Chang,Cupola,Flessibile,09/05/2026,13/05/2026,4,749.2,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMNEHTMMEZ,24/03/2026 00:00,,Airbnb,Hamza Benfkira,Palazzo Vecchio,Flessibile,08/05/2026,13/05/2026,5,634.26,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HM2REPY5HD,08/12/2025 00:00,,Airbnb,Ju-Young Suh,Uffizi,Flessibile,06/05/2026,12/05/2026,6,1202.7,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMBXQHKRFN,23/04/2026 00:00,,Airbnb,Nicole Bubalo,Ponte Vecchio,Flessibile,07/05/2026,09/05/2026,2,297.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMQHH2AMB5,14/04/2026 00:00,,Airbnb,Nicolás Torres González,Palazzo Pitti,Flessibile,05/05/2026,09/05/2026,4,561.0,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMKYF49PDP,19/02/2026 00:00,,Airbnb,Jose Lizarzaburu,Cupola,Flessibile,05/05/2026,09/05/2026,4,977.21,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMNJ45HCCH,10/05/2026 00:00,,Airbnb,미성 서,Cupola,Flessibile,25/06/2026,30/06/2026,5,1225.15,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMA9XHCBYM,02/06/2026 00:00,,Airbnb,Briza Garcia,Ponte Vecchio,Flessibile,27/06/2026,29/06/2026,2,229.21,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMBQA85EMD,15/05/2026 00:00,,Airbnb,Stephanie Zammit,Uffizi,Flessibile,26/06/2026,28/06/2026,2,435.09,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMCZC453DP,12/04/2026 00:00,,Airbnb,Giovanni Regaiolo,Palazzo Pitti,Flessibile,26/06/2026,28/06/2026,2,292.4,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMN9H9PREM,30/04/2026 00:00,,Airbnb,Davide Scognamiglio,Palazzo Vecchio,Flessibile,26/06/2026,27/06/2026,1,153.7,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMCFBPDR5M,13/04/2026 00:00,,Airbnb,Bruna Silvestre,Ponte Vecchio,Flessibile,25/06/2026,27/06/2026,2,296.2,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMQHJAQ9A3,23/06/2026 00:00,,Airbnb,Dulce Padilla,Palazzo Pitti,Flessibile,23/06/2026,26/06/2026,3,296.4,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM3R2J2BZ8,22/06/2026 00:00,,Airbnb,Martin Sahagun,Palazzo Vecchio,Flessibile,25/06/2026,26/06/2026,1,113.81,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMXS4FDFMQ,19/06/2026 00:00,,Airbnb,Betsy Ellenberger,Uffizi,Flessibile,23/06/2026,26/06/2026,3,574.0,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 1
+HMZB3FWE2J,20/06/2026 00:00,,Airbnb,Thomas Colin-Daigremont,Ponte Vecchio,Flessibile,21/06/2026,24/06/2026,3,305.91,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMMYT2RNQS,21/09/2025 00:00,,Airbnb,Betsy Muterspaw,Uffizi,Flessibile,18/06/2026,22/06/2026,4,924.08,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMHAW9HAFC,02/06/2026 00:00,,Airbnb,Everton Mcdougall,Ponte Vecchio,Flessibile,14/06/2026,20/06/2026,6,725.6,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 1
+HMHFXAB4W3,16/06/2026 00:00,,Airbnb,Marco Parcianello,Palazzo Pitti,Flessibile,17/06/2026,19/06/2026,2,241.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HME2WHNZKE,10/05/2026 00:00,,Airbnb,J Y,Cupola,Flessibile,17/06/2026,19/06/2026,2,526.1,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMJ2Z5ZT5D,08/06/2026 00:00,,Airbnb,Jessica Santolini,Palazzo Vecchio,Flessibile,17/06/2026,18/06/2026,1,154.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 1
+HMKW2ZYYT3,12/05/2026 00:00,,Airbnb,Jéssica Ribeiro,Uffizi,Flessibile,17/06/2026,18/06/2026,1,236.55,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMDYJEDRXB,16/06/2026 00:00,,Airbnb,Tin R,Palazzo Vecchio,Flessibile,16/06/2026,17/06/2026,1,147.04,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 1
+HM3BK2Q5HN,07/06/2026 00:00,,Airbnb,재형 김,Uffizi,Flessibile,14/06/2026,17/06/2026,3,803.0,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMTZCEZP28,31/05/2026 00:00,,Airbnb,William Webster,Palazzo Pitti,Flessibile,15/06/2026,17/06/2026,2,303.01,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 1
+HMJW3M4XWB,21/05/2026 00:00,,Airbnb,시원 김,Cupola,Flessibile,15/06/2026,17/06/2026,2,433.0,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMKAQNTBCP,08/06/2026 00:00,,Airbnb,Ana Kelava,Palazzo Vecchio,Flessibile,14/06/2026,15/06/2026,1,157.99,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 3
+HMBDR8HDB2,04/06/2026 00:00,,Airbnb,Sunil Tolanur,Palazzo Pitti,Flessibile,13/06/2026,15/06/2026,2,263.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMBES8FDE2,13/05/2026 00:00,,Airbnb,Candice Remy,Cupola,Flessibile,12/06/2026,15/06/2026,3,633.65,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMPPWFCDNN,09/06/2026 00:00,,Airbnb,Helen Franca Dos Santos,Palazzo Vecchio,Flessibile,09/06/2026,14/06/2026,5,583.69,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMECJP5HCQ,04/06/2026 00:00,,Airbnb,Indira Magalys Müller-Feldmann Cascaret,Ponte Vecchio,Flessibile,12/06/2026,14/06/2026,2,319.2,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HM5NEB5PDA,26/05/2026 00:00,,Airbnb,Helena 이,Uffizi,Flessibile,12/06/2026,14/06/2026,2,497.99,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HM5MPN5MN8,04/06/2026 00:00,,Airbnb,Camilla Mussallam,Cupola,Flessibile,09/06/2026,12/06/2026,3,446.99,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMZC5ZMPSY,26/05/2026 00:00,,Airbnb,Kirsty Anne,Ponte Vecchio,Flessibile,10/06/2026,12/06/2026,2,283.2,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HM4ECQST5W,10/06/2026 00:00,,Airbnb,서연 이,Uffizi,Flessibile,10/06/2026,11/06/2026,1,142.51,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMRWF8ZH49,04/06/2026 00:00,,Airbnb,小迪 孙,Uffizi,Flessibile,07/06/2026,09/06/2026,2,312.65,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HMSEXB24ZK,30/04/2026 00:00,,Airbnb,Jorden Jackson,Ponte Vecchio,Flessibile,07/06/2026,09/06/2026,2,268.93,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMRT9XXEWP,05/06/2026 00:00,,Airbnb,Adrian Bumbacea,Palazzo Vecchio,Flessibile,05/06/2026,08/06/2026,3,273.6,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMY9DSJX8A,05/06/2026 00:00,,Airbnb,Yanis Nasri,Palazzo Pitti,Flessibile,05/06/2026,08/06/2026,3,273.6,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMFYFJTDA5,30/05/2026 00:00,,Airbnb,Sarah Johnson,Cupola,Flessibile,04/06/2026,07/06/2026,3,507.0,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM3ZMHDQBZ,31/01/2026 00:00,,Airbnb,Tomasz Miś,Ponte Vecchio,Flessibile,13/02/2026,16/02/2026,3,208.99,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMD2MTRPY8,11/12/2025 00:00,,Airbnb,Sheshagni Sen,Palazzo Vecchio,Flessibile,13/02/2026,16/02/2026,3,196.65,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM5S8C85A2,25/11/2025 00:00,,Airbnb,Kate Bicknell,Cupola,Flessibile,13/02/2026,16/02/2026,3,341.6,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMQ8NC4WAP,06/02/2026 00:00,,Airbnb,Jesscia Kim,Cupola,Flessibile,09/02/2026,13/02/2026,4,344.54,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 1
+HMBBT9MRCN,03/02/2026 00:00,,Airbnb,Julian Tovar Jr,Uffizi,Flessibile,09/02/2026,11/02/2026,2,227.99,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMZEETEYDR,06/02/2026 00:00,,Airbnb,Abdulmajeed Al Thabit,Uffizi,Flessibile,06/02/2026,08/02/2026,2,203.09,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMCBZA5FT8,09/12/2025 00:00,,Airbnb,Walter Matias Leguizamon,Cupola,Flessibile,04/02/2026,06/02/2026,2,197.6,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMRQXDE53H,23/10/2025 00:00,,Airbnb,Aisha Youm,Uffizi,Flessibile,02/02/2026,06/02/2026,4,499.26,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM4YC88X9N,07/12/2025 00:00,,Airbnb,嘉鍾 徐,Uffizi,Flessibile,29/01/2026,01/02/2026,3,303.4,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM3FWAZ8C3,14/01/2026 00:00,,Airbnb,Camilla Locatelli,Cupola,Flessibile,27/01/2026,31/01/2026,4,349.0,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMCK5KR5XX,19/12/2025 00:00,,Airbnb,Junho Lee,Uffizi,Flessibile,26/01/2026,28/01/2026,2,197.6,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMT3SXAFXX,20/12/2025 00:00,,Airbnb,진희 김,Cupola,Flessibile,25/01/2026,27/01/2026,2,197.6,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1 Bambini: 1
+HMA3FAJQ9Y,12/01/2026 00:00,,Airbnb,Carole Sanchez,Uffizi,Flessibile,24/01/2026,26/01/2026,2,178.0,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMS4WF5CA5,23/01/2026 00:00,,Airbnb,Michael Fucilli,Cupola,Flessibile,23/01/2026,25/01/2026,2,184.1,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HM5HQSDH4F,30/11/2025 00:00,,Airbnb,Powen Wang,Uffizi,Flessibile,21/01/2026,24/01/2026,3,349.68,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMYXKYTJAF,27/11/2025 00:00,,Airbnb,Youngboon Kim,Uffizi,Flessibile,17/01/2026,20/01/2026,3,349.67,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMT53JH2KT,02/01/2026 00:00,,Airbnb,Cristina Shimizu,Cupola,Flessibile,15/01/2026,19/01/2026,4,399.0,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HM9NHPENTX,01/12/2025 00:00,,Airbnb,JiHyun Kim,Uffizi,Flessibile,14/01/2026,16/01/2026,2,228.2,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMBRB3YYYP,09/11/2025 00:00,,Airbnb,명찬 강,Cupola,Flessibile,13/01/2026,15/01/2026,2,238.69,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMSYF9JSJZ,05/12/2025 00:00,,Airbnb,然 沈,Uffizi,Flessibile,10/01/2026,14/01/2026,4,395.2,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HM2WZSAFK5,04/01/2026 00:00,,Airbnb,Jay Godbole,Cupola,Flessibile,08/01/2026,12/01/2026,4,389.0,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 1
+HMX4F92S8Z,14/12/2025 00:00,,Airbnb,Sophie Vo,Uffizi,Flessibile,01/01/2026,06/01/2026,5,971.0,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 3
+HMTHJ4WQ9Q,31/12/2025 00:00,,Airbnb,Arelis Rivera,Cupola,Flessibile,03/01/2026,05/01/2026,2,227.53,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HMWXFSKTZ3,08/12/2025 00:00,,Airbnb,Silvio Martino,Ponte Vecchio,Flessibile,03/01/2026,05/01/2026,2,163.0,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMEKMQBX9Y,20/12/2025 00:00,,Airbnb,Pamela Quintero Perez,Palazzo Vecchio,Flessibile,01/01/2026,04/01/2026,3,238.0,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM2D249T35,21/12/2025 00:00,,Airbnb,Andy Lemoine,Ponte Vecchio,Flessibile,01/01/2026,03/01/2026,2,203.01,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMSSK3THY8,15/01/2026 00:00,,Airbnb,Marina Romero Del Cura,Palazzo Pitti,Flessibile,02/04/2026,05/04/2026,3,370.49,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMZ5WSJHCX,24/01/2026 00:00,,Airbnb,Felipe Lucca,Cupola,Flessibile,01/04/2026,04/04/2026,3,510.15,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMDK923HM9,02/03/2026 00:00,,Airbnb,Hailey Giles,Uffizi,Flessibile,01/04/2026,03/04/2026,2,400.91,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HM9H8EMDPR,13/12/2025 00:00,,Airbnb,Lucia Raynard,Palazzo Vecchio,Flessibile,26/03/2026,02/04/2026,7,575.36,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMKPNQMMRY,07/02/2026 00:00,,Airbnb,Jean Marc Chauffour,Palazzo Pitti,Flessibile,28/03/2026,01/04/2026,4,335.0,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMDDCNWEW4,11/11/2025 00:00,,Airbnb,Yuting Hsu,Uffizi,Flessibile,30/03/2026,01/04/2026,2,326.28,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMH5828J5H,09/12/2025 00:00,,Airbnb,Jansen Comadena,Cupola,Flessibile,30/03/2026,31/03/2026,1,141.54,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HM8NRQA5ES,04/02/2026 00:00,,Airbnb,Sabrina Wong,Uffizi,Flessibile,27/03/2026,30/03/2026,3,532.15,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 3
+HMJEK59ATE,22/01/2026 00:00,,Airbnb,Zara Arrowsmith,Ponte Vecchio,Flessibile,27/03/2026,30/03/2026,3,245.09,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM58Q2PNCB,15/03/2026 00:00,,Airbnb,Sjef Quaedvlieg,Cupola,Flessibile,27/03/2026,29/03/2026,2,312.99,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMA9TR9QHR,07/01/2026 00:00,,Airbnb,Simon Bennett,Cupola,Flessibile,24/03/2026,27/03/2026,3,424.64,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HMWXNX9RDH,13/11/2025 00:00,,Airbnb,Vincent Giorgianni,Uffizi,Flessibile,24/03/2026,27/03/2026,3,497.48,Nazionale 35 Apartments,Confermate,0,OTA,46.1,Adulti: 2
+HMR5JCNKQ3,15/03/2026 00:00,,Airbnb,Lucie Hockeová,Ponte Vecchio,Flessibile,18/03/2026,25/03/2026,7,525.01,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMXEKSTF4A,09/02/2026 00:00,,Airbnb,병재 유,Uffizi,Flessibile,22/03/2026,24/03/2026,2,302.11,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HM852JJCAD,05/01/2026 00:00,,Airbnb,An Chi Teng,Palazzo Pitti,Flessibile,18/03/2026,22/03/2026,4,331.2,Porte Nuove Apartments,Confermate,0,OTA,47,Adulti: 2
+HMTQ9PPY89,28/11/2025 00:00,,Airbnb,지영 윤,Uffizi,Flessibile,18/03/2026,22/03/2026,4,652.54,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HM3Z3BMMMA,09/12/2025 00:00,,Airbnb,Lucy McPherson,Cupola,Flessibile,18/03/2026,21/03/2026,3,424.66,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM5FT3TRZ3,25/01/2026 00:00,,Airbnb,Dan Olteanu,Palazzo Vecchio,Flessibile,17/03/2026,20/03/2026,3,225.15,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMTJ4F9QRQ,04/02/2026 00:00,,Airbnb,俊杰 虞,Uffizi,Flessibile,15/03/2026,17/03/2026,2,302.11,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMP4WDZJD8,14/12/2025 00:00,,Airbnb,Carolina Campos,Palazzo Vecchio,Flessibile,12/03/2026,15/03/2026,3,225.15,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM84PBHAJP,11/03/2026 00:00,,Airbnb,Maria Teresa Rodriguez,Palazzo Pitti,Flessibile,12/03/2026,14/03/2026,2,176.5,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMT5Y5FHXN,15/02/2026 00:00,,Airbnb,Giuditta Giannini,Uffizi,Flessibile,12/03/2026,14/03/2026,2,317.99,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMDDC3YDE5,27/01/2026 00:00,,Airbnb,Cristina Escudero,Cupola,Flessibile,10/03/2026,14/03/2026,4,559.2,Nazionale 35 Apartments,Confermate,0,OTA,47,Adulti: 2
+HMA8W8PBZ8,16/10/2025 00:00,,Airbnb,Chelsey Kubeck,Uffizi,Flessibile,09/03/2026,10/03/2026,1,163.13,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HM22YPRTA2,04/03/2026 00:00,,Airbnb,Ofer Flynn,Cupola,Flessibile,05/03/2026,08/03/2026,3,209.99,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 1 Bambini: 1
+HM9844E2S8,03/01/2026 00:00,,Airbnb,Lara Lozano Huerta,Ponte Vecchio,Flessibile,05/03/2026,08/03/2026,3,253.99,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMJHQCZBSE,04/12/2025 00:00,,Airbnb,Alfonso Garcia,Palazzo Vecchio,Flessibile,05/03/2026,07/03/2026,2,165.1,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
+HMP4MCY38K,27/01/2026 00:00,,Airbnb,선영 장,Uffizi,Flessibile,27/02/2026,01/03/2026,2,239.4,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMZYBYP2TF,29/10/2025 00:00,,Airbnb,Gabriella Slattery,Ponte Vecchio,Flessibile,27/02/2026,01/03/2026,2,155.58,Porte Nuove Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMMP4938XJ,12/12/2025 00:00,,Airbnb,Anne Monica De Leon,Uffizi,Flessibile,24/02/2026,27/02/2026,3,331.91,Nazionale 35 Apartments,Confermate,0,OTA,40,Adulti: 2
+HM88TC58R3,23/02/2026 00:00,,Airbnb,Varia Bortsova,Cupola,Flessibile,23/02/2026,25/02/2026,2,233.5,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HM8XWCMAZR,23/02/2026 00:00,,Airbnb,Sandeep Singh,Uffizi,Flessibile,23/02/2026,24/02/2026,1,119.7,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMNE5R8BAJ,16/12/2025 00:00,,Airbnb,Jaqueline Lorena,Cupola,Flessibile,21/02/2026,23/02/2026,2,207.09,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMT4XKF9K3,02/01/2026 00:00,,Airbnb,Kwong Fai Lai,Ponte Vecchio,Flessibile,19/02/2026,22/02/2026,3,225.15,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMJSDJJNAM,18/11/2025 00:00,,Airbnb,冰清 奚,Uffizi,Flessibile,20/02/2026,22/02/2026,2,249.63,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 2
+HMB5HKSYR2,17/02/2026 00:00,,Airbnb,Franca Nicolia,Palazzo Vecchio,Flessibile,18/02/2026,21/02/2026,3,233.71,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMMZP2W2AA,20/10/2025 00:00,,Airbnb,Dennis Yan,Cupola,Flessibile,17/02/2026,21/02/2026,4,469.29,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+HMWHKYA5YE,25/10/2025 00:00,,Airbnb,Yu Wen Tseng,Uffizi,Flessibile,18/02/2026,20/02/2026,2,304.95,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 3
+HMPH328FXT,28/01/2026 00:00,,Airbnb,Dang Nguyen,Ponte Vecchio,Flessibile,16/02/2026,19/02/2026,3,237.0,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 1
+HM4X4JYRHR,20/10/2025 00:00,,Airbnb,아름 이,Uffizi,Flessibile,13/02/2026,18/02/2026,5,624.07,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
 FBBEF6C12B,06/10/2026 04:05,,Expedia,Aaron Stolarov,Suite,Non rimborsabile,15/11/2026,16/11/2026,1,138.08,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
 CFF7B0A9B7,05/10/2026 23:37,,Expedia,Ethan Brown,Suite con Terrazza,Non rimborsabile,14/10/2026,16/10/2026,2,543.13,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
 48696BD83F,05/10/2026 22:07,,Booking,Michal Mazel,Trilocale,Flessibile,14/10/2026,18/10/2026,4,1819.79,Condotta 16,Confermate,0,OTA,0,Adulti: 4
@@ -8230,6 +8230,13 @@ F5BC62D98A,05/10/2025 21:26,,Booking,Marcus Campos,"Trilocale, Trilocale","Fless
 F5F8252A14,30/09/2025 13:58,,Booking,Valentina Preda,Bilocale,Non rimborsabile,17/02/2026,20/02/2026,3,504,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 367A8D0906,16/06/2025 08:58,,Booking,Masahiko Kato,Bilocale,Non rimborsabile,02/01/2026,05/01/2026,3,719.22,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 DF14FBB4D6,15/03/2025 10:56,,Beddy,Colm Devine,Trilocale,Flessibile,12/08/2028,13/08/2028,1,330,Condotta 16,Confermate,0,Non Specificato,0,Adulti: 4
+DC40EA7900,29/09/2026 17:29,06/10/2026 10:49,Ctrip,XIAOMING MA,Superior,Tariffa Non Rimborsabile - Pernottamento,16/10/2026,18/10/2026,2,529.23,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+09122E9257,06/10/2026 01:32,06/10/2026 10:49,Ctrip,ZHENZI ZHU,Superior,Tariffa Esclusiva,16/10/2026,18/10/2026,2,633.23,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3 Bambini: 1
+32C7D61832,23/09/2026 00:04,06/10/2026 10:49,Ctrip,WENXUAN LUO,Superior,Tariffa Non Rimborsabile - Pernottamento,17/10/2026,18/10/2026,1,268.88,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+A27C2C3982,06/10/2026 06:42,,Ctrip,XIAOGUANG ZHENG,Classic,Tariffa Esclusiva,07/10/2026,09/10/2026,2,520.87,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+67F80AD5E8,25/08/2026 14:47,06/10/2026 04:11,Ctrip,QIN YANG,Classic,Tariffa Rimborsabile - Pernottamento,12/10/2026,14/10/2026,2,502.25,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 2 Bambini: 1
+F07D614141,06/10/2026 02:31,,Ctrip,KYUNGYOON MOON,Junior suite,Tariffa Rimborsabile - Pernottamento,26/01/2027,29/01/2027,3,518.07,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+9AF37869F8,05/10/2026 22:35,,Ctrip,LI FAN,Classic,Tariffa Esclusiva,06/10/2026,07/10/2026,1,262.54,Palazzo Alfani,Confermate,14,OTA,0,Adulti: 2
 1BA97FDFBC,03/06/2026 14:36,05/10/2026 16:22,Ctrip,RICARDO DOS SANTOS,Deluxe,Tariffa Rimborsabile - Pernottamento,09/10/2026,12/10/2026,3,1631.1,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 4 Bambini: 3
 010A682DF2,05/10/2026 15:28,,Ctrip,XUEYIN RUI,Junior suite,Tariffa Rimborsabile - Pernottamento,03/07/2027,06/07/2027,3,667.08,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
 9915E1BFDE,05/10/2026 10:31,05/10/2026 10:31,Beddy,Anna Facchini,Superior,Tariffa Rimborsabile - Pernottamento,09/10/2026,11/10/2026,2,500,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 1
@@ -8242,7 +8249,6 @@ A5AE1F86CF,04/10/2026 11:55,,Booking,Jinhang Choi,Junior suite,Tariffa Esclusiva
 C52FCB8DCC,01/10/2026 20:11,04/10/2026 00:03,Ctrip,PENGZHOU CHENG,Superior,Tariffa Rimborsabile - Pernottamento,11/10/2026,13/10/2026,2,597.54,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 3
 2C75FA5919,03/10/2026 20:12,03/10/2026 23:28,Ctrip,JINGLING HE,Superior,Tariffa Rimborsabile - Pernottamento,27/10/2026,31/10/2026,4,1110.47,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 3
 0AEE5A8980,03/10/2026 23:27,,Ctrip,JINGLING HE,Superior,Tariffa Non Rimborsabile - Pernottamento,27/10/2026,30/10/2026,3,768.35,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
-32C7D61832,23/09/2026 00:04,03/10/2026 20:18,Ctrip,WENXUAN LUO,Superior,Tariffa Non Rimborsabile - Pernottamento,17/10/2026,18/10/2026,1,268.88,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 E0E7331945,26/09/2026 15:43,03/10/2026 20:17,Ctrip,BIXUAN CHEN,Classic,Tariffa Rimborsabile - Pernottamento,21/10/2026,22/10/2026,1,270.71,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
 36E9494989,26/09/2026 14:26,03/10/2026 20:17,Booking,Tim Klatten,Superior,Tariffa Non Rimborsabile - Pernottamento,29/10/2026,01/11/2026,3,872.9,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 4C551A8BC0,02/10/2026 10:56,,Ctrip,Chae Jin Lee,Superior,Tariffa Non Rimborsabile - Pernottamento,18/10/2026,20/10/2026,2,467.05,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
@@ -8256,13 +8262,12 @@ D43E442A70,26/09/2026 15:49,30/09/2026 11:25,Ctrip,YAN ZHENG,Classic,Tariffa Rim
 E7A5D555A4,30/08/2026 18:39,29/09/2026 20:16,Ctrip,YINING HUANG,Classic,Tariffa Non Rimborsabile - Pernottamento,06/10/2026,08/10/2026,2,537.78,Palazzo Alfani,Confermate,28,OTA,0,Adulti: 2
 D6C38CCD7E,14/07/2026 08:28,29/09/2026 20:15,Ctrip,YI ZHOU,Classic,Tariffa Rimborsabile - Pernottamento,08/10/2026,10/10/2026,2,652.77,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 500575EEEC,22/07/2026 18:26,29/09/2026 18:50,Ctrip,Hei Lo Leung,Classic,Tariffa Rimborsabile - Pernottamento,06/10/2026,10/10/2026,4,1535.38,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 4
-DC40EA7900,29/09/2026 17:29,,Ctrip,XIAOMING MA,Superior,Tariffa Non Rimborsabile - Pernottamento,16/10/2026,18/10/2026,2,529.23,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 7E25FA3D23,13/08/2026 11:33,29/09/2026 14:30,Ctrip,MENG ZHAO,Superior,Tariffa Rimborsabile - Pernottamento,06/10/2026,08/10/2026,2,596.72,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 4
 F567C41420,29/09/2026 02:23,,Ctrip,SHUYA YU,Classic,Tariffa Rimborsabile - Pernottamento,11/11/2026,14/11/2026,3,578.5,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 A7842AD9A8,26/09/2026 16:08,26/09/2026 18:15,Expedia,DI ZHAO,Junior suite,Flessibile pacchetto,05/10/2026,06/10/2026,1,252.52,Palazzo Alfani,Confermate,14,OTA,0,Adulti: 2
 613501B154,26/09/2026 18:09,,Ctrip,GENGYU LI,Classic,Tariffa Non Rimborsabile - Pernottamento,26/10/2026,29/10/2026,3,673.76,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 B4CA571322,26/09/2026 16:46,,Ctrip,DONGYI TAO,Deluxe,Tariffa Rimborsabile - Pernottamento,07/02/2027,09/02/2027,2,757.3,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 5
-DB23E39EE6,26/09/2026 16:08,,Expedia,DI ZHAO,Junior suite,Flessibile pacchetto,06/10/2026,07/10/2026,1,247.86,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+DB23E39EE6,26/09/2026 16:08,,Expedia,DI ZHAO,Junior suite,Flessibile pacchetto,06/10/2026,07/10/2026,1,261.86,Palazzo Alfani,Confermate,14,OTA,0,Adulti: 2
 4D1B09B01B,26/09/2026 15:43,,Ctrip,BIXUAN CHEN,Junior suite,Tariffa Rimborsabile - Pernottamento,20/10/2026,21/10/2026,1,278.49,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
 62078676A2,26/09/2026 06:57,,Beddy,Maria Sediva,Classic,Vantaggio Soggiorno Prolungato,31/10/2026,09/11/2026,9,1624.86,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 1
 74236D954F,22/07/2026 08:10,26/09/2026 05:53,Ctrip,GUIYI PAN,Superior,Tariffa Rimborsabile - Pernottamento,10/10/2026,13/10/2026,3,1053.87,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 3
@@ -8314,7 +8319,7 @@ E961213CAD,17/02/2026 04:41,15/09/2026 09:35,Booking,Hossein Najari,Classic,Tari
 279D63D779,04/08/2026 09:48,14/09/2026 16:54,Ctrip,HANDI ZHANG,Junior suite,Tariffa Rimborsabile - Pernottamento,01/10/2026,02/10/2026,1,367.3,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 2
 1B75D4EC1F,04/08/2026 09:48,14/09/2026 16:54,Ctrip,HANDI ZHANG,Superior,Tariffa Rimborsabile - Pernottamento,30/09/2026,01/10/2026,1,394.27,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 2
 8260D5A2E5,14/09/2026 16:54,,Ctrip,Lester Cashdollar,Superior,Tariffa Non Rimborsabile - Pernottamento,07/10/2026,08/10/2026,1,302.96,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
-B2C55C4BA0,14/09/2026 15:06,,Ctrip,XIANG LI,Classic,Tariffa Non Rimborsabile - Pernottamento,04/10/2026,06/10/2026,2,624.19,Palazzo Alfani,Confermate,56,OTA,0,Adulti: 3
+B2C55C4BA0,14/09/2026 15:06,,Ctrip,XIANG LI,Classic,Tariffa Non Rimborsabile - Pernottamento,04/10/2026,06/10/2026,2,610.19,Palazzo Alfani,Confermate,42,OTA,0,Adulti: 3
 122ACC955E,14/09/2026 13:01,,Ctrip,LIN YANG,Junior suite,Tariffa Rimborsabile - Pernottamento,15/12/2026,18/12/2026,3,540.15,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
 495C04B91E,15/07/2026 08:07,14/09/2026 12:34,Booking,JACKSON KRUEGER AVERY,Superior,Tariffa Rimborsabile - Pernottamento,13/09/2026,15/09/2026,2,893.28,Palazzo Alfani,Confermate,42,OTA,0,Adulti: 2
 6320BF9255,23/06/2026 16:53,13/09/2026 16:55,Ctrip,XINYAN LIU,Junior suite,Tariffa Rimborsabile - Pernottamento,28/09/2026,01/10/2026,3,987.41,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 3
@@ -8330,7 +8335,6 @@ E347CC46E5,31/08/2026 15:25,12/09/2026 16:37,Ctrip,YIREN PENG,Superior,Tariffa N
 DBFDA92B96,21/08/2026 07:11,12/09/2026 14:55,Ctrip,WANSHA CAO,Superior,Tariffa Rimborsabile - Pernottamento,20/10/2026,23/10/2026,3,696.84,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 9356504499,24/03/2026 23:03,12/09/2026 14:54,Beddy,Liz Elder,"Classic, Superior, Deluxe","Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa, Tariffa Rimborsabile con Colazione inclusa",22/10/2026,28/10/2026,6,7317,Palazzo Alfani,Confermate,0,Sito web,0,Adulti: 5
 F4F440C7CB,20/08/2026 21:57,12/09/2026 14:50,Beddy,Sofie Seidenzahl,Classic,Tariffa Non Rimborsabile - Pernottamento,10/10/2026,12/10/2026,2,653.1,Palazzo Alfani,Confermate,42,Sito web,0,Adulti: 3
-67F80AD5E8,25/08/2026 14:47,12/09/2026 14:49,Ctrip,QIN YANG,Classic,Tariffa Rimborsabile - Pernottamento,12/10/2026,14/10/2026,2,502.25,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2 Bambini: 1
 AA3D841744,19/03/2026 03:25,12/09/2026 14:48,Beddy,Frank Manley,Classic,Tariffa Rimborsabile - Pernottamento,08/10/2026,12/10/2026,4,1456,Palazzo Alfani,Confermate,56,Sito web,0,Adulti: 2
 91229D8E09,22/08/2026 16:22,12/09/2026 14:44,Ctrip,LIN CHEN,Classic,Tariffa Rimborsabile - Pernottamento,09/10/2026,14/10/2026,5,1307.26,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 CB9FE32FC0,21/08/2026 17:17,12/09/2026 14:43,Ctrip,Yihan Su,Superior,Tariffa Rimborsabile - Pernottamento,04/10/2026,05/10/2026,1,307.88,Palazzo Alfani,Confermate,14,OTA,0,Adulti: 2 Bambini: 1
@@ -8340,7 +8344,7 @@ B5E42D10D5,12/09/2026 13:04,,Beddy,Anna Facchini,Classic,Tariffa Esclusiva,11/09
 A0CC777F3F,11/09/2026 23:45,,Beddy,Nouzha Chouali,Deluxe,Vantaggio Soggiorno Prolungato,16/10/2026,21/10/2026,5,2006,Palazzo Alfani,Confermate,0,Sito web,0,Adulti: 2 Bambini: 1
 C3B5FEC5E0,27/08/2026 07:14,11/09/2026 10:12,Beddy,SINGH SINGH,Deluxe,Tariffa Rimborsabile - Pernottamento,05/06/2027,08/06/2027,3,1527,Palazzo Alfani,Cancellate,0,Sito web,0,Adulti: 4
 73BB11AAC2,03/06/2026 09:49,11/09/2026 00:03,Beddy,Melinda Manley,Superior,Tariffa Rimborsabile - Pernottamento,03/10/2026,07/10/2026,4,1871,Palazzo Alfani,Confermate,56,Sito web,0,Adulti: 2 Bambini: 2
-1DE9CFBB53,19/07/2026 06:26,11/09/2026 00:03,Booking,CHRISTINE TADA,Superior,Tariffa Non Rimborsabile - Pernottamento,05/10/2026,09/10/2026,4,1618.25,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+1DE9CFBB53,19/07/2026 06:26,11/09/2026 00:03,Booking,CHRISTINE keiko TADA,Superior,Tariffa Non Rimborsabile - Pernottamento,05/10/2026,09/10/2026,4,1674.25,Palazzo Alfani,Confermate,56,OTA,0,Adulti: 2
 46BA504545,10/09/2026 08:39,10/09/2026 10:59,Booking,Xiao Jie,Classic,Tariffa Rimborsabile - Pernottamento,28/12/2026,30/12/2026,2,659.2,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2 Bambini: 2
 9B595D1071,10/09/2026 09:59,,Ctrip,SHUTING YANG,Superior,Tariffa Esclusiva,23/09/2026,25/09/2026,2,657.98,Palazzo Alfani,Confermate,28,OTA,0,Adulti: 2
 978B4AB9D2,07/09/2026 06:01,10/09/2026 06:20,Expedia,Amy Dubin Fine,Deluxe,Flessibile pacchetto,12/06/2027,18/06/2027,6,2555.94,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3 Bambini: 1
@@ -8541,7 +8545,7 @@ F65E6ABCD8,03/06/2026 17:25,28/07/2026 21:58,Ctrip,BEI JING ZHANG,Classic,Tariff
 390700E173,28/06/2026 15:33,28/07/2026 04:07,Ctrip,ZHAOQI LI,Superior,Tariffa Rimborsabile - Pernottamento,22/08/2026,26/08/2026,4,775.49,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 4
 7B0387FBEF,22/06/2026 17:58,27/07/2026 15:55,Ctrip,PEISHAN XU,Superior,Tariffa Rimborsabile - Pernottamento,09/08/2026,12/08/2026,3,579,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 3
 240D42E3F1,27/07/2026 15:48,,Booking,Lara Marinelli,Deluxe,Tariffa Rimborsabile - Pernottamento,29/12/2026,02/01/2027,4,2103.64,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 4
-2D85720431,26/07/2026 11:24,,Ctrip,XUEYAN LING,Deluxe,Tariffa Rimborsabile - Pernottamento,06/10/2026,09/10/2026,3,1547.9,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 7
+2D85720431,26/07/2026 11:24,,Ctrip,XUEYAN LING,Deluxe,Tariffa Rimborsabile - Pernottamento,06/10/2026,09/10/2026,3,1694.9,Palazzo Alfani,Confermate,147,OTA,0,Adulti: 7
 8EC8C29DB5,04/07/2026 14:06,26/07/2026 11:02,Ctrip,JINGYI LIANG,Superior,Tariffa Rimborsabile - Pernottamento,10/08/2026,12/08/2026,2,423.12,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 3
 B9D75C6937,26/07/2026 07:19,,Ctrip,YUANYUAN ZHOU,Classic,Tariffa Rimborsabile - Pernottamento,26/09/2026,27/09/2026,1,254.04,Palazzo Alfani,Confermate,14,OTA,0,Adulti: 2
 81E25176B4,02/07/2026 10:52,25/07/2026 17:09,Ctrip,YING SONG,Superior,Tariffa Rimborsabile - Pernottamento,11/08/2026,13/08/2026,2,465.94,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 4
@@ -8808,7 +8812,7 @@ DF32DED494,15/04/2026 18:43,29/05/2026 13:34,Expedia,Caroline Wetherilt,Deluxe,F
 4FA1DCB862,28/05/2026 20:14,29/05/2026 11:42,Booking,filippo maria pantini,Superior,Tariffa Esclusiva,30/05/2026,01/06/2026,2,630.13,Palazzo Alfani,Confermate,42,OTA,0,Adulti: 2 Bambini: 2
 D48CA4E31C,26/04/2026 05:10,29/05/2026 11:42,Ctrip,XIAOYAN LI,Superior,Tariffa Non Rimborsabile - Pernottamento,31/05/2026,02/06/2026,2,637.88,Palazzo Alfani,Confermate,28,OTA,0,Adulti: 2
 6064E12707,29/05/2026 03:18,29/05/2026 03:33,Expedia,ANDREA MESSINA,Classic,Flessibile pacchetto,26/06/2026,30/06/2026,4,1042.77,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 1 Bambini: 1
-60C6D52029,29/05/2026 00:31,,Ctrip,QI HUANG,Junior suite,Tariffa Rimborsabile - Pernottamento,07/10/2026,11/10/2026,4,1253.7,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+60C6D52029,29/05/2026 00:31,,Ctrip,QI HUANG,Junior suite,Tariffa Rimborsabile - Pernottamento,07/10/2026,11/10/2026,4,1309.7,Palazzo Alfani,Confermate,56,OTA,0,Adulti: 2
 96D2C876CC,26/05/2026 22:25,28/05/2026 16:01,Beddy,Deborah Voronoff,Superior,Tariffa Rimborsabile - Pernottamento,05/07/2026,09/07/2026,4,1176,Palazzo Alfani,Confermate,28,Sito web,0,Adulti: 2
 8435DDB566,27/05/2026 22:24,28/05/2026 05:38,Beddy,Jacquelyn Wieland,Deluxe,Tariffa Rimborsabile - Pernottamento,21/12/2026,26/12/2026,5,2588.52,Palazzo Alfani,Cancellate,0,Sito web,0,Adulti: 3
 D39B2D09B1,12/03/2026 16:06,27/05/2026 12:12,Ctrip,MINGSHAN ZHANG,Classic,Tariffa Non Rimborsabile - Pernottamento,31/05/2026,03/06/2026,3,844.96,Palazzo Alfani,Confermate,42,OTA,0,Adulti: 2
@@ -9858,6 +9862,14 @@ CD943C5C97,27/07/2025 11:32,,Booking,HANJIE WANG,Deluxe,Tariffa Rimborsabile - P
 1915,14/11/2025 23:04:04,,Booking,Cornejo Müller Antonio,Verde,Verde - Non Rimborsabile OTA,02/01/2026,06/01/2026,4,468.3,Florence David's Apartament,Confermate,48,Booking,0,
 1967,25/12/2025 18:11:33,,Airbnb,Mario Satta,Blu,Blu - Standard,01/01/2026,02/01/2026,1,97.17,Florence David's Apartament,Confermate,0,Airbnb,0,
 1937,26/11/2025 23:13:02,,Booking,Zafeiriou Eleni,Senape,Senape - Min Stay 5 notti,01/01/2026,06/01/2026,5,563.58,Florence David's Apartament,Confermate,60,Booking,0,
+HMACQRTEMS,18/05/2026 00:00,,Airbnb,Kristoffer Øvrebø,Ponte Vecchio,Flessibile,01/07/2026,04/07/2026,3,297.54,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HMSF9KYRRM,04/05/2026 00:00,,Airbnb,Tsung Sheng Wong,Palazzo Pitti,Flessibile,01/07/2026,04/07/2026,3,242.25,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM49Q4YPRW,12/12/2025 00:00,,Airbnb,Jung Soyeon,Uffizi,Flessibile,01/07/2026,03/07/2026,2,400.91,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMQPA9HXTX,24/05/2026 00:00,,Airbnb,Iva Pouplin,Cupola,Flessibile,02/07/2026,04/07/2026,2,241.09,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 1
+HMDBXFRK9N,03/07/2026 00:00,,Airbnb,재영 장,Uffizi,Flessibile,03/07/2026,05/07/2026,2,235.0,Nazionale 35 Apartments,Confermate,0,OTA,25,Adulti: 2
+HMTJX4ZQDK,06/06/2026 00:00,,Airbnb,Julia Rivas,Ponte Vecchio,Flessibile,04/07/2026,07/07/2026,3,307.97,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 2
+HM2EYMPCTE,18/03/2026 00:00,,Airbnb,Verónica Chávez,Palazzo Vecchio,Flessibile,04/07/2026,07/07/2026,3,253.65,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 1 Bambini: 1
+HMCF8EQ8ST,17/05/2026 00:00,,Airbnb,Ivonne Castro,Palazzo Pitti,Flessibile,04/07/2026,06/07/2026,2,184.1,Porte Nuove Apartments,Confermate,0,OTA,25,Adulti: 2
 
 `;
 const AIRBNB_DATA = []  /* Airbnb data moved to separate dashboard (airbnb_dashboard.html) */;
