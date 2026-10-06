@@ -91,7 +91,15 @@ for(const p of PROPS){
       const sl=rr.reduce((s,r)=>s+r.l,0), sb=rr.reduce((s,r)=>s+r.b,0);
       TOT.l+=sl; TOT.b+=sb;
       const key=p.id+'-'+anno+'-'+i;
-      t+='<tr class="ch" data-k="'+key+'"><td>'+esc(c)+'</td>';
+      /* Sotto il nome dell'appartamento, i canali che lo hanno venduto:
+         nel 2025 e sempre e solo Airbnb, ma cosi si vede invece di doverlo
+         dare per scontato. */
+      const sotto = perCamera
+        ? [...new Set(rr.map(r=>r.ch))].sort().join(' · ')
+        : '';
+      t+='<tr class="ch" data-k="'+key+'"><td>'+esc(c)
+         +(sotto?'<div style="font-size:10.5px;color:var(--ink3);font-weight:400;margin-top:1px;padding-left:15px">'+esc(sotto)+'</div>':'')
+         +'</td>';
       for(const m of mesi) t+='<td>'+E(rr.filter(r=>r.ym%100===m).reduce((s,r)=>s+r.l,0))+'</td>';
       t+='<td><b>'+E(sl)+'</b></td></tr>';
       t+='<tr class="det" id="d-'+key+'" hidden><td colspan="'+(mesi.length+2)+'"><div class="inner">'
