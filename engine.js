@@ -4018,38 +4018,59 @@ function fp_expToBeddyDivisor(structKey){
                   : ((typeof fp_getOtaMarkup === 'function') ? fp_getOtaMarkup(structKey) : 17);
   return (1 + markupPct/100);   // niente piu' fattore 0.90
 }
-function expContext(ymdNum, structSel){
+/* I DATI EXPEDIA DI UNA STRUTTURA, CERCATI PER NOME invece che elencati a mano.
+   Le quattro strutture con il rate shopper erano scritte a mano in tre punti
+   diversi (la colonna, questa funzione, il compset): il giorno in cui arrivano
+   i dati di una struttura nuova, la colonna resta nascosta finche' qualcuno non
+   si ricorda di aggiungerla in tutti e tre. Cosi' invece compare da sola quando
+   il dato c'e', e resta nascosta dove non c'e' niente da mostrare.
+   Le chiavi senza suffisso (compset_avg, search_current, competitors) sono i
+   nomi storici di Condotta, rimasti da quando era l'unica struttura: valgono da
+   ripiego, e per Condotta sono byte per byte uguali a quelle col suffisso.
+   La pressione di ricerca e' di mercato, non di struttura: tutte le serie
+   search_current_* sono identiche fra loro, quindi il ripiego non falsa nulla. */
+const _EXP_SERIES_CACHE = {};
+function expSeriesFor(struct){
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return null;
-  if (structSel !== 'condotta' && structSel !== 'alfani' && structSel !== 'firenze' && structSel !== 'davids') return null;
+  if (!struct) return null;
+  if (Object.prototype.hasOwnProperty.call(_EXP_SERIES_CACHE, struct)) return _EXP_SERIES_CACHE[struct];
+  const E = EXPEDIA_DATA, sfx = '_' + struct;
+  const mine = E[struct];
+  const out = (mine && typeof mine === 'object') ? {
+    mine:        mine,
+    comp:        E['compset_avg' + sfx]     || E.compset_avg     || null,
+    searchCur:   E['search_current' + sfx]  || E.search_current  || null,
+    searchPrev:  E['search_previous' + sfx] || E.search_previous || null,
+    competitors: E['competitors' + sfx]     || (struct === 'condotta' ? E.competitors : null),
+  } : null;
+  _EXP_SERIES_CACHE[struct] = out;
+  return out;
+}
+/* Vero solo se esiste almeno un prezzo vero. Una serie di soli null significa
+   "nessun dato", e mostrare una colonna di trattini e' peggio che non mostrarla. */
+const _EXP_HAS_CACHE = {};
+function expHasData(struct){
+  if (Object.prototype.hasOwnProperty.call(_EXP_HAS_CACHE, struct)) return _EXP_HAS_CACHE[struct];
+  const s = expSeriesFor(struct);
+  let ok = false;
+  if (s && s.mine){
+    for (const d in s.mine){ const v = s.mine[d]; if (v != null && isFinite(v) && v >= 10){ ok = true; break; } }
+  }
+  _EXP_HAS_CACHE[struct] = ok;
+  return ok;
+}
+function expContext(ymdNum, structSel){
+  const S = expSeriesFor(structSel);
+  if (!S) return null;
   const k = expYmdKey(ymdNum);
   if (!k) return null;
-  // Sanitizer: any Expedia value < 10 € is treated as missing (it's a minimum-stay number
-  // leaked into the price column, not a real rate). Floor across all properties is ≥ 100 €.
+  // Sanitizer: any Expedia value < 10 \u20ac is treated as missing (it's a minimum-stay number
+  // leaked into the price column, not a real rate). Floor across all properties is \u2265 100 \u20ac.
   const _sanePrice = (v) => (v != null && isFinite(v) && v >= 10) ? v : null;
-  let myPrice, compAvg, searchCur, searchPrev;
-  if (structSel === 'condotta'){
-    myPrice = EXPEDIA_DATA.condotta[k];
-    compAvg = EXPEDIA_DATA.compset_avg[k];
-    searchCur = EXPEDIA_DATA.search_current[k];
-    searchPrev = EXPEDIA_DATA.search_previous[k];
-  } else if (structSel === 'alfani'){
-    myPrice = EXPEDIA_DATA.alfani[k];
-    compAvg = EXPEDIA_DATA.compset_avg_alfani[k];
-    searchCur = EXPEDIA_DATA.search_current[k];
-    searchPrev = EXPEDIA_DATA.search_previous[k];
-  } else if (structSel === 'davids'){
-    myPrice = EXPEDIA_DATA.davids ? EXPEDIA_DATA.davids[k] : null;
-    compAvg = EXPEDIA_DATA.compset_avg_davids ? EXPEDIA_DATA.compset_avg_davids[k] : null;
-    searchCur = EXPEDIA_DATA.search_current_davids ? EXPEDIA_DATA.search_current_davids[k] : null;
-    searchPrev = EXPEDIA_DATA.search_previous_davids ? EXPEDIA_DATA.search_previous_davids[k] : null;
-  } else if (structSel === 'firenze'){
-    myPrice = EXPEDIA_DATA.firenze ? EXPEDIA_DATA.firenze[k] : null;
-    compAvg = EXPEDIA_DATA.compset_avg_firenze ? EXPEDIA_DATA.compset_avg_firenze[k] : null;
-    searchCur = EXPEDIA_DATA.search_current[k];
-    searchPrev = EXPEDIA_DATA.search_previous[k];
-  } else { // nazionale / portenuove: no Expedia data → factors D·Online & E·Search go n/a
-    myPrice = null; compAvg = null; searchCur = null; searchPrev = null;
-  }
+  let myPrice   = S.mine ? S.mine[k] : null;
+  let compAvg   = S.comp ? S.comp[k] : null;
+  const searchCur  = S.searchCur  ? S.searchCur[k]  : null;
+  const searchPrev = S.searchPrev ? S.searchPrev[k] : null;
   myPrice = _sanePrice(myPrice);
   compAvg = _sanePrice(compAvg);
   return {
@@ -12492,7 +12513,10 @@ function renderSellStrategy(sel){
   }
   SELL_LAST_AGG = A;
   const dowIT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const showExp = (sel === 'condotta' || sel === 'alfani' || sel === 'firenze' || sel === 'davids');
+  /* La colonna c'e' se per questa struttura esistono davvero prezzi Expedia
+     (expHasData). Nazionale e Porte Nuove non ne hanno ancora: li' resta
+     nascosta, e comparira' da sola il giorno in cui i dati arrivano. */
+  const showExp = (typeof expHasData === 'function') ? expHasData(sel) : false;
   const showBeddy = false;
   let _paceIdx = null, _paceMult = 1, _paceCurRn = 0, _paceStlyRn = 0;
   const _paceMultByRT = {};
@@ -17954,11 +17978,12 @@ function compsetWeightedAvg(struct, isoKey, applyOffset, opts){
   // opts.rawExpedia=true → prezzo Expedia lordo, senza divisor né offset (uso interno/debug).
   opts = opts || {};
   if (typeof EXPEDIA_DATA === 'undefined' || !EXPEDIA_DATA) return {avg: null, n: 0};
-  let compMap = null;
-  if (struct === 'condotta') compMap = EXPEDIA_DATA.competitors;
-  else if (struct === 'alfani') compMap = EXPEDIA_DATA.competitors_alfani;
-  else if (struct === 'firenze') compMap = EXPEDIA_DATA.competitors_firenze;
-  else if (struct === 'davids') compMap = EXPEDIA_DATA.competitors_davids;
+  /* Stessa regola della colonna: i competitor si cercano per nome di struttura,
+     non si elencano a mano. Senza compset la funzione risponde null e tutto
+     quello che la usa (fattore D, tetto del Goal Value, puntino rosso) si
+     spegne da solo, senza inventare un confronto che non esiste. */
+  const _S = (typeof expSeriesFor === 'function') ? expSeriesFor(struct) : null;
+  const compMap = _S ? _S.competitors : null;
   if (!compMap) return {avg: null, n: 0};
   const myStructKeys = new Set([
     'Condotta 16 Apartments',     // = Condotta nei compset Alfani e Firenze
