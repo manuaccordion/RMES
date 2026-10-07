@@ -9,7 +9,7 @@
 const T = require('./t_lib');
 const { w, X, D, ok, info, fine, errs } = T.boot([
   'renderSellStrategy', 'renderForecast', 'renderRMESConfigTab', 'renderAnalysis', 'BOOKINGS', '_grossUpFactor', 'structKeysFor',
-  'computeRMESPriceMap', 'CFG'
+  'computeRMESPriceMap', 'CFG', 'expHasData', 'expSeriesFor', 'expContext', 'compsetWeightedAvg'
 ]);
 const TUTTE = ['firenze', 'condotta', 'alfani', 'davids', 'nazionale', 'portenuove'];
 
@@ -143,4 +143,53 @@ for (const [id, cosa] of [['sell-warn-filter', 'il filtro dei puntini rossi'],
   ok(/1\.1996/.test(src) && /1\.2195/.test(src), 'con i fattori veri');
   ok(!/Airbnb 15\.5%|Ctrip 15%|grossed up 18%/.test(src), 'e senza i vecchi');
 }
+
+/* --- LA COLONNA RATE SHOPPER C'E' DOVE C'E' IL DATO, E SOLO LI' ----------
+   Le strutture col rate shopper erano una lista scritta a mano in tre punti
+   (la colonna, expContext, il compset). Chi guardava Porte Nuove o Nazionale
+   non vedeva la colonna e non aveva modo di sapere se mancasse il dato o il
+   codice. Ora si decide dal dato: questi controlli tengono insieme le due cose
+   e falliscono sia se la colonna sparisce dove serve, sia se compare vuota. */
+{
+  for (const st of TUTTE){
+    const ha = X.expHasData(st);
+    w.CURRENT_STRUCT = st; w.RMES_TAB_STRUCT = st;
+    X.renderSellStrategy(st);
+    const col = [...D.querySelectorAll('#sell-table-wrap th')].some(t => /Rate shopper/i.test(t.textContent));
+    ok(col === ha, st + ': la colonna Rate shopper c e esattamente dove ci sono prezzi Expedia',
+       'dato ' + ha + ' / colonna ' + col);
+    const ser = X.expSeriesFor(st);
+    if (ha){
+      /* Dove c'e' il dato devono esserci anche i competitor, altrimenti il
+         fattore D e il tetto del Goal Value lavorano su niente. */
+      ok(ser && ser.competitors && Object.keys(ser.competitors).length >= 3,
+         st + ': ha un compset con almeno 3 competitor',
+         ser && ser.competitors ? Object.keys(ser.competitors).length : 'nessuno');
+    } else {
+      /* Dove non c'e', tutto deve spegnersi in silenzio invece di rompersi. */
+      ok(X.expContext(20261120, st) === null, st + ': expContext risponde null, non un oggetto vuoto');
+      const r = X.compsetWeightedAvg(st, '2026-11-20', true);
+      ok(r && r.avg == null && r.n === 0, st + ': il compset risponde vuoto senza esplodere', JSON.stringify(r));
+    }
+  }
+  /* I tre modi del compset restano distinti: se gli offset smettessero di
+     entrare nel Goal Value, il tetto del Base Price diventerebbe un altro
+     numero senza che nulla lo segnali. */
+  const iso = '2026-11-20';
+  const g = X.compsetWeightedAvg('alfani', iso, true);
+  const wt = X.compsetWeightedAvg('alfani', iso, false);
+  const rw = X.compsetWeightedAvg('alfani', iso, false, {rawExpedia:true});
+  info('Alfani ' + iso + ': Goal ' + (g.avg!=null?Math.round(g.avg):'-')
+     + ' · Weighted ' + (wt.avg!=null?Math.round(wt.avg):'-')
+     + ' · Raw ' + (rw.rawAvg!=null?Math.round(rw.rawAvg):'-'));
+  ok(g.avg > 0 && wt.avg > 0 && rw.rawAvg > 0, 'i tre modi del compset rispondono tutti');
+  ok(Math.round(g.avg) !== Math.round(wt.avg),
+     'Goal Value e Weighted compset restano diversi (gli offset entrano solo nel primo)',
+     Math.round(g.avg) + ' vs ' + Math.round(wt.avg));
+  ok(Math.round(wt.avg) !== Math.round(rw.rawAvg),
+     'Weighted e Raw restano diversi (il divisor Expedia→Beddy si applica solo al primo)',
+     Math.round(wt.avg) + ' vs ' + Math.round(rw.rawAvg));
+}
+
+
 fine();
