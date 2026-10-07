@@ -157,8 +157,27 @@ for (const id of T.IDS){
   const SOGLIA = 0.15;
   /* Salti gia' esaminati e spiegati. Toglierne uno da qui lo rimette sotto
      osservazione; aggiungerne uno richiede di aver capito perche'. */
+  /* Ogni voce porta la DIREZIONE del movimento che spiega, non solo la ragione.
+     Senza, un'eccezione scritta per un aumento zittirebbe anche un crollo dello
+     stesso canale l'anno dopo: il controllo resterebbe verde proprio quando ha
+     qualcosa da dire.
+     Alfani · Direct non e' piu' qui: la sua ragione era un cambio di mix, e il
+     cambio di mix ora lo riconosce la regola stessa confrontando mediana e
+     media. Un'eccezione che il meccanismo rende superflua va tolta, non
+     tenuta per sicurezza. */
   const SPIEGATI = {
-    'alfani|Direct': 'apertura della struttura: il mix di camere vendute in diretta e cambiato'
+    /* Verificato prima di metterli qui, perche' un'eccezione messa per far
+       tornare il verde e' peggio del rosso. Il sospetto era una cucitura: il
+       2025 Airbnb e' ricostruito, dal 5 luglio 2026 arriva da Beddy, e se i due
+       non fossero d'accordo su cosa sia il lordo si vedrebbe uno scalino
+       esattamente li'. Misurate le mediane per notte in tre blocchi:
+         nazionale   125,1  →  137,7 (fino al 4/7)  →  150,5 (dal 5/7)
+         portenuove   87,8  →   97,6               →  103,2
+       Nessuno scalino al confine, e la salita continua DENTRO il periodo Beddy:
+       e' prezzo, non contabilita'. Coerente con il +15,8% / +18,7% riconciliato
+       sul rendiconto Airbnb di luglio. */
+    'nazionale|Airbnb':  { dir: +1, why: 'aumento di prezzo reale, verificato senza scalino al passaggio backfill→Beddy del 5/7/2026' },
+    'portenuove|Airbnb': { dir: +1, why: 'aumento di prezzo reale, verificato senza scalino al passaggio backfill→Beddy del 5/7/2026' }
   };
   const perKey = {};
   for (const b of X.BOOKINGS){
@@ -170,7 +189,24 @@ for (const id of T.IDS){
       .push(b.revPerNight || 0);
   }
   const mediana = a => { a = a.slice().sort((x,y) => x-y); return a.length ? a[a.length>>1] : null; };
-  const nuovi = [];
+  const media   = a => a.length ? a.reduce((x,y) => x+y, 0) / a.length : null;
+  /* MEDIANA E MEDIA INSIEME, PERCHE' DA SOLE NON DISTINGUONO DUE COSE DIVERSE.
+     Un prezzo che cambia le muove entrambe nella stessa direzione. Un mix che
+     cambia muove la mediana e lascia la media dov'era: se una camera economica
+     passa da 4 a 14 vendite, il centro della distribuzione scende anche se
+     nessun prezzo e' stato toccato.
+     Misurato su Enis · Direct 2025→2026: mediana 102 → 85 (−17%), media 99 → 99
+     (invariata). Camera per camera la Senape, che e' la camera di riferimento,
+     stava ferma a 97 → 94; la Verde era passata da 4 vendite a 146 a 14 vendite
+     a 75. Nessuno sconto: un mix diverso. Il controllo lo segnalava come se
+     fosse un taglio di prezzo.
+     Quindi: fallisce solo quando SI MUOVONO ENTRAMBE oltre la soglia e nella
+     stessa direzione. Quando si muove solo la mediana lo dice comunque, come
+     riga informativa — l'informazione resta a schermo, ma non accende un rosso
+     che manderebbe a cercare un problema che non c'e'. Mettere un'eccezione a
+     mano avrebbe nascosto il caso invece di saperlo leggere, e l'elenco delle
+     eccezioni sarebbe cresciuto ad ogni cambio di mix. */
+  const nuovi = [], mix = [];
   for (const k in perKey){
     const [id, ch, anno] = k.split('|');
     if (anno !== '2026') continue;
@@ -181,12 +217,24 @@ for (const id of T.IDS){
     const salto = a/b - 1;
     if (Math.abs(salto) <= SOGLIA) continue;
     const chiave = id + '|' + ch;
-    const txt = id + ' ' + ch + ': ' + Math.round(b) + ' → ' + Math.round(a)
-              + ' (' + (salto>=0?'+':'') + (salto*100).toFixed(0) + '%)';
-    if (SPIEGATI[chiave]) info('salto noto ·', txt, '·', SPIEGATI[chiave]);
+    const pct = v => (v>=0?'+':'') + (v*100).toFixed(0) + '%';
+    const am = media(perKey[k]), bm = media(prec);
+    const saltoM = (am > 0 && bm > 0) ? (am/bm - 1) : null;
+    const txt = id + ' ' + ch + ': mediana ' + Math.round(b) + ' → ' + Math.round(a)
+              + ' (' + pct(salto) + ')'
+              + (saltoM != null ? ', media ' + Math.round(bm) + ' → ' + Math.round(am)
+                                  + ' (' + pct(saltoM) + ')' : '');
+    const anchelaMedia = (saltoM != null && Math.abs(saltoM) > SOGLIA
+                          && Math.sign(saltoM) === Math.sign(salto));
+    if (!anchelaMedia){ mix.push(txt); continue; }
+    const sp = SPIEGATI[chiave];
+    if (sp && Math.sign(salto) === Math.sign(sp.dir)) info('salto noto ·', txt, '·', sp.why);
+    else if (sp) nuovi.push(txt + '  [registrato come ' + (sp.dir > 0 ? 'aumento' : 'calo')
+                                + ', ma questa volta va nell altro verso]');
     else nuovi.push(txt);
   }
-  ok(nuovi.length === 0, 'nessun salto inspiegato del prezzo medio fra 2025 e 2026',
+  for (const m of mix) info('cambio di mix (la media non si e mossa) ·', m);
+  ok(nuovi.length === 0, 'nessun salto inspiegato del prezzo fra 2025 e 2026',
      nuovi.length + ' · ' + nuovi.slice(0,2).join(' | '));
 }
 fine();
