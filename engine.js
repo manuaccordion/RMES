@@ -12655,7 +12655,7 @@ function renderSellStrategy(sel){
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · net RN a year ago. Click a cell for the new/cancelled detail.">Var RN</th>'
     + '<th class="sell-grp-pkstly-sub" title="Pickup STLY · ADR of the net STLY pickup">Var ADR</th>'
     + '<th class="sell-grp-rmes-today" title="Suggested price for the BASE room type, to load on Beddy. Click the cell for the calculation detail. The \u2713 button accepts it as the active price.">Pricing<br><span class="sell-th-sub">' + escapeHtml(_baseRTShort) + ' \u00b7 \u2713</span>'
-      + '<br><button type="button" id="sell-warn-filter" class="sell-warn-filter" title="Show only the dates marked with a red dot: the suggestion is far from what you loaded, with nothing in the data to explain it.">\u25cf only these</button></th>'
+      + '<br><button type="button" id="sell-warn-filter" class="sell-warn-filter" title="Show only the dates marked with a red dot. Two things earn one: the suggestion is far from what you loaded with nothing in the data to explain it, or the price sits above your Goal Value on an empty night that is too far out for the last-minute discount to reach. Hover the price to read which.">\u25cf only these</button></th>'
     + '<th class="sell-grp-loaded" title="The price you have actually loaded on Beddy for the base room type.\n\nType a number to record it \u2014 it is saved as a manual override and shared with everyone. Leave it empty to go back to what the engine decides.\n\nAccepting an RMES suggestion fills this box by itself.">Loaded<br><span class="sell-th-sub">on Beddy</span></th>'
     + _suppRTs.map(rt => {
         /* Nell'intestazione metto anche il confronto fra supplemento configurato
@@ -13666,6 +13666,86 @@ function renderSellStrategy(sel){
         const cellTip = `RMES suggests €${targetOnBaseRounded} for ${fpDateISO}\nCurrent active price: €${ref!=null?Math.round(ref):'—'}${dirHint}${_capNote}\n\nClick the cell to see the calculation detail. Click ✓ to accept €${targetOnBaseRounded} as the new active price.`;
         // I supplementi hanno ora una colonna ciascuno: fuori dal tooltip.
         const _suppTip = '';
+    /* CARA E FERMA, DOVE IL MOTORE NON ARRIVA.
+       Il prezzo alto non e' un problema finche' vende. Lo diventa quando sta
+       sopra il posizionamento che hai scelto tu, la notte e' vuota, niente
+       entra, e la data e' ancora troppo lontana perche' il last minute la
+       raggiunga: in quella combinazione il prezzo non scende da solo e nessuno
+       lo dice. Dentro la finestra del pickup il motore se ne occupa gia' (taglia
+       il 5% quando resta ferma oltre la banda di mercato) e la riga non si
+       marca: segnalare una cosa di cui qualcuno sta gia' rispondendo vuol dire
+       insegnare a ignorare il segnale.
+       NON tocca il prezzo. Accende solo il puntino, cosi' il filtro in cima
+       alla colonna le raccoglie tutte insieme. */
+    const _stuckHigh = (function(){
+      try {
+        if (!(ref > 0)) return null;
+        /* L'obiettivo e' il Goal Value: lo stesso numero che fa da tetto al Base
+           Price, cioe' il compset pesato con i tuoi offset di posizionamento.
+           Non il compset grezzo: quello dice dove sta il mercato, non dove hai
+           deciso di stare tu. */
+        if (typeof compsetWeightedAvg !== 'function') return null;
+        /* Solo dentro l'orizzonte di vendita. E' la stessa soglia oltre la quale
+           il Base Price si rifiuta di farsi limitare dal Goal Value, con la
+           ragione scritta accanto: piu' in la' i prezzi pubblicati sono
+           segnaposto. Misurato su dicembre si vede bene — gli stessi quattro
+           prezzi dei competitor identici il 9 e il 16, e il nostro prezzo piatto
+           su venti date di fila: due numeri grossolani, e la loro distanza non
+           dice niente. Senza questo filtro il segnale accendeva un blocco
+           continuo di venti date che comincia esatto a 61 giorni, cioe' il
+           confine della matrice last minute: segnava il calendario, non una
+           situazione. */
+        const _hzOut = (typeof fpCapHorizonDays === 'function') ? fpCapHorizonDays(sel) : 180;
+        const _leadOut = Math.round((ymdToDate(r.ymd) - startOfDay(new Date(TODAY))) / 86400000);
+        if (_leadOut > _hzOut) return null;
+        const _gv = compsetWeightedAvg(sel, fpDateISO, true);
+        if (!_gv || !(_gv.avg > 0) || !(_gv.n >= 2)) return null;
+        const _over = ref / _gv.avg - 1;
+        if (_over <= 0.05) return null;                 // sopra davvero, non per arrotondamento
+        if (!(r.curOcc != null && r.curOcc <= 0.30)) return null;
+        if ((r.pkRn || 0) > 0) return null;             // qualcosa si muove: non e' ferma
+        /* Se il motore sta gia' suggerendo di scendere, il problema e' sul
+           tavolo e un secondo segnale non aggiunge niente. */
+        if (targetOnBaseRounded < ref * 0.97) return null;
+        /* E se il last minute sta gia' scontando, il prezzo cala da se' man mano
+           che la data si avvicina: non c'e' niente da segnalare. */
+        let _lmf = 0;
+        if (typeof fp_lmfLookup === 'function'){
+          const _dOut = Math.round((ymdToDate(r.ymd) - startOfDay(new Date(TODAY))) / 86400000);
+          _lmf = fp_lmfLookup(sel, r.curOcc, Math.max(0, _dOut)) || 0;
+        }
+        if (_lmf < 0) return null;
+        const _pctOver = Math.round(_over * 100) + '%';
+        const _head = 'Active price ' + fmtEUR(ref) + ' against a Goal Value of ' + fmtEUR(_gv.avg)
+                    + ' — ' + _pctOver + ' above the position you set for this date.'
+                    + '\nThe night is at ' + fmtPct(r.curOcc, 0) + ' and nothing has booked.';
+        /* CHI STA TENENDO SU IL PREZZO.
+           Se il mercato di quella data sta sotto il pavimento, il Base Price e'
+           appoggiato sul pavimento e il motore NON PUO' scendere: e' il pavimento
+           a tenere il prezzo, non il segnale. Dirgli "portalo verso il Goal Value"
+           sarebbe chiedere una cosa che la configurazione vieta — il tipo di
+           falso allarme peggiore, perche' manda a cercare il problema dove non e'.
+           Misurato su Alfani a dicembre: storico 126-149, Goal Value 159-185,
+           Floor Rate 200. Il prezzo e' piatto per quello. */
+        const _flr = (typeof fp_getFloor === 'function') ? fp_getFloor(sel) : 0;
+        if (_flr > 0 && _gv.avg < _flr){
+          return { over: _over, gv: _gv.avg, floorBound: true,
+                   head: 'ABOVE THE GOAL VALUE — THE FLOOR IS HOLDING IT',
+                   txt: _head
+                      + '\nThe market for this date is below your Floor Rate of ' + fmtEUR(_flr)
+                      + ', so the Base Price is resting on the floor and the engine cannot go any lower:'
+                      + ' it is the floor holding this price up, not the signal. Either the floor is right'
+                      + ' and these nights are not worth selling cheaper, or it needs a lower value for'
+                      + ' this period.' };
+        }
+        return { over: _over, gv: _gv.avg, floorBound: false,
+                 head: 'ABOVE THE GOAL VALUE, AND NOTHING MOVING',
+                 txt: _head
+                    + ' It is still too far out for the last-minute discount to reach it, so the price'
+                    + ' will not come down on its own. If the position is deliberate, leave it; otherwise'
+                    + ' bring it towards ' + fmtEUR(_gv.avg) + '.' };
+      } catch(e){ return null; }
+    })();
     /* LETTURA DEL SUGGERIMENTO CONTRO L'ULTIMO VENDUTO.
        Il confronto lo puo' fare il motore, non serve che lo faccia l'occhio:
        sa quanto propone, a quanto quella notte ha venduto, se sta entrando
@@ -13765,8 +13845,12 @@ function renderSellStrategy(sel){
         const _vHead = !_verdict ? ''
           : (/loaded \u2014/.test(_verdict.txt) ? 'SUGGESTED VERSUS WHAT YOU LOADED'
             : (/last year/.test(_verdict.txt) ? 'VERSUS LAST YEAR' : 'VERSUS THE LAST SALE'));
-        const _vTip = _verdict ? ('\n\n' + _vHead + '\n' + _verdict.txt) : '';
-        const _vMark = (_verdict && _verdict.tone === 'warn')
+        /* I due commenti convivono: parlano di cose diverse (uno del
+           suggerimento, l'altro del posizionamento) e far vincere il primo
+           significherebbe perdere il secondo proprio sulle date che lo meritano. */
+        const _shTip = _stuckHigh ? ('\n\n' + _stuckHigh.head + '\n' + _stuckHigh.txt) : '';
+        const _vTip = (_verdict ? ('\n\n' + _vHead + '\n' + _verdict.txt) : '') + _shTip;
+        const _vMark = ((_verdict && _verdict.tone === 'warn') || _stuckHigh)
           ? '<span style="color:#b0332f;font-weight:700">\u00b7</span>' : '';
         return `<td class="cell-mono" data-rmes-struct="${sel}" data-rmes-rt="${escapeHtml(baseRTKey)}" data-rmes-date="${fpDateISO}" style="background:${bgCol};cursor:pointer;text-align:center;color:${textCol};font-weight:700" ${_tip(cellTip + _suppTip + _vTip)}>${_vMark}${arrow}${targetOnBaseRounded}${acceptBtn}</td>`;
       })();

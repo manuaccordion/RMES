@@ -2480,6 +2480,21 @@ table.data.sell-table .sell-drill{
           <p style="margin:6px 0 0 0;font-size:12.5px;color:#666"><i>The historical p15 no longer raises the floor. It was pushing Palazzo Alfani to &euro;266 and made the number hard to reason about; the floor is now simply the figure you set.</i></p>
         </div>
 
+        <div style="margin-top:14px;padding:12px 14px;background:#fafaf8;border-left:3px solid #b0332f;font-size:13px;line-height:1.6">
+          <p style="margin:0 0 8px 0"><b>The red dot, and the <span style="font-family:monospace">&#9679; only these</span> filter</b></p>
+          <p style="margin:0 0 8px 0">A small red dot in front of a price means the engine has something to say about that date. The filter at the top of the Pricing column hides every other row, so the dates needing a decision can be read together instead of hunted through 365 rows. Hover the price to read which of the two cases it is.</p>
+          <ul style="margin:6px 0 8px 18px">
+            <li><b>The suggestion is far from what you loaded</b>, and nothing in the pickup or the market explains a gap that wide. Either your price is deliberate, or the suggestion is the safer number.</li>
+            <li><b>The price sits above your Goal Value on an empty night.</b> Nothing has booked, and the date is still too far out for the last-minute discount to reach it &mdash; so the price will not come down on its own. The tooltip then separates the two possible reasons, because the action is different:
+              <ul style="margin:4px 0 0 18px">
+                <li>the market for that date is <b>below your Floor Rate</b> &mdash; then the Base Price is resting on the floor and the engine <i>cannot</i> go lower. It is the floor holding the price up, not the signal. The decision is about the floor for that period, not about the date.</li>
+                <li>the market is above the floor &mdash; then there is room, and the tooltip names the price to move towards.</li>
+              </ul>
+            </li>
+          </ul>
+          <p style="margin:0;font-size:12.5px;color:#666"><i>This second dot only appears <b>inside the selling horizon</b> of the property &mdash; the same window beyond which the Goal Value is not allowed to cap the Base Price, because further out the competitors' published prices are placeholders. Without that limit the dot lit up a continuous block of dates starting exactly at 61 days out, which is the edge of the last-minute matrix: it was marking the calendar, not a situation. Inside the horizon, three of the four properties have no such dates at all &mdash; their selling horizon ends before the last-minute discount stops acting, so the engine already covers everything that matters.</i></p>
+        </div>
+
         <p style="margin-top:12px;padding:10px 12px;background:#fafaf8;border-left:3px solid #4a7c59;font-size:12px"><b>How to read a row at a glance.</b> Look first at the <b>Last update</b> column to know the price active right now (Base Price by default, accepted ✓, or override 🖋). When both an accept and an override exist for the same day, the <b>most recent decision wins</b> (whichever you did last). Then look at the <b>RMES</b> column for the engine's verdict: either a target to consider (↓/↑) or "✓ in line" if your decision is already in tune.</p>
       </div>
     </details>
