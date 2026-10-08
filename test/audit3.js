@@ -9,7 +9,8 @@
 const T = require('./t_lib');
 const { w, X, D, ok, info, fine, errs } = T.boot([
   'renderSellStrategy', 'renderForecast', 'renderRMESConfigTab', 'renderAnalysis', 'BOOKINGS', '_grossUpFactor', 'structKeysFor',
-  'computeRMESPriceMap', 'CFG', 'expHasData', 'expSeriesFor', 'expContext', 'compsetWeightedAvg'
+  'computeRMESPriceMap', 'CFG', 'expHasData', 'expSeriesFor', 'expContext', 'compsetWeightedAvg',
+  'fpWirePlaybookSearch'
 ]);
 const TUTTE = ['firenze', 'condotta', 'alfani', 'davids', 'nazionale', 'portenuove'];
 
@@ -189,6 +190,45 @@ for (const [id, cosa] of [['sell-warn-filter', 'il filtro dei puntini rossi'],
   ok(Math.round(wt.avg) !== Math.round(rw.rawAvg),
      'Weighted e Raw restano diversi (il divisor Expedia→Beddy si applica solo al primo)',
      Math.round(wt.avg) + ' vs ' + Math.round(rw.rawAvg));
+}
+
+
+
+/* --- LE RISPOSTE RAPIDE DEL PLAYBOOK --------------------------------------
+   Tredicimila parole in undici sezioni: la spiegazione c'era, trovarla no.
+   Questi controlli difendono le tre cose che possono rompersi in silenzio: un
+   link che punta a una sezione che non esiste piu', il filtro che smette di
+   filtrare, e l'evidenziazione che entra dentro un href e spezza i link. */
+{
+  const inp = D.getElementById('qa-search');
+  const righe = [...D.querySelectorAll('#qa-table tr.qa-row')];
+  ok(!!inp && righe.length >= 15, 'le risposte rapide ci sono', righe.length);
+  const rotti = righe.map(tr => {
+    const a = tr.querySelector('a.qa-link');
+    return (!a) ? 'riga senza link' : (D.getElementById(a.getAttribute('href').slice(1)) ? null : a.getAttribute('href'));
+  }).filter(Boolean);
+  ok(rotti.length === 0, 'ogni risposta rimanda a una sezione che esiste', rotti.join(' '));
+
+  const vis = () => righe.filter(tr => !tr.classList.contains('qa-hide')).length;
+  const scrivi = t => { inp.value = t; inp.dispatchEvent(new w.Event('input')); };
+  ok(vis() === righe.length, 'a casella vuota si vedono tutte');
+  scrivi('base price');
+  ok(vis() > 0 && vis() < righe.length, 'il filtro stringe su "base price"', vis());
+  ok(righe.some(tr => !tr.classList.contains('qa-hide') && /recalculate every day/i.test(tr.textContent)),
+     'e la domanda sul ricalcolo giornaliero e fra i risultati');
+  ok(righe.filter(tr => !tr.classList.contains('qa-hide')).every(tr => {
+       const a = tr.querySelector('a.qa-link');
+       return a && /^#instr-/.test(a.getAttribute('href'));
+     }), 'evidenziando le parole i link restano interi');
+  scrivi('qwerty');
+  ok(vis() === 0 && D.getElementById('qa-none').style.display === 'block',
+     'una ricerca senza risultati lo dice invece di mostrare una tabella vuota');
+  scrivi('');
+  ok(vis() === righe.length, 'svuotando tornano tutte');
+
+  /* Le risposte devono dire un numero o un fatto, non rimandare e basta. */
+  const vaghe = righe.filter(tr => (tr.querySelector('.qa-a').textContent || '').trim().length < 25);
+  ok(vaghe.length === 0, 'nessuna risposta e troppo corta per dire qualcosa', vaghe.length);
 }
 
 
