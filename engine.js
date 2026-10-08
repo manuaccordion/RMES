@@ -1521,6 +1521,51 @@ function _showDataVersionWarning(local, remote){
   });
 }
 
+/* RICERCA DELLE QUICK ANSWERS DEL PLAYBOOK.
+   Il Playbook sono tredicimila parole in undici sezioni: la spiegazione c'e'
+   sempre, ma per sapere se il Base Price si ricalcola ogni giorno bisognava
+   leggere una sezione intera. Le risposte rapide stanno in cima, e questa
+   funzione le filtra mentre si scrive.
+   Vive qui e non in un <script> dentro index.html per due ragioni: la logica
+   sta nel motore, e cosi' i test la vedono davvero (jsdom non esegue gli
+   script inline della pagina, quindi la' sarebbe rimasta non verificata). */
+function fpWirePlaybookSearch(){
+  const inp = document.getElementById('qa-search');
+  if (!inp || inp.dataset.wired === '1') return;
+  inp.dataset.wired = '1';
+  const righe = [].slice.call(document.querySelectorAll('#qa-table tr.qa-row'));
+  if (!righe.length) return;
+  righe.forEach(tr => {
+    tr.dataset.testo = (tr.textContent || '').toLowerCase();
+    [].slice.call(tr.querySelectorAll('td')).forEach(td => { td.dataset.orig = td.innerHTML; });
+  });
+  const vuoto = document.getElementById('qa-none');
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const filtra = () => {
+    const q = (inp.value || '').trim().toLowerCase();
+    const parole = q ? q.split(/\s+/) : [];
+    let visibili = 0;
+    righe.forEach(tr => {
+      const ok = parole.every(p => tr.dataset.testo.indexOf(p) !== -1);
+      tr.classList.toggle('qa-hide', !ok);
+      if (ok) visibili++;
+      [].slice.call(tr.querySelectorAll('td')).forEach(td => {
+        let h = td.dataset.orig;
+        if (ok && parole.length){
+          parole.forEach(p => {
+            if (p.length < 2) return;
+            /* (?![^<]*>) tiene l'evidenziazione fuori dagli attributi: senza,
+               una ricerca di "instr" o "href" spezzerebbe i link. */
+            h = h.replace(new RegExp('(' + esc(p) + ')(?![^<]*>)', 'gi'), '<mark>$1</mark>');
+          });
+        }
+        td.innerHTML = h;
+      });
+    });
+    if (vuoto) vuoto.style.display = visibili ? 'none' : 'block';
+  };
+  inp.addEventListener('input', filtra);
+}
 function fp_postLoadHook(){
   // --- ONE-SHOT MIGRATION to NewRMES system (Base Price + Acceptance) ---
   // Wipes the previous override-based system on first load, then sets a flag so it never runs again.
@@ -1710,6 +1755,7 @@ function fp_postLoadHook(){
   } catch(e){
     console.error('[Foundation] pre-compute failed', e);
   }
+  try { fpWirePlaybookSearch(); } catch(err){ console.error('playbook search', err); }
 }
 /* -------- FILTER HELPERS -------- */
 let CURRENT_STRUCT = 'firenze';   // struttura singola | gruppo gestione | 'both'

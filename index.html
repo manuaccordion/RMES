@@ -1549,6 +1549,19 @@ table.data.sell-table .sell-warn-filter{margin-top:4px;font-size:9.5px;font-weig
 table.data.sell-table .sell-warn-filter.on{background:#b0332f;color:#fff;border-color:#b0332f}
 table.data.sell-table .sell-warn-filter:disabled{opacity:.4;cursor:default}
 table.data.sell-table.warn-only tbody tr:not(.sell-row-warn):not(.total){display:none}
+
+/* Quick answers: una domanda per riga, la risposta accanto. Il Playbook spiega
+   tutto ma in tredicimila parole, e per sapere se il Base Price si ricalcola
+   ogni giorno non si deve leggere una sezione intera. */
+#instr-faq table.data td{border-bottom:1px solid var(--line);padding:7px 10px;vertical-align:top;font-size:12.5px}
+#instr-faq table.data tr:last-child td{border-bottom:none}
+#instr-faq .qa-q{width:34%;font-weight:600;color:var(--ink-1)}
+#instr-faq .qa-a{color:var(--ink-2);line-height:1.5}
+#instr-faq .qa-link{margin-left:6px;font-size:11.5px;color:#3b6b9a;text-decoration:none;white-space:nowrap}
+#instr-faq .qa-link:hover{text-decoration:underline}
+#instr-faq tr.qa-hide{display:none}
+#instr-faq mark{background:#fdf0cf;color:inherit;padding:0 1px;border-radius:2px}
+
 table.data.sell-table td.c-ctr{text-align:center}
 table.data.sell-table td.bg-grey{background:rgba(138,138,138,.04)}
 table.data.sell-table td.bg-mkt{background:rgba(58,107,107,.04);text-align:center;line-height:1.25}
@@ -2353,6 +2366,47 @@ table.data.sell-table .sell-drill{
         <a href="#instr-rmes"   style="font-size:12px;color:#7a4f1c;font-weight:600;text-decoration:none;padding:4px 10px;background:#fef8ed;border:1px solid #c4823b;border-radius:4px">⑦ RMES (config)</a>
         <a href="#instr-export"  style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑧ Export Pricing</a>
         <a href="#instr-glossario" style="font-size:12px;color:#5a3a14;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">📚 Glossary</a>
+      </div>
+    </div>
+
+
+    <!-- RISPOSTE RAPIDE -->
+    <div class="panel" id="instr-faq" style="margin-bottom:18px;border-left:3px solid #4a7c59">
+      <div class="panel-body" style="padding:14px 18px">
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;margin-bottom:10px">
+          <span style="font-weight:700;font-size:15px;color:#2c5c3c">Quick answers</span>
+          <span style="font-size:12px;color:var(--ink-3)">the twenty things people actually ask &mdash; type to filter</span>
+        </div>
+        <input id="qa-search" type="search" placeholder="base price, floor, horizon, red dot, STLY&hellip;"
+               style="width:100%;box-sizing:border-box;padding:8px 12px;font-size:13px;font-family:inherit;
+                      border:1px solid var(--line);border-radius:5px;margin-bottom:4px">
+        <div id="qa-none" style="display:none;font-size:12.5px;color:var(--ink-3);padding:10px 2px">
+          Nothing matches. The full sections are below, and the Export Pricing tab shows every figure with its own tooltip.
+        </div>
+        <table class="data" id="qa-table" style="margin-top:8px">
+          <tbody>
+        <tr class="qa-row"><td class="qa-q">Does the Base Price recalculate every day?</td><td class="qa-a">Yes. It is recomputed from scratch every time the dashboard opens, for all 365 days. Nothing is frozen. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Does the selling horizon limit the Base Price?</td><td class="qa-a">No. The Base Price exists for all 365 days. The horizon limits two other things: beyond it the Goal Value does not cap the Base, and RMES does not move the price. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What is the selling horizon?</td><td class="qa-a">The lead time within which 80% of that property's bookings arrive. The system computes it from your own data, you do not set it. Firenze 54 days &middot; Condotta 50 &middot; Alfani 104 &middot; Enis 59 &middot; Nazionale 104 &middot; Porte Nuove 80. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What moves the suggested price?</td><td class="qa-a">Only the pickup of the last 7 days. Market and AirDNA never push: they can only stop a push. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">How much can the price move in one day?</td><td class="qa-a">5% at most. The engine smooths its own movement, so a date cannot jump: it walks towards the target a step a day. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">How far can it go in total?</td><td class="qa-a">30% away from the Base Price, in either direction. That is the cap per property, configurable in the RMES tab. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What can never be broken?</td><td class="qa-a">The Floor. No calculation ever goes below it. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What exactly is the Floor?</td><td class="qa-a">The lowest price anyone can pay &mdash; not the flexible rate, but the cheapest one on offer: long stay, cheapest room type. &laquo;Floor 200&raquo; means nobody pays less than &euro;200. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">When does the last-minute discount act?</td><td class="qa-a">Within 60 days of arrival and below 60% occupancy. Further out, or fuller than that, it is zero and the price does not come down on its own. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Does a suggested price apply by itself?</td><td class="qa-a">Never. Until you press &#10003; the active price stays what it is. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What does the red dot mean?</td><td class="qa-a">One of two things: the suggestion is more than 20% away from what you loaded with nothing in the data explaining it, or the price sits above your Goal Value on an empty night too far out for the last minute. Hover the price to read which. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Goal Value or Weighted compset &mdash; which is which?</td><td class="qa-a">Goal Value = weighted compset WITH your offsets; it is used only as the cap on the Base Price. Weighted compset = the same WITHOUT offsets; it feeds the RMES signals. <a href="#instr-rate" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Why is there no Rate shopper on Nazionale and Porte Nuove?</td><td class="qa-a">They have no Expedia data at all: no price of ours, no competitors, no search pressure. The column appears by itself the day those prices are loaded. <a href="#instr-rate" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What is STLY?</td><td class="qa-a">The same date last year, minus 364 days, so the day of the week matches. <a href="#instr-glossario" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Is revenue gross or net of OTA commission?</td><td class="qa-a">Gross: what the guest actually paid. Expedia 18% (16.5% on Condotta) &middot; Ctrip 18% on Alfani, 15% elsewhere &middot; Booking and Airbnb arrive already gross. <a href="#instr-otb" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Do cleaning fees count as revenue?</td><td class="qa-a">Yes in the total revenue, no in the ADR. <a href="#instr-otb" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Who sees the changes I make?</td><td class="qa-a">Everyone, in near real time. The &#9729; synced chip in the header means the link is live; &#9888; local only means you are working on your browser alone. <a href="#instr-menu" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What is the Anchor Price?</td><td class="qa-a">One number per property per year. It bounds the computed Base Price to &plusmn;50%. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What is the target growth?</td><td class="qa-a">The percentage added to last year's median ADR in step 2 of the Base Price. Today it is +5% on every month and every property. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Where do I check a price number by number?</td><td class="qa-a">Export Pricing &rarr; Base Price breakdown for the Base, RMES breakdown for the suggestion. Every step has a tooltip saying where the figure comes from. <a href="#instr-export" class="qa-link">apri</a></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
