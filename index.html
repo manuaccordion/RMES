@@ -2403,6 +2403,7 @@ table.data.sell-table .sell-drill{
         <tr class="qa-row"><td class="qa-q">Do cleaning fees count as revenue?</td><td class="qa-a">Yes in the total revenue, no in the ADR. <a href="#instr-otb" class="qa-link">apri</a></td></tr>
         <tr class="qa-row"><td class="qa-q">Who sees the changes I make?</td><td class="qa-a">Everyone, in near real time. The &#9729; synced chip in the header means the link is live; &#9888; local only means you are working on your browser alone. <a href="#instr-menu" class="qa-link">apri</a></td></tr>
         <tr class="qa-row"><td class="qa-q">What is the Anchor Price?</td><td class="qa-a">One number per property per year. It bounds the computed Base Price to &plusmn;50%. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What happens when two events fall on the same day?</td><td class="qa-a">Both are shown and their weights are added &mdash; +10% and +8% give +18%. The events file has two columns because it is easier to read that way, not because one matters more. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
         <tr class="qa-row"><td class="qa-q">What is the target growth?</td><td class="qa-a">The percentage added to last year's median ADR in step 2 of the Base Price. Today it is +5% on every month and every property. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
         <tr class="qa-row"><td class="qa-q">Where do I check a price number by number?</td><td class="qa-a">Export Pricing &rarr; Base Price breakdown for the Base, RMES breakdown for the suggestion. Every step has a tooltip saying where the figure comes from. <a href="#instr-export" class="qa-link">apri</a></td></tr>
           </tbody>
@@ -2886,6 +2887,7 @@ table.data.sell-table .sell-drill{
         <ul style="margin:6px 0 10px 18px">
           <li><b>Daily step limit.</b> The suggestion cannot move more than 5% from yesterday's. It is not a cap on the level &mdash; the price still gets where it needs to, just over more days. Without it a single component switching on could swing the price 30% overnight.</li>
           <li><b>Last Minute Factor and Event Factor</b> apply after the signals. The Event Factor <b>only ever raises</b>: an event you know about is a reason to charge more, never to charge less &mdash; if a date is going badly, the pickup is what should bring it down.</li>
+          <li><b>Two events on the same day.</b> The events file has two columns, and neither counts more than the other &mdash; they are split for readability only. When a date carries two, the Sell Strategy shows both and <b>their weights are added</b>: Firenze Rock at +10% together with Pitti at +8% gives +18%. With the &plusmn;10% range per event, a double day can reach +20%. It happens on 14 dates between 2025 and 2028. A negative weight has no effect, as before.</li>
         </ul>
 
         <p style="margin:0 0 4px 0;font-weight:700;color:#5a3a14">Why the price does not creep up on its own</p>

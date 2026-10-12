@@ -1206,9 +1206,21 @@ function normProv(p, canale){
 let RAW = [];        // raw CSV rows (Confermate only, valid)
 let BOOKINGS = [];   // expanded per-room bookings
 let MARKET_RATES = []; // [{date, ymd:'YYYYMMDD'(num), listings:int, adr:float}]
-let EVENTS = {};     // ymd (number) -> event label string
+let EVENTS = {};     // ymd (number) -> etichetta da mostrare (i due eventi uniti da " · ")
+/* GLI EVENTI DI UN GIORNO SONO PIU' D'UNO.
+   Il file eventi ha due colonne, e non perche' la prima conti di piu': sono
+   divise solo per leggibilita'. Prima EVENTS[k] teneva una stringa sola e il
+   secondo evento spariva in silenzio — su 14 giorni, fra cui Firenze Rock
+   insieme a Pitti. Adesso EVENTS_LIST tiene l'elenco vero, che serve al peso e
+   alla configurazione, mentre EVENTS resta la stringa da stampare a schermo. */
+let EVENTS_LIST = {};  // ymd (number) -> [etichette]
+function _eventLabelsFor(ymd){
+  if (typeof EVENTS_LIST !== 'undefined' && EVENTS_LIST[ymd]) return EVENTS_LIST[ymd];
+  const one = (typeof EVENTS !== 'undefined') ? EVENTS[ymd] : null;
+  return one ? [one] : [];
+}
 function loadEvents(csvText){
-  EVENTS = {};
+  EVENTS = {}; EVENTS_LIST = {};
   const rows = parseCSV(csvText);
   for (const r of rows){
     const ds = (r['Date']||'').trim();
@@ -1218,8 +1230,12 @@ function loadEvents(csvText){
     if (!m) continue;
     const y = +m[1], mo = +m[2], d = +m[3];
     const k = y*10000 + mo*100 + d;
-    EVENTS[k] = lbl;
+    /* Due righe con la stessa data = due eventi quel giorno. Il formato del CSV
+       non cambia: cambia solo che non si sovrascrivono. */
+    if (!EVENTS_LIST[k]) EVENTS_LIST[k] = [];
+    if (EVENTS_LIST[k].indexOf(lbl) === -1) EVENTS_LIST[k].push(lbl);
   }
+  for (const k in EVENTS_LIST) EVENTS[k] = EVENTS_LIST[k].join(' \u00b7 ');
 }
 /* AirDNA Florence market data — Booked Listings & Daily Rate, 180 days forward.
    Used by the D·Demand factor (AirDNA market booking density) and as the market reference.
@@ -4984,12 +5000,20 @@ const RMES_PICKUP_THR_DEFAULT = [
    a farla scendere ci pensano il pickup e il guard-rail di mercato, che
    guardano cosa sta succedendo davvero. Valori negativi vengono ignorati. */
 function _getEventBoost(ymd){
-  if (typeof EVENTS === 'undefined' || !EVENTS[ymd]) return 1.0;
-  const label = EVENTS[ymd]; if (!label) return 1.0;
+  const names = _eventLabelsFor(ymd);
+  if (!names.length) return 1.0;
   const weights = _getEventWeights();
-  const pct = weights[label]; if (pct == null || !isFinite(+pct)) return 1.0;
-  if (+pct <= 0) return 1.0;
-  return 1 + (+pct)/100;
+  /* I pesi dei due eventi si SOMMANO: due eventi lo stesso giorno fanno piu'
+     domanda di uno. Con il range configurabile di ±10% a evento, il massimo su
+     un giorno doppio e' +20%. I pesi negativi restano senza effetto, come erano
+     gia' prima di questa modifica. */
+  let tot = 0;
+  for (const n of names){
+    const pct = weights[n];
+    if (pct == null || !isFinite(+pct) || +pct <= 0) continue;
+    tot += +pct;
+  }
+  return tot > 0 ? 1 + tot/100 : 1.0;
 }
 
 /* ===========================================================================
@@ -5004,7 +5028,11 @@ const DOW_PREMIUM_KEY = 'rmes_dow_premium_v1';
 function _listEventLabels(){
   if (typeof EVENTS === 'undefined') return [];
   const s = new Set();
-  for (const k in EVENTS){ if (EVENTS[k]) s.add(EVENTS[k]); }
+  /* Dall'elenco vero, non dalla stringa unita: altrimenti "Firenze Rock · Pitti"
+     diventerebbe un evento a se' da configurare, e i due veri sparirebbero. */
+  const src = (typeof EVENTS_LIST !== 'undefined' && Object.keys(EVENTS_LIST).length) ? EVENTS_LIST : null;
+  if (src){ for (const k in src) for (const n of src[k]) if (n) s.add(n); }
+  else { for (const k in EVENTS){ if (EVENTS[k]) s.add(EVENTS[k]); } }
   return Array.from(s).sort((a,b)=>a.localeCompare(b));
 }
 
@@ -18770,12 +18798,15 @@ function _renderRmesEventsBox(){
   const datesByLabel = {};
   if (typeof EVENTS !== 'undefined'){
     for (const k in EVENTS){
-      const lbl = EVENTS[k];
-      if (!lbl) continue;
       const ymdN = parseInt(k,10);
       if (ymdN < _todayYmd) continue;  // skip past dates
-      if (!datesByLabel[lbl]) datesByLabel[lbl] = [];
-      datesByLabel[lbl].push(ymdN);
+      /* Un giorno doppio compare sotto ENTRAMBI gli eventi, non sotto la
+         stringa unita: e' l'elenco su cui si clicca per configurare i pesi. */
+      for (const lbl of _eventLabelsFor(ymdN)){
+        if (!lbl) continue;
+        if (!datesByLabel[lbl]) datesByLabel[lbl] = [];
+        datesByLabel[lbl].push(ymdN);
+      }
     }
     for (const lbl in datesByLabel) datesByLabel[lbl].sort((a,b)=>a-b);
   }

@@ -30,10 +30,13 @@ function boot(exports_, opts){
   w.console.error = (...a) => errs.push(a.map(x => (x && x.message) ? x.message : String(x)).join(' '));
 
   const names = ['EMBEDDED_CSV', 'EVENTS_CSV'].concat(exports_ || []);
-  const expr = names.map(n => {
-    if (n === 'BOOKINGS' || n === 'TODAY' || n === 'CFG') return 'get ' + n + '(){return ' + n + '}';
-    return n;
-  }).join(',');
+  /* TUTTO dietro un getter, non solo tre nomi.
+     Prima i valori venivano catturati al momento del boot: un test che ricarica
+     qualcosa (loadEvents con un file nuovo, per dire) continuava a vedere il
+     valore vecchio, e la variabile risultava undefined o stantia senza che
+     nulla lo segnalasse. Un getter restituisce sempre quello che c'e' adesso,
+     e per le funzioni non cambia niente. */
+  const expr = names.map(n => 'get ' + n + '(){return typeof ' + n + ' === "undefined" ? undefined : ' + n + '}').join(',');
   w.eval(fs.readFileSync(P + 'data.js', 'utf8') + '\n;\n'
        + fs.readFileSync(P + 'engine.js', 'utf8')
        + '\n;window.__X={' + expr + '};');

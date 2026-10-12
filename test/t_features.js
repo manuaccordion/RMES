@@ -12,7 +12,8 @@ const { w, X, D, ok, info, fine } = T.boot([
   'rmesSignalsSet', 'getRmesCap', 'setRmesCap', 'fp_getLmfMatrix', 'fp_setLmfMatrix',
   'fp_getChannelMarkupParts', 'fp_setChannelMarkupParts', 'fp_getFloor', 'fp_getBasePrice',
   'fp_setOverride', 'newrmesGetEffectiveBase', '_invalidateRmesMapCache', 'TODAY', 'CFG',
-  'compsetWeightedAvg', 'fpCapHorizonDays', 'newrmesGetCurrentReference'
+  'compsetWeightedAvg', 'fpCapHorizonDays', 'newrmesGetCurrentReference',
+  'loadEvents', 'EVENTS', 'EVENTS_LIST', '_getEventBoost', '_listEventLabels', '_eventLabelsFor'
 ]);
 const t0 = new Date(X.TODAY); t0.setHours(0,0,0,0);
 
@@ -222,6 +223,63 @@ const t0 = new Date(X.TODAY); t0.setHours(0,0,0,0);
   ok(suggeriti.length > 60, 'le celle prezzo restano tutte leggibili e cliccabili', suggeriti.length);
   const fl = X.fp_getFloor('alfani');
   ok(suggeriti.every(v => v >= fl - 1), 'e nessun prezzo e scivolato sotto il pavimento', fl);
+}
+
+
+
+/* --- DUE EVENTI NELLO STESSO GIORNO ---------------------------------------
+   Il file eventi ha due colonne e non perche' la prima conti di piu'. Prima il
+   motore ne teneva una sola: su 14 giorni il secondo evento spariva senza dirlo,
+   e 27 giorni avevano l'evento SOLO nella seconda colonna. Questi controlli
+   difendono le tre cose che si romperebbero in silenzio: un evento perso, la
+   stringa unita che finisce fra gli eventi configurabili, e i pesi che smettono
+   di sommarsi. */
+{
+  const CSV = [
+    'Date,Event',
+    '2026-03-01,Solo Uno',
+    '2026-03-02,Primo',
+    '2026-03-02,Secondo',
+    '2026-03-03,"Con, la virgola"',
+    '2026-03-04,Senza Peso',
+  ].join('\n');
+  const prima = X.EVENTS_CSV;              // per rimettere a posto dopo
+  X.loadEvents(CSV);
+  const EL = X.EVENTS_LIST;
+  ok(Object.keys(EL).length === 4, 'quattro giorni caricati', Object.keys(EL).length);
+  ok(EL[20260302] && EL[20260302].length === 2,
+     'due righe con la stessa data danno due eventi, non uno che sovrascrive l altro',
+     JSON.stringify(EL[20260302]));
+  ok(X.EVENTS[20260302].indexOf('Primo') !== -1 && X.EVENTS[20260302].indexOf('Secondo') !== -1,
+     'e a schermo si leggono tutti e due', X.EVENTS[20260302]);
+  ok(EL[20260303] && EL[20260303][0] === 'Con, la virgola',
+     'un nome che contiene una virgola non si spezza in due eventi', JSON.stringify(EL[20260303]));
+
+  const nomi = X._listEventLabels();
+  ok(nomi.length === 5, 'gli eventi configurabili sono i nomi veri', nomi.length + ': ' + nomi.join(' | '));
+  ok(!nomi.some(n => n.indexOf(' · ') !== -1),
+     'la stringa unita NON compare fra quelli da configurare');
+
+  w.localStorage.setItem('rmes_event_weights_v1', JSON.stringify({
+    'Solo Uno': 5, 'Primo': 10, 'Secondo': 8 }));
+  ok(Math.abs(X._getEventBoost(20260301) - 1.05) < 1e-9,
+     'un evento solo vale il suo peso', X._getEventBoost(20260301));
+  ok(Math.abs(X._getEventBoost(20260302) - 1.18) < 1e-9,
+     'due eventi sommano i pesi: 10% + 8% = +18%', X._getEventBoost(20260302));
+  ok(X._getEventBoost(20260304) === 1.0,
+     'un evento senza peso configurato lascia il prezzo dov e');
+  ok(X._getEventBoost(20260305) === 1.0, 'un giorno senza eventi nemmeno');
+
+  /* Un peso negativo non deve far scendere il prezzo: era gia' cosi' prima, e
+     il passaggio alla somma non deve averlo cambiato di nascosto. */
+  w.localStorage.setItem('rmes_event_weights_v1', JSON.stringify({ 'Primo': 10, 'Secondo': -8 }));
+  ok(Math.abs(X._getEventBoost(20260302) - 1.10) < 1e-9,
+     'un peso negativo resta senza effetto, come prima', X._getEventBoost(20260302));
+
+  w.localStorage.removeItem('rmes_event_weights_v1');
+  X.loadEvents(prima);                      // rimetto gli eventi veri
+  ok(Object.keys(X.EVENTS_LIST).length > 100, 'gli eventi veri sono tornati al loro posto',
+     Object.keys(X.EVENTS_LIST).length);
 }
 
 

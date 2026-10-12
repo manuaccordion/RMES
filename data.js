@@ -33515,7 +33515,104 @@ const EVENTS_CSV = `Date,Event
 2027-01-04,Holiday Season
 2027-01-05,Holiday Season
 2027-01-06,Epifania
-`;
+2027-01-11,pre Pitti
+2027-01-12,Pitti
+2027-01-13,Pitti
+2027-01-14,post Pitti
+2027-01-20,Pitti Bimbo
+2027-01-21,Pitti Bimbo
+2027-02-04,Capodanno Cinese
+2027-02-05,Capodanno Cinese
+2027-02-06,Capodanno Cinese
+2027-02-06,Taste Fortezza
+2027-02-07,Capodanno Cinese
+2027-02-07,Taste Fortezza
+2027-02-08,Capodanno Cinese
+2027-02-09,Capodanno Cinese
+2027-02-10,Capodanno Cinese
+2027-02-11,Capodanno Cinese
+2027-02-12,Capodanno Cinese
+2027-02-13,Capodanno Cinese
+2027-02-14,Capodanno Cinese
+2027-02-15,Capodanno Cinese
+2027-02-16,Capodanno Cinese
+2027-02-17,Capodanno Cinese
+2027-02-18,Capodanno Cinese
+2027-02-19,Capodanno Cinese
+2027-02-19,Danza In Fiera Fortezza
+2027-02-20,Capodanno Cinese
+2027-02-20,Danza In Fiera Fortezza
+2027-03-25,Pre Pasqua
+2027-03-26,Pre Pasqua
+2027-03-27,Pre Pasqua
+2027-03-28,Pasqua
+2027-03-29,Pasquetta
+2027-03-30,Post Pasqua
+2027-04-10,Half Marathon Firenze
+2027-04-11,Half Marathon Firenze
+2027-04-23,Festa della Liberazione
+2027-04-24,Festa della Liberazione
+2027-04-24,Internationa Handcraft Exhibition
+2027-04-25,Festa della Liberazione
+2027-04-25,Internationa Handcraft Exhibition
+2027-04-26,Internationa Handcraft Exhibition
+2027-04-27,Internationa Handcraft Exhibition
+2027-04-28,Internationa Handcraft Exhibition
+2027-04-29,Internationa Handcraft Exhibition
+2027-04-30,Pre Primo Maggio
+2027-04-30,Internationa Handcraft Exhibition
+2027-05-01,Primo Maggio
+2027-05-01,Internationa Handcraft Exhibition
+2027-05-02,Post Primo Maggio
+2027-06-02,Festa della Repubblica
+2027-06-11,Firenze Rock
+2027-06-12,Firenze Rock
+2027-06-13,Firenze Rock
+2027-06-14,Firenze Rock
+2027-06-14,Pitti Uomo/Bimbo/Filatti
+2027-06-15,Pitti Uomo/Bimbo/Filatti
+2027-06-16,Pitti Uomo/Bimbo/Filatti
+2027-06-17,Pitti Uomo/Bimbo/Filatti
+2027-06-18,Pitti Uomo/Bimbo/Filatti
+2027-06-19,Pitti Uomo/Bimbo/Filatti
+2027-06-20,Pitti Uomo/Bimbo/Filatti
+2027-06-21,Pitti Uomo/Bimbo/Filatti
+2027-06-22,Pitti Uomo/Bimbo/Filatti
+2027-06-23,Pitti Uomo/Bimbo/Filatti
+2027-06-24,San Giovanni Patrono Firenze
+2027-06-25,Post San Giovanni Patrono Firenze
+2027-06-26,Post San Giovanni Patrono Firenze
+2027-08-13,Pre Ferragosto
+2027-08-14,Pre Ferragosto
+2027-08-15,Ferragosto
+2027-10-29,Pre Ognissanti
+2027-10-30,Pre Ognissanti
+2027-10-31,Pre Ognissanti
+2027-11-01,Ognisanti
+2027-11-26,Pre Florence Marathon
+2027-11-27,Pre Florence Marathon
+2027-11-28,Florence Marathon
+2027-12-07,Pre Immacolata
+2027-12-08,Immacolata
+2027-12-09,Post Immacolata
+2027-12-24,Pre Natale
+2027-12-25,Natale
+2027-12-26,Natale
+2027-12-27,Holiday Season
+2027-12-28,Holiday Season
+2027-12-29,Holiday Season
+2027-12-30,Holiday Season
+2027-12-31,Capodanno
+2028-01-01,Capodanno
+2028-01-02,Holiday Season
+2028-01-03,Holiday Season
+2028-01-04,Holiday Season
+2028-01-05,Holiday Season
+2028-01-06,Befana
+2028-01-10,Pre Pitti
+2028-01-11,Pitti
+2028-01-12,Pitti
+2028-01-13,Post Pitti`;
 
 /* ─────────── AIRDNA DATA (Florence market, Booked Listings + Daily Rate, ~180gg) ───────────
    Letto al boot via loadAirdna(AIRDNA_CSV). Sostituire interamente a ogni nuovo export. */
