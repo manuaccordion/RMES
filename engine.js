@@ -50,6 +50,7 @@ const RMES_CLOUD = (function(){
     'rmes_dow_premium_v1',
     'rmes_promos_v1',
     'rmes_need_days_v1',   // shared "Need days" watchlist (Pricing Console) — per-cell merge
+    'rmes_cfg_ts_v1',      // quando ogni campo di configurazione è stato cambiato → merge per campo
     '_data_fingerprint_v1'
   ];
   const FIREBASE_CONFIG = {
@@ -68,6 +69,8 @@ const RMES_CLOUD = (function(){
   let _pendingAuditPush = false; // true se il merge del log ha aggiunto righe locali assenti dal cloud
   let _pendingCellPush = false;  // true se il merge per-cella (override/accept) ha righe locali assenti dal cloud
   let _visibilityHooked = false; // per registrare il re-pull su focus una sola volta
+  let _pushFailures = 0;         // push falliti di fila → attesa crescente prima di riprovare
+  let _nextPushAllowedAt = 0;    // epochMs: prima di questo momento non si ritenta
   let lastRemoteJSON = null;    // ultimo stato remoto applicato (per dedup)
   const statusListeners = [];
 
@@ -602,11 +605,117 @@ const RMES_CLOUD = (function(){
     return JSON.stringify(out);
   }
 
+  // ---- Per-field merge for the per-PROPERTY CONFIG keys ----
+  // Queste chiavi sono {struttura: valore}: floor, anchor, target growth, cap,
+  // markup, pesi, offset compset. Finora viaggiavano in last-write-wins SULL'INTERO
+  // oggetto, e questo le rendeva fragili in un modo che non si vedeva: se il push
+  // falliva (quota, regole, rete) Firestore faceva rollback della cache e il
+  // listener riceveva indietro il documento del server. _applyToLocal riscriveva
+  // allora il valore vecchio in localStorage e il campo tornava com'era, in un
+  // paio di secondi, senza una riga di avviso. Stesso effetto se un altro browser
+  // rimasto indietro spingeva su il suo oggetto intero.
+  // Le chiavi per-giorno (accept, override) non avevano il problema perché erano
+  // già unite cella per cella: per questo "spariva" solo la configurazione.
+  // Ora ogni campo porta con sé il momento in cui è stato cambiato qui
+  // (rmes_cfg_ts_v1) e vince solo chi è più recente. A parità, e quando nessuno
+  // dei due è timbrato, vince il cloud: identico a prima.
+  const CONFIG_TS_KEY = 'rmes_cfg_ts_v1';
+  const CONFIG_MERGE_KEYS = [
+    'rmes_floor_v1',
+    'rmes_base_price_v1',
+    'rmes_target_growth_v1',
+    'rmes_total_cap_v1',
+    'rmes_elasticity_v1',
+    'rmes_channel_markup_v1',
+    'rmes_compset_offsets_v1',
+    'rmes_compset_weights_v1',
+    'rmes_weights_per_struct_v4',
+    'rmes_lastminute_factor_v1',
+    'rmes_event_weights_v1'
+  ];
+  function _parseObj(raw){
+    let o = null;
+    try { o = raw ? JSON.parse(raw) : null; } catch(e){ o = null; }
+    return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {};
+  }
+  // Il timbro: { chiave: { campo: epochMs } }. Si unisce prendendo il più recente.
+  function _mergeTsRaw(localRaw, remoteRaw){
+    const a = _parseObj(localRaw), b = _parseObj(remoteRaw), out = {};
+    const keys = {};
+    for (const k in a) keys[k] = 1;
+    for (const k in b) keys[k] = 1;
+    for (const k in keys){
+      const af = (a[k] && typeof a[k] === 'object') ? a[k] : {};
+      const bf = (b[k] && typeof b[k] === 'object') ? b[k] : {};
+      const o = {};
+      for (const f in af) o[f] = +af[f] || 0;
+      for (const f in bf){ const v = +bf[f] || 0; if (!(o[f] > v)) o[f] = v; }
+      out[k] = o;
+    }
+    return JSON.stringify(out);
+  }
+  // Unione campo per campo. localWins = il locale ha qualcosa che il cloud non ha
+  // (o ha più recente) → va rispinto su, altrimenti resterebbe solo su questo browser.
+  function _mergeConfigRaw(localRaw, remoteRaw, tsL, tsR){
+    const a = _parseObj(localRaw), b = _parseObj(remoteRaw);
+    tsL = (tsL && typeof tsL === 'object') ? tsL : {};
+    tsR = (tsR && typeof tsR === 'object') ? tsR : {};
+    const out = {}, fields = {};
+    let localWins = false;
+    for (const f in a) fields[f] = 1;
+    for (const f in b) fields[f] = 1;
+    for (const f in fields){
+      const inA = Object.prototype.hasOwnProperty.call(a, f);
+      const inB = Object.prototype.hasOwnProperty.call(b, f);
+      const tA = +tsL[f] || 0, tB = +tsR[f] || 0;
+      if (tA > tB){
+        // cambiato qui dopo l'ultima modifica remota: vince il locale.
+        // Se qui è stato CANCELLATO (inA false) la cancellazione vince allo stesso modo.
+        if (inA) out[f] = a[f];
+        localWins = true;
+        continue;
+      }
+      if (inB){ out[f] = b[f]; continue; }   // il cloud ha il campo e non siamo più recenti → cloud
+      if (inA){ out[f] = a[f]; localWins = true; }   // il cloud non l'ha mai avuto → tengo e rimando su
+    }
+    return { out: JSON.stringify(out), localWins: localWins };
+  }
+  // Timbra i campi toccati da una scrittura locale. Chiamata dal wrapper di setItem
+  // PRIMA che il valore nuovo sostituisca il vecchio, così si vede cosa è cambiato.
+  function _needsConfigStamp(key){
+    return !applyingRemote && CONFIG_MERGE_KEYS.indexOf(key) !== -1;
+  }
+  function _stampConfigWrite(key, prevRaw, nextRaw){
+    if (applyingRemote) return;
+    if (CONFIG_MERGE_KEYS.indexOf(key) === -1) return;
+    const a = _parseObj(prevRaw), b = _parseObj(nextRaw);
+    const fields = {}, touched = [];
+    for (const f in a) fields[f] = 1;
+    for (const f in b) fields[f] = 1;
+    for (const f in fields){
+      const av = Object.prototype.hasOwnProperty.call(a, f) ? JSON.stringify(a[f]) : undefined;
+      const bv = Object.prototype.hasOwnProperty.call(b, f) ? JSON.stringify(b[f]) : undefined;
+      if (av !== bv) touched.push(f);   // aggiunto, cambiato o cancellato
+    }
+    if (!touched.length) return;
+    let map = {};
+    try { map = _parseObj(localStorage.getItem(CONFIG_TS_KEY)); } catch(e){ map = {}; }
+    if (!map[key] || typeof map[key] !== 'object') map[key] = {};
+    const now = Date.now();
+    for (const f of touched) map[key][f] = now;
+    try { localStorage.setItem(CONFIG_TS_KEY, JSON.stringify(map)); } catch(e){}
+  }
+
   // Applica uno stato remoto in localStorage; ritorna true se qualcosa è cambiato
   function _applyToLocal(remote){
     if (!remote || typeof remote !== 'object') return false;
     let changed = false;
     applyingRemote = true;
+    // I timbri servono mentre si uniscono le chiavi di configurazione: si leggono
+    // prima del giro, perché la chiave dei timbri viene riscritta dentro il giro stesso.
+    let _tsLocal = {}, _tsRemote = {};
+    try { _tsLocal = _parseObj(localStorage.getItem(CONFIG_TS_KEY)); } catch(e){}
+    try { _tsRemote = _parseObj(remote[CONFIG_TS_KEY]); } catch(e){}
     try {
       for (const k of SYNC_KEYS){
         const incoming = (remote[k] != null) ? remote[k] : null;
@@ -620,6 +729,28 @@ const RMES_CLOUD = (function(){
             if (merged !== incoming) _pendingAuditPush = true;   // local has entries the cloud lacks → push back
           } else if (current != null){
             _pendingAuditPush = true;   // cloud has no log yet but we do → push ours up
+          }
+          continue;
+        }
+        if (k === CONFIG_TS_KEY){
+          // i timbri non si sovrascrivono mai: si tiene il più recente di ogni campo
+          if (incoming != null){
+            const mergedTs = _mergeTsRaw(current, incoming);
+            if (mergedTs !== current){ try { localStorage.setItem(k, mergedTs); changed = true; } catch(e){} }
+            if (mergedTs !== incoming) _pendingCellPush = true;
+          } else if (current != null){
+            _pendingCellPush = true;
+          }
+          continue;
+        }
+        if (CONFIG_MERGE_KEYS.indexOf(k) !== -1){
+          // config per-struttura → unione campo per campo, vince il timbro più recente
+          if (incoming != null){
+            const r = _mergeConfigRaw(current, incoming, _tsLocal[k], _tsRemote[k]);
+            if (r.out !== current){ try { localStorage.setItem(k, r.out); changed = true; } catch(e){} }
+            if (r.localWins) _pendingCellPush = true;
+          } else if (current != null){
+            _pendingCellPush = true;
           }
           continue;
         }
@@ -684,6 +815,11 @@ const RMES_CLOUD = (function(){
     if (!available || !db || applyingRemote) return;
     _setStatus('syncing');
     if (pushTimer) clearTimeout(pushTimer);
+    /* Se il push sta fallendo, il rollback di Firestore fa arrivare indietro il
+       documento del server: l'unione lo riconosce come più vecchio e rimanda su,
+       e senza un freno i due si rincorrerebbero ogni 800ms. Dopo un errore si
+       aspetta: 30s, poi 1m, 2m, fino a 5 minuti. Niente viene perso, solo rinviato. */
+    const _wait = Math.max(800, _nextPushAllowedAt - Date.now());
     pushTimer = setTimeout(function(){
       pushTimer = null;
       const payload = _collectLocal();
@@ -694,9 +830,15 @@ const RMES_CLOUD = (function(){
           return id; } catch(e){ return 'unknown'; }
       })();
       db.collection('rmes_shared').doc('state').set(_encodeForCloud(payload))
-        .then(function(){ lastRemoteJSON = JSON.stringify(payload); _logSync('push'); _setStatus('synced'); _lastPushError = null; })
-        .catch(function(e){ console.warn('[rmesCloud] push failed', e); _setStatus('offline'); _lastPushError = (e && (e.message || e.code)) || String(e); });
-    }, 800);  // accorpa scritture ravvicinate
+        .then(function(){ lastRemoteJSON = JSON.stringify(payload); _logSync('push'); _setStatus('synced'); _lastPushError = null; _pushFailures = 0; _nextPushAllowedAt = 0; })
+        .catch(function(e){
+          console.warn('[rmesCloud] push failed', e);
+          _setStatus('offline');
+          _lastPushError = (e && (e.message || e.code)) || String(e);
+          _pushFailures++;
+          _nextPushAllowedAt = Date.now() + Math.min(30000 * Math.pow(2, _pushFailures - 1), 300000);
+        });
+    }, _wait);  // accorpa scritture ravvicinate (e rispetta l'attesa dopo un errore)
   }
 
   // Hook pubblico: chiamato dopo ogni scrittura su una chiave RMES
@@ -798,6 +940,10 @@ const RMES_CLOUD = (function(){
     onStatus: function(fn){ statusListeners.push(fn); },
     _collectLocal: _collectLocal,
     _mergeAuditRaw: _mergeAuditRaw,
+    _mergeConfigRaw: _mergeConfigRaw,
+    _mergeTsRaw: _mergeTsRaw,
+    needsConfigStamp: _needsConfigStamp,
+    stampConfigWrite: _stampConfigWrite,
     _applyToLocal: _applyToLocal,
     _encodeForCloud: _encodeForCloud,
     _decodeFromCloud: _decodeFromCloud,
@@ -854,13 +1000,64 @@ function _markHeavyTabsDirty(){
     if (typeof localStorage === 'undefined' || !localStorage.setItem) return;
     if (localStorage.__rmesWrapped) return;
     const _origSet = localStorage.setItem.bind(localStorage);
-    localStorage.setItem = function(key, value){
-      _origSet(key, value);
+    const _origProtoSet = (typeof Storage !== 'undefined' && Storage.prototype && Storage.prototype.setItem)
+      ? Storage.prototype.setItem : null;
+    /* Prima di sovrascrivere: se e' una chiave di configurazione per-struttura,
+       serve il valore vecchio per capire QUALI campi stanno cambiando e timbrarli.
+       Senza timbro, un push fallito o un browser rimasto indietro rimetterebbe il
+       valore di prima (e' il caso del Floor rate che tornava da solo a 160). */
+    const _pre = function(key){
+      let stamp = false;
+      try { stamp = (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.needsConfigStamp && RMES_CLOUD.needsConfigStamp(key)); } catch(e){}
+      if (!stamp) return null;
+      let prev = null;
+      try { prev = localStorage.getItem(key); } catch(e){}
+      return { prev: prev };
+    };
+    const _post = function(key, value, pre){
+      if (pre){ try { RMES_CLOUD.stampConfigWrite(key, pre.prev, value); } catch(e){} }
       try { if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.notifyLocalChange) RMES_CLOUD.notifyLocalChange(key); } catch(e){}
       // Any pricing/config change (local edit or remote sync) invalidates the heavy tabs.
       try { if (typeof key === 'string' && key.indexOf('rmes_') === 0 && typeof _markHeavyTabsDirty === 'function') _markHeavyTabsDirty(); } catch(e){}
     };
-    try { Object.defineProperty(localStorage, '__rmesWrapped', { value:true, enumerable:false }); }
+    const _wrappedSet = function(key, value){
+      const p = _pre(key);
+      _origSet(key, value);
+      _post(key, value, p);
+    };
+    /* Installarlo non e' scontato. localStorage non e' un oggetto normale: un
+       nome che non copre un metodo gia' esistente viene salvato come VOCE.
+       Su Chrome l'assegnazione secca funziona (il metodo sta sul prototipo e la
+       proprieta' propria lo nasconde); altrove la stessa riga salva una voce di
+       nome "setItem" e il wrapper non viene mai chiamato - niente sync, niente
+       timbri, e nessun errore a dirlo. Quindi si prova, si VERIFICA, e si passa
+       alla strada successiva finche' una non attacca. */
+    let _how = null;
+    try { localStorage.setItem = _wrappedSet; if (localStorage.setItem === _wrappedSet) _how = 'own'; } catch(e){}
+    if (!_how){
+      try {
+        Object.defineProperty(localStorage, 'setItem', { value:_wrappedSet, writable:true, configurable:true });
+        if (localStorage.setItem === _wrappedSet) _how = 'defineProperty';
+      } catch(e){}
+    }
+    if (!_how && _origProtoSet){
+      /* Ultima strada: il prototipo. Vale anche per sessionStorage, quindi si
+         lascia passare tutto il resto senza toccarlo, e si scrive sempre
+         sull'oggetto giusto (mai rimandare una scrittura di sessionStorage su
+         localStorage). */
+      const _protoWrapped = function(key, value){
+        if (this !== localStorage) return _origProtoSet.call(this, key, value);
+        const p = _pre(key);
+        _origProtoSet.call(this, key, value);
+        _post(key, value, p);
+      };
+      try { Storage.prototype.setItem = _protoWrapped; if (localStorage.setItem === _protoWrapped) _how = 'prototype'; } catch(e){}
+    }
+    /* I tentativi falliti possono aver lasciato una voce "setItem" con dentro il
+       sorgente della funzione: via. */
+    try { if (localStorage.getItem('setItem') != null) localStorage.removeItem('setItem'); } catch(e){}
+    if (!_how){ console.warn('[rmesCloud] setItem wrapper not installed - no cloud sync on this browser'); return; }
+    try { Object.defineProperty(localStorage, '__rmesWrapped', { value:_how, enumerable:false }); }
     catch(e){ /* alcuni browser non permettono defineProperty su localStorage: ignora */ }
   } catch(e){ console.warn('[rmesCloud] could not wrap setItem', e); }
 })();
@@ -7393,7 +7590,7 @@ function renderPriceChain(){
   h += th('obs', 'How many bookings that median rests on.');
   h += th('Growth', 'Step 2 — the median after the target growth of that month.');
   h += th('Ceiling', 'Step 3 — Goal Value: the weighted compset on Expedia plus your offsets, divided by your Expedia markup. Only applies inside the selling horizon and with at least 2 competitors visible.');
-  h += th('Floor', 'Step 4 — the higher of your annual Floor Rate and the historical p15.');
+  h += th('Floor', 'Step 4 — your annual Floor Rate, re-based on the base room type (it is the minimum of the lowest rate, so the long-stay discount is added back) plus the seasonal lift. No historical value raises it.');
   h += th('BASE', 'The Base Price: the structural starting point. Accepted by default.', true);
   h += th('Pickup', 'RMES — the pickup signal: good bookings on this room type in the window, compared with the same point last year (on revenue).', true);
   h += th('Market', 'RMES — the market guard-rail: it never moves the price, it can only block a move that would take you further from the compset.');
@@ -7422,8 +7619,11 @@ function renderPriceChain(){
               : 'No compset for this day.',
             v.cappedByGoal ? 'color:#a83b3b;font-weight:700' : 'color:#999');
     h += td(eur(v.floorEff) + (v.flooredBy ? ' ↑' : ''),
-            'Annual floor €' + v.floor + ' · historical p15 ' + (v.floorHist != null ? '€' + v.floorHist : 'n/a')
-            + '\nApplied: €' + v.floorEff + ' (' + v.floorSource + ')' + (v.flooredBy ? '\nThe floor ACTED.' : ''),
+            'Floor Rate you set EUR' + v.floor + ' (minimum of the lowest rate)'
+            + '\nApplied on the base room type: EUR' + v.floorEff
+            + (v.floorLift ? ' (incl. seasonal lift EUR' + Math.round(v.floorLift) + ')' : '')
+            + '\nHistorical p15 ' + (v.floorHist != null ? 'EUR' + v.floorHist : 'n/a') + ' - reference only, does not raise the floor'
+            + (v.flooredBy ? '\nThe floor ACTED.' : ''),
             v.flooredBy ? 'color:#a83b3b;font-weight:700' : 'color:#999');
     h += td('<b>' + eur(v.finalBase) + '</b>', 'The structural starting point for this night.', 'border-left:2px solid #f0eae0');
     // RMES
@@ -11648,12 +11848,17 @@ function fp_showBasePriceModal(structKey, rt, dateISO){
   // ④ floor
   h += sec('④', 'Floor', '#8e5fa8');
   h += '<table style="width:100%;border-collapse:collapse">';
-  h += row('Annual Floor Rate', eur(v.floor), 'set by you, same all year');
-  h += row('Historical p15', v.floorHist != null ? eur(v.floorHist) : '—',
-           v.floorHist != null ? ('you sold below this only 15% of the time · ' + v.floorHistN + ' observations')
-                               : ('fewer than ' + (typeof FP_FLOOR_HIST_MIN_OBS !== 'undefined' ? FP_FLOOR_HIST_MIN_OBS : 8) + ' observations, not used'));
+  h += row('Annual Floor Rate', eur(v.floor), 'set by you, same all year — minimum of the lowest rate');
+  /* La riga "Historical p15" diceva quale dei due pavimenti vincesse. Il p15 non
+     entra piu' nel conto (floorSource e' sempre 'annual'): resta solo come
+     riferimento, e la riga sotto spiega da dove viene il numero applicato. */
+  h += row('Historical p15 (reference only)', v.floorHist != null ? eur(v.floorHist) : '—',
+           v.floorHist != null ? ('you sold below this only 15% of the time · ' + v.floorHistN + ' observations · does not raise the floor')
+                               : ('fewer than ' + (typeof FP_FLOOR_HIST_MIN_OBS !== 'undefined' ? FP_FLOOR_HIST_MIN_OBS : 8) + ' observations'));
   h += row('Floor applied', '<b>' + eur(v.floorEff) + '</b>',
-           v.floorSource === 'historical' ? 'the historical p15 wins' : 'the annual floor wins', true);
+           'your Floor Rate re-based on the base room type (long-stay discount '
+           + Math.round((typeof FP_LONGSTAY_DISCOUNT !== 'undefined' ? FP_LONGSTAY_DISCOUNT : 0.15)*100) + '%)'
+           + (v.floorLift ? ' + seasonal lift ' + eur(v.floorLift) : ''), true);
   h += row('Did it act?', v.flooredBy
       ? '<span style="color:#a83b3b;font-weight:700">YES → raised to ' + eur(v.floorEff) + '</span>'
       : '<span style="color:#999">no</span>');
@@ -11689,7 +11894,7 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<div class="panel-sub"><b>Annual Anchor Price</b>: a fallback value (net Beddy_eq) used as guard-rail of the Base Price <b>only when LY data for the target month is missing</b>. In normal conditions the guard-rail uses the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month, computed dynamically from the last 2 years. Default Firenze 220 / Condotta 280 / Alfani 270 / David\'s 145. <b>Floor</b>: the absolute minimum below which the Base Price never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. 0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Used as guard-rail only when LY data for the target month is missing. Normally the Monthly Anchor (computed from last 2 years data) is used instead."><b style="color:#7a4f1c">Annual Anchor (fallback)</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
-  h += '<label style="font-size:12px;color:var(--ink-2)" title="Annual minimum for this property. The effective floor on each date is the HIGHER of this and the historical p15 of that period."><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="10" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
+  h += '<label style="font-size:12px;color:var(--ink-2)" title="The minimum for this property, same all year. It is the minimum of the LOWEST rate (long stay on the cheapest room type): on the base room type the applied floor is higher - see the figure next to this field. Nothing else raises it."><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="5" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
   h += '<span id="fp-floor-p15" style="font-size:11px;color:var(--ink-3);font-family:\'DM Mono\',monospace"></span>';
   /* I TRE PEZZI DEL MARKUP, come sono impostati su Beddy: ricarico del canale,
      campagna e member deal. Prima si scriveva direttamente il risultato (13%,
@@ -11778,6 +11983,7 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<div style="display:flex;gap:10px;justify-content:flex-end;padding:14px 0;border-top:1px solid var(--line);margin-top:18px">';
   h += '<button id="fp-reset-defaults" style="font-size:12px;padding:8px 16px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);cursor:pointer">↺ Reset Base Price defaults</button>';
   h += '<button id="fp-recompute" style="font-size:13px;padding:8px 22px;border:1px solid #c4823b;border-radius:5px;background:#c4823b;color:#fff;cursor:pointer;font-weight:700">↻ Recompute Base Price</button>';
+  h += '<div id="fp-apply-msg" style="font-size:11.5px;margin-top:8px;line-height:1.5"></div>';
   h += '</div>';
   wrap.innerHTML = h;
   const tgGrid = document.getElementById('fp-tg-grid');
@@ -11791,36 +11997,33 @@ function fp_renderFoundationConfigBox(structKey){
   }
   document.getElementById('fp-base-input').value = fp_getBasePrice(structKey);
   document.getElementById('fp-floor-input').value = fp_getFloor(structKey);
-  // Accanto al floor annuale: il p15 storico mese per mese, per vedere quando
-  // e' lui a comandare. Il floor effettivo e' sempre il piu' alto dei due.
+  /* Accanto al campo: il floor che viene DAVVERO applicato.
+     Qui prima stava il p15 storico, con scritto "takes over in N/12 months".
+     Non e' piu' vero da quando il pavimento e' solo quello deciso a mano
+     (newrmesCalculateBasePrice tiene floorSource 'annual' e basta): leggere che
+     un valore storico "prende il sopravvento" proprio mentre si prova a
+     cambiare il floor manda fuori strada. Al suo posto l'unica cosa che serve
+     sapere: il numero scritto nel campo e' il minimo della tariffa piu' BASSA
+     (soggiorno prolungato), quindi sulla camera base il pavimento e' piu' alto
+     del 15%, piu' l'eventuale rialzo di stagione. */
   (function(){
     const el = document.getElementById('fp-floor-p15');
     if (!el) return;
     const ann = fp_getFloor(structKey);
-    const rt = (CFG.structures[structKey] || {}).baseRT;
-    if (!rt){ el.textContent = ''; return; }
-    const y = TODAY.getFullYear() + 1;
-    const parts = [];
-    let nHigher = 0;
-    for (let mo=1; mo<=12; mo++){
-      const vals = [];
-      for (let d=1; d<=7; d++){
-        try {
-          const a = fp_computeAnchorLY(structKey, rt, y+'-'+pad2(mo)+'-'+pad2(d));
-          if (a && a.adrP15 != null && a.adrP15N >= FP_FLOOR_HIST_MIN_OBS) vals.push(a.adrP15);
-        } catch(e){}
-      }
-      if (!vals.length){ parts.push(CFG.monthsIT[mo-1]+' —'); continue; }
-      const v = Math.round(vals.reduce((x,z)=>x+z,0)/vals.length);
-      if (v > ann) nHigher++;
-      parts.push(CFG.monthsIT[mo-1]+' '+v+(v > ann ? '*' : ''));
-    }
+    const mo = TODAY.getMonth() + 1;
+    let lift = 0;
+    try { lift = fpFloorLiftForBaseRT(structKey, mo) || 0; } catch(e){}
+    const eff = Math.round(ann / (1 - FP_LONGSTAY_DISCOUNT) + lift);
     el.innerHTML = '<span title="' + escapeHtml(
-        'Historical p15 = the 15th percentile of the same pool that produces the median: the price below which you sold only 15% of the time.\n'
-      + 'The floor actually applied on a date is the HIGHER of the annual Floor Rate and this value.\n'
-      + '* = that month the historical p15 is above your annual floor, so it takes over.\n\n'
-      + parts.join('  ·  ')) + '" style="cursor:help;border-bottom:1px dotted var(--line-2)">'
-      + 'historical p15 takes over in <b>' + nHigher + '/12</b> months \u2139</span>';
+        'The Floor Rate you set is the minimum of the LOWEST rate: long stay on the cheapest room type.\n'
+      + 'On the base room type the floor applied is therefore higher:\n'
+      + '  ' + ann + ' / ' + (1 - FP_LONGSTAY_DISCOUNT).toFixed(2) + ' (long-stay discount '
+      + Math.round(FP_LONGSTAY_DISCOUNT*100) + '%)'
+      + (lift ? ' + ' + Math.round(lift) + ' (seasonal lift this month)' : '')
+      + ' = ' + eff + ' EUR\n\n'
+      + 'No historical value raises it: the floor is only the number you set here.')
+      + '" style="cursor:help;border-bottom:1px dotted var(--line-2)">'
+      + '→ <b>' + eff + ' €</b> applied on the base room type ℹ</span>';
   })();
   const _mk = (typeof fp_getChannelMarkups === 'function') ? fp_getChannelMarkups(structKey) : {expedia:17,booking:13,airbnb:10};
   const elInp = document.getElementById('fp-elasticity-input');
@@ -12128,13 +12331,35 @@ function fp_renderFoundationConfigBox(structKey){
     // BUG FIX: forza push immediato a Firebase (default è debounced 800ms).
     // Senza questo, se l'utente naviga via prima di 800ms, il cambio non arriva al cloud
     // e al prossimo refresh viene sovrascritto dal valore vecchio.
-    try {
-      if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.forcePushToCloud){
+    /* L'esito del push va DETTO. Prima finiva solo in console: se il cloud
+       rifiutava la scrittura il valore restava su questo browser e nessuno lo
+       sapeva — né chi aveva appena salvato, né la collega che continuava a
+       vedere il prezzo vecchio. */
+    (function(){
+      const _msg = document.getElementById('fp-apply-msg');
+      const _say = function(html, col){ if (_msg){ _msg.innerHTML = html; _msg.style.color = col; } };
+      try {
+        if (typeof RMES_CLOUD === 'undefined' || !RMES_CLOUD.forcePushToCloud){
+          _say('Saved on this browser only — cloud sync not available.', '#a83b3b');
+          return;
+        }
+        _say('Saving…', '#8a6d3b');
         RMES_CLOUD.forcePushToCloud().then(function(res){
-          if (!res.ok) console.warn('[Apply] cloud push failed:', res.error);
+          if (res.ok){
+            _say('✓ Saved and shared with the other browsers.', '#3d7a4b');
+            setTimeout(function(){ const m = document.getElementById('fp-apply-msg'); if (m && /Saved and shared/.test(m.textContent)) m.innerHTML = ''; }, 6000);
+          } else {
+            console.warn('[Apply] cloud push failed:', res.error);
+            _say('⚠ <b>Saved on this browser only — it did NOT reach the cloud.</b><br>'
+               + 'Reason: ' + String(res.error || 'unknown').replace(/</g,'&lt;') + '<br>'
+               + 'Your change still applies here, but nobody else sees it. Click the cloud chip in the header for the sync diagnostics.', '#a83b3b');
+          }
         });
+      } catch(e){
+        console.warn('[Apply] cloud push exception', e);
+        _say('⚠ Saved on this browser only — cloud push raised an error: ' + ((e && e.message) || e), '#a83b3b');
       }
-    } catch(e){ console.warn('[Apply] cloud push exception', e); }
+    })();
     const btn = document.getElementById('fp-recompute');
     btn.disabled = true;
     btn.textContent = '⏳ Calcolo in corso...';
