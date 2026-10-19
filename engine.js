@@ -18,6 +18,11 @@
      la dashboard funziona comunque, esattamente come prima.
    Documento unico condiviso: collection "rmes_shared", doc "state".
    ============================================================ */
+/* Versione del codice. Serve a rispondere alla domanda che torna ogni volta:
+   "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
+   di sincronizzazione (clic sul chip in alto) alla voce "Code version".
+   DA AGGIORNARE a ogni modifica di engine.js. */
+const ENGINE_BUILD = '2026-10-19 · sell table: inserimento unico + ridisegno remoto differito';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -72,6 +77,7 @@ const RMES_CLOUD = (function(){
   let _pushFailures = 0;         // push falliti di fila → attesa crescente prima di riprovare
   let _nextPushAllowedAt = 0;    // epochMs: prima di questo momento non si ritenta
   let lastRemoteJSON = null;    // ultimo stato remoto applicato (per dedup)
+  let _lastChangedKeys = [];    // quali chiavi ha toccato l'ultimo arrivo dal cloud
   const statusListeners = [];
 
   let _lastSyncTime = null;
@@ -143,6 +149,15 @@ const RMES_CLOUD = (function(){
       }
     } catch(e){}
     h += '<div style="margin-bottom:10px"><b>Data file:</b> '+dataVer+'</div>';
+    /* Se questa riga non e' quella che ti aspetti, il browser sta servendo
+       engine.js dalla cache: Ctrl+Shift+R. */
+    h += '<div style="margin-bottom:10px"><b>Code version:</b> <span style="font-family:\'DM Mono\',monospace;font-size:11.5px">'
+       + ((typeof ENGINE_BUILD !== 'undefined') ? escapeHtml(ENGINE_BUILD) : 'unknown')
+       + '</span><div style="font-size:10px;color:#888;margin-top:3px">Not the version you expect? The browser is serving a cached engine.js — hard-reload with Ctrl+Shift+R.</div></div>';
+    /* Quante volte il sync ha rifatto la tabella da quando la pagina e' aperta. */
+    h += '<div style="margin-bottom:10px"><b>Redraws from sync:</b> '
+       + ((typeof _remoteRedrawCount !== 'undefined') ? _remoteRedrawCount : '?')
+       + '<div style="font-size:10px;color:#888;margin-top:3px">How many times an update from the cloud rebuilt the open tab. If this climbs on its own while you work, the table is being rebuilt by the sync.</div></div>';
     // Browser
     let browser = 'unknown';
     try {
@@ -710,6 +725,10 @@ const RMES_CLOUD = (function(){
   function _applyToLocal(remote){
     if (!remote || typeof remote !== 'object') return false;
     let changed = false;
+    /* Quali chiavi ha toccato questo arrivo: serve a chi ridisegna, per non
+       rifare la tabella quando e' cambiato qualcosa che la tabella non mostra. */
+    _lastChangedKeys = [];
+    const _note = (k) => { changed = true; if (_lastChangedKeys.indexOf(k) === -1) _lastChangedKeys.push(k); };
     applyingRemote = true;
     // I timbri servono mentre si uniscono le chiavi di configurazione: si leggono
     // prima del giro, perché la chiave dei timbri viene riscritta dentro il giro stesso.
@@ -725,7 +744,7 @@ const RMES_CLOUD = (function(){
           // append-only log → MERGE (never overwrite, or we lose the other person's entries)
           if (incoming != null){
             const merged = _mergeAuditRaw(current, incoming);
-            if (merged !== current){ try { localStorage.setItem(k, merged); changed = true; } catch(e){} }
+            if (merged !== current){ try { localStorage.setItem(k, merged); _note(k); } catch(e){} }
             if (merged !== incoming) _pendingAuditPush = true;   // local has entries the cloud lacks → push back
           } else if (current != null){
             _pendingAuditPush = true;   // cloud has no log yet but we do → push ours up
@@ -736,7 +755,7 @@ const RMES_CLOUD = (function(){
           // i timbri non si sovrascrivono mai: si tiene il più recente di ogni campo
           if (incoming != null){
             const mergedTs = _mergeTsRaw(current, incoming);
-            if (mergedTs !== current){ try { localStorage.setItem(k, mergedTs); changed = true; } catch(e){} }
+            if (mergedTs !== current){ try { localStorage.setItem(k, mergedTs); _note(k); } catch(e){} }
             if (mergedTs !== incoming) _pendingCellPush = true;
           } else if (current != null){
             _pendingCellPush = true;
@@ -747,7 +766,7 @@ const RMES_CLOUD = (function(){
           // config per-struttura → unione campo per campo, vince il timbro più recente
           if (incoming != null){
             const r = _mergeConfigRaw(current, incoming, _tsLocal[k], _tsRemote[k]);
-            if (r.out !== current){ try { localStorage.setItem(k, r.out); changed = true; } catch(e){} }
+            if (r.out !== current){ try { localStorage.setItem(k, r.out); _note(k); } catch(e){} }
             if (r.localWins) _pendingCellPush = true;
           } else if (current != null){
             _pendingCellPush = true;
@@ -758,7 +777,7 @@ const RMES_CLOUD = (function(){
           // per-cell union merge (never clobber the other person's edits on other days)
           if (incoming != null){
             const merged = _mergeCellRaw(current, incoming);
-            if (merged !== current){ try { localStorage.setItem(k, merged); changed = true; } catch(e){} }
+            if (merged !== current){ try { localStorage.setItem(k, merged); _note(k); } catch(e){} }
             if (merged !== incoming) _pendingCellPush = true;   // local has cells the cloud lacks → push back
           } else if (current != null){
             _pendingCellPush = true;   // cloud has none yet but we do → push ours up
@@ -766,7 +785,7 @@ const RMES_CLOUD = (function(){
           continue;
         }
         if (incoming != null && incoming !== current){
-          try { localStorage.setItem(k, incoming); changed = true; } catch(e){}
+          try { localStorage.setItem(k, incoming); _note(k); } catch(e){}
         }
       }
       // ===== 4-factor migration safety net =====
@@ -778,14 +797,18 @@ const RMES_CLOUD = (function(){
         if (raw){
           const parsed = JSON.parse(raw);
           const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
+          /* Stesso criterio del boot (vedi _migrate4Factors): vecchia = porta
+             ancora peso su un fattore oggi spento. Il vecchio controllo
+             "occ != 0.25" era sempre vero, quindi questo blocco scattava a OGNI
+             arrivo dal cloud: ridisegnava la tabella e faceva un push, che
+             svegliava l'altro browser, che ridisegnava e ripushava. */
+          const SPENTI = Object.keys(defaults).filter(f => defaults[f] === 0);
+          const vecchia = p => SPENTI.some(f => (p[f] || 0) > 0.001);
           let needsForce = false;
           for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
             const p = parsed[s];
             if (!p) continue;
-            // Criteri: price > 0 (B·ADR ancora attivo) OPPURE occ != 0.25 (somma vecchia ~20%)
-            if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
-              needsForce = true; break;
-            }
+            if (vecchia(p)){ needsForce = true; break; }
           }
           if (needsForce){
             for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
@@ -798,8 +821,8 @@ const RMES_CLOUD = (function(){
                 SELL_RMES_W_ALL[s] = Object.assign({}, defaults);
               }
             }
-            console.log('[rmesCloud] 4-factor weights force-applied (cloud had legacy 5-factor config)');
-            changed = true;  // triggera anche un push verso Firestore
+            console.log('[rmesCloud] weights force-applied (the cloud still had a legacy factor switched on)');
+            _note('rmes_weights_per_struct_v4');  // triggera anche un push verso Firestore
           }
         }
       } catch(e){}
@@ -942,6 +965,7 @@ const RMES_CLOUD = (function(){
     _mergeAuditRaw: _mergeAuditRaw,
     _mergeConfigRaw: _mergeConfigRaw,
     _mergeTsRaw: _mergeTsRaw,
+    getLastChangedKeys: function(){ return _lastChangedKeys.slice(); },
     needsConfigStamp: _needsConfigStamp,
     stampConfigWrite: _stampConfigWrite,
     _applyToLocal: _applyToLocal,
@@ -961,16 +985,64 @@ const RMES_CLOUD = (function(){
 
 /* Hook chiamato dal listener realtime quando arriva un aggiornamento da un altro browser.
    Ridisegna le viste correnti senza ricaricare la pagina. */
+/* Chiavi che NON si vedono nella tabella: se arriva solo roba di queste, non
+   c'e' niente da ridisegnare. Il log delle decisioni e le note hanno un loro
+   aggiornamento piu' sotto, i timbri e l'impronta dei dati non si vedono. */
+const _QUIET_SYNC_KEYS = { 'rmes_audit_log_v1':1, 'notes_journal_v2':1, '_data_fingerprint_v1':1, 'rmes_cfg_ts_v1':1 };
+let _remoteRedrawPending = false;
+let _remoteRedrawSince = 0;
+/* Quante volte un arrivo dal cloud ha ridisegnato la tab. Si legge nel
+   pannello di sincronizzazione: se quel numero sale da solo mentre si
+   lavora, e' il sync che rifa la tabella, non lo scorrimento. */
+let _remoteRedrawCount = 0;
+/* Chi sta lavorando sulla tabella non va interrotto. Un ridisegno mentre il
+   puntatore e' li' sopra, o mentre si sta scrivendo un prezzo, sposta tutto
+   sotto le mani: e' il "si muove a scatti". Si aspetta che la persona abbia
+   finito, al massimo 20 secondi, poi si ridisegna una volta sola. */
+function _rmesUserBusy(){
+  try {
+    const a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return true;
+    const wrap = document.getElementById('sell-table-wrap');
+    if (wrap && typeof wrap.matches === 'function' && wrap.matches(':hover')) return true;
+  } catch(e){}
+  return false;
+}
+function _rmesRedrawActiveTab(){
+  _remoteRedrawCount++;
+  try {
+    if (typeof CURRENT_TAB === 'undefined') return;
+    if (CURRENT_TAB === 'sell' && typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
+    else if (CURRENT_TAB === 'baseprice' && typeof renderPriceChain === 'function') { renderPriceChain(); }
+    else if (CURRENT_TAB === 'pri' && typeof renderRMESTab === 'function') renderRMESTab();
+    else if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function') renderCheckUpdates();
+  } catch(e){ console.warn('redraw', e); }
+}
+function _rmesScheduleRemoteRedraw(){
+  if (_remoteRedrawPending) return;        // piu' arrivi ravvicinati = un ridisegno solo
+  _remoteRedrawPending = true;
+  _remoteRedrawSince = Date.now();
+  const tick = () => {
+    if (_rmesUserBusy() && (Date.now() - _remoteRedrawSince) < 20000){
+      setTimeout(tick, 400);
+      return;
+    }
+    _remoteRedrawPending = false;
+    _rmesRedrawActiveTab();
+  };
+  setTimeout(tick, 0);
+}
 function rmesCloudOnRemoteUpdate(){
   // Lo stato e' cambiato da fuori: la cache degli archivi non vale piu'.
   try { if (typeof _newrmesInvalidateObjCache === 'function') _newrmesInvalidateObjCache(); } catch(e){}
   try {
-    if (typeof CURRENT_TAB !== 'undefined'){
-      if (CURRENT_TAB === 'sell' && typeof renderSellStrategy === 'function') renderSellStrategy(CURRENT_STRUCT);
-      else if (CURRENT_TAB === 'baseprice' && typeof renderPriceChain === 'function') { renderPriceChain(); }
-      else if (CURRENT_TAB === 'pri' && typeof renderRMESTab === 'function') renderRMESTab();
-      else if (CURRENT_TAB === 'checks' && typeof renderCheckUpdates === 'function') renderCheckUpdates();
-    }
+    let keys = null;
+    try { if (typeof RMES_CLOUD !== 'undefined' && RMES_CLOUD.getLastChangedKeys) keys = RMES_CLOUD.getLastChangedKeys(); } catch(e){}
+    /* keys null = chiamata da un'altra strada, senza informazioni: si ridisegna
+       come prima. keys vuoto = l'arrivo non ha cambiato niente: non c'e' nulla
+       da rifare. Altrimenti si guarda se almeno una chiave si vede a schermo. */
+    const tocca = !keys || (keys.length > 0 && keys.some(k => !_QUIET_SYNC_KEYS[k]));
+    if (tocca) _rmesScheduleRemoteRedraw();
     // Refresh notes UI (badge + panel se aperto) when notes change remotely
     if (typeof updateNotesBadge === 'function') updateNotesBadge();
     const notesPanel = document.getElementById('notes-panel');
@@ -4571,16 +4643,23 @@ let SELL_RMES_W_ALL = (function(){
   try {
     const flagKey = 'rmes_factors_v4_migration_2026_05_28';
     const defaults = { occ: 0.20, price: 0.00, pace: 0.20, budget: 0.00, comp: 0.20, airdna: 0.20, mkt: 0.20 };
-    // Controllo idempotente: anche se il flag è già settato, se trovo pesi in formato vecchio
-    // (price > 0 o occ ≠ 0.25) li forzo ai nuovi default. Questo gestisce il caso Firebase Cloud
-    // che ripristina pesi vecchi sovrascrivendo la migrazione locale.
+    /* Com'e' fatta una configurazione VECCHIA: ha ancora peso su un fattore che
+       oggi e' spento. Il controllo si ricava dai default stessi, cosi' non puo'
+       piu' scollarsi da loro.
+       Prima qui c'era anche "occ diverso da 0.25". Era rimasto da quando i
+       fattori erano quattro al 25%: ora sono cinque al 20%, quindi occ vale
+       0.20 e quella condizione era VERA PER SEMPRE. Risultato: i pesi venivano
+       riscritti a ogni caricamento e, nella copia dentro il layer cloud, a ogni
+       singolo arrivo dal cloud — con ridisegno e push ogni volta, che fra due
+       browser aperti diventava un rimpallo continuo e la tabella andava a
+       scatti. */
+    const SPENTI = Object.keys(defaults).filter(f => defaults[f] === 0);
+    const vecchia = p => SPENTI.some(f => (p[f] || 0) > 0.001);
     let needsForce = false;
     for (const s of ['firenze','condotta','alfani','davids','nazionale','portenuove']){
       const p = SELL_RMES_W_ALL[s];
       if (!p) continue;
-      if ((p.price || 0) > 0.001 || Math.abs((p.occ || 0) - 0.25) > 0.001){
-        needsForce = true; break;
-      }
+      if (vecchia(p)){ needsForce = true; break; }
     }
     const hadFlag = !!localStorage.getItem(flagKey);
     if (!hadFlag || needsForce){
@@ -4589,7 +4668,7 @@ let SELL_RMES_W_ALL = (function(){
       }
       localStorage.setItem(SELL_RMES_W_KEY, JSON.stringify(SELL_RMES_W_ALL));
       localStorage.setItem(flagKey, '1');
-      console.log('[RMES] 4-factor migration applied: weights reset to 25/0/25/25/25' + (hadFlag ? ' (forced: legacy format detected)' : ''));
+      console.log('[RMES] weights reset to the current model (20% x 5 factors)' + (hadFlag ? ' (forced: legacy format detected)' : ''));
     }
   } catch(e){}
 })();
