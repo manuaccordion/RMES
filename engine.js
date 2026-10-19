@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-19 · sell table: inserimento unico + ridisegno remoto differito';
+const ENGINE_BUILD = '2026-10-19b · sell table + ridisegno remoto + tooltip Beddy sui totali';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -17691,10 +17691,19 @@ function _aggForecastImpl(structKey){
 /* ============ RENDER ============ */
 let FCST_SHOW_PAST_2026 = false;
 let FCST_HIDE_FUTURE_2027 = false;
-/* Tooltip Overview: mostra Revenue e ADR PRE gross-up (netto commissione OTA, "com'era prima"). */
+/* Tooltip Overview: Revenue e ADR PRIMA del ritocco commissione, cioe' esattamente
+   come l'importo arriva da Beddy.
+   Diceva "net of OTA commission", ma non e' vero per tutti i canali: Booking,
+   Airbnb, Direct e le prenotazioni Hotel Collect su Beddy ci arrivano gia'
+   lorde e non vengono toccate. Gli unici riportati a quanto ha pagato il
+   cliente sono Expedia Collect, Ctrip, VRBO e HomeAway (vedi _grossUpFactor).
+   Quindi il numero qui sotto non e' "il netto": e' il dato come sta su Beddy. */
 function _ovNetTip(net, rn){
   net = net || 0; var adr = rn>0 ? net/rn : 0;
-  return 'Before gross-up (net of OTA commission): ADR ' + (adr>0?fmtEUR(adr):'—') + ' · Revenue ' + fmtEUR(net);
+  return 'As it arrives on Beddy (before the commission gross-up): ADR '
+       + (adr>0?fmtEUR(adr):'\u2014') + ' \u00b7 Revenue ' + fmtEUR(net)
+       + '\nOnly Expedia Collect, Ctrip, VRBO and HomeAway are grossed up to what the guest paid.'
+       + '\nBooking, Airbnb, Direct and Hotel Collect already arrive gross and are left as they are.';
 }
 /* ===========================================================================
    ANNI CHIUSI (2023 · 2024) — KPI storici in fondo a Overview
@@ -17836,6 +17845,9 @@ function renderForecast(sel){
   }
   let totFcstRn=0, totFcstRev=0, totFLRn=0, totFLRev=0, totOtbRn=0, totOtbRev=0, totDays=0;
   let totStlyRn=0, totStlyRev=0;
+  /* Gli stessi importi COME ARRIVANO DA BEDDY (prima del ritocco commissione):
+     servono al tooltip della riga dei totali, che prima non ce l'aveva. */
+  let totOtbRevNet=0, totStlyRevNet=0, totFLRevNet=0;
   const ymOrderAll = Object.keys(M).map(x=>+x).sort((a,b)=>a-b);
   const ymOrder = ymOrderAll.filter(isVisibleMonth);
   for (const ym of ymOrder){
@@ -17844,6 +17856,9 @@ function renderForecast(sel){
     totFLRn += m.finalLyRn; totFLRev += m.finalLyRev;
     totOtbRn += m.otbRn; totOtbRev += m.otbRev;
     totStlyRn += (m.stlyRn || 0); totStlyRev += (m.stlyRev || 0);
+    totOtbRevNet += (m.otbRevNet || 0);
+    totStlyRevNet += (m.stlyRevNet || 0);
+    totFLRevNet += (m.finalLyRevNet || 0);
     totDays += m.days;
   }
   const totCap = A.totRooms * totDays;
@@ -18048,19 +18063,19 @@ function renderForecast(sel){
   body += `<tr class="total mkpi-total">
     <td>Total ${ymOrder.length} months</td>
     <td class="cell-mono cell-flat" title="${totOtbRn} RN of ${totCap} available">${fmtPct(totOtbOcc,1)}</td>
-    <td class="cell-mono cell-flat">${totOtbRn>0 ? fmtEUR(totOtbAdr) : '—'}</td>
-    <td class="cell-mono cell-flat">${fmtEUR(totOtbRev)}</td>
+    <td class="cell-mono cell-flat" style="cursor:help" title="${_ovNetTip(totOtbRevNet, totOtbRn)}">${totOtbRn>0 ? fmtEUR(totOtbAdr) : '—'}</td>
+    <td class="cell-mono cell-flat" style="cursor:help" title="${_ovNetTip(totOtbRevNet, totOtbRn)}">${fmtEUR(totOtbRev)}</td>
     ${(() => {
       const stlyOccT = totCap > 0 ? totStlyRn / totCap : 0;
       const stlyAdrT = totStlyRn > 0 ? totStlyRev / totStlyRn : 0;
       return `
         <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)">${fmtPct(stlyOccT,1)}</td>
-        <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)">${totStlyRn>0 ? fmtEUR(stlyAdrT) : '—'}</td>
-        <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03)"><b>${fmtEUR(totStlyRev)}</b></td>`;
+        <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03);cursor:help" title="${_ovNetTip(totStlyRevNet, totStlyRn)}">${totStlyRn>0 ? fmtEUR(stlyAdrT) : '—'}</td>
+        <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.03);cursor:help" title="${_ovNetTip(totStlyRevNet, totStlyRn)}"><b>${fmtEUR(totStlyRev)}</b></td>`;
     })()}
     <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtPct(flOcc,1)}</td>
-    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtEUR(flAdr)}</td>
-    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)"><b>${fmtEUR(totFLRev)}</b></td>
+    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(totFLRevNet, totFLRn)}">${fmtEUR(flAdr)}</td>
+    <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(totFLRevNet, totFLRn)}"><b>${fmtEUR(totFLRev)}</b></td>
     <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(fcstOcc,1)}</td>
     <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(fcstAdr)}</td>
     <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(totFcstRev)}</b></td>
