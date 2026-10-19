@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-19b · sell table + ridisegno remoto + tooltip Beddy sui totali';
+const ENGINE_BUILD = '2026-10-19c · tooltip Beddy su totali e YTD+Forecast';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -17698,12 +17698,66 @@ let FCST_HIDE_FUTURE_2027 = false;
    lorde e non vengono toccate. Gli unici riportati a quanto ha pagato il
    cliente sono Expedia Collect, Ctrip, VRBO e HomeAway (vedi _grossUpFactor).
    Quindi il numero qui sotto non e' "il netto": e' il dato come sta su Beddy. */
+var _OV_CHANNELS_NOTE =
+    '\nOnly Expedia Collect, Ctrip, VRBO and HomeAway are grossed up to what the guest paid.'
+  + '\nBooking, Airbnb, Direct and Hotel Collect already arrive gross and are left as they are.';
 function _ovNetTip(net, rn){
   net = net || 0; var adr = rn>0 ? net/rn : 0;
   return 'As it arrives on Beddy (before the commission gross-up): ADR '
        + (adr>0?fmtEUR(adr):'\u2014') + ' \u00b7 Revenue ' + fmtEUR(net)
-       + '\nOnly Expedia Collect, Ctrip, VRBO and HomeAway are grossed up to what the guest paid.'
-       + '\nBooking, Airbnb, Direct and Hotel Collect already arrive gross and are left as they are.';
+       + _OV_CHANNELS_NOTE;
+}
+/* Tooltip della colonna YTD+Forecast.
+   Qui non esiste un importo "come arriva su Beddy" gia' registrato: il forecast
+   e' costruito su prezzi LORDI, e quanto ne restera' su Beddy dipende da che
+   canali porteranno le prenotazioni non ancora fatte. Quindi:
+   - mese CHIUSO: il forecast E' l'OTB (m.fcstRev = m.otbRev), quindi il numero
+     e' quello vero, non una stima;
+   - mese APERTO: si converte col rapporto lordo/Beddy misurato su quello che e'
+     gia' a libro, e lo si dice chiaramente che e' una stima;
+   - niente a libro da cui ricavare il rapporto: si dice che non si puo' stimare,
+     invece di inventare un numero.
+   `ratio` = lordo / Beddy (es. 1.039 = +3,9% di ritocco commissione). */
+function _ovFcstTip(o, ratioAll){
+  /* Il forecast non ha un "come arriva su Beddy" gia' registrato, ma non serve
+     stimarlo tutto: la parte GIA' A LIBRO il suo netto ce l'ha (otbRevNet), e si
+     converte esatta. Va stimato solo il residuo, cioe' le prenotazioni non
+     ancora fatte, e per quelle si usa la commissione tipica del periodo.
+     Su un mese chiuso il residuo e' zero, quindi il numero e' esatto. */
+  o = o || {};
+  var rev = o.rev || 0, rn = o.rn || 0, otb = o.otbRev || 0, otbNet = o.otbRevNet || 0;
+  if (!(rev > 0)) return '';
+  var resto = rev - otb, net = null, esatto = false, note = '';
+  if (resto <= 0.5){
+    /* previsione <= gia' a libro: niente da stimare, al massimo si scala per le
+       cancellazioni attese. */
+    if (!(otb > 0) || !(otbNet > 0)) return _ovNoEstimate();
+    net = otbNet * (rev / otb);
+    esatto = Math.abs(resto) < 0.5;
+    note = esatto
+      ? '\nThe month is closed, so this is the same figure as Current OTB — not an estimate.'
+      : '\nScaled from what is on the books, which the forecast expects to shrink through cancellations.';
+  } else {
+    if (!(ratioAll > 0)) return _ovNoEstimate();
+    net = otbNet + resto / ratioAll;
+    var cut = '−' + ((1 - 1/ratioAll) * 100).toFixed(1) + '%';
+    note = (otbNet > 0)
+      ? '\n' + fmtEUR(otbNet) + ' of it is already on the books and converts exactly;'
+        + '\nthe remaining ' + fmtEUR(resto) + ' is an ESTIMATE at the typical commission of the period (' + cut + ').'
+      : '\nAn ESTIMATE: nothing is on the books yet, so the whole amount is converted'
+        + '\nat the typical commission of the period (' + cut + ').';
+  }
+  var adr = rn > 0 ? net/rn : 0;
+  return (esatto ? 'As it arrives on Beddy (before the commission gross-up): ADR '
+                 : 'Estimated as it would arrive on Beddy: ADR ')
+       + (adr>0?fmtEUR(adr):'—') + ' · Revenue ' + fmtEUR(net)
+       + note + _OV_CHANNELS_NOTE;
+}
+function _ovNoEstimate(){
+  return 'The forecast is built on gross prices — what the guest pays.'
+       + '\nHow much of it lands on Beddy depends on the channel mix of bookings not made yet,'
+       + '\nand there is nothing on the books yet to estimate it from.'
+       + _OV_CHANNELS_NOTE;
 }
 /* ===========================================================================
    ANNI CHIUSI (2023 · 2024) — KPI storici in fondo a Overview
@@ -17861,6 +17915,11 @@ function renderForecast(sel){
     totFLRevNet += (m.finalLyRevNet || 0);
     totDays += m.days;
   }
+  /* Rapporto lordo/Beddy, per convertire il forecast. Si misura su quello che e'
+     GIA' a libro: per il mese dal suo stesso OTB, e se quel mese non ha ancora
+     niente si usa il rapporto di tutto il periodo. Se non c'e' nemmeno quello,
+     _ovFcstTip lo dice invece di inventare un numero. */
+  const _ratioAll = (totOtbRevNet > 0 && totOtbRev > 0) ? totOtbRev / totOtbRevNet : null;
   const totCap = A.totRooms * totDays;
   const fcstOcc = totCap>0 ? totFcstRn/totCap : 0;
   const fcstAdr = totFcstRn>0 ? totFcstRev/totFcstRn : 0;
@@ -17968,9 +18027,9 @@ function renderForecast(sel){
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtPct(m.finalLyOcc,1)}</td>
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(m.finalLyRevNet, m.finalLyRn)}">${fmtEUR(m.finalLyAdr)}</td>
       <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(m.finalLyRevNet, m.finalLyRn)}"><b>${fmtEUR(m.finalLyRev)}</b></td>
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(m.occ,1)}</td>
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(m.adr)}</td>
-      <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="${escapeHtml((() => {
+      <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="${m.fcstRn ? Math.round(m.fcstRn) + ' RN of ' + (A.totRooms*m.days) + ' available' : ''}">${fmtPct(m.occ,1)}</td>
+      <td class="cell-mono" style="background:rgba(195,131,59,.04);cursor:help" title="${escapeHtml(_ovFcstTip({rev:m.fcstRev, rn:m.fcstRn, otbRev:m.otbRev, otbRevNet:m.otbRevNet}, _ratioAll))}">${fmtEUR(m.adr)}</td>
+      <td class="cell-mono" style="background:rgba(195,131,59,.04);cursor:help" title="${escapeHtml((() => {
         /* Quando la previsione e' SOTTO il gia' a libro sembra un errore, e non lo
            e': significa che una parte delle prenotazioni verra' cancellata. Le
            cancellazioni misurate coincidono con la curva usata (Firenze 97,1%
@@ -17981,8 +18040,8 @@ function renderForecast(sel){
         if (diff >= -0.5) return '';
         return 'Lower than the ' + fmtEUR(m.otbRev) + ' already on the books: the engine expects about '
              + fmtEUR(-diff) + ' of it to be cancelled before check-in, based on this property\'s own '
-             + 'cancellation history at this distance. Nothing is missing \u2014 it is the expected net.';
-      })())}"><b>${fmtEUR(m.fcstRev)}</b>${(() => {
+             + 'cancellation history at this distance. Nothing is missing \u2014 it is the expected net.\n\n';
+      })() + _ovFcstTip({rev:m.fcstRev, rn:m.fcstRn, otbRev:m.otbRev, otbRevNet:m.otbRevNet}, _ratioAll))}"><b>${fmtEUR(m.fcstRev)}</b>${(() => {
         /* BANDA DI AFFIDABILITA'. Il numero da solo non dice quanto fidarsi:
            misurato sui mesi chiusi, l'errore passa dal 6,6% sul mese in corso
            all'11,5% a tre mesi. Mostro l'intervallo sotto il ricavo previsto,
@@ -18076,9 +18135,9 @@ function renderForecast(sel){
     <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04)">${fmtPct(flOcc,1)}</td>
     <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(totFLRevNet, totFLRn)}">${fmtEUR(flAdr)}</td>
     <td class="cell-mono cell-flat" style="background:rgba(142,95,168,.04);cursor:help" title="${_ovNetTip(totFLRevNet, totFLRn)}"><b>${fmtEUR(totFLRev)}</b></td>
-    <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtPct(fcstOcc,1)}</td>
-    <td class="cell-mono" style="background:rgba(195,131,59,.04)">${fmtEUR(fcstAdr)}</td>
-    <td class="cell-mono" style="background:rgba(195,131,59,.04)"><b>${fmtEUR(totFcstRev)}</b></td>
+    <td class="cell-mono" style="background:rgba(195,131,59,.04)" title="${Math.round(totFcstRn)} RN of ${totCap} available">${fmtPct(fcstOcc,1)}</td>
+    <td class="cell-mono" style="background:rgba(195,131,59,.04);cursor:help" title="${escapeHtml(_ovFcstTip({rev:totFcstRev, rn:totFcstRn, otbRev:totOtbRev, otbRevNet:totOtbRevNet}, _ratioAll))}">${fmtEUR(fcstAdr)}</td>
+    <td class="cell-mono" style="background:rgba(195,131,59,.04);cursor:help" title="${escapeHtml(_ovFcstTip({rev:totFcstRev, rn:totFcstRn, otbRev:totOtbRev, otbRevNet:totOtbRevNet}, _ratioAll))}"><b>${fmtEUR(totFcstRev)}</b></td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetOcc > 0 ? fmtPct(totBudgetOcc,1) : '—'}</td>
     <td class="cell-mono cell-flat" style="background:rgba(60,124,90,.04)">${totBudgetAdr > 0 ? fmtEUR(totBudgetAdr) : '—'}</td>
     <td class="cell-mono ${totBudgetRevCls}" style="background:rgba(60,124,90,.04)" title="${totBudgetRevTip}"><b>${totBudgetRev > 0 ? fmtEUR(totBudgetRev) : '—'}</b></td>
