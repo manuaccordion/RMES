@@ -14266,42 +14266,27 @@ function renderSellStrategy(sel){
     ${_suppRTs.map(() => '<td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">\u2014</td>').join('')}
     <td class="cell-flat" style="text-align:center;color:var(--ink-3);font-size:10px">— per date —</td>
   </tr>`;
-  /* INSERIMENTO IN DUE TEMPI.
-     Costruire 1.900 celle in un colpo solo blocca la pagina per piu' di un
-     secondo, e il costo sta nel numero di celle, non nei byte. Le prime
-     SELL_FIRST_CHUNK righe entrano subito (sono quelle che vedi), il resto un
-     istante dopo: il tempo totale e' lo stesso ma la tabella compare subito.
-     Il totale in fondo va inserito con l'ultimo blocco, altrimenti resterebbe
-     appiccicato alle prime righe. */
-  const SELL_FIRST_CHUNK = 25;
-  const _tailHtml = html;              // intestazioni + apertura tbody
-  const _first = _rowsBuf.slice(0, SELL_FIRST_CHUNK).join('');
-  const _rest  = _rowsBuf.slice(SELL_FIRST_CHUNK).join('');
-  const _closeHtml = html_total_row + '</tbody></table>';
+  /* INSERIMENTO IN UNA VOLTA SOLA.
+     Prima le prime 25 righe entravano subito e il resto un istante dopo, per
+     far comparire la tabella senza attesa. Il guaio e' che la tabella non ha
+     larghezze fisse: il browser le ricava dal contenuto, e quando arrivavano
+     le altre righe (un evento con un nome lungo, un OCC a tre cifre, un prezzo
+     caricato piu' largo) le colonne si riallargavano e tutto quello a destra
+     slittava di un centinaio di pixel, un frame dopo OGNI ridisegno. Siccome
+     ogni accept e ogni override ridisegnano, la tabella ballava sotto il
+     puntatore proprio mentre si cercava di cliccarci dentro.
+     Misurato in Chromium su questa tabella: 21 ms a 30 giorni, 49 a 90,
+     102 a 180, 184 a 365. Il "piu' di un secondo" del commento precedente non
+     e' piu' vero da quando i tooltip non stanno piu' dentro l'HTML. Un fermo
+     da 50 ms sulla vista di tutti i giorni non si vede; la tabella che si
+     sposta si vedeva eccome. */
   const _wrapEl = document.getElementById('sell-table-wrap');
   { const _t=Date.now();
-    _wrapEl.innerHTML = _tailHtml + _first + (_rest ? '' : _closeHtml);
+    _wrapEl.innerHTML = html + _rowsBuf.join('') + html_total_row + '</tbody></table>';
     if (typeof window!=='undefined' && window.__PH) window.__PH.inner=Date.now()-_t; }
   _tipWire();
-  /* I test leggono la tabella subito dopo il render e non hanno modo di
-     aspettare il secondo blocco: con questo interruttore l'inserimento torna
-     tutto in una volta. Nell'uso normale resta spezzato. */
-  const _syncRender = (typeof window !== 'undefined' && window.__RMES_SYNC_RENDER);
-  if (_rest && _syncRender){
-    const tb = _wrapEl.querySelector('table.sell-table tbody');
-    if (tb) tb.insertAdjacentHTML('beforeend', _rest + html_total_row);
-    _tipFlushAll();
-    try { _sellWireAfterRender(sel, _savedSellScrollLeft); } catch(e){ console.error('wire', e); }
-  } else if (_rest){
-    const _finish = () => {
-      const tb = _wrapEl.querySelector('table.sell-table tbody');
-      if (tb) tb.insertAdjacentHTML('beforeend', _rest + html_total_row);
-      else _wrapEl.innerHTML = _tailHtml + _first + _rest + _closeHtml;
-      try { _sellWireAfterRender(sel, _savedSellScrollLeft); } catch(e){ console.error('wire', e); }
-    };
-    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => setTimeout(_finish, 0));
-    else setTimeout(_finish, 0);
-  } else {
+  if (typeof window !== 'undefined' && window.__RMES_SYNC_RENDER) _tipFlushAll();
+  {
     try { _sellWireAfterRender(sel, _savedSellScrollLeft); } catch(e){ console.error('wire', e); }
   }
 }
@@ -14324,9 +14309,10 @@ function _sellWireAfterRender(sel, _savedSellScrollLeft){
       btn.classList.toggle('on', !!window._SELL_WARN_ONLY);
     };
   })();
-  /* Tutto l'aggancio dei listener e il ripristino dello scroll: va
-     richiamato DOPO che le righe sono nel DOM, e con l'inserimento in due
-     tempi quel momento non e' piu' la fine del render. */
+  /* Tutto l'aggancio dei listener e il ripristino dello scroll, da fare DOPO
+     che le righe sono nel DOM. Resta una funzione a parte perche' per un
+     periodo le righe entravano in due blocchi e quel momento non coincideva
+     con la fine del render; ora l'inserimento e' unico e la chiamata e' una. */
   // Orientamento classico ripristinato su richiesta: giorni in RIGA, KPI in COLONNA.
   // La versione trasposta della tabella e' stata rimossa.
   // Ripristina lo scroll orizzontale (vedi save all'inizio della funzione) — così l'utente
