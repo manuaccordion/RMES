@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-19c · tooltip Beddy su totali e YTD+Forecast';
+const ENGINE_BUILD = '2026-10-20 · floor Alfani 140 (una tantum) + tooltip Beddy';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -1914,6 +1914,27 @@ function fp_postLoadHook(){
       console.log('[NewRMES] Wipe v3 complete. Base Price will be re-frozen with the Goal Value cap.');
     }
   } catch(e){ console.error('[NewRMES] wipe v3 failed', e); }
+
+  /* --- UNA TANTUM: Floor rate di Palazzo Alfani a 140 (Manu, 20/10/2026) ---
+     Deciso a voce: da 160 a 140. Lo metto qui invece che a mano nel pannello
+     perche' il valore e' condiviso fra i browser e a mano era gia' tornato
+     indietro. Passa da fp_setFloor, quindi la scrittura viene TIMBRATA
+     (rmes_cfg_ts_v1) e vince sul 160 che sta nel cloud, che nessuno ha mai
+     timbrato; poi viene spinta su, cosi' la vedono tutti.
+     Scatta una volta per browser. Dopo, il floor si cambia normalmente dal
+     pannello RMES: questo blocco non lo ritocca mai piu'. */
+  try {
+    const FLOOR_ALFANI_FLAG = 'rmes_floor_alfani_140_2026_10_20';
+    if (!localStorage.getItem(FLOOR_ALFANI_FLAG)
+        && typeof fp_setFloor === 'function' && typeof fp_getFloor === 'function'){
+      const _prima = fp_getFloor('alfani');
+      if (_prima !== 140){
+        fp_setFloor('alfani', 140);
+        console.log('[RMES] Floor Palazzo Alfani ' + _prima + ' \u2192 140 (una tantum, 20/10/2026)');
+      }
+      try { localStorage.setItem(FLOOR_ALFANI_FLAG, '1'); } catch(e){}
+    }
+  } catch(e){ console.error('[RMES] floor alfani 140 failed', e); }
 
   // --- ONE-SHOT WIPE v4: clear entries without author (Manu, 12/06/2026) ---
   // Reason: profile system introduced — pre-profile entries appear as "unknown" in
