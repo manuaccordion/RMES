@@ -37,14 +37,20 @@ function boot(exports_, opts){
      nulla lo segnalasse. Un getter restituisce sempre quello che c'e' adesso,
      e per le funzioni non cambia niente. */
   const expr = names.map(n => 'get ' + n + '(){return typeof ' + n + ' === "undefined" ? undefined : ' + n + '}').join(',');
-  w.eval(fs.readFileSync(P + 'data.js', 'utf8') + '\n;\n'
+  /* Di norma i dati sono quelli accanto al codice. Con RMES_DATA si punta a un
+     altro file: serve per provare i test sul data.js PUBBLICATO quando la copia
+     locale e' piu' vecchia, che e' il caso in cui un test sembra rotto e invece
+     sta solo guardando dati diversi da quelli veri. */
+  const DATA_FILE = process.env.RMES_DATA || (P + 'data.js');
+  w.eval(fs.readFileSync(DATA_FILE, 'utf8') + '\n;\n'
        + fs.readFileSync(P + 'engine.js', 'utf8')
        + '\n;window.__X={' + expr + '};');
   const X = w.__X;
   w.loadData(X.EMBEDDED_CSV);
   if (X.EVENTS_CSV && typeof w.loadEvents === 'function') w.loadEvents(X.EVENTS_CSV);
   try { w.fp_postLoadHook(); } catch(e){}
-  // La tabella entra in due blocchi: i test la leggono subito, quindi tutta in una volta.
+  // La tabella entra tutta in una volta; questo flag ora serve solo a far
+  // scrivere subito i tooltip, che altrimenti vengono messi al primo hover.
   w.__RMES_SYNC_RENDER = true;
   if (opts.struct) w.CURRENT_STRUCT = opts.struct;
 

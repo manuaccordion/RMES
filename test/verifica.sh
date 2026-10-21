@@ -10,7 +10,16 @@
 # =============================================================================
 cd "$(dirname "$0")" || exit 1
 NODE="node --max-old-space-size=6144"
-[ "$1" = "audit" ] && FILES="audit.js audit2.js audit3.js" || FILES="audit.js audit2.js audit3.js t_features.js"
+# I file NON si elencano a mano: si cercano. Elencandoli, un file di test nuovo
+# che arriva nella cartella non viene eseguito e nessuno se ne accorge - e'
+# successo con t_cfgsync.js, 52 controlli rimasti fermi per giorni senza un
+# rosso. t_lib.js e' la base comune, non un test.
+if [ "$1" = "audit" ]; then
+  FILES=$(ls audit*.js 2>/dev/null | tr '\n' ' ')
+else
+  FILES=$(ls audit*.js t_*.js 2>/dev/null | grep -v '^t_lib\.js$' | tr '\n' ' ')
+fi
+[ -z "$FILES" ] && { echo "  nessun file di test trovato in $(pwd)"; exit 1; }
 
 tot_ok=0; tot_ko=0; rotti=""
 for f in $FILES; do
