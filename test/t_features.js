@@ -11,7 +11,7 @@ const { w, X, D, ok, info, fine } = T.boot([
   'renderSellStrategy', 'renderRMESConfigTab', 'rmesCopyRulesToAll', 'rmesSignalsCfg',
   'rmesSignalsSet', 'getRmesCap', 'setRmesCap', 'fp_getLmfMatrix', 'fp_setLmfMatrix',
   'fp_getChannelMarkupParts', 'fp_setChannelMarkupParts', 'fp_getFloor', 'fp_getBasePrice',
-  'fp_setOverride', 'newrmesGetEffectiveBase', '_invalidateRmesMapCache', 'TODAY', 'CFG',
+  'fp_setOverride', 'fp_setFloor', 'newrmesGetEffectiveBase', '_invalidateRmesMapCache', 'TODAY', 'CFG',
   'compsetWeightedAvg', 'fpCapHorizonDays', 'newrmesGetCurrentReference',
   'loadEvents', 'EVENTS', 'EVENTS_LIST', '_getEventBoost', '_listEventLabels', '_eventLabelsFor'
 ]);
@@ -187,9 +187,20 @@ const t0 = new Date(X.TODAY); t0.setHours(0,0,0,0);
 
   /* Il messaggio deve nominare i due numeri e, quando e' il pavimento a tenere
      su il prezzo, deve dirlo invece di chiedere un taglio impossibile. */
-  const conPav = [].concat(...Object.keys(perStruct).map(k => perStruct[k])).filter(x => x.pavimento);
   const senzaPav = [].concat(...Object.keys(perStruct).map(k => perStruct[k])).filter(x => !x.pavimento);
-  ok(totPav > 0, 'riconosce il caso in cui il mercato sta sotto il pavimento', totPav);
+  /* Il caso "il mercato sta sotto il pavimento" NON si cerca fra i floor
+     configurati oggi: dipenderebbe da una scelta commerciale. Quando Alfani e'
+     passato da 200 a 140 questo controllo e' diventato rosso pur non essendo
+     cambiata una riga di codice. Quindi la situazione si costruisce: si alza il
+     floor sopra qualunque compset, si guarda il messaggio, si rimette com'era. */
+  const _floorPrima = X.fp_getFloor('alfani');
+  X.fp_setFloor('alfani', 400);
+  try { X._invalidateRmesMapCache(); } catch(e){}
+  const conPav = _nuovi('alfani').filter(x => x.pavimento);
+  X.fp_setFloor('alfani', _floorPrima);
+  try { X._invalidateRmesMapCache(); } catch(e){}
+  ok(conPav.length > 0, 'col floor sopra il mercato, riconosce che e il pavimento a tenere su il prezzo',
+     conPav.length + ' date (floor forzato a 400, poi rimesso a ' + _floorPrima + ')');
   if (conPav.length){
     const t = conPav[0].tip;
     ok(/Active price €[\d.,]+/.test(t), 'dice il prezzo attivo');
@@ -282,5 +293,135 @@ const t0 = new Date(X.TODAY); t0.setHours(0,0,0,0);
      Object.keys(X.EVENTS_LIST).length);
 }
 
+
+/* --- LA SELL STRATEGY ENTRA TUTTA IN UNA VOLTA --------------------------- */
+/* Prima le prime 25 righe entravano subito e il resto un frame dopo. La
+   tabella non ha larghezze fisse, quindi all'arrivo del secondo blocco le
+   colonne si riallargavano e tutto quello a destra slittava di un centinaio
+   di pixel: a ogni accept la tabella ballava sotto il puntatore.
+   jsdom non fa layout, ma la causa si misura lo stesso: se il render torna e
+   le righe non ci sono ancora, il secondo blocco e' tornato. */
+{
+  const wrap = D.getElementById('sell-table-wrap');
+  ok(!!wrap, 'il contenitore della Sell Strategy esiste');
+  const wasSync = w.__RMES_SYNC_RENDER;
+  w.__RMES_SYNC_RENDER = false;          // il flag dei test non deve mascherare il difetto
+  X.renderSellStrategy('firenze');
+  /* SELL_RANGE_DAYS e' un let dello scope dell'eval: assegnarlo da qui
+     creerebbe un'altra variabile e il motore non la leggerebbe mai. Si cambia
+     dai pill veri, che e' poi quello che fa l'utente. */
+  const pill = n => D.querySelector('#sell-range-pills button[data-range="' + n + '"]');
+  ok(!!pill(30) && !!pill(365), 'i pill del periodo ci sono');
+  for (const days of [30, 90, 365]){
+    let n = 0, tot = 0, err = null;
+    try {
+      pill(days).click();                // cambia il periodo E ridisegna, come l'utente
+      const rows = wrap.querySelectorAll('table.sell-table tbody tr');
+      n = rows.length;
+      tot = [...rows].filter(r => /total/i.test(r.textContent || '')).length;
+    } catch(e){ err = e.message; }
+    if (err){ ok(false, 'render a ' + days + ' giorni', err); continue; }
+    ok(n >= days, 'a ' + days + ' giorni le righe ci sono tutte al ritorno del render', n + ' righe');
+    ok(tot >= 1, 'a ' + days + ' giorni la riga Total e gia in fondo', tot);
+  }
+  pill(90).click();
+  w.__RMES_SYNC_RENDER = wasSync;
+  X.renderSellStrategy('firenze');
+}
+/* --- OVERVIEW: il tooltip "come arriva su Beddy" anche sui totali --------- */
+/* Diceva "net of OTA commission", ma non e' il netto: Booking, Airbnb, Direct e
+   Hotel Collect su Beddy arrivano gia' lordi e non vengono toccati. E la riga
+   dei totali il tooltip non ce l'aveva proprio. */
+{
+  const eur = t => +String(t).replace(/[^\d.-]/g, '');
+  for (const sk of ['firenze','alfani']){
+    let tbl = null;
+    try { w.setStructure(sk); X.renderForecast(sk); tbl = D.getElementById('fcst-monthly-table'); }
+    catch(e){ ok(false, 'Overview di ' + sk, e.message); continue; }
+    const tot = tbl && tbl.querySelector('tr.total');
+    ok(!!tot, sk + ': la riga dei totali c\'e\'');
+    if (!tot) continue;
+    /* le tre coppie ADR/Revenue: OTB, STLY, Final LY */
+    const conTip = [2,3,5,6,8,9].filter(i => tot.children[i] && tot.children[i].getAttribute('title'));
+    ok(conTip.length === 6, sk + ': tutte e sei le celle ADR/Revenue dei totali hanno il tooltip', conTip.length + '/6');
+    const t = tot.children[3].getAttribute('title') || '';
+    ok(/As it arrives on Beddy/.test(t), sk + ': il tooltip dice come arriva su Beddy');
+    ok(!/net of OTA commission/.test(t), sk + ': e non lo chiama piu "net of OTA commission"');
+    ok(/Booking, Airbnb, Direct and Hotel Collect/.test(t), sk + ': e dice quali canali arrivano gia lordi');
+    /* il numero: minore del lordo, e pari alla somma dei mesi (a meno degli arrotondamenti) */
+    const netTot = eur((t.match(/Revenue €([\d.,]+)/) || [])[1]);
+    const lordo  = eur(tot.children[3].textContent);
+    ok(netTot > 0 && netTot < lordo, sk + ': il valore su Beddy e minore del lordo',
+       netTot.toLocaleString('it-IT') + ' < ' + lordo.toLocaleString('it-IT'));
+    ok(netTot / lordo > 0.80, sk + ': e il ritocco commissione resta sotto il 20%',
+       ((lordo/netTot - 1) * 100).toFixed(2) + '%');
+    const somma = [...tbl.querySelectorAll('tbody tr:not(.total)')].reduce((acc, tr) => {
+      const tt = tr.children[3] && tr.children[3].getAttribute('title');
+      const m = tt && tt.match(/Revenue €([\d.,]+)/);
+      return acc + (m ? eur(m[1]) : 0);
+    }, 0);
+    ok(Math.abs(somma - netTot) <= 12, sk + ': il totale e la somma dei mesi (a meno degli arrotondamenti)',
+       somma.toLocaleString('it-IT') + ' vs ' + netTot.toLocaleString('it-IT'));
+  }
+}
+/* --- OVERVIEW: anche la colonna YTD+Forecast ha il suo tooltip ------------ */
+/* Non esiste un "come arriva su Beddy" registrato per una previsione. Pero' la
+   parte GIA' A LIBRO il netto ce l'ha e si converte esatta: va stimato solo il
+   residuo. Su un mese chiuso il residuo e' zero, quindi il numero e' esatto e
+   coincide con quello della colonna OTB. */
+{
+  const eur = t => +String(t).replace(/[^\d.-]/g, '');
+  const rev = t => { const m = String(t).match(/Revenue €([\d.,]+)/); return m ? eur(m[1]) : null; };
+  for (const sk of ['firenze','alfani']){
+    try { w.setStructure(sk); X.renderForecast(sk); } catch(e){ ok(false, 'Overview ' + sk, e.message); continue; }
+    const tbl = D.getElementById('fcst-monthly-table');
+    const righe = [...tbl.querySelectorAll('tbody tr:not(.total)')];
+    const tot = tbl.querySelector('tr.total');
+
+    /* tutte e tre le celle della colonna hanno un tooltip, riga per riga */
+    const senza = righe.filter(tr => [10,11,12].some(i => !(tr.children[i] && tr.children[i].getAttribute('title'))));
+    ok(senza.length === 0, sk + ': ogni mese ha il tooltip su OCC, ADR e Revenue di YTD+Forecast',
+       senza.length ? senza.map(tr => tr.children[0].textContent.trim()).join(', ') : '');
+    ok([10,11,12].every(i => tot.children[i] && tot.children[i].getAttribute('title')),
+       sk + ': ce l\'ha anche la riga dei totali');
+
+    /* mese chiuso: deve essere ESATTO e uguale al netto della colonna OTB */
+    const chiusi = righe.filter(tr => /not an estimate/.test(tr.children[12].getAttribute('title') || ''));
+    ok(chiusi.length > 0, sk + ': almeno un mese chiuso e dichiarato esatto, non stimato', chiusi.length);
+    for (const tr of chiusi.slice(0,3)){
+      const nf = rev(tr.children[12].getAttribute('title'));
+      const no = rev(tr.children[3].getAttribute('title'));
+      ok(nf === no, sk + ' ' + tr.children[0].textContent.trim() + ': chiuso → stesso valore della colonna OTB',
+         nf + ' vs ' + no);
+    }
+
+    /* mese aperto: dichiarato stima, e il valore sta fra il netto OTB e il lordo */
+    const aperti = righe.filter(tr => /ESTIMATE/.test(tr.children[12].getAttribute('title') || ''));
+    ok(aperti.length > 0, sk + ': i mesi aperti sono dichiarati stima', aperti.length);
+    for (const tr of aperti){
+      const lbl = tr.children[0].textContent.trim();
+      const t = tr.children[12].getAttribute('title');
+      const net = rev(t);
+      const lordo = eur(tr.children[12].textContent.split('–')[0].match(/€[\d.,]+/)[0]);
+      const netOtb = rev(tr.children[3].getAttribute('title')) || 0;
+      if (net == null){ ok(false, sk + ' ' + lbl + ': stima leggibile'); continue; }
+      ok(net < lordo && net >= netOtb,
+         sk + ' ' + lbl + ': la stima sta fra il netto gia a libro e il lordo previsto',
+         netOtb + ' ≤ ' + net + ' < ' + lordo);
+    }
+
+    /* la stima non puo' sostenere che su un mese quasi vuoto non ci sia commissione */
+    for (const tr of aperti){
+      const t = tr.children[12].getAttribute('title');
+      const net = rev(t), lordo = eur(tr.children[12].textContent.split('–')[0].match(/€[\d.,]+/)[0]);
+      const otbLordo = eur(tr.children[3].textContent);
+      if (otbLordo / lordo < 0.25){   // mese ancora quasi tutto da vendere
+        ok(net < lordo * 0.999,
+           sk + ' ' + tr.children[0].textContent.trim() + ': su un mese quasi vuoto la commissione non sparisce',
+           net + ' / ' + lordo);
+      }
+    }
+  }
+}
 
 fine();
