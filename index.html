@@ -333,6 +333,10 @@ table.data tbody tr.total td{border-bottom:none}
 .cell-flat{color:var(--ink-3)}
 .cell-mono{font-family:'DM Mono',monospace;font-size:12px}
 .cell-divider{border-left:1px solid var(--line-2)}
+/* Valore leggibile ma non equiparato al resto: l'ADR per tipologia dei mesi in
+   cui la riconduzione ai room type di oggi e' ricostruita dai nomi vecchi.
+   Il tratteggio sotto dice che c'e' un tooltip da leggere. */
+table.data tbody td.rt-soft{opacity:.5;text-decoration:underline dotted 1px;text-underline-offset:3px;cursor:help}
 .rt-block-start{border-left:3px solid var(--accent) !important}
 table.data thead tr:first-child th.rt-block-start{border-left:3px solid var(--accent)}
 /* Sell-strategy block borders: color-coded per block for visual separation.
@@ -2782,9 +2786,13 @@ table.data.sell-table .sell-drill{
           <li><b>The total follows your selection.</b> With <i>All</i> the last row reads <b>Year</b>; with a selection it reads <i>Jul</i> or <i>3 months</i> and recomputes on those months only. It is a real recomputation, not an average of averages: room nights, revenue and capacity are re-summed, then OCC = room nights &divide; capacity and ADR = revenue &divide; room nights. Hover the label to see which months are in.</li>
           <li><b>Filter room type</b> works alongside: hide a room type and it disappears from both the charts and the table.</li>
         </ul>
+        <h4 style="margin:12px 0 6px 0;color:#5a3a14">Palazzo Alfani before December 2025</h4>
+        <p><b>The occupancy is blank on purpose, and the ADR beside it is greyed.</b> The property moved to the current system between <b>November and December 2025</b>. Up to and including November, 100% of the bookings still carry the old <code>n.</code> prefix on the reference and 84% an old-style accommodation name; in December the prefix drops to 2% and the short names rise to 98%.</p>
+        <p>In the old export that column carried the room type <b>as sold by the channel</b>, not the unit actually occupied: every OTA used its own listing name (<i>Classic Apartment</i>, <i>Appartamento Classic con 1 Camera da Letto</i>), the PMS its own in capitals (<i>APPARTAMENTO CLASSIC</i>) &mdash; each long name appears on one channel and one only. So on nights when a guest was moved, more &ldquo;Junior Suite&rdquo; were sold than Junior Suites exist: four separate reservations on the night of 8 November 2025, and 148% in October. From December the column carries the <b>assigned</b> accommodation, with the booked one in brackets when they differ, and the count adds up by construction.</p>
+        <p>So before December 2025 the occupancy by room type is <b>not computed</b>. It is not a missing number; it is a number that would not mean anything.</p>
+        <p>Nights and revenue of that period are real and stay in every other tab. The <b>ADR by room type</b> stays visible too, but greyed with a dotted underline: it is the ADR of the type <i>sold</i>, not of the type <i>occupied</i> &mdash; a real figure, measured on a different basis from the 2026 column beside it. Hover any greyed figure for the note. The same holds on the total row: hover <b>ADR &rsquo;25</b> to see how many months sit on the old basis, and <b>OCC &rsquo;25</b> to see which months it actually covers. For Alfani with <i>All</i> selected that total stands on December alone, so it is not comparable with the OCC &rsquo;26 beside it.</p>
+        <p>In the charts a month with no measurable occupancy leaves a <b>gap</b> in the line rather than a dip to zero, which would read as &ldquo;sold nothing&rdquo;. The other five properties never had this step and are drawn and computed normally throughout.</p>
       </div>
-    
-        <p><b>Palazzo Alfani, prima di novembre 2025: l’occupazione non c’è, e non è un dato mancante.</b> The property moved to the current system between October and November 2025. In the data the two eras sit side by side: the older bookings carry a <code>n.</code> prefix on the reference, channel names in capitals (<code>BOOKINGXML</code>, <code>CTRIPV4</code>) and <b>25 accommodation names</b> (<i>APPARTAMENTO CLASSIC</i>, <i>Appartamento Junior Suite + 2 letti aggiuntivi</i>, <i>Classic Apartment</i>…) that share <b>not one name</b> with the 5 of today. Those names were being folded onto today’s four room types, so a night with four “Junior Suite” sold was measured against the <b>one</b> Junior Suite that exists now: 148%. Nights, revenue and ADR of that period are real and are still shown; only the occupancy by room type is left blank, because there is no inventory to measure it against. From November 2025 on, everything is computed normally. The other five properties never had this step.</p>
       </details>
 
     <!-- ⑥ RATE SHOPPER -->

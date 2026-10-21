@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-21c · confine inventario Alfani + OCC per tipologia';
+const ENGINE_BUILD = '2026-10-21e · confine Alfani a dicembre 2025 + ADR smorzato + buchi nei grafici';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -2670,24 +2670,68 @@ function aggOTBYearly(sel){
   return { monthRows, tot, provCur, provPrev, canCur, canPrev, provFly, canFly,
            provCurM, provPrevM, provFlyM, canCurM, canPrevM, canFlyM };
 }
-/* CONFINE DI INVENTARIO — da quando i nomi degli alloggi sono quelli di oggi.
-   Palazzo Alfani ha cambiato sistema fra ottobre e novembre 2025: nel file
-   convivono due export diversi, riconoscibili dal prefisso "n." sul numero di
-   riferimento e dai nomi dei canali in maiuscolo (BOOKINGXML, CTRIPV4). I 25
-   alloggi di prima ("APPARTAMENTO CLASSIC", "Appartamento Junior Suite + 2
-   letti aggiuntivi", "Classic Apartment"...) e i 5 di adesso (Classic,
-   Superior, Junior suite, Deluxe) non hanno NEMMENO UN NOME IN COMUNE.
-   normRoom li fa comunque ricadere sulle quattro tipologie attuali, e cosi'
-   una notte con quattro "Junior Suite" vendute finiva contro UNA camera: 148%.
-   Prima di questo confine l'occupazione per tipologia non si calcola: non e'
-   che manchi il numero, e' che non significa niente. Revenue, ADR e notti
-   restano, perche' quelli sono veri comunque.
+/* CONFINE DI INVENTARIO — da quando la colonna alloggi dice l'unita' assegnata.
+   Palazzo Alfani ha cambiato sistema fra NOVEMBRE e DICEMBRE 2025. Misurato sui
+   soggiorni, non stimato: nei mesi fino a novembre il 100% delle prenotazioni ha
+   il prefisso "n." sul numero di riferimento e l'84% un nome alloggio lungo; a
+   dicembre il prefisso crolla al 2% e i nomi corti salgono al 98%.
+   (Il primo tentativo metteva il confine a novembre: sbagliato di un mese, e
+   novembre e' proprio il mese peggiore — Junior Suite a 113%.)
+   Nel vecchio export quella colonna portava la TIPOLOGIA VENDUTA dal canale, non
+   l'unita' occupata: ogni OTA col suo nome di annuncio ("Classic Apartment",
+   "Appartamento Classic con 1 Camera da Letto"), il PMS col suo in maiuscolo
+   ("APPARTAMENTO CLASSIC") — la verifica incrociata etichetta x canale non lascia
+   dubbi, ogni nome lungo sta su un solo canale. Percio' nelle notti in cui un
+   ospite veniva spostato si contavano piu' "Junior Suite" vendute delle Junior
+   Suite esistenti: 4 prenotazioni sulla stessa notte dell'8/11/2025, 148% a
+   ottobre. Da dicembre la colonna porta l'alloggio ASSEGNATO (con quello
+   prenotato fra parentesi se diverso) e il conto torna per costruzione.
+   Prima del confine l'occupazione per tipologia non si calcola: non e' che manchi
+   il numero, e' che non significa niente. Revenue e notti restano, perche' quelli
+   sono veri comunque; l'ADR resta ma smorzato (vedi sotto).
    Le altre cinque strutture non hanno questo scalino: un solo export, sempre. */
-const RT_INVENTARIO_DA = { alfani: 202511 };
+const RT_INVENTARIO_DA = { alfani: 202512 };
 function rtInventarioAttendibile(structKey, year, month){
   const da = RT_INVENTARIO_DA[structKey];
   if (!da) return true;
   return (year * 100 + month) >= da;
+}
+/* Prima del confine anche l'ADR per tipologia non e' la stessa misura di dopo:
+   e' l'ADR della tipologia VENDUTA, non di quella occupata. Resta un numero
+   vero e utile, ma non confrontabile riga per riga con la colonna 2026 accanto.
+   Lasciato com'era sembrava il dato solido dei due, proprio perche'
+   l'occupazione accanto e' vuota: e' la domanda che ha fatto fermare l'utente.
+   Resta leggibile ma smorzato, con il tooltip che dice cos'e'. */
+const RT_SOFT_ADR_TIP = 'Measured on a different basis. Until November 2025 this property exported the room type as SOLD by the channel — each OTA used its own listing name, the PMS its own — rather than the unit actually assigned. The nights and the revenue are real, but the room type behind them is the one sold, not the one occupied, so this figure is not computed the same way as the 2026 column beside it. From December 2025 the column carries the assigned accommodation.';
+function _rtAdrCell(adr, structKey, year, month, extraCls){
+  const soft = !rtInventarioAttendibile(structKey, year, month);
+  return '<td class="cell-mono' + (extraCls ? ' ' + extraCls : '') + (soft ? ' rt-soft' : '') + '"'
+       + (soft ? ' title="' + escapeHtml(RT_SOFT_ADR_TIP) + '"' : '')
+       + '>' + fmtAdr(adr) + '</td>';
+}
+function _rtAdrTotCell(adr, structKey, year, monthsSel, extraCls){
+  const pre = monthsSel.filter(m => !rtInventarioAttendibile(structKey, year, m));
+  if (!pre.length) return '<td class="cell-mono' + (extraCls ? ' ' + extraCls : '') + '">' + fmtAdr(adr) + '</td>';
+  const tip = RT_SOFT_ADR_TIP + ' This total includes ' + pre.length + ' such month'
+            + (pre.length > 1 ? 's' : '') + ': ' + pre.map(m => CFG.monthsIT[m-1]).join(', ') + '.';
+  return '<td class="cell-mono' + (extraCls ? ' ' + extraCls : '') + ' rt-soft" title="'
+       + escapeHtml(tip) + '">' + fmtAdr(adr) + '</td>';
+}
+/* L'occupazione dei mesi pre-confine non entra ne' nelle notti ne' nella
+   capacita': il totale e' corretto ma copre meno mesi di quello accanto, e due
+   percentuali affiancate si leggono sempre come confrontabili. Il tooltip dice
+   su quali mesi sta effettivamente. */
+function _rtOccTotCell(occ, structKey, year, monthsSel, extraCls){
+  const dentro = monthsSel.filter(m => rtInventarioAttendibile(structKey, year, m));
+  const fuori  = monthsSel.length - dentro.length;
+  let tip = '';
+  if (fuori > 0 && dentro.length > 0){
+    tip = ' title="' + escapeHtml('Covers ' + dentro.map(m => CFG.monthsIT[m-1]).join(', ')
+        + ' only. The other ' + fuori + ' month' + (fuori > 1 ? 's carry' : ' carries')
+        + ' no measurable inventory for this property, so ' + (fuori > 1 ? 'they are' : 'it is')
+        + ' left out of both the nights and the capacity. Not comparable with the figure beside it, which covers every selected month.') + '"';
+  }
+  return '<td class="cell-mono' + (extraCls ? ' ' + extraCls : '') + '"' + tip + '>' + fmtPct(occ,1) + '</td>';
 }
 
 /* OCC by Room Type
@@ -3462,14 +3506,14 @@ function renderRT(sel){
   const occSeries = visList.map((rt,i)=>({
     label: rt,
     color: RT_PALETTE[A.rtList.indexOf(rt)%RT_PALETTE.length],
-    cur: A.rtData[rt].months.map(m=>isFinite(m.occC)?m.occC*100:0),
-    prev: A.rtData[rt].months.map(m=>isFinite(m.occP)?m.occP*100:0),
+    cur: A.rtData[rt].months.map(m=>isFinite(m.occC)?m.occC*100:NaN),
+    prev: A.rtData[rt].months.map(m=>isFinite(m.occP)?m.occP*100:NaN),
   }));
   const adrSeries = visList.map((rt,i)=>({
     label: rt,
     color: RT_PALETTE[A.rtList.indexOf(rt)%RT_PALETTE.length],
-    cur: A.rtData[rt].months.map(m=>isFinite(m.adrC)?m.adrC:0),
-    prev: A.rtData[rt].months.map(m=>isFinite(m.adrP)?m.adrP:0),
+    cur: A.rtData[rt].months.map(m=>isFinite(m.adrC)?m.adrC:NaN),
+    prev: A.rtData[rt].months.map(m=>isFinite(m.adrP)?m.adrP:NaN),
   }));
   document.getElementById('rt-chart-occ').innerHTML = multiLineChart(occSeries, CFG.monthsIT, '%', 'pct');
   document.getElementById('rt-chart-adr').innerHTML = multiLineChart(adrSeries, CFG.monthsIT, '€', 'eur');
@@ -3498,9 +3542,9 @@ function renderRT(sel){
       const md = A.rtData[rt].months[m-1];
       r += `
         <td class="cell-mono rt-block-start">${fmtPct(md.occC,1)}</td>
-        <td class="cell-mono">${fmtAdr(md.adrC)}</td>
+        ${_rtAdrCell(md.adrC, sel, CUR_YEAR, m, '')}
         <td class="cell-mono cell-flat cell-divider">${fmtPct(md.occP,1)}</td>
-        <td class="cell-mono cell-flat">${fmtAdr(md.adrP)}</td>`;
+        ${_rtAdrCell(md.adrP, sel, PREV_YEAR, m, 'cell-flat')}`;
     }
     r += '</tr>';
     body.push(r);
@@ -3523,9 +3567,9 @@ function renderRT(sel){
     const adrC = rnC>0 ? revC/rnC : NaN, adrP = rnP>0 ? revP/rnP : NaN;
     trow += `
       <td class="cell-mono rt-block-start">${fmtPct(occC,1)}</td>
-      <td class="cell-mono">${fmtAdr(adrC)}</td>
-      <td class="cell-mono cell-flat cell-divider">${fmtPct(occP,1)}</td>
-      <td class="cell-mono cell-flat">${fmtAdr(adrP)}</td>`;
+      ${_rtAdrTotCell(adrC, sel, CUR_YEAR, monthsSel, '')}
+      ${_rtOccTotCell(occP, sel, PREV_YEAR, monthsSel, 'cell-flat cell-divider')}
+      ${_rtAdrTotCell(adrP, sel, PREV_YEAR, monthsSel, 'cell-flat')}`;
   }
   trow+='</tr>';
   document.getElementById('rt-monthly').innerHTML = head + '<tbody>' + body.join('') + trow + '</tbody>';
@@ -21203,14 +21247,26 @@ function multiLineChart(series, labels, unit='%', kind='pct'){
     const yv = isFinite(v)?v:0;
     return [x, padT + innerH * (1 - (yv-yMin)/(yMax-yMin))];
   }
+  /* Un buco nei dati non e' uno zero. Prima i mesi senza valore venivano
+     disegnati a quota 0 e la linea ci scendeva dentro: su Palazzo Alfani, dove
+     l'occupazione per tipologia non esiste prima di nov 2025, la tratteggiata
+     STLY correva piatta sullo zero da gennaio a ottobre e si leggeva come
+     "occupazione zero" invece che "non misurabile". Ora la linea si interrompe
+     e riprende dopo il buco. Un punto isolato resta visibile: il pallino lo
+     disegna comunque il ciclo qui sotto. */
   function pathFor(arr){
-    const pts = arr.map((v,i)=>xy(i,isFinite(v)?v:0));
-    if (!pts.length) return '';
-    let d = `M${pts[0][0]} ${pts[0][1]}`;
-    for (let i=1;i<pts.length;i++){
-      const [x0,y0] = pts[i-1], [x1,y1] = pts[i];
-      const cx = (x0+x1)/2;
-      d += ` C${cx} ${y0}, ${cx} ${y1}, ${x1} ${y1}`;
+    let d = '', aperto = false, prevPt = null;
+    for (let i = 0; i < arr.length; i++){
+      const v = arr[i];
+      if (!isFinite(v)){ aperto = false; prevPt = null; continue; }
+      const pt = xy(i, v);
+      if (!aperto){ d += `M${pt[0]} ${pt[1]}`; aperto = true; }
+      else {
+        const [x0,y0] = prevPt, [x1,y1] = pt;
+        const cx = (x0+x1)/2;
+        d += ` C${cx} ${y0}, ${cx} ${y1}, ${x1} ${y1}`;
+      }
+      prevPt = pt;
     }
     return d;
   }
