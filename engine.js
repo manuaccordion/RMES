@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-20 · floor Alfani 140 (una tantum) + tooltip Beddy';
+const ENGINE_BUILD = '2026-10-21 · Analysis: secondo blocco a data scelta';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -16749,15 +16749,22 @@ function fcstDataLastBookYmd(){
 /* Filtri attivi. Chiave = dimensione, valore = voce selezionata (o null). */
 let ANLY_FILTERS = { ch: null, rt: null, rate: null };
 let ANLY_YM = null;
+let ANLY_ASOF = null;   // ymd del secondo blocco Analysis (null = ancora da impostare)
 
-function anlyAggregate(sel, ym, filters){
+function anlyAggregate(sel, ym, filters, asOf){
   filters = filters || {};
   const keys = new Set(structKeysFor(sel));
   const y = Math.floor(ym/100), mo = ym % 100;
   const ymLy = (y-1)*100 + mo;
-  const cutCur = ymd(startOfDay(new Date(TODAY)));
-  const cutLy  = ymd(startOfDay(new Date(TODAY.getTime() - 364*86400000)));
-  const pickupFrom = ymd(addDays(startOfDay(new Date(TODAY)), -7));
+  /* Il taglio: di norma oggi. Con asOf si guarda il mese com'era a quella data,
+     contando solo le prenotazioni gia' fatte allora. L'anno scorso si sposta
+     dello stesso passo (-364 giorni), altrimenti il confronto non sarebbe piu'
+     allo stesso punto della stagione. */
+  const _rif   = (asOf && isFinite(asOf) && typeof ymdToDate === 'function')
+                 ? startOfDay(ymdToDate(asOf)) : startOfDay(new Date(TODAY));
+  const cutCur = ymd(_rif);
+  const cutLy  = ymd(startOfDay(new Date(_rif.getTime() - 364*86400000)));
+  const pickupFrom = ymd(addDays(_rif, -7));
   const giorni = new Date(y, mo, 0).getDate();
   const rooms = (typeof fcstRoomsByRT === 'function')
     ? Object.values(fcstRoomsByRT(sel)).reduce((a,b) => a+b, 0) : 0;
@@ -16846,7 +16853,7 @@ function anlyAggregate(sel, ym, filters){
   const med = a => { a = a.slice().sort((x,z) => x-z); return a.length ? a[a.length>>1] : null; };
 
   return {
-    ym, ymLy, giorni, rooms, cap,
+    ym, ymLy, giorni, rooms, cap, asOf: cutCur, asOfLy: cutLy,
     cur: kpi(cur), ly: kpi(ly), hasLy: ly.tot.rev > 0,
     channels: confronta(cur.ch, ly.ch),
     rooms_: confronta(cur.rt, ly.rt),
@@ -16888,21 +16895,35 @@ function renderAnalysis(sel){
     clr.addEventListener('click', () => { ANLY_FILTERS = { ch:null, rt:null, rate:null }; renderAnalysis(CURRENT_STRUCT); });
   }
 
-  let a = null;
-  try { a = anlyAggregate(sel, ym, ANLY_FILTERS); } catch(e){ console.error('analysis', e); }
+  const a = _anlyAgg(sel, ym, ANLY_FILTERS, null);
   if (!a){ wrap.innerHTML = '<p style="color:var(--ink-3)">No data.</p>'; return; }
+  const attivi = Object.keys(ANLY_FILTERS).filter(k => ANLY_FILTERS[k]);
+  const sub = document.getElementById('anly-sub');
+  if (sub) sub.textContent = attivi.length
+    ? 'filtered by ' + attivi.map(k => ANLY_FILTERS[k]).join(' + ')
+    : 'click any row to filter everything else by it';
+  wrap.innerHTML = _anlyHtml(a, { chips: true });
+  _anlyWire(wrap);
+  _anlyRenderAsOf(sel, ym, a);
+}
 
+/* L'aggregato con la rete: un errore qui non deve lasciare la tab bianca. */
+function _anlyAgg(sel, ym, filtri, asOf){
+  try { return anlyAggregate(sel, ym, filtri, asOf); }
+  catch(e){ console.error('analysis', e); return null; }
+}
+
+/* Il disegno di UN blocco Analysis. Sta in una funzione sua perche' i blocchi
+   sono due — quello fino a oggi e quello a una data scelta — e devono leggersi
+   nello stesso modo: stesse colonne, stesse regole, stessi colori. */
+function _anlyHtml(a, opts){
+  opts = opts || {};
   const eur = v => (v == null || !isFinite(v)) ? '\u2014' : (v < 0 ? '\u2212' : '') + '\u20ac' + Math.abs(Math.round(v)).toLocaleString('en-GB');
   const pct = v => (v == null || !isFinite(v)) ? '\u2014' : (v >= 0 ? '+' : '\u2212') + Math.abs(v*100).toFixed(1) + '%';
   const occ = v => (v == null || !isFinite(v)) ? '\u2014' : (v*100).toFixed(0) + '%';
   const col = v => v > 0 ? '#3d7a4b' : (v < 0 ? '#a83b3b' : 'var(--ink-3)');
 
   const attivi = Object.keys(ANLY_FILTERS).filter(k => ANLY_FILTERS[k]);
-  const sub = document.getElementById('anly-sub');
-  if (sub) sub.textContent = attivi.length
-    ? 'filtered by ' + attivi.map(k => ANLY_FILTERS[k]).join(' + ')
-    : 'click any row to filter everything else by it';
-
   let h = '';
   if (attivi.length){
     h += '<div style="margin-bottom:10px;display:flex;gap:7px;flex-wrap:wrap;align-items:center">';
@@ -16994,7 +17015,13 @@ function renderAnalysis(sel){
        + nota + '</div>';
   }
 
-  wrap.innerHTML = h;
+  return h;
+}
+
+/* I click sulle righe: filtrano e ridisegnano. Valgono per tutti e due i
+   blocchi, cosi' un filtro messo sopra vale anche sotto e il confronto resta
+   sullo stesso taglio di dati. */
+function _anlyWire(wrap){
 
   /* Click: aggiunge o toglie il filtro, poi ridisegna tutto. */
   wrap.querySelectorAll('.anly-row').forEach(tr => {
@@ -17007,6 +17034,75 @@ function renderAnalysis(sel){
   wrap.querySelectorAll('.anly-chip').forEach(b => {
     b.addEventListener('click', () => { ANLY_FILTERS[b.dataset.dim] = null; renderAnalysis(CURRENT_STRUCT); });
   });
+}
+
+/* ---------------------------------------------------------------------------
+   SECONDO BLOCCO ANALYSIS — lo stesso mese com'era a una data scelta.
+   Il blocco di sopra e' sempre fino a oggi. Questo conta solo le prenotazioni
+   gia' fatte entro la data scelta, e sposta anche l'anno scorso dello stesso
+   passo, altrimenti si confronterebbero due punti diversi della stagione.
+   Serve a rispondere a "novembre e' messo meglio di due settimane fa?", che
+   guardando solo il totale di oggi non si capisce.
+   --------------------------------------------------------------------------- */
+function _anlyRenderAsOf(sel, ym, aOggi){
+  const wrap = document.getElementById('anly-asof-wrap');
+  if (!wrap) return;
+  const inp = document.getElementById('anly-asof-date');
+  const oggi = startOfDay(new Date(TODAY));
+  const isoOf = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  if (ANLY_ASOF == null) ANLY_ASOF = ymd(addDays(oggi, -14));   // due settimane fa, il caso tipico
+  if (inp){
+    inp.max = isoOf(oggi);
+    if (!inp.dataset.wired){
+      inp.dataset.wired = '1';
+      inp.addEventListener('change', () => {
+        const v = isoToYmdNum(inp.value);
+        if (v){ ANLY_ASOF = Math.min(v, ymd(oggi)); renderAnalysis(CURRENT_STRUCT); }
+      });
+      document.querySelectorAll('button[data-anly-back]').forEach(b => {
+        b.addEventListener('click', () => {
+          ANLY_ASOF = ymd(addDays(oggi, -(+b.dataset.anlyBack)));
+          renderAnalysis(CURRENT_STRUCT);
+        });
+      });
+    }
+    inp.value = isoOf(ymdToDate(ANLY_ASOF));
+  }
+  document.querySelectorAll('button[data-anly-back]').forEach(b => {
+    const on = ANLY_ASOF === ymd(addDays(oggi, -(+b.dataset.anlyBack)));
+    b.style.background = on ? '#7a4f8e' : '#fff';
+    b.style.color      = on ? '#fff' : 'var(--ink-2)';
+    b.style.borderColor = on ? '#7a4f8e' : 'var(--line)';
+  });
+
+  const a = _anlyAgg(sel, ym, ANLY_FILTERS, ANLY_ASOF);
+  if (!a){ wrap.innerHTML = '<p style="color:var(--ink-3)">No data.</p>'; return; }
+
+  /* La riga che risponde alla domanda: cosa e' entrato da allora a oggi. */
+  let testa = '';
+  if (aOggi){
+    const dRev = (aOggi.cur.rev || 0) - (a.cur.rev || 0);
+    const dRn  = (aOggi.cur.rn  || 0) - (a.cur.rn  || 0);
+    const adrNuove = dRn > 0 ? dRev / dRn : null;
+    const dOcc = (aOggi.cur.occ != null && a.cur.occ != null) ? (aOggi.cur.occ - a.cur.occ) : null;
+    const eur = v => (v == null || !isFinite(v)) ? '—' : (v < 0 ? '−' : '') + '€' + Math.abs(Math.round(v)).toLocaleString('en-GB');
+    const d = ymdToDate(ANLY_ASOF);
+    const quando = String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+    const giorniFa = Math.round((oggi - startOfDay(d)) / 86400000);
+    const col = v => v > 0 ? '#3d7a4b' : (v < 0 ? '#a83b3b' : 'var(--ink-3)');
+    const pezzo = (lbl, val, c) => '<span style="margin-right:18px"><span style="color:var(--ink-3)">' + lbl + '</span> '
+      + '<b style="font-family:\'DM Mono\',monospace;color:' + (c || 'var(--ink-1)') + '">' + val + '</b></span>';
+    testa = '<div style="padding:10px 13px;background:rgba(122,79,142,.07);border:1px solid rgba(122,79,142,.25);border-radius:9px;margin-bottom:14px;font-size:12.5px">'
+      + '<span style="font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em;margin-right:14px">'
+      + 'picked up since ' + quando + ' (' + giorniFa + ' days)</span>'
+      + pezzo('revenue', (dRev >= 0 ? '+' : '') + eur(dRev), col(dRev))
+      + pezzo('nights', (dRn >= 0 ? '+' : '') + dRn, col(dRn))
+      + pezzo('ADR of those nights', eur(adrNuove))
+      + (dOcc != null ? pezzo('occupancy', (dOcc >= 0 ? '+' : '−') + Math.abs(dOcc*100).toFixed(1) + ' pt', col(dOcc)) : '')
+      + '</div>';
+  }
+  wrap.innerHTML = testa + _anlyHtml(a, { chips: false });
+  _anlyWire(wrap);
 }
 
 

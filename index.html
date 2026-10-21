@@ -1864,6 +1864,22 @@ table.data.sell-table .sell-drill{
       </div>
     </div>
     <div id="anly-wrap"></div>
+
+    <!-- Secondo blocco: lo stesso mese com'era a una data scelta. Il primo e'
+         sempre fino a oggi; qui si sceglie il taglio e si vede cosa e' entrato
+         da allora. Spiegazione nel Playbook, qui solo titolo e comandi. -->
+    <div id="anly-asof" style="margin-top:30px;padding-top:20px;border-top:2px solid var(--line-2)">
+      <div class="section-head">
+        <div><h2 style="font-size:19px">Same month, as it stood on</h2></div>
+        <div class="head-actions" style="display:flex;gap:8px;align-items:center">
+          <button data-anly-back="7"  style="font-size:11.5px;font-weight:700;padding:5px 11px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">7 days ago</button>
+          <button data-anly-back="14" style="font-size:11.5px;font-weight:700;padding:5px 11px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">2 weeks ago</button>
+          <button data-anly-back="30" style="font-size:11.5px;font-weight:700;padding:5px 11px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">30 days ago</button>
+          <input type="date" id="anly-asof-date" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff">
+        </div>
+      </div>
+      <div id="anly-asof-wrap"></div>
+    </div>
   </section>
 
   <!-- ============ SECTION 4: PICKUP ============ -->
@@ -2359,6 +2375,7 @@ table.data.sell-table .sell-drill{
         <a href="#instr-big"    style="font-size:12px;color:#8e5fa8;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">★ Big Picture</a>
         <a href="#instr-sell"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">① Sell Strategy</a>
         <a href="#instr-otb"    style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">② Overview</a>
+        <a href="#instr-anly"   style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">◎ Analysis</a>
         <a href="#instr-pk"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">③ Pickup Matrix</a>
         <a href="#instr-cancel" style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">④ CXLTrend</a>
         <a href="#instr-rt"     style="font-size:12px;color:#3b6b9a;font-weight:600;text-decoration:none;padding:4px 10px;background:#fff;border:1px solid var(--line);border-radius:4px">⑤ OCC by Room Type</a>
@@ -2725,6 +2742,16 @@ table.data.sell-table .sell-drill{
     </details>
 
     <!-- ③ PICKUP MATRIX -->
+    <details id="instr-anly" class="panel" style="margin-bottom:14px;border-left:3px solid #7a4f8e">
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">◎ Analysis — where the gap comes from</summary>
+      <div style="padding:0 18px 16px;line-height:1.55;font-size:13px">
+        <p>One month at a time, broken down three ways &mdash; <b>by channel</b>, <b>by room type</b>, <b>by rate plan</b> &mdash; each against the same point last year. <b>Every row is a button</b>: click <i>Booking</i> and the KPIs, the other two tables, the lead time and the pickup all recompute on Booking alone. Click again to drop the filter.</p>
+        <p>The KPI strip reads: revenue, ADR, occupancy, <b>booking lead</b> (how many days ahead guests are booking), pickup of the last 7 days, and your Expedia price against the compset. All revenue and ADR figures are <b>gross of OTA commission</b>, like the rest of the dashboard.</p>
+        <p>The note at the bottom is the one that decides what to do: if guests are booking <b>later</b> than last year, a gap now is more recoverable than it looks, because much of what is missing would have arrived closer in anyway. If they are booking <b>earlier</b>, the same gap is harder to close &mdash; the bookings that would have filled it are already being made elsewhere.</p>
+        <p><b>Same month, as it stood on &lt;date&gt;</b> &mdash; the second block, below the first. The block on top is always up to <b>today</b>; this one counts only the bookings that already existed on the date you pick, so you can answer &laquo;is November better placed than it was two weeks ago?&raquo;. Last year moves back by the same number of days, otherwise you would be comparing two different points of the season. The strip at the top of the block says what came in between the two dates: revenue, nights, the ADR of those nights, and the occupancy gained. The quick buttons are 7 days, 2 weeks and 30 days back; the date box takes any day up to today. A filter set on either block applies to both, so the comparison always sits on the same slice of data.</p>
+      </div>
+    </details>
+
     <details id="instr-pk" class="panel" style="margin-bottom:14px;border-left:3px solid #3b6b9a">
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">③ Pickup Matrix — booking-date vs stay-date</summary>
       <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
