@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-21b · Analysis: OCC per tipologia + prezzo Expedia spiegato';
+const ENGINE_BUILD = '2026-10-21c · confine inventario Alfani + OCC per tipologia';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -2670,6 +2670,26 @@ function aggOTBYearly(sel){
   return { monthRows, tot, provCur, provPrev, canCur, canPrev, provFly, canFly,
            provCurM, provPrevM, provFlyM, canCurM, canPrevM, canFlyM };
 }
+/* CONFINE DI INVENTARIO — da quando i nomi degli alloggi sono quelli di oggi.
+   Palazzo Alfani ha cambiato sistema fra ottobre e novembre 2025: nel file
+   convivono due export diversi, riconoscibili dal prefisso "n." sul numero di
+   riferimento e dai nomi dei canali in maiuscolo (BOOKINGXML, CTRIPV4). I 25
+   alloggi di prima ("APPARTAMENTO CLASSIC", "Appartamento Junior Suite + 2
+   letti aggiuntivi", "Classic Apartment"...) e i 5 di adesso (Classic,
+   Superior, Junior suite, Deluxe) non hanno NEMMENO UN NOME IN COMUNE.
+   normRoom li fa comunque ricadere sulle quattro tipologie attuali, e cosi'
+   una notte con quattro "Junior Suite" vendute finiva contro UNA camera: 148%.
+   Prima di questo confine l'occupazione per tipologia non si calcola: non e'
+   che manchi il numero, e' che non significa niente. Revenue, ADR e notti
+   restano, perche' quelli sono veri comunque.
+   Le altre cinque strutture non hanno questo scalino: un solo export, sempre. */
+const RT_INVENTARIO_DA = { alfani: 202511 };
+function rtInventarioAttendibile(structKey, year, month){
+  const da = RT_INVENTARIO_DA[structKey];
+  if (!da) return true;
+  return (year * 100 + month) >= da;
+}
+
 /* OCC by Room Type
    Per ogni mese di soggiorno e per ogni room type, calcola RN, ADR.
    Capacità per room type = camere(rt) × days del mese.
@@ -2702,13 +2722,12 @@ function aggRoomType(sel){
       }
     }
   }
+  /* La vecchia correzione a mano (Alfani: Classic 4 e Junior Suite 0 prima di
+     febbraio 2025) provava a tamponare lo stesso scalino, ma con la data
+     sbagliata — il cambio e' di novembre 2025 — e inventando due numeri.
+     Ora il periodo vecchio non si misura affatto: vedi RT_INVENTARIO_DA. */
   function effectiveRoomsForMonth(rt, year, month){
-    if (sel !== 'alfani') return roomsMap[rt];
-    const ym = year*100 + month;
-    if (ym < 202502){
-      if (rt === 'Classic') return 4;
-      if (rt === 'Junior Suite') return 0;
-    }
+    if (!rtInventarioAttendibile(sel, year, month)) return 0;
     return roomsMap[rt];
   }
   const rtData = {};
@@ -2724,8 +2743,8 @@ function aggRoomType(sel){
       const capP = roomsPrev * daysInMonth(PREV_YEAR, m);
       months.push({
         m,
-        occC: capC>0 ? v.rnC/capC : 0,
-        occP: capP>0 ? v.rnP/capP : 0,
+        occC: capC>0 ? v.rnC/capC : NaN,
+        occP: capP>0 ? v.rnP/capP : NaN,
         adrC: v.rnC>0?v.revC/v.rnC:NaN,
         adrP: v.rnP>0?v.revP/v.rnP:NaN,
         rnC:v.rnC, rnP:v.rnP, revC:v.revC, revP:v.revP,
@@ -2733,10 +2752,13 @@ function aggRoomType(sel){
       });
       totC.rn += v.rnC; totC.rev += v.revC; totC.cap += capC;
       totP.rn += v.rnP; totP.rev += v.revP; totP.cap += capP;
+      if (capC > 0) totC.rnOcc = (totC.rnOcc || 0) + v.rnC;
+      if (capP > 0) totP.rnOcc = (totP.rnOcc || 0) + v.rnP;
     }
     rtData[rt] = {
       rooms, months,
-      occC: totC.cap>0 ? totC.rn/totC.cap : 0, occP: totP.cap>0 ? totP.rn/totP.cap : 0,
+      occC: totC.cap>0 ? (totC.rnOcc||0)/totC.cap : NaN,
+      occP: totP.cap>0 ? (totP.rnOcc||0)/totP.cap : NaN,
       adrC: totC.rn>0?totC.rev/totC.rn:NaN,
       adrP: totP.rn>0?totP.rev/totP.rn:NaN,
       rnC: totC.rn, rnP: totP.rn, revC: totC.rev, revP: totP.rev,
@@ -3440,8 +3462,8 @@ function renderRT(sel){
   const occSeries = visList.map((rt,i)=>({
     label: rt,
     color: RT_PALETTE[A.rtList.indexOf(rt)%RT_PALETTE.length],
-    cur: A.rtData[rt].months.map(m=>m.occC*100),
-    prev: A.rtData[rt].months.map(m=>m.occP*100),
+    cur: A.rtData[rt].months.map(m=>isFinite(m.occC)?m.occC*100:0),
+    prev: A.rtData[rt].months.map(m=>isFinite(m.occP)?m.occP*100:0),
   }));
   const adrSeries = visList.map((rt,i)=>({
     label: rt,
@@ -3489,13 +3511,15 @@ function renderRT(sel){
     : (monthsSel.length === 1 ? CFG.monthsIT[monthsSel[0]-1] : monthsSel.length + ' months');
   let trow = `<tr class="total"><td class="rt-month-cell" title="${RT_MONTHS===null?'All 12 months':'Selected months: '+monthsSel.map(m=>CFG.monthsIT[m-1]).join(', ')}">${_totLbl}</td>`;
   for (const rt of cols){
-    let rnC=0, revC=0, capC=0, rnP=0, revP=0, capP=0;
+    let rnC=0, revC=0, capC=0, rnP=0, revP=0, capP=0, rnOccC=0, rnOccP=0;
     for (const m of monthsSel){
       const md = A.rtData[rt].months[m-1];
       rnC += md.rnC; revC += md.revC; capC += (md.capC||0);
       rnP += md.rnP; revP += md.revP; capP += (md.capP||0);
+      if ((md.capC||0) > 0) rnOccC += md.rnC;
+      if ((md.capP||0) > 0) rnOccP += md.rnP;
     }
-    const occC = capC>0 ? rnC/capC : 0, occP = capP>0 ? rnP/capP : 0;
+    const occC = capC>0 ? rnOccC/capC : NaN, occP = capP>0 ? rnOccP/capP : NaN;
     const adrC = rnC>0 ? revC/rnC : NaN, adrP = rnP>0 ? revP/rnP : NaN;
     trow += `
       <td class="cell-mono rt-block-start">${fmtPct(occC,1)}</td>
@@ -16857,13 +16881,20 @@ function anlyAggregate(sel, ym, filters, asOf){
      tipologia ma non se era piena: 4.000 euro su una camera e 4.000 su quattro
      sono due situazioni opposte. */
   const _roomsRt = (typeof fcstRoomsByRT === 'function') ? (fcstRoomsByRT(sel) || {}) : {};
+  /* Stesso confine della tab OCC by Room Type: prima del cambio di sistema i
+     nomi degli alloggi sono di un inventario che non esiste piu', quindi
+     l'occupazione per tipologia non si calcola. Vale per l'anno in corso e per
+     il confronto con l'anno scorso, ciascuno col proprio mese. */
+  const _okCur = (typeof rtInventarioAttendibile === 'function') ? rtInventarioAttendibile(sel, y, mo) : true;
+  const _okLy  = (typeof rtInventarioAttendibile === 'function') ? rtInventarioAttendibile(sel, y-1, mo) : true;
   const conOcc = (righe) => righe.map(r => {
     const n = _roomsRt[r.name];
     const capRt = (n > 0) ? n * giorni : 0;
     return Object.assign({}, r, {
       unita: n || null,
-      occ:   capRt > 0 ? r.rn   / capRt : null,
-      occLy: capRt > 0 ? r.rnLy / capRt : null
+      occ:   (_okCur && capRt > 0) ? r.rn   / capRt : null,
+      occLy: (_okLy  && capRt > 0) ? r.rnLy / capRt : null,
+      occNo: !_okCur, occLyNo: !_okLy
     });
   });
 
@@ -17017,7 +17048,8 @@ function _anlyHtml(a, opts){
                     ? (r.rn + ' nights sold of ' + (r.unita * a.giorni) + ' available \u2014 '
                        + r.unita + ' ' + (r.unita === 1 ? 'unit' : 'units') + ' \u00d7 ' + a.giorni + ' days'
                        + (r.occLy != null ? '\nSame point last year: ' + occ(r.occLy) : ''))
-                    : 'This room type is not in the property configuration, so there is nothing to measure the nights against.') + '">'
+                    : 'This room type is not in the property configuration, so there is nothing to measure the nights against.')
+                 + ((r.occNo || r.occLyNo) ? '\n\nBefore November 2025 this property was on a different system, with accommodation names that no longer exist. Nights and revenue are real, but there is no inventory to measure them against, so the occupancy is left blank.' : '') + '">'
                 + occ(r.occ)
                 + (r.occLy != null ? '<span style="color:var(--ink-3)"> / ' + occ(r.occLy) + '</span>' : '')
                 + '</td>')
