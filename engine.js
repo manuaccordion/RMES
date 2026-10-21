@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-21 · Analysis: secondo blocco a data scelta';
+const ENGINE_BUILD = '2026-10-21b · Analysis: OCC per tipologia + prezzo Expedia spiegato';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -16852,11 +16852,26 @@ function anlyAggregate(sel, ym, filters, asOf){
   } catch(e){}
   const med = a => { a = a.slice().sort((x,z) => x-z); return a.length ? a[a.length>>1] : null; };
 
+  /* Occupazione per tipologia: le notti vendute contro le camere di QUELLA
+     tipologia per i giorni del mese. Senza, la tabella dice quanto ha reso una
+     tipologia ma non se era piena: 4.000 euro su una camera e 4.000 su quattro
+     sono due situazioni opposte. */
+  const _roomsRt = (typeof fcstRoomsByRT === 'function') ? (fcstRoomsByRT(sel) || {}) : {};
+  const conOcc = (righe) => righe.map(r => {
+    const n = _roomsRt[r.name];
+    const capRt = (n > 0) ? n * giorni : 0;
+    return Object.assign({}, r, {
+      unita: n || null,
+      occ:   capRt > 0 ? r.rn   / capRt : null,
+      occLy: capRt > 0 ? r.rnLy / capRt : null
+    });
+  });
+
   return {
     ym, ymLy, giorni, rooms, cap, asOf: cutCur, asOfLy: cutLy,
     cur: kpi(cur), ly: kpi(ly), hasLy: ly.tot.rev > 0,
     channels: confronta(cur.ch, ly.ch),
-    rooms_: confronta(cur.rt, ly.rt),
+    rooms_: conOcc(confronta(cur.rt, ly.rt)),
     rates: confronta(cur.rate, ly.rate),
     pickup: { rn: pickupRn, rev: pickupRev },
     expedia: { mine: med(expMine), comp: med(expComp), n: expMine.length }
@@ -16960,8 +16975,16 @@ function _anlyHtml(a, opts){
      + '<div style="font-size:11px;color:var(--ink-3)">' + a.pickup.rn + ' nights booked</div></div>';
   if (a.expedia.mine != null){
     const gap = a.expedia.comp > 0 ? a.expedia.mine/a.expedia.comp - 1 : null;
-    h += '<div style="min-width:150px">'
-       + '<div style="font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">My price on Expedia</div>'
+    /* Cos'e' questo numero, detto nel tooltip e non in pagina (regola: niente
+       testi nelle tab). E' il prezzo a scaffale, non quello incassato. */
+    const _expTip = 'The price you are publishing on Expedia for the nights of this month, taken as the median'
+      + ' across the ' + a.expedia.n + ' nights where a price is visible.'
+      + '\nUnderneath, the median of the competitor average on the same nights.'
+      + '\n\nIt is the SHELF price: what a guest sees today, gross of commission.'
+      + '\nIt is not what you earned \u2014 that is the Revenue above, which comes from bookings already made.'
+      + '\nA month can show a high shelf price and a low ADR: it means the price went up after most of the month was sold.';
+    h += '<div style="min-width:150px;cursor:help" title="' + escapeHtml(_expTip) + '">'
+       + '<div style="font-size:10.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.06em">My price on Expedia \u2139</div>'
        + '<div style="font-size:20px;font-weight:700;font-family:\'DM Mono\',monospace">' + eur(a.expedia.mine) + '</div>'
        + '<div style="font-size:11px;color:var(--ink-3)">compset ' + eur(a.expedia.comp)
        + (gap != null ? ' &middot; <span style="color:' + col(gap) + ';font-weight:700">' + pct(gap) + '</span>' : '')
@@ -16975,8 +16998,10 @@ function _anlyHtml(a, opts){
     let t = '<div style="flex:1;min-width:290px">';
     t += '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin:0 0 5px">' + titolo + '</div>';
     t += '<table style="border-collapse:collapse;width:100%;font-size:12px">';
+    const _conOcc = (dim === 'rt');
     t += '<tr style="color:var(--ink-3);font-size:10px"><th style="text-align:left;padding:2px 0">&nbsp;</th>'
        + '<th style="text-align:right;padding:2px 5px">rev</th><th style="text-align:right;padding:2px 5px">vs LY</th>'
+       + (_conOcc ? '<th style="text-align:right;padding:2px 5px">OCC</th>' : '')
        + '<th style="text-align:right;padding:2px 5px">ADR</th><th style="text-align:right;padding:2px 0 2px 5px">lead</th></tr>';
     for (const r of rows.slice(0, 8)){
       const on = ANLY_FILTERS[dim] === r.name;
@@ -16986,6 +17011,17 @@ function _anlyHtml(a, opts){
          + '<td style="text-align:right;padding:4px 5px;font-family:\'DM Mono\',monospace">' + eur(r.rev) + '</td>'
          + '<td style="text-align:right;padding:4px 5px;font-family:\'DM Mono\',monospace;font-weight:700;color:' + col(r.dRev) + '">'
          + (r.dRev >= 0 ? '+' : '') + eur(r.dRev) + '</td>'
+         + (_conOcc
+             ? ('<td style="text-align:right;padding:4px 5px;font-family:\'DM Mono\',monospace;font-size:11px"'
+                + ' title="' + escapeHtml(r.unita
+                    ? (r.rn + ' nights sold of ' + (r.unita * a.giorni) + ' available \u2014 '
+                       + r.unita + ' ' + (r.unita === 1 ? 'unit' : 'units') + ' \u00d7 ' + a.giorni + ' days'
+                       + (r.occLy != null ? '\nSame point last year: ' + occ(r.occLy) : ''))
+                    : 'This room type is not in the property configuration, so there is nothing to measure the nights against.') + '">'
+                + occ(r.occ)
+                + (r.occLy != null ? '<span style="color:var(--ink-3)"> / ' + occ(r.occLy) + '</span>' : '')
+                + '</td>')
+             : '')
          + '<td style="text-align:right;padding:4px 5px;font-size:11px">' + eur(r.adr)
          + (r.adrLy != null ? '<span style="color:var(--ink-3)"> / ' + eur(r.adrLy) + '</span>' : '') + '</td>'
          + '<td style="text-align:right;padding:4px 0 4px 5px;font-size:11px">'
