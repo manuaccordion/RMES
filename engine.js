@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-22g · Alfani: Junior Suite prima colonna nella tab Room Type';
+const ENGINE_BUILD = '2026-10-22h · Alfani 2025: corrette anche le prenotazioni di gruppo';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -1326,73 +1326,89 @@ const ROOM_NORMALIZE = {
   'superior apartment':'Superior',
   'deluxe apartment':'Deluxe',
 };
-/* ═══ ASSEGNAZIONE REALE DEGLI ALLOGGI — Palazzo Alfani, gennaio-novembre 2025 ═══
-   Fino a novembre 2025 l'export di SimpleBooking metteva nella colonna alloggi la
-   TIPOLOGIA VENDUTA dal canale, non l'unita' in cui l'ospite ha dormito. Risultato:
-   133 notti con piu' camere "vendute" di quante ne esistano, fino al 148%.
-   La proprieta' teneva a mano un planning per stanza fisica (1A..3D, 9 stanze, lo
-   stesso inventario di oggi: Classic 3 - 1A 2C 3D, Superior 4 - 1B 2A 3A 3B,
-   Deluxe 1 - 2B, Junior Suite 1 - 3C). Da li' arriva questa mappa.
-   Dei 769 alloggi prenotati nel periodo, 669 (87%) sono agganciati al planning per
-   nome + data di arrivo; i restanti 100 sono stati messi nelle stanze rimaste
-   fisicamente libere, scelta quasi obbligata perche' il planning fissa gia' il
-   resto della griglia. Dopo la correzione: ZERO notti sopra inventario.
-   NON e' una regola inventata: un algoritmo di riassegnazione era stato provato
-   prima e bocciato, perche' tre criteri di priorita' diversi davano alla Junior
-   Suite fra 274 e 532 notti e nessuno indovinava i casi verificati a mano.
-   Chiave: "<numero di riferimento>|<indice dell'alloggio nella prenotazione>".
-   Valore: C/S/J/D = tipo realmente occupato. Il "?" marca le 22 dedotte invece che
-   lette dal planning. Ci sono SOLO le 144 che cambiano: tutte le altre restano
-   dove le mette l'export. 3 prenotazioni restano impiazzabili (overbooking vero).
-   Da dicembre 2025 l'export porta l'alloggio assegnato e non serve piu' nulla. */
-const RT_ALFANI_OCCUPATO = {
-  "n.1128138417121766|0":"S","n.1128139727669303|0":"S","n.1128140859832359|0":"S",
-  "n.1128141488195872|0":"S","n.1128141823127130|0":"C","n.1128142330452019|0":"S?",
-  "n.1128142815979581|0":"S?","n.1128143007458695|0":"S?","n.1128143113411919|0":"S?",
-  "n.1128143266991741|0":"C","n.2025010237183733|0":"S","n.2025012837739005|0":"J",
-  "n.2025021138063017|0":"S?","n.2025022138277965|0":"D","n.2025031738809107|0":"S?",
-  "n.2025032238949552|0":"C","n.2025032238951858|0":"S","n.2025033139144123|0":"D",
-  "n.2025041339457576|0":"S","n.2025041639519190|0":"J?","n.2025060840825541|0":"D",
-  "n.2025061841092654|0":"S","n.2025082442880547|0":"S","n.2025092743543342|0":"J",
-  "n.2025110144144836|0":"S","n.2025110244169843|0":"C","n.2025111144330903|0":"S",
-  "n.2156152948|0":"S","n.2161252661|0":"S","n.2168840924|0":"S","n.2170538508|0":"S",
-  "n.2179281238|0":"S","n.2179413365|0":"S","n.2180005039|0":"S?","n.2180508003|0":"C",
-  "n.2190821690|0":"S","n.2195323302|0":"S","n.2200836962|0":"S","n.2203588283|0":"C",
-  "n.2211090180|0":"C","n.2214916598|0":"S","n.2226237022|0":"S","n.2229151851|0":"S",
-  "n.2234273009|0":"S?","n.2236065628|0":"S","n.2240649726|0":"S","n.2245654261|0":"J",
-  "n.2246161753|0":"S","n.2250082445|0":"S","n.2253530414|0":"S","n.2270534520|0":"S?",
-  "n.2289265209|0":"J","n.2320829509|0":"C","n.356969978|0":"J","n.356998651|0":"J",
-  "n.377934945|0":"S","n.389764013|0":"J","n.410218665|0":"S","n.427166417|0":"S?",
-  "n.429346279|0":"S?","n.4296933656|0":"S?","n.4301196664|0":"S","n.4354926977|0":"S",
-  "n.4369564653|0":"S","n.4386346376|0":"S","n.4386520429|0":"S","n.4416302211|0":"S",
-  "n.4463252965|0":"S","n.4463906423|0":"S","n.4468748880|0":"S?","n.4476330010|0":"S",
-  "n.4482802664|0":"J","n.4487101837|0":"J","n.4497602404|0":"C?","n.4515576425|0":"S",
-  "n.4547903288|0":"S","n.4561605234|0":"S?","n.4632937735|0":"S","n.4669820897|0":"S",
-  "n.4743820831|0":"C","n.4808778736|0":"D","n.4835467073|0":"S","n.4862842193|0":"S",
-  "n.4871526383|0":"J","n.4880708140|0":"S","n.4882334477|0":"J","n.4883187046|0":"S",
-  "n.4894728774|0":"S","n.4901192729|0":"S?","n.4957131837|0":"S","n.4959248055|0":"S",
-  "n.5154378288|0":"S","n.5157736976|0":"S?","n.5172390838|0":"D","n.5213431629|0":"S",
-  "n.5244770511|0":"S","n.5282813696|0":"J","n.5300282981|0":"D","n.5352541072|0":"S",
-  "n.5356744975|0":"S","n.5366919135|0":"S","n.5460858972|0":"S","n.5472287917|0":"S",
-  "n.5479815622|0":"C","n.5539102027|0":"C","n.5606506539|0":"S","n.5626558106|0":"D",
-  "n.5632796112|0":"S","n.5655874782|0":"S","n.5908370401|0":"S","n.5953838200|0":"S",
-  "n.5974116427|0":"S","n.6057220426|0":"C","n.6154990866|0":"S","n.6270994477|0":"S",
-  "n.6277699042|0":"S","n.6290163986|0":"S","n.6298260753|0":"S","n.6311375178|0":"S",
-  "n.6315744677|0":"S","n.6383043476|0":"S","n.6473279490|0":"S","n.6475867033|0":"S",
-  "n.6481288602|0":"C","n.6493256482|0":"S","n.6506264273|0":"S","n.6506737810|0":"S?",
-  "n.6595166760|0":"C?","n.6755180159|0":"S?","n.6792088836|0":"J","n.6867896573|0":"S",
-  "n.6955491961|0":"S","n.6966391053|0":"C","n.999238885527650|0":"C","n.999239098798031|0":"C",
-  "n.999239355874408|0":"S","n.999239604486075|0":"S","n.999239725618553|0":"S",
-  "n.999239751337690|0":"S","n.999240193938827|0":"S","n.999240199996767|0":"J",
-  "n.999240443032031|0":"S?","n.999240809704122|0":"S","n.999240843923038|0":"S"
+/* ═══ ALLOGGI REALMENTE OCCUPATI — Palazzo Alfani, gennaio-novembre 2025 ═══
+   Il vecchio export di SimpleBooking sbagliava quella colonna in DUE modi:
+   1. ci metteva la TIPOLOGIA VENDUTA dal canale invece dell'unita' occupata, e
+   2. per le prenotazioni di GRUPPO dichiarava una stanza sola. "Lih Shin Shen",
+      16-20 novembre, occupava cinque appartamenti (1B 2A 2B 3A 3B): l'export ne
+      riporta uno. Il ricavo invece c'e' tutto (planning 625.354 EUR contro
+      617.571 di Beddy, -1,2%), quindi l'occupazione 2025 risultava sottostimata
+      dell'11% e l'ADR sovrastimato di altrettanto.
+   Questa mappa rimpiazza la lista degli alloggi con quella vera, presa dal
+   planning per stanza fisica tenuto a mano dalla proprieta' (9 stanze: Classic
+   1A 2C 3D, Superior 1B 2A 3A 3B, Deluxe 2B, Junior Suite 3C - lo stesso
+   inventario di oggi). Correggendo la LISTA si sistemano insieme il tipo, il
+   numero di stanze e, di conseguenza, occupazione e ADR: il revenue della
+   prenotazione viene diviso fra le stanze davvero usate (numRooms piu' sotto).
+   Aggancio per nome ospite + data di arrivo, ESCLUSIVO: ogni riga del planning
+   si usa una volta sola, altrimenti due soggiorni ravvicinati dello stesso
+   ospite si prendono le stesse stanze e le notti si contano doppie. Il confronto
+   fra i nomi e' per token: "facchini" nel planning aggancia "Anna Facchini"
+   nell'export, perche' nel foglio molti ospiti sono scritti col solo cognome.
+   698 prenotazioni su 769 agganciate; le altre restano come le dichiara
+   l'export, con il tipo corretto solo se la stanza venduta era occupata.
+   Risultato: 1950 -> 2073 notti-alloggio, nessun mese sopra il 100%. Restano
+   fuori ~130 notti: sono gruppi che in Beddy non esistono proprio (il "danza in
+   fiera" del 21/02, sette stanze), e quelli non si aggiungono per ipotesi.
+   Chiave: numero di riferimento. Valore: una lettera per alloggio occupato,
+   C=Classic S=Superior J=Junior Suite D=Deluxe. Ci sono solo le 162 liste che
+   cambiano. Da dicembre 2025 l'export e' corretto e qui non entra nulla. */
+const RT_ALFANI_ALLOGGI = {
+  "n.1128138417121766":"S","n.1128139727669303":"S","n.1128140592042622":"S",
+  "n.1128140859832359":"S","n.1128141488195872":"S","n.1128141823127130":"C",
+  "n.1128142330452019":"S","n.1128142815979581":"S","n.1128143007458695":"S",
+  "n.1128143113411919":"S","n.2024123137140814":"J","n.2025010237183733":"S",
+  "n.2025012837739005":"J","n.2025020537918866":"JC","n.2025021638164001":"JC",
+  "n.2025022138277965":"D","n.2025031138659653":"SC","n.2025031738809107":"S",
+  "n.2025032238949552":"C","n.2025032238951858":"SS","n.2025032739069221":"CS",
+  "n.2025033139144123":"D","n.2025033139146297":"SSDSS","n.2025041339457576":"S",
+  "n.2025042039615291":"CSJ","n.2025042039615298":"SSC","n.2025051440178522":"SS",
+  "n.2025051640222064":"CC","n.2025060840825541":"D","n.2025061841092654":"SJ",
+  "n.2025071641864963":"DC","n.2025082442880547":"SJ","n.2025092743543342":"J",
+  "n.2025101643888437":"S","n.2025110144144836":"S","n.2025110244169843":"C",
+  "n.2025111144330903":"S","n.2156152948":"SC","n.2161252661":"S","n.2168840924":"S",
+  "n.2169041289":"CS","n.2170538508":"S","n.2179281238":"S","n.2179413365":"S",
+  "n.2180508003":"C","n.2184725174":"SS","n.2190821690":"S","n.2195323302":"S",
+  "n.2203588283":"C","n.2204957217":"S","n.2211090180":"CSS","n.2214916598":"S",
+  "n.2226237022":"S","n.2229151851":"S","n.2234273009":"S","n.2236065628":"S",
+  "n.2240649726":"S","n.2245654261":"J","n.2246161753":"S","n.2250082445":"S",
+  "n.2253530414":"S","n.2270534520":"S","n.2289265209":"J","n.2320829509":"C",
+  "n.344441221":"SS","n.356969978":"J","n.356998651":"J","n.377934945":"S","n.389764013":"J",
+  "n.410218665":"S","n.411897819":"SS","n.427166417":"JC","n.429346279":"C","n.4296933656":"S",
+  "n.4299282107":"CS","n.4301196664":"S","n.4314248766":"DC","n.4354926977":"S",
+  "n.4369564653":"S","n.4386346376":"S","n.4386520429":"S","n.4416302211":"S",
+  "n.4463252965":"S","n.4463906423":"S","n.4476330010":"S","n.4482802664":"J",
+  "n.4485403704":"J","n.4487101837":"J","n.4497602404":"C","n.4515576425":"S",
+  "n.4547903288":"S","n.4561605234":"S","n.4632937735":"S","n.4669820897":"S",
+  "n.4743820831":"C","n.4808778736":"D","n.4835467073":"S","n.4861949799":"CS",
+  "n.4862842193":"S","n.4871526383":"J","n.4880708140":"S","n.4882334477":"J",
+  "n.4883187046":"S","n.4894728774":"SC","n.4901192729":"S","n.4957131837":"S",
+  "n.4959248055":"S","n.4992326247":"SS","n.5154378288":"S","n.5157736976":"S",
+  "n.5172390838":"D","n.5213431629":"S","n.5244770511":"S","n.5255949999":"SS",
+  "n.5282813696":"J","n.5300282981":"D","n.5352541072":"S","n.5356744975":"S",
+  "n.5366919135":"S","n.5460858972":"S","n.5472287917":"S","n.5479815622":"C",
+  "n.5483008992":"SS","n.5539102027":"C","n.5606506539":"S","n.5626558106":"D",
+  "n.5632796112":"S","n.5655874782":"S","n.5728525650":"CC","n.5908370401":"S",
+  "n.5939454308":"S","n.5953838200":"SC","n.5974116427":"S","n.6057220426":"C",
+  "n.6154990866":"S","n.6270994477":"S","n.6277699042":"SC","n.6290163986":"S",
+  "n.6298260753":"S","n.6311375178":"S","n.6315744677":"S","n.6383043476":"S",
+  "n.6473279490":"S","n.6475867033":"S","n.6481288602":"C","n.6493256482":"SJ",
+  "n.6506264273":"S","n.6595166760":"C","n.6755180159":"S","n.6792088836":"J",
+  "n.6867861207":"SSCC","n.6867896573":"SC","n.6955491961":"S","n.6966391053":"C",
+  "n.999238885527650":"C","n.999238974561305":"JC","n.999239098798031":"C",
+  "n.999239355874408":"S","n.999239604486075":"SC","n.999239725618553":"S",
+  "n.999239751337690":"S","n.999239973134604":"D","n.999240193938827":"S",
+  "n.999240199996767":"J","n.999240809704122":"S","n.999240843923038":"S"
 };
 const _RT_SIGLA_TIPO = { C:'Classic', S:'Superior', J:'Junior Suite', D:'Deluxe' };
-function rtAlloggioReale(structKey, ref, idx, dIn, venduto){
-  if (structKey !== 'alfani' || !dIn) return venduto;
+function rtAlloggiReali(structKey, ref, dIn, esportati){
+  if (structKey !== 'alfani' || !dIn) return esportati;
   const ym = dIn.getFullYear() * 100 + (dIn.getMonth() + 1);
-  if (ym < 202501 || ym > 202511) return venduto;
-  const v = RT_ALFANI_OCCUPATO[String(ref || '').trim() + '|' + idx];
-  return v ? (_RT_SIGLA_TIPO[v[0]] || venduto) : venduto;
+  if (ym < 202501 || ym > 202511) return esportati;
+  const v = RT_ALFANI_ALLOGGI[String(ref || '').trim()];
+  if (!v) return esportati;
+  const lista = v.split('').map(c => _RT_SIGLA_TIPO[c]).filter(Boolean);
+  return lista.length ? lista : esportati;
 }
 function normRoom(s){
   if(!s) return '';
@@ -1701,6 +1717,10 @@ function loadData(csvText){
         alloggi = _filtered;
       }
     }
+    /* Alfani gen-nov 2025: la lista vera viene dal planning della proprieta'.
+       Va fatto QUI, prima di numRooms, perche' cambia anche QUANTE stanze sono
+       e quindi come si divide il revenue della prenotazione. */
+    alloggi = rtAlloggiReali(_structKeyForRooms, r['numero di riferimento'], dIn, alloggi);
     if (!alloggi.length) continue;
     const numRooms = alloggi.length;
     const revPerRoomNight = (totNet / notti) / numRooms;
@@ -1721,11 +1741,7 @@ function loadData(csvText){
     const channelMarkup = isDirect ? 0 : (_markupPct / 100);
     const revPerRoomNightCaricato = revPerRoomNightGross / (1 + channelMarkup);
     RAW.push(r);
-    for (let _iAll = 0; _iAll < alloggi.length; _iAll++){
-      /* La tipologia che finisce nel booking e' quella OCCUPATA, non quella
-         venduta: per Alfani gen-nov 2025 la corregge il planning della
-         proprieta' (vedi RT_ALFANI_OCCUPATO), altrove resta com'e'. */
-      const room = rtAlloggioReale(_structKeyForRooms, ref, _iAll, dIn, alloggi[_iAll]);
+    for (const room of alloggi){
       BOOKINGS.push({
         struct, structKey: _structKeyForRooms, room, prov, canale, ref, guest, tariffa,
         dBook, dIn, dOut,
@@ -2760,7 +2776,7 @@ function aggOTBYearly(sel){
    prenotato fra parentesi se diverso) e il conto torna per costruzione.
    Da gennaio a novembre 2025 il problema NON si aggira piu': si corregge alla
    fonte, con il planning per stanza fisica tenuto a mano dalla proprieta' (vedi
-   RT_ALFANI_OCCUPATO sopra). Ogni prenotazione finisce nella stanza in cui
+   RT_ALFANI_ALLOGGI sopra). Ogni prenotazione finisce nelle stanze in cui
    l'ospite ha davvero dormito, e il suo revenue la segue. Occupazione e ADR per
    tipologia tornano quindi sulla stessa base del periodo nuovo: nessun mese passa
    il 100%. Questo confine ora serve solo a MARCARE quei mesi, perche' il 13%
