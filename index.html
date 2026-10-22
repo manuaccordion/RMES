@@ -337,6 +337,11 @@ table.data tbody tr.total td{border-bottom:none}
    cui la riconduzione ai room type di oggi e' ricostruita dai nomi vecchi.
    Il tratteggio sotto dice che c'e' un tooltip da leggere. */
 table.data tbody td.rt-soft{opacity:.5;text-decoration:underline dotted 1px;text-underline-offset:3px;cursor:help}
+/* rt-void = non c'e' un valore (n/a, none) e il perche' sta nel tooltip.
+   rt-note = il valore c'e' ma vuole un avvertimento.
+   Stesso tratteggio: dice "qui c'e' qualcosa da leggere al passaggio". */
+.rt-void,.rt-note{cursor:help;text-decoration:underline dotted 1px;text-underline-offset:3px}
+table.data tbody td.rt-void{color:var(--ink-3);font-style:italic}
 .rt-block-start{border-left:3px solid var(--accent) !important}
 table.data thead tr:first-child th.rt-block-start{border-left:3px solid var(--accent)}
 /* Sell-strategy block borders: color-coded per block for visual separation.
@@ -2791,6 +2796,13 @@ table.data.sell-table .sell-drill{
         <p>In the old export that column carried the room type <b>as sold by the channel</b>, not the unit actually occupied: every OTA used its own listing name (<i>Classic Apartment</i>, <i>Appartamento Classic con 1 Camera da Letto</i>), the PMS its own in capitals (<i>APPARTAMENTO CLASSIC</i>) &mdash; each long name appears on one channel and one only. So on nights when a guest was moved, more &ldquo;Junior Suite&rdquo; were sold than Junior Suites exist: four separate reservations on the night of 8 November 2025, and 148% in October. From December the column carries the <b>assigned</b> accommodation, with the booked one in brackets when they differ, and the count adds up by construction.</p>
         <p>So before December 2025 the occupancy by room type is <b>not computed</b>. It is not a missing number; it is a number that would not mean anything.</p>
         <p>Nights and revenue of that period are real and stay in every other tab. The <b>ADR by room type</b> stays visible too, but greyed with a dotted underline: it is the ADR of the type <i>sold</i>, not of the type <i>occupied</i> &mdash; a real figure, measured on a different basis from the 2026 column beside it. Hover any greyed figure for the note. The same holds on the total row: hover <b>ADR &rsquo;25</b> to see how many months sit on the old basis, and <b>OCC &rsquo;25</b> to see which months it actually covers. For Alfani with <i>All</i> selected that total stands on December alone, so it is not comparable with the OCC &rsquo;26 beside it.</p>
+        <p><b>No cell is ever left empty.</b> A dash cannot tell three different things apart, so occupancy and ADR never show one. Instead:</p>
+        <ul style="margin:6px 0 8px 18px">
+          <li><code>n/a</code> &mdash; <b>not measurable</b>. There is no inventory to measure the nights against, as in Alfani before December 2025.</li>
+          <li><code>none</code> &mdash; <b>measurable, but nothing was sold</b>. A real zero, not a missing figure: no nights of that room type that month, so there is no average rate to compute.</li>
+        </ul>
+        <p>Both are underlined with dots and explain themselves on hover, here and in the room-type rows of the Analysis tab. All of them are fed by one piece of text, so the explanation cannot drift apart between tabs. A value that exists but needs a caveat &mdash; the OCC &rsquo;25 total, for instance &mdash; is shown in full with the same dotted underline, never replaced by a label.</p>
+        <p>In the <b>KPI cards</b> at the top, the year-on-year difference in <i>pp</i> disappears for this property: with <i>All</i> selected, OCC &rsquo;26 covers twelve months and STLY covers December alone, and the gap between them read as &ldquo;+33.7 pp&rdquo; of improvement that does not exist. The STLY figure is still shown, underlined; hover it to see which months it stands on. The other properties keep the difference, because both sides cover the same period.</p>
         <p>In the charts a month with no measurable occupancy leaves a <b>gap</b> in the line rather than a dip to zero, which would read as &ldquo;sold nothing&rdquo;. The other five properties never had this step and are drawn and computed normally throughout.</p>
       </div>
       </details>

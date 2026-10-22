@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-21e · confine Alfani a dicembre 2025 + ADR smorzato + buchi nei grafici';
+const ENGINE_BUILD = '2026-10-22b · mai celle vuote: n/a e none al posto del trattino, con spiegazione';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -2702,28 +2702,65 @@ function rtInventarioAttendibile(structKey, year, month){
    Lasciato com'era sembrava il dato solido dei due, proprio perche'
    l'occupazione accanto e' vuota: e' la domanda che ha fatto fermare l'utente.
    Resta leggibile ma smorzato, con il tooltip che dice cos'e'. */
+/* MAI UNA CELLA VUOTA. Un trattino non distingue tre cose molto diverse: "non
+   e' misurabile", "e' misurabile ma non e' stato venduto niente" e "me ne sono
+   dimenticato". Due etichette corte, ciascuna col suo tooltip, in ogni punto in
+   cui prima usciva un trattino. */
+const RT_LBL_NA   = 'n/a';    // non misurabile
+const RT_LBL_ZERO = 'none';   // misurabile, ma venduto niente
+const RT_NOSALE_TIP = 'Nothing sold. No nights of this room type in this month, so there is no average rate to compute. A real zero, not a missing figure.';
+const RT_NOCAP_TIP  = 'No capacity to measure against. This room type has no units in the property configuration for this period, so an occupancy percentage cannot be computed.';
+/* Stesso testo in tutti i punti in cui l'occupazione per tipologia sparisce -
+   tabella, KPI, tab Analysis - cosi' se la storia cambia ancora si cambia qui
+   e basta. */
+const RT_OCC_VUOTA_TIP = 'Not measurable here. Until November 2025 this property exported the room type as SOLD by the channel rather than the unit actually assigned, so on nights when a guest was moved more rooms of a type were sold than exist — up to 148%. The nights and the revenue are real and are kept in every other tab; only the occupancy by room type is left blank, because there is no inventory to measure it against. From December 2025 it is computed normally.';
 const RT_SOFT_ADR_TIP = 'Measured on a different basis. Until November 2025 this property exported the room type as SOLD by the channel — each OTA used its own listing name, the PMS its own — rather than the unit actually assigned. The nights and the revenue are real, but the room type behind them is the one sold, not the one occupied, so this figure is not computed the same way as the 2026 column beside it. From December 2025 the column carries the assigned accommodation.';
+function _rtVoidTd(lbl, tip, base){
+  return '<td class="' + base + ' rt-void" title="' + escapeHtml(tip) + '">' + lbl + '</td>';
+}
+/* Versioni per testo libero (KPI), dove non c'e' una cella da marcare. */
+function _rtTxtPct(v, tip){
+  return isFinite(v) ? fmtPct(v, 1)
+    : '<span class="rt-void" title="' + escapeHtml(tip || RT_NOCAP_TIP) + '">' + RT_LBL_NA + '</span>';
+}
+function _rtTxtAdr(v){
+  return (isFinite(v) && v > 0) ? fmtAdr(v)
+    : '<span class="rt-void" title="' + escapeHtml(RT_NOSALE_TIP) + '">' + RT_LBL_ZERO + '</span>';
+}
+function _rtOccCell(occ, structKey, year, month, extraCls){
+  const base = 'cell-mono' + (extraCls ? ' ' + extraCls : '');
+  if (!rtInventarioAttendibile(structKey, year, month)) return _rtVoidTd(RT_LBL_NA, RT_OCC_VUOTA_TIP, base);
+  if (!isFinite(occ)) return _rtVoidTd(RT_LBL_NA, RT_NOCAP_TIP, base);
+  return '<td class="' + base + '">' + fmtPct(occ, 1) + '</td>';
+}
 function _rtAdrCell(adr, structKey, year, month, extraCls){
+  const base = 'cell-mono' + (extraCls ? ' ' + extraCls : '');
   const soft = !rtInventarioAttendibile(structKey, year, month);
-  return '<td class="cell-mono' + (extraCls ? ' ' + extraCls : '') + (soft ? ' rt-soft' : '') + '"'
+  if (!isFinite(adr) || adr <= 0)
+    return _rtVoidTd(RT_LBL_ZERO, RT_NOSALE_TIP + (soft ? ' ' + RT_SOFT_ADR_TIP : ''), base);
+  return '<td class="' + base + (soft ? ' rt-soft' : '') + '"'
        + (soft ? ' title="' + escapeHtml(RT_SOFT_ADR_TIP) + '"' : '')
        + '>' + fmtAdr(adr) + '</td>';
 }
 function _rtAdrTotCell(adr, structKey, year, monthsSel, extraCls){
+  const base = 'cell-mono' + (extraCls ? ' ' + extraCls : '');
   const pre = monthsSel.filter(m => !rtInventarioAttendibile(structKey, year, m));
-  if (!pre.length) return '<td class="cell-mono' + (extraCls ? ' ' + extraCls : '') + '">' + fmtAdr(adr) + '</td>';
+  if (!isFinite(adr) || adr <= 0) return _rtVoidTd(RT_LBL_ZERO, RT_NOSALE_TIP, base);
+  if (!pre.length) return '<td class="' + base + '">' + fmtAdr(adr) + '</td>';
   const tip = RT_SOFT_ADR_TIP + ' This total includes ' + pre.length + ' such month'
             + (pre.length > 1 ? 's' : '') + ': ' + pre.map(m => CFG.monthsIT[m-1]).join(', ') + '.';
-  return '<td class="cell-mono' + (extraCls ? ' ' + extraCls : '') + ' rt-soft" title="'
-       + escapeHtml(tip) + '">' + fmtAdr(adr) + '</td>';
+  return '<td class="' + base + ' rt-soft" title="' + escapeHtml(tip) + '">' + fmtAdr(adr) + '</td>';
 }
 /* L'occupazione dei mesi pre-confine non entra ne' nelle notti ne' nella
    capacita': il totale e' corretto ma copre meno mesi di quello accanto, e due
    percentuali affiancate si leggono sempre come confrontabili. Il tooltip dice
    su quali mesi sta effettivamente. */
 function _rtOccTotCell(occ, structKey, year, monthsSel, extraCls){
+  const base = 'cell-mono' + (extraCls ? ' ' + extraCls : '');
   const dentro = monthsSel.filter(m => rtInventarioAttendibile(structKey, year, m));
   const fuori  = monthsSel.length - dentro.length;
+  if (!isFinite(occ))
+    return _rtVoidTd(RT_LBL_NA, dentro.length === 0 ? RT_OCC_VUOTA_TIP : RT_NOCAP_TIP, base);
   let tip = '';
   if (fuori > 0 && dentro.length > 0){
     tip = ' title="' + escapeHtml('Covers ' + dentro.map(m => CFG.monthsIT[m-1]).join(', ')
@@ -2731,7 +2768,9 @@ function _rtOccTotCell(occ, structKey, year, monthsSel, extraCls){
         + ' no measurable inventory for this property, so ' + (fuori > 1 ? 'they are' : 'it is')
         + ' left out of both the nights and the capacity. Not comparable with the figure beside it, which covers every selected month.') + '"';
   }
-  return '<td class="cell-mono' + (extraCls ? ' ' + extraCls : '') + '"' + tip + '>' + fmtPct(occ,1) + '</td>';
+  /* rt-note, non rt-void: qui un valore c'e', ha solo bisogno di un avvertimento.
+     rt-void resta riservato alle celle che un valore non ce l'hanno. */
+  return '<td class="' + base + (tip ? ' rt-note' : '') + '"' + tip + '>' + fmtPct(occ,1) + '</td>';
 }
 
 /* OCC by Room Type
@@ -2768,7 +2807,8 @@ function aggRoomType(sel){
   }
   /* La vecchia correzione a mano (Alfani: Classic 4 e Junior Suite 0 prima di
      febbraio 2025) provava a tamponare lo stesso scalino, ma con la data
-     sbagliata — il cambio e' di novembre 2025 — e inventando due numeri.
+     sbagliata e inventando due numeri. Anche il primo confine automatico aveva
+     la data sbagliata, di un mese: il cambio e' fra novembre e DICEMBRE 2025.
      Ora il periodo vecchio non si misura affatto: vedi RT_INVENTARIO_DA. */
   function effectiveRoomsForMonth(rt, year, month){
     if (!rtInventarioAttendibile(sel, year, month)) return 0;
@@ -3478,13 +3518,31 @@ function renderRT(sel){
   if (!RT_VISIBLE || RT_VISIBLE._sel !== sel){
     RT_VISIBLE = new Set(A.rtList); RT_VISIBLE._sel = sel;
   }
+  /* Se l'anno scorso e' misurabile solo in parte, l'occupazione STLY sta su meno
+     mesi di quella corrente e il delta fra le due non significa niente: a
+     Palazzo Alfani il solo dicembre contro dodici mesi dava "+33,7 pp", un
+     miglioramento che non esiste. Il valore si mostra, il delta no, e il
+     passaggio del mouse dice su cosa sta. */
+  const _mesiLy = [];
+  for (let m = 1; m <= 12; m++) if (rtInventarioAttendibile(sel, PREV_YEAR, m)) _mesiLy.push(m);
+  const _lyParziale = _mesiLy.length > 0 && _mesiLy.length < 12;
+  const _lyTip = _lyParziale
+    ? escapeHtml('STLY stands on ' + _mesiLy.map(m => CFG.monthsIT[m-1]).join(', ') + ' only — the earlier months of '
+        + PREV_YEAR + ' are not measurable for this property, so they are out of both the nights and the capacity. '
+        + 'The year-on-year difference is not shown, because the two figures do not cover the same period. ' + RT_OCC_VUOTA_TIP)
+    : '';
   const kpis = A.rtList.slice(0,4).map((rt,i)=>{
     const d = A.rtData[rt];
     const dOcc = d.occC - d.occP;
+    const stly = _lyParziale
+      ? `<span class="rt-note" title="${_lyTip}">STLY ${_rtTxtPct(d.occP, RT_OCC_VUOTA_TIP)}</span>`
+      : (isFinite(d.occC) && isFinite(d.occP)
+          ? `STLY ${fmtPct(d.occP,1)} <span class="delta ${dOcc>0?'pos':dOcc<0?'neg':'flat'}">${(dOcc>=0?'+':'')+(dOcc*100).toFixed(1)} pp</span>`
+          : `STLY ${_rtTxtPct(d.occP, RT_OCC_VUOTA_TIP)}`);
     return `<div class="kpi" style="border-left-color:${RT_PALETTE[i%RT_PALETTE.length]}">
       <div class="kpi-label">${escapeHtml(rt)}</div>
-      <div class="kpi-val">${fmtPct(d.occC,1)}</div>
-      <div class="kpi-sub">ADR ${fmtAdr(d.adrC)} · STLY ${fmtPct(d.occP,1)} <span class="delta ${dOcc>0?'pos':dOcc<0?'neg':'flat'}">${(dOcc>=0?'+':'')+(dOcc*100).toFixed(1)} pp</span></div>
+      <div class="kpi-val">${_rtTxtPct(d.occC, RT_OCC_VUOTA_TIP)}</div>
+      <div class="kpi-sub">ADR ${_rtTxtAdr(d.adrC)} · ${stly}</div>
     </div>`;
   }).join('');
   document.getElementById('rt-kpis').innerHTML = kpis;
@@ -3541,9 +3599,9 @@ function renderRT(sel){
     for (const rt of cols){
       const md = A.rtData[rt].months[m-1];
       r += `
-        <td class="cell-mono rt-block-start">${fmtPct(md.occC,1)}</td>
+        ${_rtOccCell(md.occC, sel, CUR_YEAR, m, 'rt-block-start')}
         ${_rtAdrCell(md.adrC, sel, CUR_YEAR, m, '')}
-        <td class="cell-mono cell-flat cell-divider">${fmtPct(md.occP,1)}</td>
+        ${_rtOccCell(md.occP, sel, PREV_YEAR, m, 'cell-flat cell-divider')}
         ${_rtAdrCell(md.adrP, sel, PREV_YEAR, m, 'cell-flat')}`;
     }
     r += '</tr>';
@@ -16925,10 +16983,12 @@ function anlyAggregate(sel, ym, filters, asOf){
      tipologia ma non se era piena: 4.000 euro su una camera e 4.000 su quattro
      sono due situazioni opposte. */
   const _roomsRt = (typeof fcstRoomsByRT === 'function') ? (fcstRoomsByRT(sel) || {}) : {};
-  /* Stesso confine della tab OCC by Room Type: prima del cambio di sistema i
-     nomi degli alloggi sono di un inventario che non esiste piu', quindi
-     l'occupazione per tipologia non si calcola. Vale per l'anno in corso e per
-     il confronto con l'anno scorso, ciascuno col proprio mese. */
+  /* Stesso confine della tab OCC by Room Type: prima del cambio di sistema la
+     colonna alloggi porta la tipologia venduta dal canale e non l'unita'
+     assegnata, quindi l'occupazione per tipologia non si calcola. Vale per
+     l'anno in corso e per il confronto con l'anno scorso, ciascuno col proprio
+     mese. Il testo del tooltip e' RT_OCC_VUOTA_TIP, uno solo per tutta la
+     dashboard. */
   const _okCur = (typeof rtInventarioAttendibile === 'function') ? rtInventarioAttendibile(sel, y, mo) : true;
   const _okLy  = (typeof rtInventarioAttendibile === 'function') ? rtInventarioAttendibile(sel, y-1, mo) : true;
   const conOcc = (righe) => righe.map(r => {
@@ -17039,8 +17099,12 @@ function _anlyHtml(a, opts){
   const dOcc = (a.cur.occ != null && a.ly.occ > 0) ? a.cur.occ/a.ly.occ - 1 : null;
   h += '<div style="display:flex;gap:22px;flex-wrap:wrap;padding:12px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;margin-bottom:14px">';
   h += kpi('Revenue (gross)', eur(a.cur.rev), eur(a.ly.rev), dRev);
-  h += kpi('ADR', eur(a.cur.adr), eur(a.ly.adr), dAdr);
-  h += kpi('Occupancy', occ(a.cur.occ), occ(a.ly.occ), dOcc, a.cur.rn + ' of ' + a.cap + ' nights');
+  const _adrKpi = v => (v == null || !isFinite(v) || v <= 0)
+    ? '<span class="rt-void" title="' + escapeHtml(RT_NOSALE_TIP) + '">' + RT_LBL_ZERO + '</span>' : eur(v);
+  const _occKpi = v => (v == null || !isFinite(v))
+    ? '<span class="rt-void" title="' + escapeHtml(RT_NOCAP_TIP) + '">' + RT_LBL_NA + '</span>' : occ(v);
+  h += kpi('ADR', _adrKpi(a.cur.adr), _adrKpi(a.ly.adr), dAdr);
+  h += kpi('Occupancy', _occKpi(a.cur.occ), _occKpi(a.ly.occ), dOcc, a.cur.rn + ' of ' + a.cap + ' nights');
   h += kpi('Booking lead', a.cur.lead != null ? Math.round(a.cur.lead) + ' days' : '\u2014',
            a.ly.lead != null ? Math.round(a.ly.lead) + ' days' : '\u2014',
            (a.cur.lead != null && a.ly.lead > 0) ? a.cur.lead/a.ly.lead - 1 : null);
@@ -17093,13 +17157,18 @@ function _anlyHtml(a, opts){
                        + r.unita + ' ' + (r.unita === 1 ? 'unit' : 'units') + ' \u00d7 ' + a.giorni + ' days'
                        + (r.occLy != null ? '\nSame point last year: ' + occ(r.occLy) : ''))
                     : 'This room type is not in the property configuration, so there is nothing to measure the nights against.')
-                 + ((r.occNo || r.occLyNo) ? '\n\nBefore November 2025 this property was on a different system, with accommodation names that no longer exist. Nights and revenue are real, but there is no inventory to measure them against, so the occupancy is left blank.' : '') + '">'
-                + occ(r.occ)
-                + (r.occLy != null ? '<span style="color:var(--ink-3)"> / ' + occ(r.occLy) + '</span>' : '')
+                 + ((r.occNo || r.occLyNo) ? '\n\n' + RT_OCC_VUOTA_TIP : '') + '">'
+                + ((r.occ == null || !isFinite(r.occ)) ? RT_LBL_NA : occ(r.occ))
+                + '<span style="color:var(--ink-3)"> / '
+                + ((r.occLy == null || !isFinite(r.occLy)) ? RT_LBL_NA : occ(r.occLy)) + '</span>'
                 + '</td>')
              : '')
-         + '<td style="text-align:right;padding:4px 5px;font-size:11px">' + eur(r.adr)
-         + (r.adrLy != null ? '<span style="color:var(--ink-3)"> / ' + eur(r.adrLy) + '</span>' : '') + '</td>'
+         + '<td style="text-align:right;padding:4px 5px;font-size:11px"'
+         + ((r.adr == null || !isFinite(r.adr) || r.adrLy == null || !isFinite(r.adrLy))
+              ? ' title="' + escapeHtml(RT_NOSALE_TIP) + '"' : '') + '>'
+         + ((r.adr == null || !isFinite(r.adr) || r.adr <= 0) ? RT_LBL_ZERO : eur(r.adr))
+         + '<span style="color:var(--ink-3)"> / '
+         + ((r.adrLy == null || !isFinite(r.adrLy) || r.adrLy <= 0) ? RT_LBL_ZERO : eur(r.adrLy)) + '</span></td>'
          + '<td style="text-align:right;padding:4px 0 4px 5px;font-size:11px">'
          + (r.lead != null ? Math.round(r.lead) + 'd' : '\u2014')
          + (r.leadLy != null ? '<span style="color:var(--ink-3)"> / ' + Math.round(r.leadLy) + 'd</span>' : '') + '</td></tr>';
