@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-22e · Alfani 2025: alloggi corretti col planning, mai piu sopra il 100%';
+const ENGINE_BUILD = '2026-10-22f · grigio piu leggibile + tooltip e Playbook asciugati';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -2784,13 +2784,13 @@ function rtInventarioAttendibile(structKey, year, month){
    cui prima usciva un trattino. */
 const RT_LBL_NA   = 'n/a';    // non misurabile
 const RT_LBL_ZERO = 'none';   // misurabile, ma venduto niente
-const RT_NOSALE_TIP = 'Nothing sold. No nights of this room type in this month, so there is no average rate to compute. A real zero, not a missing figure.';
-const RT_NOCAP_TIP  = 'No capacity to measure against. This room type has no units in the property configuration for this period, so an occupancy percentage cannot be computed.';
+const RT_NOSALE_TIP = 'Nothing sold this month, so there is no average rate. A real zero, not a missing figure.';
+const RT_NOCAP_TIP  = 'No units configured for this room type, so no occupancy can be computed.';
 /* Stesso testo in tutti i punti in cui l'occupazione per tipologia sparisce -
    tabella, KPI, tab Analysis - cosi' se la storia cambia ancora si cambia qui
    e basta. */
-const RT_OCC_SOLD_TIP = 'Taken from the property planning. Until November 2025 the export recorded the room type the channel SOLD, not the unit the guest slept in, which pushed some nights past 100% — up to 148%. These figures use the property’s own room-by-room planning instead: 87% of the bookings are matched to it by guest name and arrival date, and the rest are placed in the rooms left physically free, which the matched ones mostly determine. Occupancy now stays within the inventory in every month. From December 2025 the export carries the assigned accommodation and nothing is reconstructed.';
-const RT_SOFT_ADR_TIP = 'Follows the room actually occupied. Until November 2025 the export recorded the room type SOLD by the channel rather than the unit the guest slept in, so the revenue sat under the wrong type. Each booking has been moved to the room the property’s own planning records — 87% matched by guest name and arrival date, the rest deduced from the rooms left free — and its revenue moved with it. So this is the ADR of the type occupied, the same basis as the 2026 column beside it; the marking is only there to say the assignment was reconstructed rather than exported.';
+const RT_OCC_SOLD_TIP = 'Rebuilt from the property planning: until Nov 2025 the export recorded the type sold, not the room occupied. 87% matched by guest and arrival date, the rest deduced. Playbook ①.';
+const RT_SOFT_ADR_TIP = 'ADR of the room actually occupied: revenue follows each booking to the room the planning records. Same basis as 2026; marked because the assignment was rebuilt. Playbook ①.';
 function _rtVoidTd(lbl, tip, base){
   return '<td class="' + base + ' rt-void" title="' + escapeHtml(tip) + '">' + lbl + '</td>';
 }
@@ -2828,8 +2828,7 @@ function _rtAdrTotCell(adr, structKey, year, monthsSel, extraCls){
   const pre = monthsSel.filter(m => !rtInventarioAttendibile(structKey, year, m));
   if (!isFinite(adr) || adr <= 0) return _rtVoidTd(RT_LBL_ZERO, RT_NOSALE_TIP, base);
   if (!pre.length) return '<td class="' + base + '">' + fmtAdr(adr) + '</td>';
-  const tip = RT_SOFT_ADR_TIP + ' This total includes ' + pre.length + ' such month'
-            + (pre.length > 1 ? 's' : '') + ': ' + pre.map(m => CFG.monthsIT[m-1]).join(', ') + '.';
+  const tip = RT_SOFT_ADR_TIP + ' Rebuilt months here: ' + pre.map(m => CFG.monthsIT[m-1]).join(', ') + '.';
   return '<td class="' + base + ' rt-soft" title="' + escapeHtml(tip) + '">' + fmtAdr(adr) + '</td>';
 }
 /* L'occupazione dei mesi pre-confine non entra ne' nelle notti ne' nella
@@ -2842,8 +2841,7 @@ function _rtOccTotCell(occ, structKey, year, monthsSel, extraCls){
   const sold = monthsSel.filter(m => !rtInventarioAttendibile(structKey, year, m));
   if (!sold.length) return '<td class="' + base + '">' + fmtPct(occ,1) + '</td>';
   /* rt-soft, non rt-void: il valore c'e', e' solo misurato su un'altra base. */
-  const tip = RT_OCC_SOLD_TIP + ' This total covers every selected month, ' + sold.length
-            + ' of which on that older basis: ' + sold.map(m => CFG.monthsIT[m-1]).join(', ') + '.';
+  const tip = RT_OCC_SOLD_TIP + ' Rebuilt months here: ' + sold.map(m => CFG.monthsIT[m-1]).join(', ') + '.';
   return '<td class="' + base + ' rt-soft" title="' + escapeHtml(tip) + '">' + fmtPct(occ,1) + '</td>';
 }
 
@@ -3616,9 +3614,8 @@ function renderRT(sel){
   for (let m = 1; m <= 12; m++) if (!rtInventarioAttendibile(sel, PREV_YEAR, m)) _mesiSold.push(m);
   const _lySold = _mesiSold.length > 0;
   const _lyTip = _lySold
-    ? escapeHtml('STLY includes ' + _mesiSold.length + ' month' + (_mesiSold.length > 1 ? 's' : '')
-        + ' measured on the older basis (' + _mesiSold.map(m => CFG.monthsIT[m-1]).join(', ')
-        + '), so read the difference with that in mind. ' + RT_OCC_SOLD_TIP)
+    ? escapeHtml('STLY includes ' + _mesiSold.length + ' rebuilt month'
+        + (_mesiSold.length > 1 ? 's' : '') + '. ' + RT_OCC_SOLD_TIP)
     : '';
   const kpis = A.rtList.slice(0,4).map((rt,i)=>{
     const d = A.rtData[rt];
@@ -3679,9 +3676,9 @@ function renderRT(sel){
      ultime due e' tutto quello che e' entrato dopo questa data l'anno scorso:
      dice quanto pickup resta ancora da raccogliere su quel mese. */
   const _YY = String(CUR_YEAR).slice(2);
-  const _T_OTB  = escapeHtml('On the books right now for ' + CUR_YEAR + '.');
-  const _T_STLY = escapeHtml('Same point last year: only the bookings that already existed on this date in ' + PREV_YEAR + '. This is the fair comparison with the column on the left.');
-  const _T_FIN  = escapeHtml('Last year closed: every booking for ' + PREV_YEAR + ', however late it came in. The gap against STLY is what last year still picked up after this date.');
+  const _T_OTB  = escapeHtml('On the books now for ' + CUR_YEAR + '.');
+  const _T_STLY = escapeHtml('Same point last year: only what existed on this date in ' + PREV_YEAR + '. The fair comparison with the left.');
+  const _T_FIN  = escapeHtml(PREV_YEAR + ' closed. The gap against STLY is the late pickup.');
   let head = `<thead>
     <tr>
       <th rowspan="2" class="rt-corner">Month</th>
