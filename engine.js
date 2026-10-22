@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-22d · Room Type: tre coppie OCC/ADR, sempre un numero (niente n/a)';
+const ENGINE_BUILD = '2026-10-22e · Alfani 2025: alloggi corretti col planning, mai piu sopra il 100%';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -1326,6 +1326,74 @@ const ROOM_NORMALIZE = {
   'superior apartment':'Superior',
   'deluxe apartment':'Deluxe',
 };
+/* ═══ ASSEGNAZIONE REALE DEGLI ALLOGGI — Palazzo Alfani, gennaio-novembre 2025 ═══
+   Fino a novembre 2025 l'export di SimpleBooking metteva nella colonna alloggi la
+   TIPOLOGIA VENDUTA dal canale, non l'unita' in cui l'ospite ha dormito. Risultato:
+   133 notti con piu' camere "vendute" di quante ne esistano, fino al 148%.
+   La proprieta' teneva a mano un planning per stanza fisica (1A..3D, 9 stanze, lo
+   stesso inventario di oggi: Classic 3 - 1A 2C 3D, Superior 4 - 1B 2A 3A 3B,
+   Deluxe 1 - 2B, Junior Suite 1 - 3C). Da li' arriva questa mappa.
+   Dei 769 alloggi prenotati nel periodo, 669 (87%) sono agganciati al planning per
+   nome + data di arrivo; i restanti 100 sono stati messi nelle stanze rimaste
+   fisicamente libere, scelta quasi obbligata perche' il planning fissa gia' il
+   resto della griglia. Dopo la correzione: ZERO notti sopra inventario.
+   NON e' una regola inventata: un algoritmo di riassegnazione era stato provato
+   prima e bocciato, perche' tre criteri di priorita' diversi davano alla Junior
+   Suite fra 274 e 532 notti e nessuno indovinava i casi verificati a mano.
+   Chiave: "<numero di riferimento>|<indice dell'alloggio nella prenotazione>".
+   Valore: C/S/J/D = tipo realmente occupato. Il "?" marca le 22 dedotte invece che
+   lette dal planning. Ci sono SOLO le 144 che cambiano: tutte le altre restano
+   dove le mette l'export. 3 prenotazioni restano impiazzabili (overbooking vero).
+   Da dicembre 2025 l'export porta l'alloggio assegnato e non serve piu' nulla. */
+const RT_ALFANI_OCCUPATO = {
+  "n.1128138417121766|0":"S","n.1128139727669303|0":"S","n.1128140859832359|0":"S",
+  "n.1128141488195872|0":"S","n.1128141823127130|0":"C","n.1128142330452019|0":"S?",
+  "n.1128142815979581|0":"S?","n.1128143007458695|0":"S?","n.1128143113411919|0":"S?",
+  "n.1128143266991741|0":"C","n.2025010237183733|0":"S","n.2025012837739005|0":"J",
+  "n.2025021138063017|0":"S?","n.2025022138277965|0":"D","n.2025031738809107|0":"S?",
+  "n.2025032238949552|0":"C","n.2025032238951858|0":"S","n.2025033139144123|0":"D",
+  "n.2025041339457576|0":"S","n.2025041639519190|0":"J?","n.2025060840825541|0":"D",
+  "n.2025061841092654|0":"S","n.2025082442880547|0":"S","n.2025092743543342|0":"J",
+  "n.2025110144144836|0":"S","n.2025110244169843|0":"C","n.2025111144330903|0":"S",
+  "n.2156152948|0":"S","n.2161252661|0":"S","n.2168840924|0":"S","n.2170538508|0":"S",
+  "n.2179281238|0":"S","n.2179413365|0":"S","n.2180005039|0":"S?","n.2180508003|0":"C",
+  "n.2190821690|0":"S","n.2195323302|0":"S","n.2200836962|0":"S","n.2203588283|0":"C",
+  "n.2211090180|0":"C","n.2214916598|0":"S","n.2226237022|0":"S","n.2229151851|0":"S",
+  "n.2234273009|0":"S?","n.2236065628|0":"S","n.2240649726|0":"S","n.2245654261|0":"J",
+  "n.2246161753|0":"S","n.2250082445|0":"S","n.2253530414|0":"S","n.2270534520|0":"S?",
+  "n.2289265209|0":"J","n.2320829509|0":"C","n.356969978|0":"J","n.356998651|0":"J",
+  "n.377934945|0":"S","n.389764013|0":"J","n.410218665|0":"S","n.427166417|0":"S?",
+  "n.429346279|0":"S?","n.4296933656|0":"S?","n.4301196664|0":"S","n.4354926977|0":"S",
+  "n.4369564653|0":"S","n.4386346376|0":"S","n.4386520429|0":"S","n.4416302211|0":"S",
+  "n.4463252965|0":"S","n.4463906423|0":"S","n.4468748880|0":"S?","n.4476330010|0":"S",
+  "n.4482802664|0":"J","n.4487101837|0":"J","n.4497602404|0":"C?","n.4515576425|0":"S",
+  "n.4547903288|0":"S","n.4561605234|0":"S?","n.4632937735|0":"S","n.4669820897|0":"S",
+  "n.4743820831|0":"C","n.4808778736|0":"D","n.4835467073|0":"S","n.4862842193|0":"S",
+  "n.4871526383|0":"J","n.4880708140|0":"S","n.4882334477|0":"J","n.4883187046|0":"S",
+  "n.4894728774|0":"S","n.4901192729|0":"S?","n.4957131837|0":"S","n.4959248055|0":"S",
+  "n.5154378288|0":"S","n.5157736976|0":"S?","n.5172390838|0":"D","n.5213431629|0":"S",
+  "n.5244770511|0":"S","n.5282813696|0":"J","n.5300282981|0":"D","n.5352541072|0":"S",
+  "n.5356744975|0":"S","n.5366919135|0":"S","n.5460858972|0":"S","n.5472287917|0":"S",
+  "n.5479815622|0":"C","n.5539102027|0":"C","n.5606506539|0":"S","n.5626558106|0":"D",
+  "n.5632796112|0":"S","n.5655874782|0":"S","n.5908370401|0":"S","n.5953838200|0":"S",
+  "n.5974116427|0":"S","n.6057220426|0":"C","n.6154990866|0":"S","n.6270994477|0":"S",
+  "n.6277699042|0":"S","n.6290163986|0":"S","n.6298260753|0":"S","n.6311375178|0":"S",
+  "n.6315744677|0":"S","n.6383043476|0":"S","n.6473279490|0":"S","n.6475867033|0":"S",
+  "n.6481288602|0":"C","n.6493256482|0":"S","n.6506264273|0":"S","n.6506737810|0":"S?",
+  "n.6595166760|0":"C?","n.6755180159|0":"S?","n.6792088836|0":"J","n.6867896573|0":"S",
+  "n.6955491961|0":"S","n.6966391053|0":"C","n.999238885527650|0":"C","n.999239098798031|0":"C",
+  "n.999239355874408|0":"S","n.999239604486075|0":"S","n.999239725618553|0":"S",
+  "n.999239751337690|0":"S","n.999240193938827|0":"S","n.999240199996767|0":"J",
+  "n.999240443032031|0":"S?","n.999240809704122|0":"S","n.999240843923038|0":"S"
+};
+const _RT_SIGLA_TIPO = { C:'Classic', S:'Superior', J:'Junior Suite', D:'Deluxe' };
+function rtAlloggioReale(structKey, ref, idx, dIn, venduto){
+  if (structKey !== 'alfani' || !dIn) return venduto;
+  const ym = dIn.getFullYear() * 100 + (dIn.getMonth() + 1);
+  if (ym < 202501 || ym > 202511) return venduto;
+  const v = RT_ALFANI_OCCUPATO[String(ref || '').trim() + '|' + idx];
+  return v ? (_RT_SIGLA_TIPO[v[0]] || venduto) : venduto;
+}
 function normRoom(s){
   if(!s) return '';
   const k = s.trim().toLowerCase();
@@ -1653,7 +1721,11 @@ function loadData(csvText){
     const channelMarkup = isDirect ? 0 : (_markupPct / 100);
     const revPerRoomNightCaricato = revPerRoomNightGross / (1 + channelMarkup);
     RAW.push(r);
-    for (const room of alloggi){
+    for (let _iAll = 0; _iAll < alloggi.length; _iAll++){
+      /* La tipologia che finisce nel booking e' quella OCCUPATA, non quella
+         venduta: per Alfani gen-nov 2025 la corregge il planning della
+         proprieta' (vedi RT_ALFANI_OCCUPATO), altrove resta com'e'. */
+      const room = rtAlloggioReale(_structKeyForRooms, ref, _iAll, dIn, alloggi[_iAll]);
       BOOKINGS.push({
         struct, structKey: _structKeyForRooms, room, prov, canale, ref, guest, tariffa,
         dBook, dIn, dOut,
@@ -2670,7 +2742,7 @@ function aggOTBYearly(sel){
   return { monthRows, tot, provCur, provPrev, canCur, canPrev, provFly, canFly,
            provCurM, provPrevM, provFlyM, canCurM, canPrevM, canFlyM };
 }
-/* CONFINE DI INVENTARIO — da quando la colonna alloggi dice l'unita' assegnata.
+/* CONFINE — fin dove le assegnazioni sono ricostruite invece che esportate.
    Palazzo Alfani ha cambiato sistema fra NOVEMBRE e DICEMBRE 2025. Misurato sui
    soggiorni, non stimato: nei mesi fino a novembre il 100% delle prenotazioni ha
    il prefisso "n." sul numero di riferimento e l'84% un nome alloggio lungo; a
@@ -2686,9 +2758,13 @@ function aggOTBYearly(sel){
    Suite esistenti: 4 prenotazioni sulla stessa notte dell'8/11/2025, 148% a
    ottobre. Da dicembre la colonna porta l'alloggio ASSEGNATO (con quello
    prenotato fra parentesi se diverso) e il conto torna per costruzione.
-   Prima del confine l'occupazione per tipologia non si calcola: non e' che manchi
-   il numero, e' che non significa niente. Revenue e notti restano, perche' quelli
-   sono veri comunque; l'ADR resta ma smorzato (vedi sotto).
+   Da gennaio a novembre 2025 il problema NON si aggira piu': si corregge alla
+   fonte, con il planning per stanza fisica tenuto a mano dalla proprieta' (vedi
+   RT_ALFANI_OCCUPATO sopra). Ogni prenotazione finisce nella stanza in cui
+   l'ospite ha davvero dormito, e il suo revenue la segue. Occupazione e ADR per
+   tipologia tornano quindi sulla stessa base del periodo nuovo: nessun mese passa
+   il 100%. Questo confine ora serve solo a MARCARE quei mesi, perche' il 13%
+   delle assegnazioni e' dedotto e non letto dal planning.
    Le altre cinque strutture non hanno questo scalino: un solo export, sempre. */
 const RT_INVENTARIO_DA = { alfani: 202512 };
 function rtInventarioAttendibile(structKey, year, month){
@@ -2713,8 +2789,8 @@ const RT_NOCAP_TIP  = 'No capacity to measure against. This room type has no uni
 /* Stesso testo in tutti i punti in cui l'occupazione per tipologia sparisce -
    tabella, KPI, tab Analysis - cosi' se la storia cambia ancora si cambia qui
    e basta. */
-const RT_OCC_SOLD_TIP = 'Room type as SOLD, not as occupied. Until November 2025 this property exported the type the channel sold rather than the unit actually assigned, so this percentage counts nights sold under that name against the units that exist today. On nights when a guest was moved it can go ABOVE 100% — up to 148% — and that is the data saying so, not an error. Nights and revenue are real throughout; the property-level occupancy in the other tabs is correct for this period too. From December 2025 the column carries the assigned accommodation and the figure is exact.';
-const RT_SOFT_ADR_TIP = 'Measured on a different basis. Until November 2025 this property exported the room type as SOLD by the channel — each OTA used its own listing name, the PMS its own — rather than the unit actually assigned. The nights and the revenue are real, but the room type behind them is the one sold, not the one occupied, so this figure is not computed the same way as the 2026 column beside it. From December 2025 the column carries the assigned accommodation.';
+const RT_OCC_SOLD_TIP = 'Taken from the property planning. Until November 2025 the export recorded the room type the channel SOLD, not the unit the guest slept in, which pushed some nights past 100% — up to 148%. These figures use the property’s own room-by-room planning instead: 87% of the bookings are matched to it by guest name and arrival date, and the rest are placed in the rooms left physically free, which the matched ones mostly determine. Occupancy now stays within the inventory in every month. From December 2025 the export carries the assigned accommodation and nothing is reconstructed.';
+const RT_SOFT_ADR_TIP = 'Follows the room actually occupied. Until November 2025 the export recorded the room type SOLD by the channel rather than the unit the guest slept in, so the revenue sat under the wrong type. Each booking has been moved to the room the property’s own planning records — 87% matched by guest name and arrival date, the rest deduced from the rooms left free — and its revenue moved with it. So this is the ADR of the type occupied, the same basis as the 2026 column beside it; the marking is only there to say the assignment was reconstructed rather than exported.';
 function _rtVoidTd(lbl, tip, base){
   return '<td class="' + base + ' rt-void" title="' + escapeHtml(tip) + '">' + lbl + '</td>';
 }
