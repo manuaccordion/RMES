@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-22f · grigio piu leggibile + tooltip e Playbook asciugati';
+const ENGINE_BUILD = '2026-10-22g · Alfani: Junior Suite prima colonna nella tab Room Type';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -2845,6 +2845,22 @@ function _rtOccTotCell(occ, structKey, year, monthsSel, extraCls){
   return '<td class="' + base + ' rt-soft" title="' + escapeHtml(tip) + '">' + fmtPct(occ,1) + '</td>';
 }
 
+/* ORDINE DELLE TIPOLOGIE nella tab OCC by Room Type.
+   Senza questo l'ordine e' quello in cui le camere stanno nel CFG, che segue la
+   configurazione del PMS e non la lettura: a Palazzo Alfani la Junior Suite
+   finiva terza, in mezzo alle altre. Qui si dichiara l'ordine voluto struttura
+   per struttura; le tipologie non elencate restano in coda nell'ordine originale.
+   Tocca SOLO questa tab (aggRoomType la usa solo renderRT): baseRT, Base Price e
+   supplementi continuano a leggere il CFG. */
+const RT_ORDINE_VISTA = {
+  alfani: ['Junior Suite', 'Classic', 'Superior', 'Deluxe'],
+};
+function rtOrdineVista(structKey, lista){
+  const ord = RT_ORDINE_VISTA[structKey];
+  if (!ord) return lista;
+  const pos = rt => { const i = ord.indexOf(rt); return i < 0 ? 999 : i; };
+  return lista.slice().sort((a, b) => pos(a) - pos(b) || lista.indexOf(a) - lista.indexOf(b));
+}
 /* OCC by Room Type
    Per ogni mese di soggiorno e per ogni room type, calcola RN, ADR.
    Capacità per room type = camere(rt) × days del mese.
@@ -2852,7 +2868,7 @@ function _rtOccTotCell(occ, structKey, year, monthsSel, extraCls){
 function aggRoomType(sel){
   const keys = new Set(structKeysFor(sel));
   const roomsMap = structRoomsFor(sel);     // rt -> count
-  const rtList = Object.keys(roomsMap);
+  const rtList = rtOrdineVista(sel, Object.keys(roomsMap));
   const buc = {};
   for (const rt of rtList){
     buc[rt] = {};
