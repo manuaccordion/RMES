@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-22b · mai celle vuote: n/a e none al posto del trattino, con spiegazione';
+const ENGINE_BUILD = '2026-10-22d · Room Type: tre coppie OCC/ADR, sempre un numero (niente n/a)';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -2713,7 +2713,7 @@ const RT_NOCAP_TIP  = 'No capacity to measure against. This room type has no uni
 /* Stesso testo in tutti i punti in cui l'occupazione per tipologia sparisce -
    tabella, KPI, tab Analysis - cosi' se la storia cambia ancora si cambia qui
    e basta. */
-const RT_OCC_VUOTA_TIP = 'Not measurable here. Until November 2025 this property exported the room type as SOLD by the channel rather than the unit actually assigned, so on nights when a guest was moved more rooms of a type were sold than exist — up to 148%. The nights and the revenue are real and are kept in every other tab; only the occupancy by room type is left blank, because there is no inventory to measure it against. From December 2025 it is computed normally.';
+const RT_OCC_SOLD_TIP = 'Room type as SOLD, not as occupied. Until November 2025 this property exported the type the channel sold rather than the unit actually assigned, so this percentage counts nights sold under that name against the units that exist today. On nights when a guest was moved it can go ABOVE 100% — up to 148% — and that is the data saying so, not an error. Nights and revenue are real throughout; the property-level occupancy in the other tabs is correct for this period too. From December 2025 the column carries the assigned accommodation and the figure is exact.';
 const RT_SOFT_ADR_TIP = 'Measured on a different basis. Until November 2025 this property exported the room type as SOLD by the channel — each OTA used its own listing name, the PMS its own — rather than the unit actually assigned. The nights and the revenue are real, but the room type behind them is the one sold, not the one occupied, so this figure is not computed the same way as the 2026 column beside it. From December 2025 the column carries the assigned accommodation.';
 function _rtVoidTd(lbl, tip, base){
   return '<td class="' + base + ' rt-void" title="' + escapeHtml(tip) + '">' + lbl + '</td>';
@@ -2727,10 +2727,15 @@ function _rtTxtAdr(v){
   return (isFinite(v) && v > 0) ? fmtAdr(v)
     : '<span class="rt-void" title="' + escapeHtml(RT_NOSALE_TIP) + '">' + RT_LBL_ZERO + '</span>';
 }
+/* Il numero si mostra SEMPRE. Prima il periodo vecchio usciva n/a perche' la
+   percentuale puo' superare il 100%: ma un n/a non si legge, non si confronta e
+   non si esporta, e chi guarda la tab preferisce un numero marcato a un buco.
+   Quindi si calcola con l'inventario di oggi, si smorza e si spiega. */
 function _rtOccCell(occ, structKey, year, month, extraCls){
   const base = 'cell-mono' + (extraCls ? ' ' + extraCls : '');
-  if (!rtInventarioAttendibile(structKey, year, month)) return _rtVoidTd(RT_LBL_NA, RT_OCC_VUOTA_TIP, base);
   if (!isFinite(occ)) return _rtVoidTd(RT_LBL_NA, RT_NOCAP_TIP, base);
+  const sold = !rtInventarioAttendibile(structKey, year, month);
+  if (sold) return '<td class="' + base + ' rt-soft" title="' + escapeHtml(RT_OCC_SOLD_TIP) + '">' + fmtPct(occ, 1) + '</td>';
   return '<td class="' + base + '">' + fmtPct(occ, 1) + '</td>';
 }
 function _rtAdrCell(adr, structKey, year, month, extraCls){
@@ -2757,20 +2762,13 @@ function _rtAdrTotCell(adr, structKey, year, monthsSel, extraCls){
    su quali mesi sta effettivamente. */
 function _rtOccTotCell(occ, structKey, year, monthsSel, extraCls){
   const base = 'cell-mono' + (extraCls ? ' ' + extraCls : '');
-  const dentro = monthsSel.filter(m => rtInventarioAttendibile(structKey, year, m));
-  const fuori  = monthsSel.length - dentro.length;
-  if (!isFinite(occ))
-    return _rtVoidTd(RT_LBL_NA, dentro.length === 0 ? RT_OCC_VUOTA_TIP : RT_NOCAP_TIP, base);
-  let tip = '';
-  if (fuori > 0 && dentro.length > 0){
-    tip = ' title="' + escapeHtml('Covers ' + dentro.map(m => CFG.monthsIT[m-1]).join(', ')
-        + ' only. The other ' + fuori + ' month' + (fuori > 1 ? 's carry' : ' carries')
-        + ' no measurable inventory for this property, so ' + (fuori > 1 ? 'they are' : 'it is')
-        + ' left out of both the nights and the capacity. Not comparable with the figure beside it, which covers every selected month.') + '"';
-  }
-  /* rt-note, non rt-void: qui un valore c'e', ha solo bisogno di un avvertimento.
-     rt-void resta riservato alle celle che un valore non ce l'hanno. */
-  return '<td class="' + base + (tip ? ' rt-note' : '') + '"' + tip + '>' + fmtPct(occ,1) + '</td>';
+  if (!isFinite(occ)) return _rtVoidTd(RT_LBL_NA, RT_NOCAP_TIP, base);
+  const sold = monthsSel.filter(m => !rtInventarioAttendibile(structKey, year, m));
+  if (!sold.length) return '<td class="' + base + '">' + fmtPct(occ,1) + '</td>';
+  /* rt-soft, non rt-void: il valore c'e', e' solo misurato su un'altra base. */
+  const tip = RT_OCC_SOLD_TIP + ' This total covers every selected month, ' + sold.length
+            + ' of which on that older basis: ' + sold.map(m => CFG.monthsIT[m-1]).join(', ') + '.';
+  return '<td class="' + base + ' rt-soft" title="' + escapeHtml(tip) + '">' + fmtPct(occ,1) + '</td>';
 }
 
 /* OCC by Room Type
@@ -2784,7 +2782,7 @@ function aggRoomType(sel){
   const buc = {};
   for (const rt of rtList){
     buc[rt] = {};
-    for (let m=1;m<=12;m++) buc[rt][m] = {rnC:0,revC:0,rnP:0,revP:0};
+    for (let m=1;m<=12;m++) buc[rt][m] = {rnC:0,revC:0,rnP:0,revP:0,rnF:0,revF:0};
   }
   for (const b of BOOKINGS){
     if (b.cancelled) continue;
@@ -2792,7 +2790,9 @@ function aggRoomType(sel){
     if (!(b.room in roomsMap)) continue;   // skip stray room-type assignments
     const isCurrentBk = b.bookYmd <= TODAY_YMD;
     const isStlyBk    = b.bookYmd <= STLY_YMD;
-    if (!isCurrentBk && !isStlyBk) continue;
+    /* Niente scorciatoia che salta la prenotazione: il Final LY non ha filtri
+       sulla data di prenotazione, quindi ogni soggiorno dell'anno scorso deve
+       arrivare fin qui. Stessa definizione dell'Overview (aggOTBYearly: fly). */
     const alloc = monthAllocate(b.dIn, b.dOut, b.revPerNight);
     for (const k in alloc){
       const ym = +k, y = Math.floor(ym/100), m = ym%100;
@@ -2803,6 +2803,9 @@ function aggRoomType(sel){
       if (isStlyBk && y===PREV_YEAR){
         buc[b.room][m].rnP += a.rn; buc[b.room][m].revP += a.rev;
       }
+      if (y===PREV_YEAR){           // Final LY: l'anno scorso chiuso
+        buc[b.room][m].rnF += a.rn; buc[b.room][m].revF += a.rev;
+      }
     }
   }
   /* La vecchia correzione a mano (Alfani: Classic 4 e Junior Suite 0 prima di
@@ -2810,42 +2813,54 @@ function aggRoomType(sel){
      sbagliata e inventando due numeri. Anche il primo confine automatico aveva
      la data sbagliata, di un mese: il cambio e' fra novembre e DICEMBRE 2025.
      Ora il periodo vecchio non si misura affatto: vedi RT_INVENTARIO_DA. */
+  /* L'inventario usato e' SEMPRE quello di oggi, anche nel periodo vecchio.
+     Per quei mesi il numero che ne esce e' "notti vendute sotto quel nome
+     contro le camere che esistono adesso": puo' superare il 100%, ed e' marcato
+     in tab perche' si veda. Meglio un numero con un avvertimento che un buco. */
   function effectiveRoomsForMonth(rt, year, month){
-    if (!rtInventarioAttendibile(sel, year, month)) return 0;
     return roomsMap[rt];
   }
   const rtData = {};
   for (const rt of rtList){
     const rooms = roomsMap[rt];  // displayed reference rooms (current)
     const months = [];
-    let totC={rn:0,rev:0,cap:0}, totP={rn:0,rev:0,cap:0};
+    let totC={rn:0,rev:0,cap:0}, totP={rn:0,rev:0,cap:0}, totF={rn:0,rev:0,cap:0};
     for (let m=1;m<=12;m++){
       const v = buc[rt][m];
       const roomsCur  = effectiveRoomsForMonth(rt, CUR_YEAR, m);
       const roomsPrev = effectiveRoomsForMonth(rt, PREV_YEAR, m);
       const capC = roomsCur  * daysInMonth(CUR_YEAR, m);
       const capP = roomsPrev * daysInMonth(PREV_YEAR, m);
+      /* Il Final LY sta sullo stesso anno dello STLY, quindi stessa capacita'
+         e stesso confine di inventario: cambia solo quali prenotazioni conta. */
       months.push({
         m,
         occC: capC>0 ? v.rnC/capC : NaN,
         occP: capP>0 ? v.rnP/capP : NaN,
+        occF: capP>0 ? v.rnF/capP : NaN,
         adrC: v.rnC>0?v.revC/v.rnC:NaN,
         adrP: v.rnP>0?v.revP/v.rnP:NaN,
-        rnC:v.rnC, rnP:v.rnP, revC:v.revC, revP:v.revP,
+        adrF: v.rnF>0?v.revF/v.rnF:NaN,
+        rnC:v.rnC, rnP:v.rnP, rnF:v.rnF, revC:v.revC, revP:v.revP, revF:v.revF,
         capC, capP,   // servono per ricalcolare i totali sui soli mesi selezionati
       });
       totC.rn += v.rnC; totC.rev += v.revC; totC.cap += capC;
       totP.rn += v.rnP; totP.rev += v.revP; totP.cap += capP;
+      totF.rn += v.rnF; totF.rev += v.revF; totF.cap += capP;
       if (capC > 0) totC.rnOcc = (totC.rnOcc || 0) + v.rnC;
       if (capP > 0) totP.rnOcc = (totP.rnOcc || 0) + v.rnP;
+      if (capP > 0) totF.rnOcc = (totF.rnOcc || 0) + v.rnF;
     }
     rtData[rt] = {
       rooms, months,
       occC: totC.cap>0 ? (totC.rnOcc||0)/totC.cap : NaN,
       occP: totP.cap>0 ? (totP.rnOcc||0)/totP.cap : NaN,
+      occF: totF.cap>0 ? (totF.rnOcc||0)/totF.cap : NaN,
       adrC: totC.rn>0?totC.rev/totC.rn:NaN,
       adrP: totP.rn>0?totP.rev/totP.rn:NaN,
-      rnC: totC.rn, rnP: totP.rn, revC: totC.rev, revP: totP.rev,
+      adrF: totF.rn>0?totF.rev/totF.rn:NaN,
+      rnC: totC.rn, rnP: totP.rn, rnF: totF.rn,
+      revC: totC.rev, revP: totP.rev, revF: totF.rev,
     };
   }
   return { rtList, rtData };
@@ -3518,30 +3533,29 @@ function renderRT(sel){
   if (!RT_VISIBLE || RT_VISIBLE._sel !== sel){
     RT_VISIBLE = new Set(A.rtList); RT_VISIBLE._sel = sel;
   }
-  /* Se l'anno scorso e' misurabile solo in parte, l'occupazione STLY sta su meno
-     mesi di quella corrente e il delta fra le due non significa niente: a
-     Palazzo Alfani il solo dicembre contro dodici mesi dava "+33,7 pp", un
-     miglioramento che non esiste. Il valore si mostra, il delta no, e il
-     passaggio del mouse dice su cosa sta. */
-  const _mesiLy = [];
-  for (let m = 1; m <= 12; m++) if (rtInventarioAttendibile(sel, PREV_YEAR, m)) _mesiLy.push(m);
-  const _lyParziale = _mesiLy.length > 0 && _mesiLy.length < 12;
-  const _lyTip = _lyParziale
-    ? escapeHtml('STLY stands on ' + _mesiLy.map(m => CFG.monthsIT[m-1]).join(', ') + ' only — the earlier months of '
-        + PREV_YEAR + ' are not measurable for this property, so they are out of both the nights and the capacity. '
-        + 'The year-on-year difference is not shown, because the two figures do not cover the same period. ' + RT_OCC_VUOTA_TIP)
+  /* Ora l'anno scorso copre tutti i mesi, quindi il delta torna confrontabile
+     come periodo. Resta diverso come BASE nei mesi vecchi: il delta si mostra,
+     marcato, e il passaggio del mouse dice di cosa e' fatto. */
+  const _mesiSold = [];
+  for (let m = 1; m <= 12; m++) if (!rtInventarioAttendibile(sel, PREV_YEAR, m)) _mesiSold.push(m);
+  const _lySold = _mesiSold.length > 0;
+  const _lyTip = _lySold
+    ? escapeHtml('STLY includes ' + _mesiSold.length + ' month' + (_mesiSold.length > 1 ? 's' : '')
+        + ' measured on the older basis (' + _mesiSold.map(m => CFG.monthsIT[m-1]).join(', ')
+        + '), so read the difference with that in mind. ' + RT_OCC_SOLD_TIP)
     : '';
   const kpis = A.rtList.slice(0,4).map((rt,i)=>{
     const d = A.rtData[rt];
     const dOcc = d.occC - d.occP;
-    const stly = _lyParziale
-      ? `<span class="rt-note" title="${_lyTip}">STLY ${_rtTxtPct(d.occP, RT_OCC_VUOTA_TIP)}</span>`
-      : (isFinite(d.occC) && isFinite(d.occP)
-          ? `STLY ${fmtPct(d.occP,1)} <span class="delta ${dOcc>0?'pos':dOcc<0?'neg':'flat'}">${(dOcc>=0?'+':'')+(dOcc*100).toFixed(1)} pp</span>`
-          : `STLY ${_rtTxtPct(d.occP, RT_OCC_VUOTA_TIP)}`);
+    const delta = (isFinite(d.occC) && isFinite(d.occP))
+      ? ` <span class="delta ${dOcc>0?'pos':dOcc<0?'neg':'flat'}">${(dOcc>=0?'+':'')+(dOcc*100).toFixed(1)} pp</span>`
+      : '';
+    const stly = _lySold
+      ? `<span class="rt-note" title="${_lyTip}">STLY ${_rtTxtPct(d.occP, RT_OCC_SOLD_TIP)}${delta}</span>`
+      : `STLY ${_rtTxtPct(d.occP, RT_NOCAP_TIP)}${delta}`;
     return `<div class="kpi" style="border-left-color:${RT_PALETTE[i%RT_PALETTE.length]}">
       <div class="kpi-label">${escapeHtml(rt)}</div>
-      <div class="kpi-val">${_rtTxtPct(d.occC, RT_OCC_VUOTA_TIP)}</div>
+      <div class="kpi-val">${_rtTxtPct(d.occC, RT_NOCAP_TIP)}</div>
       <div class="kpi-sub">ADR ${_rtTxtAdr(d.adrC)} · ${stly}</div>
     </div>`;
   }).join('');
@@ -3584,13 +3598,23 @@ function renderRT(sel){
   renderRtMonthFilter(A, sel);
   const monthsSel = [];
   for (let m=1;m<=12;m++){ if (RT_MONTHS === null || RT_MONTHS.has(m)) monthsSel.push(m); }
+  /* Tre coppie OCC/ADR: dove siamo adesso, dove eravamo allo stesso punto
+     dell'anno scorso, e come l'anno scorso e' poi finito. La differenza fra le
+     ultime due e' tutto quello che e' entrato dopo questa data l'anno scorso:
+     dice quanto pickup resta ancora da raccogliere su quel mese. */
+  const _YY = String(CUR_YEAR).slice(2);
+  const _T_OTB  = escapeHtml('On the books right now for ' + CUR_YEAR + '.');
+  const _T_STLY = escapeHtml('Same point last year: only the bookings that already existed on this date in ' + PREV_YEAR + '. This is the fair comparison with the column on the left.');
+  const _T_FIN  = escapeHtml('Last year closed: every booking for ' + PREV_YEAR + ', however late it came in. The gap against STLY is what last year still picked up after this date.');
   let head = `<thead>
     <tr>
       <th rowspan="2" class="rt-corner">Month</th>
-      ${cols.map((rt,i)=>`<th colspan="4" class="group rt-block-start" style="color:${RT_PALETTE[A.rtList.indexOf(rt)%RT_PALETTE.length]};text-align:center">${escapeHtml(rt)}</th>`).join('')}
+      ${cols.map((rt,i)=>`<th colspan="6" class="group rt-block-start" style="color:${RT_PALETTE[A.rtList.indexOf(rt)%RT_PALETTE.length]};text-align:center">${escapeHtml(rt)}</th>`).join('')}
     </tr>
     <tr>
-      ${cols.map(_=>`<th class="rt-block-start">OCC '26</th><th>ADR '26</th><th class="cell-divider">OCC '25</th><th>ADR '25</th>`).join('')}
+      ${cols.map(_=>`<th class="rt-block-start" title="${_T_OTB}">OCC '${_YY}</th><th title="${_T_OTB}">ADR '${_YY}</th>`
+                   + `<th class="cell-divider" title="${_T_STLY}">OCC STLY</th><th title="${_T_STLY}">ADR STLY</th>`
+                   + `<th class="cell-divider" title="${_T_FIN}">OCC LY fin</th><th title="${_T_FIN}">ADR LY fin</th>`).join('')}
     </tr>
   </thead>`;
   const body = [];
@@ -3602,7 +3626,9 @@ function renderRT(sel){
         ${_rtOccCell(md.occC, sel, CUR_YEAR, m, 'rt-block-start')}
         ${_rtAdrCell(md.adrC, sel, CUR_YEAR, m, '')}
         ${_rtOccCell(md.occP, sel, PREV_YEAR, m, 'cell-flat cell-divider')}
-        ${_rtAdrCell(md.adrP, sel, PREV_YEAR, m, 'cell-flat')}`;
+        ${_rtAdrCell(md.adrP, sel, PREV_YEAR, m, 'cell-flat')}
+        ${_rtOccCell(md.occF, sel, PREV_YEAR, m, 'cell-flat cell-divider')}
+        ${_rtAdrCell(md.adrF, sel, PREV_YEAR, m, 'cell-flat')}`;
     }
     r += '</tr>';
     body.push(r);
@@ -3613,21 +3639,28 @@ function renderRT(sel){
     : (monthsSel.length === 1 ? CFG.monthsIT[monthsSel[0]-1] : monthsSel.length + ' months');
   let trow = `<tr class="total"><td class="rt-month-cell" title="${RT_MONTHS===null?'All 12 months':'Selected months: '+monthsSel.map(m=>CFG.monthsIT[m-1]).join(', ')}">${_totLbl}</td>`;
   for (const rt of cols){
-    let rnC=0, revC=0, capC=0, rnP=0, revP=0, capP=0, rnOccC=0, rnOccP=0;
+    let rnC=0, revC=0, capC=0, rnP=0, revP=0, capP=0, rnF=0, revF=0;
+    let rnOccC=0, rnOccP=0, rnOccF=0;
     for (const m of monthsSel){
       const md = A.rtData[rt].months[m-1];
       rnC += md.rnC; revC += md.revC; capC += (md.capC||0);
       rnP += md.rnP; revP += md.revP; capP += (md.capP||0);
+      rnF += md.rnF; revF += md.revF;          // stessa capacita' dello STLY
       if ((md.capC||0) > 0) rnOccC += md.rnC;
       if ((md.capP||0) > 0) rnOccP += md.rnP;
+      if ((md.capP||0) > 0) rnOccF += md.rnF;
     }
     const occC = capC>0 ? rnOccC/capC : NaN, occP = capP>0 ? rnOccP/capP : NaN;
+    const occF = capP>0 ? rnOccF/capP : NaN;
     const adrC = rnC>0 ? revC/rnC : NaN, adrP = rnP>0 ? revP/rnP : NaN;
+    const adrF = rnF>0 ? revF/rnF : NaN;
     trow += `
-      <td class="cell-mono rt-block-start">${fmtPct(occC,1)}</td>
+      ${_rtOccTotCell(occC, sel, CUR_YEAR, monthsSel, 'rt-block-start')}
       ${_rtAdrTotCell(adrC, sel, CUR_YEAR, monthsSel, '')}
       ${_rtOccTotCell(occP, sel, PREV_YEAR, monthsSel, 'cell-flat cell-divider')}
-      ${_rtAdrTotCell(adrP, sel, PREV_YEAR, monthsSel, 'cell-flat')}`;
+      ${_rtAdrTotCell(adrP, sel, PREV_YEAR, monthsSel, 'cell-flat')}
+      ${_rtOccTotCell(occF, sel, PREV_YEAR, monthsSel, 'cell-flat cell-divider')}
+      ${_rtAdrTotCell(adrF, sel, PREV_YEAR, monthsSel, 'cell-flat')}`;
   }
   trow+='</tr>';
   document.getElementById('rt-monthly').innerHTML = head + '<tbody>' + body.join('') + trow + '</tbody>';
@@ -16987,17 +17020,20 @@ function anlyAggregate(sel, ym, filters, asOf){
      colonna alloggi porta la tipologia venduta dal canale e non l'unita'
      assegnata, quindi l'occupazione per tipologia non si calcola. Vale per
      l'anno in corso e per il confronto con l'anno scorso, ciascuno col proprio
-     mese. Il testo del tooltip e' RT_OCC_VUOTA_TIP, uno solo per tutta la
+     mese. Il testo del tooltip e' RT_OCC_SOLD_TIP, uno solo per tutta la
      dashboard. */
   const _okCur = (typeof rtInventarioAttendibile === 'function') ? rtInventarioAttendibile(sel, y, mo) : true;
   const _okLy  = (typeof rtInventarioAttendibile === 'function') ? rtInventarioAttendibile(sel, y-1, mo) : true;
+  /* L'occupazione si calcola sempre: nei mesi vecchi e' "venduto sotto quel
+     nome contro le camere di oggi" e puo' passare il 100%, ma e' un numero, e
+     il tooltip dice su che base sta. Prima usciva null e la cella restava muta. */
   const conOcc = (righe) => righe.map(r => {
     const n = _roomsRt[r.name];
     const capRt = (n > 0) ? n * giorni : 0;
     return Object.assign({}, r, {
       unita: n || null,
-      occ:   (_okCur && capRt > 0) ? r.rn   / capRt : null,
-      occLy: (_okLy  && capRt > 0) ? r.rnLy / capRt : null,
+      occ:   capRt > 0 ? r.rn   / capRt : null,
+      occLy: capRt > 0 ? r.rnLy / capRt : null,
       occNo: !_okCur, occLyNo: !_okLy
     });
   });
@@ -17157,7 +17193,7 @@ function _anlyHtml(a, opts){
                        + r.unita + ' ' + (r.unita === 1 ? 'unit' : 'units') + ' \u00d7 ' + a.giorni + ' days'
                        + (r.occLy != null ? '\nSame point last year: ' + occ(r.occLy) : ''))
                     : 'This room type is not in the property configuration, so there is nothing to measure the nights against.')
-                 + ((r.occNo || r.occLyNo) ? '\n\n' + RT_OCC_VUOTA_TIP : '') + '">'
+                 + ((r.occNo || r.occLyNo) ? '\n\n' + RT_OCC_SOLD_TIP : '') + '">'
                 + ((r.occ == null || !isFinite(r.occ)) ? RT_LBL_NA : occ(r.occ))
                 + '<span style="color:var(--ink-3)"> / '
                 + ((r.occLy == null || !isFinite(r.occLy)) ? RT_LBL_NA : occ(r.occLy)) + '</span>'
