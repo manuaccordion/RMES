@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-22h · Alfani 2025: corrette anche le prenotazioni di gruppo';
+const ENGINE_BUILD = '2026-10-23a · modal RMES: effetto di ogni blocco anche in euro';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -6797,8 +6797,12 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
       }
     }
     const _multFinaleRaw = 1 + _totDevSmoothed;
+    /* devAfterMarket serve al modal per dire in euro quanto ha tolto ciascun
+       blocco: senza, il display dovrebbe dedurlo dal flag "blocked" e ogni
+       cambio alla catena lo farebbe mentire in silenzio. */
     const _sigDbg = { A: _sigA, market: _mktInfo, airdna: _adInfo, nrDiscount: _nrDisc,
                       horizon: _horizon, lead: _leadRmes, inHorizon: _inHorizon, farQuiet: _farQuiet,
+                      devAfterMarket: _devAfterMarket,
                       totDev: _totDev, totDevApplied: _totDevSmoothed, smoothing: _smoothInfo };
     const _capStruct = (typeof getRmesCap === 'function') ? getRmesCap(sel) : 0.25;
     const _cappedStruct = applyTotalCap(_multFinaleRaw - 1, _capStruct);
@@ -11741,6 +11745,28 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         rmesSection += '<div style="font-size:12px;color:#999;font-style:italic;margin-bottom:10px">Signal detail not available for this date.</div>';
       } else {
         const pc = (x) => (x >= 0 ? '+' : '') + (x*100).toFixed(1) + '%';
+        /* EFFETTO IN EURO. Una percentuale da sola non dice quanto pesa: "+12%"
+           su 150 e su 400 sono due decisioni diverse. Il nostro motore non somma
+           contributi come fanno altri RMS - il pickup propone, mercato e AirDNA
+           possono solo fermarlo - quindi qui si mostra una CASCATA: quanto
+           chiedeva il pickup, quanto gli e' stato tolto da ciascun blocco, e
+           quanto resta. I quattro pezzi sommano esattamente al netto. */
+        const _rifEur = (typeof fpPriceSource === 'number' && isFinite(fpPriceSource) && fpPriceSource > 0)
+          ? fpPriceSource : null;
+        const _eur = (dev) => {
+          if (_rifEur == null || dev == null || !isFinite(dev)) return '';
+          const v = _rifEur * dev;
+          if (Math.abs(v) < 0.5) return '<div style="font-size:10.5px;color:#999;font-weight:400">&plusmn;€0</div>';
+          return '<div style="font-size:10.5px;color:#999;font-weight:400">'
+               + (v >= 0 ? '+' : '−') + '€' + Math.abs(Math.round(v)) + '</div>';
+        };
+        const _devA   = (_sg.A && isFinite(_sg.A.dev)) ? _sg.A.dev : 0;
+        const _devAM  = isFinite(_sg.devAfterMarket) ? _sg.devAfterMarket : _devA;
+        const _devTot = isFinite(_sg.totDev) ? _sg.totDev : _devAM;
+        const _devFin = isFinite(_sg.totDevApplied) ? _sg.totDevApplied : _devTot;
+        const _effMercato = _devAM  - _devA;    // quanto ha tolto il guard-rail di mercato
+        const _effAirdna  = _devTot - _devAM;   // quanto ha tolto AirDNA
+        const _effSmooth  = _devFin - _devTot;  // quanto ha trattenuto il limite giornaliero
         const rowSig = (code, colour, name, verdict, verdictCol, detail) =>
           '<tr><td style="padding:7px 10px;border-bottom:1px solid #eee;vertical-align:top">'
           + '<span style="background:'+colour+';color:#fff;padding:2px 6px;border-radius:3px;font-family:\'DM Mono\',monospace;font-weight:700;font-size:11px;margin-right:6px">'+code+'</span>'
@@ -11779,7 +11805,8 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
                + '<span style="color:#999">(80% of its bookings arrive inside that window)</span>.'
                + '<br>Out there the price has little effect and a quiet date is normal, not a signal, so the RMES stays out and the Base Price stands.';
         }
-        rmesSection += rowSig('A', '#2c7a4b', 'Pickup', A.dev ? pc(A.dev) : '—',
+        rmesSection += rowSig('A', '#2c7a4b', 'Pickup',
+          (A.dev ? pc(A.dev) : '—') + (A.dev ? _eur(_devA) : ''),
           (A.dev||0) > 0 ? '#1e6b4a' : ((A.dev||0) < 0 ? '#a83b3b' : '#999'), aDet);
         // B · mercato
         const M = _sg.market || {};
@@ -11803,14 +11830,18 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
                + (M.suppRemoved ? '<br><span style="color:#999">Expedia is showing '+escapeHtml(M.myRtShown||'')+' today, so '+fmtEUR(M.suppRemoved)+' of supplement was removed to compare like with like</span>' : '')
                + '<br>' + mDet;
         }
-        const mDev = (_sg.totDev || 0) - (A.dev || 0);
+        /* L'effetto del mercato e' devAfterMarket - devA, non totDev - devA:
+           totDev ha gia' attraversato anche AirDNA, quindi la vecchia formula
+           attribuiva al mercato anche cio' che aveva trattenuto AirDNA. */
+        const mDev = _effMercato;
         rmesSection += rowSig('B', '#3a6b6b', 'Market guard-rail',
-          Math.abs(mDev) > 0.001 ? pc(mDev) : '—',
+          (Math.abs(mDev) > 0.001 ? pc(mDev) : '—') + (Math.abs(mDev) > 0.001 ? _eur(mDev) : ''),
           mDev > 0 ? '#1e6b4a' : (mDev < 0 ? '#a83b3b' : '#999'), mDet);
         // C · airdna
         const AD = _sg.airdna || {};
         rmesSection += rowSig('C', '#8e5fa8', 'AirDNA check',
-          AD.weak ? 'held' : '—', AD.weak ? '#a83b3b' : '#999',
+          (Math.abs(_effAirdna) > 0.001 ? pc(_effAirdna) + _eur(_effAirdna) : '—'),
+          _effAirdna < 0 ? '#a83b3b' : (_effAirdna > 0 ? '#1e6b4a' : '#999'),
           !AD.on ? 'Switched off in the RMES settings.'
                  : (AD.weak ? 'The market is booking little: the suggested increase of <b>'+pc(AD.held||0)+'</b> did not go through.'
                             : 'The market is not holding the price back.'));
@@ -11818,9 +11849,18 @@ function fp_showDetailModalFromResult(r, structKey, rt, dateISO){
         const SM = _sg.smoothing || {};
         if (SM.on && SM.limited){
           rmesSection += rowSig('·', '#c4823b', 'Daily step limit',
-            pc(_sg.totDevApplied || 0), '#7a4f1c',
+            (Math.abs(_effSmooth) > 0.001 ? pc(_effSmooth) + _eur(_effSmooth) : pc(_sg.totDevApplied || 0)), '#7a4f1c',
             'The raw signal was <b>'+pc(_sg.totDev||0)+'</b>, capped to keep the move within one step of yesterday\'s suggestion ('+fmtEUR(SM.from||0)+').');
         }
+        /* Riga di chiusura: la somma dei pezzi sopra, in euro. E' il controllo
+           che il lettore puo' fare a occhio - i quattro effetti devono dare
+           esattamente questo, e questo applicato al riferimento da' il prezzo. */
+        rmesSection += '<tr style="background:#f8f8f5"><td style="padding:8px 10px;font-weight:700">Net effect on the reference'
+          + (_rifEur != null ? ' <span style="font-weight:400;color:#888;font-size:11px">(' + fmtEUR(_rifEur) + ')</span>' : '')
+          + '</td><td style="padding:8px 10px;text-align:right;font-family:\'DM Mono\',monospace;font-weight:700;white-space:nowrap;color:'
+          + (_devFin > 0 ? '#1e6b4a' : (_devFin < 0 ? '#a83b3b' : '#999')) + '">'
+          + (Math.abs(_devFin) > 0.0001 ? pc(_devFin) : '—')
+          + (Math.abs(_devFin) > 0.0001 ? _eur(_devFin) : '') + '</td></tr>';
         rmesSection += '</tbody></table>';
       }
       const multFinPct = (mults.multFinale - 1) * 100;
