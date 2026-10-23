@@ -2989,7 +2989,13 @@ table.data.sell-table .sell-drill{
           <li><b>× growth</b> — monthly target growth % applied at Step 2.</li>
           <li><b>after growth</b> — ADR used × (1 + growth%).</li>
           <li><b>Goal Value cap</b> — weighted compset price with offsets (your desired online positioning). <b>red ✓cap</b> = "after growth" was above Goal Value, capped down. <b>⚠</b> = cap disabled for sanity (fewer than 2 competitors visible, or Goal &lt; Floor); the Base Price flows through to the next step. Hover the cell for the exact reason.</li>
-          <li><b>Floor</b> — the property Floor Rate (hard minimum). <b>✓</b> = the Floor lifted the price (final &lt; Floor before clamping).</li>
+          <li><b>Floor</b> &mdash; the floor that applied, now the highest of <b>three</b> levels. <b>&#10003;</b> = it lifted the price.
+            <ul style="margin:4px 0 4px 18px">
+              <li><b>Absolute minimum</b> &mdash; the number you set, valid all year, never crossed. Taken from the 5th percentile of your own 2024&ndash;2025 history on the base room: the level you have gone below five times in a hundred.</li>
+              <li><b>Seasonal floor</b> &mdash; the <b>p15 of that exact date</b> (same weekday, same month) from the same pool that produced the median. It rises by itself in high season and on holidays.</li>
+              <li><b>Ceiling on it</b> &mdash; the seasonal floor never exceeds <b>Base &minus; 20%</b>. In high season the p15 closes in on the median, and without this the floor would have left the engine 9% of downward room instead of 20%.</li>
+            </ul>
+            The Base Price modal shows all three and says which one won.</li>
           <li><b>→ Base Price</b> — the final number, frozen and stored.</li>
           <li><b>⚑ Flags</b> — special situations needing attention (🔴 alert / 🟡 warn). · (centered) = no flag, clean run. Hover the icon to read all flags for the day with the explanation. See dedicated section below.</li>
         </ul>

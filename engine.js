@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-23a · modal RMES: effetto di ogni blocco anche in euro';
+const ENGINE_BUILD = '2026-10-23b · floor stagionale a due livelli con tetto Base-20%';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -2023,6 +2023,30 @@ function fp_postLoadHook(){
       try { localStorage.setItem(FLOOR_ALFANI_FLAG, '1'); } catch(e){}
     }
   } catch(e){ console.error('[RMES] floor alfani 140 failed', e); }
+
+  /* --- MINIMI ASSOLUTI (Manu, 23/10/2026) ---
+     Il floor cambia natura: non e' piu' un prezzo commerciale valido tutto
+     l'anno, ma il minimo SOTTO CUI NON SI SCENDE MAI. Sopra ci lavora il
+     pavimento stagionale (p15 della data), che prima non c'era.
+     I valori vengono dal p5 dello storico 2024+2025 sulla camera base: dove la
+     pratica aveva gia' tracciato la linea da sola. Tenerli ai vecchi livelli
+     avrebbe annullato il nuovo meccanismo, perche' il minimo assoluto vince
+     sempre e su Condotta stava addirittura sulla mediana dello storico.
+     Scatta una volta per browser; dopo si cambiano dal pannello RMES. */
+  try {
+    const FLOOR_ABS_FLAG = 'rmes_floor_abs_2026_10_23';
+    const ABS = { firenze: 105, condotta: 115, alfani: 115, davids: 60, nazionale: 70, portenuove: 50 };
+    if (!localStorage.getItem(FLOOR_ABS_FLAG)
+        && typeof fp_setFloor === 'function' && typeof fp_getFloor === 'function'){
+      const _cambi = [];
+      for (const k in ABS){
+        const _prima = fp_getFloor(k);
+        if (_prima !== ABS[k]){ fp_setFloor(k, ABS[k]); _cambi.push(k + ' ' + _prima + '\u2192' + ABS[k]); }
+      }
+      if (_cambi.length) console.log('[RMES] Minimi assoluti: ' + _cambi.join(' \u00b7 ') + ' (una tantum, 23/10/2026)');
+      try { localStorage.setItem(FLOOR_ABS_FLAG, '1'); } catch(e){}
+    }
+  } catch(e){ console.error('[RMES] minimi assoluti failed', e); }
 
   // --- ONE-SHOT WIPE v4: clear entries without author (Manu, 12/06/2026) ---
   // Reason: profile system introduced — pre-profile entries appear as "unknown" in
@@ -7092,6 +7116,11 @@ const FP_FLOOR_HIST_MIN_OBS = 8;
    cinque notti sulla camera piu' economica. La flessibile della camera base
    deve stare abbastanza sopra perche' quella soglia regga. */
 const FP_LONGSTAY_DISCOUNT = 0.15;
+/* Tetto sul pavimento stagionale. Il p15 storico in alta stagione si avvicina
+   molto alla mediana - la distribuzione si stringe - e un pavimento li' sopra
+   lascerebbe al RMES solo un 9% di corsa verso il basso invece del 20% che ha
+   oggi. Il pavimento non toglie mai piu' di questo al motore. */
+const FP_FLOOR_SEASON_CAP = 0.20;
 function fpFloorLiftForBaseRT(structKey, month){
   try {
     if (typeof aggPricingDaily !== 'function') return 0;
@@ -7720,11 +7749,18 @@ function newrmesCalculateBasePrice(structKey, isoDate){
   const floorHist = (anchor && anchor.adrP15 != null && anchor.adrP15 > 0 && anchor.adrP15N >= FP_FLOOR_HIST_MIN_OBS)
     ? anchor.adrP15 : null;
   const _lift = fpFloorLiftForBaseRT(structKey, +isoDate.slice(5,7));
-  /* Il p15 storico non entra piu': il pavimento e' solo quello che decidi tu,
-     piu' semplice da capire e da controllare. La soglia si riferisce alla
-     tariffa piu' bassa (soggiorno prolungato sulla camera piu' economica),
-     quindi la flessibile della camera base va alzata di conseguenza. */
-  const floorEff = floor / (1 - FP_LONGSTAY_DISCOUNT) + _lift;
+  /* Il p15 era stato TOLTO in passato per semplicita'. Torna ora, ma con un
+     tetto, che e' il pezzo che mancava: da solo in alta stagione saliva troppo.
+     Le due soglie si riferiscono alla tariffa piu' bassa (soggiorno prolungato
+     sulla camera piu' economica), quindi vanno alzate per la flessibile della
+     camera base - da qui il /0.85 e il lift. */
+  const _floorAbsEff = floor / (1 - FP_LONGSTAY_DISCOUNT) + _lift;
+  let floorEff = _floorAbsEff;
+  if (floorHist != null){
+    const _histEff = floorHist / (1 - FP_LONGSTAY_DISCOUNT) + _lift;
+    const _season = Math.min(_histEff, price * (1 - FP_FLOOR_SEASON_CAP));
+    if (_season > floorEff) floorEff = _season;
+  }
   if (price < floorEff) price = floorEff;
   return Math.round(price);
 }
@@ -7782,8 +7818,23 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
     ? Math.round(anchor.adrP15) : null;
   const _lift = fpFloorLiftForBaseRT(structKey, +isoDate.slice(5,7));
   const floorBase = floor / (1 - FP_LONGSTAY_DISCOUNT);
-  const floorEff = floorBase + _lift;
-  const floorSource = 'annual';
+  /* Due pavimenti: il minimo assoluto che decidi tu, valido tutto l'anno, e il
+     p15 dello stesso pool storico che ha prodotto la mediana. Vince il piu'
+     alto, ma il secondo non supera mai il tetto (Base - 20%): senza, in alta
+     stagione il pavimento arrivava a un 9% sotto il Base e il motore non aveva
+     piu' spazio per scendere. */
+  const _floorAbsEff = floorBase + _lift;
+  let floorEff = _floorAbsEff, floorSource = 'absolute';
+  let floorHistEff = null, floorCapTetto = null;
+  if (floorHist != null){
+    floorHistEff = floorHist / (1 - FP_LONGSTAY_DISCOUNT) + _lift;
+    floorCapTetto = price * (1 - FP_FLOOR_SEASON_CAP);
+    const _season = Math.min(floorHistEff, floorCapTetto);
+    if (_season > floorEff){
+      floorEff = _season;
+      floorSource = (floorHistEff <= floorCapTetto) ? 'hist' : 'capped';
+    }
+  }
   let flooredBy = false;
   if (price < floorEff){ price = floorEff; flooredBy = true; }
   return {
@@ -7833,6 +7884,7 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
     floor,
     flooredBy,
     floorHist, floorEff, floorSource, floorLift: _lift, floorBeforeLift: floorBase,
+    floorAbsEff: _floorAbsEff, floorHistEff, floorCapTetto,
     floorHistN: anchor ? anchor.adrP15N : 0,
     finalBase: Math.round(price),
     flags: _bpComputeFlags({
@@ -10540,7 +10592,11 @@ function fp_setTargetGrowth(structKey, month, pct){
   localStorage.setItem(FP_TARGET_GROWTH_KEY, JSON.stringify(obj));
 }
 function fp_getFloor(structKey){
-  const FLOOR_DEFAULTS = { condotta: 200, alfani: 200, firenze: 150, davids: 100, nazionale: 85, portenuove: 80 };
+  /* Minimi ASSOLUTI, non prezzi commerciali: il livello sotto cui non si scende
+     mai, qualunque cosa dicano i segnali. Presi dal p5 dello storico 2024+2025
+     sulla camera base - dove la pratica ha gia' tracciato la linea da sola - e
+     arrotondati. Sopra ci lavora il pavimento stagionale (p15 della data). */
+  const FLOOR_DEFAULTS = { condotta: 115, alfani: 115, firenze: 105, davids: 60, nazionale: 70, portenuove: 50 };
   try {
     const raw = localStorage.getItem(FP_FLOOR_KEY);
     if (raw){
@@ -12252,17 +12308,23 @@ function fp_showBasePriceModal(structKey, rt, dateISO){
   // ④ floor
   h += sec('④', 'Floor', '#8e5fa8');
   h += '<table style="width:100%;border-collapse:collapse">';
-  h += row('Annual Floor Rate', eur(v.floor), 'set by you, same all year — minimum of the lowest rate');
-  /* La riga "Historical p15" diceva quale dei due pavimenti vincesse. Il p15 non
-     entra piu' nel conto (floorSource e' sempre 'annual'): resta solo come
-     riferimento, e la riga sotto spiega da dove viene il numero applicato. */
-  h += row('Historical p15 (reference only)', v.floorHist != null ? eur(v.floorHist) : '—',
-           v.floorHist != null ? ('you sold below this only 15% of the time · ' + v.floorHistN + ' observations · does not raise the floor')
-                               : ('fewer than ' + (typeof FP_FLOOR_HIST_MIN_OBS !== 'undefined' ? FP_FLOOR_HIST_MIN_OBS : 8) + ' observations'));
+  const _lsTxt = Math.round((typeof FP_LONGSTAY_DISCOUNT !== 'undefined' ? FP_LONGSTAY_DISCOUNT : 0.15)*100) + '%'
+    + (v.floorLift ? ' + seasonal lift ' + eur(v.floorLift) : '');
+  h += row('Absolute minimum', eur(v.floorAbsEff != null ? v.floorAbsEff : v.floorEff),
+           'set by you (' + eur(v.floor) + '), never crossed · re-based on the base room type (long-stay ' + _lsTxt + ')');
+  h += row('Seasonal floor (p15 of this date)',
+           v.floorHistEff != null ? eur(v.floorHistEff) : '—',
+           v.floorHist != null
+             ? ('you sold below ' + eur(v.floorHist) + ' only 15% of the time on this weekday and month · ' + v.floorHistN + ' observations')
+             : ('fewer than ' + (typeof FP_FLOOR_HIST_MIN_OBS !== 'undefined' ? FP_FLOOR_HIST_MIN_OBS : 8) + ' observations — no seasonal floor for this date'));
+  h += row('Ceiling on the seasonal floor',
+           v.floorCapTetto != null ? eur(v.floorCapTetto) : '—',
+           'the floor never takes more than ' + Math.round((typeof FP_FLOOR_SEASON_CAP !== 'undefined' ? FP_FLOOR_SEASON_CAP : 0.20)*100)
+           + '% of downward room away from the engine');
+  const _fsTxt = { absolute: 'the absolute minimum', hist: 'the seasonal p15', capped: 'the ceiling (Base − '
+    + Math.round((typeof FP_FLOOR_SEASON_CAP !== 'undefined' ? FP_FLOOR_SEASON_CAP : 0.20)*100) + '%)' };
   h += row('Floor applied', '<b>' + eur(v.floorEff) + '</b>',
-           'your Floor Rate re-based on the base room type (long-stay discount '
-           + Math.round((typeof FP_LONGSTAY_DISCOUNT !== 'undefined' ? FP_LONGSTAY_DISCOUNT : 0.15)*100) + '%)'
-           + (v.floorLift ? ' + seasonal lift ' + eur(v.floorLift) : ''), true);
+           'the highest of the three — here it is <b>' + (_fsTxt[v.floorSource] || v.floorSource) + '</b>', true);
   h += row('Did it act?', v.flooredBy
       ? '<span style="color:#a83b3b;font-weight:700">YES → raised to ' + eur(v.floorEff) + '</span>'
       : '<span style="color:#999">no</span>');
