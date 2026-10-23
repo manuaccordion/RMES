@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-23c · floor: minimo assoluto + Base-20%, due livelli';
+const ENGINE_BUILD = '2026-10-23e · floor a due livelli ovunque (modal, tooltip, CSV), Playbook tutto in inglese';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -2027,7 +2027,7 @@ function fp_postLoadHook(){
   /* --- MINIMI ASSOLUTI (Manu, 23/10/2026) ---
      Il floor cambia natura: non e' piu' un prezzo commerciale valido tutto
      l'anno, ma il minimo SOTTO CUI NON SI SCENDE MAI. Sopra ci lavora il
-     pavimento stagionale (p15 della data), che prima non c'era.
+     secondo livello, Base - 20% della data, che prima non c'era.
      I valori vengono dal p5 dello storico 2024+2025 sulla camera base: dove la
      pratica aveva gia' tracciato la linea da sola. Tenerli ai vecchi livelli
      avrebbe annullato il nuovo meccanismo, perche' il minimo assoluto vince
@@ -5976,8 +5976,8 @@ function computeRMESPriceMap(sel, startYmd, rangeDays){
   const _rmKey = sel + '|' + startYmd + '|' + rangeDays;
   if (_RMESMAP_TICK && _RMESMAP_TICK[_rmKey] !== undefined) return _RMESMAP_TICK[_rmKey];
   /* Il pavimento del RMES deve essere LO STESSO del Base Price, non il solo
-     valore annuale: quello effettivo include il p15 storico e il rialzo per la
-     camera piu' economica. Usando fp_getFloor grezzo il suggerimento poteva
+     valore annuale: quello effettivo include il rialzo per la camera piu'
+     economica e il secondo livello Base - 20% della data. Usando fp_getFloor grezzo il suggerimento poteva
      scendere sotto il pavimento che il Base Price rispetta (visto su Alfani:
      250 contro un floor di 257). */
   const _floorAnnual = (typeof fp_getFloor === 'function') ? fp_getFloor(sel) : 0;
@@ -8025,10 +8025,14 @@ function renderPriceChain(){
               : 'No compset for this day.',
             v.cappedByGoal ? 'color:#a83b3b;font-weight:700' : 'color:#999');
     h += td(eur(v.floorEff) + (v.flooredBy ? ' ↑' : ''),
-            'Floor Rate you set EUR' + v.floor + ' (minimum of the lowest rate)'
-            + '\nApplied on the base room type: EUR' + v.floorEff
-            + (v.floorLift ? ' (incl. seasonal lift EUR' + Math.round(v.floorLift) + ')' : '')
-            + '\nHistorical p15 ' + (v.floorHist != null ? 'EUR' + v.floorHist : 'n/a') + ' - reference only, does not raise the floor'
+            'Two levels, the higher one wins.'
+            + '\n1. Absolute minimum EUR' + (v.floorAbsEff != null ? v.floorAbsEff : v.floorEff)
+            + ' - from the Floor Rate you set (EUR' + v.floor + ', the lowest rate)'
+            + ', re-based on the base room type'
+            + (v.floorLift ? ' + seasonal lift EUR' + Math.round(v.floorLift) : '')
+            + '\n2. Base - ' + Math.round((typeof FP_FLOOR_SEASON_CAP !== 'undefined' ? FP_FLOOR_SEASON_CAP : 0.20)*100) + '% for this date'
+            + (v.floorFromBase != null ? ': EUR' + Math.round(v.floorFromBase) : ': n/a')
+            + '\nApplied: EUR' + v.floorEff + ' (' + (v.floorSource === 'base' ? 'level 2' : 'level 1') + ')'
             + (v.flooredBy ? '\nThe floor ACTED.' : ''),
             v.flooredBy ? 'color:#a83b3b;font-weight:700' : 'color:#999');
     h += td('<b>' + eur(v.finalBase) + '</b>', 'The structural starting point for this night.', 'border-left:2px solid #f0eae0');
@@ -8067,7 +8071,7 @@ function renderPriceChain(){
 let _CHAIN_ROWS = [];
 function _chainExportCSV(){
   const H = ['property','date','dow','lead_days','ly_median','obs','set_used','after_growth','target_growth_pct',
-             'goal_value','capped_by_goal','floor_annual','floor_p15','floor_applied','floor_source','floored',
+             'goal_value','capped_by_goal','floor_absolute','floor_from_base','floor_applied','floor_source','floored',
              'base_price','in_horizon','pickup_good','pickup_days','max_push','good_ly','stly_ratio','stly_basis',
              'stly_state','pickup_dev','market_gap','market_action','airdna','signal_total','suggested_price'];
   const lines = [H.join(',')];
@@ -8076,7 +8080,10 @@ function _chainExportCSV(){
     const v = r.v, sg = r.sg, e = r.e, A = sg ? sg.A : null;
     lines.push([q(r.label), q(fp_isoDate(r.d)), q(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][r.d.getDay()]), r.lead,
       v.lyMedianADR, v.lyObs, q(v.lySetDesc), v.afterGrowth, v.targetGrowth,
-      v.goalValue, v.cappedByGoal ? 'yes':'no', v.floor, v.floorHist, v.floorEff, q(v.floorSource), v.flooredBy?'yes':'no',
+      v.goalValue, v.cappedByGoal ? 'yes':'no',
+      v.floorAbsEff != null ? v.floorAbsEff : v.floorEff,
+      v.floorFromBase != null ? Math.round(v.floorFromBase) : '',
+      v.floorEff, q(v.floorSource), v.flooredBy?'yes':'no',
       v.finalBase, sg ? (sg.inHorizon?'yes':'no') : '',
       A && A.good != null ? A.good.toFixed(3) : '', A ? (A.pickupDays||'') : '', A && A.maxPush != null ? A.maxPush.toFixed(3) : '',
       A && A.goodLy != null ? A.goodLy.toFixed(3) : '', A && A.stlyRatio != null ? A.stlyRatio.toFixed(3) : '',
@@ -10581,7 +10588,7 @@ function fp_getFloor(structKey){
   /* Minimi ASSOLUTI, non prezzi commerciali: il livello sotto cui non si scende
      mai, qualunque cosa dicano i segnali. Presi dal p5 dello storico 2024+2025
      sulla camera base - dove la pratica ha gia' tracciato la linea da sola - e
-     arrotondati. Sopra ci lavora il pavimento stagionale (p15 della data). */
+     arrotondati. Sopra ci lavora il secondo livello, Base - 20% della data. */
   const FLOOR_DEFAULTS = { condotta: 115, alfani: 115, firenze: 105, davids: 60, nazionale: 70, portenuove: 50 };
   try {
     const raw = localStorage.getItem(FP_FLOOR_KEY);
@@ -12298,13 +12305,12 @@ function fp_showBasePriceModal(structKey, rt, dateISO){
     + (v.floorLift ? ' + seasonal lift ' + eur(v.floorLift) : '');
   h += row('Absolute minimum', eur(v.floorAbsEff != null ? v.floorAbsEff : v.floorEff),
            'set by you (' + eur(v.floor) + '), never crossed · re-based on the base room type (long-stay ' + _lsTxt + ')');
+  /* Il p15 non compare piu' qui: non entra nel floor, e una terza riga dentro
+     una sezione intitolata FLOOR si legge come un terzo livello anche se dice
+     "reference only". Resta nel CSV e in floorHist per chi lo cerca. */
   h += row('Base − ' + Math.round((typeof FP_FLOOR_SEASON_CAP !== 'undefined' ? FP_FLOOR_SEASON_CAP : 0.20)*100) + '% for this date',
            v.floorFromBase != null ? eur(v.floorFromBase) : '—',
            'the engine never goes more than ' + Math.round((typeof FP_FLOOR_SEASON_CAP !== 'undefined' ? FP_FLOOR_SEASON_CAP : 0.20)*100) + '% below the Base Price of the day · seasonality comes from the Base itself');
-  h += row('Historical p15 (reference only)', v.floorHist != null ? eur(v.floorHist) : '—',
-           v.floorHist != null
-             ? ('you sold below this only 15% of the time on this weekday and month · ' + v.floorHistN + ' observations · does not raise the floor')
-             : ('fewer than ' + (typeof FP_FLOOR_HIST_MIN_OBS !== 'undefined' ? FP_FLOOR_HIST_MIN_OBS : 8) + ' observations'));
   const _fsTxt = { absolute: 'the absolute minimum', base: 'Base − ' + Math.round((typeof FP_FLOOR_SEASON_CAP !== 'undefined' ? FP_FLOOR_SEASON_CAP : 0.20)*100) + '%' };
   h += row('Floor applied', '<b>' + eur(v.floorEff) + '</b>',
            'the higher of the two — here it is <b>' + (_fsTxt[v.floorSource] || v.floorSource) + '</b>', true);
@@ -12343,8 +12349,8 @@ function fp_renderFoundationConfigBox(structKey){
   h += '<div class="panel-sub"><b>Annual Anchor Price</b>: a fallback value (net Beddy_eq) used as guard-rail of the Base Price <b>only when LY data for the target month is missing</b>. In normal conditions the guard-rail uses the <b>Monthly Anchor</b> = true ADR LY of the base RT for that month, computed dynamically from the last 2 years. Default Firenze 220 / Condotta 280 / Alfani 270 / David\'s 145. <b>Floor</b>: the absolute minimum below which the Base Price never drops. Default €100. <b>OTA markup</b>: the percentage OTAs add to the net Beddy_eq price. Default 12%. Used for: (1) converting OTA booking revenue to Beddy_eq in the historical calculation (revPerNightCaricato = revLordo / (1+markup/100)); (2) converting My Expedia → Beddy_eq in the RMES factors; (3) computing the compset reference. On save the system recomputes revPerNightCaricato on the existing BOOKINGS. 0. The "📊 Estimate from data" computes the estimate from your historical data (last 24 months, grouped by month × DOW).</div></div></div>';
   h += '<div class="panel-body" style="padding:12px 16px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">';
   h += '<label style="font-size:12px;color:var(--ink-2)" title="Used as guard-rail only when LY data for the target month is missing. Normally the Monthly Anchor (computed from last 2 years data) is used instead."><b style="color:#7a4f1c">Annual Anchor (fallback)</b>: <input type="number" id="fp-base-input" min="0" max="2000" step="10" style="width:80px;padding:6px 8px;border:1px solid #c4823b;border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px;background:#fef8ed"> €</label>';
-  h += '<label style="font-size:12px;color:var(--ink-2)" title="The minimum for this property, same all year. It is the minimum of the LOWEST rate (long stay on the cheapest room type): on the base room type the applied floor is higher - see the figure next to this field. Nothing else raises it."><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="5" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
-  h += '<span id="fp-floor-p15" style="font-size:11px;color:var(--ink-3);font-family:\'DM Mono\',monospace"></span>';
+  h += '<label style="font-size:12px;color:var(--ink-2)" title="The minimum for this property, same all year. It is the minimum of the LOWEST rate (long stay on the cheapest room type): on the base room type the applied floor is higher - see the figure next to this field. This is level 1 of the floor; level 2, Base minus 20% of that date, can sit higher."><b>Floor rate</b>: <input type="number" id="fp-floor-input" min="0" max="1000" step="5" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;font-family:\'DM Mono\',monospace;text-align:right;font-size:13px"> €</label>';
+  h += '<span id="fp-floor-applied" style="font-size:11px;color:var(--ink-3);font-family:\'DM Mono\',monospace"></span>';
   /* I TRE PEZZI DEL MARKUP, come sono impostati su Beddy: ricarico del canale,
      campagna e member deal. Prima si scriveva direttamente il risultato (13%,
      17%): giusto come numero ma opaco, e per cambiarlo bisognava rifare il
@@ -12447,16 +12453,13 @@ function fp_renderFoundationConfigBox(structKey){
   document.getElementById('fp-base-input').value = fp_getBasePrice(structKey);
   document.getElementById('fp-floor-input').value = fp_getFloor(structKey);
   /* Accanto al campo: il floor che viene DAVVERO applicato.
-     Qui prima stava il p15 storico, con scritto "takes over in N/12 months".
-     Non e' piu' vero da quando il pavimento e' solo quello deciso a mano
-     (newrmesCalculateBasePrice tiene floorSource 'annual' e basta): leggere che
-     un valore storico "prende il sopravvento" proprio mentre si prova a
-     cambiare il floor manda fuori strada. Al suo posto l'unica cosa che serve
-     sapere: il numero scritto nel campo e' il minimo della tariffa piu' BASSA
-     (soggiorno prolungato), quindi sulla camera base il pavimento e' piu' alto
-     del 15%, piu' l'eventuale rialzo di stagione. */
+     L'unica cosa che serve sapere mentre si cambia il numero: quello scritto
+     nel campo e' il minimo della tariffa piu' BASSA (soggiorno prolungato),
+     quindi sulla camera base il pavimento e' piu' alto del 15%, piu'
+     l'eventuale rialzo di stagione. Il secondo livello (Base - 20%) non si
+     configura: nasce dal Base del giorno. */
   (function(){
-    const el = document.getElementById('fp-floor-p15');
+    const el = document.getElementById('fp-floor-applied');
     if (!el) return;
     const ann = fp_getFloor(structKey);
     const mo = TODAY.getMonth() + 1;
@@ -12470,7 +12473,9 @@ function fp_renderFoundationConfigBox(structKey){
       + Math.round(FP_LONGSTAY_DISCOUNT*100) + '%)'
       + (lift ? ' + ' + Math.round(lift) + ' (seasonal lift this month)' : '')
       + ' = ' + eff + ' EUR\n\n'
-      + 'No historical value raises it: the floor is only the number you set here.')
+      + 'This is level 1 of the floor, the absolute minimum. Level 2 is Base - '
+      + Math.round((typeof FP_FLOOR_SEASON_CAP !== 'undefined' ? FP_FLOOR_SEASON_CAP : 0.20)*100) + '% of each date,\n'
+      + 'which is not configured here: it comes from the Base Price of the day. The higher of the two is applied.')
       + '" style="cursor:help;border-bottom:1px dotted var(--line-2)">'
       + '→ <b>' + eff + ' €</b> applied on the base room type ℹ</span>';
   })();

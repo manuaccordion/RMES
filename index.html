@@ -2405,7 +2405,7 @@ table.data.sell-table .sell-drill{
       <div class="panel-body" style="padding:14px 18px">
         <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;margin-bottom:10px">
           <span style="font-weight:700;font-size:15px;color:#2c5c3c">Quick answers</span>
-          <span style="font-size:12px;color:var(--ink-3)">the twenty things people actually ask &mdash; type to filter</span>
+          <span style="font-size:12px;color:var(--ink-3)">the questions people actually ask &mdash; type to filter</span>
         </div>
         <input id="qa-search" type="search" placeholder="base price, floor, horizon, red dot, STLY&hellip;"
                style="width:100%;box-sizing:border-box;padding:8px 12px;font-size:13px;font-family:inherit;
@@ -2415,31 +2415,31 @@ table.data.sell-table .sell-drill{
         </div>
         <table class="data" id="qa-table" style="margin-top:8px">
           <tbody>
-        <tr class="qa-row"><td class="qa-q">Does the Base Price recalculate every day?</td><td class="qa-a">Yes. It is recomputed from scratch every time the dashboard opens, for all 365 days. Nothing is frozen. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Does the selling horizon limit the Base Price?</td><td class="qa-a">No. The Base Price exists for all 365 days. The horizon limits two other things: beyond it the Goal Value does not cap the Base, and RMES does not move the price. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What is the selling horizon?</td><td class="qa-a">The lead time within which 80% of that property's bookings arrive. The system computes it from your own data, you do not set it. Firenze 54 days &middot; Condotta 50 &middot; Alfani 104 &middot; Enis 59 &middot; Nazionale 104 &middot; Porte Nuove 80. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What moves the suggested price?</td><td class="qa-a">Only the pickup of the last 7 days. Market and AirDNA never push: they can only stop a push. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">How much can the price move in one day?</td><td class="qa-a">5% at most. The engine smooths its own movement, so a date cannot jump: it walks towards the target a step a day. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">How far can it go in total?</td><td class="qa-a">30% away from the Base Price, in either direction. That is the cap per property, configurable in the RMES tab. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What can never be broken?</td><td class="qa-a">The Floor. No calculation ever goes below it. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What exactly is the Floor?</td><td class="qa-a">The figure you type is the <b>absolute minimum</b>: the lowest price anyone can pay &mdash; not the flexible rate, but the cheapest on offer, long stay in the cheapest room. Nobody ever pays less. On top of it sits a second level: <b>Base &minus; 20%</b> for that date, so the engine never goes further below the structural price. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">The Sell Strategy table keeps jumping</td><td class="qa-a">It should not any more. The table is drawn in one go, and an update from the cloud waits until you stop hovering or typing. If it still moves, open <b>Sync Diagnostics</b> from the cloud chip and watch <b>Redraws from sync</b> &mdash; and check <b>Code version</b> is today’s, or hard-reload with Ctrl+Shift+R. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">How do I change the Floor rate?</td><td class="qa-a">RMES tab &rarr; pick the property &rarr; <b>Floor rate</b> &rarr; <b>&#8635; Recompute Base Price</b>. The message under the button says whether it was also shared with the other browsers. Each property keeps its own figure. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">I set the Floor and the old number came back</td><td class="qa-a">It means the save did not reach the cloud and the shared state put the previous figure back. Now the figure stays, and the red message under the button names the reason &mdash; click the <b>cloud chip</b> in the header for the details. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Why is the figure next to the Floor higher?</td><td class="qa-a">Two reasons. The figure you type is the minimum of the <i>cheapest</i> rate, so on the base room the engine guards Floor &divide; 0.85 plus the seasonal lift. And from 23/10/2026 a second level can raise it: the floor is the higher of the absolute minimum and Base &minus; 20% for that date. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">When does the last-minute discount act?</td><td class="qa-a">Within 60 days of arrival and below 60% occupancy. Further out, or fuller than that, it is zero and the price does not come down on its own. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Does a suggested price apply by itself?</td><td class="qa-a">Never. Until you press &#10003; the active price stays what it is. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What does the red dot mean?</td><td class="qa-a">One of two things: the suggestion is more than 20% away from what you loaded with nothing in the data explaining it, or the price sits above your Goal Value on an empty night too far out for the last minute. Hover the price to read which. <a href="#instr-sell" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Goal Value or Weighted compset &mdash; which is which?</td><td class="qa-a">Goal Value = weighted compset WITH your offsets; it is used only as the cap on the Base Price. Weighted compset = the same WITHOUT offsets; it feeds the RMES signals. <a href="#instr-rate" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Why is there no Rate shopper on Nazionale and Porte Nuove?</td><td class="qa-a">They have no Expedia data at all: no price of ours, no competitors, no search pressure. The column appears by itself the day those prices are loaded. <a href="#instr-rate" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What is STLY?</td><td class="qa-a">The same date last year, minus 364 days, so the day of the week matches. <a href="#instr-glossario" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Is revenue gross or net of OTA commission?</td><td class="qa-a">Gross: what the guest actually paid. Expedia 18% (16.5% on Condotta) &middot; Ctrip 18% on Alfani, 15% elsewhere &middot; Booking and Airbnb arrive already gross. <a href="#instr-otb" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Do cleaning fees count as revenue?</td><td class="qa-a">Yes in the total revenue, no in the ADR. <a href="#instr-otb" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Who sees the changes I make?</td><td class="qa-a">Everyone, in near real time. The &#9729; synced chip in the header means the link is live; &#9888; local only means you are working on your browser alone. <a href="#instr-menu" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What is the Anchor Price?</td><td class="qa-a">One number per property per year. It bounds the computed Base Price to &plusmn;50%. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What happens when two events fall on the same day?</td><td class="qa-a">Both are shown and their weights are added &mdash; +10% and +8% give +18%. The events file has two columns because it is easier to read that way, not because one matters more. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">What is the target growth?</td><td class="qa-a">The percentage added to last year's median ADR in step 2 of the Base Price. Today it is +5% on every month and every property. <a href="#instr-rmes" class="qa-link">apri</a></td></tr>
-        <tr class="qa-row"><td class="qa-q">Where do I check a price number by number?</td><td class="qa-a">Export Pricing &rarr; Base Price breakdown for the Base, RMES breakdown for the suggestion. Every step has a tooltip saying where the figure comes from. <a href="#instr-export" class="qa-link">apri</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Does the Base Price recalculate every day?</td><td class="qa-a">Yes. It is recomputed from scratch every time the dashboard opens, for all 365 days. Nothing is frozen. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Does the selling horizon limit the Base Price?</td><td class="qa-a">No. The Base Price exists for all 365 days. The horizon limits two other things: beyond it the Goal Value does not cap the Base, and RMES does not move the price. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What is the selling horizon?</td><td class="qa-a">The lead time within which 80% of that property's bookings arrive. The system computes it from your own data, you do not set it. Firenze 54 days &middot; Condotta 50 &middot; Alfani 104 &middot; Enis 59 &middot; Nazionale 104 &middot; Porte Nuove 80. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What moves the suggested price?</td><td class="qa-a">Only the pickup of the last 7 days. Market and AirDNA never push: they can only stop a push. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">How much can the price move in one day?</td><td class="qa-a">5% at most. The engine smooths its own movement, so a date cannot jump: it walks towards the target a step a day. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">How far can it go in total?</td><td class="qa-a">30% away from the Base Price, in either direction. That is the cap per property, configurable in the RMES tab. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What can never be broken?</td><td class="qa-a">The Floor. No calculation ever goes below it. <a href="#instr-sell" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What exactly is the Floor?</td><td class="qa-a">The figure you type is the <b>absolute minimum</b>: the lowest price anyone can pay &mdash; not the flexible rate, but the cheapest on offer, long stay in the cheapest room. Nobody ever pays less. On top of it sits a second level: <b>Base &minus; 20%</b> for that date, so the engine never goes further below the structural price. <a href="#instr-sell" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">The Sell Strategy table keeps jumping</td><td class="qa-a">It should not any more. The table is drawn in one go, and an update from the cloud waits until you stop hovering or typing. If it still moves, open <b>Sync Diagnostics</b> from the cloud chip and watch <b>Redraws from sync</b> &mdash; and check <b>Code version</b> is today’s, or hard-reload with Ctrl+Shift+R. <a href="#instr-sell" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">How do I change the Floor rate?</td><td class="qa-a">RMES tab &rarr; pick the property &rarr; <b>Floor rate</b> &rarr; <b>&#8635; Recompute Base Price</b>. The message under the button says whether it was also shared with the other browsers. Each property keeps its own figure. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">I set the Floor and the old number came back</td><td class="qa-a">It means the save did not reach the cloud and the shared state put the previous figure back. Now the figure stays, and the red message under the button names the reason &mdash; click the <b>cloud chip</b> in the header for the details. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Why is the figure next to the Floor higher?</td><td class="qa-a">Two reasons. The figure you type is the minimum of the <i>cheapest</i> rate, so on the base room the engine guards Floor &divide; 0.85 plus the seasonal lift. And a second level can raise it: the floor is the higher of the absolute minimum and Base &minus; 20% for that date. <a href="#instr-sell" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">When does the last-minute discount act?</td><td class="qa-a">Within 60 days of arrival and below 60% occupancy. Further out, or fuller than that, it is zero and the price does not come down on its own. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Does a suggested price apply by itself?</td><td class="qa-a">Never. Until you press &#10003; the active price stays what it is. <a href="#instr-sell" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What does the red dot mean?</td><td class="qa-a">One of two things: the suggestion is more than 20% away from what you loaded with nothing in the data explaining it, or the price sits above your Goal Value on an empty night too far out for the last minute. Hover the price to read which. <a href="#instr-sell" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Goal Value or Weighted compset &mdash; which is which?</td><td class="qa-a">Goal Value = weighted compset WITH your offsets; it is used only as the cap on the Base Price. Weighted compset = the same WITHOUT offsets; it feeds the RMES signals. <a href="#instr-rate" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Why is there no Rate shopper on Nazionale and Porte Nuove?</td><td class="qa-a">They have no Expedia data at all: no price of ours, no competitors, no search pressure. The column appears by itself the day those prices are loaded. <a href="#instr-rate" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What is STLY?</td><td class="qa-a">The same date last year, minus 364 days, so the day of the week matches. <a href="#instr-glossario" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Is revenue gross or net of OTA commission?</td><td class="qa-a">Gross: what the guest actually paid. Expedia 18% (16.5% on Condotta) &middot; Ctrip 18% on Alfani, 15% elsewhere &middot; Booking and Airbnb arrive already gross. <a href="#instr-otb" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Do cleaning fees count as revenue?</td><td class="qa-a">Yes in the total revenue, no in the ADR. <a href="#instr-otb" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Who sees the changes I make?</td><td class="qa-a">Everyone, in near real time. The &#9729; synced chip in the header means the link is live; &#9888; local only means you are working on your browser alone. <a href="#instr-menu" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What is the Anchor Price?</td><td class="qa-a">One number per property per year. It bounds the computed Base Price to &plusmn;50%. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What happens when two events fall on the same day?</td><td class="qa-a">Both are shown and their weights are added &mdash; +10% and +8% give +18%. The events file has two columns because it is easier to read that way, not because one matters more. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">What is the target growth?</td><td class="qa-a">The percentage added to last year's median ADR in step 2 of the Base Price. Today it is +5% on every month and every property. <a href="#instr-rmes" class="qa-link">open</a></td></tr>
+        <tr class="qa-row"><td class="qa-q">Where do I check a price number by number?</td><td class="qa-a">Export Pricing &rarr; Base Price breakdown for the Base, RMES breakdown for the suggestion. Every step has a tooltip saying where the figure comes from. <a href="#instr-export" class="qa-link">open</a></td></tr>
           </tbody>
         </table>
       </div>
@@ -2470,9 +2470,9 @@ table.data.sell-table .sell-drill{
     <!-- ★ BIG PICTURE -->
     <details id="instr-big" open class="panel" style="margin-bottom:14px;border-left:3px solid #8e5fa8">
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14"><span style="color:#8e5fa8">★</span> Big Picture — daily landing</summary>
-        <div style="padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;margin:0 18px 10px 18px"><p style="margin:0 0 6px 0;font-weight:700;color:#5a3a14">📖 In 30 secondi</p><p style="margin:0;font-size:13px">La schermata di apertura. In alto la curva del venduto cumulato: dove sei, dov'eri l'anno scorso, dove stai andando a finire. Sotto una riga per struttura coi totali di oggi. Serve a capire in dieci secondi se la giornata va bene.</p></div>
+        <div style="padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;margin:0 18px 10px 18px"><p style="margin:0 0 6px 0;font-weight:700;color:#5a3a14">📖 In 30 seconds</p><p style="margin:0;font-size:13px">The opening screen. On top, cumulative revenue by booking date: where you are, where you were last year, where you are heading. Below, one row per property with today's totals. Ten seconds to see whether the day is going well.</p></div>
 
-        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Dettaglio completo — apri solo se ti serve</summary>
+        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Full detail — open only if you need it</summary>
       <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
         <p>Today's snapshot, with a chart of the last/next days and the totals for each of the 4 properties.</p>
         <ul style="margin:6px 0 6px 18px">
@@ -2511,7 +2511,7 @@ table.data.sell-table .sell-drill{
           <p style="margin:0 0 6px 0;font-weight:700;color:#5a3a14">📖 In 30 seconds — what this tab is for</p>
           <p style="margin:0;font-size:13px">One row per stay-date, looking forward. <b>This is where you decide the price to load on Beddy.</b> For every day you see: how it's booking, what the engine suggests, what is the price currently active, and a quick action to accept the suggestion or override it.</p>
         </div>
-        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Dettaglio completo — apri solo se ti serve</summary>
+        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Full detail — open only if you need it</summary>
 
         <p><b>Columns, left to right</b>: Date · DoW · Event · OTB to date · Pickup · STLY · Pickup STLY · Rate shopper · Beddy · Base Price · <b>RMES</b> (Pricing + Min stay, at the far right — you read the day from left to right and end on the decision).</p>
         <ul style="margin:6px 0 6px 18px">
@@ -2578,7 +2578,6 @@ table.data.sell-table .sell-drill{
           <li><b>Base &minus; 20%</b> &mdash; the engine never goes more than 20% below the Base Price of that date. The seasonality is already inside the Base, so this level breathes with the year by itself: high in May, low in January.</li>
         </ul>
         <p style="margin:0 0 8px 0">In the quiet months the absolute minimum wins and the floor sits low; in season Base &minus; 20% wins and the floor follows the Base. The <b>Base Price detail</b> shows both figures and names the winner for that date.</p>
-        <p style="margin:6px 0 0 0;font-size:12.5px;color:#666"><i>A third level was tried on 23/10/2026 &mdash; the p15 of that exact date from your own history &mdash; and dropped the same day: measured over 1,098 dates it decided only 3% of them, because the seasonality is already carried by the Base. It is still shown in the Base Price detail as a reference, labelled as such.</i></p>
         </div>
 
         <div style="margin-top:14px;padding:12px 14px;background:#fafaf8;border-left:3px solid #b0332f;font-size:13px;line-height:1.6">
@@ -2610,7 +2609,7 @@ table.data.sell-table .sell-drill{
           <p style="margin:0 0 6px 0;font-weight:700;color:#2c5c3c">📖 In 30 seconds — what this tab is for</p>
           <p style="margin:0;font-size:13px">One row per month, 16 months forward. <b>Where you see how the year is shaping up: budget vs forecast vs OTB.</b> The forecast is automatic — no buttons. It is built <b>night by night</b> from what is already on the books plus the pickup you can still expect, then summed into months.</p>
         </div>
-        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Dettaglio completo — apri solo se ti serve</summary>
+        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Full detail — open only if you need it</summary>
 
         <p><b>Top KPIs</b>: YTD + Forecast Revenue, Final LY 2025 reference, Δ vs Final LY, OTB already acquired.</p>
 
@@ -2800,9 +2799,9 @@ table.data.sell-table .sell-drill{
     <!-- ⑤ OCC BY ROOM TYPE -->
     <details id="instr-rt" class="panel" style="margin-bottom:14px;border-left:3px solid #3a6b6b">
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">⑤ OCC by Room Type</summary>
-        <div style="padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;margin:0 18px 10px 18px"><p style="margin:0 0 6px 0;font-weight:700;color:#5a3a14">📖 In 30 secondi</p><p style="margin:0;font-size:13px">Occupazione e ADR per tipologia di camera, mese per mese. Tre coppie di colonne: come stai adesso, come stavi allo stesso punto l'anno scorso, come l'anno scorso &egrave; poi finito. La distanza fra le ultime due &egrave; il pickup che devi ancora raccogliere.</p></div>
+        <div style="padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;margin:0 18px 10px 18px"><p style="margin:0 0 6px 0;font-weight:700;color:#5a3a14">📖 In 30 seconds</p><p style="margin:0;font-size:13px">Occupancy and ADR by room type, month by month. Three pairs of columns: where you are now, where you were at this same point last year, and how last year actually closed. The gap between the last two is the pickup still to come.</p></div>
 
-        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Dettaglio completo — apri solo se ti serve</summary>
+        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Full detail — open only if you need it</summary>
       <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
         <p>OCC broken down by Room Type. Used to spot RTs that book early vs late and the actual price/RT mix.</p>
         <h4 style="margin:12px 0 6px 0;color:#5a3a14">Monthly table by Room Type</h4>
@@ -2844,9 +2843,9 @@ table.data.sell-table .sell-drill{
     <!-- ⑦ RMES -->
     <details id="instr-rmes" open class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">⑦ RMES — the daily price signal</summary>
-        <div style="padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;margin:0 18px 10px 18px"><p style="margin:0 0 6px 0;font-weight:700;color:#5a3a14">📖 In 30 secondi</p><p style="margin:0;font-size:13px">Il motore che suggerisce il prezzo di ogni giorno. Parte dal Base Price e lo sposta, al massimo del 20%. <b>A muoverlo &egrave; solo il tuo pickup</b>: mercato e AirDNA possono soltanto frenare una mossa, mai farne partire una. E sotto il floor non si scende mai.</p></div>
+        <div style="padding:10px 14px;background:#fbfaf6;border:1px solid var(--line);border-radius:6px;margin:0 18px 10px 18px"><p style="margin:0 0 6px 0;font-weight:700;color:#5a3a14">📖 In 30 seconds</p><p style="margin:0;font-size:13px">The engine that suggests each day's price. It starts from the Base Price and moves it, by at most 20%. <b>Only your own pickup moves it</b> &mdash; the market and AirDNA can slow a move down, never start one. And it never goes below the floor.</p></div>
 
-        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Dettaglio completo — apri solo se ti serve</summary>
+        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Full detail — open only if you need it</summary>
       <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
 
         <p style="margin:0 0 10px 0"><b>In one sentence:</b> the Base Price says what a date is worth structurally. The RMES says what is happening on that date <i>right now</i>, and nudges the price from there. <b>Your own pickup is the only thing that moves the price.</b> Everything else can only hold a move back.</p>
@@ -2999,7 +2998,7 @@ table.data.sell-table .sell-drill{
           <p style="margin:0 0 6px 0;font-weight:700;color:#5a3a14">📖 In 30 seconds — what this tab is for</p>
           <p style="margin:0;font-size:13px">A transparent, day-by-day view of how every price is built. <b>Two sections</b>, one above the other, with a shared toolbar (property + date range). Use this tab to audit any price, debug a surprising number, or export to CSV for your records.</p>
         </div>
-        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Dettaglio completo — apri solo se ti serve</summary>
+        <details style="margin:4px 18px 10px 18px"><summary style="cursor:pointer;font-size:12.5px;color:#7a4f1c;font-weight:600;padding:4px 0">Full detail — open only if you need it</summary>
 
         <h4 style="margin:14px 0 6px 0;color:#5a3a14">⚡ Section 1 — Base Price breakdown</h4>
         <p>The same five steps described in the RMES → ⚡ Base Price block, shown left to right as columns. Header row stays sticky while you scroll. Hovering any number shows how it was obtained.</p>
@@ -3151,7 +3150,7 @@ table.data.sell-table .sell-drill{
         <h3 id="modal-title">Drilldown</h3>
         <div class="modal-sub" id="modal-sub"></div>
       </div>
-      <button class="modal-close" id="modal-close" aria-label="Chiudi">×</button>
+      <button class="modal-close" id="modal-close" aria-label="Close">×</button>
     </div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-foot"><span id="modal-foot-l">—</span><span id="modal-foot-r" class="mono">—</span></div>
@@ -3159,14 +3158,14 @@ table.data.sell-table .sell-drill{
 </div>
 
 <!-- ============ NOTES SYSTEM ============ -->
-<button id="notes-fab" aria-label="Apri note" title="Note (📝)">
+<button id="notes-fab" aria-label="Open notes" title="Notes (📝)">
   📝
   <span id="notes-fab-badge"></span>
 </button>
 <aside id="notes-panel" role="dialog" aria-label="Note">
   <div class="notes-head">
     <h3 id="notes-panel-title">Note</h3>
-    <button id="notes-close" aria-label="Chiudi" style="background:transparent;border:none;font-size:24px;cursor:pointer;color:var(--ink-3);padding:4px 8px;line-height:1">×</button>
+    <button id="notes-close" aria-label="Close" style="background:transparent;border:none;font-size:24px;cursor:pointer;color:var(--ink-3);padding:4px 8px;line-height:1">×</button>
   </div>
   <div id="notes-panel-sub" style="padding:6px 20px 10px;font-size:11px;color:var(--ink-3);font-style:italic;border-bottom:1px solid var(--line)"></div>
   <div class="notes-meta-row">
@@ -3197,7 +3196,7 @@ table.data.sell-table .sell-drill{
     </div>
     <div style="display:flex;align-items:center;gap:2px">
       <button id="chat-settings-btn" aria-label="AI settings" title="AI settings (API key)">⚙</button>
-      <button id="chat-close" aria-label="Chiudi">×</button>
+      <button id="chat-close" aria-label="Close">×</button>
     </div>
   </div>
   <div id="chat-settings" style="display:none;position:absolute;top:56px;left:0;right:0;z-index:5;padding:12px 14px;border-bottom:1px solid var(--line);background:#faf8f3;font-size:12px;box-shadow:0 8px 20px rgba(40,30,15,.15)">
