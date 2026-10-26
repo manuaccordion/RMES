@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-23e · floor a due livelli ovunque (modal, tooltip, CSV), Playbook tutto in inglese';
+const ENGINE_BUILD = '2026-10-26a · Alfani 2025: il totale non si divide sulle camere aggiunte dal planning';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -1718,12 +1718,22 @@ function loadData(csvText){
       }
     }
     /* Alfani gen-nov 2025: la lista vera viene dal planning della proprieta'.
-       Va fatto QUI, prima di numRooms, perche' cambia anche QUANTE stanze sono
-       e quindi come si divide il revenue della prenotazione. */
+       Va fatto QUI, prima di numRooms, perche' cambia QUANTE stanze sono. */
+    const _numRoomsExport = alloggi.length;   // quante ne elencava l'export
     alloggi = rtAlloggiReali(_structKeyForRooms, r['numero di riferimento'], dIn, alloggi);
     if (!alloggi.length) continue;
     const numRooms = alloggi.length;
-    const revPerRoomNight = (totNet / notti) / numRooms;
+    /* Il totale si divide per le camere che l'EXPORT elencava, non per quelle
+       ricostruite. Quando l'export ne elenca piu' d'una ("Bilocale, Bilocale")
+       il Totale e' del gruppo e va diviso: resta come prima. Quando ne elenca
+       una sola il Totale e' di quella camera, e il planning dice solo che il
+       gruppo ne occupava altre allo stesso prezzo: dividere lo spalmava su
+       camere che avevano pagato per conto loro. Su Alfani gen-nov 2025 erano
+       35 prenotazioni e 219 room-night, con ADR schiacciati fino a 43 EUR
+       contro un minimo assoluto di 115. Confermato da Manu il 26/10/2026:
+       quei nomi ripetuti nel planning sono gruppi veri, non spostamenti. */
+    const _numRoomsRevenue = _numRoomsExport > 0 ? _numRoomsExport : numRooms;
+    const revPerRoomNight = (totNet / notti) / _numRoomsRevenue;
     const canaleRaw = (r['Canale']||'—').trim() || '—';
     const canale = normCanale(canaleRaw);
     // Gross-up commissioni OTA: porta il ricavo al LORDO in modo uniforme su tutti i canali.
