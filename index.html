@@ -1871,8 +1871,13 @@ table.data.sell-table .sell-drill{
   <section class="tab-panel" id="panel-anly">
     <div class="section-head">
       <div><h2>Analysis</h2><div class="section-sub" id="anly-sub">&nbsp;</div></div>
-      <div class="head-actions" style="display:flex;gap:8px;align-items:center">
+      <div class="head-actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <select id="anly-month" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff"></select>
+        <span style="display:flex;gap:6px;align-items:center;font-size:11.5px;color:var(--ink-3)">
+          <input type="date" id="anly-from" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff">
+          <span>to</span>
+          <input type="date" id="anly-to" style="font-family:'DM Mono',monospace;font-size:12px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:#fff">
+        </span>
         <button id="anly-clear" style="font-size:11.5px;font-weight:700;padding:5px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">clear filters</button>
       </div>
     </div>
@@ -1883,7 +1888,7 @@ table.data.sell-table .sell-drill{
          da allora. Spiegazione nel Playbook, qui solo titolo e comandi. -->
     <div id="anly-asof" style="margin-top:30px;padding-top:20px;border-top:2px solid var(--line-2)">
       <div class="section-head">
-        <div><h2 style="font-size:19px">Same month, as it stood on</h2></div>
+        <div><h2 style="font-size:19px" id="anly-asof-title">Same month, as it stood on</h2></div>
         <div class="head-actions" style="display:flex;gap:8px;align-items:center">
           <button data-anly-back="7"  style="font-size:11.5px;font-weight:700;padding:5px 11px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">7 days ago</button>
           <button data-anly-back="14" style="font-size:11.5px;font-weight:700;padding:5px 11px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--ink-2);cursor:pointer">2 weeks ago</button>
@@ -2771,7 +2776,7 @@ table.data.sell-table .sell-drill{
     <details id="instr-anly" class="panel" style="margin-bottom:14px;border-left:3px solid #7a4f8e">
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14">◎ Analysis — where the gap comes from</summary>
       <div style="padding:0 18px 16px;line-height:1.55;font-size:13px">
-        <p>One month at a time, broken down three ways &mdash; <b>by channel</b>, <b>by room type</b>, <b>by rate plan</b> &mdash; each against the same point last year. <b>Every row is a button</b>: click <i>Booking</i> and the KPIs, the other two tables, the lead time and the pickup all recompute on Booking alone. Click again to drop the filter.</p>
+        <p>One period at a time, broken down three ways &mdash; <b>by channel</b>, <b>by room type</b>, <b>by rate plan</b> &mdash; each against the same point last year. Pick the period from the <b>month menu</b> or, for anything that is not a whole month, from the <b>two date fields</b> beside it: a single weekend, the ten days around an event, a stretch that runs across two months. The menu and the dates always say the same thing &mdash; choosing a month fills the dates, typing a date switches the menu to <i>custom range</i>. Last year is the <b>same dates one year earlier</b>, so a whole month still compares with that month a year ago, exactly as before. <b>Every row is a button</b>: click <i>Booking</i> and the KPIs, the other two tables, the lead time and the pickup all recompute on Booking alone. Click again to drop the filter.</p>
         <p>The KPI strip reads: revenue, ADR, occupancy, <b>booking lead</b> (how many days ahead guests are booking), pickup of the last 7 days, and your Expedia price against the compset. All revenue and ADR figures are <b>gross of OTA commission</b>, like the rest of the dashboard.</p><p><b>My price on Expedia</b> is the odd one out, and it is worth knowing why: it is the <b>shelf price</b> &mdash; what a guest looking today would be quoted &mdash; taken as the median across the nights of the month where a price is visible, against the median of the competitor average on the same nights. <b>It is not what you earned.</b> That is the Revenue and the ADR, which come from bookings already made, most of them weeks ago. A month can perfectly well show a high shelf price and a low ADR: it means the price went up after most of the month had already been sold. Hover the tile for the same explanation.</p><p><b>By room type</b> also carries an <b>OCC</b> column: nights sold against the units of that room type for the days of the month, this year and at the same point last year. Revenue alone does not tell you whether a type was full &mdash; &euro;4,000 on one room and &euro;4,000 on four are opposite situations. Hovering shows the nights and the capacity behind the percentage. The other two tables do not have it: occupancy of a channel or of a rate plan would mean nothing, since any room can be sold through any of them.</p>
         <p>The note at the bottom is the one that decides what to do: if guests are booking <b>later</b> than last year, a gap now is more recoverable than it looks, because much of what is missing would have arrived closer in anyway. If they are booking <b>earlier</b>, the same gap is harder to close &mdash; the bookings that would have filled it are already being made elsewhere.</p>
         <p><b>Same month, as it stood on &lt;date&gt;</b> &mdash; the second block, below the first. The block on top is always up to <b>today</b>; this one counts only the bookings that already existed on the date you pick, so you can answer &laquo;is November better placed than it was two weeks ago?&raquo;. Last year moves back by the same number of days, otherwise you would be comparing two different points of the season. The strip at the top of the block says what came in between the two dates: revenue, nights, the ADR of those nights, and the occupancy gained. The quick buttons are 7 days, 2 weeks and 30 days back; the date box takes any day up to today. A filter set on either block applies to both, so the comparison always sits on the same slice of data.</p>

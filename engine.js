@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-26a · Alfani 2025: il totale non si divide sulle camere aggiunte dal planning';
+const ENGINE_BUILD = '2026-10-29a · Analysis: il periodo si sceglie per date, non solo per mese';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -17113,11 +17113,59 @@ function fcstDataLastBookYmd(){
 /* Filtri attivi. Chiave = dimensione, valore = voce selezionata (o null). */
 let ANLY_FILTERS = { ch: null, rt: null, rate: null };
 let ANLY_YM = null;
+/* L'intervallo che si sta guardando, in AAAAMMGG. Comanda lui: il menu dei
+   mesi non fa altro che scriverci dentro il primo e l'ultimo giorno. Prima
+   c'era solo il mese, e un periodo come "i primi dieci giorni di dicembre"
+   non si poteva chiedere. */
+let ANLY_FROM = null, ANLY_TO = null;
 let ANLY_ASOF = null;   // ymd del secondo blocco Analysis (null = ancora da impostare)
 
-function anlyAggregate(sel, ym, filters, asOf){
+/* Il periodo della tab Analysis. Puo' essere un mese (il numero AAAAMM, come
+   e' sempre stato) oppure un intervallo di date {from, to} in AAAAMMGG.
+   Un mese intero passa di qui e ne esce col primo e l'ultimo giorno, quindi i
+   numeri restano identici a prima: il mese e' solo il caso piu' comune di un
+   intervallo, non un calcolo diverso. */
+function _anlyPeriodo(p){
+  const d2y = d => d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  let from, to;
+  if (p && typeof p === 'object'){ from = +p.from; to = +p.to; }
+  else {
+    const ym = +p;
+    if (!(ym > 0)) return null;
+    const y = Math.floor(ym/100), mo = ym % 100;
+    from = ym*100 + 1;
+    to   = ym*100 + new Date(y, mo, 0).getDate();
+  }
+  if (!(from > 0) || !(to > 0)) return null;
+  if (to < from){ const t = from; from = to; to = t; }
+  const dFrom = startOfDay(ymdToDate(from)), dTo = startOfDay(ymdToDate(to));
+  const giorni = Math.round((dTo - dFrom) / 86400000) + 1;
+  /* L'anno scorso sono le STESSE DATE dell'anno prima. Su un mese intero
+     coincide col mese di un anno fa, cioe' esattamente quello che la tab
+     faceva finora. Il 29 febbraio scende al 28. */
+  const annoPrima = (d) => {
+    const ultimo = new Date(d.getFullYear()-1, d.getMonth()+1, 0).getDate();
+    return new Date(d.getFullYear()-1, d.getMonth(), Math.min(d.getDate(), ultimo));
+  };
+  const ym0 = Math.floor(from/100);
+  const ultimoDelMese = new Date(Math.floor(ym0/100), ym0 % 100, 0).getDate();
+  return {
+    from, to, giorni,
+    fromLy: d2y(annoPrima(dFrom)), toLy: d2y(annoPrima(dTo)),
+    ym: ym0,
+    /* vero quando l'intervallo e' esattamente un mese solare: serve solo alle
+       etichette, i conti non cambiano */
+    mese: Math.floor(to/100) === ym0 && (from % 100) === 1 && (to % 100) === ultimoDelMese
+  };
+}
+
+function anlyAggregate(sel, periodo, filters, asOf){
   filters = filters || {};
   const keys = new Set(structKeysFor(sel));
+  const _per = _anlyPeriodo(periodo);
+  if (!_per) return null;
+  const from = _per.from, to = _per.to, fromLy = _per.fromLy, toLy = _per.toLy;
+  const ym = _per.ym;
   const y = Math.floor(ym/100), mo = ym % 100;
   const ymLy = (y-1)*100 + mo;
   /* Il taglio: di norma oggi. Con asOf si guarda il mese com'era a quella data,
@@ -17129,7 +17177,7 @@ function anlyAggregate(sel, ym, filters, asOf){
   const cutCur = ymd(_rif);
   const cutLy  = ymd(startOfDay(new Date(_rif.getTime() - 364*86400000)));
   const pickupFrom = ymd(addDays(_rif, -7));
-  const giorni = new Date(y, mo, 0).getDate();
+  const giorni = _per.giorni;
   const rooms = (typeof fcstRoomsByRT === 'function')
     ? Object.values(fcstRoomsByRT(sel)).reduce((a,b) => a+b, 0) : 0;
 
@@ -17154,8 +17202,8 @@ function anlyAggregate(sel, ym, filters, asOf){
 
   for (const b of BOOKINGS){
     if (b.cancelled || !b.stayYmds || !keys.has(b.struct)) continue;
-    const nCur = b.stayYmds.filter(v => Math.floor(v/100) === ym).length;
-    const nLy  = b.stayYmds.filter(v => Math.floor(v/100) === ymLy).length;
+    const nCur = b.stayYmds.filter(v => v >= from   && v <= to  ).length;
+    const nLy  = b.stayYmds.filter(v => v >= fromLy && v <= toLy).length;
     if (!nCur && !nLy) continue;
     if (!passa(b)) continue;
     /* Anticipo: giorni fra la prenotazione e la prima notte. E' la variabile
@@ -17204,8 +17252,11 @@ function anlyAggregate(sel, ym, filters, asOf){
   try {
     const E = (typeof EXPEDIA_DATA !== 'undefined') ? EXPEDIA_DATA : null;
     const mio = E && E[sel], comp = E && E['competitors_' + sel];
-    if (mio) for (let d = 1; d <= giorni; d++){
-      const iso = y + '-' + String(mo).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const _d0 = startOfDay(ymdToDate(from));
+    if (mio) for (let i = 0; i < giorni; i++){
+      const _d = addDays(_d0, i);
+      const iso = _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0')
+                + '-' + String(_d.getDate()).padStart(2,'0');
       const v = mio[iso];
       if (v > 10) expMine.push(v);
       if (comp){
@@ -17245,6 +17296,7 @@ function anlyAggregate(sel, ym, filters, asOf){
 
   return {
     ym, ymLy, giorni, rooms, cap, asOf: cutCur, asOfLy: cutLy,
+    from, to, fromLy, toLy, mese: _per.mese,
     cur: kpi(cur), ly: kpi(ly), hasLy: ly.tot.rev > 0,
     channels: confronta(cur.ch, ly.ch),
     rooms_: conOcc(confronta(cur.rt, ly.rt)),
@@ -17274,11 +17326,24 @@ function renderAnalysis(sel){
       if (i === 0) o.selected = true;
       selEl.appendChild(o);
     }
-    selEl.addEventListener('change', () => { ANLY_YM = +selEl.value; renderAnalysis(CURRENT_STRUCT); });
+    selEl.addEventListener('change', () => {
+      const v = +selEl.value;
+      if (!v) return;                       // la voce "custom range" non fa niente
+      ANLY_YM = v;
+      const ult = new Date(Math.floor(v/100), v % 100, 0).getDate();
+      ANLY_FROM = v*100 + 1; ANLY_TO = v*100 + ult;
+      renderAnalysis(CURRENT_STRUCT);
+    });
   }
   if (ANLY_YM == null && selEl) ANLY_YM = +selEl.value;
-  const ym = ANLY_YM;
-  if (!ym) return;
+  if (ANLY_FROM == null || ANLY_TO == null){
+    const v = ANLY_YM;
+    if (!v) return;
+    ANLY_FROM = v*100 + 1;
+    ANLY_TO   = v*100 + new Date(Math.floor(v/100), v % 100, 0).getDate();
+  }
+  _anlyWireDate(selEl);
+  const ym = { from: ANLY_FROM, to: ANLY_TO };
 
   const clr = document.getElementById('anly-clear');
   if (clr && !clr.dataset.wired){
@@ -17299,6 +17364,46 @@ function renderAnalysis(sel){
 }
 
 /* L'aggregato con la rete: un errore qui non deve lasciare la tab bianca. */
+/* I due campi data e la voce "custom range" del menu. Il menu e le date
+   raccontano la stessa cosa, quindi vanno tenuti allineati: scegliendo un mese
+   le date si spostano, scegliendo una data il menu passa su custom. */
+function _anlyWireDate(selEl){
+  const a = document.getElementById('anly-from'), b = document.getElementById('anly-to');
+  if (!a || !b) return;
+  const iso = n => { const d = ymdToDate(n);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); };
+  if (!a.dataset.wired){
+    a.dataset.wired = b.dataset.wired = '1';
+    const cambia = () => {
+      const f = isoToYmdNum(a.value), t = isoToYmdNum(b.value);
+      if (!f || !t) return;
+      ANLY_FROM = Math.min(f, t); ANLY_TO = Math.max(f, t);
+      renderAnalysis(CURRENT_STRUCT);
+    };
+    a.addEventListener('change', cambia);
+    b.addEventListener('change', cambia);
+  }
+  a.value = iso(ANLY_FROM); b.value = iso(ANLY_TO);
+
+  if (selEl){
+    const per = _anlyPeriodo({ from: ANLY_FROM, to: ANLY_TO });
+    let custom = selEl.querySelector('option[value="0"]');
+    if (per && per.mese){
+      if (custom) custom.remove();
+      selEl.value = String(per.ym);
+    } else {
+      if (!custom){
+        custom = document.createElement('option');
+        custom.value = '0';
+        selEl.insertBefore(custom, selEl.firstChild);
+      }
+      const g = per ? per.giorni : 0;
+      custom.textContent = 'custom range \u00b7 ' + g + (g === 1 ? ' day' : ' days');
+      selEl.value = '0';
+    }
+  }
+}
+
 function _anlyAgg(sel, ym, filtri, asOf){
   try { return anlyAggregate(sel, ym, filtri, asOf); }
   catch(e){ console.error('analysis', e); return null; }
@@ -17469,6 +17574,11 @@ function _anlyWire(wrap){
 function _anlyRenderAsOf(sel, ym, aOggi){
   const wrap = document.getElementById('anly-asof-wrap');
   if (!wrap) return;
+  /* Il titolo segue quello che si sta guardando: "Same month" su un mese
+     intero, "Same period" su un intervallo scelto a mano. */
+  const _tit = document.getElementById('anly-asof-title');
+  if (_tit) _tit.textContent = (aOggi && aOggi.mese === false)
+    ? 'Same period, as it stood on' : 'Same month, as it stood on';
   const inp = document.getElementById('anly-asof-date');
   const oggi = startOfDay(new Date(TODAY));
   const isoOf = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
