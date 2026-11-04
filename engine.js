@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-10-29a · Analysis: il periodo si sceglie per date, non solo per mese';
+const ENGINE_BUILD = '2026-11-04a · fine anno prezzato come fine anno · non-rimborsabili in inglese · Overview fino a dicembre 2027';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -53,6 +53,7 @@ const RMES_CLOUD = (function(){
     'rmes_audit_log_v1',
     'notes_journal_v2',
     'rmes_dow_premium_v1',
+    'rmes_special_days_v1',          // feste e ponti: la lista deve essere una sola per tutti
     'rmes_promos_v1',
     'rmes_need_days_v1',   // shared "Need days" watchlist (Pricing Console) — per-cell merge
     'rmes_cfg_ts_v1',      // quando ogni campo di configurazione è stato cambiato → merge per campo
@@ -1743,7 +1744,16 @@ function loadData(csvText){
     const guest = (r['prenotante']||'').trim();
     const tariffa = (r['Piani tariffari']||'').trim();
     const tariffaLower = tariffa.toLowerCase();
-    const hasNonRimb = tariffaLower.includes('non rimborsabile');
+    /* Il nome del piano tariffario cambia con il PMS e con la lingua del canale.
+       Cercare solo "non rimborsabile" lasciava fuori tutto l'inglese: il vecchio
+       export di SimpleBooking su Alfani scriveva "Non Refundable Rate" e
+       "BEST RATE NOT REFUNDABLE", e quelle prenotazioni finivano fra le
+       flessibili. Da qui il buco: su Alfani 2025 non compariva una sola
+       non-rimborsabile fino a novembre, quando e' arrivato il nuovo export
+       con "Tariffa Non Rimborsabile - Pernottamento". */
+    /* \bnr\b prende "NR min 5 notti": nei nomi dei piani tariffari NR non ha mai
+       voluto dire altro che non rimborsabile. */
+    const hasNonRimb = /non\s*rimborsabile|non[\s-]*refundable|not\s+refundable|nonrefundable|\bnr\b/.test(tariffaLower);
     const hasFlex = tariffaLower.includes('flessibile') || tariffaLower.includes('standard rate');
     const isNonRefundable = hasNonRimb && !hasFlex;
     const isDirect = (canale === 'Direct' || canale === 'Beddy' || canale === 'Diretto' || canale === '—' || canale === '');
@@ -2147,6 +2157,33 @@ function fp_postLoadHook(){
       console.log('[NewRMES] Wipe v6 complete. Base Price frozen only within ' + BASE_FREEZE_WINDOW_DAYS + ' days; beyond that it recomputes live.');
     }
   } catch(e){ console.error('[NewRMES] wipe v6 failed', e); }
+
+  /* --- UNA TANTUM: i giorni fra Natale e l'Epifania entrano fra gli speciali ---
+     Chi aveva gia' toccato la lista delle feste dal pannello RMES si ritrova
+     con la sua copia salvata, che non conosce le voci nuove. Qui le voci di
+     default che mancano vengono AGGIUNTE alla lista salvata, senza toccare
+     quelle aggiunte a mano: la lista resta la loro, con dentro anche i giorni
+     di fine anno. Il Base Price non va ricongelato perche' non viene mai
+     congelato (BASE_FREEZE_WINDOW_DAYS = 0): si ricalcola a ogni caricamento. */
+  try {
+    const XMAS_FLAG = 'rmes_special_days_xmas_2026_11_04';
+    if (!localStorage.getItem(XMAS_FLAG)){
+      const raw = localStorage.getItem('rmes_special_days_v1');
+      if (raw){
+        const cur = JSON.parse(raw);
+        if (Array.isArray(cur)){
+          const hanno = new Set(cur.map(x => x && String(x.d)));
+          const nuovi = FP_SPECIAL_DAYS_DEFAULT.filter(x => !hanno.has(x.d));
+          if (nuovi.length){
+            if (typeof fpSetSpecialDays === 'function') fpSetSpecialDays(cur.concat(nuovi));
+            else localStorage.setItem('rmes_special_days_v1', JSON.stringify(cur.concat(nuovi)));
+            console.log('[RMES] Giorni speciali: aggiunti ' + nuovi.map(x=>x.d).join(' ') + ' (una tantum, 04/11/2026)');
+          }
+        }
+      }
+      try { localStorage.setItem(XMAS_FLAG, '1'); } catch(e){}
+    }
+  } catch(e){ console.error('[RMES] merge giorni speciali failed', e); }
 
 
   try {
@@ -7884,6 +7921,8 @@ function newrmesCalculateBasePriceVerbose(structKey, isoDate){
     floorHistN: anchor ? anchor.adrP15N : 0,
     finalBase: Math.round(price),
     flags: _bpComputeFlags({
+      lySpecial: anchor ? anchor.special : null,
+      lySpecialFellBack: anchor ? !!anchor.specialFellBack : false,
       lyMedianADR: adrLY,
       lyObsSameDay: (anchor && anchor._nObsSameDay != null) ? anchor._nObsSameDay : 0,
       lyObsDow: (anchor && anchor._nObsDow != null) ? anchor._nObsDow : 0,
@@ -7943,6 +7982,23 @@ function _bpComputeFlags(c){
     }
   }
   // F4 rimosso insieme al guard-rail Anchor.
+  /* F5 — giorno di festa prezzato come un giorno qualunque.
+     Capita dove lo storico non c'e': Porte Nuove ha due anni di vita e in tutta
+     la quindicina di fine anno conta una o due vendite sulla camera base. In quel
+     caso il prezzo scende sui giorni normali del mese, cioe' bassa stagione, e il
+     31 dicembre finisce a 60 euro. Non si inventa un numero: si dice che non c'e'
+     e si chiede di metterlo a mano. */
+  if (c.lySpecial && (c.lyFallback === 'weekday' || c.lyFallback === 'monthWide')){
+    flags.push({
+      code: 'special_day_priced_as_normal',
+      severity: 'warn',
+      message: c.lySpecial + ' has no sales history on the base room type \u2014 not on the day '
+             + 'itself, not across its holiday period. The price falls back to ordinary '
+             + (c.lyFallback === 'monthWide' ? 'days of the month' : 'same-weekday days')
+             + ', which is low season: it will read far below the neighbouring holidays. '
+             + 'Set this day by hand (\uD83D\uDD8B Base Price override) or check the compset.'
+    });
+  }
   return flags;
 }
 
@@ -10797,19 +10853,54 @@ function _easterEquivYmd(year, offset){
    Pasqua NON sta in lista: si muove ogni anno ed e' calcolata dal computus.
    =========================================================================== */
 const FP_SPECIAL_DAYS_KEY = 'rmes_special_days_v1';
+/* grp = giorni che si comportano allo stesso modo sul prezzo. Serve quando uno
+   di loro non ha storico proprio: invece di ripiegare sui giorni normali del
+   mese, si misura sui suoi compagni di gruppo. Senza questo, il 29 dicembre di
+   Enis Guesthouse (due soli anni di storico, nessuna vendita quel giorno)
+   finiva a 91 euro mentre il 31 stava a 187. */
 const FP_SPECIAL_DAYS_DEFAULT = [
-  { d: '01-01', label: 'Capodanno' },
-  { d: '01-06', label: 'Epifania' },
+  { d: '01-01', label: 'Capodanno', grp: 'capodanno' },
+  { d: '01-06', label: 'Epifania', grp: 'epifania' },
   { d: '04-25', label: 'Liberazione' },
   { d: '05-01', label: 'Festa del lavoro' },
   { d: '06-02', label: 'Festa della Repubblica' },
   { d: '08-15', label: 'Ferragosto' },
   { d: '12-08', label: 'Immacolata' },
-  { d: '12-24', label: 'Vigilia di Natale' },
-  { d: '12-25', label: 'Natale' },
-  { d: '12-26', label: 'Santo Stefano' },
-  { d: '12-31', label: 'San Silvestro' },
+  { d: '12-24', label: 'Vigilia di Natale', grp: 'natale' },
+  { d: '12-25', label: 'Natale', grp: 'natale' },
+  { d: '12-26', label: 'Santo Stefano', grp: 'natale' },
+  /* Dal 27 dicembre al 5 gennaio il prezzo non somiglia al resto del mese: il
+     29 e il 30 dicembre su Alfani sono stati venduti sopra i 300, mentre la
+     mediana dei martedi' e mercoledi' di dicembre sta sotto i 150. Finche'
+     questi giorni non erano in lista venivano misurati sui giorni-settimana
+     di dicembre, e il 31 restava un picco isolato in mezzo a prezzi di bassa
+     stagione. Da qui entrano nel pool "stesso giorno di calendario" e, allo
+     stesso tempo, escono dal pool dei giorni normali, che non devono essere
+     tirati su dai prezzi di fine anno. */
+  { d: '12-27', label: 'Tra Natale e Capodanno', grp: 'capodanno' },
+  { d: '12-28', label: 'Tra Natale e Capodanno', grp: 'capodanno' },
+  { d: '12-29', label: 'Tra Natale e Capodanno', grp: 'capodanno' },
+  { d: '12-30', label: 'Tra Natale e Capodanno', grp: 'capodanno' },
+  { d: '12-31', label: 'San Silvestro', grp: 'capodanno' },
+  { d: '01-02', label: 'Dopo Capodanno', grp: 'epifania' },
+  { d: '01-03', label: 'Dopo Capodanno', grp: 'epifania' },
+  { d: '01-04', label: 'Dopo Capodanno', grp: 'epifania' },
+  { d: '01-05', label: 'Dopo Capodanno', grp: 'epifania' },
 ];
+/* Il gruppo di un giorno, preso dalla lista di default. Chi ha una lista salvata
+   da prima non ha il campo grp sulle sue voci: invece di chiedergli di
+   ricostruirla, il gruppo gli viene ridato da qui. */
+const _FP_GRP_BY_MD = (() => { const m = {};
+  for (const it of FP_SPECIAL_DAYS_DEFAULT) if (it.grp) m[it.d] = it.grp;
+  return m; })();
+/* I tre gruppi di fine anno si tengono per mano: Natale, Capodanno ed Epifania
+   hanno prezzi diversi fra loro (su Alfani 213, 297 e 248), ma stanno tutti
+   molto sopra un giorno normale di dicembre. Dove un gruppo intero non ha
+   vendite - Nazionale 35 e Porte Nuove hanno due soli anni di storico e
+   nessun compset da cui farsi correggere - questa e' l'ultima misura
+   disponibile prima di cadere sui giorni normali del mese, che per il 25
+   dicembre darebbero 82 euro. Piu' grossa, ma dalla parte giusta. */
+const FP_GRP_PARENT = { natale: 'fineanno', capodanno: 'fineanno', epifania: 'fineanno' };
 let _SPECIAL_DAYS_CACHE = null;
 function fpGetSpecialDays(){
   if (_SPECIAL_DAYS_CACHE) return _SPECIAL_DAYS_CACHE;
@@ -10822,6 +10913,14 @@ function fpGetSpecialDays(){
     }
   } catch(e){}
   if (!list) list = FP_SPECIAL_DAYS_DEFAULT.slice();
+  /* una voce senza gruppo lo prende da quella di default con la stessa data:
+     cosi' una lista salvata mesi fa continua a funzionare */
+  list = list.map(it => {
+    if (it.grp) return it;
+    const md = String(it.d).length === 5 ? it.d : String(it.d).slice(5);
+    const g = _FP_GRP_BY_MD[md];
+    return g ? Object.assign({}, it, { grp: g }) : it;
+  });
   _SPECIAL_DAYS_CACHE = list;
   return list;
 }
@@ -10844,8 +10943,8 @@ function fpSpecialDayInfo(dateObj){
   const md = mm + '-' + dd;
   const full = dateObj.getFullYear() + '-' + md;
   for (const it of fpGetSpecialDays()){
-    if (it.d === md)   return { kind: 'holiday', label: it.label || md, key: 'md:' + md, md: md, of: it.of || null };
-    if (it.d === full) return { kind: 'holiday', label: it.label || full, key: 'exact:' + full, exact: full, md: md, of: it.of || null };
+    if (it.d === md)   return { kind: 'holiday', label: it.label || md, key: 'md:' + md, md: md, of: it.of || null, grp: it.grp || null };
+    if (it.d === full) return { kind: 'holiday', label: it.label || full, key: 'exact:' + full, exact: full, md: md, of: it.of || null, grp: it.grp || null };
   }
   return null;
 }
@@ -10861,6 +10960,24 @@ function fpSpecialYmdsOfYear(year){
     } else if (p.length === 3 && +p[0] === year){
       out.add((+p[0])*10000 + (+p[1])*100 + (+p[2]));
     }
+  }
+  return out;
+}
+/* Tutti i giorni di un gruppo in un dato anno, come ymd numerici. E' il pool di
+   ripiego di un giorno speciale che non ha vendite proprie negli anni passati:
+   il 29 dicembre senza storico si misura sul resto della settimana di
+   Capodanno, che e' la cosa piu' vicina, non su un martedi' di bassa stagione. */
+function fpSpecialGroupYmds(grp, year){
+  const out = new Set();
+  if (!grp) return out;
+  /* un gruppo "padre" raccoglie i giorni di tutti i suoi figli */
+  const figli = new Set();
+  for (const g in FP_GRP_PARENT) if (FP_GRP_PARENT[g] === grp) figli.add(g);
+  for (const it of fpGetSpecialDays()){
+    if (figli.size ? !figli.has(it.grp) : it.grp !== grp) continue;
+    const p = String(it.d).split('-');
+    if (p.length === 2) out.add(year*10000 + (+p[0])*100 + (+p[1]));
+    else if (p.length === 3 && +p[0] === year) out.add((+p[0])*10000 + (+p[1])*100 + (+p[2]));
   }
   return out;
 }
@@ -11019,6 +11136,11 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
   //   prendere il massimo di due stime alza il prezzo per costruzione.
   // =======================================================================
   const SPECIAL_MIN_OBS = 2;
+  /* Il gruppo e' una stima piu' grossa dello stesso giorno, quindi gli si
+     chiedono piu' osservazioni prima di fidarsi. */
+  const GROUP_MIN_OBS = 3;
+  /* il gruppo padre e' la stima piu' grossolana di tutte: non ci si va sotto le 4 */
+  const PARENT_MIN_OBS = 4;
 
   // --- Pool giorno-settimana dello stesso mese (con fallback a tutto il mese) ---
   function _weekdayPool(){
@@ -11066,6 +11188,34 @@ function _fp_computeAnchorLY_impl(structKey, rt, targetDateISO){
       medianADR = specialMedian; obsUsed = specialObs; rnByDay = r.rnByDay; _lastAdr = r.adrObs;
       methodUsed = (special.kind === 'easter') ? 'easter' : 'holiday';
       setDesc = special.label + ' ' + yearsLabel + (special.kind === 'easter' ? ' (Easter-aligned)' : ' (same calendar day)');
+    } else if (special.grp){
+      /* Niente vendite su questo giorno negli anni passati. Prima di scendere
+         sui giorni normali del mese si prova il gruppo: il 29 dicembre si
+         misura sulla settimana di Capodanno, non su un martedi' qualunque. */
+      const gDays = new Set();
+      for (const y of yearsToCheck){ for (const k of fpSpecialGroupYmds(special.grp, y)) gDays.add(k); }
+      const rg = _gather(gDays);
+      specialFellBack = true;    // il giorno suo non aveva dati: va detto
+      if (rg.adrObs.length >= GROUP_MIN_OBS){
+        medianADR = _med(rg.adrObs); obsUsed = rg.adrObs.length;
+        rnByDay = rg.rnByDay; _lastAdr = rg.adrObs;
+        methodUsed = 'holidayGroup';
+        setDesc = special.label + ' ' + yearsLabel + ' (no sales on this exact day \u2192 whole '
+                + special.grp + ' period)';
+      } else if (FP_GRP_PARENT[special.grp]){
+        /* nemmeno il gruppo ha vendite: si allarga alla quindicina di fine anno */
+        const pGrp = FP_GRP_PARENT[special.grp];
+        const pDays = new Set();
+        for (const y of yearsToCheck){ for (const k of fpSpecialGroupYmds(pGrp, y)) pDays.add(k); }
+        const rp = _gather(pDays);
+        if (rp.adrObs.length >= PARENT_MIN_OBS){
+          medianADR = _med(rp.adrObs); obsUsed = rp.adrObs.length;
+          rnByDay = rp.rnByDay; _lastAdr = rp.adrObs;
+          methodUsed = 'holidaySeason';
+          setDesc = special.label + ' ' + yearsLabel + ' (no sales over the whole '
+                  + special.grp + ' period \u2192 entire year-end season)';
+        }
+      }
     } else {
       specialFellBack = true;
     }
@@ -17816,7 +17966,7 @@ function _aggForecastImpl(structKey){
   const baseRT = supp.baseRT;
   const FCST_RANGE = [];
   for (let mo=1; mo<=12; mo++) FCST_RANGE.push({ y: 2026, mo });
-  for (let mo=1; mo<=4;  mo++) FCST_RANGE.push({ y: 2027, mo });
+  for (let mo=1; mo<=12; mo++) FCST_RANGE.push({ y: 2027, mo });
   const today = new Date(TODAY); today.setHours(0,0,0,0);
   const today0 = today;
   const ymdToday = TODAY_YMD;
@@ -18340,6 +18490,10 @@ function _aggForecastImpl(structKey){
 /* ============ RENDER ============ */
 let FCST_SHOW_PAST_2026 = false;
 let FCST_HIDE_FUTURE_2027 = false;
+/* Maggio-dicembre 2027 sta fuori di default: a quella distanza l'OTB e' quasi
+   vuoto e otto righe a zero schiacciano i mesi su cui si sta lavorando.
+   Acceso, la tabella copre due anni interi. */
+let FCST_SHOW_2027_H2 = false;
 /* Tooltip Overview: Revenue e ADR PRIMA del ritocco commissione, cioe' esattamente
    come l'importo arriva da Beddy.
    Diceva "net of OTA commission", ma non e' vero per tutti i canali: Booking,
@@ -18541,9 +18695,11 @@ function renderForecast(sel){
   const monthsITLong = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const showPast = (typeof FCST_SHOW_PAST_2026 !== 'undefined') ? FCST_SHOW_PAST_2026 : false;
   const hideFuture = (typeof FCST_HIDE_FUTURE_2027 !== 'undefined') ? FCST_HIDE_FUTURE_2027 : false;
+  const show2027H2 = (typeof FCST_SHOW_2027_H2 !== 'undefined') ? FCST_SHOW_2027_H2 : false;
   function isVisibleMonth(ym){
     if (ym >= 202601 && ym <= 202604) return showPast;       // gen-apr 2026 → opzionale
     if (ym >= 202701 && ym <= 202704) return !hideFuture;    // gen-apr 2027 → opzionale (default visibili)
+    if (ym >= 202705 && ym <= 202712) return show2027H2;     // mag-dic 2027 → opzionale (default fuori)
     return true;  // mag-dic 2026 sempre visibili
   }
   let totFcstRn=0, totFcstRev=0, totFLRn=0, totFLRev=0, totOtbRn=0, totOtbRev=0, totDays=0;
@@ -18901,6 +19057,17 @@ function renderForecast(sel){
       cbPast._wired = true;
       cbPast.addEventListener('change', function(){
         FCST_SHOW_PAST_2026 = cbPast.checked;
+        renderForecast(CURRENT_STRUCT);
+      });
+    }
+  }
+  const cb2027 = document.getElementById('fcst-show-2027h2-cb');
+  if (cb2027){
+    cb2027.checked = FCST_SHOW_2027_H2;
+    if (!cb2027.dataset.wired){
+      cb2027.dataset.wired = '1';
+      cb2027.addEventListener('change', () => {
+        FCST_SHOW_2027_H2 = cb2027.checked;
         renderForecast(CURRENT_STRUCT);
       });
     }
