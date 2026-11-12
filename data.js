@@ -6250,6 +6250,16 @@ HMMZP2W2AA,20/10/2025 00:00,,Airbnb,Dennis Yan,Cupola,Flessibile,17/02/2026,21/0
 HMWHKYA5YE,25/10/2025 00:00,,Airbnb,Yu Wen Tseng,Uffizi,Flessibile,18/02/2026,20/02/2026,2,304.95,Nazionale 35 Apartments,Confermate,0,OTA,28.81,Adulti: 3
 HMPH328FXT,28/01/2026 00:00,,Airbnb,Dang Nguyen,Ponte Vecchio,Flessibile,16/02/2026,19/02/2026,3,237.0,Porte Nuove Apartments,Confermate,0,OTA,40,Adulti: 1
 HM4X4JYRHR,20/10/2025 00:00,,Airbnb,아름 이,Uffizi,Flessibile,13/02/2026,18/02/2026,5,624.07,Nazionale 35 Apartments,Confermate,0,OTA,54.17,Adulti: 2
+7466EE4F3D,04/11/2026 20:39,12/11/2026 15:19,Booking,martina cecchi,Trilocale,Flessibile,21/11/2026,22/11/2026,1,206.86,Condotta 16,Cancellate,0,OTA,0,Adulti: 2 Bambini: 1
+9E24D56A98,12/11/2026 13:40,,Booking,Michelle Akerman,Camera Matrimoniale Deluxe,Flessibile,12/02/2027,14/02/2027,2,373.5,Firenze Suite,Confermate,0,OTA,0,Adulti: 1
+C10425A472,12/11/2026 11:33,,Booking,נאוה קמחי,Trilocale,Flessibile,21/04/2027,22/04/2027,1,377.26,Condotta 16,Confermate,0,OTA,0,Adulti: 5
+CB52B96702,21/10/2026 17:45,12/11/2026 08:38,Ctrip,TSZ KIU LEUNG,Suite,Non rimborsabile,12/11/2026,14/11/2026,2,213.03,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
+E2A87CAA82,11/11/2026 22:23,,Beddy,Angela McDonough,"Camera Matrimoniale Deluxe, Camera Matrimoniale Deluxe","Flessibile, Flessibile",14/05/2027,17/05/2027,3,1830,Firenze Suite,Confermate,0,Sito web,0,Adulti: 4
+F7EEDEFA3E,11/11/2026 22:02,,Booking,Lorenzo Virgili,Ponte Vecchio,Flessibile,14/11/2026,15/11/2026,1,118.69,Porte Nuove Apartments,Confermate,0,OTA,0,Adulti: 2 Bambini: 2
+F2D34CAE84,11/11/2026 21:43,,Expedia,Jason Marcucci,Trilocale,Flessibile,08/04/2027,09/04/2027,1,313.94,Condotta 16,Confermate,0,OTA,0,Adulti: 3 Bambini: 2
+335E3F8179,30/09/2026 02:26,11/11/2026 21:10,Expedia,Patrick Rando,Bilocale,Flessibile,10/01/2027,12/01/2027,2,340.86,Condotta 16,Cancellate,0,OTA,0,Adulti: 2
+B85B3A6724,11/11/2026 20:42,,Expedia,Dongbin Kim,Trilocale,Flessibile,23/12/2026,26/12/2026,3,668.1,Condotta 16,Confermate,0,OTA,0,Adulti: 3
+F42ADBA74A,11/11/2026 20:12,,Beddy,Hugo Soares,Bilocale,Non rimborsabile,04/12/2026,07/12/2026,3,405,Condotta 16,Confermate,0,Sito web,0,Adulti: 2
 B9473D7074,11/11/2026 16:18,,Booking,ZOU YIMING,Suite,Flessibile,12/02/2027,15/02/2027,3,676.07,Firenze Suite,Confermate,0,OTA,0,Adulti: 2 Bambini: 1
 25687E6259,11/11/2026 13:37,,Booking,Ornela Alliaj,Trilocale,Flessibile,12/11/2026,14/11/2026,2,414.22,Condotta 16,Confermate,0,OTA,0,Adulti: 4
 66A02529AD,31/10/2026 22:58,11/11/2026 13:23,Booking,Nikolaus Dorfmann,Suite,Non rimborsabile,28/11/2026,30/11/2026,2,287.18,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
@@ -6274,10 +6284,9 @@ A844FD8F33,10/11/2026 18:00,,Expedia,Stefanie von Born Fallois,Camera Matrimonia
 BDF6AEF959,09/11/2026 14:44,,Booking,claire-eva casiro,Bilocale,Flessibile,25/12/2026,30/12/2026,5,1358.74,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 AB3B0133B2,11/08/2026 16:34,09/11/2026 11:27,Airbnb,희원 서,Uffizi,Flessibile,29/03/2027,01/04/2027,3,461,Nazionale 35 Apartments,Cancellate,0,OTA,0,Adulti: 2
 0C0703529E,20/07/2026 09:42,09/11/2026 08:50,Airbnb,Adela Shen,Cupola,Flessibile,05/04/2027,07/04/2027,2,330,Nazionale 35 Apartments,Cancellate,0,OTA,0,Adulti: 1
-CB52B96702,21/10/2026 17:45,09/11/2026 08:29,Ctrip,TSZ KIU LEUNG,Camera Matrimoniale Deluxe,Non rimborsabile,12/11/2026,14/11/2026,2,213.03,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
 7A8F21906F,13/10/2026 06:27,09/11/2026 08:28,Expedia,Maenza Janine Ruth,Camera Matrimoniale Deluxe,Flessibile,10/11/2026,12/11/2026,2,227.82,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
 1C45B66BC5,09/11/2026 08:27,09/11/2026 08:28,Expedia,Beatrice Bordoni,Camera Matrimoniale Deluxe,Non rimborsabile,14/11/2026,15/11/2026,1,99.59,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
-CCA00618ED,08/09/2026 16:21,09/11/2026 08:28,Beddy,Karen Bridgeman,Camera Matrimoniale Deluxe,Più Stai Più Risparmi,11/11/2026,23/11/2026,12,1432.25,Firenze Suite,Confermate,0,Sito web,0,Adulti: 2
+CCA00618ED,08/09/2026 16:21,09/11/2026 08:28,Beddy,Karen Lausten Bridgeman,Camera Matrimoniale Deluxe,Più Stai Più Risparmi,11/11/2026,23/11/2026,12,1432.25,Firenze Suite,Confermate,0,Sito web,0,Adulti: 2
 ABCB9B1DC5,09/11/2026 03:44,,Airbnb,Maria Laurent,Cupola,Flessibile,16/11/2026,17/11/2026,1,108.9,Nazionale 35 Apartments,Confermate,0,OTA,0,Adulti: 2
 029DEB8857,08/11/2026 19:45,,Airbnb,Lygerla Bashllari,Cupola,Flessibile,14/11/2026,15/11/2026,1,108.9,Nazionale 35 Apartments,Confermate,0,OTA,0,Adulti: 1
 B27E5083A2,08/11/2026 15:53,,Airbnb,Ruben Stokroos,Cupola,Flessibile,25/11/2026,27/11/2026,2,198,Nazionale 35 Apartments,Confermate,0,OTA,0,Adulti: 2
@@ -6316,7 +6325,6 @@ A30660E9AF,31/10/2026 04:35,05/11/2026 10:55,Beddy,Timothy Connor McQuaide,Camer
 68C43047AD,04/11/2026 19:39,05/11/2026 10:47,Booking,Nanda Koopman,Bilocale,Non rimborsabile,18/11/2026,22/11/2026,4,529.43,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 60C322623F,01/11/2026 14:34,05/11/2026 10:47,Booking,Sergio Araujo,Bilocale,Non rimborsabile,20/11/2026,23/11/2026,3,404.52,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 1CC18902CF,05/11/2026 07:13,,Booking,SACHIKO KUROSAWA,Attico,Non rimborsabile,16/11/2026,18/11/2026,2,423.72,Condotta 16,Confermate,0,OTA,0,Adulti: 2
-7466EE4F3D,04/11/2026 20:39,,Booking,martina cecchi,Trilocale,Flessibile,21/11/2026,22/11/2026,1,206.86,Condotta 16,Confermate,0,OTA,0,Adulti: 2 Bambini: 1
 CFCD253F14,04/11/2026 15:38,04/11/2026 15:39,Beddy,Roza Rrapi,Trilocale,Non rimborsabile,04/12/2026,06/12/2026,2,400,Condotta 16,Confermate,0,Non Specificato,0,Adulti: 5
 D585F94AA5,04/11/2026 09:39,,Ctrip,XIAOWEI ZHANG,Camera Matrimoniale Deluxe,Flessibile,06/02/2027,10/02/2027,4,501.2,Firenze Suite,Confermate,0,OTA,0,Adulti: 1
 C67D2ED4D6,16/10/2026 23:42,04/11/2026 09:35,Booking,Azzurra Maria Marchio,Trilocale,Non rimborsabile,06/11/2026,07/11/2026,1,262.27,Condotta 16,Confermate,0,OTA,0,Adulti: 2 Bambini: 2
@@ -6338,7 +6346,7 @@ C7F3E3F3F8,08/10/2026 18:06,03/11/2026 09:55,Ctrip,Mauro Cattarozzi,Camera Matri
 65EB3DC7C9,02/11/2026 14:20,,Airbnb,Ala Ben Hassine,Palazzo Vecchio,Flessibile,21/11/2026,24/11/2026,3,199.8,Porte Nuove Apartments,Confermate,0,OTA,0,Adulti: 1
 79536D495B,02/11/2026 12:17,,Ctrip,SHOU PENG LIAO,Camera Matrimoniale Deluxe,Flessibile,03/12/2026,06/12/2026,3,357.12,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
 9D28AF718C,22/10/2026 22:26,02/11/2026 10:04,Beddy,Amici Mirandi,Ponte Vecchio,Non rimborsabile,03/12/2026,06/12/2026,3,225,Porte Nuove Apartments,Confermate,0,Non Specificato,0,Adulti: 2
-5D9696A790,02/11/2026 09:41,,Beddy,OZ EISENTAL,Bilocale,Flessibile,15/11/2026,17/11/2026,2,265,Condotta 16,Confermate,0,Sito web,0,Adulti: 2 Bambini: 1
+5D9696A790,02/11/2026 09:41,,Beddy,OZ DAVID EISENTAL,Bilocale,Flessibile,15/11/2026,17/11/2026,2,265,Condotta 16,Confermate,0,Sito web,0,Adulti: 2 Bambini: 1
 1E71E4A61E,02/11/2026 07:07,,Beddy,Carlo Borzillo,Suite,Non rimborsabile,18/12/2026,21/12/2026,3,553.8,Firenze Suite,Confermate,0,Sito web,0,Adulti: 2
 CF646D1894,21/04/2026 20:39,01/11/2026 17:31,Booking,Colleen Berding,Bilocale,Flessibile,15/11/2026,21/11/2026,6,824.16,Condotta 16,Cancellate,0,OTA,0,Adulti: 2
 443FDBAD21,01/11/2026 13:36,,Ctrip,Jieun Lee,Trilocale,Non rimborsabile,08/12/2026,10/12/2026,2,335.73,Condotta 16,Confermate,0,OTA,0,Adulti: 2
@@ -6500,7 +6508,7 @@ B8DFE30E4F,14/10/2026 02:33,,Beddy,Joshua Gan Dempster,Camera Matrimoniale Delux
 4B1EB77F87,27/09/2026 17:14,13/10/2026 18:37,Booking,Lucia Doffini,Trilocale,Flessibile,22/10/2026,26/10/2026,4,1903.82,Condotta 16,Cancellate,0,OTA,0,Adulti: 2 Bambini: 1
 A9E1DC17C2,13/10/2026 18:34,,Booking,Lucia Doffini,Trilocale,Flessibile,22/10/2026,26/10/2026,4,1603.4,Condotta 16,Confermate,0,OTA,0,Adulti: 2 Bambini: 1
 206DD6A81F,13/10/2026 15:49,,Ctrip,XIAOYU WANG,Camera Matrimoniale Deluxe,Non rimborsabile,20/10/2026,22/10/2026,2,412.07,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
-D166C29603,13/10/2026 15:20,,Booking,Huang yuti,Bilocale,Non rimborsabile,11/11/2026,15/11/2026,4,676.68,Condotta 16,Confermate,0,OTA,0,Adulti: 2
+D166C29603,13/10/2026 15:20,,Booking,Yu-Ti Huang,Bilocale,Non rimborsabile,11/11/2026,15/11/2026,4,676.68,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 C5B82AF1AE,28/09/2026 12:38,13/10/2026 13:17,Booking,Yaakovm Hillel Applbaum,Suite,Flessibile,14/10/2026,15/10/2026,1,283.73,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
 ECE8FA0B0F,13/10/2026 12:53,,Booking,Shubhank Sahay,Camera Matrimoniale Deluxe,Flessibile,13/10/2026,14/10/2026,1,197.82,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
 1B6C685A98,04/10/2026 13:41,13/10/2026 11:22,Ctrip,ZHIFAN YE,Camera Matrimoniale Deluxe,Non rimborsabile,13/10/2026,14/10/2026,1,177.84,Firenze Suite,Confermate,0,OTA,0,Adulti: 2
@@ -6581,7 +6589,6 @@ CD3A9EB82B,19/09/2026 11:37,30/09/2026 09:31,Beddy,Sela Michal,Bilocale,Flessibi
 68920ADF42,06/08/2026 15:37,30/09/2026 09:30,Expedia,frank klanduch,Bilocale,Flessibile,01/10/2026,02/10/2026,1,331.41,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 A0447733C7,30/09/2026 09:17,,Airbnb,Tim Segneri,Uffizi,Flessibile,24/02/2027,26/02/2027,2,286,Nazionale 35 Apartments,Confermate,0,OTA,0,Adulti: 2
 D8D1F4FCDB,30/09/2026 07:59,,Airbnb,Sandra Leung,Uffizi,Flessibile,24/11/2026,25/11/2026,1,134.1,Nazionale 35 Apartments,Confermate,0,OTA,0,Adulti: 2
-335E3F8179,30/09/2026 02:26,,Expedia,Patrick Rando,Bilocale,Flessibile,10/01/2027,12/01/2027,2,340.86,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 C025490DF7,29/09/2026 23:24,,Expedia,Sean Ross Moonie,Bilocale,Non rimborsabile,07/10/2026,11/10/2026,4,1026.04,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 99E9DB505C,22/07/2026 16:51,29/09/2026 23:13,Airbnb,Jasmine San Miguel,Cupola,Flessibile,08/11/2026,10/11/2026,2,230,Nazionale 35 Apartments,Cancellate,0,OTA,0,Adulti: 2
 0A1C6F4A5A,03/09/2026 04:17,29/09/2026 15:12,Booking,Ahmed Elbetanony,Bilocale,Flessibile,05/10/2026,11/10/2026,6,2044.13,Condotta 16,Cancellate,0,OTA,0,Adulti: 2
@@ -8465,6 +8472,19 @@ F5BC62D98A,05/10/2025 21:26,,Booking,Marcus Campos,"Trilocale, Trilocale","Fless
 F5F8252A14,30/09/2025 13:58,,Booking,Valentina Preda,Bilocale,Non rimborsabile,17/02/2026,20/02/2026,3,504,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 367A8D0906,16/06/2025 08:58,,Booking,Masahiko Kato,Bilocale,Non rimborsabile,02/01/2026,05/01/2026,3,719.22,Condotta 16,Confermate,0,OTA,0,Adulti: 2
 DF14FBB4D6,15/03/2025 10:56,,Beddy,Colm Devine,Trilocale,Flessibile,12/08/2028,13/08/2028,1,330,Condotta 16,Confermate,0,Non Specificato,0,Adulti: 4
+9EF3791E98,12/11/2026 16:49,,Ctrip,TING LU,Classic,Tariffa Esclusiva,16/11/2026,18/11/2026,2,218.18,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+BDA872C9B0,10/11/2026 19:49,12/11/2026 11:13,Ctrip,ZIXUAN XU,Junior suite,Tariffa Esclusiva,15/11/2026,17/11/2026,2,203.44,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+28CC16D33E,12/11/2026 10:27,,Ctrip,DANNI LIU,Superior,Tariffa Non Rimborsabile - Pernottamento,02/12/2026,04/12/2026,2,248.68,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+7BB4E530EA,12/11/2026 10:15,,Booking,Heyam AlDahifallah,Superior,Tariffa Rimborsabile - Pernottamento,27/11/2026,29/11/2026,2,441.1,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
+54AC8AE81F,12/11/2026 06:35,,Ctrip,CHAO CHEN,Superior,Tariffa Non Rimborsabile - Pernottamento,09/02/2027,11/02/2027,2,487.48,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 4
+029E434A63,16/10/2026 09:18,12/11/2026 05:06,Ctrip,JINGHAN YANG,Junior suite,Tariffa Rimborsabile - Pernottamento,04/04/2027,06/04/2027,2,529.1,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 3
+C60A7F0440,10/11/2026 14:19,12/11/2026 03:34,Expedia,KONSTANTINOS ANANIKAS,Superior,Tariffa Rimborsabile - Pernottamento,03/12/2026,06/12/2026,3,468.67,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 2
+7154705493,12/11/2026 03:34,,Expedia,KONSTANTINOS ANANIKAS,Superior,Tariffa Rimborsabile - Pernottamento,03/12/2026,06/12/2026,3,468.67,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+7F62F19FAD,03/11/2026 09:27,11/11/2026 23:45,Ctrip,Hui Dong,Classic,Tariffa Rimborsabile - Pernottamento,15/11/2026,17/11/2026,2,227.09,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+9370801EF7,11/11/2026 20:47,11/11/2026 20:48,Beddy,Andrea Conti,Superior,Tariffa Rimborsabile - Pernottamento,11/01/2027,14/01/2027,3,618,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 2
+616A7D70A9,11/11/2026 20:22,,Expedia,Marci Fine,Classic,Tariffa Rimborsabile - Pernottamento,11/06/2027,15/06/2027,4,1381.79,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
+312507E6B4,11/11/2026 20:12,11/11/2026 20:17,Expedia,Marci Fine,Junior suite,Tariffa Rimborsabile - Pernottamento,11/06/2027,15/06/2027,4,1344.59,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 2
+BDDABDF42C,10/11/2026 01:03,11/11/2026 19:20,Expedia,Marci Fine,Junior suite,Tariffa Rimborsabile - Pernottamento,12/06/2027,15/06/2027,3,973.59,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 2
 C61CF8EC85,11/11/2026 16:37,,Ctrip,Zhoudao Lu,Classic,Tariffa Non Rimborsabile - Pernottamento,12/01/2027,14/01/2027,2,333.52,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
 293F63C3EE,11/11/2026 16:36,,Ctrip,YUAN YUAN,Classic,Tariffa Non Rimborsabile - Pernottamento,12/01/2027,14/01/2027,2,333.52,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
 1209F68F61,11/11/2026 13:44,,Ctrip,ZEMING ZHAO,Classic,Tariffa Rimborsabile - Pernottamento,19/11/2026,22/11/2026,3,351.42,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
@@ -8473,8 +8493,6 @@ B5481CE331,11/11/2026 04:20,,Ctrip,ONELL HERMIS,Classic,Tariffa Non Rimborsabile
 3087E52DB7,31/10/2026 13:28,10/11/2026 22:15,Booking,Gabriel Aquilina,Superior,Tariffa Rimborsabile - Pernottamento,04/12/2026,07/12/2026,3,705.74,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 3
 E8D0C46E82,10/11/2026 21:27,,Ctrip,YUN LIU,Classic,Tariffa Esclusiva,11/11/2026,12/11/2026,1,107.46,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 3BDBF90154,10/11/2026 20:51,,Booking,Ulrich Schlueter,Superior,Tariffa Rimborsabile - Pernottamento,19/11/2026,23/11/2026,4,696.32,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
-BDA872C9B0,10/11/2026 19:49,,Ctrip,ZIXUAN XU,Junior suite,Tariffa Esclusiva,15/11/2026,17/11/2026,2,203.44,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
-7F62F19FAD,03/11/2026 09:27,10/11/2026 15:49,Ctrip,Hui Dong,Classic,Tariffa Rimborsabile - Pernottamento,15/11/2026,17/11/2026,2,227.09,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 54F2DB3824,02/11/2026 11:54,10/11/2026 15:48,Ctrip,YUXUAN ZHANG,Classic,Tariffa Non Rimborsabile - Pernottamento,20/11/2026,21/11/2026,1,111.12,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 0CFBF8E1CB,02/11/2026 16:16,10/11/2026 15:48,Ctrip,YUXUAN ZHANG,Classic,Tariffa Non Rimborsabile - Pernottamento,21/11/2026,22/11/2026,1,109.57,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 524C9E4811,10/11/2026 15:47,,Ctrip,DI LIU,Classic,Tariffa Esclusiva,17/11/2026,20/11/2026,3,328.91,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
@@ -8489,7 +8507,6 @@ C8A1E70652,31/10/2026 16:13,10/11/2026 15:10,Ctrip,HARUKA YOSHIMURA,Classic,Tari
 459C69B23E,12/10/2026 07:32,10/11/2026 15:09,Beddy,ASHLEY CHEONG,Classic,Tariffa Non Rimborsabile - Pernottamento,27/11/2026,28/11/2026,1,247.5,Palazzo Alfani,Confermate,0,Sito web,0,Adulti: 3
 5EBCB141BF,10/11/2026 07:41,10/11/2026 15:04,Beddy,Sara Pastorino,Classic,Tariffa Rimborsabile - Pernottamento,04/12/2026,08/12/2026,4,773.3,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 2 Bambini: 2
 C3D4BDC237,05/11/2026 12:36,10/11/2026 15:03,Booking,Valeria Gennari,Superior,Tariffa Rimborsabile - Pernottamento,05/12/2026,06/12/2026,1,237.38,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
-C60A7F0440,10/11/2026 14:19,,Expedia,KONSTANTINOS ANANIKAS,Superior,Tariffa Rimborsabile - Pernottamento,03/12/2026,06/12/2026,3,468.67,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 D2DBFFF1D8,10/11/2026 11:21,,Beddy,nino morabito amico pierpaolo,Superior,Tariffa Rimborsabile - Pernottamento,05/06/2026,07/06/2026,2,300,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 2
 E2F560BBE9,10/11/2026 11:19,,Beddy,dania gazzoni,Classic,Tariffa Rimborsabile - Pernottamento,13/06/2026,14/06/2026,1,190,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 2
 CA92E6A8F5,10/11/2026 10:57,10/11/2026 10:57,Beddy,eva anna,Superior,Tariffa Rimborsabile - Pernottamento,03/09/2026,05/09/2026,2,280,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 2
@@ -8500,7 +8517,6 @@ DDC44F21D6,10/11/2026 10:53,10/11/2026 10:53,Beddy,Inna Keghay,Classic,Tariffa R
 04A5426007,10/11/2026 10:45,,Beddy,nicola rutigliano,Superior,Tariffa Rimborsabile - Pernottamento,31/10/2026,01/11/2026,1,200,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 1
 6DEF4FD9D4,10/11/2026 10:40,10/11/2026 10:42,Beddy,homeexchange scambio,Classic,Tariffa Rimborsabile - Pernottamento,18/12/2026,21/12/2026,3,0,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 2
 5290298308,10/11/2026 10:38,,Beddy,Carlos Cpf,Superior,Tariffa Rimborsabile - Pernottamento,19/12/2026,22/12/2026,3,360,Palazzo Alfani,Confermate,0,Non Specificato,0,Adulti: 2
-BDDABDF42C,10/11/2026 01:03,,Expedia,Marci Fine,Junior suite,Tariffa Rimborsabile - Pernottamento,12/06/2027,15/06/2027,3,973.59,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2
 F017E638A4,09/11/2026 22:33,,Ctrip,Kanishka Bhatia,Classic,Tariffa Rimborsabile - Pernottamento,20/12/2026,22/12/2026,2,250.41,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2 Bambini: 1
 ECE6DC9EDA,09/11/2026 22:30,09/11/2026 22:33,Ctrip,Kanishka Bhatia,Classic,Tariffa Rimborsabile - Pernottamento,18/12/2026,20/12/2026,2,253,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 2 Bambini: 1
 F157569A7E,05/11/2026 07:12,09/11/2026 21:03,Ctrip,ZIXUAN DNEG,Superior,Tariffa Rimborsabile - Pernottamento,08/12/2026,10/12/2026,2,279.81,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
@@ -8647,7 +8663,6 @@ A31D6D0C2A,15/09/2026 17:50,16/10/2026 19:32,Ctrip,WENXIN LI,Classic,Tariffa Rim
 A44F43E94D,15/10/2026 08:42,16/10/2026 17:20,Expedia,Omar Mahmood,Superior,Tariffa Rimborsabile - Pernottamento,23/10/2026,26/10/2026,3,1341.25,Palazzo Alfani,Confermate,42,OTA,0,Adulti: 2 Bambini: 2
 B1AFC686E0,06/10/2026 19:29,16/10/2026 17:20,Ctrip,PEI XU,Junior suite,Tariffa Non Rimborsabile - Pernottamento,24/10/2026,26/10/2026,2,456.19,Palazzo Alfani,Confermate,28,OTA,0,Adulti: 2
 0A488FADEA,23/09/2026 10:44,16/10/2026 17:20,Beddy,ZIFAN SHA,Junior suite,Tariffa Rimborsabile - Pernottamento,22/10/2026,24/10/2026,2,662,Palazzo Alfani,Confermate,28,Sito web,0,Adulti: 2
-029E434A63,16/10/2026 09:18,,Ctrip,JINGHAN YANG,Junior suite,Tariffa Rimborsabile - Pernottamento,04/04/2027,06/04/2027,2,529.1,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 3
 F0741B7993,15/10/2026 11:01,,Ctrip,ZIHE QI,Deluxe,Tariffa Non Rimborsabile - Pernottamento,06/11/2026,08/11/2026,2,707.47,Palazzo Alfani,Confermate,42,OTA,0,Adulti: 4
 72712A9E8F,14/10/2026 15:30,,Booking,Sundari Vankamamidi,Superior,Tariffa Rimborsabile - Pernottamento,26/12/2026,28/12/2026,2,735.84,Palazzo Alfani,Confermate,0,OTA,0,Adulti: 2 Bambini: 2
 70B41ECAE8,14/10/2026 09:31,14/10/2026 09:37,Expedia,WENCHAO CAO,Classic,Flessibile pacchetto,11/11/2026,14/11/2026,3,536.46,Palazzo Alfani,Cancellate,0,OTA,0,Adulti: 2
@@ -10316,10 +10331,9 @@ HMCF8EQ8ST,17/05/2026 00:00,,Airbnb,Ivonne Castro,Palazzo Pitti,Flessibile,04/07
 `;
 const AIRBNB_DATA = []  /* Airbnb data moved to separate dashboard (airbnb_dashboard.html) */;
 const EXPEDIA_DATA = {
-  "as_of": "2026-11-11",
+  "as_of": "2026-11-12",
   "alfani": {
-    "2026-11-11": null,
-    "2026-11-12": 181,
+    "2026-11-12": null,
     "2026-11-13": null,
     "2026-11-14": null,
     "2026-11-15": 159,
@@ -10333,8 +10347,8 @@ const EXPEDIA_DATA = {
     "2026-11-23": null,
     "2026-11-24": null,
     "2026-11-25": null,
-    "2026-11-26": 146,
-    "2026-11-27": 185,
+    "2026-11-26": 153,
+    "2026-11-27": 308,
     "2026-11-28": null,
     "2026-11-29": null,
     "2026-11-30": 156,
@@ -10380,8 +10394,8 @@ const EXPEDIA_DATA = {
     "2027-01-09": 233,
     "2027-01-10": 192,
     "2027-01-11": 203,
-    "2027-01-12": 232,
-    "2027-01-13": 232,
+    "2027-01-12": 253,
+    "2027-01-13": 253,
     "2027-01-14": 190,
     "2027-01-15": 169,
     "2027-01-16": 178,
@@ -10463,7 +10477,7 @@ const EXPEDIA_DATA = {
     "2027-04-02": 337,
     "2027-04-03": 316,
     "2027-04-04": 337,
-    "2027-04-05": 337,
+    "2027-04-05": 285,
     "2027-04-06": 352,
     "2027-04-07": 352,
     "2027-04-08": 352,
@@ -10681,35 +10695,35 @@ const EXPEDIA_DATA = {
     "2027-11-06": 269,
     "2027-11-07": 249,
     "2027-11-08": 249,
-    "2027-11-09": 249
+    "2027-11-09": 249,
+    "2027-11-10": 249
   },
   "compset_avg_alfani": {
-    "2026-11-11": 181,
-    "2026-11-12": 213,
-    "2026-11-13": 207,
-    "2026-11-14": 204,
-    "2026-11-15": 189,
-    "2026-11-16": 198,
-    "2026-11-17": 207,
-    "2026-11-18": 211,
-    "2026-11-19": 204,
+    "2026-11-12": 218,
+    "2026-11-13": 209,
+    "2026-11-14": 214,
+    "2026-11-15": 179,
+    "2026-11-16": 197,
+    "2026-11-17": 208,
+    "2026-11-18": 215,
+    "2026-11-19": 202,
     "2026-11-20": 196,
-    "2026-11-21": 242,
-    "2026-11-22": 186,
-    "2026-11-23": 203,
+    "2026-11-21": 253,
+    "2026-11-22": 189,
+    "2026-11-23": 208,
     "2026-11-24": 208,
     "2026-11-25": 183,
     "2026-11-26": 214,
-    "2026-11-27": 243,
+    "2026-11-27": 244,
     "2026-11-28": 196,
-    "2026-11-29": 186,
-    "2026-11-30": 181,
+    "2026-11-29": 188,
+    "2026-11-30": 180,
     "2026-12-01": 187,
     "2026-12-02": 205,
-    "2026-12-03": 222,
-    "2026-12-04": 205,
-    "2026-12-05": 279,
-    "2026-12-06": 234,
+    "2026-12-03": 214,
+    "2026-12-04": 202,
+    "2026-12-05": 313,
+    "2026-12-06": 239,
     "2026-12-07": 238,
     "2026-12-08": 215,
     "2026-12-09": 206,
@@ -10722,7 +10736,7 @@ const EXPEDIA_DATA = {
     "2026-12-16": 212,
     "2026-12-17": 211,
     "2026-12-18": 227,
-    "2026-12-19": 236,
+    "2026-12-19": 238,
     "2026-12-20": 205,
     "2026-12-21": 263,
     "2026-12-22": 226,
@@ -10730,8 +10744,8 @@ const EXPEDIA_DATA = {
     "2026-12-24": 223,
     "2026-12-25": 264,
     "2026-12-26": 288,
-    "2026-12-27": 285,
-    "2026-12-28": 299,
+    "2026-12-27": 286,
+    "2026-12-28": 293,
     "2026-12-29": 283,
     "2026-12-30": 412,
     "2026-12-31": 487,
@@ -10744,7 +10758,7 @@ const EXPEDIA_DATA = {
     "2027-01-07": 198,
     "2027-01-08": 200,
     "2027-01-09": 214,
-    "2027-01-10": 200,
+    "2027-01-10": 205,
     "2027-01-11": 242,
     "2027-01-12": 286,
     "2027-01-13": 280,
@@ -10753,9 +10767,9 @@ const EXPEDIA_DATA = {
     "2027-01-16": 211,
     "2027-01-17": 185,
     "2027-01-18": 180,
-    "2027-01-19": 182,
-    "2027-01-20": 185,
-    "2027-01-21": 185,
+    "2027-01-19": 181,
+    "2027-01-20": 184,
+    "2027-01-21": 186,
     "2027-01-22": 181,
     "2027-01-23": 201,
     "2027-01-24": 174,
@@ -10763,18 +10777,18 @@ const EXPEDIA_DATA = {
     "2027-01-26": 175,
     "2027-01-27": 176,
     "2027-01-28": 183,
-    "2027-01-29": 196,
+    "2027-01-29": 197,
     "2027-01-30": 223,
     "2027-01-31": 205,
     "2027-02-01": 188,
     "2027-02-02": 185,
-    "2027-02-03": 179,
-    "2027-02-04": 182,
-    "2027-02-05": 197,
+    "2027-02-03": 182,
+    "2027-02-04": 185,
+    "2027-02-05": 198,
     "2027-02-06": 218,
     "2027-02-07": 202,
     "2027-02-08": 197,
-    "2027-02-09": 205,
+    "2027-02-09": 207,
     "2027-02-10": 212,
     "2027-02-11": 196,
     "2027-02-12": 203,
@@ -10812,11 +10826,11 @@ const EXPEDIA_DATA = {
     "2027-03-16": 215,
     "2027-03-17": 225,
     "2027-03-18": 241,
-    "2027-03-19": 246,
+    "2027-03-19": 244,
     "2027-03-20": 236,
     "2027-03-21": 213,
-    "2027-03-22": 222,
-    "2027-03-23": 220,
+    "2027-03-22": 221,
+    "2027-03-23": 219,
     "2027-03-24": 237,
     "2027-03-25": 253,
     "2027-03-26": 286,
@@ -10841,15 +10855,15 @@ const EXPEDIA_DATA = {
     "2027-04-14": 265,
     "2027-04-15": 270,
     "2027-04-16": 277,
-    "2027-04-17": 302,
+    "2027-04-17": 294,
     "2027-04-18": 286,
-    "2027-04-19": 264,
-    "2027-04-20": 264,
-    "2027-04-21": 266,
+    "2027-04-19": 262,
+    "2027-04-20": 268,
+    "2027-04-21": 271,
     "2027-04-22": 280,
     "2027-04-23": 276,
     "2027-04-24": 302,
-    "2027-04-25": 293,
+    "2027-04-25": 295,
     "2027-04-26": 287,
     "2027-04-27": 293,
     "2027-04-28": 299,
@@ -11047,11 +11061,11 @@ const EXPEDIA_DATA = {
     "2027-11-06": 260,
     "2027-11-07": 211,
     "2027-11-08": 272,
-    "2027-11-09": 272
+    "2027-11-09": 272,
+    "2027-11-10": 272
   },
   "competitors_alfani": {
     "Residence Hilda": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -11414,22 +11428,22 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Martelli 6 Suites and Apartments": {
-      "2026-11-11": null,
-      "2026-11-12": 130,
+      "2026-11-12": null,
       "2026-11-13": null,
-      "2026-11-14": 144,
+      "2026-11-14": null,
       "2026-11-15": 120,
       "2026-11-16": 110,
       "2026-11-17": 105,
-      "2026-11-18": 139,
-      "2026-11-19": 139,
+      "2026-11-18": 149,
+      "2026-11-19": 149,
       "2026-11-20": 115,
-      "2026-11-21": 159,
-      "2026-11-22": 110,
-      "2026-11-23": 110,
+      "2026-11-21": 273,
+      "2026-11-22": 130,
+      "2026-11-23": 130,
       "2026-11-24": 110,
       "2026-11-25": 110,
       "2026-11-26": 110,
@@ -11455,7 +11469,7 @@ const EXPEDIA_DATA = {
       "2026-12-16": 130,
       "2026-12-17": 96,
       "2026-12-18": 139,
-      "2026-12-19": 149,
+      "2026-12-19": 169,
       "2026-12-20": 110,
       "2026-12-21": 115,
       "2026-12-22": 139,
@@ -11463,7 +11477,7 @@ const EXPEDIA_DATA = {
       "2026-12-24": 149,
       "2026-12-25": null,
       "2026-12-26": null,
-      "2026-12-27": 159,
+      "2026-12-27": 169,
       "2026-12-28": 238,
       "2026-12-29": 165,
       "2026-12-30": 205,
@@ -11496,7 +11510,7 @@ const EXPEDIA_DATA = {
       "2027-01-26": 96,
       "2027-01-27": 95,
       "2027-01-28": 95,
-      "2027-01-29": 110,
+      "2027-01-29": 120,
       "2027-01-30": 130,
       "2027-01-31": 120,
       "2027-02-01": 120,
@@ -11548,8 +11562,8 @@ const EXPEDIA_DATA = {
       "2027-03-19": 149,
       "2027-03-20": 159,
       "2027-03-21": 136,
-      "2027-03-22": 155,
-      "2027-03-23": 155,
+      "2027-03-22": 146,
+      "2027-03-23": 146,
       "2027-03-24": 179,
       "2027-03-25": 179,
       "2027-03-26": 209,
@@ -11574,10 +11588,10 @@ const EXPEDIA_DATA = {
       "2027-04-14": 194,
       "2027-04-15": 209,
       "2027-04-16": 209,
-      "2027-04-17": 263,
+      "2027-04-17": 205,
       "2027-04-18": 174,
-      "2027-04-19": 199,
-      "2027-04-20": 189,
+      "2027-04-19": 185,
+      "2027-04-20": 175,
       "2027-04-21": 189,
       "2027-04-22": 169,
       "2027-04-23": 248,
@@ -11780,13 +11794,13 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Casa del Sarto": {
-      "2026-11-11": 216,
       "2026-11-12": 216,
-      "2026-11-13": 196,
-      "2026-11-14": 196,
+      "2026-11-13": 216,
+      "2026-11-14": 212,
       "2026-11-15": 196,
       "2026-11-16": 196,
       "2026-11-17": 196,
@@ -12146,18 +12160,18 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Chic Stay Boutique Apartments": {
-      "2026-11-11": null,
-      "2026-11-12": 328,
+      "2026-11-12": null,
       "2026-11-13": 296,
       "2026-11-14": 312,
       "2026-11-15": 264,
       "2026-11-16": 247,
       "2026-11-17": 296,
       "2026-11-18": 280,
-      "2026-11-19": 304,
+      "2026-11-19": 280,
       "2026-11-20": 286,
       "2026-11-21": 322,
       "2026-11-22": 268,
@@ -12239,7 +12253,7 @@ const EXPEDIA_DATA = {
       "2027-02-06": 268,
       "2027-02-07": 250,
       "2027-02-08": 250,
-      "2027-02-09": 231,
+      "2027-02-09": 250,
       "2027-02-10": 231,
       "2027-02-11": 247,
       "2027-02-12": 231,
@@ -12512,20 +12526,20 @@ const EXPEDIA_DATA = {
       "2027-11-06": 328,
       "2027-11-07": 328,
       "2027-11-08": 328,
-      "2027-11-09": 328
+      "2027-11-09": 328,
+      "2027-11-10": 328
     },
     "Condotta 16 Apartments": {
-      "2026-11-11": 171,
       "2026-11-12": 231,
       "2026-11-13": null,
       "2026-11-14": null,
       "2026-11-15": 175,
       "2026-11-16": null,
       "2026-11-17": 148,
-      "2026-11-18": 168,
+      "2026-11-18": 196,
       "2026-11-19": 130,
       "2026-11-20": 140,
-      "2026-11-21": null,
+      "2026-11-21": 194,
       "2026-11-22": 185,
       "2026-11-23": 138,
       "2026-11-24": 134,
@@ -12539,8 +12553,8 @@ const EXPEDIA_DATA = {
       "2026-12-02": 145,
       "2026-12-03": 152,
       "2026-12-04": 156,
-      "2026-12-05": 173,
-      "2026-12-06": 166,
+      "2026-12-05": 265,
+      "2026-12-06": 207,
       "2026-12-07": 172,
       "2026-12-08": 168,
       "2026-12-09": 150,
@@ -12562,7 +12576,7 @@ const EXPEDIA_DATA = {
       "2026-12-25": 249,
       "2026-12-26": 261,
       "2026-12-27": 245,
-      "2026-12-28": null,
+      "2026-12-28": 260,
       "2026-12-29": 272,
       "2026-12-30": null,
       "2026-12-31": 507,
@@ -12878,10 +12892,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Florence Art Apartments": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -13244,10 +13258,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Granduomo Charming Accomodation": {
-      "2026-11-11": 215,
       "2026-11-12": 215,
       "2026-11-13": 215,
       "2026-11-14": 215,
@@ -13277,7 +13291,7 @@ const EXPEDIA_DATA = {
       "2026-12-08": 279,
       "2026-12-09": 279,
       "2026-12-10": 279,
-      "2026-12-11": 277,
+      "2026-12-11": 279,
       "2026-12-12": 277,
       "2026-12-13": 277,
       "2026-12-14": 277,
@@ -13307,7 +13321,7 @@ const EXPEDIA_DATA = {
       "2027-01-07": 277,
       "2027-01-08": 277,
       "2027-01-09": 277,
-      "2027-01-10": 262,
+      "2027-01-10": 277,
       "2027-01-11": 335,
       "2027-01-12": 335,
       "2027-01-13": 335,
@@ -13610,13 +13624,13 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Residenza Marchesi Pontenani": {
-      "2026-11-11": 106,
       "2026-11-12": 102,
-      "2026-11-13": 113,
-      "2026-11-14": 125,
+      "2026-11-13": 102,
+      "2026-11-14": 113,
       "2026-11-15": 106,
       "2026-11-16": 102,
       "2026-11-17": 94,
@@ -13628,10 +13642,10 @@ const EXPEDIA_DATA = {
       "2026-11-23": 105,
       "2026-11-24": 105,
       "2026-11-25": 97,
-      "2026-11-26": 93,
-      "2026-11-27": 171,
+      "2026-11-26": 100,
+      "2026-11-27": 178,
       "2026-11-28": null,
-      "2026-11-29": 127,
+      "2026-11-29": 142,
       "2026-11-30": 93,
       "2026-12-01": 113,
       "2026-12-02": 113,
@@ -13773,8 +13787,8 @@ const EXPEDIA_DATA = {
       "2027-04-17": null,
       "2027-04-18": 125,
       "2027-04-19": 150,
-      "2027-04-20": 150,
-      "2027-04-21": 150,
+      "2027-04-20": 193,
+      "2027-04-21": 193,
       "2027-04-22": 157,
       "2027-04-23": 144,
       "2027-04-24": null,
@@ -13976,22 +13990,22 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Ricasoli Garden Relais": {
-      "2026-11-11": null,
-      "2026-11-12": 204,
+      "2026-11-12": null,
       "2026-11-13": null,
-      "2026-11-14": null,
+      "2026-11-14": 204,
       "2026-11-15": 142,
-      "2026-11-16": 217,
+      "2026-11-16": 204,
       "2026-11-17": 217,
       "2026-11-18": null,
       "2026-11-19": null,
       "2026-11-20": null,
       "2026-11-21": null,
       "2026-11-22": 204,
-      "2026-11-23": 196,
+      "2026-11-23": 217,
       "2026-11-24": 204,
       "2026-11-25": 204,
       "2026-11-26": 217,
@@ -14039,7 +14053,7 @@ const EXPEDIA_DATA = {
       "2027-01-07": 282,
       "2027-01-08": 282,
       "2027-01-09": 282,
-      "2027-01-10": 255,
+      "2027-01-10": 282,
       "2027-01-11": 255,
       "2027-01-12": 255,
       "2027-01-13": 255,
@@ -14342,16 +14356,16 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Solo Experience Hotel": {
-      "2026-11-11": 196,
-      "2026-11-12": 280,
+      "2026-11-12": 326,
       "2026-11-13": 215,
       "2026-11-14": 230,
       "2026-11-15": 149,
       "2026-11-16": 163,
-      "2026-11-17": 148,
+      "2026-11-17": 163,
       "2026-11-18": 153,
       "2026-11-19": 172,
       "2026-11-20": 187,
@@ -14364,12 +14378,12 @@ const EXPEDIA_DATA = {
       "2026-11-27": 219,
       "2026-11-28": null,
       "2026-11-29": 146,
-      "2026-11-30": 135,
+      "2026-11-30": 126,
       "2026-12-01": 117,
       "2026-12-02": 153,
       "2026-12-03": 302,
       "2026-12-04": 198,
-      "2026-12-05": 289,
+      "2026-12-05": null,
       "2026-12-06": 208,
       "2026-12-07": 208,
       "2026-12-08": 109,
@@ -14414,9 +14428,9 @@ const EXPEDIA_DATA = {
       "2027-01-16": 156,
       "2027-01-17": 114,
       "2027-01-18": 125,
-      "2027-01-19": 139,
-      "2027-01-20": 129,
-      "2027-01-21": 144,
+      "2027-01-19": 130,
+      "2027-01-20": 120,
+      "2027-01-21": 126,
       "2027-01-22": 119,
       "2027-01-23": 141,
       "2027-01-24": 123,
@@ -14429,9 +14443,9 @@ const EXPEDIA_DATA = {
       "2027-01-31": 117,
       "2027-02-01": 102,
       "2027-02-02": 105,
-      "2027-02-03": 109,
-      "2027-02-04": 102,
-      "2027-02-05": 135,
+      "2027-02-03": 136,
+      "2027-02-04": 129,
+      "2027-02-05": 144,
       "2027-02-06": 172,
       "2027-02-07": 116,
       "2027-02-08": 119,
@@ -14473,7 +14487,7 @@ const EXPEDIA_DATA = {
       "2027-03-16": 150,
       "2027-03-17": 148,
       "2027-03-18": 171,
-      "2027-03-19": 197,
+      "2027-03-19": 179,
       "2027-03-20": 178,
       "2027-03-21": 133,
       "2027-03-22": 140,
@@ -14708,14 +14722,14 @@ const EXPEDIA_DATA = {
       "2027-11-06": 224,
       "2027-11-07": 113,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Tornabuoni Suites Collection": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
-      "2026-11-15": 274,
+      "2026-11-15": null,
       "2026-11-16": 274,
       "2026-11-17": 262,
       "2026-11-18": 262,
@@ -14733,9 +14747,9 @@ const EXPEDIA_DATA = {
       "2026-11-30": 262,
       "2026-12-01": 262,
       "2026-12-02": 285,
-      "2026-12-03": 285,
-      "2026-12-04": 239,
-      "2026-12-05": null,
+      "2026-12-03": 216,
+      "2026-12-04": 216,
+      "2026-12-05": 331,
       "2026-12-06": 205,
       "2026-12-07": 205,
       "2026-12-08": 205,
@@ -14782,7 +14796,7 @@ const EXPEDIA_DATA = {
       "2027-01-18": 216,
       "2027-01-19": 216,
       "2027-01-20": 239,
-      "2027-01-21": 216,
+      "2027-01-21": 239,
       "2027-01-22": 216,
       "2027-01-23": 216,
       "2027-01-24": 216,
@@ -14876,7 +14890,7 @@ const EXPEDIA_DATA = {
       "2027-04-22": 458,
       "2027-04-23": 354,
       "2027-04-24": 319,
-      "2027-04-25": 354,
+      "2027-04-25": 365,
       "2027-04-26": 319,
       "2027-04-27": 319,
       "2027-04-28": 354,
@@ -15074,11 +15088,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": 228,
       "2027-11-07": 193,
       "2027-11-08": 216,
-      "2027-11-09": 216
+      "2027-11-09": 216,
+      "2027-11-10": 216
     }
   },
   "search_current_alfani": {
-    "2026-11-11": 2021,
     "2026-11-12": 2054,
     "2026-11-13": 2011,
     "2026-11-14": 1909,
@@ -15441,10 +15455,10 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "search_previous_alfani": {
-    "2026-11-11": 2122,
     "2026-11-12": 2196,
     "2026-11-13": 2218,
     "2026-11-14": 2113,
@@ -15807,20 +15821,20 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "condotta": {
-    "2026-11-11": 171,
     "2026-11-12": 231,
     "2026-11-13": null,
     "2026-11-14": null,
     "2026-11-15": 175,
     "2026-11-16": null,
     "2026-11-17": 148,
-    "2026-11-18": 168,
+    "2026-11-18": 196,
     "2026-11-19": 130,
     "2026-11-20": 140,
-    "2026-11-21": null,
+    "2026-11-21": 194,
     "2026-11-22": 185,
     "2026-11-23": 138,
     "2026-11-24": 134,
@@ -15834,8 +15848,8 @@ const EXPEDIA_DATA = {
     "2026-12-02": 145,
     "2026-12-03": 152,
     "2026-12-04": 156,
-    "2026-12-05": 173,
-    "2026-12-06": 166,
+    "2026-12-05": 265,
+    "2026-12-06": 207,
     "2026-12-07": 172,
     "2026-12-08": 168,
     "2026-12-09": 150,
@@ -15857,7 +15871,7 @@ const EXPEDIA_DATA = {
     "2026-12-25": 249,
     "2026-12-26": 261,
     "2026-12-27": 245,
-    "2026-12-28": null,
+    "2026-12-28": 260,
     "2026-12-29": 272,
     "2026-12-30": null,
     "2026-12-31": 507,
@@ -16173,28 +16187,28 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "compset_avg_condotta": {
-    "2026-11-11": 174,
-    "2026-11-12": 181,
-    "2026-11-13": 174,
-    "2026-11-14": 178,
+    "2026-11-12": 178,
+    "2026-11-13": 178,
+    "2026-11-14": 186,
     "2026-11-15": 175,
-    "2026-11-16": 186,
+    "2026-11-16": 184,
     "2026-11-17": 203,
     "2026-11-18": 200,
     "2026-11-19": 188,
     "2026-11-20": 152,
     "2026-11-21": 212,
     "2026-11-22": 184,
-    "2026-11-23": 207,
+    "2026-11-23": 212,
     "2026-11-24": 215,
     "2026-11-25": 170,
-    "2026-11-26": 213,
-    "2026-11-27": 240,
+    "2026-11-26": 216,
+    "2026-11-27": 266,
     "2026-11-28": 196,
-    "2026-11-29": 200,
+    "2026-11-29": 203,
     "2026-11-30": 175,
     "2026-12-01": 178,
     "2026-12-02": 192,
@@ -16206,7 +16220,7 @@ const EXPEDIA_DATA = {
     "2026-12-08": 228,
     "2026-12-09": 221,
     "2026-12-10": 221,
-    "2026-12-11": 230,
+    "2026-12-11": 231,
     "2026-12-12": 230,
     "2026-12-13": 220,
     "2026-12-14": 219,
@@ -16236,10 +16250,10 @@ const EXPEDIA_DATA = {
     "2027-01-07": 214,
     "2027-01-08": 219,
     "2027-01-09": 239,
-    "2027-01-10": 188,
+    "2027-01-10": 195,
     "2027-01-11": 222,
-    "2027-01-12": 228,
-    "2027-01-13": 248,
+    "2027-01-12": 232,
+    "2027-01-13": 253,
     "2027-01-14": 215,
     "2027-01-15": 188,
     "2027-01-16": 209,
@@ -16321,7 +16335,7 @@ const EXPEDIA_DATA = {
     "2027-04-02": 317,
     "2027-04-03": 311,
     "2027-04-04": 317,
-    "2027-04-05": 282,
+    "2027-04-05": 272,
     "2027-04-06": 281,
     "2027-04-07": 320,
     "2027-04-08": 320,
@@ -16336,8 +16350,8 @@ const EXPEDIA_DATA = {
     "2027-04-17": 317,
     "2027-04-18": 314,
     "2027-04-19": 283,
-    "2027-04-20": 283,
-    "2027-04-21": 283,
+    "2027-04-20": 292,
+    "2027-04-21": 292,
     "2027-04-22": 280,
     "2027-04-23": 287,
     "2027-04-24": 323,
@@ -16539,14 +16553,14 @@ const EXPEDIA_DATA = {
     "2027-11-06": 269,
     "2027-11-07": 249,
     "2027-11-08": 249,
-    "2027-11-09": 249
+    "2027-11-09": 249,
+    "2027-11-10": 249
   },
   "competitors_condotta": {
     "Casa del Sarto": {
-      "2026-11-11": 216,
       "2026-11-12": 216,
-      "2026-11-13": 196,
-      "2026-11-14": 196,
+      "2026-11-13": 216,
+      "2026-11-14": 212,
       "2026-11-15": 196,
       "2026-11-16": 196,
       "2026-11-17": 196,
@@ -16906,10 +16920,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Florence Art Apartments": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -17272,10 +17286,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Granduomo Charming Accomodation": {
-      "2026-11-11": 215,
       "2026-11-12": 215,
       "2026-11-13": 215,
       "2026-11-14": 215,
@@ -17305,7 +17319,7 @@ const EXPEDIA_DATA = {
       "2026-12-08": 279,
       "2026-12-09": 279,
       "2026-12-10": 279,
-      "2026-12-11": 277,
+      "2026-12-11": 279,
       "2026-12-12": 277,
       "2026-12-13": 277,
       "2026-12-14": 277,
@@ -17335,7 +17349,7 @@ const EXPEDIA_DATA = {
       "2027-01-07": 277,
       "2027-01-08": 277,
       "2027-01-09": 277,
-      "2027-01-10": 262,
+      "2027-01-10": 277,
       "2027-01-11": 335,
       "2027-01-12": 335,
       "2027-01-13": 335,
@@ -17638,11 +17652,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Palazzo Alfani al David": {
-      "2026-11-11": null,
-      "2026-11-12": 181,
+      "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
       "2026-11-15": 159,
@@ -17656,8 +17670,8 @@ const EXPEDIA_DATA = {
       "2026-11-23": null,
       "2026-11-24": null,
       "2026-11-25": null,
-      "2026-11-26": 146,
-      "2026-11-27": 185,
+      "2026-11-26": 153,
+      "2026-11-27": 308,
       "2026-11-28": null,
       "2026-11-29": null,
       "2026-11-30": 156,
@@ -17703,8 +17717,8 @@ const EXPEDIA_DATA = {
       "2027-01-09": 233,
       "2027-01-10": 192,
       "2027-01-11": 203,
-      "2027-01-12": 232,
-      "2027-01-13": 232,
+      "2027-01-12": 253,
+      "2027-01-13": 253,
       "2027-01-14": 190,
       "2027-01-15": 169,
       "2027-01-16": 178,
@@ -17786,7 +17800,7 @@ const EXPEDIA_DATA = {
       "2027-04-02": 337,
       "2027-04-03": 316,
       "2027-04-04": 337,
-      "2027-04-05": 337,
+      "2027-04-05": 285,
       "2027-04-06": 352,
       "2027-04-07": 352,
       "2027-04-08": 352,
@@ -18004,10 +18018,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": 269,
       "2027-11-07": 249,
       "2027-11-08": 249,
-      "2027-11-09": 249
+      "2027-11-09": 249,
+      "2027-11-10": 249
     },
     "Residence Hilda": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -18370,11 +18384,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Residenza Della Signoria": {
-      "2026-11-11": 160,
-      "2026-11-12": 168,
+      "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
       "2026-11-15": 168,
@@ -18736,13 +18750,13 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Residenza Marchesi Pontenani": {
-      "2026-11-11": 106,
       "2026-11-12": 102,
-      "2026-11-13": 113,
-      "2026-11-14": 125,
+      "2026-11-13": 102,
+      "2026-11-14": 113,
       "2026-11-15": 106,
       "2026-11-16": 102,
       "2026-11-17": 94,
@@ -18754,10 +18768,10 @@ const EXPEDIA_DATA = {
       "2026-11-23": 105,
       "2026-11-24": 105,
       "2026-11-25": 97,
-      "2026-11-26": 93,
-      "2026-11-27": 171,
+      "2026-11-26": 100,
+      "2026-11-27": 178,
       "2026-11-28": null,
-      "2026-11-29": 127,
+      "2026-11-29": 142,
       "2026-11-30": 93,
       "2026-12-01": 113,
       "2026-12-02": 113,
@@ -18899,8 +18913,8 @@ const EXPEDIA_DATA = {
       "2027-04-17": null,
       "2027-04-18": 125,
       "2027-04-19": 150,
-      "2027-04-20": 150,
-      "2027-04-21": 150,
+      "2027-04-20": 193,
+      "2027-04-21": 193,
       "2027-04-22": 157,
       "2027-04-23": 144,
       "2027-04-24": null,
@@ -19102,22 +19116,22 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Ricasoli Garden Relais": {
-      "2026-11-11": null,
-      "2026-11-12": 204,
+      "2026-11-12": null,
       "2026-11-13": null,
-      "2026-11-14": null,
+      "2026-11-14": 204,
       "2026-11-15": 142,
-      "2026-11-16": 217,
+      "2026-11-16": 204,
       "2026-11-17": 217,
       "2026-11-18": null,
       "2026-11-19": null,
       "2026-11-20": null,
       "2026-11-21": null,
       "2026-11-22": 204,
-      "2026-11-23": 196,
+      "2026-11-23": 217,
       "2026-11-24": 204,
       "2026-11-25": 204,
       "2026-11-26": 217,
@@ -19165,7 +19179,7 @@ const EXPEDIA_DATA = {
       "2027-01-07": 282,
       "2027-01-08": 282,
       "2027-01-09": 282,
-      "2027-01-10": 255,
+      "2027-01-10": 282,
       "2027-01-11": 255,
       "2027-01-12": 255,
       "2027-01-13": 255,
@@ -19468,11 +19482,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     }
   },
   "search_current_condotta": {
-    "2026-11-11": 2021,
     "2026-11-12": 2054,
     "2026-11-13": 2011,
     "2026-11-14": 1909,
@@ -19835,10 +19849,10 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "search_previous_condotta": {
-    "2026-11-11": 2122,
     "2026-11-12": 2196,
     "2026-11-13": 2218,
     "2026-11-14": 2113,
@@ -20201,10 +20215,10 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "davids": {
-    "2026-11-11": 91,
     "2026-11-12": 97,
     "2026-11-13": null,
     "2026-11-14": null,
@@ -20230,7 +20244,7 @@ const EXPEDIA_DATA = {
     "2026-12-04": 114,
     "2026-12-05": null,
     "2026-12-06": null,
-    "2026-12-07": 102,
+    "2026-12-07": 104,
     "2026-12-08": null,
     "2026-12-09": 89,
     "2026-12-10": 90,
@@ -20243,20 +20257,20 @@ const EXPEDIA_DATA = {
     "2026-12-17": 90,
     "2026-12-18": null,
     "2026-12-19": null,
-    "2026-12-20": 89,
+    "2026-12-20": 86,
     "2026-12-21": 95,
     "2026-12-22": 98,
     "2026-12-23": null,
     "2026-12-24": null,
     "2026-12-25": null,
     "2026-12-26": null,
-    "2026-12-27": 140,
+    "2026-12-27": 136,
     "2026-12-28": null,
     "2026-12-29": null,
     "2026-12-30": null,
     "2026-12-31": null,
     "2027-01-01": null,
-    "2027-01-02": 182,
+    "2027-01-02": 175,
     "2027-01-03": 129,
     "2027-01-04": null,
     "2027-01-05": null,
@@ -20264,21 +20278,21 @@ const EXPEDIA_DATA = {
     "2027-01-07": null,
     "2027-01-08": null,
     "2027-01-09": null,
-    "2027-01-10": 76,
+    "2027-01-10": 73,
     "2027-01-11": null,
     "2027-01-12": null,
     "2027-01-13": null,
     "2027-01-14": null,
     "2027-01-15": null,
     "2027-01-16": null,
-    "2027-01-17": 96,
+    "2027-01-17": 94,
     "2027-01-18": 93,
-    "2027-01-19": 97,
+    "2027-01-19": 98,
     "2027-01-20": null,
     "2027-01-21": null,
     "2027-01-22": null,
     "2027-01-23": null,
-    "2027-01-24": 89,
+    "2027-01-24": 90,
     "2027-01-25": null,
     "2027-01-26": null,
     "2027-01-27": null,
@@ -20299,7 +20313,7 @@ const EXPEDIA_DATA = {
     "2027-02-11": null,
     "2027-02-12": null,
     "2027-02-13": null,
-    "2027-02-14": 96,
+    "2027-02-14": 97,
     "2027-02-15": null,
     "2027-02-16": null,
     "2027-02-17": null,
@@ -20327,14 +20341,14 @@ const EXPEDIA_DATA = {
     "2027-03-11": null,
     "2027-03-12": null,
     "2027-03-13": null,
-    "2027-03-14": 109,
+    "2027-03-14": 108,
     "2027-03-15": null,
     "2027-03-16": null,
     "2027-03-17": null,
     "2027-03-18": null,
     "2027-03-19": null,
     "2027-03-20": null,
-    "2027-03-21": 140,
+    "2027-03-21": 139,
     "2027-03-22": null,
     "2027-03-23": null,
     "2027-03-24": null,
@@ -20355,7 +20369,7 @@ const EXPEDIA_DATA = {
     "2027-04-08": null,
     "2027-04-09": null,
     "2027-04-10": null,
-    "2027-04-11": 198,
+    "2027-04-11": 199,
     "2027-04-12": null,
     "2027-04-13": null,
     "2027-04-14": null,
@@ -20369,56 +20383,56 @@ const EXPEDIA_DATA = {
     "2027-04-22": null,
     "2027-04-23": null,
     "2027-04-24": null,
-    "2027-04-25": 213,
+    "2027-04-25": 214,
     "2027-04-26": null,
     "2027-04-27": null,
     "2027-04-28": null,
     "2027-04-29": null,
     "2027-04-30": null,
     "2027-05-01": null,
-    "2027-05-02": 224,
+    "2027-05-02": 223,
     "2027-05-03": null,
     "2027-05-04": null,
     "2027-05-05": null,
     "2027-05-06": null,
     "2027-05-07": null,
     "2027-05-08": null,
-    "2027-05-09": 245,
+    "2027-05-09": 246,
     "2027-05-10": null,
     "2027-05-11": null,
     "2027-05-12": null,
     "2027-05-13": null,
     "2027-05-14": null,
     "2027-05-15": null,
-    "2027-05-16": 238,
+    "2027-05-16": 233,
     "2027-05-17": null,
     "2027-05-18": null,
     "2027-05-19": null,
     "2027-05-20": null,
     "2027-05-21": null,
     "2027-05-22": null,
-    "2027-05-23": 247,
+    "2027-05-23": 243,
     "2027-05-24": null,
     "2027-05-25": null,
     "2027-05-26": null,
     "2027-05-27": null,
     "2027-05-28": null,
     "2027-05-29": null,
-    "2027-05-30": 242,
+    "2027-05-30": 249,
     "2027-05-31": null,
     "2027-06-01": null,
     "2027-06-02": null,
     "2027-06-03": null,
     "2027-06-04": null,
     "2027-06-05": null,
-    "2027-06-06": 234,
+    "2027-06-06": 236,
     "2027-06-07": null,
     "2027-06-08": null,
     "2027-06-09": null,
     "2027-06-10": null,
     "2027-06-11": null,
     "2027-06-12": null,
-    "2027-06-13": 223,
+    "2027-06-13": 224,
     "2027-06-14": null,
     "2027-06-15": null,
     "2027-06-16": null,
@@ -20436,27 +20450,27 @@ const EXPEDIA_DATA = {
     "2027-06-28": null,
     "2027-06-29": null,
     "2027-06-30": null,
-    "2027-07-01": 155,
+    "2027-07-01": 156,
     "2027-07-02": 190,
     "2027-07-03": 167,
-    "2027-07-04": 150,
+    "2027-07-04": 151,
     "2027-07-05": 150,
     "2027-07-06": 152,
-    "2027-07-07": 154,
+    "2027-07-07": 153,
     "2027-07-08": 150,
     "2027-07-09": 159,
-    "2027-07-10": 162,
+    "2027-07-10": 163,
     "2027-07-11": 145,
     "2027-07-12": 148,
     "2027-07-13": 150,
-    "2027-07-14": 147,
+    "2027-07-14": 146,
     "2027-07-15": 140,
-    "2027-07-16": 147,
+    "2027-07-16": 148,
     "2027-07-17": 145,
     "2027-07-18": 147,
     "2027-07-19": 148,
     "2027-07-20": 136,
-    "2027-07-21": 140,
+    "2027-07-21": 139,
     "2027-07-22": 146,
     "2027-07-23": 143,
     "2027-07-24": 140,
@@ -20465,92 +20479,92 @@ const EXPEDIA_DATA = {
     "2027-07-27": 129,
     "2027-07-28": 128,
     "2027-07-29": 129,
-    "2027-07-30": 136,
-    "2027-07-31": 138,
+    "2027-07-30": 137,
+    "2027-07-31": 139,
     "2027-08-01": 132,
     "2027-08-02": 129,
     "2027-08-03": 124,
     "2027-08-04": 127,
-    "2027-08-05": 128,
-    "2027-08-06": 128,
-    "2027-08-07": 132,
-    "2027-08-08": 127,
+    "2027-08-05": 130,
+    "2027-08-06": 131,
+    "2027-08-07": 136,
+    "2027-08-08": 129,
     "2027-08-09": 126,
     "2027-08-10": 124,
-    "2027-08-11": 125,
+    "2027-08-11": 124,
     "2027-08-12": 126,
-    "2027-08-13": 133,
-    "2027-08-14": 136,
-    "2027-08-15": 125,
-    "2027-08-16": 120,
-    "2027-08-17": 122,
-    "2027-08-18": 123,
+    "2027-08-13": 134,
+    "2027-08-14": 137,
+    "2027-08-15": 126,
+    "2027-08-16": 122,
+    "2027-08-17": 125,
+    "2027-08-18": 122,
     "2027-08-19": 126,
-    "2027-08-20": 130,
-    "2027-08-21": 129,
-    "2027-08-22": 123,
+    "2027-08-20": 131,
+    "2027-08-21": 130,
+    "2027-08-22": 124,
     "2027-08-23": 122,
-    "2027-08-24": 127,
-    "2027-08-25": 132,
-    "2027-08-26": 136,
-    "2027-08-27": 143,
-    "2027-08-28": 148,
-    "2027-08-29": 144,
+    "2027-08-24": 128,
+    "2027-08-25": 131,
+    "2027-08-26": 137,
+    "2027-08-27": 144,
+    "2027-08-28": 149,
+    "2027-08-29": 145,
     "2027-08-30": 155,
     "2027-08-31": 160,
     "2027-09-01": 160,
-    "2027-09-02": 163,
-    "2027-09-03": 171,
-    "2027-09-04": 177,
-    "2027-09-05": 179,
+    "2027-09-02": 165,
+    "2027-09-03": 172,
+    "2027-09-04": 178,
+    "2027-09-05": 181,
     "2027-09-06": 183,
     "2027-09-07": 190,
-    "2027-09-08": 201,
-    "2027-09-09": 211,
+    "2027-09-08": 200,
+    "2027-09-09": 212,
     "2027-09-10": 224,
-    "2027-09-11": 223,
+    "2027-09-11": 225,
     "2027-09-12": 205,
-    "2027-09-13": 218,
-    "2027-09-14": 217,
-    "2027-09-15": 221,
-    "2027-09-16": 226,
+    "2027-09-13": 220,
+    "2027-09-14": 219,
+    "2027-09-15": 222,
+    "2027-09-16": 227,
     "2027-09-17": 234,
-    "2027-09-18": 241,
-    "2027-09-19": 215,
-    "2027-09-20": 216,
-    "2027-09-21": 219,
-    "2027-09-22": 225,
-    "2027-09-23": 232,
-    "2027-09-24": 237,
-    "2027-09-25": 241,
+    "2027-09-18": 242,
+    "2027-09-19": 224,
+    "2027-09-20": 215,
+    "2027-09-21": 218,
+    "2027-09-22": 223,
+    "2027-09-23": 233,
+    "2027-09-24": 238,
+    "2027-09-25": 244,
     "2027-09-26": 234,
     "2027-09-27": 230,
     "2027-09-28": 232,
-    "2027-09-29": 237,
-    "2027-09-30": 243,
-    "2027-10-01": 271,
-    "2027-10-02": 257,
-    "2027-10-03": 249,
-    "2027-10-04": 212,
-    "2027-10-05": 209,
-    "2027-10-06": 221,
+    "2027-09-29": 234,
+    "2027-09-30": 244,
+    "2027-10-01": 272,
+    "2027-10-02": 262,
+    "2027-10-03": 254,
+    "2027-10-04": 215,
+    "2027-10-05": 212,
+    "2027-10-06": 219,
     "2027-10-07": 239,
-    "2027-10-08": 240,
-    "2027-10-09": 239,
-    "2027-10-10": 205,
-    "2027-10-11": 208,
-    "2027-10-12": 205,
-    "2027-10-13": 198,
-    "2027-10-14": 206,
-    "2027-10-15": 217,
-    "2027-10-16": 213,
-    "2027-10-17": 182,
+    "2027-10-08": 241,
+    "2027-10-09": 241,
+    "2027-10-10": 206,
+    "2027-10-11": 200,
+    "2027-10-12": 208,
+    "2027-10-13": 197,
+    "2027-10-14": 207,
+    "2027-10-15": 219,
+    "2027-10-16": 215,
+    "2027-10-17": 183,
     "2027-10-18": 175,
-    "2027-10-19": 168,
-    "2027-10-20": 168,
+    "2027-10-19": 169,
+    "2027-10-20": 167,
     "2027-10-21": 169,
-    "2027-10-22": 184,
-    "2027-10-23": 183,
+    "2027-10-22": 186,
+    "2027-10-23": 184,
     "2027-10-24": 149,
     "2027-10-25": 137,
     "2027-10-26": 131,
@@ -20561,36 +20575,36 @@ const EXPEDIA_DATA = {
     "2027-10-31": 130,
     "2027-11-01": 109,
     "2027-11-02": 115,
-    "2027-11-03": 101,
+    "2027-11-03": 105,
     "2027-11-04": 101,
     "2027-11-05": 118,
     "2027-11-06": 123,
-    "2027-11-07": 95,
+    "2027-11-07": 96,
     "2027-11-08": 91,
-    "2027-11-09": 90
+    "2027-11-09": 91,
+    "2027-11-10": 93
   },
   "compset_avg_davids": {
-    "2026-11-11": 153,
-    "2026-11-12": 147,
-    "2026-11-13": 152,
-    "2026-11-14": 168,
-    "2026-11-15": 111,
-    "2026-11-16": 135,
-    "2026-11-17": 135,
-    "2026-11-18": 138,
-    "2026-11-19": 125,
-    "2026-11-20": 143,
+    "2026-11-12": 141,
+    "2026-11-13": 150,
+    "2026-11-14": 195,
+    "2026-11-15": 104,
+    "2026-11-16": 127,
+    "2026-11-17": 133,
+    "2026-11-18": 136,
+    "2026-11-19": 127,
+    "2026-11-20": 140,
     "2026-11-21": 200,
     "2026-11-22": 102,
     "2026-11-23": 128,
-    "2026-11-24": 130,
-    "2026-11-25": 133,
-    "2026-11-26": 148,
-    "2026-11-27": 114,
-    "2026-11-28": 152,
-    "2026-11-29": 123,
-    "2026-11-30": 139,
-    "2026-12-01": 133,
+    "2026-11-24": 128,
+    "2026-11-25": 135,
+    "2026-11-26": 147,
+    "2026-11-27": 112,
+    "2026-11-28": null,
+    "2026-11-29": 121,
+    "2026-11-30": 137,
+    "2026-12-01": 134,
     "2026-12-02": 143,
     "2026-12-03": 145,
     "2026-12-04": 171,
@@ -20609,9 +20623,9 @@ const EXPEDIA_DATA = {
     "2026-12-17": 136,
     "2026-12-18": 143,
     "2026-12-19": 148,
-    "2026-12-20": 111,
-    "2026-12-21": 137,
-    "2026-12-22": 135,
+    "2026-12-20": 101,
+    "2026-12-21": 134,
+    "2026-12-22": 131,
     "2026-12-23": 135,
     "2026-12-24": 130,
     "2026-12-25": 135,
@@ -20628,7 +20642,7 @@ const EXPEDIA_DATA = {
     "2027-01-05": 170,
     "2027-01-06": 126,
     "2027-01-07": 146,
-    "2027-01-08": 158,
+    "2027-01-08": 162,
     "2027-01-09": 191,
     "2027-01-10": 107,
     "2027-01-11": 187,
@@ -20653,7 +20667,7 @@ const EXPEDIA_DATA = {
     "2027-01-30": 147,
     "2027-01-31": 109,
     "2027-02-01": 137,
-    "2027-02-02": 137,
+    "2027-02-02": 141,
     "2027-02-03": 137,
     "2027-02-04": 152,
     "2027-02-05": 168,
@@ -20667,8 +20681,8 @@ const EXPEDIA_DATA = {
     "2027-02-13": 152,
     "2027-02-14": 134,
     "2027-02-15": 140,
-    "2027-02-16": 137,
-    "2027-02-17": 137,
+    "2027-02-16": 140,
+    "2027-02-17": 140,
     "2027-02-18": 141,
     "2027-02-19": 147,
     "2027-02-20": null,
@@ -20933,30 +20947,30 @@ const EXPEDIA_DATA = {
     "2027-11-06": 165,
     "2027-11-07": 146,
     "2027-11-08": 151,
-    "2027-11-09": 151
+    "2027-11-09": 151,
+    "2027-11-10": 151
   },
   "competitors_davids": {
     "B&B Stanze Guelfe": {
-      "2026-11-11": 84,
-      "2026-11-12": 79,
-      "2026-11-13": 90,
-      "2026-11-14": 100,
-      "2026-11-15": 79,
-      "2026-11-16": 79,
-      "2026-11-17": 74,
-      "2026-11-18": 74,
-      "2026-11-19": 74,
-      "2026-11-20": 89,
+      "2026-11-12": 73,
+      "2026-11-13": 84,
+      "2026-11-14": null,
+      "2026-11-15": 68,
+      "2026-11-16": 68,
+      "2026-11-17": 68,
+      "2026-11-18": 68,
+      "2026-11-19": 68,
+      "2026-11-20": 79,
       "2026-11-21": null,
       "2026-11-22": 74,
       "2026-11-23": 74,
-      "2026-11-24": 79,
-      "2026-11-25": 79,
-      "2026-11-26": 79,
-      "2026-11-27": 95,
+      "2026-11-24": 74,
+      "2026-11-25": 74,
+      "2026-11-26": 74,
+      "2026-11-27": 90,
       "2026-11-28": null,
-      "2026-11-29": 98,
-      "2026-11-30": 89,
+      "2026-11-29": 93,
+      "2026-11-30": 84,
       "2026-12-01": 74,
       "2026-12-02": 115,
       "2026-12-03": 115,
@@ -21300,15 +21314,15 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Residenza Fanti": {
-      "2026-11-11": null,
-      "2026-11-12": null,
+      "2026-11-12": 131,
       "2026-11-13": null,
       "2026-11-14": null,
-      "2026-11-15": 131,
-      "2026-11-16": 131,
+      "2026-11-15": 109,
+      "2026-11-16": 109,
       "2026-11-17": null,
       "2026-11-18": 131,
       "2026-11-19": 109,
@@ -21666,13 +21680,13 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": 131,
       "2027-11-08": 131,
-      "2027-11-09": 131
+      "2027-11-09": 131,
+      "2027-11-10": 131
     },
     "RFC Repubblica Florence Core B&B": {
-      "2026-11-11": 222,
       "2026-11-12": 229,
       "2026-11-13": 215,
-      "2026-11-14": 236,
+      "2026-11-14": 222,
       "2026-11-15": null,
       "2026-11-16": 208,
       "2026-11-17": 208,
@@ -21689,7 +21703,7 @@ const EXPEDIA_DATA = {
       "2026-11-28": null,
       "2026-11-29": null,
       "2026-11-30": 236,
-      "2026-12-01": 236,
+      "2026-12-01": 243,
       "2026-12-02": 236,
       "2026-12-03": 236,
       "2026-12-04": 236,
@@ -22032,10 +22046,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Althea Rooms": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -22398,10 +22412,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Apollo Guest House": {
-      "2026-11-11": 152,
       "2026-11-12": 132,
       "2026-11-13": 152,
       "2026-11-14": 167,
@@ -22415,10 +22429,10 @@ const EXPEDIA_DATA = {
       "2026-11-22": 122,
       "2026-11-23": 122,
       "2026-11-24": 122,
-      "2026-11-25": 134,
+      "2026-11-25": 147,
       "2026-11-26": 147,
       "2026-11-27": 134,
-      "2026-11-28": 152,
+      "2026-11-28": null,
       "2026-11-29": 129,
       "2026-11-30": 120,
       "2026-12-01": 111,
@@ -22498,9 +22512,9 @@ const EXPEDIA_DATA = {
       "2027-02-13": 143,
       "2027-02-14": 125,
       "2027-02-15": 116,
-      "2027-02-16": 104,
-      "2027-02-17": 104,
-      "2027-02-18": 104,
+      "2027-02-16": 116,
+      "2027-02-17": 116,
+      "2027-02-18": 116,
       "2027-02-19": 104,
       "2027-02-20": null,
       "2027-02-21": 131,
@@ -22764,18 +22778,18 @@ const EXPEDIA_DATA = {
       "2027-11-06": 122,
       "2027-11-07": 100,
       "2027-11-08": 113,
-      "2027-11-09": 113
+      "2027-11-09": 113,
+      "2027-11-10": 113
     },
     "Aramis Deluxe Rooms": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
-      "2026-11-15": 122,
+      "2026-11-15": 120,
       "2026-11-16": null,
       "2026-11-17": null,
       "2026-11-18": null,
-      "2026-11-19": 107,
+      "2026-11-19": 121,
       "2026-11-20": null,
       "2026-11-21": null,
       "2026-11-22": null,
@@ -22806,9 +22820,9 @@ const EXPEDIA_DATA = {
       "2026-12-17": 141,
       "2026-12-18": 137,
       "2026-12-19": 172,
-      "2026-12-20": 141,
-      "2026-12-21": 141,
-      "2026-12-22": 141,
+      "2026-12-20": null,
+      "2026-12-21": 125,
+      "2026-12-22": 125,
       "2026-12-23": 134,
       "2026-12-24": 143,
       "2026-12-25": 169,
@@ -22825,7 +22839,7 @@ const EXPEDIA_DATA = {
       "2027-01-05": 218,
       "2027-01-06": 129,
       "2027-01-07": 129,
-      "2027-01-08": 138,
+      "2027-01-08": 157,
       "2027-01-09": 154,
       "2027-01-10": 129,
       "2027-01-11": 174,
@@ -22850,7 +22864,7 @@ const EXPEDIA_DATA = {
       "2027-01-30": 181,
       "2027-01-31": 129,
       "2027-02-01": 135,
-      "2027-02-02": 135,
+      "2027-02-02": 154,
       "2027-02-03": 135,
       "2027-02-04": 154,
       "2027-02-05": 169,
@@ -22866,7 +22880,7 @@ const EXPEDIA_DATA = {
       "2027-02-15": 135,
       "2027-02-16": 135,
       "2027-02-17": 135,
-      "2027-02-18": 152,
+      "2027-02-18": null,
       "2027-02-19": 161,
       "2027-02-20": null,
       "2027-02-21": 135,
@@ -23130,10 +23144,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": 208,
       "2027-11-07": 208,
       "2027-11-08": 208,
-      "2027-11-09": 208
+      "2027-11-09": 208,
+      "2027-11-10": 208
     },
     "Holiday Rooms Florence": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -23496,10 +23510,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "La Locandiera B&B": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -23539,7 +23553,7 @@ const EXPEDIA_DATA = {
       "2026-12-18": null,
       "2026-12-19": null,
       "2026-12-20": null,
-      "2026-12-21": 147,
+      "2026-12-21": 145,
       "2026-12-22": null,
       "2026-12-23": null,
       "2026-12-24": null,
@@ -23862,10 +23876,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "La Tana dei Leoni B&B": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -24228,10 +24242,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Locanda il Salimbecco": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -24594,10 +24608,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Residenza San Lorenzo": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -24960,11 +24974,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     }
   },
   "search_current_davids": {
-    "2026-11-11": 2021,
     "2026-11-12": 2054,
     "2026-11-13": 2011,
     "2026-11-14": 1909,
@@ -25327,10 +25341,10 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "search_previous_davids": {
-    "2026-11-11": 2122,
     "2026-11-12": 2196,
     "2026-11-13": 2218,
     "2026-11-14": 2113,
@@ -25693,15 +25707,15 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "firenze": {
-    "2026-11-11": 154,
-    "2026-11-12": 155,
-    "2026-11-13": 165,
+    "2026-11-12": 132,
+    "2026-11-13": 142,
     "2026-11-14": null,
     "2026-11-15": 149,
-    "2026-11-16": 130,
+    "2026-11-16": 150,
     "2026-11-17": 131,
     "2026-11-18": 129,
     "2026-11-19": 130,
@@ -26059,41 +26073,41 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "compset_avg_firenze": {
-    "2026-11-11": null,
-    "2026-11-12": 181,
+    "2026-11-12": null,
     "2026-11-13": 189,
-    "2026-11-14": 266,
-    "2026-11-15": 159,
-    "2026-11-16": 168,
+    "2026-11-14": 241,
+    "2026-11-15": 157,
+    "2026-11-16": 166,
     "2026-11-17": 169,
-    "2026-11-18": 146,
+    "2026-11-18": 148,
     "2026-11-19": 152,
-    "2026-11-20": 187,
-    "2026-11-21": 186,
+    "2026-11-20": 191,
+    "2026-11-21": 190,
     "2026-11-22": 166,
-    "2026-11-23": 194,
+    "2026-11-23": 201,
     "2026-11-24": 189,
-    "2026-11-25": 200,
-    "2026-11-26": 182,
-    "2026-11-27": 211,
+    "2026-11-25": 197,
+    "2026-11-26": 181,
+    "2026-11-27": 242,
     "2026-11-28": 187,
     "2026-11-29": 178,
     "2026-11-30": 162,
     "2026-12-01": 162,
     "2026-12-02": 170,
-    "2026-12-03": 170,
-    "2026-12-04": 187,
+    "2026-12-03": 172,
+    "2026-12-04": 194,
     "2026-12-05": 244,
     "2026-12-06": 215,
     "2026-12-07": 214,
     "2026-12-08": 199,
     "2026-12-09": 198,
-    "2026-12-10": 211,
-    "2026-12-11": 228,
-    "2026-12-12": 209,
+    "2026-12-10": 214,
+    "2026-12-11": 248,
+    "2026-12-12": 213,
     "2026-12-13": 182,
     "2026-12-14": 196,
     "2026-12-15": 193,
@@ -26122,10 +26136,10 @@ const EXPEDIA_DATA = {
     "2027-01-07": 229,
     "2027-01-08": 216,
     "2027-01-09": 216,
-    "2027-01-10": 203,
+    "2027-01-10": 208,
     "2027-01-11": 217,
-    "2027-01-12": 225,
-    "2027-01-13": 225,
+    "2027-01-12": 230,
+    "2027-01-13": 230,
     "2027-01-14": 214,
     "2027-01-15": 209,
     "2027-01-16": 211,
@@ -26152,16 +26166,16 @@ const EXPEDIA_DATA = {
     "2027-02-06": 234,
     "2027-02-07": 220,
     "2027-02-08": 219,
-    "2027-02-09": 223,
-    "2027-02-10": 236,
+    "2027-02-09": 220,
+    "2027-02-10": 234,
     "2027-02-11": 234,
     "2027-02-12": 240,
     "2027-02-13": 240,
     "2027-02-14": 211,
-    "2027-02-15": 228,
-    "2027-02-16": 228,
-    "2027-02-17": 214,
-    "2027-02-18": 214,
+    "2027-02-15": 230,
+    "2027-02-16": 230,
+    "2027-02-17": 216,
+    "2027-02-18": 216,
     "2027-02-19": 218,
     "2027-02-20": 221,
     "2027-02-21": 210,
@@ -26207,7 +26221,7 @@ const EXPEDIA_DATA = {
     "2027-04-02": 287,
     "2027-04-03": 285,
     "2027-04-04": 292,
-    "2027-04-05": 298,
+    "2027-04-05": 281,
     "2027-04-06": 292,
     "2027-04-07": 292,
     "2027-04-08": 292,
@@ -26425,12 +26439,12 @@ const EXPEDIA_DATA = {
     "2027-11-06": 282,
     "2027-11-07": 271,
     "2027-11-08": 271,
-    "2027-11-09": 271
+    "2027-11-09": 271,
+    "2027-11-10": 271
   },
   "competitors_firenze": {
     "Palazzo Alfani al David": {
-      "2026-11-11": null,
-      "2026-11-12": 181,
+      "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
       "2026-11-15": 159,
@@ -26444,8 +26458,8 @@ const EXPEDIA_DATA = {
       "2026-11-23": null,
       "2026-11-24": null,
       "2026-11-25": null,
-      "2026-11-26": 146,
-      "2026-11-27": 185,
+      "2026-11-26": 153,
+      "2026-11-27": 308,
       "2026-11-28": null,
       "2026-11-29": null,
       "2026-11-30": 156,
@@ -26491,8 +26505,8 @@ const EXPEDIA_DATA = {
       "2027-01-09": 233,
       "2027-01-10": 192,
       "2027-01-11": 203,
-      "2027-01-12": 232,
-      "2027-01-13": 232,
+      "2027-01-12": 253,
+      "2027-01-13": 253,
       "2027-01-14": 190,
       "2027-01-15": 169,
       "2027-01-16": 178,
@@ -26574,7 +26588,7 @@ const EXPEDIA_DATA = {
       "2027-04-02": 337,
       "2027-04-03": 316,
       "2027-04-04": 337,
-      "2027-04-05": 337,
+      "2027-04-05": 285,
       "2027-04-06": 352,
       "2027-04-07": 352,
       "2027-04-08": 352,
@@ -26792,41 +26806,41 @@ const EXPEDIA_DATA = {
       "2027-11-06": 269,
       "2027-11-07": 249,
       "2027-11-08": 249,
-      "2027-11-09": 249
+      "2027-11-09": 249,
+      "2027-11-10": 249
     },
     "La Maison du Sage": {
-      "2026-11-11": null,
-      "2026-11-12": 167,
+      "2026-11-12": null,
       "2026-11-13": 179,
-      "2026-11-14": 227,
-      "2026-11-15": 191,
+      "2026-11-14": 214,
+      "2026-11-15": 179,
       "2026-11-16": 154,
       "2026-11-17": 167,
-      "2026-11-18": 165,
+      "2026-11-18": 179,
       "2026-11-19": 154,
-      "2026-11-20": 198,
-      "2026-11-21": 198,
+      "2026-11-20": 210,
+      "2026-11-21": 210,
       "2026-11-22": 165,
       "2026-11-23": 187,
       "2026-11-24": 165,
-      "2026-11-25": 198,
-      "2026-11-26": 177,
+      "2026-11-25": 187,
+      "2026-11-26": 165,
       "2026-11-27": 264,
       "2026-11-28": 187,
       "2026-11-29": 177,
       "2026-11-30": 198,
       "2026-12-01": 198,
       "2026-12-02": 143,
-      "2026-12-03": 154,
-      "2026-12-04": 231,
+      "2026-12-03": 165,
+      "2026-12-04": 242,
       "2026-12-05": 242,
       "2026-12-06": 198,
       "2026-12-07": 198,
       "2026-12-08": 177,
       "2026-12-09": 143,
-      "2026-12-10": 198,
-      "2026-12-11": 373,
-      "2026-12-12": 210,
+      "2026-12-10": 210,
+      "2026-12-11": 471,
+      "2026-12-12": 231,
       "2026-12-13": 143,
       "2026-12-14": 143,
       "2026-12-15": 143,
@@ -26885,16 +26899,16 @@ const EXPEDIA_DATA = {
       "2027-02-06": null,
       "2027-02-07": 165,
       "2027-02-08": 177,
-      "2027-02-09": 187,
-      "2027-02-10": 187,
+      "2027-02-09": 177,
+      "2027-02-10": 177,
       "2027-02-11": 177,
       "2027-02-12": null,
       "2027-02-13": null,
       "2027-02-14": 177,
-      "2027-02-15": 177,
-      "2027-02-16": 177,
-      "2027-02-17": 177,
-      "2027-02-18": 177,
+      "2027-02-15": 187,
+      "2027-02-16": 187,
+      "2027-02-17": 187,
+      "2027-02-18": 187,
       "2027-02-19": null,
       "2027-02-20": null,
       "2027-02-21": 187,
@@ -27158,11 +27172,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Relais Condotta": {
-      "2026-11-11": null,
-      "2026-11-12": 199,
+      "2026-11-12": null,
       "2026-11-13": 199,
       "2026-11-14": 305,
       "2026-11-15": 199,
@@ -27524,11 +27538,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Residenza dei Pucci": {
-      "2026-11-11": null,
-      "2026-11-12": 125,
+      "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
       "2026-11-15": 125,
@@ -27890,11 +27904,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": 294,
       "2027-11-07": 294,
       "2027-11-08": 294,
-      "2027-11-09": 294
+      "2027-11-09": 294,
+      "2027-11-10": 294
     },
     "Residenza La Musa Amarcord": {
-      "2026-11-11": null,
-      "2026-11-12": 209,
+      "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
       "2026-11-15": 135,
@@ -27916,7 +27930,7 @@ const EXPEDIA_DATA = {
       "2026-12-01": null,
       "2026-12-02": null,
       "2026-12-03": 120,
-      "2026-12-04": 154,
+      "2026-12-04": 172,
       "2026-12-05": 228,
       "2026-12-06": 172,
       "2026-12-07": 154,
@@ -28256,22 +28270,22 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Ricasoli Garden Relais": {
-      "2026-11-11": null,
-      "2026-11-12": 204,
+      "2026-11-12": null,
       "2026-11-13": null,
-      "2026-11-14": null,
+      "2026-11-14": 204,
       "2026-11-15": 142,
-      "2026-11-16": 217,
+      "2026-11-16": 204,
       "2026-11-17": 217,
       "2026-11-18": null,
       "2026-11-19": null,
       "2026-11-20": null,
       "2026-11-21": null,
       "2026-11-22": 204,
-      "2026-11-23": 196,
+      "2026-11-23": 217,
       "2026-11-24": 204,
       "2026-11-25": 204,
       "2026-11-26": 217,
@@ -28319,7 +28333,7 @@ const EXPEDIA_DATA = {
       "2027-01-07": 282,
       "2027-01-08": 282,
       "2027-01-09": 282,
-      "2027-01-10": 255,
+      "2027-01-10": 282,
       "2027-01-11": 255,
       "2027-01-12": 255,
       "2027-01-13": 255,
@@ -28622,10 +28636,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Velona's Jungle Luxury Suites": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -28988,11 +29002,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     }
   },
   "search_current_firenze": {
-    "2026-11-11": 2021,
     "2026-11-12": 2054,
     "2026-11-13": 2011,
     "2026-11-14": 1909,
@@ -29355,10 +29369,10 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "search_previous_firenze": {
-    "2026-11-11": 2122,
     "2026-11-12": 2196,
     "2026-11-13": 2218,
     "2026-11-14": 2113,
@@ -29721,28 +29735,28 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "compset_avg": {
-    "2026-11-11": 174,
-    "2026-11-12": 181,
-    "2026-11-13": 174,
-    "2026-11-14": 178,
+    "2026-11-12": 178,
+    "2026-11-13": 178,
+    "2026-11-14": 186,
     "2026-11-15": 175,
-    "2026-11-16": 186,
+    "2026-11-16": 184,
     "2026-11-17": 203,
     "2026-11-18": 200,
     "2026-11-19": 188,
     "2026-11-20": 152,
     "2026-11-21": 212,
     "2026-11-22": 184,
-    "2026-11-23": 207,
+    "2026-11-23": 212,
     "2026-11-24": 215,
     "2026-11-25": 170,
-    "2026-11-26": 213,
-    "2026-11-27": 240,
+    "2026-11-26": 216,
+    "2026-11-27": 266,
     "2026-11-28": 196,
-    "2026-11-29": 200,
+    "2026-11-29": 203,
     "2026-11-30": 175,
     "2026-12-01": 178,
     "2026-12-02": 192,
@@ -29754,7 +29768,7 @@ const EXPEDIA_DATA = {
     "2026-12-08": 228,
     "2026-12-09": 221,
     "2026-12-10": 221,
-    "2026-12-11": 230,
+    "2026-12-11": 231,
     "2026-12-12": 230,
     "2026-12-13": 220,
     "2026-12-14": 219,
@@ -29784,10 +29798,10 @@ const EXPEDIA_DATA = {
     "2027-01-07": 214,
     "2027-01-08": 219,
     "2027-01-09": 239,
-    "2027-01-10": 188,
+    "2027-01-10": 195,
     "2027-01-11": 222,
-    "2027-01-12": 228,
-    "2027-01-13": 248,
+    "2027-01-12": 232,
+    "2027-01-13": 253,
     "2027-01-14": 215,
     "2027-01-15": 188,
     "2027-01-16": 209,
@@ -29869,7 +29883,7 @@ const EXPEDIA_DATA = {
     "2027-04-02": 317,
     "2027-04-03": 311,
     "2027-04-04": 317,
-    "2027-04-05": 282,
+    "2027-04-05": 272,
     "2027-04-06": 281,
     "2027-04-07": 320,
     "2027-04-08": 320,
@@ -29884,8 +29898,8 @@ const EXPEDIA_DATA = {
     "2027-04-17": 317,
     "2027-04-18": 314,
     "2027-04-19": 283,
-    "2027-04-20": 283,
-    "2027-04-21": 283,
+    "2027-04-20": 292,
+    "2027-04-21": 292,
     "2027-04-22": 280,
     "2027-04-23": 287,
     "2027-04-24": 323,
@@ -30087,14 +30101,14 @@ const EXPEDIA_DATA = {
     "2027-11-06": 269,
     "2027-11-07": 249,
     "2027-11-08": 249,
-    "2027-11-09": 249
+    "2027-11-09": 249,
+    "2027-11-10": 249
   },
   "competitors": {
     "Casa del Sarto": {
-      "2026-11-11": 216,
       "2026-11-12": 216,
-      "2026-11-13": 196,
-      "2026-11-14": 196,
+      "2026-11-13": 216,
+      "2026-11-14": 212,
       "2026-11-15": 196,
       "2026-11-16": 196,
       "2026-11-17": 196,
@@ -30454,10 +30468,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Florence Art Apartments": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -30820,10 +30834,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Granduomo Charming Accomodation": {
-      "2026-11-11": 215,
       "2026-11-12": 215,
       "2026-11-13": 215,
       "2026-11-14": 215,
@@ -30853,7 +30867,7 @@ const EXPEDIA_DATA = {
       "2026-12-08": 279,
       "2026-12-09": 279,
       "2026-12-10": 279,
-      "2026-12-11": 277,
+      "2026-12-11": 279,
       "2026-12-12": 277,
       "2026-12-13": 277,
       "2026-12-14": 277,
@@ -30883,7 +30897,7 @@ const EXPEDIA_DATA = {
       "2027-01-07": 277,
       "2027-01-08": 277,
       "2027-01-09": 277,
-      "2027-01-10": 262,
+      "2027-01-10": 277,
       "2027-01-11": 335,
       "2027-01-12": 335,
       "2027-01-13": 335,
@@ -31186,11 +31200,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Palazzo Alfani al David": {
-      "2026-11-11": null,
-      "2026-11-12": 181,
+      "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
       "2026-11-15": 159,
@@ -31204,8 +31218,8 @@ const EXPEDIA_DATA = {
       "2026-11-23": null,
       "2026-11-24": null,
       "2026-11-25": null,
-      "2026-11-26": 146,
-      "2026-11-27": 185,
+      "2026-11-26": 153,
+      "2026-11-27": 308,
       "2026-11-28": null,
       "2026-11-29": null,
       "2026-11-30": 156,
@@ -31251,8 +31265,8 @@ const EXPEDIA_DATA = {
       "2027-01-09": 233,
       "2027-01-10": 192,
       "2027-01-11": 203,
-      "2027-01-12": 232,
-      "2027-01-13": 232,
+      "2027-01-12": 253,
+      "2027-01-13": 253,
       "2027-01-14": 190,
       "2027-01-15": 169,
       "2027-01-16": 178,
@@ -31334,7 +31348,7 @@ const EXPEDIA_DATA = {
       "2027-04-02": 337,
       "2027-04-03": 316,
       "2027-04-04": 337,
-      "2027-04-05": 337,
+      "2027-04-05": 285,
       "2027-04-06": 352,
       "2027-04-07": 352,
       "2027-04-08": 352,
@@ -31552,10 +31566,10 @@ const EXPEDIA_DATA = {
       "2027-11-06": 269,
       "2027-11-07": 249,
       "2027-11-08": 249,
-      "2027-11-09": 249
+      "2027-11-09": 249,
+      "2027-11-10": 249
     },
     "Residence Hilda": {
-      "2026-11-11": null,
       "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
@@ -31918,11 +31932,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Residenza Della Signoria": {
-      "2026-11-11": 160,
-      "2026-11-12": 168,
+      "2026-11-12": null,
       "2026-11-13": null,
       "2026-11-14": null,
       "2026-11-15": 168,
@@ -32284,13 +32298,13 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Residenza Marchesi Pontenani": {
-      "2026-11-11": 106,
       "2026-11-12": 102,
-      "2026-11-13": 113,
-      "2026-11-14": 125,
+      "2026-11-13": 102,
+      "2026-11-14": 113,
       "2026-11-15": 106,
       "2026-11-16": 102,
       "2026-11-17": 94,
@@ -32302,10 +32316,10 @@ const EXPEDIA_DATA = {
       "2026-11-23": 105,
       "2026-11-24": 105,
       "2026-11-25": 97,
-      "2026-11-26": 93,
-      "2026-11-27": 171,
+      "2026-11-26": 100,
+      "2026-11-27": 178,
       "2026-11-28": null,
-      "2026-11-29": 127,
+      "2026-11-29": 142,
       "2026-11-30": 93,
       "2026-12-01": 113,
       "2026-12-02": 113,
@@ -32447,8 +32461,8 @@ const EXPEDIA_DATA = {
       "2027-04-17": null,
       "2027-04-18": 125,
       "2027-04-19": 150,
-      "2027-04-20": 150,
-      "2027-04-21": 150,
+      "2027-04-20": 193,
+      "2027-04-21": 193,
       "2027-04-22": 157,
       "2027-04-23": 144,
       "2027-04-24": null,
@@ -32650,22 +32664,22 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     },
     "Ricasoli Garden Relais": {
-      "2026-11-11": null,
-      "2026-11-12": 204,
+      "2026-11-12": null,
       "2026-11-13": null,
-      "2026-11-14": null,
+      "2026-11-14": 204,
       "2026-11-15": 142,
-      "2026-11-16": 217,
+      "2026-11-16": 204,
       "2026-11-17": 217,
       "2026-11-18": null,
       "2026-11-19": null,
       "2026-11-20": null,
       "2026-11-21": null,
       "2026-11-22": 204,
-      "2026-11-23": 196,
+      "2026-11-23": 217,
       "2026-11-24": 204,
       "2026-11-25": 204,
       "2026-11-26": 217,
@@ -32713,7 +32727,7 @@ const EXPEDIA_DATA = {
       "2027-01-07": 282,
       "2027-01-08": 282,
       "2027-01-09": 282,
-      "2027-01-10": 255,
+      "2027-01-10": 282,
       "2027-01-11": 255,
       "2027-01-12": 255,
       "2027-01-13": 255,
@@ -33016,11 +33030,11 @@ const EXPEDIA_DATA = {
       "2027-11-06": null,
       "2027-11-07": null,
       "2027-11-08": null,
-      "2027-11-09": null
+      "2027-11-09": null,
+      "2027-11-10": null
     }
   },
   "search_current": {
-    "2026-11-11": 2021,
     "2026-11-12": 2054,
     "2026-11-13": 2011,
     "2026-11-14": 1909,
@@ -33383,10 +33397,10 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   },
   "search_previous": {
-    "2026-11-11": 2122,
     "2026-11-12": 2196,
     "2026-11-13": 2218,
     "2026-11-14": 2113,
@@ -33749,7 +33763,8 @@ const EXPEDIA_DATA = {
     "2027-11-06": null,
     "2027-11-07": null,
     "2027-11-08": null,
-    "2027-11-09": null
+    "2027-11-09": null,
+    "2027-11-10": null
   }
 }
 ;
@@ -33998,177 +34013,176 @@ const EVENTS_CSV = `Date,Event
    Letto al boot via loadAirdna(AIRDNA_CSV). Sostituire interamente a ogni nuovo export. */
 const AIRDNA_CSV = `
 "Date","Booked Listings","Daily Rate"
-"2026-11-11","2458","137"
-"2026-11-12","2488","137"
-"2026-11-13","2788","144"
-"2026-11-14","2871","145"
-"2026-11-15","2098","135"
-"2026-11-16","1879","133"
-"2026-11-17","1812","130"
-"2026-11-18","1829","134"
-"2026-11-19","1934","138"
-"2026-11-20","2262","146"
-"2026-11-21","2479","156"
-"2026-11-22","2083","149"
-"2026-11-23","1980","152"
-"2026-11-24","1984","152"
-"2026-11-25","1997","150"
-"2026-11-26","2161","154"
-"2026-11-27","2987","165"
-"2026-11-28","3453","173"
-"2026-11-29","2526","162"
-"2026-11-30","1458","146"
-"2026-12-01","1160","136"
-"2026-12-02","1163","135"
-"2026-12-03","1237","137"
-"2026-12-04","1600","147"
-"2026-12-05","2280","160"
-"2026-12-06","2113","158"
-"2026-12-07","1640","153"
-"2026-12-08","994","141"
-"2026-12-09","883","137"
-"2026-12-10","891","138"
-"2026-12-11","1058","147"
-"2026-12-12","1116","151"
-"2026-12-13","898","145"
-"2026-12-14","866","138"
-"2026-12-15","830","138"
-"2026-12-16","847","139"
-"2026-12-17","873","142"
-"2026-12-18","982","155"
-"2026-12-19","1112","162"
-"2026-12-20","1063","161"
-"2026-12-21","1081","162"
-"2026-12-22","1152","168"
-"2026-12-23","1245","172"
-"2026-12-24","1404","174"
-"2026-12-25","1529","179"
-"2026-12-26","1801","185"
-"2026-12-27","1839","187"
-"2026-12-28","1909","182"
-"2026-12-29","1918","185"
-"2026-12-30","2076","187"
-"2026-12-31","2239","197"
-"2027-01-01","2022","194"
-"2027-01-02","1575","184"
-"2027-01-03","1216","174"
-"2027-01-04","1050","167"
-"2027-01-05","882","164"
-"2027-01-06","769","161"
-"2027-01-07","726","154"
-"2027-01-08","719","158"
-"2027-01-09","711","160"
-"2027-01-10","680","150"
-"2027-01-11","831","155"
-"2027-01-12","906","159"
-"2027-01-13","909","161"
-"2027-01-14","778","156"
-"2027-01-15","645","157"
-"2027-01-16","614","155"
-"2027-01-17","561","150"
-"2027-01-18","540","146"
-"2027-01-19","540","146"
-"2027-01-20","552","148"
-"2027-01-21","572","151"
-"2027-01-22","592","156"
-"2027-01-23","594","154"
-"2027-01-24","523","144"
-"2027-01-25","510","142"
-"2027-01-26","510","145"
-"2027-01-27","522","146"
-"2027-01-28","533","149"
-"2027-01-29","528","154"
-"2027-01-30","520","154"
-"2027-01-31","485","152"
-"2027-02-01","451","140"
-"2027-02-02","435","140"
-"2027-02-03","434","141"
+"2026-11-12","2562","138"
+"2026-11-13","2871","142"
+"2026-11-14","2948","145"
+"2026-11-15","2145","135"
+"2026-11-16","1905","134"
+"2026-11-17","1829","131"
+"2026-11-18","1839","134"
+"2026-11-19","1952","139"
+"2026-11-20","2307","147"
+"2026-11-21","2527","156"
+"2026-11-22","2114","147"
+"2026-11-23","2008","150"
+"2026-11-24","2001","151"
+"2026-11-25","2007","149"
+"2026-11-26","2180","153"
+"2026-11-27","3015","165"
+"2026-11-28","3488","172"
+"2026-11-29","2556","162"
+"2026-11-30","1481","146"
+"2026-12-01","1181","136"
+"2026-12-02","1184","136"
+"2026-12-03","1269","137"
+"2026-12-04","1644","148"
+"2026-12-05","2332","161"
+"2026-12-06","2144","159"
+"2026-12-07","1671","153"
+"2026-12-08","1016","141"
+"2026-12-09","909","138"
+"2026-12-10","910","138"
+"2026-12-11","1071","144"
+"2026-12-12","1128","150"
+"2026-12-13","907","145"
+"2026-12-14","880","138"
+"2026-12-15","850","138"
+"2026-12-16","865","139"
+"2026-12-17","897","142"
+"2026-12-18","1003","153"
+"2026-12-19","1137","163"
+"2026-12-20","1088","163"
+"2026-12-21","1094","163"
+"2026-12-22","1160","168"
+"2026-12-23","1251","173"
+"2026-12-24","1417","174"
+"2026-12-25","1540","178"
+"2026-12-26","1824","188"
+"2026-12-27","1855","186"
+"2026-12-28","1927","182"
+"2026-12-29","1937","184"
+"2026-12-30","2108","187"
+"2026-12-31","2280","196"
+"2027-01-01","2062","192"
+"2027-01-02","1594","184"
+"2027-01-03","1223","173"
+"2027-01-04","1057","167"
+"2027-01-05","889","163"
+"2027-01-06","782","162"
+"2027-01-07","738","154"
+"2027-01-08","737","158"
+"2027-01-09","728","158"
+"2027-01-10","696","151"
+"2027-01-11","839","155"
+"2027-01-12","914","159"
+"2027-01-13","913","162"
+"2027-01-14","774","155"
+"2027-01-15","646","154"
+"2027-01-16","617","154"
+"2027-01-17","565","149"
+"2027-01-18","541","143"
+"2027-01-19","543","144"
+"2027-01-20","556","148"
+"2027-01-21","568","151"
+"2027-01-22","592","155"
+"2027-01-23","594","155"
+"2027-01-24","519","143"
+"2027-01-25","505","141"
+"2027-01-26","509","145"
+"2027-01-27","520","144"
+"2027-01-28","529","149"
+"2027-01-29","528","152"
+"2027-01-30","519","154"
+"2027-01-31","484","150"
+"2027-02-01","450","140"
+"2027-02-02","437","140"
+"2027-02-03","435","140"
 "2027-02-04","506","144"
-"2027-02-05","624","154"
-"2027-02-06","668","156"
-"2027-02-07","611","150"
-"2027-02-08","567","142"
-"2027-02-09","500","139"
-"2027-02-10","495","142"
-"2027-02-11","516","149"
-"2027-02-12","559","150"
-"2027-02-13","571","156"
-"2027-02-14","511","151"
-"2027-02-15","442","151"
-"2027-02-16","454","139"
-"2027-02-17","425","136"
-"2027-02-18","458","138"
-"2027-02-19","481","150"
-"2027-02-20","479","148"
-"2027-02-21","410","136"
-"2027-02-22","362","132"
-"2027-02-23","338","132"
-"2027-02-24","327","132"
-"2027-02-25","330","135"
-"2027-02-26","360","141"
-"2027-02-27","367","148"
-"2027-02-28","323","143"
-"2027-03-01","319","146"
-"2027-03-02","328","149"
-"2027-03-03","341","153"
-"2027-03-04","369","160"
-"2027-03-05","394","168"
-"2027-03-06","436","169"
-"2027-03-07","399","155"
-"2027-03-08","403","159"
-"2027-03-09","422","164"
-"2027-03-10","470","171"
-"2027-03-11","473","175"
-"2027-03-12","497","179"
-"2027-03-13","528","187"
-"2027-03-14","522","187"
-"2027-03-15","542","187"
-"2027-03-16","534","187"
-"2027-03-17","532","186"
-"2027-03-18","553","186"
-"2027-03-19","588","191"
-"2027-03-20","622","200"
-"2027-03-21","560","204"
-"2027-03-22","560","197"
-"2027-03-23","582","195"
-"2027-03-24","614","208"
-"2027-03-25","685","221"
-"2027-03-26","742","225"
-"2027-03-27","761","212"
-"2027-03-28","725","210"
-"2027-03-29","636","202"
-"2027-03-30","588","215"
-"2027-03-31","570","207"
-"2027-04-01","600","198"
-"2027-04-02","641","195"
-"2027-04-03","621","195"
-"2027-04-04","594","187"
-"2027-04-05","585","187"
-"2027-04-06","588","192"
-"2027-04-07","573","190"
-"2027-04-08","614","189"
-"2027-04-09","610","189"
-"2027-04-10","597","189"
-"2027-04-11","555","194"
-"2027-04-12","586","197"
-"2027-04-13","596","198"
-"2027-04-14","572","190"
-"2027-04-15","591","191"
-"2027-04-16","601","198"
-"2027-04-17","639","200"
-"2027-04-18","590","196"
-"2027-04-19","576","194"
-"2027-04-20","547","201"
-"2027-04-21","576","204"
-"2027-04-22","639","206"
-"2027-04-23","636","206"
-"2027-04-24","636","210"
-"2027-04-25","584","210"
-"2027-04-26","550","208"
-"2027-04-27","564","206"
-"2027-04-28","548","205"
-"2027-04-29","589","203"
-"2027-04-30","573","206"
+"2027-02-05","626","154"
+"2027-02-06","676","155"
+"2027-02-07","616","150"
+"2027-02-08","573","142"
+"2027-02-09","509","138"
+"2027-02-10","499","141"
+"2027-02-11","525","145"
+"2027-02-12","566","148"
+"2027-02-13","574","155"
+"2027-02-14","512","152"
+"2027-02-15","449","152"
+"2027-02-16","457","140"
+"2027-02-17","427","137"
+"2027-02-18","459","138"
+"2027-02-19","484","148"
+"2027-02-20","480","146"
+"2027-02-21","414","136"
+"2027-02-22","368","132"
+"2027-02-23","345","133"
+"2027-02-24","335","131"
+"2027-02-25","337","135"
+"2027-02-26","365","140"
+"2027-02-27","370","148"
+"2027-02-28","328","145"
+"2027-03-01","324","145"
+"2027-03-02","333","150"
+"2027-03-03","345","153"
+"2027-03-04","375","161"
+"2027-03-05","397","169"
+"2027-03-06","442","170"
+"2027-03-07","402","155"
+"2027-03-08","409","158"
+"2027-03-09","426","167"
+"2027-03-10","475","171"
+"2027-03-11","477","176"
+"2027-03-12","501","179"
+"2027-03-13","531","187"
+"2027-03-14","527","187"
+"2027-03-15","551","187"
+"2027-03-16","548","187"
+"2027-03-17","550","185"
+"2027-03-18","569","187"
+"2027-03-19","609","193"
+"2027-03-20","637","198"
+"2027-03-21","575","200"
+"2027-03-22","569","197"
+"2027-03-23","592","195"
+"2027-03-24","621","207"
+"2027-03-25","694","218"
+"2027-03-26","748","222"
+"2027-03-27","769","215"
+"2027-03-28","734","210"
+"2027-03-29","644","202"
+"2027-03-30","593","215"
+"2027-03-31","572","207"
+"2027-04-01","603","199"
+"2027-04-02","645","195"
+"2027-04-03","633","196"
+"2027-04-04","604","187"
+"2027-04-05","592","187"
+"2027-04-06","591","191"
+"2027-04-07","582","190"
+"2027-04-08","630","190"
+"2027-04-09","624","189"
+"2027-04-10","609","191"
+"2027-04-11","562","193"
+"2027-04-12","593","198"
+"2027-04-13","602","197"
+"2027-04-14","583","191"
+"2027-04-15","600","191"
+"2027-04-16","614","197"
+"2027-04-17","649","200"
+"2027-04-18","596","195"
+"2027-04-19","584","194"
+"2027-04-20","553","201"
+"2027-04-21","585","204"
+"2027-04-22","646","206"
+"2027-04-23","644","205"
+"2027-04-24","642","210"
+"2027-04-25","588","209"
+"2027-04-26","556","208"
+"2027-04-27","570","209"
+"2027-04-28","552","209"
+"2027-04-29","593","205"
+"2027-04-30","578","206"
 `;
 const BEDDY_DATA = {
  "asOf": "2026-05-12",
