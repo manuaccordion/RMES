@@ -2454,6 +2454,22 @@ table.data.sell-table .sell-drill{
       </div>
     </div>
 
+    <!-- CORREZIONI 2025 -->
+    <details id="instr-corr2025" class="panel" style="margin-bottom:14px;border-left:3px solid #7a4f8e">
+      <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14"><span style="color:#7a4f8e">◆</span> 2025 corrections &mdash; why some bookings are not in the PMS</summary>
+      <div class="panel-body" style="padding:0 18px 18px 18px;line-height:1.55">
+        <p style="margin:0 0 8px 0">The review done with Blerina in late 2026 on the Airbnb receipts, the payment receipts and the room availability found <b>165 bookings wrong or missing</b> between July and December 2025, worth <b>&euro;24,327</b>. That is 4.3% of the half-year &mdash; but <b>20% on Porte Nuove</b>. Until it was corrected, every 2026-against-2025 comparison on those months made 2026 look better than it is.</p>
+        <p style="margin:0 0 8px 0"><b>Those bookings cannot live in the PMS export.</b> Most of them never reached Beddy at all: the two Airbnb listings of Condotta are not connected to the channel manager, freetobook never arrives, and nights sold over the counter are not recorded by anyone. So they live in their own file, <code>correzioni2025.js</code>, loaded next to <code>data.js</code>, and the engine lays them on top of the Beddy rows every time the dashboard loads &mdash; before they become bookings, so channels, room types, markup, STLY and Overview all work without knowing they exist.</p>
+        <p style="margin:0 0 8px 0">Two things worth knowing:</p>
+        <ul style="margin:6px 0 8px 18px;font-size:13px">
+          <li><b>If the file is missing, nothing breaks.</b> The dashboard runs exactly as before, with the uncorrected 2025.</li>
+          <li><b>It switches itself off, one booking at a time.</b> Every addition is recognised by its reference number &mdash; for Airbnb, the confirmation code. If a booking is later entered into Beddy by hand, the engine finds it already there and does not add it twice. So they can be entered at leisure, without touching the file and without double counting.</li>
+        </ul>
+        <p style="margin:0 0 8px 0">What it holds: <b>132 bookings already in the PMS</b> with something wrong (an amount typed by hand, a night sold and never added, a channel filed as Direct instead of Airbnb, one marked cancelled although it was paid), and <b>33 that were never there at all</b>. Each entry carries the reason it exists, in plain words, next to it.</p>
+        <p style="margin:0;font-size:12.5px;color:var(--ink-2)">The agreed record, the one Blerina confirmed, is at <code>storico_ott-dic_2025.html</code>. The console prints a line at every load saying how many rows were touched, how many added, and how many were skipped because Beddy has them now.</p>
+      </div>
+    </details>
+
     <!-- PROPERTY MENU -->
     <details id="instr-menu" class="panel" style="margin-bottom:14px;border-left:3px solid #c4823b">
       <summary style="cursor:pointer;padding:14px 18px;font-weight:700;font-size:15px;color:#5a3a14"><span style="color:#c4823b">◆</span> Property menu &mdash; managements and properties</summary>
@@ -3248,6 +3264,9 @@ table.data.sell-table .sell-drill{
 </div>
 
 <script src="data.js"></script>
+<!-- Correzioni 2025 verificate con Blerina: righe che a Beddy non sono mai arrivate.
+     Va caricato prima di engine.js. Se manca, la dashboard gira lo stesso. -->
+<script src="correzioni2025.js"></script>
 <!-- Firebase SDK (compat build → espone `firebase` globale, usato da rmesCloud in engine.js) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>

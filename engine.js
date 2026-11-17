@@ -22,7 +22,7 @@
    "sto guardando il codice nuovo o quello in cache?". Si legge nel pannello
    di sincronizzazione (clic sul chip in alto) alla voce "Code version".
    DA AGGIORNARE a ogni modifica di engine.js. */
-const ENGINE_BUILD = '2026-11-04a · fine anno prezzato come fine anno · non-rimborsabili in inglese · Overview fino a dicembre 2027';
+const ENGINE_BUILD = '2026-11-17a · correzioni 2025 sopra i dati di Beddy (luglio-dicembre, +24.327)';
 const RMES_CLOUD = (function(){
   // Chiavi localStorage da sincronizzare (decisioni + config).
   const SYNC_KEYS = [
@@ -1622,8 +1622,87 @@ function loadAirdna(csvText){
   MARKET_RATES.sort((a,b)=> a.ymd - b.ymd);
 }
 const _UNKNOWN_ROOM_LOG = [];  // prenotazioni con room-type non nel CFG (es. CAMERA VIRTUALE): contate come Other
+/* ===========================================================================
+   CORREZIONI 2025 — il livello che si somma sopra Beddy
+   ---------------------------------------------------------------------------
+   La verifica fatta con Blerina su luglio-dicembre 2025 ha trovato 165 righe
+   sbagliate o mancanti, per 24.761 euro: il 4,3% del semestre, ma il 20% su
+   Porte Nuove. Finche' non erano corrette, ogni confronto 2026 contro 2025 su
+   quei mesi dava 2026 piu' bello di quanto sia.
+
+   Quelle righe non stanno nell'export del PMS e non ci possono stare: in gran
+   parte sono prenotazioni che a Beddy non sono mai arrivate (gli annunci
+   Airbnb di Condotta non sono collegati, freetobook non arriva mai, le notti
+   vendute al banco non le registra nessuno). Per questo vivono in un file
+   loro, correzioni2025.js, e si applicano qui, sulle righe del CSV, PRIMA che
+   diventino prenotazioni: cosi' tutto quello che viene dopo - canali, camere,
+   markup, STLY, Overview - non sa nemmeno che esistono e funziona uguale.
+
+   Due regole che contano:
+   - se correzioni2025.js non c'e', non succede niente. La dashboard gira lo
+     stesso, solo col 2025 di prima.
+   - un'aggiunta la cui prenotazione nel frattempo e' entrata in Beddy viene
+     SALTATA. Si riconosce dal numero di riferimento, che per Airbnb e' il
+     codice di conferma. Quindi si possono inserire a mano in Beddy con calma,
+     una alla volta, senza toccare questo file e senza contarle due volte.
+   =========================================================================== */
+function applicaCorrezioni2025(righe){
+  const C = (typeof CORREZIONI_2025 !== 'undefined') ? CORREZIONI_2025 : null;
+  if (!C || !righe || !righe.length) return righe;
+  const esito = { ritoccate: 0, aggiunte: 0, gia_in_beddy: 0, non_trovate: [] };
+
+  const perRif = {};
+  for (const r of righe){
+    const k = (r['numero di riferimento'] || '').trim().toUpperCase();
+    if (k) perRif[k] = r;
+  }
+  /* Le vendite dirette non hanno un codice vero, quindi per loro il confronto
+     e' struttura + le due date + l'inizio del nome. Senza questo, inserendole
+     a mano in Beddy si conterebbero due volte. */
+  const impronta = (s, ci, co, nome) =>
+    [s, ci, co, String(nome || '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 6)].join('|');
+  const impronte = {};
+  for (const r of righe){
+    impronte[impronta(r['Struttura'], r['Data inizio soggiorno'], r['Data partenza'], r['prenotante'])] = true;
+  }
+
+  for (const rif in (C.patch || {})){
+    const p = C.patch[rif], r = perRif[String(rif).toUpperCase()];
+    if (!r){ esito.non_trovate.push(rif); continue; }
+    if (p.tot   != null) r['Totale'] = String(p.tot);
+    if (p.out   != null) r['Data partenza'] = p.out;
+    if (p.n     != null) r['Num. notti'] = String(p.n);
+    if (p.stato != null) r['Stato'] = p.stato;
+    if (p.can   != null) r['Canale'] = p.can;
+    esito.ritoccate++;
+  }
+
+  for (const a of (C.aggiungi || [])){
+    const k = String(a.ref || '').trim().toUpperCase();
+    if (k && perRif[k]){ esito.gia_in_beddy++; continue; }
+    if (impronte[impronta(a.str, a.in, a.out, a.nome)]){ esito.gia_in_beddy++; continue; }
+    righe.push({
+      'numero di riferimento': a.ref, 'Data/ora prenotazione': a.in,
+      'Data/ora ultima modifica': a.in, 'Canale': a.can, 'prenotante': a.nome,
+      'Alloggi': a.cam, 'Piani tariffari': '', 'Data inizio soggiorno': a.in,
+      'Data partenza': a.out, 'Num. notti': String(a.n), 'Totale': String(a.tot),
+      'Struttura': a.str, 'Stato': 'Confermate', 'Tassa di soggiorno': '0',
+      'Provenienza': 'Correzione 2025', 'cleaning': '0', 'Ospiti': ''
+    });
+    esito.aggiunte++;
+  }
+
+  console.log('[Correzioni 2025] ' + esito.ritoccate + ' righe ritoccate, '
+    + esito.aggiunte + ' aggiunte'
+    + (esito.gia_in_beddy ? ', ' + esito.gia_in_beddy + ' saltate perche ormai in Beddy' : '')
+    + (esito.non_trovate.length ? ', ' + esito.non_trovate.length + ' riferimenti non trovati: '
+        + esito.non_trovate.slice(0,5).join(' ') : ''));
+  if (typeof window !== 'undefined') window.__CORREZIONI_2025_ESITO = esito;
+  return righe;
+}
+
 function loadData(csvText){
-  const all = parseCSV(csvText);
+  const all = applicaCorrezioni2025(parseCSV(csvText));
   RAW = [];
   BOOKINGS = [];
   // === Cache pre-loop: evito 26k+ chiamate ripetute a fp_getChannelMarkups() / structRoomsFor() ===
